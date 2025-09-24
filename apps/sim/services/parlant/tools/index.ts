@@ -7,26 +7,20 @@
  * interacting with Sim tools through Parlant-compatible interfaces.
  */
 
+import { GoogleSheetsBlock } from '@/blocks/blocks/google_sheets'
+import { SlackBlock } from '@/blocks/blocks/slack'
 import { UniversalToolAdapter } from './adapter-framework'
-import { UniversalToolAdapterRegistry, globalAdapterRegistry } from './adapter-registry'
-import { AdapterTestingFramework } from './testing/adapter-testing-framework'
-import { AdapterMonitoringSystem, globalAdapterMonitoring } from './quality/adapter-monitoring'
-
+import { globalAdapterRegistry, UniversalToolAdapterRegistry } from './adapter-registry'
+import { GitHubAdapter } from './adapters/github-adapter'
+import { GoogleSheetsAdapter } from './adapters/google-sheets-adapter'
 // Import specific adapters
 import { OpenAIAdapter } from './adapters/openai-adapter'
-import { GitHubAdapter } from './adapters/github-adapter'
 import { PostgreSQLAdapter } from './adapters/postgresql-adapter'
 import { SlackAdapter } from './adapters/slack-adapter'
-import { GoogleSheetsAdapter } from './adapters/google-sheets-adapter'
-
-// Import all available Sim blocks for dynamic adapter creation
-import { OpenAIBlock } from '@/blocks/blocks/openai'
-import { GitHubBlock } from '@/blocks/blocks/github'
-import { SlackBlock } from '@/blocks/blocks/slack'
-import { GoogleSheetsBlock } from '@/blocks/blocks/google_sheets'
-
+import { AdapterMonitoringSystem, globalAdapterMonitoring } from './quality/adapter-monitoring'
 // Import template utilities
 import { AdapterTemplates } from './templates/adapter-templates'
+import { AdapterTestingFramework } from './testing/adapter-testing-framework'
 
 // ================================
 // System Configuration

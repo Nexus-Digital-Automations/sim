@@ -8,14 +8,6 @@
  * @version 1.0.0
  */
 
-import type { ToolConfig } from '@/tools/types'
-import type {
-  AdapterConfiguration,
-  ToolDiscoveryQuery,
-  DiscoveredTool,
-  AdapterExecutionContext
-} from '../types/adapter-interfaces'
-
 // =============================================================================
 // Usage Context Types
 // =============================================================================
@@ -178,17 +170,14 @@ export class UsageGuidelinesEngine {
   /**
    * Get contextual usage guidelines for a tool
    */
-  async getUsageGuidelines(
-    toolId: string,
-    context: UsageContext
-  ): Promise<UsageGuideline[]> {
+  async getUsageGuidelines(toolId: string, context: UsageContext): Promise<UsageGuideline[]> {
     const allGuidelines = this.guidelines.get(toolId) || []
 
     // Score and filter guidelines based on context
     const scoredGuidelines = await Promise.all(
       allGuidelines.map(async (guideline) => ({
         guideline,
-        score: await this.scoreGuideline(guideline, context)
+        score: await this.scoreGuideline(guideline, context),
       }))
     )
 
@@ -203,8 +192,9 @@ export class UsageGuidelinesEngine {
    * Get contextual recommendations for tool usage
    */
   async getToolRecommendations(context: UsageContext): Promise<ToolRecommendation[]> {
-    const intent = context.currentIntent ||
-      await this.intentClassifier.classifyFromHistory(context.messageHistory || [])
+    const intent =
+      context.currentIntent ||
+      (await this.intentClassifier.classifyFromHistory(context.messageHistory || []))
 
     const recommendations: ToolRecommendation[] = []
 
@@ -222,13 +212,13 @@ export class UsageGuidelinesEngine {
           reason: bestGuideline.guidance.whenToUse,
           suggestedParameters: this.suggestParameters(toolId, context),
           urgency: this.assessUrgency(toolId, context),
-          alternatives: await this.findAlternativeTools(toolId, context)
+          alternatives: await this.findAlternativeTools(toolId, context),
         })
       }
     }
 
     return recommendations
-      .filter(rec => rec.confidence > 0.4)
+      .filter((rec) => rec.confidence > 0.4)
       .sort((a, b) => b.confidence - a.confidence)
       .slice(0, 5) // Top 5 recommendations
   }
@@ -249,7 +239,7 @@ export class UsageGuidelinesEngine {
       parameterGuidance: this.generateParameterGuidance(toolId, intent, context),
       examples: this.generateContextualExamples(toolId, intent, context),
       troubleshooting: this.generateTroubleshooting(toolId, context),
-      relatedTools: await this.findRelatedTools(toolId, context)
+      relatedTools: await this.findRelatedTools(toolId, context),
     }
   }
 
@@ -257,10 +247,7 @@ export class UsageGuidelinesEngine {
   // Private Methods
   // =============================================================================
 
-  private async scoreGuideline(
-    guideline: UsageGuideline,
-    context: UsageContext
-  ): Promise<number> {
+  private async scoreGuideline(guideline: UsageGuideline, context: UsageContext): Promise<number> {
     let score = 0
 
     for (const condition of guideline.conditions) {
@@ -384,7 +371,7 @@ export class UsageGuidelinesEngine {
     }
 
     // Check secondary intents
-    const secondaryMatch = intent.secondary?.some(sec => toolIntents.includes(sec))
+    const secondaryMatch = intent.secondary?.some((sec) => toolIntents.includes(sec))
     if (secondaryMatch) {
       return intent.confidence * 0.7
     }
@@ -400,7 +387,7 @@ export class UsageGuidelinesEngine {
     if (toolUsageRank === -1) return 0.3
 
     // Higher confidence for frequently used tools
-    return Math.max(0.5, 1 - (toolUsageRank / userProfile.frequentTools.length))
+    return Math.max(0.5, 1 - toolUsageRank / userProfile.frequentTools.length)
   }
 
   private assessContextFit(toolId: string, context: UsageContext): number {
@@ -439,9 +426,9 @@ export class UsageGuidelinesEngine {
 
     // Domain-specific appropriateness
     const domainTools: Record<string, string[]> = {
-      'software_development': ['github_pr', 'github_repo', 'slack_message'],
-      'content_creation': ['notion_create', 'google_docs_write', 'gmail_send'],
-      'data_analysis': ['mysql_query', 'postgresql_query', 'google_sheets_read'],
+      software_development: ['github_pr', 'github_repo', 'slack_message'],
+      content_creation: ['notion_create', 'google_docs_write', 'gmail_send'],
+      data_analysis: ['mysql_query', 'postgresql_query', 'google_sheets_read'],
     }
 
     if (context.businessDomain) {
@@ -554,7 +541,7 @@ class ContextAnalyzer {
     return {
       workflowStage: this.determineWorkflowStage(context),
       userBehavior: this.analyzeUserBehavior(context),
-      environmentalFactors: this.analyzeEnvironmentalFactors(context)
+      environmentalFactors: this.analyzeEnvironmentalFactors(context),
     }
   }
 
@@ -584,29 +571,32 @@ class IntentClassifier {
       confidence: 0.8,
       secondary: intents.slice(1),
       urgency: this.classifyUrgency(message),
-      complexity: this.classifyComplexity(message)
+      complexity: this.classifyComplexity(message),
     }
   }
 
   async classifyFromHistory(messages: ConversationMessage[]): Promise<UserIntent> {
     // Analyze message history for intent
-    const recentMessages = messages.slice(-5).map(m => m.content).join(' ')
+    const recentMessages = messages
+      .slice(-5)
+      .map((m) => m.content)
+      .join(' ')
     return this.classify(recentMessages)
   }
 
   private extractIntents(message: string): string[] {
     const intentKeywords: Record<string, string[]> = {
-      'send_email': ['send', 'email', 'message', 'compose'],
-      'create_document': ['create', 'write', 'document', 'note'],
-      'search': ['find', 'search', 'look', 'discover'],
-      'schedule': ['schedule', 'calendar', 'meeting', 'appointment']
+      send_email: ['send', 'email', 'message', 'compose'],
+      create_document: ['create', 'write', 'document', 'note'],
+      search: ['find', 'search', 'look', 'discover'],
+      schedule: ['schedule', 'calendar', 'meeting', 'appointment'],
     }
 
     const detectedIntents: string[] = []
     const lowerMessage = message.toLowerCase()
 
     Object.entries(intentKeywords).forEach(([intent, keywords]) => {
-      if (keywords.some(keyword => lowerMessage.includes(keyword))) {
+      if (keywords.some((keyword) => lowerMessage.includes(keyword))) {
         detectedIntents.push(intent)
       }
     })
@@ -618,14 +608,14 @@ class IntentClassifier {
     const urgentWords = ['urgent', 'asap', 'immediately', 'critical', 'emergency']
     const lowerMessage = message.toLowerCase()
 
-    return urgentWords.some(word => lowerMessage.includes(word)) ? 'high' : 'medium'
+    return urgentWords.some((word) => lowerMessage.includes(word)) ? 'high' : 'medium'
   }
 
   private classifyComplexity(message: string): 'simple' | 'moderate' | 'complex' {
     const complexWords = ['multiple', 'complex', 'detailed', 'comprehensive', 'analyze']
     const lowerMessage = message.toLowerCase()
 
-    if (complexWords.some(word => lowerMessage.includes(word))) {
+    if (complexWords.some((word) => lowerMessage.includes(word))) {
       return 'complex'
     }
 

@@ -22,7 +22,7 @@
  */
 
 import type { BlockConfig } from '@/blocks/types'
-import type { Tool, ToolExecution, AuthContext } from './types'
+import type { Tool, ToolExecution } from './types'
 
 // =============================================
 // Core Types and Interfaces
@@ -354,7 +354,7 @@ export class ToolIntelligenceEngine {
   /**
    * Recommend tools based on conversation context
    */
-  recommendTools(context: ToolRecommendationContext, limit: number = 5): ToolRecommendation[] {
+  recommendTools(context: ToolRecommendationContext, limit = 5): ToolRecommendation[] {
     const allTools = this.registry.getAllTools()
     const recommendations: ToolRecommendation[] = []
 
@@ -586,7 +586,7 @@ export class ToolIntelligenceEngine {
         }
       } else if (typeof execution.result === 'string') {
         summary = execution.result.length > 100
-          ? execution.result.substring(0, 100) + '...'
+          ? `${execution.result.substring(0, 100)}...`
           : execution.result
         details = execution.result
       }

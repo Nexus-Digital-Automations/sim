@@ -8,16 +8,7 @@
  * @version 1.0.0
  */
 
-import type { ToolConfig } from '@/tools/types'
-import type {
-  UsageContext,
-  ConversationMessage,
-  UserIntent
-} from './usage-guidelines'
-import type {
-  ToolRecommendationWithDetails,
-  IntentAnalysis
-} from './recommendation-engine'
+import type { ConversationMessage, UsageContext, UserIntent } from './usage-guidelines'
 
 // =============================================================================
 // Help System Types
@@ -249,7 +240,6 @@ export class NaturalLanguageHelpSystem {
       await this.enhanceWithInteractiveElements(response, query, classification)
 
       return response
-
     } catch (error) {
       console.error('Help query processing failed:', error)
       return this.generateErrorResponse(query, error as Error)
@@ -270,7 +260,7 @@ export class NaturalLanguageHelpSystem {
       return {
         answer: `I don't have specific help information for the tool "${toolId}". Please check if the tool ID is correct or try asking about general tool usage.`,
         type: 'explanation',
-        confidence: 0.1
+        confidence: 0.1,
       }
     }
 
@@ -296,24 +286,29 @@ export class NaturalLanguageHelpSystem {
     toolId?: string,
     context?: UsageContext
   ): Promise<HelpResponse> {
-    const troubleshootingGuide = toolId ?
-      this.knowledgeBase.toolHelp.get(toolId)?.troubleshooting :
-      await this.findGeneralTroubleshooting(problem)
+    const troubleshootingGuide = toolId
+      ? this.knowledgeBase.toolHelp.get(toolId)?.troubleshooting
+      : await this.findGeneralTroubleshooting(problem)
 
     if (!troubleshootingGuide) {
       return {
-        answer: "I couldn't find specific troubleshooting information for this problem. Please provide more details about what you're experiencing.",
+        answer:
+          "I couldn't find specific troubleshooting information for this problem. Please provide more details about what you're experiencing.",
         type: 'troubleshooting',
         confidence: 0.2,
         followUpQuestions: [
-          "What exactly happened when you tried to use the tool?",
-          "What error messages did you see?",
-          "What were you trying to accomplish?"
-        ]
+          'What exactly happened when you tried to use the tool?',
+          'What error messages did you see?',
+          'What were you trying to accomplish?',
+        ],
       }
     }
 
-    return this.responseGenerator.generateTroubleshootingResponse(troubleshootingGuide, problem, context)
+    return this.responseGenerator.generateTroubleshootingResponse(
+      troubleshootingGuide,
+      problem,
+      context
+    )
   }
 
   /**
@@ -325,7 +320,7 @@ export class NaturalLanguageHelpSystem {
     context?: UsageContext
   ): Promise<HelpResponse> {
     const toolComparisons = await Promise.all(
-      tools.map(toolId => this.knowledgeBase.toolHelp.get(toolId))
+      tools.map((toolId) => this.knowledgeBase.toolHelp.get(toolId))
     )
 
     return this.responseGenerator.generateComparisonResponse(
@@ -351,7 +346,7 @@ export class NaturalLanguageHelpSystem {
             title: `Advanced tips for ${toolId}`,
             description: `Learn advanced techniques and best practices`,
             query: `how to use ${toolId} effectively`,
-            relevance: 0.8
+            relevance: 0.8,
           })
         }
       }
@@ -385,7 +380,7 @@ export class NaturalLanguageHelpSystem {
       commonIssues: new Map(),
       beginnerGuides: [],
       advancedGuides: [],
-      searchIndex: new HelpSearchIndex()
+      searchIndex: new HelpSearchIndex(),
     }
   }
 
@@ -406,23 +401,24 @@ export class NaturalLanguageHelpSystem {
 
   private generateErrorResponse(query: HelpQuery, error: Error): HelpResponse {
     return {
-      answer: "I encountered an issue processing your help request. Please try rephrasing your question or contact support if the problem persists.",
+      answer:
+        'I encountered an issue processing your help request. Please try rephrasing your question or contact support if the problem persists.',
       type: 'explanation',
       confidence: 0,
       followUpQuestions: [
-        "Could you rephrase your question?",
-        "Are you looking for help with a specific tool?",
-        "Would you like to see general getting started information?"
-      ]
+        'Could you rephrase your question?',
+        'Are you looking for help with a specific tool?',
+        'Would you like to see general getting started information?',
+      ],
     }
   }
 
   private extractRecentTools(history: ConversationMessage[]): string[] {
     const tools = new Set<string>()
 
-    history.slice(-10).forEach(message => {
+    history.slice(-10).forEach((message) => {
       if (message.tools) {
-        message.tools.forEach(tool => tools.add(tool))
+        message.tools.forEach((tool) => tools.add(tool))
       }
     })
 
@@ -432,84 +428,87 @@ export class NaturalLanguageHelpSystem {
   private getBeginnerSuggestions(): RelatedHelpItem[] {
     return [
       {
-        title: "Getting Started Guide",
-        description: "Learn the basics of using tools effectively",
-        query: "how to get started",
-        relevance: 0.9
+        title: 'Getting Started Guide',
+        description: 'Learn the basics of using tools effectively',
+        query: 'how to get started',
+        relevance: 0.9,
       },
       {
-        title: "Common Tool Patterns",
-        description: "Understand common usage patterns across tools",
-        query: "common tool usage patterns",
-        relevance: 0.8
-      }
+        title: 'Common Tool Patterns',
+        description: 'Understand common usage patterns across tools',
+        query: 'common tool usage patterns',
+        relevance: 0.8,
+      },
     ]
   }
 
   private getAdvancedSuggestions(): RelatedHelpItem[] {
     return [
       {
-        title: "Advanced Integrations",
-        description: "Learn about complex tool combinations",
-        query: "advanced tool integrations",
-        relevance: 0.9
+        title: 'Advanced Integrations',
+        description: 'Learn about complex tool combinations',
+        query: 'advanced tool integrations',
+        relevance: 0.9,
       },
       {
-        title: "Performance Optimization",
-        description: "Optimize your tool usage for better performance",
-        query: "tool performance optimization",
-        relevance: 0.8
-      }
+        title: 'Performance Optimization',
+        description: 'Optimize your tool usage for better performance',
+        query: 'tool performance optimization',
+        relevance: 0.8,
+      },
     ]
   }
 
   private getDomainSpecificSuggestions(domain: string): RelatedHelpItem[] {
     const domainSuggestions: Record<string, RelatedHelpItem[]> = {
-      'software_development': [
+      software_development: [
         {
-          title: "Development Workflow Tools",
-          description: "Tools for software development workflows",
-          query: "development workflow tools",
-          relevance: 0.9
-        }
+          title: 'Development Workflow Tools',
+          description: 'Tools for software development workflows',
+          query: 'development workflow tools',
+          relevance: 0.9,
+        },
       ],
-      'marketing': [
+      marketing: [
         {
-          title: "Marketing Automation Tools",
-          description: "Automate your marketing processes",
-          query: "marketing automation",
-          relevance: 0.9
-        }
-      ]
+          title: 'Marketing Automation Tools',
+          description: 'Automate your marketing processes',
+          query: 'marketing automation',
+          relevance: 0.9,
+        },
+      ],
     }
 
     return domainSuggestions[domain] || []
   }
 
-  private generateFollowUpQuestions(query: HelpQuery, classification: QueryClassification): string[] {
+  private generateFollowUpQuestions(
+    query: HelpQuery,
+    classification: QueryClassification
+  ): string[] {
     const questions: string[] = []
 
     switch (classification.type) {
       case 'how-to':
         questions.push(
-          "Would you like to see a step-by-step tutorial?",
-          "Are you looking for examples of this being used?"
+          'Would you like to see a step-by-step tutorial?',
+          'Are you looking for examples of this being used?'
         )
         break
 
       case 'troubleshoot':
         questions.push(
-          "What error message are you seeing?",
-          "When did this problem first occur?",
-          "What steps have you already tried?"
+          'What error message are you seeing?',
+          'When did this problem first occur?',
+          'What steps have you already tried?'
         )
         break
 
       case 'compare':
         questions.push(
-          "What factors are most important to you?",
+          'What factors are most important to you?',
           "What's your experience level with these tools?",
-          "Are you looking for alternatives to your current approach?"
+          'Are you looking for alternatives to your current approach?'
         )
         break
     }
@@ -517,7 +516,10 @@ export class NaturalLanguageHelpSystem {
     return questions
   }
 
-  private generateSuggestedQueries(query: HelpQuery, classification: QueryClassification): string[] {
+  private generateSuggestedQueries(
+    query: HelpQuery,
+    classification: QueryClassification
+  ): string[] {
     const suggestions: string[] = []
 
     if (query.specificTool) {
@@ -531,31 +533,34 @@ export class NaturalLanguageHelpSystem {
     return suggestions
   }
 
-  private generateQuickActions(query: HelpQuery, classification: QueryClassification): QuickAction[] {
+  private generateQuickActions(
+    query: HelpQuery,
+    classification: QueryClassification
+  ): QuickAction[] {
     const actions: QuickAction[] = []
 
     actions.push({
-      label: "Search Documentation",
-      action: "search",
-      target: "documentation",
-      description: "Search comprehensive documentation"
+      label: 'Search Documentation',
+      action: 'search',
+      target: 'documentation',
+      description: 'Search comprehensive documentation',
     })
 
     if (query.specificTool) {
       actions.push({
         label: `Try ${query.specificTool}`,
-        action: "tool",
+        action: 'tool',
         target: query.specificTool,
-        description: "Open tool with guided setup"
+        description: 'Open tool with guided setup',
       })
     }
 
     if (classification.type === 'how-to') {
       actions.push({
-        label: "View Tutorial",
-        action: "tutorial",
-        target: "tutorial_search",
-        description: "Find step-by-step guides"
+        label: 'View Tutorial',
+        action: 'tutorial',
+        target: 'tutorial_search',
+        description: 'Find step-by-step guides',
       })
     }
 
@@ -612,10 +617,10 @@ class HelpQueryClassifier {
         primary: type,
         confidence,
         urgency: this.assessUrgency(message),
-        complexity: this.assessComplexity(message)
+        complexity: this.assessComplexity(message),
       },
       entities,
-      tools
+      tools,
     }
   }
 
@@ -624,33 +629,33 @@ class HelpQueryClassifier {
       /how (?:do i|can i|to)/i,
       /(?:steps|instructions) (?:to|for)/i,
       /(?:guide|tutorial) (?:for|on)/i,
-      /teach me/i
+      /teach me/i,
     ])
 
     this.intentPatterns.set('what-is', [
       /what is/i,
       /what does .+ do/i,
       /(?:explain|define)/i,
-      /what's the difference/i
+      /what's the difference/i,
     ])
 
     this.intentPatterns.set('troubleshoot', [
       /(?:error|problem|issue|trouble|fix)/i,
       /not working/i,
       /(?:failed|broken)/i,
-      /help.+(?:error|problem)/i
+      /help.+(?:error|problem)/i,
     ])
 
     this.intentPatterns.set('compare', [
       /(?:compare|vs|versus|difference between)/i,
       /which (?:is better|should i use)/i,
-      /(?:pros and cons|advantages)/i
+      /(?:pros and cons|advantages)/i,
     ])
 
     this.intentPatterns.set('when-to-use', [
       /when (?:should|to|do) i use/i,
       /best (?:time|situation) (?:to|for)/i,
-      /appropriate for/i
+      /appropriate for/i,
     ])
   }
 
@@ -679,7 +684,7 @@ class HelpQueryClassifier {
     // Extract quoted strings
     const quotedEntities = message.match(/"([^"]+)"/g)
     if (quotedEntities) {
-      entities.push(...quotedEntities.map(q => q.replace(/"/g, '')))
+      entities.push(...quotedEntities.map((q) => q.replace(/"/g, '')))
     }
 
     return entities
@@ -691,11 +696,18 @@ class HelpQueryClassifier {
 
     // Common tool identifiers
     const toolPatterns = [
-      /gmail/i, /email/i, /notion/i, /slack/i, /calendar/i,
-      /database/i, /sql/i, /search/i, /github/i
+      /gmail/i,
+      /email/i,
+      /notion/i,
+      /slack/i,
+      /calendar/i,
+      /database/i,
+      /sql/i,
+      /search/i,
+      /github/i,
     ]
 
-    toolPatterns.forEach(pattern => {
+    toolPatterns.forEach((pattern) => {
       if (pattern.test(message_lower)) {
         const match = message_lower.match(pattern)
         if (match) {
@@ -709,8 +721,8 @@ class HelpQueryClassifier {
 
   private calculateConfidence(message: string, type: string): number {
     const patterns = this.intentPatterns.get(type) || []
-    const matches = patterns.filter(pattern => pattern.test(message)).length
-    return Math.min(matches / patterns.length * 0.8 + 0.2, 1)
+    const matches = patterns.filter((pattern) => pattern.test(message)).length
+    return Math.min((matches / patterns.length) * 0.8 + 0.2, 1)
   }
 
   private assessUrgency(message: string): 'low' | 'medium' | 'high' {
@@ -757,18 +769,18 @@ class HelpResponseGenerator {
   ): HelpResponse {
     let answer = `**${toolHelp.toolId}**\n\n${toolHelp.overview}\n\n`
     answer += `**Purpose:** ${toolHelp.purpose}\n\n`
-    answer += `**When to use:**\n${toolHelp.whenToUse.map(item => `• ${item}`).join('\n')}\n\n`
+    answer += `**When to use:**\n${toolHelp.whenToUse.map((item) => `• ${item}`).join('\n')}\n\n`
 
     if (toolHelp.parameters.length > 0) {
       answer += `**Parameters:**\n`
-      toolHelp.parameters.forEach(param => {
+      toolHelp.parameters.forEach((param) => {
         answer += `• **${param.name}** (${param.type}): ${param.description}\n`
       })
       answer += '\n'
     }
 
     if (toolHelp.bestPractices.length > 0) {
-      answer += `**Best Practices:**\n${toolHelp.bestPractices.map(practice => `• ${practice}`).join('\n')}\n\n`
+      answer += `**Best Practices:**\n${toolHelp.bestPractices.map((practice) => `• ${practice}`).join('\n')}\n\n`
     }
 
     return {
@@ -776,7 +788,7 @@ class HelpResponseGenerator {
       type: 'explanation',
       confidence: 0.9,
       examples: toolHelp.examples,
-      relatedHelp: this.generateRelatedHelp(toolHelp)
+      relatedHelp: this.generateRelatedHelp(toolHelp),
     }
   }
 
@@ -787,29 +799,31 @@ class HelpResponseGenerator {
   ): HelpResponse {
     if (!guide) {
       return {
-        answer: "I need more information to help troubleshoot this issue. Could you provide more details about what's happening?",
+        answer:
+          "I need more information to help troubleshoot this issue. Could you provide more details about what's happening?",
         type: 'troubleshooting',
         confidence: 0.3,
         followUpQuestions: [
-          "What specific error are you seeing?",
-          "What tool are you trying to use?",
-          "What were you trying to accomplish?"
-        ]
+          'What specific error are you seeing?',
+          'What tool are you trying to use?',
+          'What were you trying to accomplish?',
+        ],
       }
     }
 
-    let answer = "**Troubleshooting Guide**\n\n"
+    let answer = '**Troubleshooting Guide**\n\n'
 
     // Find matching problems
-    const matchingProblems = guide.commonProblems.filter(p =>
-      p.symptom.toLowerCase().includes(problem.toLowerCase()) ||
-      problem.toLowerCase().includes(p.symptom.toLowerCase())
+    const matchingProblems = guide.commonProblems.filter(
+      (p) =>
+        p.symptom.toLowerCase().includes(problem.toLowerCase()) ||
+        problem.toLowerCase().includes(p.symptom.toLowerCase())
     )
 
     if (matchingProblems.length > 0) {
       const problem_info = matchingProblems[0]
       answer += `**Problem:** ${problem_info.symptom}\n\n`
-      answer += `**Possible Causes:**\n${problem_info.possibleCauses.map(cause => `• ${cause}`).join('\n')}\n\n`
+      answer += `**Possible Causes:**\n${problem_info.possibleCauses.map((cause) => `• ${cause}`).join('\n')}\n\n`
       answer += `**Solutions:**\n`
 
       problem_info.solutions.forEach((solution, index) => {
@@ -821,13 +835,13 @@ class HelpResponseGenerator {
       })
     } else {
       answer += `**General troubleshooting tips:**\n`
-      answer += guide.generalTips.map(tip => `• ${tip}`).join('\n')
+      answer += guide.generalTips.map((tip) => `• ${tip}`).join('\n')
     }
 
     return {
       answer,
       type: 'troubleshooting',
-      confidence: matchingProblems.length > 0 ? 0.8 : 0.5
+      confidence: matchingProblems.length > 0 ? 0.8 : 0.5,
     }
   }
 
@@ -838,28 +852,29 @@ class HelpResponseGenerator {
   ): HelpResponse {
     if (tools.length < 2) {
       return {
-        answer: "I need at least two tools to compare. Please specify which tools you'd like me to compare.",
+        answer:
+          "I need at least two tools to compare. Please specify which tools you'd like me to compare.",
         type: 'comparison',
-        confidence: 0.2
+        confidence: 0.2,
       }
     }
 
-    let answer = "**Tool Comparison**\n\n"
+    let answer = '**Tool Comparison**\n\n'
 
-    tools.forEach(tool => {
+    tools.forEach((tool) => {
       answer += `**${tool.toolId}**\n`
       answer += `• Purpose: ${tool.purpose}\n`
       answer += `• Best for: ${tool.whenToUse.join(', ')}\n`
-      answer += `• Common use cases: ${tool.commonUseCases.map(uc => uc.title).join(', ')}\n\n`
+      answer += `• Common use cases: ${tool.commonUseCases.map((uc) => uc.title).join(', ')}\n\n`
     })
 
-    answer += "**Summary:**\n"
-    answer += "Choose based on your specific needs and the context of your task."
+    answer += '**Summary:**\n'
+    answer += 'Choose based on your specific needs and the context of your task.'
 
     return {
       answer,
       type: 'comparison',
-      confidence: 0.7
+      confidence: 0.7,
     }
   }
 
@@ -867,32 +882,38 @@ class HelpResponseGenerator {
     return {
       answer: "Here's how to accomplish what you're looking for...",
       type: 'tutorial',
-      confidence: 0.7
+      confidence: 0.7,
     }
   }
 
-  private generateExplanationResponse(query: HelpQuery, searchResults: HelpSearchResult[]): HelpResponse {
+  private generateExplanationResponse(
+    query: HelpQuery,
+    searchResults: HelpSearchResult[]
+  ): HelpResponse {
     return {
-      answer: "Let me explain this concept...",
+      answer: 'Let me explain this concept...',
       type: 'explanation',
-      confidence: 0.7
+      confidence: 0.7,
     }
   }
 
-  private generateGeneralResponse(query: HelpQuery, searchResults: HelpSearchResult[]): HelpResponse {
+  private generateGeneralResponse(
+    query: HelpQuery,
+    searchResults: HelpSearchResult[]
+  ): HelpResponse {
     return {
       answer: "Based on your question, here's what I found...",
       type: 'explanation',
-      confidence: 0.6
+      confidence: 0.6,
     }
   }
 
   private generateRelatedHelp(toolHelp: ToolHelp): RelatedHelpItem[] {
-    return toolHelp.alternatives.map(altTool => ({
+    return toolHelp.alternatives.map((altTool) => ({
       title: `Learn about ${altTool}`,
       description: `Alternative tool with similar functionality`,
       query: `what is ${altTool}`,
-      relevance: 0.6
+      relevance: 0.6,
     }))
   }
 }
@@ -911,20 +932,20 @@ class HelpSearchEngine {
           type: 'tool_help',
           content: toolHelp,
           relevance,
-          source: toolId
+          source: toolId,
         })
       }
     }
 
     // Search FAQ
-    this.knowledgeBase.faq.forEach(faqItem => {
+    this.knowledgeBase.faq.forEach((faqItem) => {
       const relevance = this.calculateFAQRelevance(query.userMessage, faqItem)
       if (relevance > 0.3) {
         results.push({
           type: 'faq',
           content: faqItem,
           relevance,
-          source: 'faq'
+          source: 'faq',
         })
       }
     })
@@ -963,7 +984,7 @@ class HelpSearchEngine {
     }
 
     // Check keywords
-    const matchingKeywords = faqItem.keywords.filter(keyword =>
+    const matchingKeywords = faqItem.keywords.filter((keyword) =>
       queryLower.includes(keyword.toLowerCase())
     )
     relevance += (matchingKeywords.length / faqItem.keywords.length) * 0.5
@@ -982,7 +1003,9 @@ interface HelpSearchResult {
 class HelpSearchIndex {
   // Implementation for search indexing would go here
   index(content: string, id: string): void {}
-  search(query: string): Array<{ id: string, score: number }> { return [] }
+  search(query: string): Array<{ id: string; score: number }> {
+    return []
+  }
 }
 
 class TutorialManager {
@@ -996,24 +1019,20 @@ class TutorialManager {
     const tutorials = Array.from(this.knowledgeBase.tutorials.values())
 
     // Filter by difficulty level
-    const levelAppropriate = tutorials.filter(tutorial =>
-      tutorial.difficulty === userLevel
-    )
+    const levelAppropriate = tutorials.filter((tutorial) => tutorial.difficulty === userLevel)
 
     if (levelAppropriate.length === 0) {
       return null
     }
 
     // Score tutorials by relevance to task description
-    const scored = levelAppropriate.map(tutorial => ({
+    const scored = levelAppropriate.map((tutorial) => ({
       tutorial,
-      score: this.scoreTutorialRelevance(tutorial, taskDescription, context)
+      score: this.scoreTutorialRelevance(tutorial, taskDescription, context),
     }))
 
     // Return the highest scoring tutorial
-    const best = scored.reduce((prev, current) =>
-      current.score > prev.score ? current : prev
-    )
+    const best = scored.reduce((prev, current) => (current.score > prev.score ? current : prev))
 
     return best.score > 0.3 ? best.tutorial : null
   }
@@ -1039,9 +1058,7 @@ class TutorialManager {
     // Check tool relevance
     if (context?.currentIntent) {
       const intentRelevantTools = this.getToolsForIntent(context.currentIntent.primary)
-      const overlap = tutorial.tools.filter(tool =>
-        intentRelevantTools.includes(tool)
-      ).length
+      const overlap = tutorial.tools.filter((tool) => intentRelevantTools.includes(tool)).length
       score += (overlap / Math.max(tutorial.tools.length, 1)) * 0.2
     }
 
@@ -1050,10 +1067,10 @@ class TutorialManager {
 
   private getToolsForIntent(intent: string): string[] {
     const intentToolMap: Record<string, string[]> = {
-      'send_communication': ['gmail_send', 'slack_message', 'mail_send'],
-      'create_content': ['notion_create', 'google_docs_create'],
-      'search_information': ['google_search', 'exa_search'],
-      'manage_data': ['mysql_query', 'postgresql_query']
+      send_communication: ['gmail_send', 'slack_message', 'mail_send'],
+      create_content: ['notion_create', 'google_docs_create'],
+      search_information: ['google_search', 'exa_search'],
+      manage_data: ['mysql_query', 'postgresql_query'],
     }
 
     return intentToolMap[intent] || []
@@ -1068,7 +1085,10 @@ export function createHelpSystem(): NaturalLanguageHelpSystem {
   return new NaturalLanguageHelpSystem()
 }
 
-export async function processHelpQuery(query: string, context?: UsageContext): Promise<HelpResponse> {
+export async function processHelpQuery(
+  query: string,
+  context?: UsageContext
+): Promise<HelpResponse> {
   const helpSystem = createHelpSystem()
   return helpSystem.processHelpQuery({ userMessage: query, context })
 }

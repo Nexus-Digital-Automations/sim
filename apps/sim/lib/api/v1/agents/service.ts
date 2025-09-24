@@ -5,21 +5,21 @@
  * workspace isolation, authentication, and error handling.
  */
 
-import { and, asc, count, desc, eq, ilike, isNull, or, sql } from 'drizzle-orm'
 import { db } from '@sim/db'
-import { parlantAgent, parlantSession, workspace, user } from '@sim/db/schema'
+import { parlantAgent, parlantSession, workspace } from '@sim/db/schema'
+import { and, asc, count, desc, eq, ilike, isNull, or, sql } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  CreateAgentRequest,
-  UpdateAgentRequest,
-  AgentResponse,
   AgentListQuery,
   AgentListResponse,
+  AgentResponse,
+  AgentStatusResponse,
+  CreateAgentRequest,
   CreateSessionRequest,
-  SessionResponse,
   SessionListQuery,
   SessionListResponse,
-  AgentStatusResponse,
+  SessionResponse,
+  UpdateAgentRequest,
 } from './schemas'
 
 const logger = createLogger('AgentService')
@@ -31,10 +31,7 @@ export class AgentService {
   /**
    * Create a new Parlant agent
    */
-  async createAgent(
-    request: CreateAgentRequest,
-    userId: string
-  ): Promise<AgentResponse> {
+  async createAgent(request: CreateAgentRequest, userId: string): Promise<AgentResponse> {
     const startTime = performance.now()
     const requestId = `create-agent-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
 
@@ -121,12 +118,7 @@ export class AgentService {
       const agent = await db
         .select()
         .from(parlantAgent)
-        .where(
-          and(
-            eq(parlantAgent.id, agentId),
-            isNull(parlantAgent.deletedAt)
-          )
-        )
+        .where(and(eq(parlantAgent.id, agentId), isNull(parlantAgent.deletedAt)))
         .limit(1)
 
       if (agent.length === 0) {
@@ -156,10 +148,7 @@ export class AgentService {
   /**
    * List agents with filtering and pagination
    */
-  async listAgents(
-    query: AgentListQuery,
-    userId: string
-  ): Promise<AgentListResponse> {
+  async listAgents(query: AgentListQuery, userId: string): Promise<AgentListResponse> {
     const startTime = performance.now()
     const requestId = `list-agents-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
 
@@ -199,9 +188,10 @@ export class AgentService {
       const total = totalResult.count
 
       // Get agents with pagination
-      const orderBy = query.sortOrder === 'asc'
-        ? asc(parlantAgent[query.sortBy])
-        : desc(parlantAgent[query.sortBy])
+      const orderBy =
+        query.sortOrder === 'asc'
+          ? asc(parlantAgent[query.sortBy])
+          : desc(parlantAgent[query.sortBy])
 
       const agents = await db
         .select()
@@ -221,7 +211,7 @@ export class AgentService {
       })
 
       return {
-        agents: agents.map(agent => this.mapAgentToResponse(agent)),
+        agents: agents.map((agent) => this.mapAgentToResponse(agent)),
         pagination: {
           total,
           offset: query.offset,
@@ -274,7 +264,8 @@ export class AgentService {
       if (request.name !== undefined) updateValues.name = request.name
       if (request.description !== undefined) updateValues.description = request.description
       if (request.status !== undefined) updateValues.status = request.status
-      if (request.compositionMode !== undefined) updateValues.compositionMode = request.compositionMode
+      if (request.compositionMode !== undefined)
+        updateValues.compositionMode = request.compositionMode
       if (request.systemPrompt !== undefined) updateValues.systemPrompt = request.systemPrompt
       if (request.modelProvider !== undefined) updateValues.modelProvider = request.modelProvider
       if (request.modelName !== undefined) updateValues.modelName = request.modelName
@@ -284,12 +275,7 @@ export class AgentService {
       const [updatedAgent] = await db
         .update(parlantAgent)
         .set(updateValues)
-        .where(
-          and(
-            eq(parlantAgent.id, agentId),
-            isNull(parlantAgent.deletedAt)
-          )
-        )
+        .where(and(eq(parlantAgent.id, agentId), isNull(parlantAgent.deletedAt)))
         .returning()
 
       if (!updatedAgent) {
@@ -345,12 +331,7 @@ export class AgentService {
           deletedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(
-          and(
-            eq(parlantAgent.id, agentId),
-            isNull(parlantAgent.deletedAt)
-          )
-        )
+        .where(and(eq(parlantAgent.id, agentId), isNull(parlantAgent.deletedAt)))
         .returning()
 
       const success = !!deletedAgent
@@ -501,9 +482,10 @@ export class AgentService {
       const total = totalResult.count
 
       // Get sessions with pagination
-      const orderBy = query.sortOrder === 'asc'
-        ? asc(parlantSession[query.sortBy])
-        : desc(parlantSession[query.sortBy])
+      const orderBy =
+        query.sortOrder === 'asc'
+          ? asc(parlantSession[query.sortBy])
+          : desc(parlantSession[query.sortBy])
 
       const sessions = await db
         .select()
@@ -524,7 +506,7 @@ export class AgentService {
       })
 
       return {
-        sessions: sessions.map(session => this.mapSessionToResponse(session)),
+        sessions: sessions.map((session) => this.mapSessionToResponse(session)),
         pagination: {
           total,
           offset: query.offset,
@@ -569,12 +551,7 @@ export class AgentService {
       const [activeSessionsResult] = await db
         .select({ count: count() })
         .from(parlantSession)
-        .where(
-          and(
-            eq(parlantSession.agentId, agentId),
-            eq(parlantSession.status, 'active')
-          )
-        )
+        .where(and(eq(parlantSession.agentId, agentId), eq(parlantSession.status, 'active')))
 
       const activeSessions = activeSessionsResult.count
 

@@ -16,19 +16,14 @@
  * - Agent learning from tool usage patterns
  */
 
-import type { Agent, AgentConfig, AuthContext } from './types'
-import type {
-  EnhancedToolDescription,
-  ToolRecommendationContext,
-  ConversationalToolExecution
-} from './tool-adapter'
-import type { SmartRecommendationResult, UserIntent } from './tool-recommendations'
-import type { ConversationalResponse, ConversationState } from './conversational-intelligence'
-
-import { toolRegistry, toolAdapter, intelligenceEngine } from './tool-adapter'
-import { recommendationEngine } from './tool-recommendations'
-import { conversationalEngine } from './conversational-intelligence'
 import { agentService } from './agent-service'
+import type { ConversationalResponse } from './conversational-intelligence'
+import { conversationalEngine } from './conversational-intelligence'
+import type { ConversationalToolExecution, ToolRecommendationContext } from './tool-adapter'
+import { toolAdapter, toolRegistry } from './tool-adapter'
+import type { SmartRecommendationResult, UserIntent } from './tool-recommendations'
+import { recommendationEngine } from './tool-recommendations'
+import type { AuthContext } from './types'
 
 // =============================================
 // Agent Tool Integration Types
@@ -235,9 +230,9 @@ export class AgentToolIntegrationManager {
       learningConfig: {
         enableLearning: true,
         memorySize: 1000,
-        learningRate: 0.1
+        learningRate: 0.1,
       },
-      ...toolConfig
+      ...toolConfig,
     }
 
     // Register tools with Parlant agent
@@ -266,31 +261,31 @@ export class AgentToolIntegrationManager {
     // Build agent conversation context
     const context: AgentConversationContext = {
       conversation: {
-        conversationHistory: conversationHistory.map(msg => ({
+        conversationHistory: conversationHistory.map((msg) => ({
           role: 'user',
           content: msg,
-          timestamp: new Date()
+          timestamp: new Date(),
         })),
         userIntents: [], // Will be filled by recommendation engine
         usedTools: [],
         userProfile: {
           skillLevel: 'intermediate',
           preferredCategories: [],
-          frequentlyUsedTools: []
-        }
+          frequentlyUsedTools: [],
+        },
       },
       agent: {
         id: agentId,
         capabilities,
         currentConversation: conversationHistory,
-        toolUsageHistory: await this.getAgentToolHistory(agentId)
+        toolUsageHistory: await this.getAgentToolHistory(agentId),
       },
       workspace: {
         id: authContext.workspace_id || '',
         availableTools: capabilities.availableTools,
         toolConfiguration: {},
-        permissions: authContext.permissions || []
-      }
+        permissions: authContext.permissions || [],
+      },
     }
 
     // Get base recommendations
@@ -304,7 +299,10 @@ export class AgentToolIntegrationManager {
     const agentRecommendation: AgentToolRecommendation = {
       recommendation: baseRecommendations,
       agentContext: await this.enhanceWithAgentContext(baseRecommendations, capabilities),
-      workspaceCompatibility: this.checkWorkspaceCompatibility(baseRecommendations, context.workspace)
+      workspaceCompatibility: this.checkWorkspaceCompatibility(
+        baseRecommendations,
+        context.workspace
+      ),
     }
 
     return agentRecommendation
@@ -339,7 +337,7 @@ export class AgentToolIntegrationManager {
       expertiseLevel: 'intermediate' as const,
       interactionMode: 'guided' as const,
       locale: 'en-US',
-      toolUsagePatterns: this.buildToolUsagePatterns(capabilities)
+      toolUsagePatterns: this.buildToolUsagePatterns(capabilities),
     }
 
     // Start conversational tool interaction
@@ -383,7 +381,7 @@ export class AgentToolIntegrationManager {
       parameters: executionResult.execution.execution.parameters,
       success: executionResult.execution.execution.status === 'completed',
       executionTime: Date.now() - startTime,
-      errors: executionResult.execution.userFriendlyErrors
+      errors: executionResult.execution.userFriendlyErrors,
     })
 
     // Calculate performance metrics
@@ -396,7 +394,7 @@ export class AgentToolIntegrationManager {
     return {
       execution: executionResult.execution,
       learningData,
-      performance
+      performance,
     }
   }
 
@@ -414,22 +412,25 @@ export class AgentToolIntegrationManager {
 
     const history = await this.getAgentToolHistory(agentId)
     const filteredHistory = timeRange
-      ? history.filter(record =>
-          record.timestamp >= timeRange.start && record.timestamp <= timeRange.end
+      ? history.filter(
+          (record) => record.timestamp >= timeRange.start && record.timestamp <= timeRange.end
         )
       : history
 
     return {
       totalToolCalls: filteredHistory.length,
-      successRate: filteredHistory.filter(r => r.success).length / filteredHistory.length,
-      averageExecutionTime: filteredHistory.reduce((sum, r) => sum + r.executionTime, 0) / filteredHistory.length,
+      successRate: filteredHistory.filter((r) => r.success).length / filteredHistory.length,
+      averageExecutionTime:
+        filteredHistory.reduce((sum, r) => sum + r.executionTime, 0) / filteredHistory.length,
       mostUsedTools: this.calculateMostUsedTools(filteredHistory),
-      toolExpertiseProgress: this.calculateExpertiseProgress(capabilities.toolPreferences.toolExpertise),
-      userSatisfaction: filteredHistory
-        .filter(r => r.userFeedback)
-        .reduce((sum, r) => sum + r.userFeedback!, 0) / filteredHistory.filter(r => r.userFeedback).length,
+      toolExpertiseProgress: this.calculateExpertiseProgress(
+        capabilities.toolPreferences.toolExpertise
+      ),
+      userSatisfaction:
+        filteredHistory.filter((r) => r.userFeedback).reduce((sum, r) => sum + r.userFeedback!, 0) /
+        filteredHistory.filter((r) => r.userFeedback).length,
       learningInsights: await this.learningEngine.getAgentInsights(agentId),
-      recommendationAccuracy: await this.calculateRecommendationAccuracy(agentId)
+      recommendationAccuracy: await this.calculateRecommendationAccuracy(agentId),
     }
   }
 
@@ -448,7 +449,7 @@ export class AgentToolIntegrationManager {
     // Update preferences
     capabilities.toolPreferences = {
       ...capabilities.toolPreferences,
-      ...preferences
+      ...preferences,
     }
 
     // Store updated capabilities
@@ -487,7 +488,7 @@ export class AgentToolIntegrationManager {
   private createDefaultPermissions(toolIds: string[]): Record<string, ToolPermission> {
     const permissions: Record<string, ToolPermission> = {}
 
-    toolIds.forEach(toolId => {
+    toolIds.forEach((toolId) => {
       const tool = toolRegistry.getTool(toolId)
 
       permissions[toolId] = {
@@ -495,8 +496,8 @@ export class AgentToolIntegrationManager {
         auditLevel: tool?.complexity === 'complex' ? 'detailed' : 'basic',
         usageLimits: {
           maxCallsPerHour: tool?.complexity === 'simple' ? 100 : 20,
-          maxCallsPerDay: tool?.complexity === 'simple' ? 1000 : 100
-        }
+          maxCallsPerDay: tool?.complexity === 'simple' ? 1000 : 100,
+        },
       }
     })
 
@@ -507,13 +508,13 @@ export class AgentToolIntegrationManager {
    * Create default tool preferences
    */
   private createDefaultPreferences(toolIds: string[]): AgentToolCapabilities['toolPreferences'] {
-    const allTools = toolIds.map(id => toolRegistry.getTool(id)!).filter(Boolean)
+    const allTools = toolIds.map((id) => toolRegistry.getTool(id)!).filter(Boolean)
 
     // Categorize tools by intent
     const preferredTools: Record<UserIntent, string[]> = {} as any
 
     // Map tools to intents based on their characteristics
-    allTools.forEach(tool => {
+    allTools.forEach((tool) => {
       if (tool.id.includes('email') || tool.id.includes('gmail')) {
         if (!preferredTools.send_email) preferredTools.send_email = []
         preferredTools.send_email.push(tool.id)
@@ -533,7 +534,7 @@ export class AgentToolIntegrationManager {
     return {
       preferredTools,
       restrictedTools: [],
-      toolExpertise: Object.fromEntries(toolIds.map(id => [id, 0.5])) // Start with moderate expertise
+      toolExpertise: Object.fromEntries(toolIds.map((id) => [id, 0.5])), // Start with moderate expertise
     }
   }
 
@@ -546,20 +547,26 @@ export class AgentToolIntegrationManager {
     authContext: AuthContext
   ): Promise<void> {
     // Convert Sim tools to Parlant tool format
-    const parlantTools = capabilities.availableTools.map(toolId => {
-      const tool = toolRegistry.getTool(toolId)
-      if (!tool) return null
+    const parlantTools = capabilities.availableTools
+      .map((toolId) => {
+        const tool = toolRegistry.getTool(toolId)
+        if (!tool) return null
 
-      return toolAdapter.adaptTool(toolRegistry.getBlockConfig(toolId)!)
-    }).filter(Boolean)
+        return toolAdapter.adaptTool(toolRegistry.getBlockConfig(toolId)!)
+      })
+      .filter(Boolean)
 
     // Update agent configuration with tools
-    await agentService.updateAgent(agentId, {
-      config: {
-        ...((await agentService.getAgent(agentId, authContext)).data.config || {}),
-        tools: parlantTools
-      }
-    }, authContext)
+    await agentService.updateAgent(
+      agentId,
+      {
+        config: {
+          ...((await agentService.getAgent(agentId, authContext)).data.config || {}),
+          tools: parlantTools,
+        },
+      },
+      authContext
+    )
   }
 
   /**
@@ -613,7 +620,7 @@ export class AgentToolIntegrationManager {
       method: 'GET',
       operation: 'send',
       limit: '10',
-      timeout: '30'
+      timeout: '30',
     }
 
     if (defaults[param]) {
@@ -645,7 +652,7 @@ export class AgentToolIntegrationManager {
         agentRelevance: 'No suitable tools found',
         expertiseLevel: 0,
         successProbability: 0,
-        learningOpportunities: []
+        learningOpportunities: [],
       }
     }
 
@@ -655,7 +662,7 @@ export class AgentToolIntegrationManager {
       agentRelevance: `This agent has ${expertise > 0.7 ? 'high' : expertise > 0.4 ? 'moderate' : 'limited'} experience with ${topTool.name}`,
       expertiseLevel: expertise,
       successProbability: Math.min(0.9, expertise + recommendations.confidence * 0.3),
-      learningOpportunities: expertise < 0.8 ? [`Improve ${topTool.name} proficiency`] : []
+      learningOpportunities: expertise < 0.8 ? [`Improve ${topTool.name} proficiency`] : [],
     }
   }
 
@@ -671,14 +678,14 @@ export class AgentToolIntegrationManager {
       return {
         hasPermissions: false,
         missingPermissions: [],
-        available: false
+        available: false,
       }
     }
 
     return {
       hasPermissions: workspace.availableTools.includes(topTool.id),
       missingPermissions: workspace.availableTools.includes(topTool.id) ? [] : [topTool.id],
-      available: workspace.availableTools.includes(topTool.id)
+      available: workspace.availableTools.includes(topTool.id),
     }
   }
 
@@ -695,19 +702,23 @@ export class AgentToolIntegrationManager {
     // Record usage for analytics
   }
 
-  private calculatePerformanceMetrics(startTime: number, conversationResult: any, executionResult: any): any {
+  private calculatePerformanceMetrics(
+    startTime: number,
+    conversationResult: any,
+    executionResult: any
+  ): any {
     return {
       responseTime: Date.now() - startTime,
       satisfactionMetrics: {
         taskCompleted: true,
         userConfident: true,
-        wouldUseAgain: true
+        wouldUseAgain: true,
       },
       efficiency: {
         parametersCollectedAutomatically: 0,
         totalParameters: 0,
-        conversationTurns: 0
-      }
+        conversationTurns: 0,
+      },
     }
   }
 
@@ -715,9 +726,11 @@ export class AgentToolIntegrationManager {
     return [] // Would fetch from database
   }
 
-  private calculateMostUsedTools(history: ToolUsageRecord[]): Array<{ toolId: string; count: number }> {
+  private calculateMostUsedTools(
+    history: ToolUsageRecord[]
+  ): Array<{ toolId: string; count: number }> {
     const counts: Record<string, number> = {}
-    history.forEach(record => {
+    history.forEach((record) => {
       counts[record.toolId] = (counts[record.toolId] || 0) + 1
     })
     return Object.entries(counts).map(([toolId, count]) => ({ toolId, count }))
@@ -731,7 +744,10 @@ export class AgentToolIntegrationManager {
     return 0.85 // Would calculate based on user feedback
   }
 
-  private async persistCapabilities(agentId: string, capabilities: AgentToolCapabilities): Promise<void> {
+  private async persistCapabilities(
+    agentId: string,
+    capabilities: AgentToolCapabilities
+  ): Promise<void> {
     // Would persist to database
   }
 }
@@ -758,13 +774,17 @@ export class AgentToolLearningEngine {
     const toolAssociations = this.discoverToolAssociations(conversationHistory, toolId)
 
     // Extract conversation patterns
-    const conversationPatterns = this.extractConversationPatterns(userQuery, toolId, execution.status === 'completed')
+    const conversationPatterns = this.extractConversationPatterns(
+      userQuery,
+      toolId,
+      execution.status === 'completed'
+    )
 
     return {
       insights,
       expertiseUpdates,
       toolAssociations,
-      conversationPatterns
+      conversationPatterns,
     }
   }
 
@@ -772,11 +792,15 @@ export class AgentToolLearningEngine {
     return [
       'Agent shows preference for API-based integrations',
       'Consistently successful with email tools',
-      'Learning curve detected with database tools'
+      'Learning curve detected with database tools',
     ]
   }
 
-  private async extractInsights(userQuery: string, toolId: string, execution: any): Promise<string[]> {
+  private async extractInsights(
+    userQuery: string,
+    toolId: string,
+    execution: any
+  ): Promise<string[]> {
     const insights: string[] = []
 
     if (execution.status === 'completed') {
@@ -788,28 +812,41 @@ export class AgentToolLearningEngine {
     return insights
   }
 
-  private calculateExpertiseUpdates(toolId: string, execution: any, capabilities: AgentToolCapabilities): Record<string, number> {
+  private calculateExpertiseUpdates(
+    toolId: string,
+    execution: any,
+    capabilities: AgentToolCapabilities
+  ): Record<string, number> {
     const currentExpertise = capabilities.toolPreferences.toolExpertise[toolId] || 0.5
     const adjustment = execution.status === 'completed' ? 0.1 : -0.05
 
     return {
-      [toolId]: Math.max(0, Math.min(1, currentExpertise + adjustment))
+      [toolId]: Math.max(0, Math.min(1, currentExpertise + adjustment)),
     }
   }
 
-  private discoverToolAssociations(conversationHistory: string[], toolId: string): Array<{ toolA: string; toolB: string; strength: number }> {
+  private discoverToolAssociations(
+    conversationHistory: string[],
+    toolId: string
+  ): Array<{ toolA: string; toolB: string; strength: number }> {
     // Would analyze conversation for tool relationships
     return []
   }
 
-  private extractConversationPatterns(userQuery: string, toolId: string, success: boolean): ConversationPattern[] {
-    return [{
-      id: `pattern-${Date.now()}`,
-      userPattern: userQuery.toLowerCase().replace(/[^a-z\s]/g, ''),
-      toolChain: [toolId],
-      contextConditions: ['user_query_contains_action'],
-      successRate: success ? 1.0 : 0.0
-    }]
+  private extractConversationPatterns(
+    userQuery: string,
+    toolId: string,
+    success: boolean
+  ): ConversationPattern[] {
+    return [
+      {
+        id: `pattern-${Date.now()}`,
+        userPattern: userQuery.toLowerCase().replace(/[^a-z\s]/g, ''),
+        toolChain: [toolId],
+        contextConditions: ['user_query_contains_action'],
+        successRate: success ? 1.0 : 0.0,
+      },
+    ]
   }
 }
 

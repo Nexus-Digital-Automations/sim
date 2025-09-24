@@ -5,9 +5,9 @@
  * including documentation search, web search, file operations, and knowledge retrieval.
  */
 
+import { createLogger } from '@/lib/logs/console/logger'
 import { BaseToolAdapter, createToolSchema } from '../base-adapter'
 import type { AdapterContext, AdapterResult, ToolAdapter, ValidationResult } from '../types'
-import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('DataRetrievalAdapters')
 
@@ -32,41 +32,43 @@ export class DataRetrievalAdapters {
  */
 class WikipediaSearchAdapter extends BaseToolAdapter {
   constructor() {
-    super(createToolSchema(
-      'wikipedia_search',
-      'Search Wikipedia for encyclopedic information on any topic',
-      'Use when you need factual, encyclopedia-style information about people, places, concepts, events, or any general knowledge topics. Excellent for getting comprehensive background information.',
-      {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description: 'Search query for Wikipedia articles'
+    super(
+      createToolSchema(
+        'wikipedia_search',
+        'Search Wikipedia for encyclopedic information on any topic',
+        'Use when you need factual, encyclopedia-style information about people, places, concepts, events, or any general knowledge topics. Excellent for getting comprehensive background information.',
+        {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query for Wikipedia articles',
+            },
+            language: {
+              type: 'string',
+              description: 'Wikipedia language code (e.g., "en", "es", "fr")',
+              default: 'en',
+            },
+            limit: {
+              type: 'number',
+              description: 'Number of results to return',
+              default: 5,
+              minimum: 1,
+              maximum: 20,
+            },
           },
-          language: {
-            type: 'string',
-            description: 'Wikipedia language code (e.g., "en", "es", "fr")',
-            default: 'en'
-          },
-          limit: {
-            type: 'number',
-            description: 'Number of results to return',
-            default: 5,
-            minimum: 1,
-            maximum: 20
-          }
+          required: ['query'],
         },
-        required: ['query']
-      },
-      {
-        category: 'data-retrieval',
-        performance: {
-          estimated_duration_ms: 2000,
-          cacheable: true,
-          resource_usage: 'low',
+        {
+          category: 'data-retrieval',
+          performance: {
+            estimated_duration_ms: 2000,
+            cacheable: true,
+            resource_usage: 'low',
+          },
         }
-      }
-    ))
+      )
+    )
   }
 
   validate(args: any): ValidationResult {
@@ -82,7 +84,7 @@ class WikipediaSearchAdapter extends BaseToolAdapter {
 
     return {
       valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined
+      errors: errors.length > 0 ? errors : undefined,
     }
   }
 
@@ -98,11 +100,11 @@ class WikipediaSearchAdapter extends BaseToolAdapter {
             title: `Wikipedia result for: ${args.query}`,
             excerpt: `Sample encyclopedic content about ${args.query}...`,
             url: `https://wikipedia.org/wiki/${encodeURIComponent(args.query)}`,
-            relevance: 0.95
-          }
+            relevance: 0.95,
+          },
         ],
         total_results: 1,
-        language: args.language || 'en'
+        language: args.language || 'en',
       }
 
       return this.createSuccessResult(
@@ -111,7 +113,7 @@ class WikipediaSearchAdapter extends BaseToolAdapter {
         {
           query: args.query,
           source: 'wikipedia',
-          language: args.language || 'en'
+          language: args.language || 'en',
         }
       )
     } catch (error: any) {
@@ -120,7 +122,11 @@ class WikipediaSearchAdapter extends BaseToolAdapter {
         'SEARCH_FAILED',
         error.message,
         'Failed to search Wikipedia. Please try a different search term.',
-        ['Try simplifying your search query', 'Check your spelling', 'Try searching in a different language'],
+        [
+          'Try simplifying your search query',
+          'Check your spelling',
+          'Try searching in a different language',
+        ],
         true
       )
     }
@@ -133,57 +139,59 @@ class WikipediaSearchAdapter extends BaseToolAdapter {
  */
 class WebSearchAdapter extends BaseToolAdapter {
   constructor() {
-    super(createToolSchema(
-      'web_search',
-      'Search the web for current information using multiple search engines',
-      'Use when you need current, real-time information from the web. Great for news, recent events, product information, or any topic requiring up-to-date content.',
-      {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description: 'Search query'
+    super(
+      createToolSchema(
+        'web_search',
+        'Search the web for current information using multiple search engines',
+        'Use when you need current, real-time information from the web. Great for news, recent events, product information, or any topic requiring up-to-date content.',
+        {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query',
+            },
+            engine: {
+              type: 'string',
+              description: 'Preferred search engine',
+              enum: ['tavily', 'serper', 'exa', 'google'],
+              default: 'tavily',
+            },
+            max_results: {
+              type: 'number',
+              description: 'Maximum number of results to return',
+              default: 10,
+              minimum: 1,
+              maximum: 50,
+            },
+            include_images: {
+              type: 'boolean',
+              description: 'Include image results',
+              default: false,
+            },
+            date_filter: {
+              type: 'string',
+              description: 'Filter by date range',
+              enum: ['day', 'week', 'month', 'year', 'all'],
+              default: 'all',
+            },
           },
-          engine: {
-            type: 'string',
-            description: 'Preferred search engine',
-            enum: ['tavily', 'serper', 'exa', 'google'],
-            default: 'tavily'
-          },
-          max_results: {
-            type: 'number',
-            description: 'Maximum number of results to return',
-            default: 10,
-            minimum: 1,
-            maximum: 50
-          },
-          include_images: {
-            type: 'boolean',
-            description: 'Include image results',
-            default: false
-          },
-          date_filter: {
-            type: 'string',
-            description: 'Filter by date range',
-            enum: ['day', 'week', 'month', 'year', 'all'],
-            default: 'all'
-          }
+          required: ['query'],
         },
-        required: ['query']
-      },
-      {
-        category: 'data-retrieval',
-        performance: {
-          estimated_duration_ms: 3000,
-          cacheable: true,
-          resource_usage: 'medium',
-          rate_limit: {
-            max_requests_per_minute: 30,
-            max_concurrent: 5
-          }
+        {
+          category: 'data-retrieval',
+          performance: {
+            estimated_duration_ms: 3000,
+            cacheable: true,
+            resource_usage: 'medium',
+            rate_limit: {
+              max_requests_per_minute: 30,
+              max_concurrent: 5,
+            },
+          },
         }
-      }
-    ))
+      )
+    )
   }
 
   validate(args: any): ValidationResult {
@@ -199,7 +207,7 @@ class WebSearchAdapter extends BaseToolAdapter {
 
     return {
       valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined
+      errors: errors.length > 0 ? errors : undefined,
     }
   }
 
@@ -215,12 +223,12 @@ class WebSearchAdapter extends BaseToolAdapter {
             url: 'https://example.com',
             snippet: `Sample web content about ${args.query}...`,
             relevance: 0.9,
-            date: new Date().toISOString()
-          }
+            date: new Date().toISOString(),
+          },
         ],
         total_results: 1,
         engine: args.engine,
-        search_timestamp: new Date().toISOString()
+        search_timestamp: new Date().toISOString(),
       }
 
       return this.createSuccessResult(
@@ -229,16 +237,24 @@ class WebSearchAdapter extends BaseToolAdapter {
         {
           query: args.query,
           engine: args.engine,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         }
       )
     } catch (error: any) {
-      logger.error('Web search failed', { error: error.message, query: args.query, engine: args.engine })
+      logger.error('Web search failed', {
+        error: error.message,
+        query: args.query,
+        engine: args.engine,
+      })
       return this.createErrorResult(
         'SEARCH_FAILED',
         error.message,
         'Failed to perform web search. Please try again.',
-        ['Try a different search engine', 'Simplify your search query', 'Check your internet connection'],
+        [
+          'Try a different search engine',
+          'Simplify your search query',
+          'Check your internet connection',
+        ],
         true
       )
     }
@@ -251,46 +267,48 @@ class WebSearchAdapter extends BaseToolAdapter {
  */
 class KnowledgeSearchAdapter extends BaseToolAdapter {
   constructor() {
-    super(createToolSchema(
-      'knowledge_search',
-      'Search internal knowledge bases, documentation, and stored information',
-      'Use when you need to find information from internal documentation, knowledge bases, or previously stored content. Great for finding company-specific information, procedures, or documentation.',
-      {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description: 'Search query for knowledge base'
+    super(
+      createToolSchema(
+        'knowledge_search',
+        'Search internal knowledge bases, documentation, and stored information',
+        'Use when you need to find information from internal documentation, knowledge bases, or previously stored content. Great for finding company-specific information, procedures, or documentation.',
+        {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query for knowledge base',
+            },
+            knowledge_base: {
+              type: 'string',
+              description: 'Specific knowledge base to search (optional)',
+            },
+            content_type: {
+              type: 'string',
+              description: 'Type of content to search for',
+              enum: ['documentation', 'procedures', 'faq', 'policies', 'all'],
+              default: 'all',
+            },
+            max_results: {
+              type: 'number',
+              description: 'Maximum results to return',
+              default: 10,
+              minimum: 1,
+              maximum: 25,
+            },
           },
-          knowledge_base: {
-            type: 'string',
-            description: 'Specific knowledge base to search (optional)'
-          },
-          content_type: {
-            type: 'string',
-            description: 'Type of content to search for',
-            enum: ['documentation', 'procedures', 'faq', 'policies', 'all'],
-            default: 'all'
-          },
-          max_results: {
-            type: 'number',
-            description: 'Maximum results to return',
-            default: 10,
-            minimum: 1,
-            maximum: 25
-          }
+          required: ['query'],
         },
-        required: ['query']
-      },
-      {
-        category: 'data-retrieval',
-        performance: {
-          estimated_duration_ms: 1500,
-          cacheable: true,
-          resource_usage: 'low',
+        {
+          category: 'data-retrieval',
+          performance: {
+            estimated_duration_ms: 1500,
+            cacheable: true,
+            resource_usage: 'low',
+          },
         }
-      }
-    ))
+      )
+    )
   }
 
   protected async executeInternal(args: any, context: AdapterContext): Promise<AdapterResult> {
@@ -305,10 +323,10 @@ class KnowledgeSearchAdapter extends BaseToolAdapter {
             content: `Sample knowledge content about ${args.query}...`,
             source: 'internal',
             type: args.content_type,
-            relevance: 0.9
-          }
+            relevance: 0.9,
+          },
         ],
-        total_results: 1
+        total_results: 1,
       }
 
       return this.createSuccessResult(
@@ -317,7 +335,7 @@ class KnowledgeSearchAdapter extends BaseToolAdapter {
         {
           query: args.query,
           knowledge_base: args.knowledge_base,
-          content_type: args.content_type
+          content_type: args.content_type,
         }
       )
     } catch (error: any) {
@@ -326,7 +344,11 @@ class KnowledgeSearchAdapter extends BaseToolAdapter {
         'KNOWLEDGE_SEARCH_FAILED',
         error.message,
         'Failed to search knowledge base. Please try a different search term.',
-        ['Try using different keywords', 'Check if the knowledge base is available', 'Try searching in a specific knowledge base'],
+        [
+          'Try using different keywords',
+          'Check if the knowledge base is available',
+          'Try searching in a specific knowledge base',
+        ],
         true
       )
     }
@@ -339,46 +361,48 @@ class KnowledgeSearchAdapter extends BaseToolAdapter {
  */
 class ScientificPaperSearchAdapter extends BaseToolAdapter {
   constructor() {
-    super(createToolSchema(
-      'scientific_paper_search',
-      'Search academic papers and research publications on arXiv',
-      'Use when you need to find academic research, scientific papers, or scholarly articles. Best for technical, scientific, or research-related queries.',
-      {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description: 'Search query for academic papers'
+    super(
+      createToolSchema(
+        'scientific_paper_search',
+        'Search academic papers and research publications on arXiv',
+        'Use when you need to find academic research, scientific papers, or scholarly articles. Best for technical, scientific, or research-related queries.',
+        {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query for academic papers',
+            },
+            category: {
+              type: 'string',
+              description: 'arXiv category to search in (e.g., cs.AI, math.NA)',
+            },
+            max_results: {
+              type: 'number',
+              description: 'Maximum number of papers to return',
+              default: 10,
+              minimum: 1,
+              maximum: 50,
+            },
+            sort_by: {
+              type: 'string',
+              description: 'Sort order for results',
+              enum: ['relevance', 'submitted_date', 'last_updated_date'],
+              default: 'relevance',
+            },
           },
-          category: {
-            type: 'string',
-            description: 'arXiv category to search in (e.g., cs.AI, math.NA)',
-          },
-          max_results: {
-            type: 'number',
-            description: 'Maximum number of papers to return',
-            default: 10,
-            minimum: 1,
-            maximum: 50
-          },
-          sort_by: {
-            type: 'string',
-            description: 'Sort order for results',
-            enum: ['relevance', 'submitted_date', 'last_updated_date'],
-            default: 'relevance'
-          }
+          required: ['query'],
         },
-        required: ['query']
-      },
-      {
-        category: 'data-retrieval',
-        performance: {
-          estimated_duration_ms: 4000,
-          cacheable: true,
-          resource_usage: 'medium',
+        {
+          category: 'data-retrieval',
+          performance: {
+            estimated_duration_ms: 4000,
+            cacheable: true,
+            resource_usage: 'medium',
+          },
         }
-      }
-    ))
+      )
+    )
   }
 
   protected async executeInternal(args: any, context: AdapterContext): Promise<AdapterResult> {
@@ -394,10 +418,10 @@ class ScientificPaperSearchAdapter extends BaseToolAdapter {
             abstract: `Sample research abstract about ${args.query}...`,
             url: 'https://arxiv.org/abs/sample',
             category: args.category,
-            published_date: new Date().toISOString()
-          }
+            published_date: new Date().toISOString(),
+          },
         ],
-        total_results: 1
+        total_results: 1,
       }
 
       return this.createSuccessResult(
@@ -407,7 +431,7 @@ class ScientificPaperSearchAdapter extends BaseToolAdapter {
           query: args.query,
           category: args.category,
           sort_by: args.sort_by,
-          source: 'arxiv'
+          source: 'arxiv',
         }
       )
     } catch (error: any) {
@@ -416,7 +440,11 @@ class ScientificPaperSearchAdapter extends BaseToolAdapter {
         'PAPER_SEARCH_FAILED',
         error.message,
         'Failed to search academic papers. Please try a different search term.',
-        ['Use more specific academic terminology', 'Try searching in a specific category', 'Check the spelling of technical terms'],
+        [
+          'Use more specific academic terminology',
+          'Try searching in a specific category',
+          'Check the spelling of technical terms',
+        ],
         true
       )
     }
@@ -429,52 +457,54 @@ class ScientificPaperSearchAdapter extends BaseToolAdapter {
  */
 class SearchEngineAdapter extends BaseToolAdapter {
   constructor() {
-    super(createToolSchema(
-      'search_engine',
-      'Perform search engine queries with advanced filtering options',
-      'Use when you need precise search engine results with specific filters like location, language, or content type. Great for targeted searches.',
-      {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description: 'Search query'
+    super(
+      createToolSchema(
+        'search_engine',
+        'Perform search engine queries with advanced filtering options',
+        'Use when you need precise search engine results with specific filters like location, language, or content type. Great for targeted searches.',
+        {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query',
+            },
+            type: {
+              type: 'string',
+              description: 'Type of search',
+              enum: ['web', 'images', 'videos', 'news', 'shopping'],
+              default: 'web',
+            },
+            location: {
+              type: 'string',
+              description: 'Geographic location for localized results',
+            },
+            language: {
+              type: 'string',
+              description: 'Language code for results (e.g., en, es, fr)',
+            },
+            safe_search: {
+              type: 'boolean',
+              description: 'Enable safe search filtering',
+              default: true,
+            },
           },
-          type: {
-            type: 'string',
-            description: 'Type of search',
-            enum: ['web', 'images', 'videos', 'news', 'shopping'],
-            default: 'web'
-          },
-          location: {
-            type: 'string',
-            description: 'Geographic location for localized results'
-          },
-          language: {
-            type: 'string',
-            description: 'Language code for results (e.g., en, es, fr)'
-          },
-          safe_search: {
-            type: 'boolean',
-            description: 'Enable safe search filtering',
-            default: true
-          }
+          required: ['query'],
         },
-        required: ['query']
-      },
-      {
-        category: 'data-retrieval',
-        performance: {
-          estimated_duration_ms: 2500,
-          cacheable: true,
-          resource_usage: 'medium',
-          rate_limit: {
-            max_requests_per_minute: 60,
-            max_concurrent: 3
-          }
+        {
+          category: 'data-retrieval',
+          performance: {
+            estimated_duration_ms: 2500,
+            cacheable: true,
+            resource_usage: 'medium',
+            rate_limit: {
+              max_requests_per_minute: 60,
+              max_concurrent: 3,
+            },
+          },
         }
-      }
-    ))
+      )
+    )
   }
 
   protected async executeInternal(args: any, context: AdapterContext): Promise<AdapterResult> {
@@ -488,15 +518,15 @@ class SearchEngineAdapter extends BaseToolAdapter {
             title: `${args.type || 'Web'} result: ${args.query}`,
             url: 'https://example.com',
             snippet: `Sample ${args.type || 'web'} content...`,
-            type: args.type || 'web'
-          }
+            type: args.type || 'web',
+          },
         ],
         total_results: 1,
         search_metadata: {
           location: args.location,
           language: args.language,
-          safe_search: args.safe_search
-        }
+          safe_search: args.safe_search,
+        },
       }
 
       return this.createSuccessResult(
@@ -506,7 +536,7 @@ class SearchEngineAdapter extends BaseToolAdapter {
           query: args.query,
           type: args.type,
           location: args.location,
-          language: args.language
+          language: args.language,
         }
       )
     } catch (error: any) {
@@ -515,7 +545,11 @@ class SearchEngineAdapter extends BaseToolAdapter {
         'SEARCH_ENGINE_FAILED',
         error.message,
         'Search engine query failed. Please try again.',
-        ['Try a simpler search query', 'Remove location or language filters', 'Try a different search type'],
+        [
+          'Try a simpler search query',
+          'Remove location or language filters',
+          'Try a different search type',
+        ],
         true
       )
     }
@@ -528,45 +562,47 @@ class SearchEngineAdapter extends BaseToolAdapter {
  */
 class ContentExtractionAdapter extends BaseToolAdapter {
   constructor() {
-    super(createToolSchema(
-      'content_extraction',
-      'Extract and process text content from web pages and documents',
-      'Use when you need to extract clean, readable text content from web pages, PDFs, or other documents. Great for content analysis and processing.',
-      {
-        type: 'object',
-        properties: {
-          url: {
-            type: 'string',
-            description: 'URL of the content to extract'
+    super(
+      createToolSchema(
+        'content_extraction',
+        'Extract and process text content from web pages and documents',
+        'Use when you need to extract clean, readable text content from web pages, PDFs, or other documents. Great for content analysis and processing.',
+        {
+          type: 'object',
+          properties: {
+            url: {
+              type: 'string',
+              description: 'URL of the content to extract',
+            },
+            format: {
+              type: 'string',
+              description: 'Output format for extracted content',
+              enum: ['text', 'markdown', 'html', 'json'],
+              default: 'text',
+            },
+            include_links: {
+              type: 'boolean',
+              description: 'Include links in extracted content',
+              default: true,
+            },
+            max_length: {
+              type: 'number',
+              description: 'Maximum content length in characters',
+              default: 10000,
+            },
           },
-          format: {
-            type: 'string',
-            description: 'Output format for extracted content',
-            enum: ['text', 'markdown', 'html', 'json'],
-            default: 'text'
-          },
-          include_links: {
-            type: 'boolean',
-            description: 'Include links in extracted content',
-            default: true
-          },
-          max_length: {
-            type: 'number',
-            description: 'Maximum content length in characters',
-            default: 10000
-          }
+          required: ['url'],
         },
-        required: ['url']
-      },
-      {
-        category: 'data-retrieval',
-        performance: {
-          estimated_duration_ms: 5000,
-          cacheable: true,
-          resource_usage: 'medium',
+        {
+          category: 'data-retrieval',
+          performance: {
+            estimated_duration_ms: 5000,
+            cacheable: true,
+            resource_usage: 'medium',
+          },
         }
-      }
-    ))
+      )
+    )
   }
 
   validate(args: any): ValidationResult {
@@ -584,7 +620,7 @@ class ContentExtractionAdapter extends BaseToolAdapter {
 
     return {
       valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined
+      errors: errors.length > 0 ? errors : undefined,
     }
   }
 
@@ -599,26 +635,26 @@ class ContentExtractionAdapter extends BaseToolAdapter {
           title: 'Sample Title',
           word_count: 500,
           format: args.format,
-          extraction_date: new Date().toISOString()
-        }
+          extraction_date: new Date().toISOString(),
+        },
       }
 
-      return this.createSuccessResult(
-        results,
-        `Content extracted from ${args.url}`,
-        {
-          url: args.url,
-          format: args.format,
-          content_length: results.content.length
-        }
-      )
+      return this.createSuccessResult(results, `Content extracted from ${args.url}`, {
+        url: args.url,
+        format: args.format,
+        content_length: results.content.length,
+      })
     } catch (error: any) {
       logger.error('Content extraction failed', { error: error.message, url: args.url })
       return this.createErrorResult(
         'CONTENT_EXTRACTION_FAILED',
         error.message,
         'Failed to extract content from URL. Please check the URL and try again.',
-        ['Verify the URL is accessible', 'Try a different format', 'Check if the site allows content extraction'],
+        [
+          'Verify the URL is accessible',
+          'Try a different format',
+          'Check if the site allows content extraction',
+        ],
         true
       )
     }
@@ -631,46 +667,48 @@ class ContentExtractionAdapter extends BaseToolAdapter {
  */
 class DocumentationSearchAdapter extends BaseToolAdapter {
   constructor() {
-    super(createToolSchema(
-      'documentation_search',
-      'Search through technical documentation, API docs, and help content',
-      'Use when users need help with features, API documentation, or technical questions. Great for finding specific technical information and troubleshooting.',
-      {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description: 'Documentation search query'
+    super(
+      createToolSchema(
+        'documentation_search',
+        'Search through technical documentation, API docs, and help content',
+        'Use when users need help with features, API documentation, or technical questions. Great for finding specific technical information and troubleshooting.',
+        {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Documentation search query',
+            },
+            doc_type: {
+              type: 'string',
+              description: 'Type of documentation to search',
+              enum: ['api', 'user_guide', 'troubleshooting', 'faq', 'all'],
+              default: 'all',
+            },
+            version: {
+              type: 'string',
+              description: 'Documentation version (if applicable)',
+            },
+            max_results: {
+              type: 'number',
+              description: 'Maximum results to return',
+              default: 15,
+              minimum: 1,
+              maximum: 50,
+            },
           },
-          doc_type: {
-            type: 'string',
-            description: 'Type of documentation to search',
-            enum: ['api', 'user_guide', 'troubleshooting', 'faq', 'all'],
-            default: 'all'
-          },
-          version: {
-            type: 'string',
-            description: 'Documentation version (if applicable)'
-          },
-          max_results: {
-            type: 'number',
-            description: 'Maximum results to return',
-            default: 15,
-            minimum: 1,
-            maximum: 50
-          }
+          required: ['query'],
         },
-        required: ['query']
-      },
-      {
-        category: 'data-retrieval',
-        performance: {
-          estimated_duration_ms: 1000,
-          cacheable: true,
-          resource_usage: 'low',
+        {
+          category: 'data-retrieval',
+          performance: {
+            estimated_duration_ms: 1000,
+            cacheable: true,
+            resource_usage: 'low',
+          },
         }
-      }
-    ))
+      )
+    )
   }
 
   protected async executeInternal(args: any, context: AdapterContext): Promise<AdapterResult> {
@@ -686,10 +724,10 @@ class DocumentationSearchAdapter extends BaseToolAdapter {
             url: '/docs/sample',
             type: args.doc_type,
             version: args.version,
-            relevance: 0.95
-          }
+            relevance: 0.95,
+          },
         ],
-        total_results: 1
+        total_results: 1,
       }
 
       return this.createSuccessResult(
@@ -698,7 +736,7 @@ class DocumentationSearchAdapter extends BaseToolAdapter {
         {
           query: args.query,
           doc_type: args.doc_type,
-          version: args.version
+          version: args.version,
         }
       )
     } catch (error: any) {
@@ -707,7 +745,11 @@ class DocumentationSearchAdapter extends BaseToolAdapter {
         'DOCUMENTATION_SEARCH_FAILED',
         error.message,
         'Failed to search documentation. Please try a different search term.',
-        ['Try using different keywords', 'Check the documentation type filter', 'Browse the documentation manually'],
+        [
+          'Try using different keywords',
+          'Check the documentation type filter',
+          'Browse the documentation manually',
+        ],
         true
       )
     }
@@ -720,50 +762,56 @@ class DocumentationSearchAdapter extends BaseToolAdapter {
  */
 class GeneralSearchAdapter extends BaseToolAdapter {
   constructor() {
-    super(createToolSchema(
-      'general_search',
-      'Comprehensive search across multiple sources including web, knowledge bases, and documentation',
-      'Use when you need comprehensive information from multiple sources. This searches web, internal knowledge bases, and documentation simultaneously.',
-      {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description: 'Search query'
-          },
-          sources: {
-            type: 'array',
-            description: 'Sources to search',
-            items: {
+    super(
+      createToolSchema(
+        'general_search',
+        'Comprehensive search across multiple sources including web, knowledge bases, and documentation',
+        'Use when you need comprehensive information from multiple sources. This searches web, internal knowledge bases, and documentation simultaneously.',
+        {
+          type: 'object',
+          properties: {
+            query: {
               type: 'string',
-              enum: ['web', 'knowledge', 'documentation', 'wikipedia', 'academic']
+              description: 'Search query',
             },
-            default: ['web', 'knowledge', 'documentation']
+            sources: {
+              type: 'array',
+              description: 'Sources to search',
+              items: {
+                type: 'string',
+                enum: ['web', 'knowledge', 'documentation', 'wikipedia', 'academic'],
+              },
+              default: ['web', 'knowledge', 'documentation'],
+            },
+            max_results_per_source: {
+              type: 'number',
+              description: 'Maximum results per source',
+              default: 5,
+              minimum: 1,
+              maximum: 15,
+            },
           },
-          max_results_per_source: {
-            type: 'number',
-            description: 'Maximum results per source',
-            default: 5,
-            minimum: 1,
-            maximum: 15
-          }
+          required: ['query'],
         },
-        required: ['query']
-      },
-      {
-        category: 'data-retrieval',
-        performance: {
-          estimated_duration_ms: 6000,
-          cacheable: true,
-          resource_usage: 'high',
+        {
+          category: 'data-retrieval',
+          performance: {
+            estimated_duration_ms: 6000,
+            cacheable: true,
+            resource_usage: 'high',
+          },
         }
-      }
-    ))
+      )
+    )
   }
 
   protected async executeInternal(args: any, context: AdapterContext): Promise<AdapterResult> {
     try {
-      logger.info('Executing general search across multiple sources', { query: args.query, sources: args.sources, context })
+      logger.info('Executing general search across multiple sources', {
+        query: args.query,
+        sources: args.sources,
+        context,
+      })
 
       const results: any = {
         web_results: [],
@@ -771,7 +819,7 @@ class GeneralSearchAdapter extends BaseToolAdapter {
         documentation_results: [],
         wikipedia_results: [],
         academic_results: [],
-        total_results: 0
+        total_results: 0,
       }
 
       const sources = args.sources || ['web', 'knowledge', 'documentation']
@@ -781,16 +829,24 @@ class GeneralSearchAdapter extends BaseToolAdapter {
         results.web_results = [{ title: `Web: ${args.query}`, content: 'Sample web content...' }]
       }
       if (sources.includes('knowledge')) {
-        results.knowledge_results = [{ title: `Knowledge: ${args.query}`, content: 'Sample knowledge content...' }]
+        results.knowledge_results = [
+          { title: `Knowledge: ${args.query}`, content: 'Sample knowledge content...' },
+        ]
       }
       if (sources.includes('documentation')) {
-        results.documentation_results = [{ title: `Docs: ${args.query}`, content: 'Sample documentation...' }]
+        results.documentation_results = [
+          { title: `Docs: ${args.query}`, content: 'Sample documentation...' },
+        ]
       }
       if (sources.includes('wikipedia')) {
-        results.wikipedia_results = [{ title: `Wikipedia: ${args.query}`, content: 'Sample encyclopedia content...' }]
+        results.wikipedia_results = [
+          { title: `Wikipedia: ${args.query}`, content: 'Sample encyclopedia content...' },
+        ]
       }
       if (sources.includes('academic')) {
-        results.academic_results = [{ title: `Academic: ${args.query}`, content: 'Sample academic content...' }]
+        results.academic_results = [
+          { title: `Academic: ${args.query}`, content: 'Sample academic content...' },
+        ]
       }
 
       results.total_results = Object.values(results).reduce((sum: number, resultArray: any) => {
@@ -803,7 +859,7 @@ class GeneralSearchAdapter extends BaseToolAdapter {
         {
           query: args.query,
           sources_searched: sources,
-          search_timestamp: new Date().toISOString()
+          search_timestamp: new Date().toISOString(),
         }
       )
     } catch (error: any) {
@@ -812,7 +868,11 @@ class GeneralSearchAdapter extends BaseToolAdapter {
         'GENERAL_SEARCH_FAILED',
         error.message,
         'Comprehensive search failed. Please try a simpler query.',
-        ['Try searching individual sources', 'Use more specific search terms', 'Reduce the number of sources'],
+        [
+          'Try searching individual sources',
+          'Use more specific search terms',
+          'Reduce the number of sources',
+        ],
         true
       )
     }

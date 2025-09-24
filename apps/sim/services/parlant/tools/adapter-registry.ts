@@ -10,8 +10,12 @@
  * - Error tracking and recovery
  */
 
-import { UniversalToolAdapter, ParlantTool, ToolExecutionContext, AdapterExecutionResult } from './adapter-framework'
-import type { BlockConfig } from '@/blocks/types'
+import type {
+  AdapterExecutionResult,
+  ParlantTool,
+  ToolExecutionContext,
+  UniversalToolAdapter,
+} from './adapter-framework'
 
 // ================================
 // Registry Types
@@ -99,7 +103,7 @@ export class UniversalToolAdapterRegistry {
       maxRetries: 3,
       healthCheckInterval: 60, // 1 minute
       enableLogging: true,
-      ...config
+      ...config,
     }
 
     // Start health monitoring if enabled
@@ -134,15 +138,15 @@ export class UniversalToolAdapterRegistry {
       metrics: {
         totalExecutions: 0,
         successRate: 1.0,
-        averageLatencyMs: 0
+        averageLatencyMs: 0,
       },
       features: {
         caching: this.config.enableCaching,
         retries: this.config.maxRetries > 0,
-        monitoring: this.config.enableLogging
+        monitoring: this.config.enableLogging,
       },
       tags: [parlantTool.category],
-      ...metadata
+      ...metadata,
     })
 
     if (this.config.enableLogging) {
@@ -158,10 +162,11 @@ export class UniversalToolAdapterRegistry {
     this.metadata.delete(adapterId)
 
     // Clear related cache entries
-    const cacheKeysToRemove = Array.from(this.cache.keys())
-      .filter(key => key.startsWith(`${adapterId}:`))
+    const cacheKeysToRemove = Array.from(this.cache.keys()).filter((key) =>
+      key.startsWith(`${adapterId}:`)
+    )
 
-    cacheKeysToRemove.forEach(key => this.cache.delete(key))
+    cacheKeysToRemove.forEach((key) => this.cache.delete(key))
 
     if (this.config.enableLogging && removed) {
       console.log(`[AdapterRegistry] Unregistered adapter: ${adapterId}`)
@@ -195,14 +200,14 @@ export class UniversalToolAdapterRegistry {
    * Get all Parlant tool definitions
    */
   getParlantTools(): ParlantTool[] {
-    return Array.from(this.adapters.values()).map(adapter => adapter.getParlantTool())
+    return Array.from(this.adapters.values()).map((adapter) => adapter.getParlantTool())
   }
 
   /**
    * Find tools by category
    */
   getToolsByCategory(category: ParlantTool['category']): ParlantTool[] {
-    return this.getParlantTools().filter(tool => tool.category === category)
+    return this.getParlantTools().filter((tool) => tool.category === category)
   }
 
   /**
@@ -210,10 +215,11 @@ export class UniversalToolAdapterRegistry {
    */
   searchTools(query: string): ParlantTool[] {
     const queryLower = query.toLowerCase()
-    return this.getParlantTools().filter(tool =>
-      tool.name.toLowerCase().includes(queryLower) ||
-      tool.description.toLowerCase().includes(queryLower) ||
-      tool.usageHints?.some(hint => hint.toLowerCase().includes(queryLower))
+    return this.getParlantTools().filter(
+      (tool) =>
+        tool.name.toLowerCase().includes(queryLower) ||
+        tool.description.toLowerCase().includes(queryLower) ||
+        tool.usageHints?.some((hint) => hint.toLowerCase().includes(queryLower))
     )
   }
 
@@ -238,13 +244,13 @@ export class UniversalToolAdapterRegistry {
         errorDetails: {
           code: 'TOOL_NOT_FOUND',
           message: `No adapter registered for tool ID: ${toolId}`,
-          context: { toolId, availableTools: this.listAdapters() }
+          context: { toolId, availableTools: this.listAdapters() },
         },
         timing: {
           startTime: new Date().toISOString(),
           endTime: new Date().toISOString(),
-          duration: 0
-        }
+          duration: 0,
+        },
       }
     }
 
@@ -290,18 +296,17 @@ export class UniversalToolAdapterRegistry {
                 code: 'EXECUTION_FAILED_MAX_RETRIES',
                 message: lastError.message,
                 stack: lastError.stack,
-                context: { toolId, attempts: attempt + 1 }
+                context: { toolId, attempts: attempt + 1 },
               },
               timing: {
                 startTime: new Date(startTime).toISOString(),
                 endTime: new Date().toISOString(),
-                duration: Date.now() - startTime
-              }
+                duration: Date.now() - startTime,
+              },
             }
           } else {
             // Wait before retry (exponential backoff)
-            await this.sleep(Math.pow(2, attempt) * 1000)
-            continue
+            await this.sleep(2 ** attempt * 1000)
           }
         }
       }
@@ -315,7 +320,6 @@ export class UniversalToolAdapterRegistry {
       }
 
       return result
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       const result: AdapterExecutionResult = {
@@ -325,13 +329,13 @@ export class UniversalToolAdapterRegistry {
           code: 'UNEXPECTED_ERROR',
           message: errorMessage,
           stack: error instanceof Error ? error.stack : undefined,
-          context: { toolId }
+          context: { toolId },
         },
         timing: {
           startTime: new Date(startTime).toISOString(),
           endTime: new Date().toISOString(),
-          duration: Date.now() - startTime
-        }
+          duration: Date.now() - startTime,
+        },
       }
 
       this.updateMetrics(toolId, result, Date.now() - startTime)
@@ -378,7 +382,7 @@ export class UniversalToolAdapterRegistry {
     this.cache.set(cacheKey, {
       data: result,
       timestamp: Date.now(),
-      ttl: this.config.cacheTTL
+      ttl: this.config.cacheTTL,
     })
   }
 
@@ -398,7 +402,7 @@ export class UniversalToolAdapterRegistry {
     let hash = 0
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     return Math.abs(hash).toString(36)
@@ -424,12 +428,13 @@ export class UniversalToolAdapterRegistry {
         reject(new Error(`Tool execution timed out after ${timeoutMs}ms`))
       }, timeoutMs)
 
-      adapter.execute(parameters, context)
-        .then(result => {
+      adapter
+        .execute(parameters, context)
+        .then((result) => {
           clearTimeout(timeoutId)
           resolve(result)
         })
-        .catch(error => {
+        .catch((error) => {
           clearTimeout(timeoutId)
           reject(error)
         })
@@ -440,7 +445,7 @@ export class UniversalToolAdapterRegistry {
    * Sleep utility for retry delays
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   // ================================
@@ -450,11 +455,7 @@ export class UniversalToolAdapterRegistry {
   /**
    * Update adapter metrics after execution
    */
-  private updateMetrics(
-    toolId: string,
-    result: AdapterExecutionResult,
-    latencyMs: number
-  ): void {
+  private updateMetrics(toolId: string, result: AdapterExecutionResult, latencyMs: number): void {
     const metadata = this.metadata.get(toolId)
     if (!metadata) return
 
@@ -500,10 +501,13 @@ export class UniversalToolAdapterRegistry {
   private performHealthCheck(): void {
     if (this.config.enableLogging) {
       const totalAdapters = this.adapters.size
-      const healthyAdapters = Array.from(this.metadata.values())
-        .filter(m => m.health === 'healthy').length
+      const healthyAdapters = Array.from(this.metadata.values()).filter(
+        (m) => m.health === 'healthy'
+      ).length
 
-      console.log(`[AdapterRegistry] Health check: ${healthyAdapters}/${totalAdapters} adapters healthy`)
+      console.log(
+        `[AdapterRegistry] Health check: ${healthyAdapters}/${totalAdapters} adapters healthy`
+      )
     }
   }
 
@@ -522,11 +526,12 @@ export class UniversalToolAdapterRegistry {
 
     return {
       totalAdapters: metadataArray.length,
-      healthyAdapters: metadataArray.filter(m => m.health === 'healthy').length,
-      degradedAdapters: metadataArray.filter(m => m.health === 'degraded').length,
-      unhealthyAdapters: metadataArray.filter(m => m.health === 'unhealthy').length,
+      healthyAdapters: metadataArray.filter((m) => m.health === 'healthy').length,
+      degradedAdapters: metadataArray.filter((m) => m.health === 'degraded').length,
+      unhealthyAdapters: metadataArray.filter((m) => m.health === 'unhealthy').length,
       totalExecutions: metadataArray.reduce((sum, m) => sum + m.metrics.totalExecutions, 0),
-      overallSuccessRate: metadataArray.reduce((sum, m) => sum + m.metrics.successRate, 0) / metadataArray.length
+      overallSuccessRate:
+        metadataArray.reduce((sum, m) => sum + m.metrics.successRate, 0) / metadataArray.length,
     }
   }
 
@@ -566,5 +571,5 @@ export const globalAdapterRegistry = new UniversalToolAdapterRegistry({
   cacheTTL: 300, // 5 minutes
   maxRetries: 3,
   healthCheckInterval: 60, // 1 minute
-  enableLogging: process.env.NODE_ENV !== 'production'
+  enableLogging: process.env.NODE_ENV !== 'production',
 })

@@ -9,13 +9,7 @@
  */
 
 import type { ToolConfig } from '@/tools/types'
-import type {
-  AdapterConfiguration,
-  NaturalLanguageConfig,
-  ConversationalHint,
-  ToolDiscoveryQuery,
-  DiscoveredTool
-} from '../types/adapter-interfaces'
+import type { ConversationalHint, NaturalLanguageConfig } from '../types/adapter-interfaces'
 
 // =============================================================================
 // Core Description Templates
@@ -64,17 +58,17 @@ export const TOOL_DESCRIPTION_TEMPLATES: Record<string, DescriptionTemplate> = {
     examplePhrasesTemplate: [
       'send an email to {recipient}',
       'message {person} about {topic}',
-      'schedule a meeting with {team}'
+      'schedule a meeting with {team}',
     ],
     contextualHints: {
       businessContext: ['team coordination', 'client communication', 'project updates'],
       technicalContext: ['API integration', 'OAuth authentication', 'message formatting'],
       userTypeContext: {
         'business-user': 'Perfect for staying connected with your team and clients',
-        'developer': 'Integrate communication workflows into your applications',
-        'manager': 'Coordinate teams and manage project communications'
-      }
-    }
+        developer: 'Integrate communication workflows into your applications',
+        manager: 'Coordinate teams and manage project communications',
+      },
+    },
   },
 
   data_storage: {
@@ -89,17 +83,17 @@ export const TOOL_DESCRIPTION_TEMPLATES: Record<string, DescriptionTemplate> = {
     examplePhrasesTemplate: [
       'save data to {database}',
       'find records where {condition}',
-      'update {table} with {data}'
+      'update {table} with {data}',
     ],
     contextualHints: {
       businessContext: ['data analytics', 'customer management', 'inventory tracking'],
       technicalContext: ['database queries', 'data persistence', 'CRUD operations'],
       userTypeContext: {
         'business-user': 'Easily manage your business data and records',
-        'developer': 'Integrate database operations into your workflows',
-        'analyst': 'Query and analyze data for insights'
-      }
-    }
+        developer: 'Integrate database operations into your workflows',
+        analyst: 'Query and analyze data for insights',
+      },
+    },
   },
 
   productivity: {
@@ -114,17 +108,17 @@ export const TOOL_DESCRIPTION_TEMPLATES: Record<string, DescriptionTemplate> = {
     examplePhrasesTemplate: [
       'create a {document} for {purpose}',
       'schedule {task} for {time}',
-      'organize {content} in {system}'
+      'organize {content} in {system}',
     ],
     contextualHints: {
       businessContext: ['task management', 'document creation', 'workflow automation'],
       technicalContext: ['API integrations', 'data formatting', 'automation logic'],
       userTypeContext: {
         'business-user': 'Streamline your daily tasks and workflows',
-        'developer': 'Automate development and deployment processes',
-        'manager': 'Organize team tasks and track progress'
-      }
-    }
+        developer: 'Automate development and deployment processes',
+        manager: 'Organize team tasks and track progress',
+      },
+    },
   },
 
   search_research: {
@@ -139,17 +133,17 @@ export const TOOL_DESCRIPTION_TEMPLATES: Record<string, DescriptionTemplate> = {
     examplePhrasesTemplate: [
       'search for {query}',
       'find information about {topic}',
-      'research {subject} thoroughly'
+      'research {subject} thoroughly',
     ],
     contextualHints: {
       businessContext: ['market research', 'competitive analysis', 'content discovery'],
       technicalContext: ['search algorithms', 'data retrieval', 'result ranking'],
       userTypeContext: {
         'business-user': 'Research markets, competitors, and opportunities',
-        'developer': 'Find technical documentation and code examples',
-        'researcher': 'Conduct comprehensive research across multiple sources'
-      }
-    }
+        developer: 'Find technical documentation and code examples',
+        researcher: 'Conduct comprehensive research across multiple sources',
+      },
+    },
   },
 
   ai_ml: {
@@ -164,18 +158,18 @@ export const TOOL_DESCRIPTION_TEMPLATES: Record<string, DescriptionTemplate> = {
     examplePhrasesTemplate: [
       'generate {content} using AI',
       'analyze {data} with machine learning',
-      'create {output} automatically'
+      'create {output} automatically',
     ],
     contextualHints: {
       businessContext: ['content generation', 'data analysis', 'automation'],
       technicalContext: ['neural networks', 'model inference', 'API integrations'],
       userTypeContext: {
         'business-user': 'Harness AI to create content and analyze data',
-        'developer': 'Integrate AI capabilities into your applications',
-        'data-scientist': 'Apply machine learning models to solve problems'
-      }
-    }
-  }
+        developer: 'Integrate AI capabilities into your applications',
+        'data-scientist': 'Apply machine learning models to solve problems',
+      },
+    },
+  },
 }
 
 // =============================================================================
@@ -192,12 +186,12 @@ export class DescriptionGenerator {
     this.templates = new Map()
 
     // Load default templates
-    Object.values(TOOL_DESCRIPTION_TEMPLATES).forEach(template => {
+    Object.values(TOOL_DESCRIPTION_TEMPLATES).forEach((template) => {
       this.templates.set(template.id, template)
     })
 
     // Add custom templates
-    customTemplates?.forEach(template => {
+    customTemplates?.forEach((template) => {
       this.templates.set(template.id, template)
     })
   }
@@ -217,18 +211,14 @@ export class DescriptionGenerator {
       exampleUsage: this.generateExampleUsage(tool, template, customContext),
       conversationalHints: this.generateConversationalHints(tool, template, customContext),
       aliases: this.generateAliases(tool),
-      keywords: this.generateKeywords(tool, template, customContext)
+      keywords: this.generateKeywords(tool, template, customContext),
     }
   }
 
   /**
    * Generate user-friendly tool description
    */
-  generateToolDescription(
-    tool: ToolConfig,
-    category?: string,
-    userType?: string
-  ): string {
+  generateToolDescription(tool: ToolConfig, category?: string, userType?: string): string {
     const template = this.getTemplateForTool(tool, category)
 
     // Extract key information from tool
@@ -241,9 +231,9 @@ export class DescriptionGenerator {
       .replace('{platform}', platform)
       .replace('{capability}', capability)
 
-    const userContext = userType ?
-      template.contextualHints.userTypeContext[userType] :
-      'A versatile tool for various use cases'
+    const userContext = userType
+      ? template.contextualHints.userTypeContext[userType]
+      : 'A versatile tool for various use cases'
 
     return `${baseDescription}. ${userContext}`
   }
@@ -251,17 +241,13 @@ export class DescriptionGenerator {
   /**
    * Generate conversational examples
    */
-  generateConversationalExamples(
-    tool: ToolConfig,
-    category?: string,
-    count: number = 3
-  ): string[] {
+  generateConversationalExamples(tool: ToolConfig, category?: string, count = 3): string[] {
     const template = this.getTemplateForTool(tool, category)
     const params = this.extractParameterInfo(tool)
 
     return template.examplePhrasesTemplate
       .slice(0, count)
-      .map(phrase => this.populateTemplate(phrase, { tool, params }))
+      .map((phrase) => this.populateTemplate(phrase, { tool, params }))
   }
 
   /**
@@ -280,9 +266,9 @@ export class DescriptionGenerator {
     return {
       whenToUse: template.whenToUseTemplate,
       bestPractices: this.generateBestPractices(tool, template),
-      commonScenarios: template.contextualHints.businessContext.map(context =>
-        `${context}: ${this.generateScenarioDescription(tool, context)}`
-      )
+      commonScenarios: template.contextualHints.businessContext.map(
+        (context) => `${context}: ${this.generateScenarioDescription(tool, context)}`
+      ),
     }
   }
 
@@ -311,26 +297,38 @@ export class DescriptionGenerator {
     const toolName = (tool.name || '').toLowerCase()
 
     // Communication tools
-    if (['gmail', 'outlook', 'slack', 'discord', 'teams', 'telegram', 'whatsapp', 'mail'].some(term =>
-        toolId.includes(term) || toolName.includes(term))) {
+    if (
+      ['gmail', 'outlook', 'slack', 'discord', 'teams', 'telegram', 'whatsapp', 'mail'].some(
+        (term) => toolId.includes(term) || toolName.includes(term)
+      )
+    ) {
       return 'communication'
     }
 
     // Data storage tools
-    if (['mongodb', 'mysql', 'postgresql', 'pinecone', 'qdrant', 'supabase', 'airtable'].some(term =>
-        toolId.includes(term) || toolName.includes(term))) {
+    if (
+      ['mongodb', 'mysql', 'postgresql', 'pinecone', 'qdrant', 'supabase', 'airtable'].some(
+        (term) => toolId.includes(term) || toolName.includes(term)
+      )
+    ) {
       return 'data_storage'
     }
 
     // Search/research tools
-    if (['search', 'exa', 'serper', 'google', 'arxiv', 'wikipedia', 'tavily'].some(term =>
-        toolId.includes(term) || toolName.includes(term))) {
+    if (
+      ['search', 'exa', 'serper', 'google', 'arxiv', 'wikipedia', 'tavily'].some(
+        (term) => toolId.includes(term) || toolName.includes(term)
+      )
+    ) {
       return 'search_research'
     }
 
     // AI/ML tools
-    if (['openai', 'huggingface', 'elevenlabs', 'mistral', 'perplexity'].some(term =>
-        toolId.includes(term) || toolName.includes(term))) {
+    if (
+      ['openai', 'huggingface', 'elevenlabs', 'mistral', 'perplexity'].some(
+        (term) => toolId.includes(term) || toolName.includes(term)
+      )
+    ) {
       return 'ai_ml'
     }
 
@@ -361,7 +359,7 @@ export class DescriptionGenerator {
     const params = this.extractParameterInfo(tool)
 
     // Generate examples based on template patterns
-    template.examplePhrasesTemplate.forEach(phrase => {
+    template.examplePhrasesTemplate.forEach((phrase) => {
       const example = this.populateTemplate(phrase, { tool, params, context })
       examples.push(example)
     })
@@ -377,7 +375,7 @@ export class DescriptionGenerator {
     return {
       whenToUse: template.whenToUseTemplate,
       parameters: this.generateParameterHints(tool, template),
-      results: this.generateResultHints(tool, template)
+      results: this.generateResultHints(tool, template),
     }
   }
 
@@ -416,7 +414,7 @@ export class DescriptionGenerator {
     keywords.push(platform, capability)
 
     // Add parameter-based keywords
-    Object.keys(tool.params || {}).forEach(param => {
+    Object.keys(tool.params || {}).forEach((param) => {
       keywords.push(param)
     })
 
@@ -429,18 +427,18 @@ export class DescriptionGenerator {
 
     // Common platforms
     const platforms = {
-      'gmail': 'Gmail',
-      'slack': 'Slack',
-      'discord': 'Discord',
-      'notion': 'Notion',
-      'airtable': 'Airtable',
-      'github': 'GitHub',
-      'mongodb': 'MongoDB',
-      'mysql': 'MySQL',
-      'postgresql': 'PostgreSQL',
-      'google': 'Google',
-      'microsoft': 'Microsoft',
-      'openai': 'OpenAI'
+      gmail: 'Gmail',
+      slack: 'Slack',
+      discord: 'Discord',
+      notion: 'Notion',
+      airtable: 'Airtable',
+      github: 'GitHub',
+      mongodb: 'MongoDB',
+      mysql: 'MySQL',
+      postgresql: 'PostgreSQL',
+      google: 'Google',
+      microsoft: 'Microsoft',
+      openai: 'OpenAI',
     }
 
     for (const [key, name] of Object.entries(platforms)) {
@@ -450,7 +448,7 @@ export class DescriptionGenerator {
     }
 
     // Fallback to formatted tool name
-    return tool.name || tool.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    return tool.name || tool.id.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
   }
 
   private extractCapability(tool: ToolConfig): string {
@@ -500,7 +498,7 @@ export class DescriptionGenerator {
 
   private populateTemplate(
     template: string,
-    context: { tool: ToolConfig, params: Record<string, string>, context?: any }
+    context: { tool: ToolConfig; params: Record<string, string>; context?: any }
   ): string {
     let result = template
 
@@ -524,7 +522,7 @@ export class DescriptionGenerator {
       '{table}': 'the table',
       '{query}': 'your search terms',
       '{document}': 'a document',
-      '{content}': 'content'
+      '{content}': 'content',
     }
 
     Object.entries(genericReplacements).forEach(([placeholder, replacement]) => {
@@ -614,13 +612,12 @@ export class DescriptionGenerator {
     const outputs = tool.outputs || {}
 
     if (Object.keys(outputs).length > 0) {
-      const outputDescriptions = Object.entries(outputs)
-        .map(([key, config]) => {
-          if (typeof config === 'object' && config.description) {
-            return `${key}: ${config.description}`
-          }
-          return key
-        })
+      const outputDescriptions = Object.entries(outputs).map(([key, config]) => {
+        if (typeof config === 'object' && config.description) {
+          return `${key}: ${config.description}`
+        }
+        return key
+      })
 
       return `Returns: ${outputDescriptions.join(', ')}`
     }
@@ -638,7 +635,9 @@ export class DescriptionGenerator {
 /**
  * Create a description generator with default templates
  */
-export function createDescriptionGenerator(customTemplates?: DescriptionTemplate[]): DescriptionGenerator {
+export function createDescriptionGenerator(
+  customTemplates?: DescriptionTemplate[]
+): DescriptionGenerator {
   return new DescriptionGenerator(customTemplates)
 }
 
@@ -653,19 +652,20 @@ export function generateToolNaturalLanguage(
     customContext?: Record<string, any>
     includeExamples?: boolean
   }
-): NaturalLanguageConfig & { description: string, examples: string[], guidelines: any } {
+): NaturalLanguageConfig & { description: string; examples: string[]; guidelines: any } {
   const generator = createDescriptionGenerator()
 
   const config = generator.generateNaturalLanguageConfig(tool, category, options?.customContext)
   const description = generator.generateToolDescription(tool, category, options?.userType)
-  const examples = options?.includeExamples ?
-    generator.generateConversationalExamples(tool, category) : []
+  const examples = options?.includeExamples
+    ? generator.generateConversationalExamples(tool, category)
+    : []
   const guidelines = generator.generateUsageGuidelines(tool, category)
 
   return {
     ...config,
     description,
     examples,
-    guidelines
+    guidelines,
   }
 }

@@ -9,12 +9,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type {
-  AdapterConfiguration,
-  ToolConfig,
-  GlobalAdapterConfig,
-  PermissionLevel,
-} from './types'
+import type { AdapterConfiguration, GlobalAdapterConfig, ToolConfig } from './types'
 
 const logger = createLogger('AdapterConfiguration')
 
@@ -261,7 +256,10 @@ export class ConfigurationManager {
     }
   }
 
-  private mergeGlobalConfigs(base: GlobalAdapterConfig, override: Partial<GlobalAdapterConfig>): GlobalAdapterConfig {
+  private mergeGlobalConfigs(
+    base: GlobalAdapterConfig,
+    override: Partial<GlobalAdapterConfig>
+  ): GlobalAdapterConfig {
     return {
       ...base,
       ...override,
@@ -312,8 +310,8 @@ export function loadConfigurationFromEnvironment(): Partial<AdapterConfiguration
     config.global!.rate_limiting = { ...config.global!.rate_limiting, enabled: false }
   }
 
-  const defaultRpm = parseInt(process.env.ADAPTER_DEFAULT_RATE_LIMIT_RPM || '60')
-  if (!isNaN(defaultRpm)) {
+  const defaultRpm = Number.parseInt(process.env.ADAPTER_DEFAULT_RATE_LIMIT_RPM || '60')
+  if (!Number.isNaN(defaultRpm)) {
     config.global!.rate_limiting = {
       ...config.global!.rate_limiting,
       default_requests_per_minute: defaultRpm,

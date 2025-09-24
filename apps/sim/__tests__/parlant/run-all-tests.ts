@@ -38,43 +38,43 @@ class ParlantTestRunner {
       file: 'migration.test.ts',
       description: 'Database schema migration and rollback validation',
       timeout: 60000,
-      critical: true
+      critical: true,
     },
     {
       name: 'Integration Tests',
       file: 'integration.test.ts',
       description: 'Complete Parlant functionality integration tests',
       timeout: 120000,
-      critical: true
+      critical: true,
     },
     {
       name: 'Performance Tests',
       file: 'performance.test.ts',
       description: 'Database performance and scalability validation',
       timeout: 180000,
-      critical: false
+      critical: false,
     },
     {
       name: 'Sim Compatibility Tests',
       file: 'sim-compatibility.test.ts',
       description: 'Existing Sim functionality compatibility validation',
       timeout: 90000,
-      critical: true
+      critical: true,
     },
     {
       name: 'Concurrent Access Tests',
       file: 'concurrent.test.ts',
       description: 'Concurrency, transactions, and race condition testing',
       timeout: 150000,
-      critical: false
+      critical: false,
     },
     {
       name: 'Automated Compatibility Checks',
       file: 'compatibility-checks.test.ts',
       description: 'Comprehensive automated compatibility validation',
       timeout: 60000,
-      critical: true
-    }
+      critical: true,
+    },
   ]
 
   private results: TestResult[] = []
@@ -95,7 +95,7 @@ class ParlantTestRunner {
 
     return {
       allExist: missing.length === 0,
-      missing
+      missing,
     }
   }
 
@@ -112,7 +112,7 @@ class ParlantTestRunner {
       const child = spawn('bunx', ['vitest', 'run', testFile], {
         stdio: 'pipe',
         timeout: suite.timeout,
-        cwd: process.cwd()
+        cwd: process.cwd(),
       })
 
       let output = ''
@@ -144,7 +144,7 @@ class ParlantTestRunner {
           passed,
           output,
           error: error || undefined,
-          duration
+          duration,
         })
       })
 
@@ -158,7 +158,7 @@ class ParlantTestRunner {
           passed: false,
           output: '',
           error: err.message,
-          duration
+          duration,
         })
       })
     })
@@ -167,11 +167,9 @@ class ParlantTestRunner {
   /**
    * Run all test suites
    */
-  async runAllTests(options: {
-    parallel?: boolean
-    criticalOnly?: boolean
-    verbose?: boolean
-  } = {}): Promise<{
+  async runAllTests(
+    options: { parallel?: boolean; criticalOnly?: boolean; verbose?: boolean } = {}
+  ): Promise<{
     success: boolean
     results: TestResult[]
     summary: {
@@ -183,13 +181,13 @@ class ParlantTestRunner {
     }
   }> {
     console.log('🚀 Starting Parlant Database Test Suite')
-    console.log('=' .repeat(50))
+    console.log('='.repeat(50))
 
     // Check if all test files exist
     const fileCheck = this.checkTestFiles()
     if (!fileCheck.allExist) {
       console.error('❌ Missing test files:')
-      fileCheck.missing.forEach(file => console.error(`   - ${file}`))
+      fileCheck.missing.forEach((file) => console.error(`   - ${file}`))
       return {
         success: false,
         results: [],
@@ -198,22 +196,20 @@ class ParlantTestRunner {
           passed: 0,
           failed: 0,
           critical_failures: 0,
-          total_duration: 0
-        }
+          total_duration: 0,
+        },
       }
     }
 
     const suitesToRun = options.criticalOnly
-      ? this.testSuites.filter(suite => suite.critical)
+      ? this.testSuites.filter((suite) => suite.critical)
       : this.testSuites
 
     const startTime = Date.now()
 
     if (options.parallel) {
       console.log('🔄 Running tests in parallel...')
-      this.results = await Promise.all(
-        suitesToRun.map(suite => this.runTestSuite(suite))
-      )
+      this.results = await Promise.all(suitesToRun.map((suite) => this.runTestSuite(suite)))
     } else {
       console.log('🔄 Running tests sequentially...')
       for (const suite of suitesToRun) {
@@ -233,12 +229,12 @@ class ParlantTestRunner {
     // Calculate summary
     const summary = {
       total: this.results.length,
-      passed: this.results.filter(r => r.passed).length,
-      failed: this.results.filter(r => !r.passed).length,
-      critical_failures: this.results.filter(r =>
-        !r.passed && suitesToRun.find(s => s.name === r.suite)?.critical
+      passed: this.results.filter((r) => r.passed).length,
+      failed: this.results.filter((r) => !r.passed).length,
+      critical_failures: this.results.filter(
+        (r) => !r.passed && suitesToRun.find((s) => s.name === r.suite)?.critical
       ).length,
-      total_duration: totalDuration
+      total_duration: totalDuration,
     }
 
     this.printSummary(summary, options.verbose)
@@ -246,17 +242,17 @@ class ParlantTestRunner {
     return {
       success: summary.critical_failures === 0,
       results: this.results,
-      summary
+      summary,
     }
   }
 
   /**
    * Print test summary
    */
-  private printSummary(summary: any, verbose: boolean = false) {
-    console.log('\n' + '=' .repeat(50))
+  private printSummary(summary: any, verbose = false) {
+    console.log(`\n${'='.repeat(50)}`)
     console.log('📊 TEST SUMMARY')
-    console.log('=' .repeat(50))
+    console.log('='.repeat(50))
 
     console.log(`Total Tests: ${summary.total}`)
     console.log(`✅ Passed: ${summary.passed}`)
@@ -274,7 +270,7 @@ class ParlantTestRunner {
 
     if (verbose) {
       console.log('\n📋 DETAILED RESULTS:')
-      this.results.forEach(result => {
+      this.results.forEach((result) => {
         const status = result.passed ? '✅' : '❌'
         console.log(`${status} ${result.suite} (${result.duration}ms)`)
         if (!result.passed && result.error) {
@@ -283,7 +279,7 @@ class ParlantTestRunner {
       })
     }
 
-    console.log('\n' + '=' .repeat(50))
+    console.log(`\n${'='.repeat(50)}`)
   }
 
   /**
@@ -298,26 +294,26 @@ class ParlantTestRunner {
     const recommendations: string[] = []
 
     // Analyze results and generate recommendations
-    const failedCritical = this.results.filter(r =>
-      !r.passed && this.testSuites.find(s => s.name === r.suite)?.critical
+    const failedCritical = this.results.filter(
+      (r) => !r.passed && this.testSuites.find((s) => s.name === r.suite)?.critical
     )
 
     if (failedCritical.length > 0) {
       recommendations.push('Address critical test failures before deploying Parlant integration')
-      failedCritical.forEach(result => {
+      failedCritical.forEach((result) => {
         recommendations.push(`- Fix issues in: ${result.suite}`)
       })
     }
 
-    const slowTests = this.results.filter(r => r.duration > 30000)
+    const slowTests = this.results.filter((r) => r.duration > 30000)
     if (slowTests.length > 0) {
       recommendations.push('Consider optimizing performance for slow-running tests')
-      slowTests.forEach(result => {
+      slowTests.forEach((result) => {
         recommendations.push(`- Optimize: ${result.suite} (${result.duration}ms)`)
       })
     }
 
-    if (this.results.every(r => r.passed)) {
+    if (this.results.every((r) => r.passed)) {
       recommendations.push('All tests passed! Parlant integration is ready for deployment')
       recommendations.push('Consider setting up automated testing in CI/CD pipeline')
       recommendations.push('Monitor performance metrics in production environment')
@@ -328,10 +324,10 @@ class ParlantTestRunner {
       environment: {
         node_version: process.version,
         platform: process.platform,
-        memory: process.memoryUsage()
+        memory: process.memoryUsage(),
       },
       results: this.results,
-      recommendations
+      recommendations,
     }
   }
 }
@@ -345,7 +341,7 @@ async function main() {
     parallel: args.includes('--parallel'),
     criticalOnly: args.includes('--critical-only'),
     verbose: args.includes('--verbose'),
-    help: args.includes('--help')
+    help: args.includes('--help'),
   }
 
   if (options.help) {

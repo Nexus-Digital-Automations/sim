@@ -8,37 +8,36 @@
  * and business logic validation.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@sim/db'
-import { sql } from 'drizzle-orm'
 import {
+  apiKey,
+  customTools,
+  knowledgeBase,
+  mcpServers,
   parlantAgent,
-  parlantSession,
+  parlantAgentApiKey,
+  parlantAgentKnowledgeBase,
+  parlantAgentTool,
+  parlantAgentWorkflow,
+  parlantCannedResponse,
   parlantEvent,
   parlantGuideline,
   parlantJourney,
+  parlantJourneyGuideline,
   parlantJourneyState,
   parlantJourneyTransition,
-  parlantVariable,
-  parlantTool,
-  parlantTerm,
-  parlantCannedResponse,
-  parlantAgentTool,
-  parlantJourneyGuideline,
-  parlantAgentKnowledgeBase,
-  parlantToolIntegration,
-  parlantAgentWorkflow,
-  parlantAgentApiKey,
+  parlantSession,
   parlantSessionWorkflow,
-  workspace,
+  parlantTerm,
+  parlantTool,
+  parlantToolIntegration,
+  parlantVariable,
   user,
-  knowledgeBase,
   workflow,
-  apiKey,
-  customTools,
-  mcpServers,
+  workspace,
 } from '@sim/db/schema'
-import { eq, and, count, desc, asc } from 'drizzle-orm'
+import { and, count, desc, eq, sql } from 'drizzle-orm'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 interface TestContext {
   workspaceId: string
@@ -128,8 +127,8 @@ describe('Parlant Database Integration Tests', () => {
         schema: {
           type: 'object',
           properties: {
-            input: { type: 'string' }
-          }
+            input: { type: 'string' },
+          },
         },
         code: 'function execute(input) { return { result: input }; }',
       })
@@ -239,15 +238,15 @@ describe('Parlant Database Integration Tests', () => {
           parameters: {
             type: 'object',
             properties: {
-              query: { type: 'string', description: 'The query to process' }
+              query: { type: 'string', description: 'The query to process' },
             },
-            required: ['query']
+            required: ['query'],
           },
           returnSchema: {
             type: 'object',
             properties: {
-              response: { type: 'string' }
-            }
+              response: { type: 'string' },
+            },
           },
           usageGuidelines: 'Use this tool when the user needs help with queries',
           executionTimeout: 15000,
@@ -534,7 +533,11 @@ describe('Parlant Database Integration Tests', () => {
           sessionId: ctx.sessionId,
           offset: 2,
           eventType: 'agent_message' as const,
-          content: { message: 'Hello! I\'d be happy to help you with testing. What specific area do you need assistance with?', timestamp: Date.now() },
+          content: {
+            message:
+              "Hello! I'd be happy to help you with testing. What specific area do you need assistance with?",
+            timestamp: Date.now(),
+          },
           metadata: { messageId: 'msg-2', generatedBy: 'gpt-4' },
         },
         {
@@ -548,13 +551,20 @@ describe('Parlant Database Integration Tests', () => {
           sessionId: ctx.sessionId,
           offset: 4,
           eventType: 'status_update' as const,
-          content: { status: 'processing_query', details: 'Analyzing user request for integration testing information' },
+          content: {
+            status: 'processing_query',
+            details: 'Analyzing user request for integration testing information',
+          },
         },
         {
           sessionId: ctx.sessionId,
           offset: 5,
           eventType: 'agent_message' as const,
-          content: { message: 'Integration testing involves testing multiple components together to ensure they work correctly as a system.', timestamp: Date.now() },
+          content: {
+            message:
+              'Integration testing involves testing multiple components together to ensure they work correctly as a system.',
+            timestamp: Date.now(),
+          },
           metadata: { messageId: 'msg-4', includedKnowledge: true },
         },
       ]
@@ -570,7 +580,7 @@ describe('Parlant Database Integration Tests', () => {
           scope: 'session',
           value: 'beginner',
           valueType: 'string',
-          description: 'User\'s self-reported expertise level',
+          description: "User's self-reported expertise level",
         },
         {
           agentId: ctx.agentId,
@@ -600,11 +610,11 @@ describe('Parlant Database Integration Tests', () => {
         inputData: {
           sessionId: ctx.sessionId,
           userMessage: 'I need to understand integration testing',
-          userType: 'tester'
+          userType: 'tester',
         },
         outputData: {
           processedData: 'Integration testing explanation generated',
-          confidence: 0.95
+          confidence: 0.95,
         },
         status: 'completed',
         completedAt: new Date(),
@@ -664,7 +674,7 @@ describe('Parlant Database Integration Tests', () => {
       expect(workflowExecution[0].inputData).toEqual({
         sessionId: ctx.sessionId,
         userMessage: 'I need to understand integration testing',
-        userType: 'tester'
+        userType: 'tester',
       })
     })
   })
@@ -785,7 +795,7 @@ describe('Parlant Database Integration Tests', () => {
         .groupBy(parlantSession.sessionType)
         .orderBy(desc(count(parlantSession.id)))
 
-      const typeMap = new Map(sessionTypeBreakdown.map(t => [t.sessionType, t]))
+      const typeMap = new Map(sessionTypeBreakdown.map((t) => [t.sessionType, t]))
 
       expect(typeMap.get('support')?.sessionCount).toBe(1)
       expect(typeMap.get('support')?.avgSatisfaction).toBe(5)
@@ -942,14 +952,12 @@ describe('Parlant Database Integration Tests', () => {
           sql`outgoing.from_state_id = ${parlantJourneyState.id}`
         )
         .where(eq(parlantJourneyState.journeyId, journey[0].id))
-        .groupBy(
-          parlantJourneyState.id,
-          parlantJourneyState.name,
-          parlantJourneyState.stateType
+        .groupBy(parlantJourneyState.id, parlantJourneyState.name, parlantJourneyState.stateType)
+        .orderBy(
+          desc(sql`COALESCE(SUM(incoming.use_count), 0) - COALESCE(SUM(outgoing.use_count), 0)`)
         )
-        .orderBy(desc(sql`COALESCE(SUM(incoming.use_count), 0) - COALESCE(SUM(outgoing.use_count), 0)`))
 
-      const stateMap = new Map(bottleneckAnalysis.map(s => [s.stateName, s]))
+      const stateMap = new Map(bottleneckAnalysis.map((s) => [s.stateName, s]))
 
       // Process Request state should have highest drop-off (12 in, 8 out = 33% drop-off)
       expect(stateMap.get('Process Request')?.totalIncoming).toBe(12)
@@ -1053,7 +1061,7 @@ describe('Parlant Database Integration Tests', () => {
     })
 
     it('should properly handle transaction rollback on errors', async () => {
-      let agentId: string = ''
+      let agentId = ''
 
       // Transaction that should fail and rollback
       await expect(
@@ -1097,10 +1105,7 @@ describe('Parlant Database Integration Tests', () => {
       ).rejects.toThrow()
 
       // Verify rollback - agent should not exist
-      const agentCheck = await db
-        .select()
-        .from(parlantAgent)
-        .where(eq(parlantAgent.id, agentId))
+      const agentCheck = await db.select().from(parlantAgent).where(eq(parlantAgent.id, agentId))
 
       expect(agentCheck).toHaveLength(0)
 

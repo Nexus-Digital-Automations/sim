@@ -10,11 +10,11 @@
  */
 
 import { type NextRequest, NextResponse } from 'next/server'
-import { createLogger } from '@/lib/logs/console/logger'
-import { checkRateLimit, createRateLimitResponse } from '../../../middleware'
-import { authenticateV1Request } from '../../../auth'
+import type { ErrorResponse } from '@/lib/api/v1/agents/schemas'
 import { agentService } from '@/lib/api/v1/agents/service'
-import { type ErrorResponse } from '@/lib/api/v1/agents/schemas'
+import { createLogger } from '@/lib/logs/console/logger'
+import { authenticateV1Request } from '../../../auth'
+import { checkRateLimit, createRateLimitResponse } from '../../../middleware'
 
 const logger = createLogger('AgentStatusAPI')
 
@@ -30,7 +30,7 @@ interface RouteParams {
 function createErrorResponse(
   error: string,
   message: string,
-  status: number = 400,
+  status = 400,
   details?: Record<string, any>,
   requestId?: string
 ): NextResponse<ErrorResponse> {
@@ -47,7 +47,7 @@ function createErrorResponse(
       headers: {
         'Content-Type': 'application/json',
         'X-Request-Id': requestId || 'unknown',
-      }
+      },
     }
   )
 }
@@ -62,10 +62,7 @@ function createErrorResponse(
  * - Configuration summary
  * - Usage statistics
  */
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-): Promise<NextResponse> {
+export async function GET(request: NextRequest, { params }: RouteParams): Promise<NextResponse> {
   const startTime = performance.now()
   const requestId = `agent-status-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
   const agentId = params.id
@@ -146,7 +143,6 @@ export async function GET(
         'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
 

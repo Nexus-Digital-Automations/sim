@@ -13,13 +13,9 @@
  * @version 2.0.0
  */
 
-import { createLogger } from '../utils/logger'
 import { EventEmitter } from 'events'
-import type {
-  AdapterExecutionResult,
-  AdapterExecutionContext,
-  MonitoringConfig
-} from '../types/adapter-interfaces'
+import type { AdapterExecutionContext, AdapterExecutionResult } from '../types/adapter-interfaces'
+import { createLogger } from '../utils/logger'
 
 const logger = createLogger('MonitoringDashboard')
 
@@ -260,7 +256,7 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
       timestamp: new Date(),
       latency: result.durationMs,
       success: result.success,
-      error: result.error
+      error: result.error,
     }
 
     this.metricsCollector.recordExecution(executionData)
@@ -270,7 +266,7 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
   /**
    * Get current dashboard data
    */
-  getDashboardData(timeWindow: number = 3600000): DashboardData {
+  getDashboardData(timeWindow = 3600000): DashboardData {
     const now = Date.now()
     const cutoff = now - timeWindow
 
@@ -285,7 +281,7 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
   /**
    * Get detailed metrics for a specific tool
    */
-  getToolMetrics(toolId: string, timeWindow: number = 3600000): ToolMetrics | null {
+  getToolMetrics(toolId: string, timeWindow = 3600000): ToolMetrics | null {
     if (!this.currentMetrics) return null
 
     return this.currentMetrics.tools[toolId] || null
@@ -300,9 +296,7 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
     issues: HealthIssue[]
     trends: Array<{ timestamp: Date; score: number }>
   } {
-    return this.healthChecker.getHealthStatus(
-      Array.from(this.metricsStore.values())
-    )
+    return this.healthChecker.getHealthStatus(Array.from(this.metricsStore.values()))
   }
 
   /**
@@ -419,7 +413,7 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
     await Promise.all([
       this.alertManager.shutdown(),
       this.analyticsEngine.shutdown(),
-      this.reportGenerator.shutdown()
+      this.reportGenerator.shutdown(),
     ])
 
     this.emit('shutdown')
@@ -434,7 +428,7 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
     logger.info('Initializing performance monitoring dashboard', {
       metricsInterval: this.config.collection.metricsIntervalMs,
       dashboardRefresh: this.config.dashboard.refreshIntervalMs,
-      alertingEnabled: this.config.alerting.enabled
+      alertingEnabled: this.config.alerting.enabled,
     })
 
     // Start metrics collection
@@ -488,9 +482,8 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
         timestamp,
         totalTools: Object.keys(metrics.tools).length,
         throughput: metrics.execution.throughputRps,
-        errorRate: metrics.execution.errorRate
+        errorRate: metrics.execution.errorRate,
       })
-
     } catch (error) {
       logger.error('Failed to collect metrics', { error: error.message })
     }
@@ -501,7 +494,7 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
 
     this.emit('dashboardUpdate', {
       timestamp: new Date(),
-      data: dashboardData
+      data: dashboardData,
     })
   }
 
@@ -530,7 +523,7 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
         averageResponseTime: latest.execution.averageLatencyMs,
         errorRate: latest.execution.errorRate,
         uptime: this.calculateUptime(metrics),
-        healthScore: latest.health.overallScore
+        healthScore: latest.health.overallScore,
       },
 
       realTimeMetrics: {
@@ -541,8 +534,8 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
         resourceUsage: {
           cpu: latest.resources.cpuUsagePercent,
           memory: latest.resources.memoryUsageMB,
-          disk: latest.resources.diskUsageMB
-        }
+          disk: latest.resources.diskUsageMB,
+        },
       },
 
       charts: this.buildChartData(metrics),
@@ -550,30 +543,32 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
       topTools: toolsList
         .sort((a, b) => b.usage.requestCount - a.usage.requestCount)
         .slice(0, 10)
-        .map(tool => ({
+        .map((tool) => ({
           name: tool.name,
           requestCount: tool.usage.requestCount,
           averageLatency: tool.performance.averageLatencyMs,
-          errorRate: (1 - tool.performance.successRate) * 100
+          errorRate: (1 - tool.performance.successRate) * 100,
         })),
 
       recentErrors: this.extractRecentErrors(latest.tools),
-      alerts: this.alertManager.getActiveAlerts()
+      alerts: this.alertManager.getActiveAlerts(),
     }
   }
 
   private buildChartData(metrics: PerformanceMetrics[]): DashboardData['charts'] {
-    const timestamps = metrics.map(m => m.timestamp.toISOString())
+    const timestamps = metrics.map((m) => m.timestamp.toISOString())
 
     return {
       throughput: {
         labels: timestamps,
-        datasets: [{
-          label: 'Requests per Second',
-          data: metrics.map(m => m.execution.throughputRps),
-          color: '#3b82f6',
-          type: 'line'
-        }]
+        datasets: [
+          {
+            label: 'Requests per Second',
+            data: metrics.map((m) => m.execution.throughputRps),
+            color: '#3b82f6',
+            type: 'line',
+          },
+        ],
       },
 
       latency: {
@@ -581,27 +576,29 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
         datasets: [
           {
             label: 'Average Latency',
-            data: metrics.map(m => m.execution.averageLatencyMs),
+            data: metrics.map((m) => m.execution.averageLatencyMs),
             color: '#10b981',
-            type: 'line'
+            type: 'line',
           },
           {
             label: 'P95 Latency',
-            data: metrics.map(m => m.execution.p95LatencyMs),
+            data: metrics.map((m) => m.execution.p95LatencyMs),
             color: '#f59e0b',
-            type: 'line'
-          }
-        ]
+            type: 'line',
+          },
+        ],
       },
 
       errorRate: {
         labels: timestamps,
-        datasets: [{
-          label: 'Error Rate %',
-          data: metrics.map(m => m.execution.errorRate * 100),
-          color: '#ef4444',
-          type: 'line'
-        }]
+        datasets: [
+          {
+            label: 'Error Rate %',
+            data: metrics.map((m) => m.execution.errorRate * 100),
+            color: '#ef4444',
+            type: 'line',
+          },
+        ],
       },
 
       resourceUsage: {
@@ -609,20 +606,20 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
         datasets: [
           {
             label: 'CPU %',
-            data: metrics.map(m => m.resources.cpuUsagePercent),
+            data: metrics.map((m) => m.resources.cpuUsagePercent),
             color: '#8b5cf6',
-            type: 'line'
+            type: 'line',
           },
           {
             label: 'Memory MB',
-            data: metrics.map(m => m.resources.memoryUsageMB),
+            data: metrics.map((m) => m.resources.memoryUsageMB),
             color: '#06b6d4',
-            type: 'line'
-          }
-        ]
+            type: 'line',
+          },
+        ],
       },
 
-      toolUsage: this.buildToolUsageChart(metrics)
+      toolUsage: this.buildToolUsageChart(metrics),
     }
   }
 
@@ -637,12 +634,14 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
 
     return {
       labels: toolNames,
-      datasets: [{
-        label: 'Request Count',
-        data: toolNames.map(name => latest.tools[name].usage.requestCount),
-        color: colors[0],
-        type: 'bar'
-      }]
+      datasets: [
+        {
+          label: 'Request Count',
+          data: toolNames.map((name) => latest.tools[name].usage.requestCount),
+          color: colors[0],
+          type: 'bar',
+        },
+      ],
     }
   }
 
@@ -654,25 +653,25 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
         averageResponseTime: 0,
         errorRate: 0,
         uptime: 100,
-        healthScore: 100
+        healthScore: 100,
       },
       realTimeMetrics: {
         requestsPerSecond: 0,
         averageLatency: 0,
         errorCount: 0,
         activeUsers: 0,
-        resourceUsage: { cpu: 0, memory: 0, disk: 0 }
+        resourceUsage: { cpu: 0, memory: 0, disk: 0 },
       },
       charts: {
         throughput: { labels: [], datasets: [] },
         latency: { labels: [], datasets: [] },
         errorRate: { labels: [], datasets: [] },
         resourceUsage: { labels: [], datasets: [] },
-        toolUsage: { labels: [], datasets: [] }
+        toolUsage: { labels: [], datasets: [] },
       },
       topTools: [],
       recentErrors: [],
-      alerts: []
+      alerts: [],
     }
   }
 
@@ -690,7 +689,7 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
     if (metrics.length === 0) return 100
 
     const totalPoints = metrics.length
-    const healthyPoints = metrics.filter(m => m.health.overallScore >= 90).length
+    const healthyPoints = metrics.filter((m) => m.health.overallScore >= 90).length
 
     return (healthyPoints / totalPoints) * 100
   }
@@ -716,7 +715,7 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
           tool: tool.name,
           error: tool.errors.commonErrorPatterns[0] || 'Unknown error',
           user: 'system',
-          workspace: 'global'
+          workspace: 'global',
         })
       }
     }
@@ -726,8 +725,16 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
 
   private generateColors(count: number): string[] {
     const colors = [
-      '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-      '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6366f1'
+      '#3b82f6',
+      '#10b981',
+      '#f59e0b',
+      '#ef4444',
+      '#8b5cf6',
+      '#06b6d4',
+      '#84cc16',
+      '#f97316',
+      '#ec4899',
+      '#6366f1',
     ]
 
     return Array.from({ length: count }, (_, i) => colors[i % colors.length])
@@ -737,12 +744,19 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
     if (metrics.length === 0) return ''
 
     const headers = [
-      'timestamp', 'totalRequests', 'successfulRequests', 'failedRequests',
-      'averageLatencyMs', 'throughputRps', 'errorRate', 'cpuUsagePercent',
-      'memoryUsageMB', 'healthScore'
+      'timestamp',
+      'totalRequests',
+      'successfulRequests',
+      'failedRequests',
+      'averageLatencyMs',
+      'throughputRps',
+      'errorRate',
+      'cpuUsagePercent',
+      'memoryUsageMB',
+      'healthScore',
     ]
 
-    const rows = metrics.map(m => [
+    const rows = metrics.map((m) => [
       m.timestamp.toISOString(),
       m.execution.totalRequests,
       m.execution.successfulRequests,
@@ -752,10 +766,10 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
       m.execution.errorRate,
       m.resources.cpuUsagePercent,
       m.resources.memoryUsageMB,
-      m.health.overallScore
+      m.health.overallScore,
     ])
 
-    return [headers, ...rows].map(row => row.join(',')).join('\n')
+    return [headers, ...rows].map((row) => row.join(',')).join('\n')
   }
 
   private convertMetricsToPrometheus(metrics: PerformanceMetrics[]): string {
@@ -809,32 +823,38 @@ class AlertManager {
 
     // Check error rate threshold
     if (metrics.execution.errorRate > this.config.thresholds.errorRate) {
-      alerts.push(this.createAlert(
-        'high_error_rate',
-        'critical',
-        `Error rate ${(metrics.execution.errorRate * 100).toFixed(2)}% exceeds threshold ${(this.config.thresholds.errorRate * 100).toFixed(2)}%`,
-        metrics.timestamp
-      ))
+      alerts.push(
+        this.createAlert(
+          'high_error_rate',
+          'critical',
+          `Error rate ${(metrics.execution.errorRate * 100).toFixed(2)}% exceeds threshold ${(this.config.thresholds.errorRate * 100).toFixed(2)}%`,
+          metrics.timestamp
+        )
+      )
     }
 
     // Check response time threshold
     if (metrics.execution.p95LatencyMs > this.config.thresholds.responseTime) {
-      alerts.push(this.createAlert(
-        'high_response_time',
-        'high',
-        `P95 response time ${metrics.execution.p95LatencyMs}ms exceeds threshold ${this.config.thresholds.responseTime}ms`,
-        metrics.timestamp
-      ))
+      alerts.push(
+        this.createAlert(
+          'high_response_time',
+          'high',
+          `P95 response time ${metrics.execution.p95LatencyMs}ms exceeds threshold ${this.config.thresholds.responseTime}ms`,
+          metrics.timestamp
+        )
+      )
     }
 
     // Check throughput threshold
     if (metrics.execution.throughputRps < this.config.thresholds.throughput) {
-      alerts.push(this.createAlert(
-        'low_throughput',
-        'medium',
-        `Throughput ${metrics.execution.throughputRps} RPS below threshold ${this.config.thresholds.throughput} RPS`,
-        metrics.timestamp
-      ))
+      alerts.push(
+        this.createAlert(
+          'low_throughput',
+          'medium',
+          `Throughput ${metrics.execution.throughputRps} RPS below threshold ${this.config.thresholds.throughput} RPS`,
+          metrics.timestamp
+        )
+      )
     }
 
     // Process new alerts
@@ -867,12 +887,12 @@ class AlertManager {
     timestamp: Date
     acknowledged: boolean
   }> {
-    return Array.from(this.activeAlerts.values()).map(alert => ({
+    return Array.from(this.activeAlerts.values()).map((alert) => ({
       id: alert.id,
       severity: alert.severity,
       message: alert.message,
       timestamp: alert.timestamp,
-      acknowledged: alert.acknowledged
+      acknowledged: alert.acknowledged,
     }))
   }
 
@@ -888,7 +908,7 @@ class AlertManager {
       severity,
       message,
       timestamp,
-      acknowledged: false
+      acknowledged: false,
     }
   }
 }
@@ -934,19 +954,20 @@ class AnalyticsEngine {
         type: 'performance',
         priority: 'high',
         title: 'High Error Rate Detected',
-        description: 'The system error rate is above 5%, indicating potential issues with tool execution',
+        description:
+          'The system error rate is above 5%, indicating potential issues with tool execution',
         expectedImprovement: 'Reduce error rate to below 2%',
         implementationComplexity: 'medium',
         actions: [
           {
             description: 'Review error logs and identify common failure patterns',
-            code: 'grep -E "ERROR|FAIL" logs/*.log | sort | uniq -c | sort -nr'
+            code: 'grep -E "ERROR|FAIL" logs/*.log | sort | uniq -c | sort -nr',
           },
           {
             description: 'Implement circuit breaker pattern for failing tools',
-            config: { circuitBreaker: { enabled: true, failureThreshold: 5 } }
-          }
-        ]
+            config: { circuitBreaker: { enabled: true, failureThreshold: 5 } },
+          },
+        ],
       })
     }
 
@@ -962,12 +983,12 @@ class AnalyticsEngine {
         actions: [
           {
             description: 'Enable garbage collection monitoring',
-            config: { gc: { monitoring: true } }
+            config: { gc: { monitoring: true } },
           },
           {
-            description: 'Implement result caching to reduce memory allocation'
-          }
-        ]
+            description: 'Implement result caching to reduce memory allocation',
+          },
+        ],
       })
     }
 
@@ -993,7 +1014,7 @@ class MetricsCollector {
         p95LatencyMs: Math.random() * 2000,
         p99LatencyMs: Math.random() * 5000,
         throughputRps: Math.random() * 100,
-        errorRate: Math.random() * 0.1
+        errorRate: Math.random() * 0.1,
       },
       resources: {
         cpuUsagePercent: Math.random() * 100,
@@ -1001,7 +1022,7 @@ class MetricsCollector {
         diskUsageMB: Math.random() * 10000,
         networkBytesIn: Math.floor(Math.random() * 1000000),
         networkBytesOut: Math.floor(Math.random() * 1000000),
-        activeConnections: Math.floor(Math.random() * 100)
+        activeConnections: Math.floor(Math.random() * 100),
       },
       tools: this.generateMockToolMetrics(),
       health: {
@@ -1009,11 +1030,11 @@ class MetricsCollector {
         componentScores: {
           cache: Math.random() * 100,
           database: Math.random() * 100,
-          api: Math.random() * 100
+          api: Math.random() * 100,
         },
         issues: [],
-        recommendations: []
-      }
+        recommendations: [],
+      },
     }
   }
 
@@ -1022,7 +1043,7 @@ class MetricsCollector {
     logger.debug('Execution recorded', {
       toolId: data.toolId,
       success: data.success,
-      latency: data.latency
+      latency: data.latency,
     })
   }
 
@@ -1040,25 +1061,23 @@ class MetricsCollector {
           uniqueUsers: Math.floor(Math.random() * 50),
           uniqueWorkspaces: Math.floor(Math.random() * 20),
           averageExecutionsPerUser: Math.random() * 10,
-          popularParameterCombinations: []
+          popularParameterCombinations: [],
         },
         performance: {
           averageLatencyMs: Math.random() * 1000,
           successRate: 0.9 + Math.random() * 0.1,
           cacheHitRate: Math.random(),
-          resourceConsumption: Math.random() * 100
+          resourceConsumption: Math.random() * 100,
         },
         errors: {
           totalErrors: Math.floor(Math.random() * 10),
           errorsByType: {
-            'validation_error': Math.floor(Math.random() * 5),
-            'timeout_error': Math.floor(Math.random() * 3)
+            validation_error: Math.floor(Math.random() * 5),
+            timeout_error: Math.floor(Math.random() * 3),
           },
           commonErrorPatterns: ['Invalid parameter format', 'Connection timeout'],
-          errorTrends: [
-            { timestamp: new Date(), count: Math.floor(Math.random() * 5) }
-          ]
-        }
+          errorTrends: [{ timestamp: new Date(), count: Math.floor(Math.random() * 5) }],
+        },
       }
     }
 
@@ -1079,10 +1098,10 @@ class HealthChecker {
       overall: latest?.health.overallScore || 100,
       components: latest?.health.componentScores || {},
       issues: latest?.health.issues || [],
-      trends: metrics.slice(-10).map(m => ({
+      trends: metrics.slice(-10).map((m) => ({
         timestamp: m.timestamp,
-        score: m.health.overallScore
-      }))
+        score: m.health.overallScore,
+      })),
     }
   }
 }
@@ -1102,24 +1121,26 @@ class ReportGenerator {
       type: reportType,
       period: {
         start: metrics[0]?.timestamp || new Date(),
-        end: metrics[metrics.length - 1]?.timestamp || new Date()
+        end: metrics[metrics.length - 1]?.timestamp || new Date(),
       },
       summary: {
         totalRequests: metrics.reduce((sum, m) => sum + m.execution.totalRequests, 0),
-        averageLatency: metrics.reduce((sum, m) => sum + m.execution.averageLatencyMs, 0) / metrics.length,
-        overallErrorRate: metrics.reduce((sum, m) => sum + m.execution.errorRate, 0) / metrics.length,
-        uptime: 99.9
+        averageLatency:
+          metrics.reduce((sum, m) => sum + m.execution.averageLatencyMs, 0) / metrics.length,
+        overallErrorRate:
+          metrics.reduce((sum, m) => sum + m.execution.errorRate, 0) / metrics.length,
+        uptime: 99.9,
       },
       trends: {
         performanceTrend: 'improving',
         usageTrend: 'increasing',
-        errorTrend: 'stable'
+        errorTrend: 'stable',
       },
       recommendations: [],
       insights: [
         'System performance is within acceptable limits',
-        'No critical issues detected in the reporting period'
-      ]
+        'No critical issues detected in the reporting period',
+      ],
     }
   }
 }
@@ -1148,14 +1169,14 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {
     metricsIntervalMs: 30000, // 30 seconds
     samplingRate: 1.0,
     retentionPeriodMs: 7 * 24 * 60 * 60 * 1000, // 7 days
-    aggregationIntervals: [60000, 300000, 3600000] // 1min, 5min, 1hour
+    aggregationIntervals: [60000, 300000, 3600000], // 1min, 5min, 1hour
   },
 
   dashboard: {
     refreshIntervalMs: 5000, // 5 seconds
     maxDataPoints: 100,
     timeWindowOptions: [3600000, 21600000, 86400000], // 1h, 6h, 24h
-    chartTypes: ['line', 'bar', 'area']
+    chartTypes: ['line', 'bar', 'area'],
   },
 
   alerting: {
@@ -1164,10 +1185,10 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {
       errorRate: 0.05, // 5%
       responseTime: 5000, // 5 seconds
       throughput: 10, // 10 RPS
-      resourceUsage: 0.8 // 80%
+      resourceUsage: 0.8, // 80%
     },
     notificationChannels: ['email', 'slack'],
-    cooldownMs: 300000 // 5 minutes
+    cooldownMs: 300000, // 5 minutes
   },
 
   analytics: {
@@ -1175,6 +1196,6 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {
     predictiveAnalysis: true,
     trendAnalysis: true,
     anomalyDetection: true,
-    reportingSchedule: ['daily', 'weekly', 'monthly']
-  }
+    reportingSchedule: ['daily', 'weekly', 'monthly'],
+  },
 }

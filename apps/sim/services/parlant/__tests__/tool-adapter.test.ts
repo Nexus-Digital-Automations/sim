@@ -11,43 +11,32 @@
  * - Performance and reliability testing
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
-import type { AuthContext } from '../types'
-import type {
-  EnhancedToolDescription,
-  ToolRecommendationContext
-} from '../tool-adapter'
-
+import { beforeEach, describe, expect, jest, test } from '@jest/globals'
+import { AgentToolIntegrationManager } from '../agent-tool-integration'
+import {
+  ConversationalIntelligenceEngine,
+  conversationalEngine,
+} from '../conversational-intelligence'
+import type { EnhancedToolDescription, ToolRecommendationContext } from '../tool-adapter'
 // Import modules under test
 import {
+  intelligenceEngine,
   SimToolRegistry,
-  UniversalToolAdapter,
   ToolIntelligenceEngine,
-  toolRegistry,
   toolAdapter,
-  intelligenceEngine
+  toolRegistry,
+  UniversalToolAdapter,
 } from '../tool-adapter'
-
 import {
   AdvancedRecommendationEngine,
   IntentRecognizer,
-  recommendationEngine
+  recommendationEngine,
 } from '../tool-recommendations'
-
 import {
-  ConversationalIntelligenceEngine,
-  conversationalEngine
-} from '../conversational-intelligence'
-
-import {
-  AgentToolIntegrationManager,
-  agentToolIntegration
-} from '../agent-tool-integration'
-
-import {
+  COMPREHENSIVE_TOOL_DESCRIPTIONS,
   toolRegistryInitializer,
-  COMPREHENSIVE_TOOL_DESCRIPTIONS
 } from '../tool-registry-initialization'
+import type { AuthContext } from '../types'
 
 // =============================================
 // Test Data and Fixtures
@@ -57,36 +46,33 @@ const mockAuthContext: AuthContext = {
   user_id: 'test-user-123',
   workspace_id: 'test-workspace-456',
   key_type: 'workspace',
-  permissions: ['tool_execute', 'tool_manage']
+  permissions: ['tool_execute', 'tool_manage'],
 }
 
 const mockToolDescription: EnhancedToolDescription = {
   id: 'test-tool',
   name: 'Test Tool',
   shortDescription: 'A test tool for unit testing',
-  longDescription: 'This is a comprehensive test tool used for validating the Universal Tool Adapter System functionality.',
-  usageExamples: [
-    'Test basic functionality',
-    'Validate tool parameters',
-    'Check error handling'
-  ],
+  longDescription:
+    'This is a comprehensive test tool used for validating the Universal Tool Adapter System functionality.',
+  usageExamples: ['Test basic functionality', 'Validate tool parameters', 'Check error handling'],
   usageGuidelines: {
     bestUsedFor: ['Testing', 'Validation', 'Development'],
     avoidWhen: ['Production environments', 'Critical operations'],
-    commonMistakes: ['Not providing test data', 'Skipping validation']
+    commonMistakes: ['Not providing test data', 'Skipping validation'],
   },
   conversationalPrompts: {
     parameterQuestions: [
       {
         parameter: 'testParam',
         question: 'What test value should be used?',
-        examples: ['test123', 'sample-data', 'mock-value']
-      }
-    ]
+        examples: ['test123', 'sample-data', 'mock-value'],
+      },
+    ],
   },
   tags: ['testing', 'validation', 'development'],
   difficulty: 'beginner',
-  complexity: 'simple'
+  complexity: 'simple',
 }
 
 const mockBlockConfig = {
@@ -97,16 +83,16 @@ const mockBlockConfig = {
   bgColor: '#FF0000',
   inputs: {
     testParam: { type: 'string', description: 'Test parameter' },
-    optionalParam: { type: 'number', description: 'Optional parameter' }
+    optionalParam: { type: 'number', description: 'Optional parameter' },
   },
   outputs: {
-    result: { type: 'json', description: 'Test result' }
+    result: { type: 'json', description: 'Test result' },
   },
   tools: { access: ['test_execute'] },
   subBlocks: [
     { id: 'testParam', type: 'short-input', required: true },
-    { id: 'optionalParam', type: 'short-input', required: false }
-  ]
+    { id: 'optionalParam', type: 'short-input', required: false },
+  ],
 }
 
 // =============================================
@@ -230,8 +216,8 @@ describe('UniversalToolAdapter', () => {
       userProfile: {
         skillLevel: 'beginner',
         preferredCategories: ['testing'],
-        frequentlyUsedTools: []
-      }
+        frequentlyUsedTools: [],
+      },
     }
 
     const parlantTool = adapter.adaptTool(mockBlockConfig as any, context)
@@ -266,15 +252,15 @@ describe('ToolIntelligenceEngine', () => {
   test('should recommend tools based on context', () => {
     const context: ToolRecommendationContext = {
       conversationHistory: [
-        { role: 'user', content: 'I need to test something', timestamp: new Date() }
+        { role: 'user', content: 'I need to test something', timestamp: new Date() },
       ],
       userIntents: ['testing'],
       usedTools: [],
       userProfile: {
         skillLevel: 'beginner',
         preferredCategories: ['testing'],
-        frequentlyUsedTools: []
-      }
+        frequentlyUsedTools: [],
+      },
     }
 
     const recommendations = intelligence.recommendTools(context, 5)
@@ -291,8 +277,8 @@ describe('ToolIntelligenceEngine', () => {
       userProfile: {
         skillLevel: 'beginner',
         preferredCategories: ['testing'],
-        frequentlyUsedTools: []
-      }
+        frequentlyUsedTools: [],
+      },
     }
 
     const recommendations = intelligence.recommendTools(context)
@@ -302,10 +288,10 @@ describe('ToolIntelligenceEngine', () => {
   test('should suggest parameters based on context', () => {
     const context: ToolRecommendationContext = {
       conversationHistory: [
-        { role: 'user', content: 'Use value test123 for testing', timestamp: new Date() }
+        { role: 'user', content: 'Use value test123 for testing', timestamp: new Date() },
       ],
       userIntents: ['testing'],
-      usedTools: []
+      usedTools: [],
     }
 
     const recommendations = intelligence.recommendTools(context)
@@ -330,14 +316,14 @@ describe('IntentRecognizer', () => {
 
     expect(result.primaryIntent).toBe('send_email')
     expect(result.confidence).toBeGreaterThan(0.5)
-    expect(result.entities.some(e => e.type === 'email')).toBe(true)
+    expect(result.entities.some((e) => e.type === 'email')).toBe(true)
   })
 
   test('should recognize API calling intent', () => {
     const result = recognizer.analyzeInput('call API at https://api.example.com/users')
 
     expect(result.primaryIntent).toBe('make_api_call')
-    expect(result.entities.some(e => e.type === 'url')).toBe(true)
+    expect(result.entities.some((e) => e.type === 'url')).toBe(true)
   })
 
   test('should recognize messaging intent', () => {
@@ -351,16 +337,20 @@ describe('IntentRecognizer', () => {
     const simple = recognizer.analyzeInput('send email')
     expect(simple.complexity).toBe('simple')
 
-    const complex = recognizer.analyzeInput('send email to multiple recipients based on their preferences and schedule it for delivery when they are most likely to read it')
+    const complex = recognizer.analyzeInput(
+      'send email to multiple recipients based on their preferences and schedule it for delivery when they are most likely to read it'
+    )
     expect(complex.complexity).toBe('complex')
   })
 
   test('should extract multiple entities', () => {
-    const result = recognizer.analyzeInput('send email to john@example.com about the report at https://docs.example.com/report.pdf')
+    const result = recognizer.analyzeInput(
+      'send email to john@example.com about the report at https://docs.example.com/report.pdf'
+    )
 
     expect(result.entities.length).toBeGreaterThan(1)
-    expect(result.entities.some(e => e.type === 'email')).toBe(true)
-    expect(result.entities.some(e => e.type === 'url')).toBe(true)
+    expect(result.entities.some((e) => e.type === 'email')).toBe(true)
+    expect(result.entities.some((e) => e.type === 'url')).toBe(true)
   })
 })
 
@@ -381,7 +371,7 @@ describe('AdvancedRecommendationEngine', () => {
     const context: ToolRecommendationContext = {
       conversationHistory: [],
       userIntents: ['send_email'],
-      usedTools: []
+      usedTools: [],
     }
 
     const result = await engine.getRecommendations(
@@ -399,7 +389,7 @@ describe('AdvancedRecommendationEngine', () => {
     const context: ToolRecommendationContext = {
       conversationHistory: [],
       userIntents: ['send_email'],
-      usedTools: []
+      usedTools: [],
     }
 
     const result = await engine.getRecommendations(
@@ -417,7 +407,7 @@ describe('AdvancedRecommendationEngine', () => {
     const context: ToolRecommendationContext = {
       conversationHistory: [],
       userIntents: ['automate_workflow'],
-      usedTools: []
+      usedTools: [],
     }
 
     const result = await engine.getRecommendations(
@@ -437,7 +427,7 @@ describe('AdvancedRecommendationEngine', () => {
       rating: 5,
       timestamp: new Date(),
       helpful: true,
-      used: true
+      used: true,
     }
 
     expect(() => {
@@ -464,7 +454,7 @@ describe('ConversationalIntelligenceEngine', () => {
       expertiseLevel: 'beginner' as const,
       interactionMode: 'guided' as const,
       locale: 'en-US',
-      toolUsagePatterns: {}
+      toolUsagePatterns: {},
     }
 
     const response = await engine.startToolConversation(
@@ -515,8 +505,8 @@ describe('AgentToolIntegrationManager', () => {
     const mockAgentService = {
       getAgent: jest.fn().mockResolvedValue({
         success: true,
-        data: { id: 'test-agent', name: 'Test Agent' }
-      })
+        data: { id: 'test-agent', name: 'Test Agent' },
+      }),
     }
 
     // This test would require more mocking of dependencies
@@ -600,10 +590,10 @@ describe('Universal Tool Adapter System - Integration Tests', () => {
     // 1. Get recommendations
     const context: ToolRecommendationContext = {
       conversationHistory: [
-        { role: 'user', content: 'I need to send an email to a customer', timestamp: new Date() }
+        { role: 'user', content: 'I need to send an email to a customer', timestamp: new Date() },
       ],
       userIntents: ['send_email'],
-      usedTools: []
+      usedTools: [],
     }
 
     const recommendations = await recommendationEngine.getRecommendations(
@@ -620,7 +610,7 @@ describe('Universal Tool Adapter System - Integration Tests', () => {
       expertiseLevel: 'beginner' as const,
       interactionMode: 'guided' as const,
       locale: 'en-US',
-      toolUsagePatterns: {}
+      toolUsagePatterns: {},
     }
 
     const conversation = await conversationalEngine.startToolConversation(
@@ -676,17 +666,12 @@ describe('Performance and Reliability Tests', () => {
   test('should handle concurrent tool searches', async () => {
     await toolRegistryInitializer.initializeAllTools()
 
-    const searches = [
-      'email',
-      'database',
-      'api',
-      'storage',
-      'messaging',
-      'schedule'
-    ].map(query => toolRegistry.searchTools(query))
+    const searches = ['email', 'database', 'api', 'storage', 'messaging', 'schedule'].map((query) =>
+      toolRegistry.searchTools(query)
+    )
 
     const results = await Promise.all(searches)
-    expect(results.every(r => Array.isArray(r))).toBe(true)
+    expect(results.every((r) => Array.isArray(r))).toBe(true)
   })
 
   test('should handle invalid inputs gracefully', async () => {
@@ -718,7 +703,7 @@ describe('Performance and Reliability Tests', () => {
     const search2 = toolRegistry.searchTools('email')
 
     expect(search1.length).toBe(search2.length)
-    expect(search1.map(t => t.id)).toEqual(search2.map(t => t.id))
+    expect(search1.map((t) => t.id)).toEqual(search2.map((t) => t.id))
   })
 })
 
@@ -757,7 +742,7 @@ describe('Error Handling', () => {
     const context: ToolRecommendationContext = {
       conversationHistory: [],
       userIntents: [],
-      usedTools: []
+      usedTools: [],
     }
 
     // Should not throw even with minimal context

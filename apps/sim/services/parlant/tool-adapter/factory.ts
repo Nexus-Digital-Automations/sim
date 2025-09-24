@@ -6,17 +6,17 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { BaseToolAdapter, createToolSchema } from './base-adapter'
 import { registerToolAdapter } from './adapter-registry'
+import { BaseToolAdapter, createToolSchema } from './base-adapter'
 import type {
-  ToolAdapter,
   AdapterContext,
   AdapterResult,
-  ParlantToolSchema,
   ClientToolDefinition,
-  SimServerTool,
-  ToolCategory,
+  ParlantToolSchema,
   PermissionLevel,
+  SimServerTool,
+  ToolAdapter,
+  ToolCategory,
 } from './types'
 
 const logger = createLogger('AdapterFactory')
@@ -38,7 +38,11 @@ export function createClientToolAdapter(
           toolCallId: `adapter-${Date.now()}`,
           toolName: schema.name,
           log: (level: any, message: string, extra?: Record<string, any>) => {
-            this.logger[level]?.(message, { ...extra, userId: context.user_id, workspaceId: context.workspace_id })
+            this.logger[level]?.(message, {
+              ...extra,
+              userId: context.user_id,
+              workspaceId: context.workspace_id,
+            })
           },
         }
 
@@ -61,7 +65,6 @@ export function createClientToolAdapter(
             original_status: result.status,
           }
         )
-
       } catch (error: any) {
         logger.error('Client tool execution failed', {
           toolName: schema.name,
@@ -96,14 +99,9 @@ export function createServerToolAdapter(
         const result = await serverTool.execute(args)
 
         // Convert server tool result to adapter result
-        return this.createSuccessResult(
-          result,
-          `${schema.name} completed successfully`,
-          {
-            server_tool_result: true,
-          }
-        )
-
+        return this.createSuccessResult(result, `${schema.name} completed successfully`, {
+          server_tool_result: true,
+        })
       } catch (error: any) {
         logger.error('Server tool execution failed', {
           toolName: schema.name,
@@ -133,21 +131,15 @@ export function createCustomToolAdapter(
   executeFunction: (args: any, context: AdapterContext) => Promise<AdapterResult>,
   options: AdapterOptions = {}
 ): ToolAdapter {
-  const schema = createToolSchema(
-    name,
-    description,
-    usage_guidelines,
-    parameters,
-    {
-      category: options.category || 'automation',
-      permission_level: options.permissionLevel || 'workspace',
-      performance: {
-        estimated_duration_ms: options.estimatedDurationMs || 1000,
-        cacheable: options.cacheable !== false,
-        resource_usage: options.resourceUsage || 'medium',
-      },
-    }
-  )
+  const schema = createToolSchema(name, description, usage_guidelines, parameters, {
+    category: options.category || 'automation',
+    permission_level: options.permissionLevel || 'workspace',
+    performance: {
+      estimated_duration_ms: options.estimatedDurationMs || 1000,
+      cacheable: options.cacheable !== false,
+      resource_usage: options.resourceUsage || 'medium',
+    },
+  })
 
   class CustomToolAdapter extends BaseToolAdapter {
     protected async executeInternal(args: any, context: AdapterContext): Promise<AdapterResult> {
@@ -215,7 +207,7 @@ export function createClientToolAdapters(
   clientTools: ClientToolDefinition[],
   options: AdapterOptions = {}
 ): ToolAdapter[] {
-  return clientTools.map(tool => createClientToolAdapter(tool, options))
+  return clientTools.map((tool) => createClientToolAdapter(tool, options))
 }
 
 /**
@@ -225,16 +217,13 @@ export function createServerToolAdapters(
   serverTools: SimServerTool[],
   options: AdapterOptions = {}
 ): ToolAdapter[] {
-  return serverTools.map(tool => createServerToolAdapter(tool, options))
+  return serverTools.map((tool) => createServerToolAdapter(tool, options))
 }
 
 /**
  * Create a wrapper that adds common functionality to any tool adapter
  */
-export function wrapToolAdapter(
-  adapter: ToolAdapter,
-  wrapper: ToolAdapterWrapper
-): ToolAdapter {
+export function wrapToolAdapter(adapter: ToolAdapter, wrapper: ToolAdapterWrapper): ToolAdapter {
   const originalExecute = adapter.execute.bind(adapter)
 
   return {
@@ -261,7 +250,7 @@ export function wrapToolAdapter(
 
       // Post-execution hook
       if (wrapper.afterExecute) {
-        result = await wrapper.afterExecute(result, args, context) || result
+        result = (await wrapper.afterExecute(result, args, context)) || result
       }
 
       return result
@@ -377,6 +366,10 @@ export interface AdapterOptions {
 
 export interface ToolAdapterWrapper {
   beforeExecute?: (args: any, context: AdapterContext) => Promise<AdapterResult | null>
-  afterExecute?: (result: AdapterResult, args: any, context: AdapterContext) => Promise<AdapterResult | null>
+  afterExecute?: (
+    result: AdapterResult,
+    args: any,
+    context: AdapterContext
+  ) => Promise<AdapterResult | null>
   onError?: (error: any, args: any, context: AdapterContext) => Promise<AdapterResult>
 }

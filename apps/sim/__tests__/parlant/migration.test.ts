@@ -8,30 +8,29 @@
  * and rollback scenarios.
  */
 
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '@sim/db'
-import { sql } from 'drizzle-orm'
 import {
+  knowledgeBase,
   parlantAgent,
-  parlantSession,
+  parlantAgentKnowledgeBase,
+  parlantAgentTool,
+  parlantCannedResponse,
   parlantEvent,
   parlantGuideline,
   parlantJourney,
+  parlantJourneyGuideline,
   parlantJourneyState,
   parlantJourneyTransition,
-  parlantVariable,
-  parlantTool,
+  parlantSession,
   parlantTerm,
-  parlantCannedResponse,
-  parlantAgentTool,
-  parlantJourneyGuideline,
-  parlantAgentKnowledgeBase,
+  parlantTool,
   parlantToolIntegration,
-  workspace,
+  parlantVariable,
   user,
-  knowledgeBase,
+  workspace,
 } from '@sim/db/schema'
-import { eq, count } from 'drizzle-orm'
+import { count, eq, sql } from 'drizzle-orm'
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
 interface TestData {
   workspaceId: string
@@ -209,9 +208,7 @@ describe('Parlant Database Migration Tests', () => {
       expect(agentColumns.rows.length).toBeGreaterThanOrEqual(expectedColumns.length)
 
       // Verify key columns exist with correct types
-      const columnMap = new Map(
-        agentColumns.rows.map((col) => [col.column_name, col])
-      )
+      const columnMap = new Map(agentColumns.rows.map((col) => [col.column_name, col]))
 
       expect(columnMap.get('id')?.data_type).toBe('uuid')
       expect(columnMap.get('workspace_id')?.data_type).toBe('text')
@@ -550,9 +547,7 @@ describe('Parlant Database Migration Tests', () => {
 
       // Verify each table can be queried (indicating it exists and structure is valid)
       for (const tableName of tableOrder) {
-        const result = await db.execute(
-          sql.raw(`SELECT COUNT(*) as count FROM "${tableName}"`)
-        )
+        const result = await db.execute(sql.raw(`SELECT COUNT(*) as count FROM "${tableName}"`))
         expect(typeof result.rows[0].count).toBe('string')
       }
     })

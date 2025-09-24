@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Bot, Info, Loader2 } from 'lucide-react'
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -22,13 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Switch } from '@/components/ui/switch'
-import { Slider } from '@/components/ui/slider'
-import { useAgentManagementStore } from '@/stores/agents'
-import type { CreateAgentRequest, AgentConfiguration } from '@/stores/agents/types'
 import { createLogger } from '@/lib/logs/console/logger'
+import { useAgentManagementStore } from '@/stores/agents'
+import type { AgentConfiguration, CreateAgentRequest } from '@/stores/agents/types'
 
 const logger = createLogger('CreateAgentModal')
 
@@ -42,7 +41,8 @@ const DEFAULT_CONFIGURATION: Partial<AgentConfiguration> = {
   model: 'claude-3-5-sonnet-20241022',
   temperature: 0.7,
   maxTokens: 4096,
-  systemPrompt: 'You are a helpful AI assistant. Be concise, accurate, and friendly in your responses.',
+  systemPrompt:
+    'You are a helpful AI assistant. Be concise, accurate, and friendly in your responses.',
   toolsEnabled: true,
   availableTools: [],
   knowledgeBaseIds: [],
@@ -55,9 +55,17 @@ const DEFAULT_CONFIGURATION: Partial<AgentConfiguration> = {
 }
 
 const AVAILABLE_MODELS = [
-  { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet', description: 'Most capable model for complex tasks' },
-  { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku', description: 'Fast and efficient for simpler tasks' },
-  { value: 'gpt-4o', label: 'GPT-4o', description: 'OpenAI\'s most advanced model' },
+  {
+    value: 'claude-3-5-sonnet-20241022',
+    label: 'Claude 3.5 Sonnet',
+    description: 'Most capable model for complex tasks',
+  },
+  {
+    value: 'claude-3-5-haiku-20241022',
+    label: 'Claude 3.5 Haiku',
+    description: 'Fast and efficient for simpler tasks',
+  },
+  { value: 'gpt-4o', label: 'GPT-4o', description: "OpenAI's most advanced model" },
   { value: 'gpt-4o-mini', label: 'GPT-4o Mini', description: 'Faster and more cost-effective' },
 ]
 
@@ -75,7 +83,8 @@ const VERBOSITY_OPTIONS = [
 ]
 
 const TOOLTIPS = {
-  temperature: 'Controls randomness in responses. Higher values (0.8-1.0) are more creative, lower values (0.1-0.3) are more focused.',
+  temperature:
+    'Controls randomness in responses. Higher values (0.8-1.0) are more creative, lower values (0.1-0.3) are more focused.',
   maxTokens: 'Maximum number of tokens the agent can use in a single response.',
   systemPrompt: 'The core instructions that define how your agent behaves and responds.',
   toolsEnabled: 'Allow the agent to use tools like web search, calculations, and file operations.',
@@ -150,14 +159,14 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
   }
 
   const updateConfiguration = (updates: Partial<AgentConfiguration>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       configuration: { ...prev.configuration, ...updates },
     }))
   }
 
   const updatePersonality = (updates: Partial<AgentConfiguration['personality']>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       configuration: {
         ...prev.configuration,
@@ -191,14 +200,12 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
               <Input
                 id='agent-name'
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 placeholder='e.g., Customer Support Assistant'
                 className={`h-9 rounded-[8px] ${formErrors.name ? 'border-red-500' : ''}`}
                 maxLength={100}
               />
-              {formErrors.name && (
-                <p className='text-red-600 text-sm'>{formErrors.name}</p>
-              )}
+              {formErrors.name && <p className='text-red-600 text-sm'>{formErrors.name}</p>}
             </div>
 
             <div className='space-y-2'>
@@ -208,7 +215,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
               <Textarea
                 id='agent-description'
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 placeholder='Describe what this agent does and how it helps users...'
                 className={`min-h-[80px] rounded-[8px] ${formErrors.description ? 'border-red-500' : ''}`}
                 maxLength={500}
@@ -295,7 +302,9 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
               </div>
               <Select
                 value={formData.configuration.maxTokens?.toString()}
-                onValueChange={(value) => updateConfiguration({ maxTokens: parseInt(value) })}
+                onValueChange={(value) =>
+                  updateConfiguration({ maxTokens: Number.parseInt(value) })
+                }
               >
                 <SelectTrigger id='max-tokens' className='h-9 rounded-[8px]'>
                   <SelectValue placeholder='Select token limit' />

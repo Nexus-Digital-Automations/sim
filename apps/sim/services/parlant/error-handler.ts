@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { ParlantApiErrorDetails, ValidationError, RateLimitInfo } from './types'
+import type { ParlantApiErrorDetails, RateLimitInfo, ValidationError } from './types'
 
 const logger = createLogger('ParlantErrorHandler')
 
@@ -45,7 +45,7 @@ export class ParlantError extends Error {
       requestId: this.requestId,
       timestamp: this.timestamp,
       retryable: this.retryable,
-      stack: this.stack
+      stack: this.stack,
     }
   }
 }
@@ -54,11 +54,7 @@ export class ParlantError extends Error {
  * Network-related errors (connection, timeout, etc.)
  */
 export class ParlantNetworkError extends ParlantError {
-  constructor(
-    message: string,
-    details?: Record<string, any>,
-    requestId?: string
-  ) {
+  constructor(message: string, details?: Record<string, any>, requestId?: string) {
     super('NETWORK_ERROR', message, true, details, requestId)
     this.name = 'ParlantNetworkError'
   }
@@ -68,11 +64,7 @@ export class ParlantNetworkError extends ParlantError {
  * Authentication and authorization errors
  */
 export class ParlantAuthError extends ParlantError {
-  constructor(
-    message: string,
-    details?: Record<string, any>,
-    requestId?: string
-  ) {
+  constructor(message: string, details?: Record<string, any>, requestId?: string) {
     super('AUTH_ERROR', message, false, details, requestId)
     this.name = 'ParlantAuthError'
   }
@@ -98,7 +90,7 @@ export class ParlantValidationError extends ParlantError {
   toJSON() {
     return {
       ...super.toJSON(),
-      validationErrors: this.validationErrors
+      validationErrors: this.validationErrors,
     }
   }
 }
@@ -123,7 +115,7 @@ export class ParlantRateLimitError extends ParlantError {
   toJSON() {
     return {
       ...super.toJSON(),
-      rateLimitInfo: this.rateLimitInfo
+      rateLimitInfo: this.rateLimitInfo,
     }
   }
 }
@@ -148,7 +140,7 @@ export class ParlantServerError extends ParlantError {
   toJSON() {
     return {
       ...super.toJSON(),
-      statusCode: this.statusCode
+      statusCode: this.statusCode,
     }
   }
 }
@@ -157,10 +149,7 @@ export class ParlantServerError extends ParlantError {
  * Configuration errors
  */
 export class ParlantConfigError extends ParlantError {
-  constructor(
-    message: string,
-    details?: Record<string, any>
-  ) {
+  constructor(message: string, details?: Record<string, any>) {
     super('CONFIG_ERROR', message, false, details)
     this.name = 'ParlantConfigError'
   }
@@ -186,7 +175,7 @@ export class ParlantTimeoutError extends ParlantError {
   toJSON() {
     return {
       ...super.toJSON(),
-      timeoutMs: this.timeoutMs
+      timeoutMs: this.timeoutMs,
     }
   }
 }
@@ -207,11 +196,7 @@ export class ParlantErrorHandler {
   /**
    * Convert HTTP response errors to appropriate ParlantError types
    */
-  handleHttpError(
-    response: Response,
-    responseBody?: any,
-    requestId?: string
-  ): ParlantError {
+  handleHttpError(response: Response, responseBody?: any, requestId?: string): ParlantError {
     const { status, statusText } = response
 
     // Extract error details from response body
@@ -231,10 +216,10 @@ export class ParlantErrorHandler {
     // Rate limit errors
     if (status === 429) {
       const rateLimitInfo: RateLimitInfo = {
-        limit: parseInt(response.headers.get('X-RateLimit-Limit') || '0'),
-        remaining: parseInt(response.headers.get('X-RateLimit-Remaining') || '0'),
+        limit: Number.parseInt(response.headers.get('X-RateLimit-Limit') || '0'),
+        remaining: Number.parseInt(response.headers.get('X-RateLimit-Remaining') || '0'),
         reset_at: response.headers.get('X-RateLimit-Reset') || new Date().toISOString(),
-        retry_after: parseInt(response.headers.get('Retry-After') || '0')
+        retry_after: Number.parseInt(response.headers.get('Retry-After') || '0'),
       }
 
       return new ParlantRateLimitError(
@@ -350,7 +335,7 @@ export class ParlantErrorHandler {
       retryable: error.retryable,
       timestamp: error.timestamp,
       ...error.details,
-      ...context
+      ...context,
     }
 
     // Use different log levels based on error severity
@@ -361,12 +346,12 @@ export class ParlantErrorHandler {
     } else if (error instanceof ParlantRateLimitError) {
       logger.warn('Rate limit exceeded', {
         ...logContext,
-        rateLimitInfo: error.rateLimitInfo
+        rateLimitInfo: error.rateLimitInfo,
       })
     } else if (error instanceof ParlantValidationError) {
       logger.info('Validation error occurred', {
         ...logContext,
-        validationErrors: error.validationErrors
+        validationErrors: error.validationErrors,
       })
     } else if (error instanceof ParlantAuthError) {
       logger.warn('Authentication error occurred', logContext)
@@ -396,9 +381,11 @@ export class ParlantErrorHandler {
     }
 
     // Retry network and server errors
-    return error instanceof ParlantNetworkError ||
-           error instanceof ParlantServerError ||
-           error instanceof ParlantTimeoutError
+    return (
+      error instanceof ParlantNetworkError ||
+      error instanceof ParlantServerError ||
+      error instanceof ParlantTimeoutError
+    )
   }
 
   /**
@@ -411,7 +398,7 @@ export class ParlantErrorHandler {
     }
 
     // Exponential backoff for other retryable errors
-    return Math.min(baseDelay * Math.pow(2, attemptNumber - 1), 30000) // Max 30 seconds
+    return Math.min(baseDelay * 2 ** (attemptNumber - 1), 30000) // Max 30 seconds
   }
 
   /**
@@ -424,7 +411,7 @@ export class ParlantErrorHandler {
       code: error.code,
       details: error.details,
       requestId: error.requestId,
-      timestamp: error.timestamp
+      timestamp: error.timestamp,
     }
   }
 }
@@ -463,9 +450,7 @@ export function getRequestId(error: any): string | undefined {
  */
 export function formatErrorForUser(error: ParlantError): string {
   if (error instanceof ParlantValidationError) {
-    const fieldErrors = error.validationErrors
-      .map(ve => `${ve.field}: ${ve.message}`)
-      .join(', ')
+    const fieldErrors = error.validationErrors.map((ve) => `${ve.field}: ${ve.message}`).join(', ')
     return fieldErrors || error.message
   }
 

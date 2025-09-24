@@ -14,8 +14,8 @@
  * @version 2.0.0
  */
 
-import { createLogger } from '../utils/logger'
 import { EventEmitter } from 'events'
+import { createLogger } from '../utils/logger'
 
 const logger = createLogger('LoadBalancer')
 
@@ -208,13 +208,15 @@ export class AdvancedLoadBalancer extends EventEmitter {
   /**
    * Register a new instance with the load balancer
    */
-  registerInstance(instance: Omit<LoadBalancerInstance, 'healthy' | 'available' | 'activeConnections' | 'metrics'>): void {
+  registerInstance(
+    instance: Omit<LoadBalancerInstance, 'healthy' | 'available' | 'activeConnections' | 'metrics'>
+  ): void {
     const fullInstance: LoadBalancerInstance = {
       ...instance,
       healthy: true,
       available: true,
       activeConnections: 0,
-      metrics: this.createInitialMetrics()
+      metrics: this.createInitialMetrics(),
     }
 
     // Initialize circuit breaker if enabled
@@ -222,7 +224,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
       fullInstance.circuitBreaker = {
         state: 'closed',
         failures: 0,
-        halfOpenRequests: 0
+        halfOpenRequests: 0,
       }
     }
 
@@ -232,7 +234,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
       instanceId: instance.id,
       endpoint: instance.endpoint,
       weight: instance.weight,
-      region: instance.region
+      region: instance.region,
     })
 
     this.emit('instanceRegistered', fullInstance)
@@ -265,9 +267,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
   /**
    * Select the best instance for a request
    */
-  async selectInstance(
-    requestContext: RequestContext = {}
-  ): Promise<LoadBalancingDecision> {
+  async selectInstance(requestContext: RequestContext = {}): Promise<LoadBalancingDecision> {
     const startTime = Date.now()
 
     try {
@@ -320,12 +320,11 @@ export class AdvancedLoadBalancer extends EventEmitter {
 
       this.recordSelection(decision)
       return decision
-
     } catch (error) {
       logger.error('Instance selection failed', {
         error: error.message,
         availableInstances: this.getAvailableInstances().length,
-        totalInstances: this.instances.size
+        totalInstances: this.instances.size,
       })
 
       throw error
@@ -346,7 +345,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
     instance.metrics = {
       ...instance.metrics,
       ...metrics,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     }
 
     // Update performance-based weights if enabled
@@ -400,14 +399,14 @@ export class AdvancedLoadBalancer extends EventEmitter {
         instanceId,
         healthy,
         reason,
-        endpoint: instance.endpoint
+        endpoint: instance.endpoint,
       })
 
       this.emit('instanceHealthChanged', {
         instanceId,
         healthy,
         reason,
-        instance
+        instance,
       })
     }
 
@@ -455,7 +454,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
     }
 
     // Wait for any ongoing operations to complete
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     this.emit('shutdown')
     logger.info('Load balancer shutdown complete')
@@ -470,7 +469,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
       strategy: this.config.strategy,
       sessionAffinity: this.config.sessionAffinity.enabled,
       healthCheck: this.config.healthCheck.enabled,
-      performanceWeighting: this.config.monitoring.performanceWeightingEnabled
+      performanceWeighting: this.config.monitoring.performanceWeightingEnabled,
     })
 
     // Start health checking if enabled
@@ -497,15 +496,15 @@ export class AdvancedLoadBalancer extends EventEmitter {
 
   private getAvailableInstances(): LoadBalancerInstance[] {
     return Array.from(this.instances.values())
-      .filter(instance => instance.healthy && instance.available)
-      .filter(instance => {
+      .filter((instance) => instance.healthy && instance.available)
+      .filter((instance) => {
         // Check circuit breaker state
         if (instance.circuitBreaker) {
           return this.isCircuitBreakerAllowingRequests(instance.circuitBreaker)
         }
         return true
       })
-      .filter(instance => {
+      .filter((instance) => {
         // Check connection limits
         return instance.activeConnections < this.config.connections.maxConnectionsPerInstance
       })
@@ -598,7 +597,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
 
     // Prefer instances in the same region
     const sameRegionInstances = instances.filter(
-      instance => instance.region === requestContext.region
+      (instance) => instance.region === requestContext.region
     )
 
     if (sameRegionInstances.length > 0) {
@@ -608,7 +607,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
     // Fall back to latency-based selection if geographic data is available
     if (requestContext.latitude && requestContext.longitude) {
       const sortedByDistance = instances
-        .filter(instance => instance.geographic)
+        .filter((instance) => instance.geographic)
         .sort((a, b) => {
           const distanceA = this.calculateDistance(
             requestContext.latitude!,
@@ -638,9 +637,12 @@ export class AdvancedLoadBalancer extends EventEmitter {
     const dLat = this.toRadians(lat2 - lat1)
     const dLon = this.toRadians(lon2 - lon1)
 
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.toRadians(lat1)) *
+        Math.cos(this.toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2)
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     return R * c
@@ -659,7 +661,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
       return null
     }
 
-    const instance = availableInstances.find(inst => inst.id === instanceId)
+    const instance = availableInstances.find((inst) => inst.id === instanceId)
     return instance || null
   }
 
@@ -684,14 +686,14 @@ export class AdvancedLoadBalancer extends EventEmitter {
     return {
       instance,
       reason,
-      alternatives: alternatives.filter(alt => alt.id !== instance.id),
+      alternatives: alternatives.filter((alt) => alt.id !== instance.id),
       sessionId,
       metrics: {
         selectionTimeMs: Date.now() - startTime,
         totalInstances: this.instances.size,
         healthyInstances: alternatives.length,
-        weight: instance.weight
-      }
+        weight: instance.weight,
+      },
     }
   }
 
@@ -717,17 +719,23 @@ export class AdvancedLoadBalancer extends EventEmitter {
     const errorRate = metrics.errorRate || instance.metrics.errorRate
 
     // Check for failures
-    if (errorRate > 0.1) { // 10% error rate threshold
+    if (errorRate > 0.1) {
+      // 10% error rate threshold
       breaker.failures++
       breaker.lastFailureTime = new Date()
 
-      if (breaker.state === 'closed' && breaker.failures >= this.config.circuitBreaker.failureThreshold) {
+      if (
+        breaker.state === 'closed' &&
+        breaker.failures >= this.config.circuitBreaker.failureThreshold
+      ) {
         breaker.state = 'open'
-        breaker.nextAttemptTime = new Date(Date.now() + this.config.circuitBreaker.recoveryTimeoutMs)
+        breaker.nextAttemptTime = new Date(
+          Date.now() + this.config.circuitBreaker.recoveryTimeoutMs
+        )
 
         logger.warn('Circuit breaker opened', {
           instanceId: instance.id,
-          failures: breaker.failures
+          failures: breaker.failures,
         })
 
         this.emit('circuitBreakerOpened', { instanceId: instance.id, instance })
@@ -784,11 +792,10 @@ export class AdvancedLoadBalancer extends EventEmitter {
         if (instance.healthy !== isHealthy) {
           this.setInstanceHealth(instance.id, isHealthy, 'health-check')
         }
-
       } catch (error) {
         logger.error('Health check failed', {
           instanceId: instance.id,
-          error: error.message
+          error: error.message,
         })
 
         this.setInstanceHealth(instance.id, false, `health-check-error: ${error.message}`)
@@ -804,7 +811,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
 
     this.emit('metricsCollected', {
       timestamp: new Date(),
-      metrics
+      metrics,
     })
   }
 
@@ -818,7 +825,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
 
     logger.debug('Cleanup completed', {
       totalInstances: this.instances.size,
-      activeSessions: this.sessionMap.size
+      activeSessions: this.sessionMap.size,
     })
   }
 
@@ -834,7 +841,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
       bytesPerSecond: 0,
       errorRate: 0,
       timeoutRate: 0,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     }
   }
 }
@@ -895,11 +902,12 @@ class MetricsCollector {
     instances: Map<string, LoadBalancerInstance>,
     sessionMap: Map<string, string>
   ): LoadBalancerMetrics {
-    const healthyInstances = Array.from(instances.values()).filter(inst => inst.healthy).length
+    const healthyInstances = Array.from(instances.values()).filter((inst) => inst.healthy).length
 
-    const averageSelectionTime = this.selectionTimes.length > 0
-      ? this.selectionTimes.reduce((sum, time) => sum + time, 0) / this.selectionTimes.length
-      : 0
+    const averageSelectionTime =
+      this.selectionTimes.length > 0
+        ? this.selectionTimes.reduce((sum, time) => sum + time, 0) / this.selectionTimes.length
+        : 0
 
     const requestDistribution: Record<string, number> = {}
     for (const [instanceId, count] of this.requestDistribution.entries()) {
@@ -912,14 +920,20 @@ class MetricsCollector {
 
     // Calculate overall performance metrics
     const allInstances = Array.from(instances.values())
-    const overallLatency = allInstances.length > 0
-      ? allInstances.reduce((sum, inst) => sum + inst.metrics.averageLatencyMs, 0) / allInstances.length
-      : 0
+    const overallLatency =
+      allInstances.length > 0
+        ? allInstances.reduce((sum, inst) => sum + inst.metrics.averageLatencyMs, 0) /
+          allInstances.length
+        : 0
 
-    const overallThroughput = allInstances.reduce((sum, inst) => sum + inst.metrics.requestsPerSecond, 0)
-    const overallErrorRate = allInstances.length > 0
-      ? allInstances.reduce((sum, inst) => sum + inst.metrics.errorRate, 0) / allInstances.length
-      : 0
+    const overallThroughput = allInstances.reduce(
+      (sum, inst) => sum + inst.metrics.requestsPerSecond,
+      0
+    )
+    const overallErrorRate =
+      allInstances.length > 0
+        ? allInstances.reduce((sum, inst) => sum + inst.metrics.errorRate, 0) / allInstances.length
+        : 0
 
     return {
       totalRequests: this.totalSelections,
@@ -933,7 +947,7 @@ class MetricsCollector {
       sessionAffinityHitRate,
       overallLatency,
       overallThroughput,
-      overallErrorRate
+      overallErrorRate,
     }
   }
 
@@ -965,7 +979,7 @@ class HealthChecker {
       logger.debug('Health check failed', {
         instanceId: instance.id,
         endpoint: instance.endpoint,
-        error: error.message
+        error: error.message,
       })
       return false
     }
@@ -1030,14 +1044,14 @@ export const DEFAULT_LOAD_BALANCER_CONFIG: LoadBalancerConfig = {
     timeoutMs: 5000, // 5 seconds
     failureThreshold: 3,
     recoveryThreshold: 2,
-    endpoint: '/health'
+    endpoint: '/health',
   },
 
   sessionAffinity: {
     enabled: false,
     strategy: 'cookie',
     ttlSeconds: 3600, // 1 hour
-    cookieName: 'lb-session'
+    cookieName: 'lb-session',
   },
 
   monitoring: {
@@ -1046,21 +1060,21 @@ export const DEFAULT_LOAD_BALANCER_CONFIG: LoadBalancerConfig = {
     performanceWeightingEnabled: true,
     latencyWeightFactor: 0.5,
     throughputWeightFactor: 0.3,
-    errorRateWeightFactor: 2.0
+    errorRateWeightFactor: 2.0,
   },
 
   circuitBreaker: {
     enabled: true,
     failureThreshold: 5,
     recoveryTimeoutMs: 60000, // 1 minute
-    halfOpenMaxRequests: 3
+    halfOpenMaxRequests: 3,
   },
 
   geographic: {
     enabled: false,
     regions: ['us-east-1', 'us-west-2', 'eu-west-1'],
     latencyThresholdMs: 100,
-    preferLocalRegion: true
+    preferLocalRegion: true,
   },
 
   connections: {
@@ -1068,6 +1082,6 @@ export const DEFAULT_LOAD_BALANCER_CONFIG: LoadBalancerConfig = {
     connectionTimeoutMs: 30000, // 30 seconds
     keepAliveEnabled: true,
     retryAttempts: 3,
-    retryDelayMs: 1000
-  }
+    retryDelayMs: 1000,
+  },
 }

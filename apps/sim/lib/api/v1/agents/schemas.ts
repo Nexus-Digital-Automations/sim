@@ -28,41 +28,41 @@ export type SessionStatus = z.infer<typeof SessionStatusEnum>
  * Agent Creation Request Schema
  */
 export const CreateAgentRequestSchema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .min(1, 'Agent name is required')
     .max(255, 'Agent name must be 255 characters or less')
     .regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Agent name contains invalid characters'),
 
-  description: z.string()
-    .max(1000, 'Description must be 1000 characters or less')
-    .optional(),
+  description: z.string().max(1000, 'Description must be 1000 characters or less').optional(),
 
-  workspaceId: z.string()
-    .uuid('Invalid workspace ID format'),
+  workspaceId: z.string().uuid('Invalid workspace ID format'),
 
   // Behavior configuration
   compositionMode: CompositionModeEnum.default('fluid'),
-  systemPrompt: z.string()
-    .max(10000, 'System prompt must be 10000 characters or less')
-    .optional(),
+  systemPrompt: z.string().max(10000, 'System prompt must be 10000 characters or less').optional(),
 
   // AI Model configuration
-  modelProvider: z.string()
+  modelProvider: z
+    .string()
     .min(1, 'Model provider is required')
     .max(100, 'Model provider must be 100 characters or less')
     .default('openai'),
 
-  modelName: z.string()
+  modelName: z
+    .string()
     .min(1, 'Model name is required')
     .max(100, 'Model name must be 100 characters or less')
     .default('gpt-4'),
 
-  temperature: z.number()
+  temperature: z
+    .number()
     .min(0, 'Temperature must be between 0 and 100')
     .max(100, 'Temperature must be between 0 and 100')
     .default(70),
 
-  maxTokens: z.number()
+  maxTokens: z
+    .number()
     .min(1, 'Max tokens must be at least 1')
     .max(32000, 'Max tokens must be 32000 or less')
     .default(2000),
@@ -74,41 +74,42 @@ export type CreateAgentRequest = z.infer<typeof CreateAgentRequestSchema>
  * Agent Update Request Schema
  */
 export const UpdateAgentRequestSchema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .min(1, 'Agent name is required')
     .max(255, 'Agent name must be 255 characters or less')
     .regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Agent name contains invalid characters')
     .optional(),
 
-  description: z.string()
-    .max(1000, 'Description must be 1000 characters or less')
-    .optional(),
+  description: z.string().max(1000, 'Description must be 1000 characters or less').optional(),
 
   status: AgentStatusEnum.optional(),
 
   // Behavior configuration
   compositionMode: CompositionModeEnum.optional(),
-  systemPrompt: z.string()
-    .max(10000, 'System prompt must be 10000 characters or less')
-    .optional(),
+  systemPrompt: z.string().max(10000, 'System prompt must be 10000 characters or less').optional(),
 
   // AI Model configuration
-  modelProvider: z.string()
+  modelProvider: z
+    .string()
     .min(1, 'Model provider is required')
     .max(100, 'Model provider must be 100 characters or less')
     .optional(),
 
-  modelName: z.string()
+  modelName: z
+    .string()
     .min(1, 'Model name is required')
     .max(100, 'Model name must be 100 characters or less')
     .optional(),
 
-  temperature: z.number()
+  temperature: z
+    .number()
     .min(0, 'Temperature must be between 0 and 100')
     .max(100, 'Temperature must be between 0 and 100')
     .optional(),
 
-  maxTokens: z.number()
+  maxTokens: z
+    .number()
     .min(1, 'Max tokens must be at least 1')
     .max(32000, 'Max tokens must be 32000 or less')
     .optional(),
@@ -188,12 +189,8 @@ export type AgentListResponse = z.infer<typeof AgentListResponseSchema>
 export const CreateSessionRequestSchema = z.object({
   agentId: z.string().uuid('Invalid agent ID format'),
   mode: SessionModeEnum.default('auto'),
-  title: z.string()
-    .max(255, 'Title must be 255 characters or less')
-    .optional(),
-  customerId: z.string()
-    .max(255, 'Customer ID must be 255 characters or less')
-    .optional(),
+  title: z.string().max(255, 'Title must be 255 characters or less').optional(),
+  customerId: z.string().max(255, 'Customer ID must be 255 characters or less').optional(),
   metadata: z.record(z.any()).default({}),
   variables: z.record(z.any()).default({}),
 })

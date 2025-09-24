@@ -6,7 +6,9 @@ import { writeFile } from 'fs/promises'
 import { join } from 'path'
 
 export default async function globalTeardown() {
-  console.log('🧹 Global Teardown: Cleaning up Universal Tool Adapter System Integration Testing Environment')
+  console.log(
+    '🧹 Global Teardown: Cleaning up Universal Tool Adapter System Integration Testing Environment'
+  )
 
   try {
     // Calculate test session duration
@@ -21,13 +23,13 @@ export default async function globalTeardown() {
         startTime: new Date(startTime).toISOString(),
         endTime: new Date(endTime).toISOString(),
         duration: duration,
-        durationFormatted: formatDuration(duration)
+        durationFormatted: formatDuration(duration),
       },
       environment: {
         nodeVersion: process.version,
         platform: process.platform,
         arch: process.arch,
-        finalMemoryUsage: process.memoryUsage()
+        finalMemoryUsage: process.memoryUsage(),
       },
       summary: {
         note: 'Universal Tool Adapter System not yet implemented - tests serve as specification and readiness check',
@@ -36,9 +38,9 @@ export default async function globalTeardown() {
           'Implement Universal Tool Adapter System foundation',
           'Create base adapter patterns and registry',
           'Implement individual tool adapters',
-          'Re-run integration tests for validation'
-        ]
-      }
+          'Re-run integration tests for validation',
+        ],
+      },
     }
 
     // Save session summary
@@ -49,7 +51,6 @@ export default async function globalTeardown() {
 
     console.log(`⏱️  Test session duration: ${sessionSummary.testSession.durationFormatted}`)
     console.log('✅ Global teardown complete')
-
   } catch (error) {
     console.error('❌ Global teardown failed:', error)
     // Don't throw - teardown failures shouldn't break tests
@@ -63,9 +64,9 @@ function formatDuration(milliseconds: number): string {
 
   if (hours > 0) {
     return `${hours}h ${minutes % 60}m ${seconds % 60}s`
-  } else if (minutes > 0) {
-    return `${minutes}m ${seconds % 60}s`
-  } else {
-    return `${seconds}s`
   }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds % 60}s`
+  }
+  return `${seconds}s`
 }

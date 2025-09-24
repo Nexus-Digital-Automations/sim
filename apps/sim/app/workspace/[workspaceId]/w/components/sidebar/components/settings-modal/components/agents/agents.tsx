@@ -1,19 +1,18 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
-import { Bot, Plus, Search, Loader2, AlertCircle, Settings, Trash2, Play, Pause } from 'lucide-react'
-import { useParams } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
+import { useEffect, useMemo, useState } from 'react'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+  AlertCircle,
+  Bot,
+  Loader2,
+  Pause,
+  Play,
+  Plus,
+  Search,
+  Settings,
+  Trash2,
+} from 'lucide-react'
+import { useParams } from 'next/navigation'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,12 +23,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { CreateAgentModal } from './create-agent-modal'
-import { AgentConfigurationPanel } from './agent-configuration-panel'
-import { useAgentManagementStore } from '@/stores/agents'
-import type { ParlantAgent } from '@/stores/agents/types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { createLogger } from '@/lib/logs/console/logger'
 import { useUserPermissionsContext } from '@/app/workspace/[workspaceId]/providers/workspace-permissions-provider'
+import { useAgentManagementStore } from '@/stores/agents'
+import type { ParlantAgent } from '@/stores/agents/types'
+import { AgentConfigurationPanel } from './agent-configuration-panel'
+import { CreateAgentModal } from './create-agent-modal'
 
 const logger = createLogger('AgentsManagement')
 
@@ -38,10 +42,14 @@ interface AgentsProps {
 }
 
 const STATUS_COLORS = {
-  active: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800',
-  inactive: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800',
-  error: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
-  training: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
+  active:
+    'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800',
+  inactive:
+    'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800',
+  error:
+    'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
+  training:
+    'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
 } as const
 
 const STATUS_ICONS = {
@@ -51,7 +59,13 @@ const STATUS_ICONS = {
   training: Loader2,
 } as const
 
-function AgentCard({ agent, onEdit, onDelete, onToggleStatus, canEdit }: {
+function AgentCard({
+  agent,
+  onEdit,
+  onDelete,
+  onToggleStatus,
+  canEdit,
+}: {
   agent: ParlantAgent
   onEdit: (agent: ParlantAgent) => void
   onDelete: (agent: ParlantAgent) => void
@@ -70,17 +84,14 @@ function AgentCard({ agent, onEdit, onDelete, onToggleStatus, canEdit }: {
             </div>
             <div className='min-w-0 flex-1'>
               <CardTitle className='truncate text-base'>{agent.name}</CardTitle>
-              <CardDescription className='mt-1 text-sm'>
-                {agent.description}
-              </CardDescription>
+              <CardDescription className='mt-1 text-sm'>{agent.description}</CardDescription>
             </div>
           </div>
           <div className='flex items-center gap-1'>
-            <Badge
-              variant='outline'
-              className={`text-xs ${STATUS_COLORS[agent.status]}`}
-            >
-              <StatusIcon className={`mr-1 h-3 w-3 ${agent.status === 'training' ? 'animate-spin' : ''}`} />
+            <Badge variant='outline' className={`text-xs ${STATUS_COLORS[agent.status]}`}>
+              <StatusIcon
+                className={`mr-1 h-3 w-3 ${agent.status === 'training' ? 'animate-spin' : ''}`}
+              />
               {agent.status}
             </Badge>
           </div>
@@ -108,7 +119,8 @@ function AgentCard({ agent, onEdit, onDelete, onToggleStatus, canEdit }: {
           {/* Last active */}
           {agent.lastActiveAt && (
             <div className='text-muted-foreground text-xs'>
-              Last active: {new Date(agent.lastActiveAt).toLocaleDateString('en-US', {
+              Last active:{' '}
+              {new Date(agent.lastActiveAt).toLocaleDateString('en-US', {
                 month: 'short',
                 day: 'numeric',
                 hour: 'numeric',
@@ -123,7 +135,7 @@ function AgentCard({ agent, onEdit, onDelete, onToggleStatus, canEdit }: {
               variant='outline'
               size='sm'
               onClick={() => onEdit(agent)}
-              className='flex-1 h-8'
+              className='h-8 flex-1'
               disabled={!canEdit}
             >
               <Settings className='mr-2 h-4 w-4' />
@@ -224,7 +236,7 @@ export function Agents({ onOpenChange }: AgentsProps) {
   // Load agents on mount
   useEffect(() => {
     if (workspaceId) {
-      loadAgents(workspaceId).catch(error => {
+      loadAgents(workspaceId).catch((error) => {
         logger.error('Failed to load agents on mount:', error)
       })
     }
@@ -237,10 +249,11 @@ export function Agents({ onOpenChange }: AgentsProps) {
     }
 
     const term = searchTerm.toLowerCase()
-    return agents.filter(agent =>
-      agent.name.toLowerCase().includes(term) ||
-      agent.description.toLowerCase().includes(term) ||
-      agent.status.toLowerCase().includes(term)
+    return agents.filter(
+      (agent) =>
+        agent.name.toLowerCase().includes(term) ||
+        agent.description.toLowerCase().includes(term) ||
+        agent.status.toLowerCase().includes(term)
     )
   }, [agents, searchTerm])
 
@@ -272,7 +285,7 @@ export function Agents({ onOpenChange }: AgentsProps) {
       logger.info('Agent status updated:', {
         agentId: agent.id,
         name: agent.name,
-        newStatus
+        newStatus,
       })
     } catch (error) {
       logger.error('Failed to update agent status:', error)
@@ -398,26 +411,20 @@ export function Agents({ onOpenChange }: AgentsProps) {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        open={!!deleteConfirmAgent}
-        onOpenChange={() => setDeleteConfirmAgent(null)}
-      >
+      <AlertDialog open={!!deleteConfirmAgent} onOpenChange={() => setDeleteConfirmAgent(null)}>
         <AlertDialogContent className='rounded-[10px] sm:max-w-md'>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Agent</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete{' '}
-              <span className='font-semibold'>{deleteConfirmAgent?.name}</span>? This
-              will permanently remove the agent and all its configurations, guidelines,
-              and journeys. This action cannot be undone.
+              <span className='font-semibold'>{deleteConfirmAgent?.name}</span>? This will
+              permanently remove the agent and all its configurations, guidelines, and journeys.
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter className='flex'>
-            <AlertDialogCancel
-              className='h-9 rounded-[8px]'
-              disabled={isDeletingAgent}
-            >
+            <AlertDialogCancel className='h-9 rounded-[8px]' disabled={isDeletingAgent}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

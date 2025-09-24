@@ -6,7 +6,9 @@ import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
 export default async function globalSetup() {
-  console.log('🔧 Global Setup: Preparing Universal Tool Adapter System Integration Testing Environment')
+  console.log(
+    '🔧 Global Setup: Preparing Universal Tool Adapter System Integration Testing Environment'
+  )
 
   try {
     // Create test reports directory
@@ -23,14 +25,14 @@ export default async function globalSetup() {
           nodeVersion: process.version,
           platform: process.platform,
           arch: process.arch,
-          memoryUsage: process.memoryUsage()
+          memoryUsage: process.memoryUsage(),
         },
         configuration: {
           maxTimeout: 300000,
           maxWorkers: 1,
-          testEnvironment: 'node'
-        }
-      }
+          testEnvironment: 'node',
+        },
+      },
     }
 
     const metadataPath = join(reportsDir, 'test-session-metadata.json')
@@ -39,7 +41,7 @@ export default async function globalSetup() {
 
     // Environment validation
     const requiredEnvVars = []
-    const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar])
+    const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar])
 
     if (missingEnvVars.length > 0) {
       console.warn(`⚠️  Missing environment variables: ${missingEnvVars.join(', ')}`)
@@ -50,7 +52,6 @@ export default async function globalSetup() {
     global.testStartTime = Date.now()
 
     console.log('✅ Global setup complete')
-
   } catch (error) {
     console.error('❌ Global setup failed:', error)
     throw error

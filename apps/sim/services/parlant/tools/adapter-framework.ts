@@ -15,7 +15,7 @@
  */
 
 import type { BlockConfig } from '@/blocks/types'
-import type { ToolConfig, ToolResponse } from '@/tools/types'
+import type { ToolResponse } from '@/tools/types'
 
 // ================================
 // Core Adapter Types
@@ -201,13 +201,13 @@ export abstract class UniversalToolAdapter {
           errorDetails: {
             code: 'PARAMETER_VALIDATION_ERROR',
             message: 'Invalid parameters provided',
-            context: { errors: validationResult.errors, executionId }
+            context: { errors: validationResult.errors, executionId },
           },
           timing: {
             startTime,
             endTime: new Date().toISOString(),
-            duration: Date.now() - new Date(startTime).getTime()
-          }
+            duration: Date.now() - new Date(startTime).getTime(),
+          },
         }
       }
 
@@ -227,11 +227,10 @@ export abstract class UniversalToolAdapter {
         timing: {
           startTime,
           endTime,
-          duration: Date.now() - new Date(startTime).getTime()
+          duration: Date.now() - new Date(startTime).getTime(),
         },
-        usage: await this.calculateUsage(simResult, context)
+        usage: await this.calculateUsage(simResult, context),
       }
-
     } catch (error) {
       const endTime = new Date().toISOString()
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
@@ -243,13 +242,13 @@ export abstract class UniversalToolAdapter {
           code: 'TOOL_EXECUTION_ERROR',
           message: errorMessage,
           stack: error instanceof Error ? error.stack : undefined,
-          context: { executionId, toolId: this.blockConfig.type }
+          context: { executionId, toolId: this.blockConfig.type },
         },
         timing: {
           startTime,
           endTime,
-          duration: Date.now() - new Date(startTime).getTime()
-        }
+          duration: Date.now() - new Date(startTime).getTime(),
+        },
       }
     }
   }
@@ -327,13 +326,13 @@ export abstract class UniversalToolAdapter {
       // Constraint validation
       if (param.constraints) {
         const constraintErrors = this.validateParameterConstraints(value, param.constraints)
-        errors.push(...constraintErrors.map(err => `Parameter '${param.name}': ${err}`))
+        errors.push(...constraintErrors.map((err) => `Parameter '${param.name}': ${err}`))
       }
     }
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   }
 
@@ -345,7 +344,7 @@ export abstract class UniversalToolAdapter {
       case 'string':
         return typeof value === 'string'
       case 'number':
-        return typeof value === 'number' && !isNaN(value)
+        return typeof value === 'number' && !Number.isNaN(value)
       case 'boolean':
         return typeof value === 'boolean'
       case 'array':
@@ -395,7 +394,7 @@ export abstract class UniversalToolAdapter {
     // Base implementation - can be overridden by specific adapters
     return {
       apiCallsCount: 1,
-      computeUnits: 1
+      computeUnits: 1,
     }
   }
 
@@ -428,7 +427,9 @@ export abstract class UniversalToolAdapter {
     // Add category-specific hints
     switch (blockConfig.category) {
       case 'tools':
-        hints.push('This tool integrates with external services and may require API keys or authentication')
+        hints.push(
+          'This tool integrates with external services and may require API keys or authentication'
+        )
         break
       case 'triggers':
         hints.push('This tool can be used to trigger workflows based on external events')
@@ -436,14 +437,14 @@ export abstract class UniversalToolAdapter {
     }
 
     // Add OAuth hints
-    const requiresOAuth = blockConfig.subBlocks.some(sub => sub.type === 'oauth-input')
+    const requiresOAuth = blockConfig.subBlocks.some((sub) => sub.type === 'oauth-input')
     if (requiresOAuth) {
       hints.push('OAuth authentication required - ensure credentials are configured')
     }
 
     // Add API key hints
-    const requiresApiKey = blockConfig.subBlocks.some(sub =>
-      sub.password && (sub.id.includes('key') || sub.id.includes('token'))
+    const requiresApiKey = blockConfig.subBlocks.some(
+      (sub) => sub.password && (sub.id.includes('key') || sub.id.includes('token'))
     )
     if (requiresApiKey) {
       hints.push('API key required - check the service documentation for key generation')
@@ -459,12 +460,24 @@ export abstract class UniversalToolAdapter {
     const type = blockConfig.type.toLowerCase()
 
     // Communication tools
-    if (['slack', 'discord', 'telegram', 'whatsapp', 'sms', 'mail', 'gmail', 'outlook'].includes(type)) {
+    if (
+      ['slack', 'discord', 'telegram', 'whatsapp', 'sms', 'mail', 'gmail', 'outlook'].includes(type)
+    ) {
       return 'communication'
     }
 
     // Productivity tools
-    if (['notion', 'airtable', 'google_sheets', 'microsoft_excel', 'jira', 'linear', 'github'].includes(type)) {
+    if (
+      [
+        'notion',
+        'airtable',
+        'google_sheets',
+        'microsoft_excel',
+        'jira',
+        'linear',
+        'github',
+      ].includes(type)
+    ) {
       return 'productivity'
     }
 

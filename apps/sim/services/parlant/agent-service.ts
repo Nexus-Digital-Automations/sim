@@ -6,17 +6,16 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
+import { type ParlantClient, parlantClient } from './client'
 import type {
   Agent,
   AgentCreateRequest,
-  AgentUpdateRequest,
   AgentListQuery,
+  AgentUpdateRequest,
   ApiResponse,
+  AuthContext,
   PaginatedResponse,
-  AuthContext
 } from './types'
-import { ParlantClient } from './client'
-import { parlantClient } from './client'
 
 const logger = createLogger('AgentService')
 
@@ -42,28 +41,21 @@ export class AgentService {
   /**
    * Create a new agent
    */
-  async createAgent(
-    request: AgentCreateRequest,
-    auth: AuthContext
-  ): Promise<ApiResponse<Agent>> {
+  async createAgent(request: AgentCreateRequest, auth: AuthContext): Promise<ApiResponse<Agent>> {
     logger.info('Creating agent', {
       name: request.name,
       workspaceId: request.workspace_id,
-      userId: auth.user_id
+      userId: auth.user_id,
     })
 
     try {
-      const response = await this.client.post<Agent>(
-        '/agents',
-        request,
-        { auth }
-      )
+      const response = await this.client.post<Agent>('/agents', request, { auth })
 
       if (response.success && response.data) {
         logger.info('Agent created successfully', {
           agentId: response.data.id,
           name: response.data.name,
-          workspaceId: response.data.workspace_id
+          workspaceId: response.data.workspace_id,
         })
       }
 
@@ -71,12 +63,12 @@ export class AgentService {
       return {
         success: response.success,
         data: response.data!,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to create agent', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        request
+        request,
       })
       throw error
     }
@@ -85,34 +77,28 @@ export class AgentService {
   /**
    * Get an agent by ID
    */
-  async getAgent(
-    agentId: string,
-    auth: AuthContext
-  ): Promise<ApiResponse<Agent>> {
+  async getAgent(agentId: string, auth: AuthContext): Promise<ApiResponse<Agent>> {
     logger.debug('Getting agent', { agentId, userId: auth.user_id })
 
     try {
-      const response = await this.client.get<Agent>(
-        `/agents/${agentId}`,
-        { auth }
-      )
+      const response = await this.client.get<Agent>(`/agents/${agentId}`, { auth })
 
       if (response.success && response.data) {
         logger.debug('Agent retrieved successfully', {
           agentId: response.data.id,
-          name: response.data.name
+          name: response.data.name,
         })
       }
 
       return {
         success: response.success,
         data: response.data!,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to get agent', {
         agentId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -129,34 +115,30 @@ export class AgentService {
     logger.info('Updating agent', {
       agentId,
       updates: Object.keys(updates),
-      userId: auth.user_id
+      userId: auth.user_id,
     })
 
     try {
-      const response = await this.client.patch<Agent>(
-        `/agents/${agentId}`,
-        updates,
-        { auth }
-      )
+      const response = await this.client.patch<Agent>(`/agents/${agentId}`, updates, { auth })
 
       if (response.success && response.data) {
         logger.info('Agent updated successfully', {
           agentId: response.data.id,
           name: response.data.name,
-          updatedFields: Object.keys(updates)
+          updatedFields: Object.keys(updates),
         })
       }
 
       return {
         success: response.success,
         data: response.data!,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to update agent', {
         agentId,
         updates,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -165,17 +147,11 @@ export class AgentService {
   /**
    * Delete an agent
    */
-  async deleteAgent(
-    agentId: string,
-    auth: AuthContext
-  ): Promise<ApiResponse<void>> {
+  async deleteAgent(agentId: string, auth: AuthContext): Promise<ApiResponse<void>> {
     logger.info('Deleting agent', { agentId, userId: auth.user_id })
 
     try {
-      const response = await this.client.delete<void>(
-        `/agents/${agentId}`,
-        { auth }
-      )
+      const response = await this.client.delete<void>(`/agents/${agentId}`, { auth })
 
       if (response.success) {
         logger.info('Agent deleted successfully', { agentId })
@@ -184,12 +160,12 @@ export class AgentService {
       return {
         success: response.success,
         data: undefined,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to delete agent', {
         agentId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -198,10 +174,7 @@ export class AgentService {
   /**
    * List agents with filtering and pagination
    */
-  async listAgents(
-    params: ListAgentsParams,
-    auth: AuthContext
-  ): Promise<PaginatedResponse<Agent>> {
+  async listAgents(params: ListAgentsParams, auth: AuthContext): Promise<PaginatedResponse<Agent>> {
     const {
       workspace_id,
       status,
@@ -209,7 +182,7 @@ export class AgentService {
       limit = 20,
       offset = 0,
       sortBy = 'created_at',
-      sortOrder = 'desc'
+      sortOrder = 'desc',
     } = params
 
     logger.debug('Listing agents', {
@@ -218,7 +191,7 @@ export class AgentService {
       search,
       limit,
       offset,
-      authUserId: auth.user_id
+      authUserId: auth.user_id,
     })
 
     try {
@@ -226,22 +199,19 @@ export class AgentService {
         limit: limit.toString(),
         offset: offset.toString(),
         sortBy,
-        sortOrder
+        sortOrder,
       })
 
       if (workspace_id) queryParams.set('workspace_id', workspace_id)
       if (status) queryParams.set('status', status)
       if (search) queryParams.set('search', search)
 
-      const response = await this.client.get<Agent[]>(
-        `/agents?${queryParams.toString()}`,
-        { auth }
-      )
+      const response = await this.client.get<Agent[]>(`/agents?${queryParams.toString()}`, { auth })
 
       if (response.success && response.data) {
         logger.debug('Agents listed successfully', {
           count: response.data.length,
-          workspace_id
+          workspace_id,
         })
 
         // Convert to paginated response format
@@ -253,8 +223,8 @@ export class AgentService {
             total: response.data.length, // This would come from headers in a real implementation
             limit,
             offset,
-            has_more: response.data.length === limit
-          }
+            has_more: response.data.length === limit,
+          },
         }
       }
 
@@ -266,13 +236,13 @@ export class AgentService {
           total: 0,
           limit,
           offset,
-          has_more: false
-        }
+          has_more: false,
+        },
       }
     } catch (error) {
       logger.error('Failed to list agents', {
         params,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -294,7 +264,7 @@ export class AgentService {
       workspaceId,
       limit,
       status,
-      userId: auth.user_id
+      userId: auth.user_id,
     })
 
     return this.listAgents(
@@ -305,7 +275,7 @@ export class AgentService {
         limit,
         offset: 0,
         sortBy: 'name',
-        sortOrder: 'asc'
+        sortOrder: 'asc',
       },
       auth
     )
@@ -322,7 +292,7 @@ export class AgentService {
     logger.info('Duplicating agent', {
       sourceAgentId: agentId,
       newName,
-      userId: auth.user_id
+      userId: auth.user_id,
     })
 
     try {
@@ -333,7 +303,7 @@ export class AgentService {
         return {
           success: false,
           data: undefined as any,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         }
       }
 
@@ -342,14 +312,16 @@ export class AgentService {
       // Create duplicate with modified name
       const duplicateRequest: AgentCreateRequest = {
         name: newName,
-        description: sourceAgent.description ? `Copy of ${sourceAgent.description}` : `Copy of ${sourceAgent.name}`,
+        description: sourceAgent.description
+          ? `Copy of ${sourceAgent.description}`
+          : `Copy of ${sourceAgent.name}`,
         workspace_id: sourceAgent.workspace_id,
-        guidelines: sourceAgent.guidelines?.map(g => ({
+        guidelines: sourceAgent.guidelines?.map((g) => ({
           condition: g.condition,
           action: g.action,
-          priority: g.priority
+          priority: g.priority,
         })),
-        config: sourceAgent.config
+        config: sourceAgent.config,
       }
 
       return this.createAgent(duplicateRequest, auth)
@@ -357,7 +329,7 @@ export class AgentService {
       logger.error('Failed to duplicate agent', {
         sourceAgentId: agentId,
         newName,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }

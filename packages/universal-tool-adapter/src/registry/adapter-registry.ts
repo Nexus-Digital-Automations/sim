@@ -8,28 +8,26 @@
  * @version 1.0.0
  */
 
+import { BaseAdapter } from '../core/base-adapter'
+import { AdapterError, ConfigurationError, RegistryError } from '../errors/adapter-errors'
 import type {
-  AdapterRegistryEntry,
-  ToolDiscoveryQuery,
-  DiscoveredTool,
   AdapterConfiguration,
-  SimToolDefinition,
-  AdapterPlugin,
-  ExtensionPoint,
   AdapterMigration,
-  VersionCompatibility
+  AdapterPlugin,
+  AdapterRegistryEntry,
+  ExtensionPoint,
+  SimToolDefinition,
+  VersionCompatibility,
 } from '../types/adapter-interfaces'
 import type {
   ParlantTool,
+  RecommendationContext,
   ToolDiscovery,
+  ToolRecommendation,
   ToolSearchQuery,
   ToolSearchResult,
-  RecommendationContext,
-  ToolRecommendation
 } from '../types/parlant-interfaces'
-import { BaseAdapter } from '../core/base-adapter'
 import { createLogger } from '../utils/logger'
-import { AdapterError, RegistryError, ConfigurationError } from '../errors/adapter-errors'
 
 const logger = createLogger('AdapterRegistry')
 
@@ -106,9 +104,11 @@ export class PluginManager {
 
     // Check dependencies
     if (plugin.dependencies) {
-      const missingDeps = plugin.dependencies.filter(dep => !this.plugins.has(dep))
+      const missingDeps = plugin.dependencies.filter((dep) => !this.plugins.has(dep))
       if (missingDeps.length > 0) {
-        throw new RegistryError(`Plugin ${plugin.name} has missing dependencies: ${missingDeps.join(', ')}`)
+        throw new RegistryError(
+          `Plugin ${plugin.name} has missing dependencies: ${missingDeps.join(', ')}`
+        )
       }
     }
 
@@ -140,7 +140,9 @@ export class PluginManager {
       .map(([name]) => name)
 
     if (dependents.length > 0) {
-      throw new RegistryError(`Cannot unregister plugin ${pluginName}: dependencies exist (${dependents.join(', ')})`)
+      throw new RegistryError(
+        `Cannot unregister plugin ${pluginName}: dependencies exist (${dependents.join(', ')})`
+      )
     }
 
     this.plugins.delete(pluginName)
@@ -167,11 +169,7 @@ export class PluginManager {
   /**
    * Execute plugin hooks for a specific extension point
    */
-  async executeHooks(
-    extensionPoint: string,
-    context: any,
-    data?: any
-  ): Promise<any> {
+  async executeHooks(extensionPoint: string, context: any, data?: any): Promise<any> {
     const results: any[] = []
 
     for (const plugin of this.plugins.values()) {
@@ -183,7 +181,9 @@ export class PluginManager {
             results.push(result)
           }
         } catch (error) {
-          logger.error(`Plugin hook failed: ${plugin.name}.${extensionPoint}`, { error: error.message })
+          logger.error(`Plugin hook failed: ${plugin.name}.${extensionPoint}`, {
+            error: error.message,
+          })
           // Continue with other plugins
         }
       }
@@ -197,11 +197,11 @@ export class PluginManager {
    */
   private getHookMethod(plugin: AdapterPlugin, extensionPoint: string): Function | undefined {
     const hookMap: Record<string, string> = {
-      'before_execution': 'onBeforeExecution',
-      'after_execution': 'onAfterExecution',
-      'parameter_mapping': 'onParameterMapping',
-      'result_formatting': 'onResultFormatting',
-      'error': 'onError'
+      before_execution: 'onBeforeExecution',
+      after_execution: 'onAfterExecution',
+      parameter_mapping: 'onParameterMapping',
+      result_formatting: 'onResultFormatting',
+      error: 'onError',
     }
 
     const methodName = hookMap[extensionPoint]
@@ -296,14 +296,15 @@ export class HealthMonitor {
       const healthy = await Promise.race([
         healthCheck(),
         new Promise<boolean>((_, reject) =>
-          setTimeout(() => reject(new Error('Health check timeout')),
-            this.config.healthCheckTimeout || 5000)
-        )
+          setTimeout(
+            () => reject(new Error('Health check timeout')),
+            this.config.healthCheckTimeout || 5000
+          )
+        ),
       ])
 
       this.recordHealthCheck(adapterId, healthy)
       return healthy
-
     } catch (error) {
       logger.warn(`Health check failed for adapter: ${adapterId}`, { error: error.message })
       this.recordHealthCheck(adapterId, false)
@@ -329,7 +330,9 @@ export class HealthMonitor {
   /**
    * Get health status for an adapter
    */
-  getHealthStatus(adapterId: string): { current: boolean; history: Array<{ timestamp: Date; healthy: boolean }> } | null {
+  getHealthStatus(
+    adapterId: string
+  ): { current: boolean; history: Array<{ timestamp: Date; healthy: boolean }> } | null {
     const history = this.healthHistory.get(adapterId)
     if (!history || history.length === 0) {
       return null
@@ -337,7 +340,7 @@ export class HealthMonitor {
 
     return {
       current: history[history.length - 1].healthy,
-      history: [...history]
+      history: [...history],
     }
   }
 
@@ -364,7 +367,7 @@ export class HealthMonitor {
       total,
       healthy,
       unhealthy: total - healthy,
-      healthyPercentage: total > 0 ? (healthy / total) * 100 : 100
+      healthyPercentage: total > 0 ? (healthy / total) * 100 : 100,
     }
   }
 
@@ -433,7 +436,9 @@ export class MigrationManager {
     adapterMigrations.push(migration)
     adapterMigrations.sort((a, b) => a.fromVersion.localeCompare(b.fromVersion))
 
-    logger.debug(`Migration registered for adapter: ${adapterId} (${migration.fromVersion} -> ${migration.toVersion})`)
+    logger.debug(
+      `Migration registered for adapter: ${adapterId} (${migration.fromVersion} -> ${migration.toVersion})`
+    )
   }
 
   /**
@@ -452,9 +457,11 @@ export class MigrationManager {
     let currentVersion = fromVersion
 
     while (currentVersion !== toVersion) {
-      const nextMigration = migrations.find(m => m.fromVersion === currentVersion)
+      const nextMigration = migrations.find((m) => m.fromVersion === currentVersion)
       if (!nextMigration) {
-        throw new RegistryError(`No migration path found from ${fromVersion} to ${toVersion} for adapter ${adapterId}`)
+        throw new RegistryError(
+          `No migration path found from ${fromVersion} to ${toVersion} for adapter ${adapterId}`
+        )
       }
 
       path.push(nextMigration)
@@ -475,7 +482,9 @@ export class MigrationManager {
     let migratedData = data
 
     for (const migration of migrationPath) {
-      logger.info(`Executing migration: ${adapterId} ${migration.fromVersion} -> ${migration.toVersion}`)
+      logger.info(
+        `Executing migration: ${adapterId} ${migration.fromVersion} -> ${migration.toVersion}`
+      )
 
       try {
         // Execute configuration migration if available
@@ -490,13 +499,17 @@ export class MigrationManager {
 
         // Validate migration result
         if (migration.validate && !migration.validate(migratedData)) {
-          throw new Error(`Migration validation failed: ${migration.fromVersion} -> ${migration.toVersion}`)
+          throw new Error(
+            `Migration validation failed: ${migration.fromVersion} -> ${migration.toVersion}`
+          )
         }
-
       } catch (error) {
-        logger.error(`Migration failed: ${adapterId} ${migration.fromVersion} -> ${migration.toVersion}`, {
-          error: error.message
-        })
+        logger.error(
+          `Migration failed: ${adapterId} ${migration.fromVersion} -> ${migration.toVersion}`,
+          {
+            error: error.message,
+          }
+        )
 
         // Attempt rollback if available
         if (migration.rollback) {
@@ -547,7 +560,7 @@ export class MigrationManager {
       parlantVersion: 'unknown', // Would be determined dynamically
       compatible,
       issues,
-      recommendations
+      recommendations,
     }
   }
 }
@@ -575,17 +588,14 @@ export class AdapterRegistry implements ToolDiscovery {
     logger.info('Adapter registry initialized', {
       pluginsEnabled: config.plugins.enabled,
       healthMonitoringEnabled: config.healthMonitoring.enabled,
-      cachingEnabled: config.caching.enabled
+      cachingEnabled: config.caching.enabled,
     })
   }
 
   /**
    * Register a new adapter with the registry
    */
-  async registerAdapter(
-    simTool: SimToolDefinition,
-    config: AdapterConfiguration
-  ): Promise<void> {
+  async registerAdapter(simTool: SimToolDefinition, config: AdapterConfiguration): Promise<void> {
     const adapterId = config.parlantId || `sim_${simTool.name}`
 
     logger.debug(`Registering adapter: ${adapterId}`)
@@ -605,19 +615,19 @@ export class AdapterRegistry implements ToolDiscovery {
         version: '1.0.0',
         source: 'sim',
         category: config.category || 'utility',
-        tags: config.tags || []
+        tags: config.tags || [],
       },
       statistics: {
         executionCount: 0,
         averageExecutionTimeMs: 0,
         successRate: 100,
-        errorCount: 0
+        errorCount: 0,
       },
       health: {
         status: 'healthy',
         lastCheckAt: new Date(),
-        issues: []
-      }
+        issues: [],
+      },
     }
 
     // Execute plugin hooks
@@ -721,12 +731,12 @@ export class AdapterRegistry implements ToolDiscovery {
     let adapters = Array.from(this.adapters.values())
 
     if (filter) {
-      adapters = adapters.filter(adapter => {
+      adapters = adapters.filter((adapter) => {
         if (filter.category && adapter.metadata.category !== filter.category) {
           return false
         }
 
-        if (filter.tags && !filter.tags.some(tag => adapter.metadata.tags.includes(tag))) {
+        if (filter.tags && !filter.tags.some((tag) => adapter.metadata.tags.includes(tag))) {
           return false
         }
 
@@ -734,7 +744,10 @@ export class AdapterRegistry implements ToolDiscovery {
           return false
         }
 
-        if (filter.healthy !== undefined && (adapter.health?.status === 'healthy') !== filter.healthy) {
+        if (
+          filter.healthy !== undefined &&
+          (adapter.health?.status === 'healthy') !== filter.healthy
+        ) {
           return false
         }
 
@@ -766,10 +779,9 @@ export class AdapterRegistry implements ToolDiscovery {
     stats.executionCount++
 
     // Update average execution time
-    stats.averageExecutionTimeMs = (
+    stats.averageExecutionTimeMs =
       (stats.averageExecutionTimeMs * (stats.executionCount - 1) + execution.durationMs) /
       stats.executionCount
-    )
 
     // Update success rate
     if (!execution.success) {
@@ -800,7 +812,7 @@ export class AdapterRegistry implements ToolDiscovery {
     const results: ToolSearchResult[] = []
     const adapters = this.listAdapters({
       category: query.category,
-      tags: query.tags
+      tags: query.tags,
     })
 
     for (const entry of adapters) {
@@ -814,11 +826,13 @@ export class AdapterRegistry implements ToolDiscovery {
           tool: adapter as ParlantTool,
           relevanceScore: relevance,
           matchedFields: [], // Would be populated based on matching logic
-          usageStats: entry.statistics ? {
-            executionCount: entry.statistics.executionCount,
-            successRate: entry.statistics.successRate,
-            lastUsed: entry.statistics.lastUsed?.toISOString() || ''
-          } : undefined
+          usageStats: entry.statistics
+            ? {
+                executionCount: entry.statistics.executionCount,
+                successRate: entry.statistics.successRate,
+                lastUsed: entry.statistics.lastUsed?.toISOString() || '',
+              }
+            : undefined,
         })
       }
     }
@@ -843,7 +857,7 @@ export class AdapterRegistry implements ToolDiscovery {
    * Get tool by ID
    */
   async getTool(id: string): Promise<ParlantTool | null> {
-    return await this.getAdapter(id) as ParlantTool | null
+    return (await this.getAdapter(id)) as ParlantTool | null
   }
 
   /**
@@ -882,7 +896,7 @@ export class AdapterRegistry implements ToolDiscovery {
           tool: adapter as ParlantTool,
           confidence: 0.8,
           reason: 'Popular tool with high usage',
-          category: 'popular'
+          category: 'popular',
         })
       }
     }
@@ -899,9 +913,9 @@ export class AdapterRegistry implements ToolDiscovery {
 
     for (const entry of adapters) {
       // Check if adapter has required capabilities
-      const hasCapabilities = capabilities.every(cap =>
-        entry.metadata.tags.includes(cap) ||
-        entry.config.naturalLanguage?.keywords?.includes(cap)
+      const hasCapabilities = capabilities.every(
+        (cap) =>
+          entry.metadata.tags.includes(cap) || entry.config.naturalLanguage?.keywords?.includes(cap)
       )
 
       if (hasCapabilities) {
@@ -974,7 +988,7 @@ export class AdapterRegistry implements ToolDiscovery {
       healthyAdapters: healthStats.healthy,
       categories,
       totalExecutions,
-      averageSuccessRate: adapters.length > 0 ? totalSuccessRate / adapters.length : 100
+      averageSuccessRate: adapters.length > 0 ? totalSuccessRate / adapters.length : 100,
     }
   }
 
@@ -991,7 +1005,7 @@ export class AdapterRegistry implements ToolDiscovery {
       const searchTerm = query.query.toLowerCase()
       if (entry.id.toLowerCase().includes(searchTerm)) score += 10
       if (entry.config.description?.toLowerCase().includes(searchTerm)) score += 5
-      if (entry.metadata.tags.some(tag => tag.toLowerCase().includes(searchTerm))) score += 3
+      if (entry.metadata.tags.some((tag) => tag.toLowerCase().includes(searchTerm))) score += 3
     }
 
     // Category matching
@@ -1001,7 +1015,7 @@ export class AdapterRegistry implements ToolDiscovery {
 
     // Tag matching
     if (query.tags) {
-      const matchedTags = query.tags.filter(tag => entry.metadata.tags.includes(tag))
+      const matchedTags = query.tags.filter((tag) => entry.metadata.tags.includes(tag))
       score += matchedTags.length * 5
     }
 
@@ -1054,7 +1068,7 @@ export class AdapterRegistry implements ToolDiscovery {
 
     this.cache.set(key, {
       data,
-      timestamp: new Date()
+      timestamp: new Date(),
     })
   }
 

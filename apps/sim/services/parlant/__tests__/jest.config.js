@@ -7,42 +7,40 @@ module.exports = {
   testEnvironment: 'node',
 
   // Test file patterns
-  testMatch: [
-    '<rootDir>/**/*.test.ts',
-    '<rootDir>/**/tool-adapter-*.ts'
-  ],
+  testMatch: ['<rootDir>/**/*.test.ts', '<rootDir>/**/tool-adapter-*.ts'],
 
   // File extensions to consider
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 
   // Transform TypeScript files
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      useESM: true,
-      tsconfig: {
-        compilerOptions: {
-          module: 'esnext',
-          moduleResolution: 'node',
-          allowSyntheticDefaultImports: true,
-          esModuleInterop: true,
-          experimentalDecorators: true,
-          emitDecoratorMetadata: true,
-        }
-      }
-    }]
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        useESM: true,
+        tsconfig: {
+          compilerOptions: {
+            module: 'esnext',
+            moduleResolution: 'node',
+            allowSyntheticDefaultImports: true,
+            esModuleInterop: true,
+            experimentalDecorators: true,
+            emitDecoratorMetadata: true,
+          },
+        },
+      },
+    ],
   },
 
   // Module name mapping for path aliases
   moduleNameMapping: {
     '^@/(.*)$': '<rootDir>/../../../../$1',
     '^@/services/parlant/(.*)$': '<rootDir>/../$1',
-    '^@/tools/(.*)$': '<rootDir>/../../../../tools/$1'
+    '^@/tools/(.*)$': '<rootDir>/../../../../tools/$1',
   },
 
   // Setup files
-  setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.ts'
-  ],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 
   // Test timeouts
   testTimeout: 300000, // 5 minutes for integration tests
@@ -53,7 +51,7 @@ module.exports = {
     '<rootDir>/../**/*.ts',
     '!<rootDir>/../**/*.test.ts',
     '!<rootDir>/../**/*.d.ts',
-    '!<rootDir>/../**/node_modules/**'
+    '!<rootDir>/../**/node_modules/**',
   ],
   coverageDirectory: '<rootDir>/../../../../coverage/tool-adapter-integration',
   coverageReporters: ['text', 'lcov', 'html', 'json'],
@@ -69,11 +67,7 @@ module.exports = {
   forceExit: true,
 
   // Ignore patterns
-  testPathIgnorePatterns: [
-    '<rootDir>/node_modules/',
-    '<rootDir>/dist/',
-    '<rootDir>/build/'
-  ],
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/dist/', '<rootDir>/build/'],
 
   // Error handling
   bail: 0, // Don't stop on first failure
@@ -82,14 +76,17 @@ module.exports = {
   // Reporter configuration
   reporters: [
     'default',
-    ['jest-junit', {
-      outputDirectory: '<rootDir>/../../../../test-reports',
-      outputName: 'tool-adapter-integration-results.xml',
-      suiteName: 'Universal Tool Adapter System Integration Tests',
-      classNameTemplate: '{classname}',
-      titleTemplate: '{title}',
-      ancestorSeparator: ' › ',
-      usePathForSuiteName: true
-    }]
-  ]
+    [
+      'jest-junit',
+      {
+        outputDirectory: '<rootDir>/../../../../test-reports',
+        outputName: 'tool-adapter-integration-results.xml',
+        suiteName: 'Universal Tool Adapter System Integration Tests',
+        classNameTemplate: '{classname}',
+        titleTemplate: '{title}',
+        ancestorSeparator: ' › ',
+        usePathForSuiteName: true,
+      },
+    ],
+  ],
 }

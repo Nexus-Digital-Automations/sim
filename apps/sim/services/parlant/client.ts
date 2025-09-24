@@ -14,22 +14,11 @@
  * server while providing resilience and observability.
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-import { createLogger } from '@/lib/logs/console/logger'
+import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import { env } from '@/lib/env'
-import {
-  ParlantApiError,
-  ParlantConnectionError,
-  ParlantTimeoutError,
-  ParlantErrorHandler,
-  extractRequestId
-} from './errors'
-import type {
-  ParlantClientConfig,
-  ParlantHealthStatus,
-  ApiResponse,
-  PaginatedResponse
-} from './types'
+import { createLogger } from '@/lib/logs/console/logger'
+import { extractRequestId, ParlantConnectionError, ParlantErrorHandler } from './errors'
+import type { ParlantClientConfig, ParlantHealthStatus } from './types'
 
 const logger = createLogger('ParlantClient')
 
@@ -55,9 +44,9 @@ export class ParlantClient {
       userAgent: `Sim-Parlant-Client/1.0.0`,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        Accept: 'application/json',
       },
-      ...config
+      ...config,
     }
 
     this.baseUrl = this.config.baseUrl
@@ -69,12 +58,12 @@ export class ParlantClient {
       timeout: this.config.timeout,
       headers: {
         'User-Agent': this.config.userAgent,
-        ...this.config.headers
+        ...this.config.headers,
       },
       ...(this.config.enableCompression && {
         decompress: true,
-        'Accept-Encoding': 'gzip, deflate, br'
-      })
+        'Accept-Encoding': 'gzip, deflate, br',
+      }),
     })
 
     // Set up request interceptors
@@ -97,7 +86,7 @@ export class ParlantClient {
 
         // Add authentication token if available
         if (this.config.authToken) {
-          config.headers['Authorization'] = `Bearer ${this.config.authToken}`
+          config.headers.Authorization = `Bearer ${this.config.authToken}`
         }
 
         // Add request ID for tracing
@@ -107,7 +96,7 @@ export class ParlantClient {
           method: config.method?.toUpperCase(),
           url: config.url,
           requestId,
-          headers: this.sanitizeHeaders(config.headers)
+          headers: this.sanitizeHeaders(config.headers),
         })
 
         return config
@@ -133,7 +122,7 @@ export class ParlantClient {
           url: response.config.url,
           status: response.status,
           duration,
-          requestId
+          requestId,
         })
 
         return response
@@ -149,7 +138,7 @@ export class ParlantClient {
           status: error.response?.status,
           duration,
           requestId,
-          message: error.message
+          message: error.message,
         })
 
         // Convert to proper ParlantError
@@ -172,7 +161,7 @@ export class ParlantClient {
    */
   private async requestWithRetry<T = any>(
     config: AxiosRequestConfig,
-    attempt: number = 0
+    attempt = 0
   ): Promise<AxiosResponse<T>> {
     try {
       return await this.axiosInstance.request<T>(config)
@@ -180,10 +169,7 @@ export class ParlantClient {
       const requestId = config.metadata?.requestId || extractRequestId(error)
 
       // Check if error is retryable and we haven't exceeded max attempts
-      if (
-        attempt < this.config.maxRetries! &&
-        ParlantErrorHandler.isRetryable(error as Error)
-      ) {
+      if (attempt < this.config.maxRetries! && ParlantErrorHandler.isRetryable(error as Error)) {
         const delay = ParlantErrorHandler.getRetryDelay(attempt, this.config.retryDelay)
 
         logger.warn(`Retrying Parlant request`, {
@@ -191,11 +177,11 @@ export class ParlantClient {
           maxRetries: this.config.maxRetries,
           delay,
           requestId,
-          error: (error as Error).message
+          error: (error as Error).message,
         })
 
         // Wait before retrying
-        await new Promise(resolve => setTimeout(resolve, delay))
+        await new Promise((resolve) => setTimeout(resolve, delay))
 
         // Retry the request
         return this.requestWithRetry<T>(config, attempt + 1)
@@ -218,7 +204,7 @@ export class ParlantClient {
       method: 'GET',
       url: endpoint,
       params,
-      ...config
+      ...config,
     })
 
     return response.data
@@ -227,16 +213,12 @@ export class ParlantClient {
   /**
    * Generic POST request
    */
-  async post<T = any>(
-    endpoint: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
+  async post<T = any>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.requestWithRetry<T>({
       method: 'POST',
       url: endpoint,
       data,
-      ...config
+      ...config,
     })
 
     return response.data
@@ -245,16 +227,12 @@ export class ParlantClient {
   /**
    * Generic PUT request
    */
-  async put<T = any>(
-    endpoint: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
+  async put<T = any>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.requestWithRetry<T>({
       method: 'PUT',
       url: endpoint,
       data,
-      ...config
+      ...config,
     })
 
     return response.data
@@ -263,14 +241,11 @@ export class ParlantClient {
   /**
    * Generic DELETE request
    */
-  async delete<T = any>(
-    endpoint: string,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
+  async delete<T = any>(endpoint: string, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.requestWithRetry<T>({
       method: 'DELETE',
       url: endpoint,
-      ...config
+      ...config,
     })
 
     return response.data
@@ -279,16 +254,12 @@ export class ParlantClient {
   /**
    * PATCH request
    */
-  async patch<T = any>(
-    endpoint: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
+  async patch<T = any>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.requestWithRetry<T>({
       method: 'PATCH',
       url: endpoint,
       data,
-      ...config
+      ...config,
     })
 
     return response.data
@@ -297,10 +268,10 @@ export class ParlantClient {
   /**
    * Health check endpoint
    */
-  async healthCheck(useCache: boolean = true): Promise<ParlantHealthStatus> {
+  async healthCheck(useCache = true): Promise<ParlantHealthStatus> {
     const now = new Date()
-    const cacheValid = this.lastHealthCheck &&
-      (now.getTime() - this.lastHealthCheck.getTime()) < 30000 // 30 seconds
+    const cacheValid =
+      this.lastHealthCheck && now.getTime() - this.lastHealthCheck.getTime() < 30000 // 30 seconds
 
     if (useCache && cacheValid && this.healthStatus) {
       return this.healthStatus
@@ -310,7 +281,7 @@ export class ParlantClient {
       logger.info(`Checking Parlant server health`)
 
       const health = await this.get<ParlantHealthStatus>('/health', undefined, {
-        timeout: 5000 // Shorter timeout for health checks
+        timeout: 5000, // Shorter timeout for health checks
       })
 
       this.healthStatus = health
@@ -318,7 +289,7 @@ export class ParlantClient {
 
       logger.info(`Parlant health check completed`, {
         status: health.status,
-        checks: Object.keys(health.checks).length
+        checks: Object.keys(health.checks).length,
       })
 
       return health
@@ -329,17 +300,17 @@ export class ParlantClient {
         checks: {
           server: {
             status: 'unhealthy' as const,
-            message: (error as Error).message
+            message: (error as Error).message,
           },
           database: {
             status: 'unknown' as const,
-            message: 'Could not check database status'
+            message: 'Could not check database status',
           },
           ai_providers: {
             openai: 'unknown' as const,
-            anthropic: 'unknown' as const
-          }
-        }
+            anthropic: 'unknown' as const,
+          },
+        },
       }
 
       this.healthStatus = healthError
@@ -369,7 +340,7 @@ export class ParlantClient {
   async longPoll<T = any>(
     endpoint: string,
     params?: Record<string, any>,
-    timeoutMs: number = 30000
+    timeoutMs = 30000
   ): Promise<T> {
     const response = await this.requestWithRetry<T>({
       method: 'GET',
@@ -377,9 +348,9 @@ export class ParlantClient {
       params: {
         ...params,
         wait_for_data: true,
-        timeout: timeoutMs
+        timeout: timeoutMs,
       },
-      timeout: timeoutMs + 5000 // Add buffer to axios timeout
+      timeout: timeoutMs + 5000, // Add buffer to axios timeout
     })
 
     return response.data
@@ -407,7 +378,7 @@ export class ParlantClient {
   updateConfig(config: Partial<ParlantClientConfig>): void {
     Object.assign(this.config, config)
     logger.info(`Client configuration updated`, {
-      updatedFields: Object.keys(config)
+      updatedFields: Object.keys(config),
     })
   }
 

@@ -1,31 +1,22 @@
-/**
- * @vitest-environment node
- *
- * Automated Compatibility Checks
- *
- * Comprehensive automated validation system to ensure ongoing compatibility
- * between Sim and Parlant database schemas, operations, and integrations.
- */
-
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { db } from '@sim/db'
-import { sql } from 'drizzle-orm'
 import {
-  // Sim tables
-  user,
-  workspace,
-  workflow,
+  db,
   knowledge,
   // Parlant tables
   parlantAgents,
-  parlantSessions,
   parlantEvents,
-  parlantTools,
-  parlantJourneys,
+  parlantGuidelines,
   parlantJourneyStates,
+  parlantJourneys,
+  parlantSessions,
+  parlantTools,
   parlantVariables,
-  parlantGuidelines
+  // Sim tables
+  user,
+  workflow,
+  workspace,
 } from '@sim/db'
+import { sql } from 'drizzle-orm'
+import { describe, expect, it } from 'vitest'
 
 /**
  * Automated Compatibility Validation System
@@ -58,7 +49,7 @@ class CompatibilityValidator {
         { name: 'parlant_journeys', table: parlantJourneys },
         { name: 'parlant_journey_states', table: parlantJourneyStates },
         { name: 'parlant_variables', table: parlantVariables },
-        { name: 'parlant_guidelines', table: parlantGuidelines }
+        { name: 'parlant_guidelines', table: parlantGuidelines },
       ]
 
       for (const { name, table } of tableChecks) {
@@ -115,7 +106,7 @@ class CompatibilityValidator {
       return {
         isCompatible: issues.length === 0,
         issues,
-        warnings
+        warnings,
       }
     } catch (error) {
       issues.push(`Schema validation failed: ${error.message}`)
@@ -178,7 +169,7 @@ class CompatibilityValidator {
       return {
         isCompatible: issues.length === 0,
         issues,
-        typeMapping
+        typeMapping,
       }
     } catch (error) {
       issues.push(`Data type validation failed: ${error.message}`)
@@ -206,28 +197,34 @@ class CompatibilityValidator {
           // This would need actual Sim table operations in a real test
           // For now, we'll test if transactions work at all with Parlant tables
 
-          const agent = await tx.insert(parlantAgents).values({
-            workspaceId: testWorkspaceId,
-            name: 'Compatibility Test Agent',
-            displayName: 'Compatibility Test Agent',
-            description: 'Testing transaction compatibility',
-            systemPrompt: 'Test agent for compatibility',
-            agentType: 'customer_support',
-            enabled: true,
-            isPublic: false,
-            model: 'gpt-4',
-            maxTokens: 1000,
-            temperature: 0.7,
-            topP: 0.9
-          }).returning()
+          const agent = await tx
+            .insert(parlantAgents)
+            .values({
+              workspaceId: testWorkspaceId,
+              name: 'Compatibility Test Agent',
+              displayName: 'Compatibility Test Agent',
+              description: 'Testing transaction compatibility',
+              systemPrompt: 'Test agent for compatibility',
+              agentType: 'customer_support',
+              enabled: true,
+              isPublic: false,
+              model: 'gpt-4',
+              maxTokens: 1000,
+              temperature: 0.7,
+              topP: 0.9,
+            })
+            .returning()
 
-          const session = await tx.insert(parlantSessions).values({
-            workspaceId: testWorkspaceId,
-            agentId: agent[0].id,
-            sessionType: 'customer_chat',
-            status: 'active',
-            metadata: {}
-          }).returning()
+          const session = await tx
+            .insert(parlantSessions)
+            .values({
+              workspaceId: testWorkspaceId,
+              agentId: agent[0].id,
+              sessionType: 'customer_chat',
+              status: 'active',
+              metadata: {},
+            })
+            .returning()
 
           return { agent: agent[0], session: session[0] }
         })
@@ -237,7 +234,6 @@ class CompatibilityValidator {
         // Cleanup
         await db.delete(parlantSessions).where(sql`workspace_id = ${testWorkspaceId}`)
         await db.delete(parlantAgents).where(sql`workspace_id = ${testWorkspaceId}`)
-
       } catch (error) {
         issues.push(`Mixed transaction compatibility issue: ${error.message}`)
         testResults.mixedTransaction = 'failed'
@@ -258,7 +254,7 @@ class CompatibilityValidator {
             model: 'gpt-4',
             maxTokens: 1000,
             temperature: 0.7,
-            topP: 0.9
+            topP: 0.9,
           })
 
           throw new Error('Intentional rollback')
@@ -274,7 +270,8 @@ class CompatibilityValidator {
 
       // Verify rollback worked
       try {
-        const remainingAgents = await db.select()
+        const remainingAgents = await db
+          .select()
           .from(parlantAgents)
           .where(sql`workspace_id = ${testWorkspaceId}`)
 
@@ -292,7 +289,7 @@ class CompatibilityValidator {
       return {
         isCompatible: issues.length === 0,
         issues,
-        testResults
+        testResults,
       }
     } catch (error) {
       issues.push(`Transaction compatibility validation failed: ${error.message}`)
@@ -327,10 +324,7 @@ class CompatibilityValidator {
       const joinStartTime = Date.now()
       try {
         // This would be a real join test in a complete implementation
-        await db.select()
-          .from(parlantAgents)
-          .where(sql`workspace_id IS NOT NULL`)
-          .limit(5)
+        await db.select().from(parlantAgents).where(sql`workspace_id IS NOT NULL`).limit(5)
         performanceMetrics.joinQuery = Date.now() - joinStartTime
       } catch (error) {
         issues.push(`Join query compatibility issue: ${error.message}`)
@@ -356,19 +350,21 @@ class CompatibilityValidator {
       const thresholds = {
         basicSelect: 100,
         joinQuery: 500,
-        aggregationQuery: 1000
+        aggregationQuery: 1000,
       }
 
       for (const [query, time] of Object.entries(performanceMetrics)) {
         if (time > thresholds[query]) {
-          issues.push(`Query ${query} took ${time}ms, exceeding threshold of ${thresholds[query]}ms`)
+          issues.push(
+            `Query ${query} took ${time}ms, exceeding threshold of ${thresholds[query]}ms`
+          )
         }
       }
 
       return {
         isCompatible: issues.length === 0,
         issues,
-        performanceMetrics
+        performanceMetrics,
       }
     } catch (error) {
       issues.push(`Query compatibility validation failed: ${error.message}`)
@@ -385,7 +381,9 @@ class CompatibilityValidator {
     results: {
       schema: Awaited<ReturnType<typeof CompatibilityValidator.validateSchemaCompatibility>>
       dataTypes: Awaited<ReturnType<typeof CompatibilityValidator.validateDataTypeCompatibility>>
-      transactions: Awaited<ReturnType<typeof CompatibilityValidator.validateTransactionCompatibility>>
+      transactions: Awaited<
+        ReturnType<typeof CompatibilityValidator.validateTransactionCompatibility>
+      >
       queries: Awaited<ReturnType<typeof CompatibilityValidator.validateQueryCompatibility>>
     }
     summary: {
@@ -396,26 +394,27 @@ class CompatibilityValidator {
     }
   }> {
     const results = {
-      schema: await this.validateSchemaCompatibility(),
-      dataTypes: await this.validateDataTypeCompatibility(),
-      transactions: await this.validateTransactionCompatibility(),
-      queries: await this.validateQueryCompatibility()
+      schema: await CompatibilityValidator.validateSchemaCompatibility(),
+      dataTypes: await CompatibilityValidator.validateDataTypeCompatibility(),
+      transactions: await CompatibilityValidator.validateTransactionCompatibility(),
+      queries: await CompatibilityValidator.validateQueryCompatibility(),
     }
 
     const allIssues = [
       ...results.schema.issues,
       ...results.dataTypes.issues,
       ...results.transactions.issues,
-      ...results.queries.issues
+      ...results.queries.issues,
     ]
 
     const allWarnings = results.schema.warnings || []
 
     // Identify critical issues
-    const criticalIssues = allIssues.filter(issue =>
-      issue.toLowerCase().includes('failed') ||
-      issue.toLowerCase().includes('incompatible') ||
-      issue.toLowerCase().includes('error')
+    const criticalIssues = allIssues.filter(
+      (issue) =>
+        issue.toLowerCase().includes('failed') ||
+        issue.toLowerCase().includes('incompatible') ||
+        issue.toLowerCase().includes('error')
     )
 
     // Generate recommendations
@@ -450,8 +449,8 @@ class CompatibilityValidator {
         totalIssues: allIssues.length,
         totalWarnings: allWarnings.length,
         criticalIssues,
-        recommendations
-      }
+        recommendations,
+      },
     }
   }
 }
@@ -482,7 +481,7 @@ describe('Automated Compatibility Checks', () => {
       // We expect this to identify if there are table access issues
       if (!result.isCompatible) {
         expect(result.issues.length).toBeGreaterThan(0)
-        expect(result.issues.some(issue => issue.includes('Table'))).toBe(true)
+        expect(result.issues.some((issue) => issue.includes('Table'))).toBe(true)
       }
     })
   })
@@ -551,7 +550,7 @@ describe('Automated Compatibility Checks', () => {
       expect(typeof result.performanceMetrics).toBe('object')
 
       // Performance metrics should be recorded
-      Object.values(result.performanceMetrics).forEach(time => {
+      Object.values(result.performanceMetrics).forEach((time) => {
         expect(typeof time).toBe('number')
       })
     })

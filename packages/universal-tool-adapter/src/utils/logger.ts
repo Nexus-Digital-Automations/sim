@@ -16,7 +16,7 @@ export enum LogLevel {
   INFO = 1,
   WARN = 2,
   ERROR = 3,
-  FATAL = 4
+  FATAL = 4,
 }
 
 /**
@@ -64,7 +64,6 @@ export interface LogTransport {
  * Built-in log formatters
  */
 export class LogFormatters {
-
   /**
    * Simple console formatter
    */
@@ -89,7 +88,7 @@ export class LogFormatters {
       }
 
       return message
-    }
+    },
   }
 
   /**
@@ -106,15 +105,17 @@ export class LogFormatters {
         duration: entry.duration,
         correlationId: entry.correlationId,
         executionId: entry.executionId,
-        error: entry.error ? {
-          name: entry.error.name,
-          message: entry.error.message,
-          stack: entry.error.stack
-        } : undefined
+        error: entry.error
+          ? {
+              name: entry.error.name,
+              message: entry.error.message,
+              stack: entry.error.stack,
+            }
+          : undefined,
       }
 
       return JSON.stringify(jsonEntry)
-    }
+    },
   }
 
   /**
@@ -128,11 +129,11 @@ export class LogFormatters {
       // Color coding (basic ANSI colors)
       const colors = {
         DEBUG: '\x1b[36m', // Cyan
-        INFO: '\x1b[32m',  // Green
-        WARN: '\x1b[33m',  // Yellow
+        INFO: '\x1b[32m', // Green
+        WARN: '\x1b[33m', // Yellow
         ERROR: '\x1b[31m', // Red
         FATAL: '\x1b[35m', // Magenta
-        RESET: '\x1b[0m'
+        RESET: '\x1b[0m',
       }
 
       const color = colors[level as keyof typeof colors] || colors.RESET
@@ -151,7 +152,7 @@ export class LogFormatters {
       }
 
       return message
-    }
+    },
   }
 }
 
@@ -159,7 +160,6 @@ export class LogFormatters {
  * Built-in log transports
  */
 export class LogTransports {
-
   /**
    * Console transport
    */
@@ -172,7 +172,7 @@ export class LogTransports {
       } else {
         console.log(formatted)
       }
-    }
+    },
   }
 
   /**
@@ -184,7 +184,7 @@ export class LogTransports {
         // In a real implementation, this would write to a file
         // For now, it's a placeholder
         console.log(`[FILE:${filePath}] ${formatted}`)
-      }
+      },
     }
   }
 
@@ -199,7 +199,7 @@ export class LogTransports {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              ...headers
+              ...headers,
             },
             body: JSON.stringify({
               log: formatted,
@@ -210,16 +210,16 @@ export class LogTransports {
                 message: entry.message,
                 context: entry.context,
                 correlationId: entry.correlationId,
-                executionId: entry.executionId
-              }
-            })
+                executionId: entry.executionId,
+              },
+            }),
           })
         } catch (error) {
           // Fallback to console if HTTP transport fails
           console.error('Log transport failed:', error)
           console.log(formatted)
         }
-      }
+      },
     }
   }
 
@@ -235,7 +235,7 @@ export class LogTransports {
       },
       getLogs(): LogEntry[] {
         return [...logs]
-      }
+      },
     }
   }
 }
@@ -317,7 +317,7 @@ export class Logger {
       enableContext: true,
       enablePerformanceTracking: true,
       enableCorrelation: true,
-      ...config
+      ...config,
     }
   }
 
@@ -444,7 +444,11 @@ export class Logger {
       this.info(`Async operation completed: ${operation}`, { duration: timer.elapsed() })
       return result
     } catch (error) {
-      this.error(`Async operation failed: ${operation}`, { duration: timer.elapsed() }, error as Error)
+      this.error(
+        `Async operation failed: ${operation}`,
+        { duration: timer.elapsed() },
+        error as Error
+      )
       throw error
     }
   }
@@ -484,7 +488,7 @@ export class Logger {
       error,
       duration,
       correlationId: this.correlationId,
-      executionId: this.executionId
+      executionId: this.executionId,
     }
 
     // Apply formatters and transports
@@ -607,19 +611,21 @@ export function configureDevelopmentLogging(): void {
     transports: [LogTransports.console],
     enableContext: true,
     enablePerformanceTracking: true,
-    enableCorrelation: true
+    enableCorrelation: true,
   })
 }
 
 /**
  * Configure production logging
  */
-export function configureProductionLogging(options: {
-  logLevel?: LogLevel
-  httpEndpoint?: string
-  enableFileLogging?: boolean
-  filePath?: string
-} = {}): void {
+export function configureProductionLogging(
+  options: {
+    logLevel?: LogLevel
+    httpEndpoint?: string
+    enableFileLogging?: boolean
+    filePath?: string
+  } = {}
+): void {
   const transports: LogTransport[] = []
 
   // Always include console for production
@@ -641,7 +647,7 @@ export function configureProductionLogging(options: {
     transports,
     enableContext: true,
     enablePerformanceTracking: false, // Reduced overhead in production
-    enableCorrelation: true
+    enableCorrelation: true,
   })
 }
 
@@ -657,7 +663,7 @@ export function configureTestLogging(): LogTransport & { getLogs(): LogEntry[] }
     transports: [memoryTransport],
     enableContext: true,
     enablePerformanceTracking: true,
-    enableCorrelation: true
+    enableCorrelation: true,
   })
 
   return memoryTransport

@@ -12,112 +12,101 @@
 // Core Components Export
 // =============================================================================
 
-// Description Generation
-export {
-  DescriptionGenerator,
-  createDescriptionGenerator,
-  generateToolNaturalLanguage,
-  TOOL_DESCRIPTION_TEMPLATES
-} from './description-generator'
-
 export type {
+  ConversationalHint,
   DescriptionTemplate,
   NaturalLanguageConfig,
-  ConversationalHint
 } from './description-generator'
-
-// Usage Guidelines
+// Description Generation
 export {
-  UsageGuidelinesEngine,
-  createUsageGuidelinesEngine,
-  getContextualGuidance,
-  recommendTools
-} from './usage-guidelines'
-
+  createDescriptionGenerator,
+  DescriptionGenerator,
+  generateToolNaturalLanguage,
+  TOOL_DESCRIPTION_TEMPLATES,
+} from './description-generator'
 export type {
-  UsageContext,
-  ConversationMessage,
-  UserIntent,
-  UserProfile,
-  UserPreferences,
-  UsageGuideline,
-  UsageCondition,
-  ToolRecommendation,
-  ContextualHelp
-} from './usage-guidelines'
-
+  FAQItem,
+  HelpExample,
+  HelpQuery,
+  HelpResponse,
+  QuickAction,
+  RelatedHelpItem,
+  ToolHelp,
+  TroubleshootingGuide,
+  Tutorial,
+  TutorialStep,
+} from './help-system'
+// Help System
+export {
+  createHelpSystem,
+  NaturalLanguageHelpSystem,
+  processHelpQuery,
+} from './help-system'
+export type {
+  ConversationalInput,
+  ConversationPrompt,
+  ExtractionPattern,
+  ParameterClarification,
+  ParameterEntity,
+  ParameterSuggestion,
+  ParsedParameters,
+} from './parameter-parser'
 // Parameter Parsing
 export {
   ConversationalParameterParser,
   createParameterParser,
-  parseNaturalLanguageParameters
+  parseNaturalLanguageParameters,
 } from './parameter-parser'
-
 export type {
-  ConversationalInput,
-  ParsedParameters,
-  ParameterClarification,
-  ParameterSuggestion,
-  ExtractionPattern,
-  ParameterEntity,
-  ConversationPrompt
-} from './parameter-parser'
-
-// Recommendation Engine
-export {
-  SmartToolRecommendationEngine,
-  createRecommendationEngine
-} from './recommendation-engine'
-
-export type {
-  RecommendationRequest,
-  ToolRecommendationWithDetails,
   ConversationExample,
+  IntentAnalysis,
   RecommendationEngine,
   RecommendationExplanation,
-  UserFeedback,
+  RecommendationRequest,
   ToolCombination,
-  IntentAnalysis
+  ToolRecommendationWithDetails,
+  UserFeedback,
 } from './recommendation-engine'
-
-// Help System
+// Recommendation Engine
 export {
-  NaturalLanguageHelpSystem,
-  createHelpSystem,
-  processHelpQuery
-} from './help-system'
-
+  createRecommendationEngine,
+  SmartToolRecommendationEngine,
+} from './recommendation-engine'
 export type {
-  HelpQuery,
-  HelpResponse,
-  RelatedHelpItem,
-  QuickAction,
-  Tutorial,
-  TutorialStep,
-  HelpExample,
-  ToolHelp,
-  FAQItem,
-  TroubleshootingGuide
-} from './help-system'
-
-// Scenario Examples
-export {
-  ScenarioExamplesEngine,
-  createScenarioExamplesEngine,
-  generateExamplesForTool,
-  generateStepByStepGuide
-} from './scenario-examples'
-
-export type {
-  ScenarioExample,
+  ConversationTurn,
+  ExamplePattern,
+  GuidanceStep,
   ScenarioCategory,
   ScenarioContext,
-  ConversationTurn,
+  ScenarioExample,
   ScenarioOutcome,
-  ExamplePattern,
   StepByStepGuide,
-  GuidanceStep
 } from './scenario-examples'
+// Scenario Examples
+export {
+  createScenarioExamplesEngine,
+  generateExamplesForTool,
+  generateStepByStepGuide,
+  ScenarioExamplesEngine,
+} from './scenario-examples'
+export type {
+  ContextualHelp,
+  ConversationMessage,
+  ToolRecommendation,
+  UsageCondition,
+  UsageContext,
+  UsageGuideline,
+  UserIntent,
+  UserPreferences,
+  UserProfile,
+} from './usage-guidelines'
+// Usage Guidelines
+export {
+  createUsageGuidelinesEngine,
+  getContextualGuidance,
+  recommendTools,
+  UsageGuidelinesEngine,
+} from './usage-guidelines'
 
 // =============================================================================
 // Unified Natural Language Engine
@@ -125,32 +114,16 @@ export type {
 
 import type { ToolConfig } from '@/tools/types'
 import { DescriptionGenerator } from './description-generator'
-import { UsageGuidelinesEngine } from './usage-guidelines'
-import { ConversationalParameterParser } from './parameter-parser'
-import { SmartToolRecommendationEngine } from './recommendation-engine'
+import type { HelpQuery, HelpResponse } from './help-system'
 import { NaturalLanguageHelpSystem } from './help-system'
+import type { ConversationalInput, ParsedParameters } from './parameter-parser'
+import { ConversationalParameterParser } from './parameter-parser'
+import type { RecommendationRequest, ToolRecommendationWithDetails } from './recommendation-engine'
+import { SmartToolRecommendationEngine } from './recommendation-engine'
+import type { ScenarioExample } from './scenario-examples'
 import { ScenarioExamplesEngine } from './scenario-examples'
-
-import type {
-  UsageContext,
-  UserIntent,
-  ConversationMessage
-} from './usage-guidelines'
-import type {
-  ConversationalInput,
-  ParsedParameters
-} from './parameter-parser'
-import type {
-  RecommendationRequest,
-  ToolRecommendationWithDetails
-} from './recommendation-engine'
-import type {
-  HelpQuery,
-  HelpResponse
-} from './help-system'
-import type {
-  ScenarioExample
-} from './scenario-examples'
+import type { ConversationMessage, UsageContext, UserIntent } from './usage-guidelines'
+import { UsageGuidelinesEngine } from './usage-guidelines'
 
 /**
  * Unified Natural Language Engine
@@ -197,32 +170,36 @@ export class NaturalLanguageEngine {
         conversationContext: conversationHistory,
         userContext: context,
         availableTools: context.availableTools || [],
-        maxRecommendations: 5
+        maxRecommendations: 5,
       })
 
       // Step 3: If specific tool mentioned, parse parameters
       let parsedParameters: ParsedParameters | null = null
       if (recommendations.length > 0) {
         const primaryTool = recommendations[0].tool
-        parsedParameters = await this.parameterParser.parseParameters({
-          rawMessage: userMessage,
-          context,
-          previousParameters: {},
-          toolId: primaryTool.id
-        }, primaryTool)
+        parsedParameters = await this.parameterParser.parseParameters(
+          {
+            rawMessage: userMessage,
+            context,
+            previousParameters: {},
+            toolId: primaryTool.id,
+          },
+          primaryTool
+        )
       }
 
       // Step 4: Generate contextual help and guidance
       const helpResponse = await this.helpSystem.processHelpQuery({
         userMessage,
         context,
-        conversationHistory
+        conversationHistory,
       })
 
       // Step 5: Get relevant examples
-      const examples = recommendations.length > 0 ?
-        await this.scenarioEngine.generateToolExamples(recommendations[0].toolId, context, 2) :
-        []
+      const examples =
+        recommendations.length > 0
+          ? await this.scenarioEngine.generateToolExamples(recommendations[0].toolId, context, 2)
+          : []
 
       return {
         intent,
@@ -230,10 +207,18 @@ export class NaturalLanguageEngine {
         parsedParameters,
         help: helpResponse,
         examples,
-        confidence: this.calculateOverallConfidence(intent, recommendations, parsedParameters, helpResponse),
-        suggestedActions: this.generateSuggestedActions(recommendations, parsedParameters, helpResponse)
+        confidence: this.calculateOverallConfidence(
+          intent,
+          recommendations,
+          parsedParameters,
+          helpResponse
+        ),
+        suggestedActions: this.generateSuggestedActions(
+          recommendations,
+          parsedParameters,
+          helpResponse
+        ),
       }
-
     } catch (error) {
       console.error('Conversation processing failed:', error)
       return this.generateErrorResponse(userMessage, error as Error)
@@ -248,16 +233,11 @@ export class NaturalLanguageEngine {
     context: UsageContext,
     specificQuestion?: string
   ): Promise<ToolAssistance> {
-    const [
-      naturalLanguageConfig,
-      usageGuidelines,
-      helpResponse,
-      examples
-    ] = await Promise.all([
+    const [naturalLanguageConfig, usageGuidelines, helpResponse, examples] = await Promise.all([
       this.generateToolDescription(toolId, context),
       this.usageGuidelines.getUsageGuidelines(toolId, context),
       this.helpSystem.getToolHelp(toolId, context, specificQuestion),
-      this.scenarioEngine.generateToolExamples(toolId, context, 3)
+      this.scenarioEngine.generateToolExamples(toolId, context, 3),
     ])
 
     return {
@@ -269,24 +249,23 @@ export class NaturalLanguageEngine {
       examples,
       conversationalHints: naturalLanguageConfig.conversationalHints,
       exampleUsage: naturalLanguageConfig.exampleUsage,
-      keywords: naturalLanguageConfig.keywords || []
+      keywords: naturalLanguageConfig.keywords || [],
     }
   }
 
   /**
    * Parse natural language input into tool parameters
    */
-  async parseInput(
-    input: ConversationalInput,
-    tool: ToolConfig
-  ): Promise<ParsedParameters> {
+  async parseInput(input: ConversationalInput, tool: ToolConfig): Promise<ParsedParameters> {
     return this.parameterParser.parseParameters(input, tool)
   }
 
   /**
    * Get tool recommendations for a user request
    */
-  async getRecommendations(request: RecommendationRequest): Promise<ToolRecommendationWithDetails[]> {
+  async getRecommendations(
+    request: RecommendationRequest
+  ): Promise<ToolRecommendationWithDetails[]> {
     return this.recommendationEngine.recommendTools(request)
   }
 
@@ -300,11 +279,7 @@ export class NaturalLanguageEngine {
   /**
    * Generate usage examples
    */
-  async getExamples(
-    toolId: string,
-    context: UsageContext,
-    count: number = 3
-  ): Promise<ScenarioExample[]> {
+  async getExamples(toolId: string, context: UsageContext, count = 3): Promise<ScenarioExample[]> {
     return this.scenarioEngine.generateToolExamples(toolId, context, count)
   }
 
@@ -320,8 +295,8 @@ export class NaturalLanguageEngine {
     naturalLanguageConfig?: Partial<import('./description-generator').NaturalLanguageConfig>
   ): Promise<void> {
     // Generate natural language configuration if not provided
-    const config = naturalLanguageConfig ||
-      this.descriptionGenerator.generateNaturalLanguageConfig(tool)
+    const config =
+      naturalLanguageConfig || this.descriptionGenerator.generateNaturalLanguageConfig(tool)
 
     // Store the enhanced tool configuration
     // This would integrate with the actual tool registry
@@ -346,9 +321,7 @@ export class NaturalLanguageEngine {
   /**
    * Record user interaction for learning
    */
-  async recordInteraction(
-    interaction: UserInteraction
-  ): Promise<void> {
+  async recordInteraction(interaction: UserInteraction): Promise<void> {
     // Record the interaction for learning and improvement
     await Promise.all([
       this.recommendationEngine.recordToolUsage(
@@ -356,7 +329,7 @@ export class NaturalLanguageEngine {
         interaction.context,
         interaction.success
       ),
-      this.recordUserPreferences(interaction)
+      this.recordUserPreferences(interaction),
     ])
   }
 
@@ -383,7 +356,7 @@ export class NaturalLanguageEngine {
       primary: this.extractPrimaryIntent(message),
       confidence: 0.8,
       urgency: this.assessUrgency(message),
-      complexity: this.assessComplexity(message)
+      complexity: this.assessComplexity(message),
     }
 
     return intent
@@ -394,9 +367,12 @@ export class NaturalLanguageEngine {
 
     if (lowerMessage.includes('send') || lowerMessage.includes('email')) return 'send_communication'
     if (lowerMessage.includes('create') || lowerMessage.includes('make')) return 'create_content'
-    if (lowerMessage.includes('find') || lowerMessage.includes('search')) return 'search_information'
-    if (lowerMessage.includes('schedule') || lowerMessage.includes('calendar')) return 'schedule_organize'
-    if (lowerMessage.includes('analyze') || lowerMessage.includes('process')) return 'analyze_process'
+    if (lowerMessage.includes('find') || lowerMessage.includes('search'))
+      return 'search_information'
+    if (lowerMessage.includes('schedule') || lowerMessage.includes('calendar'))
+      return 'schedule_organize'
+    if (lowerMessage.includes('analyze') || lowerMessage.includes('process'))
+      return 'analyze_process'
     if (lowerMessage.includes('help') || lowerMessage.includes('how')) return 'get_help'
 
     return 'general'
@@ -415,16 +391,24 @@ export class NaturalLanguageEngine {
   private async generateToolDescription(
     toolId: string,
     context: UsageContext
-  ): Promise<ReturnType<typeof this.descriptionGenerator.generateNaturalLanguageConfig> & { description: string }> {
+  ): Promise<
+    ReturnType<typeof this.descriptionGenerator.generateNaturalLanguageConfig> & {
+      description: string
+    }
+  > {
     // This would fetch the actual tool configuration
     const mockTool: ToolConfig = { id: toolId, name: toolId }
 
     const config = this.descriptionGenerator.generateNaturalLanguageConfig(mockTool)
-    const description = this.descriptionGenerator.generateToolDescription(mockTool, undefined, context.userProfile?.role)
+    const description = this.descriptionGenerator.generateToolDescription(
+      mockTool,
+      undefined,
+      context.userProfile?.role
+    )
 
     return {
       ...config,
-      description
+      description,
     }
   }
 
@@ -457,13 +441,13 @@ export class NaturalLanguageEngine {
     const actions: SuggestedAction[] = []
 
     // Add tool execution actions
-    recommendations.slice(0, 2).forEach(rec => {
+    recommendations.slice(0, 2).forEach((rec) => {
       actions.push({
         type: 'execute_tool',
         label: `Use ${rec.tool.name}`,
         toolId: rec.toolId,
         confidence: rec.confidence,
-        description: rec.reason
+        description: rec.reason,
       })
     })
 
@@ -473,18 +457,18 @@ export class NaturalLanguageEngine {
         type: 'clarify_parameters',
         label: 'Provide missing information',
         confidence: 0.8,
-        description: 'Some parameters need clarification'
+        description: 'Some parameters need clarification',
       })
     }
 
     // Add help actions
     if (helpResponse.quickActions?.length) {
-      helpResponse.quickActions.forEach(quickAction => {
+      helpResponse.quickActions.forEach((quickAction) => {
         actions.push({
           type: 'get_help',
           label: quickAction.label,
           confidence: 0.6,
-          description: quickAction.description || 'Get additional help'
+          description: quickAction.description || 'Get additional help',
         })
       })
     }
@@ -498,29 +482,34 @@ export class NaturalLanguageEngine {
         primary: 'error',
         confidence: 0,
         urgency: 'medium',
-        complexity: 'simple'
+        complexity: 'simple',
       },
       recommendations: [],
       parsedParameters: null,
       help: {
-        answer: 'I encountered an error processing your request. Please try rephrasing your question.',
+        answer:
+          'I encountered an error processing your request. Please try rephrasing your question.',
         type: 'explanation',
-        confidence: 0
+        confidence: 0,
       },
       examples: [],
       confidence: 0,
-      suggestedActions: [{
-        type: 'get_help',
-        label: 'Try rephrasing your request',
-        confidence: 0.5,
-        description: 'Rephrase your question for better understanding'
-      }]
+      suggestedActions: [
+        {
+          type: 'get_help',
+          label: 'Try rephrasing your request',
+          confidence: 0.5,
+          description: 'Rephrase your question for better understanding',
+        },
+      ],
     }
   }
 
   private async recordUserPreferences(interaction: UserInteraction): Promise<void> {
     // Record user preferences for future recommendations
-    console.log(`Recorded user preference: ${interaction.toolId} used successfully: ${interaction.success}`)
+    console.log(
+      `Recorded user preference: ${interaction.toolId} used successfully: ${interaction.success}`
+    )
   }
 }
 

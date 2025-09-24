@@ -12,16 +12,16 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { ZodError } from 'zod'
-import { createLogger } from '@/lib/logs/console/logger'
-import { checkRateLimit, createRateLimitResponse } from '../../middleware'
-import { authenticateV1Request } from '../../auth'
-import { agentService } from '@/lib/api/v1/agents/service'
 import {
-  UpdateAgentRequestSchema,
-  type UpdateAgentRequest,
   type ErrorResponse,
   type SuccessResponse,
+  type UpdateAgentRequest,
+  UpdateAgentRequestSchema,
 } from '@/lib/api/v1/agents/schemas'
+import { agentService } from '@/lib/api/v1/agents/service'
+import { createLogger } from '@/lib/logs/console/logger'
+import { authenticateV1Request } from '../../auth'
+import { checkRateLimit, createRateLimitResponse } from '../../middleware'
 
 const logger = createLogger('AgentAPI')
 
@@ -37,7 +37,7 @@ interface RouteParams {
 function createErrorResponse(
   error: string,
   message: string,
-  status: number = 400,
+  status = 400,
   details?: Record<string, any>,
   requestId?: string
 ): NextResponse<ErrorResponse> {
@@ -54,7 +54,7 @@ function createErrorResponse(
       headers: {
         'Content-Type': 'application/json',
         'X-Request-Id': requestId || 'unknown',
-      }
+      },
     }
   )
 }
@@ -62,10 +62,7 @@ function createErrorResponse(
 /**
  * Create a standardized success response
  */
-function createSuccessResponse(
-  message: string,
-  requestId?: string
-): NextResponse<SuccessResponse> {
+function createSuccessResponse(message: string, requestId?: string): NextResponse<SuccessResponse> {
   return NextResponse.json(
     {
       success: true,
@@ -78,7 +75,7 @@ function createSuccessResponse(
       headers: {
         'Content-Type': 'application/json',
         'X-Request-Id': requestId || 'unknown',
-      }
+      },
     }
   )
 }
@@ -89,10 +86,7 @@ function createSuccessResponse(
  * Retrieves detailed information about a specific agent.
  * Includes configuration, status, and usage metrics.
  */
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-): Promise<NextResponse> {
+export async function GET(request: NextRequest, { params }: RouteParams): Promise<NextResponse> {
   const startTime = performance.now()
   const requestId = `get-agent-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
   const agentId = params.id
@@ -165,7 +159,6 @@ export async function GET(
         'Cache-Control': 'private, no-cache',
       },
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
 
@@ -192,10 +185,7 @@ export async function GET(
  * Updates an existing agent's configuration.
  * Supports partial updates - only provided fields are modified.
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: RouteParams
-): Promise<NextResponse> {
+export async function PUT(request: NextRequest, { params }: RouteParams): Promise<NextResponse> {
   const startTime = performance.now()
   const requestId = `update-agent-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
   const agentId = params.id
@@ -303,7 +293,6 @@ export async function PUT(
         'X-Response-Time': `${duration}ms`,
       },
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
 
@@ -343,10 +332,7 @@ export async function PUT(
  * Soft deletes an agent by marking it as archived and setting deletedAt timestamp.
  * This preserves historical data while making the agent inaccessible.
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: RouteParams
-): Promise<NextResponse> {
+export async function DELETE(request: NextRequest, { params }: RouteParams): Promise<NextResponse> {
   const startTime = performance.now()
   const requestId = `delete-agent-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
   const agentId = params.id
@@ -410,11 +396,7 @@ export async function DELETE(
       duration: `${duration}ms`,
     })
 
-    return createSuccessResponse(
-      `Agent ${agentId} has been successfully deleted`,
-      requestId
-    )
-
+    return createSuccessResponse(`Agent ${agentId} has been successfully deleted`, requestId)
   } catch (error) {
     const duration = performance.now() - startTime
 

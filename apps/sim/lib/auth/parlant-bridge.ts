@@ -7,8 +7,8 @@
 
 import { cookies } from 'next/headers'
 import { getSession } from '@/lib/auth'
-import { createLogger } from '@/lib/logs/console/logger'
 import { env } from '@/lib/env'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('ParlantAuthBridge')
 
@@ -30,7 +30,7 @@ export interface ParlantUserContext {
 }
 
 export interface ParlantRequestHeaders {
-  'Authorization': string
+  Authorization: string
   'X-User-Context': string
   'X-Workspace-Id'?: string
   'Content-Type': 'application/json'
@@ -57,8 +57,8 @@ export async function getParlantUserContext(): Promise<ParlantUserContext | null
         id: 'default-workspace',
         name: 'Default Workspace',
         role: 'admin',
-        permissions: ['read', 'write', 'admin']
-      }
+        permissions: ['read', 'write', 'admin'],
+      },
     ]
 
     const userContext: ParlantUserContext = {
@@ -75,11 +75,10 @@ export async function getParlantUserContext(): Promise<ParlantUserContext | null
 
     logger.debug('Created Parlant user context', {
       userId: user.id,
-      email: user.email
+      email: user.email,
     })
 
     return userContext
-
   } catch (error) {
     logger.error('Error creating Parlant user context:', error)
     return null
@@ -109,9 +108,9 @@ export async function createParlantHeaders(
     }
 
     const headers: ParlantRequestHeaders = {
-      'Authorization': `Bearer ${sessionToken}`,
+      Authorization: `Bearer ${sessionToken}`,
       'X-User-Context': Buffer.from(JSON.stringify(userContext)).toString('base64'),
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     }
 
     if (workspaceId) {
@@ -119,7 +118,6 @@ export async function createParlantHeaders(
     }
 
     return headers
-
   } catch (error) {
     logger.error('Error creating Parlant headers:', error)
     return null
@@ -138,19 +136,16 @@ export async function validateWorkspaceAccess(workspaceId: string): Promise<bool
     }
 
     // Check if user has access to the workspace
-    const hasAccess = userContext.workspaces.some(
-      workspace => workspace.id === workspaceId
-    )
+    const hasAccess = userContext.workspaces.some((workspace) => workspace.id === workspaceId)
 
     if (!hasAccess) {
       logger.warn('User denied workspace access', {
         userId: userContext.user_id,
-        workspaceId
+        workspaceId,
       })
     }
 
     return hasAccess
-
   } catch (error) {
     logger.error('Error validating workspace access:', error)
     return false
@@ -254,7 +249,7 @@ export async function createParlantSession(
     const sessionData = {
       agent_id: agentId,
       workspace_id: workspaceId,
-      metadata: metadata || {}
+      metadata: metadata || {},
     }
 
     const response = await client.post('/api/v1/sessions', sessionData, workspaceId)
@@ -262,11 +257,10 @@ export async function createParlantSession(
     logger.info('Created Parlant session', {
       sessionId: response.id,
       agentId,
-      workspaceId
+      workspaceId,
     })
 
     return { sessionId: response.id }
-
   } catch (error) {
     logger.error('Error creating Parlant session:', error)
     return null
@@ -284,7 +278,9 @@ export async function isParlantAuthenticated(): Promise<boolean> {
 /**
  * Helper function to extract user context from Parlant request headers
  */
-export function extractUserContextFromHeaders(headers: Record<string, string>): ParlantUserContext | null {
+export function extractUserContextFromHeaders(
+  headers: Record<string, string>
+): ParlantUserContext | null {
   try {
     const contextHeader = headers['x-user-context']
 
@@ -294,7 +290,6 @@ export function extractUserContextFromHeaders(headers: Record<string, string>): 
 
     const decodedContext = Buffer.from(contextHeader, 'base64').toString('utf-8')
     return JSON.parse(decodedContext) as ParlantUserContext
-
   } catch (error) {
     logger.error('Error extracting user context from headers:', error)
     return null

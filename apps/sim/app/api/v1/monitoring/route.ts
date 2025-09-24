@@ -23,8 +23,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const url = new URL(request.url)
     const view = url.searchParams.get('view') // 'dashboard', 'system', 'agents', 'usage', 'alerts'
-    const timeWindow = parseInt(url.searchParams.get('timeWindow') || '60') // minutes for agent metrics
-    const period = parseInt(url.searchParams.get('period') || '24') // hours for usage metrics
+    const timeWindow = Number.parseInt(url.searchParams.get('timeWindow') || '60') // minutes for agent metrics
+    const period = Number.parseInt(url.searchParams.get('period') || '24') // hours for usage metrics
     const agentId = url.searchParams.get('agentId')
 
     logger.info('Monitoring request received', {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       timeWindow,
       period,
       agentId,
-      userAgent: request.headers.get('user-agent')
+      userAgent: request.headers.get('user-agent'),
     })
 
     // Check rate limit
@@ -50,8 +50,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           data: await monitoring.system(),
           requestInfo: {
             responseTime: performance.now() - startTime,
-            timestamp: new Date().toISOString()
-          }
+            timestamp: new Date().toISOString(),
+          },
         }
         break
 
@@ -61,12 +61,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           data: await monitoring.agents(timeWindow, agentId || undefined),
           filters: {
             timeWindow,
-            agentId: agentId || null
+            agentId: agentId || null,
           },
           requestInfo: {
             responseTime: performance.now() - startTime,
-            timestamp: new Date().toISOString()
-          }
+            timestamp: new Date().toISOString(),
+          },
         }
         break
 
@@ -75,12 +75,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           type: 'usage',
           data: await monitoring.usage(period),
           filters: {
-            period
+            period,
           },
           requestInfo: {
             responseTime: performance.now() - startTime,
-            timestamp: new Date().toISOString()
-          }
+            timestamp: new Date().toISOString(),
+          },
         }
         break
 
@@ -90,20 +90,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           data: await monitoring.alerts(),
           requestInfo: {
             responseTime: performance.now() - startTime,
-            timestamp: new Date().toISOString()
-          }
+            timestamp: new Date().toISOString(),
+          },
         }
         break
-
-      case 'dashboard':
       default:
         response = {
           type: 'dashboard',
           data: await monitoring.dashboard(),
           requestInfo: {
             responseTime: performance.now() - startTime,
-            timestamp: new Date().toISOString()
-          }
+            timestamp: new Date().toISOString(),
+          },
         }
         break
     }
@@ -111,7 +109,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     logger.info('Monitoring request completed', {
       view: view || 'dashboard',
       duration: performance.now() - startTime,
-      dataType: response.type
+      dataType: response.type,
     })
 
     return NextResponse.json(response, {
@@ -120,8 +118,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'X-Monitoring-View': response.type,
-        'X-Response-Time': `${response.requestInfo.responseTime}ms`
-      }
+        'X-Response-Time': `${response.requestInfo.responseTime}ms`,
+      },
     })
   } catch (error) {
     const duration = performance.now() - startTime
@@ -132,13 +130,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: 'Monitoring data unavailable',
         message: error instanceof Error ? error.message : 'Failed to retrieve monitoring data',
         timestamp: new Date().toISOString(),
-        duration
+        duration,
       },
       {
         status: 500,
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     )
   }
@@ -190,10 +188,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       default:
         logger.warn('Unknown metric type', { type, value })
-        return NextResponse.json(
-          { error: `Unknown metric type: ${type}` },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: `Unknown metric type: ${type}` }, { status: 400 })
     }
 
     const response = {
@@ -201,22 +196,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       recorded: {
         type,
         value,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      responseTime: performance.now() - startTime
+      responseTime: performance.now() - startTime,
     }
 
     logger.info('Metric recorded successfully', {
       type,
       value,
-      duration: response.responseTime
+      duration: response.responseTime,
     })
 
     return NextResponse.json(response, {
       status: 200,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
   } catch (error) {
     const duration = performance.now() - startTime
@@ -227,13 +222,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: 'Failed to record metric',
         message: error instanceof Error ? error.message : 'Recording failed',
         timestamp: new Date().toISOString(),
-        duration
+        duration,
       },
       {
         status: 500,
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     )
   }
@@ -256,23 +251,26 @@ export async function GET_STATUS(request: NextRequest): Promise<NextResponse> {
     const response = {
       status: alertStatus.systemHealth,
       activeAlerts: alertStatus.alerts.length,
-      severity: alertStatus.alerts.some(a => a.severity === 'critical') ? 'critical' :
-                alertStatus.alerts.some(a => a.severity === 'warning') ? 'warning' : 'none',
+      severity: alertStatus.alerts.some((a) => a.severity === 'critical')
+        ? 'critical'
+        : alertStatus.alerts.some((a) => a.severity === 'warning')
+          ? 'warning'
+          : 'none',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      responseTime: performance.now() - startTime
+      responseTime: performance.now() - startTime,
     }
 
-    const httpStatus = response.status === 'critical' ? 503 :
-                      response.status === 'degraded' ? 200 : 200
+    const httpStatus =
+      response.status === 'critical' ? 503 : response.status === 'degraded' ? 200 : 200
 
     return NextResponse.json(response, {
       status: httpStatus,
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache',
-        'X-Monitoring-Status': response.status
-      }
+        'X-Monitoring-Status': response.status,
+      },
     })
   } catch (error) {
     const duration = performance.now() - startTime
@@ -283,7 +281,7 @@ export async function GET_STATUS(request: NextRequest): Promise<NextResponse> {
         status: 'unknown',
         error: 'Status check failed',
         timestamp: new Date().toISOString(),
-        duration
+        duration,
       },
       { status: 500 }
     )

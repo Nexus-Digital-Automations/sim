@@ -10,14 +10,8 @@ import { createLogger } from '@/lib/logs/console/logger'
 import { globalToolAdapterRegistry } from './adapter-registry'
 import { globalConfigurationManager } from './configuration'
 import { globalErrorHandler } from './error-handling'
-import { globalPerformanceMonitor, globalCache, globalRateLimiter } from './performance'
-import type {
-  AdapterContext,
-  AdapterResult,
-  ParlantToolSchema,
-  ToolAdapter,
-  ToolRecommendation,
-} from './types'
+import { globalCache, globalPerformanceMonitor, globalRateLimiter } from './performance'
+import type { AdapterContext, AdapterResult, ParlantToolSchema, ToolRecommendation } from './types'
 
 const logger = createLogger('ParlantToolAdapterService')
 
@@ -67,11 +61,7 @@ export class ParlantToolAdapterService {
   /**
    * Execute a tool with comprehensive monitoring and error handling
    */
-  async executeTool(
-    toolName: string,
-    args: any,
-    context: AdapterContext
-  ): Promise<AdapterResult> {
+  async executeTool(toolName: string, args: any, context: AdapterContext): Promise<AdapterResult> {
     if (!this.initialized) {
       throw new Error('Service not initialized. Call initialize() first.')
     }
@@ -99,7 +89,11 @@ export class ParlantToolAdapterService {
       }
 
       // Check if tool is enabled for this context
-      const toolConfig = this.configManager.getToolConfig(toolName, context.workspace_id, context.user_id)
+      const toolConfig = this.configManager.getToolConfig(
+        toolName,
+        context.workspace_id,
+        context.user_id
+      )
       if (!toolConfig.enabled) {
         return {
           success: false,
@@ -133,7 +127,8 @@ export class ParlantToolAdapterService {
             error: {
               code: 'RATE_LIMIT_EXCEEDED',
               message: 'Rate limit exceeded',
-              user_message: 'You have made too many requests. Please wait a moment before trying again.',
+              user_message:
+                'You have made too many requests. Please wait a moment before trying again.',
               suggestions: [
                 'Wait a few minutes before retrying',
                 'Consider using batch operations',
@@ -193,7 +188,6 @@ export class ParlantToolAdapterService {
       })
 
       return result
-
     } catch (error: any) {
       const duration = timer.end()
       this.performanceMonitor.recordExecution(toolName, duration, false)
@@ -225,7 +219,7 @@ export class ParlantToolAdapterService {
     if (context) {
       // Return only tools accessible to this user/workspace
       const accessibleTools = this.registry.getAccessibleTools(context)
-      return accessibleTools.map(adapter => adapter.schema)
+      return accessibleTools.map((adapter) => adapter.schema)
     }
 
     return this.registry.getAllSchemas()
@@ -234,7 +228,7 @@ export class ParlantToolAdapterService {
   /**
    * Get contextual tool recommendations
    */
-  async getRecommendations(context: AdapterContext, maxResults: number = 5): Promise<ToolRecommendation[]> {
+  async getRecommendations(context: AdapterContext, maxResults = 5): Promise<ToolRecommendation[]> {
     if (!this.initialized) {
       throw new Error('Service not initialized. Call initialize() first.')
     }
@@ -255,12 +249,12 @@ export class ParlantToolAdapterService {
     // Filter by accessibility if context provided
     if (context) {
       const accessibleToolNames = new Set(
-        this.registry.getAccessibleTools(context).map(adapter => adapter.schema.name)
+        this.registry.getAccessibleTools(context).map((adapter) => adapter.schema.name)
       )
-      tools = tools.filter(adapter => accessibleToolNames.has(adapter.schema.name))
+      tools = tools.filter((adapter) => accessibleToolNames.has(adapter.schema.name))
     }
 
-    return tools.map(adapter => adapter.schema)
+    return tools.map((adapter) => adapter.schema)
   }
 
   /**
@@ -276,12 +270,12 @@ export class ParlantToolAdapterService {
     // Filter by accessibility if context provided
     if (context) {
       const accessibleToolNames = new Set(
-        this.registry.getAccessibleTools(context).map(adapter => adapter.schema.name)
+        this.registry.getAccessibleTools(context).map((adapter) => adapter.schema.name)
       )
-      tools = tools.filter(adapter => accessibleToolNames.has(adapter.schema.name))
+      tools = tools.filter((adapter) => accessibleToolNames.has(adapter.schema.name))
     }
 
-    return tools.map(adapter => adapter.schema)
+    return tools.map((adapter) => adapter.schema)
   }
 
   /**
@@ -341,10 +335,7 @@ export class ParlantToolAdapterService {
     logger.info('Cleaning up service resources')
 
     try {
-      await Promise.all([
-        this.registry.cleanup(),
-        this.cache.clear(),
-      ])
+      await Promise.all([this.registry.cleanup(), this.cache.clear()])
 
       this.initialized = false
       logger.info('Service cleanup completed')
@@ -410,7 +401,7 @@ export function getParlantToolAdapterService(): ParlantToolAdapterService {
  */
 export async function initializeParlantToolAdapterService(): Promise<ParlantToolAdapterService> {
   const service = getParlantToolAdapterService()
-  if (!service['initialized']) {
+  if (!service.initialized) {
     await service.initialize()
   }
   return service

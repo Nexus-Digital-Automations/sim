@@ -16,15 +16,11 @@
  * - Voice and text input processing
  */
 
-import type {
-  EnhancedToolDescription,
-  ToolRecommendation,
-  ConversationalToolExecution
-} from './tool-adapter'
-import type { IntentRecognitionResult, ExtractedEntity } from './tool-recommendations'
-import type { AuthContext, ToolExecution } from './types'
+import type { ConversationalToolExecution, EnhancedToolDescription } from './tool-adapter'
 import { intelligenceEngine, toolRegistry } from './tool-adapter'
+import type { ExtractedEntity, IntentRecognitionResult } from './tool-recommendations'
 import { recommendationEngine } from './tool-recommendations'
+import type { AuthContext, ToolExecution } from './types'
 
 // =============================================
 // Core Conversational Types
@@ -237,7 +233,7 @@ export class ConversationalIntelligenceEngine {
       currentStep: 1,
       totalSteps: this.calculateTotalSteps(tool),
       validationIssues: [],
-      currentSuggestions: []
+      currentSuggestions: [],
     }
 
     this.conversationStates.set(conversationId, state)
@@ -267,7 +263,7 @@ export class ConversationalIntelligenceEngine {
       id: `msg-${Date.now()}`,
       role: 'user',
       content: message,
-      timestamp: new Date()
+      timestamp: new Date(),
     })
 
     // Extract parameters from message
@@ -298,7 +294,9 @@ export class ConversationalIntelligenceEngine {
     // Final validation
     await this.validateParameters(state)
     if (state.validationIssues.length > 0) {
-      throw new Error(`Parameter validation failed: ${state.validationIssues.map(i => i.message).join(', ')}`)
+      throw new Error(
+        `Parameter validation failed: ${state.validationIssues.map((i) => i.message).join(', ')}`
+      )
     }
 
     // Mock tool execution (in real implementation, this would call the actual tool)
@@ -310,11 +308,14 @@ export class ConversationalIntelligenceEngine {
       result: { success: true, data: 'Mock result' },
       status: 'completed',
       created_at: new Date().toISOString(),
-      completed_at: new Date().toISOString()
+      completed_at: new Date().toISOString(),
     }
 
     // Format execution result for conversation
-    const conversationalExecution = intelligenceEngine.formatExecutionResult(mockExecution, state.currentTool)
+    const conversationalExecution = intelligenceEngine.formatExecutionResult(
+      mockExecution,
+      state.currentTool
+    )
 
     // Create rich conversational result
     return this.createConversationalResult(conversationalExecution, state, authContext)
@@ -339,7 +340,7 @@ export class ConversationalIntelligenceEngine {
       remainingParameters: state.remainingParameters,
       validationIssues: state.validationIssues,
       readyToExecute: state.remainingParameters.length === 0 && state.validationIssues.length === 0,
-      nextAction: this.determineNextAction(state)
+      nextAction: this.determineNextAction(state),
     }
   }
 
@@ -354,7 +355,7 @@ export class ConversationalIntelligenceEngine {
     if (!state.currentTool) return
 
     // Use intent recognition to extract structured data
-    const intentResult = await recommendationEngine['intentRecognizer'].analyzeInput(message)
+    const intentResult = await recommendationEngine.intentRecognizer.analyzeInput(message)
 
     // Extract entities that match tool parameters
     for (const entity of intentResult.entities) {
@@ -374,7 +375,10 @@ export class ConversationalIntelligenceEngine {
   /**
    * Map extracted entity to tool parameter
    */
-  private async mapEntityToParameter(state: ConversationState, entity: ExtractedEntity): Promise<void> {
+  private async mapEntityToParameter(
+    state: ConversationState,
+    entity: ExtractedEntity
+  ): Promise<void> {
     if (!state.currentTool) return
 
     const tool = state.currentTool
@@ -387,7 +391,7 @@ export class ConversationalIntelligenceEngine {
       url: ['url', 'endpoint', 'webhook', 'api_url'],
       file: ['file', 'filename', 'attachment', 'path'],
       date: ['date', 'timestamp', 'schedule', 'deadline'],
-      number: ['amount', 'quantity', 'limit', 'timeout', 'count']
+      number: ['amount', 'quantity', 'limit', 'timeout', 'count'],
     }
 
     const potentialParameters = entityParameterMap[entity.type] || []
@@ -395,7 +399,7 @@ export class ConversationalIntelligenceEngine {
     for (const paramName of potentialParameters) {
       if (paramName in blockConfig.inputs && !(paramName in state.collectedParameters)) {
         state.collectedParameters[paramName] = entity.value
-        state.remainingParameters = state.remainingParameters.filter(p => p !== paramName)
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== paramName)
         break
       }
     }
@@ -438,10 +442,10 @@ export class ConversationalIntelligenceEngine {
     if (!state.collectedParameters.operation) {
       if (lowerMessage.includes('send message') || lowerMessage.includes('post to')) {
         state.collectedParameters.operation = 'send'
-        state.remainingParameters = state.remainingParameters.filter(p => p !== 'operation')
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== 'operation')
       } else if (lowerMessage.includes('create canvas') || lowerMessage.includes('new canvas')) {
         state.collectedParameters.operation = 'canvas'
-        state.remainingParameters = state.remainingParameters.filter(p => p !== 'operation')
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== 'operation')
       }
     }
 
@@ -451,7 +455,7 @@ export class ConversationalIntelligenceEngine {
       if (channelMatch) {
         const channel = channelMatch[1] || channelMatch[2]
         state.collectedParameters.channel = `#${channel}`
-        state.remainingParameters = state.remainingParameters.filter(p => p !== 'channel')
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== 'channel')
       }
     }
 
@@ -461,7 +465,7 @@ export class ConversationalIntelligenceEngine {
       if (messageMatch) {
         const messageText = messageMatch[1] || messageMatch[2] || messageMatch[3]
         state.collectedParameters.text = messageText.trim()
-        state.remainingParameters = state.remainingParameters.filter(p => p !== 'text')
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== 'text')
       }
     }
   }
@@ -476,10 +480,10 @@ export class ConversationalIntelligenceEngine {
     if (!state.collectedParameters.operation) {
       if (lowerMessage.includes('send email') || lowerMessage.includes('email to')) {
         state.collectedParameters.operation = 'send_gmail'
-        state.remainingParameters = state.remainingParameters.filter(p => p !== 'operation')
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== 'operation')
       } else if (lowerMessage.includes('read email') || lowerMessage.includes('check email')) {
         state.collectedParameters.operation = 'read_gmail'
-        state.remainingParameters = state.remainingParameters.filter(p => p !== 'operation')
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== 'operation')
       }
     }
 
@@ -489,7 +493,7 @@ export class ConversationalIntelligenceEngine {
       if (subjectMatch) {
         const subject = (subjectMatch[1] || subjectMatch[2]).trim()
         state.collectedParameters.subject = subject
-        state.remainingParameters = state.remainingParameters.filter(p => p !== 'subject')
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== 'subject')
       }
     }
   }
@@ -503,13 +507,19 @@ export class ConversationalIntelligenceEngine {
       const methodMatch = message.match(/\b(GET|POST|PUT|DELETE|PATCH)\b/i)
       if (methodMatch) {
         state.collectedParameters.method = methodMatch[1].toUpperCase()
-        state.remainingParameters = state.remainingParameters.filter(p => p !== 'method')
-      } else if (message.toLowerCase().includes('fetch') || message.toLowerCase().includes('get data')) {
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== 'method')
+      } else if (
+        message.toLowerCase().includes('fetch') ||
+        message.toLowerCase().includes('get data')
+      ) {
         state.collectedParameters.method = 'GET'
-        state.remainingParameters = state.remainingParameters.filter(p => p !== 'method')
-      } else if (message.toLowerCase().includes('submit') || message.toLowerCase().includes('post')) {
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== 'method')
+      } else if (
+        message.toLowerCase().includes('submit') ||
+        message.toLowerCase().includes('post')
+      ) {
         state.collectedParameters.method = 'POST'
-        state.remainingParameters = state.remainingParameters.filter(p => p !== 'method')
+        state.remainingParameters = state.remainingParameters.filter((p) => p !== 'method')
       }
     }
   }
@@ -528,7 +538,8 @@ export class ConversationalIntelligenceEngine {
 
     // Check required parameters
     for (const [paramName, paramConfig] of Object.entries(blockConfig.inputs)) {
-      const isRequired = blockConfig.subBlocks?.find(sub => sub.id === paramName)?.required || false
+      const isRequired =
+        blockConfig.subBlocks?.find((sub) => sub.id === paramName)?.required || false
       const hasValue = paramName in state.collectedParameters
 
       if (isRequired && !hasValue) {
@@ -536,7 +547,7 @@ export class ConversationalIntelligenceEngine {
           parameter: paramName,
           issue: 'required',
           message: `${paramName} is required`,
-          suggestion: this.getParameterSuggestion(paramName, tool)
+          suggestion: this.getParameterSuggestion(paramName, tool),
         })
       }
     }
@@ -550,7 +561,7 @@ export class ConversationalIntelligenceEngine {
           issue: 'invalid_format',
           message: validation.error || 'Invalid value',
           suggestion: validation.suggestion,
-          examples: validation.examples
+          examples: validation.examples,
         })
       }
     }
@@ -571,7 +582,7 @@ export class ConversationalIntelligenceEngine {
         return {
           valid: false,
           error: 'Invalid email format',
-          examples: ['user@example.com', 'contact@company.org']
+          examples: ['user@example.com', 'contact@company.org'],
         }
       }
     }
@@ -584,7 +595,7 @@ export class ConversationalIntelligenceEngine {
         return {
           valid: false,
           error: 'Invalid URL format',
-          examples: ['https://api.example.com/endpoint', 'https://www.example.com']
+          examples: ['https://api.example.com/endpoint', 'https://www.example.com'],
         }
       }
     }
@@ -595,7 +606,7 @@ export class ConversationalIntelligenceEngine {
         return {
           valid: false,
           error: 'Channel should start with # for channels or @ for direct messages',
-          examples: ['#general', '#dev-team', '@username']
+          examples: ['#general', '#dev-team', '@username'],
         }
       }
     }
@@ -606,7 +617,10 @@ export class ConversationalIntelligenceEngine {
   /**
    * Get parameter suggestion based on context
    */
-  private getParameterSuggestion(paramName: string, tool: EnhancedToolDescription): string | undefined {
+  private getParameterSuggestion(
+    paramName: string,
+    tool: EnhancedToolDescription
+  ): string | undefined {
     const suggestions: Record<string, string> = {
       to: 'Who should receive this email?',
       subject: 'What should the email subject be?',
@@ -614,7 +628,7 @@ export class ConversationalIntelligenceEngine {
       channel: 'Which channel should receive the message?',
       url: 'What API endpoint do you want to call?',
       method: 'What HTTP method should be used? (GET, POST, PUT, DELETE)',
-      operation: `What do you want to do with ${tool.name}?`
+      operation: `What do you want to do with ${tool.name}?`,
     }
 
     return suggestions[paramName]
@@ -643,34 +657,37 @@ export class ConversationalIntelligenceEngine {
   /**
    * Generate suggestions for current parameter
    */
-  private async generateParameterSuggestions(state: ConversationState): Promise<ParameterSuggestion[]> {
+  private async generateParameterSuggestions(
+    state: ConversationState
+  ): Promise<ParameterSuggestion[]> {
     const suggestions: ParameterSuggestion[] = []
 
     if (!state.currentParameter || !state.currentTool) return suggestions
 
     // Get suggestions from workflow context
     if (state.userContext.workflowContext?.availableVariables) {
-      const workflowVar = state.userContext.workflowContext.availableVariables[state.currentParameter]
+      const workflowVar =
+        state.userContext.workflowContext.availableVariables[state.currentParameter]
       if (workflowVar) {
         suggestions.push({
           parameter: state.currentParameter,
           value: workflowVar,
           confidence: 0.9,
           reasoning: 'Available from previous workflow step',
-          source: 'workflow'
+          source: 'workflow',
         })
       }
     }
 
     // Get suggestions from user's tool usage patterns
     const usage = state.userContext.toolUsagePatterns[state.currentTool.id]
-    if (usage && usage[state.currentParameter]) {
+    if (usage?.[state.currentParameter]) {
       suggestions.push({
         parameter: state.currentParameter,
         value: usage[state.currentParameter],
         confidence: 0.7,
         reasoning: 'Based on your previous usage',
-        source: 'history'
+        source: 'history',
       })
     }
 
@@ -694,12 +711,14 @@ export class ConversationalIntelligenceEngine {
     if (state.validationIssues.length > 0) {
       // Handle validation issues
       message = this.generateValidationMessage(state)
-      suggestions = state.validationIssues.map(issue => issue.suggestion).filter(Boolean) as string[]
+      suggestions = state.validationIssues
+        .map((issue) => issue.suggestion)
+        .filter(Boolean) as string[]
     } else if (state.remainingParameters.length > 0) {
       // Ask for next parameter
       message = this.generateParameterRequest(state)
-      suggestions = this.generateParameterSuggestions(state).then(sugs =>
-        sugs.map(s => `Try: "${s.value}" (${s.reasoning})`)
+      suggestions = this.generateParameterSuggestions(state).then((sugs) =>
+        sugs.map((s) => `Try: "${s.value}" (${s.reasoning})`)
       ) as any
       quickActions = this.generateParameterQuickActions(state)
     } else {
@@ -710,8 +729,8 @@ export class ConversationalIntelligenceEngine {
           id: 'execute',
           label: `Execute ${state.currentTool?.name}`,
           action: 'execute_tool',
-          parameters: state.collectedParameters
-        }
+          parameters: state.collectedParameters,
+        },
       ]
     }
 
@@ -724,8 +743,8 @@ export class ConversationalIntelligenceEngine {
       metadata: {
         tool: state.currentTool?.id,
         parameter: state.currentParameter,
-        confidence: status.completionPercentage / 100
-      }
+        confidence: status.completionPercentage / 100,
+      },
     })
 
     return {
@@ -734,7 +753,7 @@ export class ConversationalIntelligenceEngine {
       status,
       suggestions: await suggestions,
       quickActions,
-      conversationHistory: state.messages.slice(-10) // Last 10 messages
+      conversationHistory: state.messages.slice(-10), // Last 10 messages
     }
   }
 
@@ -765,7 +784,7 @@ export class ConversationalIntelligenceEngine {
     const param = state.currentParameter!
 
     // Get conversational prompt for this parameter
-    const prompt = tool.conversationalPrompts.parameterQuestions.find(p => p.parameter === param)
+    const prompt = tool.conversationalPrompts.parameterQuestions.find((p) => p.parameter === param)
 
     if (prompt) {
       return prompt.question
@@ -797,7 +816,7 @@ export class ConversationalIntelligenceEngine {
           id: `suggestion-${index}`,
           label: `Use: ${suggestion.value}`,
           action: 'apply_suggestion',
-          parameters: { [suggestion.parameter]: suggestion.value }
+          parameters: { [suggestion.parameter]: suggestion.value },
         })
       })
     }
@@ -827,7 +846,7 @@ export class ConversationalIntelligenceEngine {
       conversationalSummary: {
         achievement: `Successfully executed ${tool.name}`,
         highlights: [execution.conversationalResult.summary],
-        notes: execution.userFriendlyErrors
+        notes: execution.userFriendlyErrors,
       },
       interactiveElements: {
         suggestedActions: [
@@ -836,19 +855,19 @@ export class ConversationalIntelligenceEngine {
             label: 'View Details',
             description: 'See the full execution result',
             action: 'view_details',
-            confidence: 1.0
-          }
+            confidence: 1.0,
+          },
         ],
         quickCommands: [
           {
             trigger: 'again',
             description: `Run ${tool.name} again with same parameters`,
             action: 'repeat_execution',
-            parameters: state.collectedParameters
-          }
+            parameters: state.collectedParameters,
+          },
         ],
-        relatedSuggestions: execution.conversationalResult.suggestedNextSteps || []
-      }
+        relatedSuggestions: execution.conversationalResult.suggestedNextSteps || [],
+      },
     }
   }
 
@@ -859,9 +878,7 @@ export class ConversationalIntelligenceEngine {
     const blockConfig = toolRegistry.getBlockConfig(tool.id)
     if (!blockConfig?.subBlocks) return []
 
-    return blockConfig.subBlocks
-      .filter(sub => sub.required)
-      .map(sub => sub.id)
+    return blockConfig.subBlocks.filter((sub) => sub.required).map((sub) => sub.id)
   }
 
   private calculateTotalSteps(tool: EnhancedToolDescription): number {

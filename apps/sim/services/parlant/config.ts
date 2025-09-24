@@ -6,7 +6,6 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { env } from '@/lib/env'
 import type { ParlantConfig, ServiceConfig } from './types'
 
 const logger = createLogger('ParlantConfig')
@@ -19,7 +18,7 @@ const ENV_KEYS = {
   PARLANT_RETRY_ATTEMPTS: 'PARLANT_RETRY_ATTEMPTS',
   PARLANT_RETRY_DELAY: 'PARLANT_RETRY_DELAY',
   PARLANT_LOG_LEVEL: 'PARLANT_LOG_LEVEL',
-  PARLANT_AUTH_ENABLED: 'PARLANT_AUTH_ENABLED'
+  PARLANT_AUTH_ENABLED: 'PARLANT_AUTH_ENABLED',
 } as const
 
 // Default configuration values
@@ -34,7 +33,7 @@ const DEFAULTS = {
   workspaceValidation: true,
   includeRequests: false,
   includeResponses: false,
-  maxDelay: 10000 // 10 seconds
+  maxDelay: 10000, // 10 seconds
 } as const
 
 /**
@@ -55,8 +54,8 @@ export function getParlantConfig(): ParlantConfig {
   const timeoutStr = process.env[ENV_KEYS.PARLANT_TIMEOUT]
   let timeout = DEFAULTS.timeout
   if (timeoutStr) {
-    const parsed = parseInt(timeoutStr, 10)
-    if (!isNaN(parsed) && parsed > 0) {
+    const parsed = Number.parseInt(timeoutStr, 10)
+    if (!Number.isNaN(parsed) && parsed > 0) {
       timeout = parsed
     } else {
       logger.warn(`Invalid PARLANT_TIMEOUT: ${timeoutStr}, using default: ${DEFAULTS.timeout}`)
@@ -67,11 +66,13 @@ export function getParlantConfig(): ParlantConfig {
   const retryAttemptsStr = process.env[ENV_KEYS.PARLANT_RETRY_ATTEMPTS]
   let retryAttempts = DEFAULTS.retryAttempts
   if (retryAttemptsStr) {
-    const parsed = parseInt(retryAttemptsStr, 10)
-    if (!isNaN(parsed) && parsed >= 0 && parsed <= 10) {
+    const parsed = Number.parseInt(retryAttemptsStr, 10)
+    if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 10) {
       retryAttempts = parsed
     } else {
-      logger.warn(`Invalid PARLANT_RETRY_ATTEMPTS: ${retryAttemptsStr}, using default: ${DEFAULTS.retryAttempts}`)
+      logger.warn(
+        `Invalid PARLANT_RETRY_ATTEMPTS: ${retryAttemptsStr}, using default: ${DEFAULTS.retryAttempts}`
+      )
     }
   }
 
@@ -79,11 +80,13 @@ export function getParlantConfig(): ParlantConfig {
   const retryDelayStr = process.env[ENV_KEYS.PARLANT_RETRY_DELAY]
   let retryDelay = DEFAULTS.retryDelay
   if (retryDelayStr) {
-    const parsed = parseInt(retryDelayStr, 10)
-    if (!isNaN(parsed) && parsed >= 100) {
+    const parsed = Number.parseInt(retryDelayStr, 10)
+    if (!Number.isNaN(parsed) && parsed >= 100) {
       retryDelay = parsed
     } else {
-      logger.warn(`Invalid PARLANT_RETRY_DELAY: ${retryDelayStr}, using default: ${DEFAULTS.retryDelay}`)
+      logger.warn(
+        `Invalid PARLANT_RETRY_DELAY: ${retryDelayStr}, using default: ${DEFAULTS.retryDelay}`
+      )
     }
   }
 
@@ -92,7 +95,7 @@ export function getParlantConfig(): ParlantConfig {
     timeout,
     retryAttempts,
     retryDelay,
-    apiKey: process.env[ENV_KEYS.PARLANT_API_KEY]
+    apiKey: process.env[ENV_KEYS.PARLANT_API_KEY],
   }
 
   logger.info('Parlant configuration loaded', {
@@ -100,7 +103,7 @@ export function getParlantConfig(): ParlantConfig {
     timeout: config.timeout,
     retryAttempts: config.retryAttempts,
     retryDelay: config.retryDelay,
-    hasApiKey: !!config.apiKey
+    hasApiKey: !!config.apiKey,
   })
 
   return config
@@ -128,19 +131,19 @@ export function getServiceConfig(): ServiceConfig {
     auth: {
       enabled: authEnabled,
       apiKeyRequired: DEFAULTS.apiKeyRequired,
-      workspaceValidation: DEFAULTS.workspaceValidation
+      workspaceValidation: DEFAULTS.workspaceValidation,
     },
     logging: {
       level: logLevel,
       includeRequests: DEFAULTS.includeRequests,
-      includeResponses: DEFAULTS.includeResponses
+      includeResponses: DEFAULTS.includeResponses,
     },
     retry: {
       enabled: parlantConfig.retryAttempts > 0,
       maxAttempts: parlantConfig.retryAttempts,
       baseDelay: parlantConfig.retryDelay,
-      maxDelay: DEFAULTS.maxDelay
-    }
+      maxDelay: DEFAULTS.maxDelay,
+    },
   }
 
   return config
@@ -174,10 +177,14 @@ export function validateConfig(): ConfigValidation {
 
     // Validate timeout
     if (config.timeout < 1000) {
-      warnings.push(`Very low timeout value: ${config.timeout}ms. Consider increasing for reliable requests.`)
+      warnings.push(
+        `Very low timeout value: ${config.timeout}ms. Consider increasing for reliable requests.`
+      )
     }
     if (config.timeout > 120000) {
-      warnings.push(`Very high timeout value: ${config.timeout}ms. Consider reducing for better UX.`)
+      warnings.push(
+        `Very high timeout value: ${config.timeout}ms. Consider reducing for better UX.`
+      )
     }
 
     // Validate retry configuration
@@ -193,9 +200,10 @@ export function validateConfig(): ConfigValidation {
     if (!config.apiKey) {
       warnings.push('No PARLANT_API_KEY configured. Some features may be limited.')
     }
-
   } catch (error) {
-    errors.push(`Configuration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    errors.push(
+      `Configuration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 
   const isValid = errors.length === 0
@@ -211,7 +219,7 @@ export function validateConfig(): ConfigValidation {
   return {
     isValid,
     errors,
-    warnings
+    warnings,
   }
 }
 
@@ -233,16 +241,16 @@ export function getEnvironmentConfig() {
       logging: {
         level: 'debug' as const,
         includeRequests: true,
-        includeResponses: true
-      }
+        includeResponses: true,
+      },
     }),
     // Production-specific settings
     ...(isProduction && {
       logging: {
         level: 'warn' as const,
         includeRequests: false,
-        includeResponses: false
-      }
+        includeResponses: false,
+      },
     }),
     // Test-specific settings
     ...(isTest && {
@@ -250,9 +258,9 @@ export function getEnvironmentConfig() {
         baseUrl: 'http://localhost:8801', // Different port for tests
         timeout: 5000,
         retryAttempts: 1,
-        retryDelay: 100
-      }
-    })
+        retryDelay: 100,
+      },
+    }),
   }
 }
 

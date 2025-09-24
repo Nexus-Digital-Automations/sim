@@ -6,7 +6,7 @@
  */
 
 import { createCustomToolAdapter } from '../factory'
-import type { ToolAdapter, AdapterContext, AdapterResult } from '../types'
+import type { AdapterContext, AdapterResult, ToolAdapter } from '../types'
 
 export class WorkflowManagementAdapters {
   createAdapters(): ToolAdapter[] {
@@ -30,7 +30,13 @@ export class WorkflowManagementAdapters {
           template_name: {
             type: 'string',
             description: 'Name of the workflow template to use',
-            enum: ['data-processing', 'api-integration', 'notification-system', 'reporting', 'automation'],
+            enum: [
+              'data-processing',
+              'api-integration',
+              'notification-system',
+              'reporting',
+              'automation',
+            ],
           },
           name: {
             type: 'string',
@@ -101,7 +107,8 @@ export class WorkflowManagementAdapters {
             error: {
               code: 'TEMPLATE_CREATION_ERROR',
               message: error.message || 'Failed to create workflow from template',
-              user_message: 'There was a problem creating the workflow from the template. Please try again.',
+              user_message:
+                'There was a problem creating the workflow from the template. Please try again.',
               suggestions: [
                 'Check your template parameters',
                 'Try a different template',
@@ -143,10 +150,7 @@ export class WorkflowManagementAdapters {
             default: 'comprehensive',
           },
         },
-        oneOf: [
-          { required: ['workflow_id'] },
-          { required: ['yaml_content'] },
-        ],
+        oneOf: [{ required: ['workflow_id'] }, { required: ['yaml_content'] }],
       },
       async (args: any, context: AdapterContext): Promise<AdapterResult> => {
         try {
@@ -200,7 +204,8 @@ export class WorkflowManagementAdapters {
             error: {
               code: 'VALIDATION_ERROR',
               message: error.message || 'Failed to validate workflow',
-              user_message: 'There was a problem validating the workflow. Please check the input and try again.',
+              user_message:
+                'There was a problem validating the workflow. Please check the input and try again.',
               suggestions: ['Check your workflow content', 'Try a different validation level'],
               retryable: true,
             },
@@ -261,7 +266,7 @@ export class WorkflowManagementAdapters {
             schedule_time,
             cron_expression,
             timezone = 'UTC',
-            enabled = true
+            enabled = true,
           } = args
 
           // Validate schedule parameters
@@ -326,7 +331,8 @@ export class WorkflowManagementAdapters {
             error: {
               code: 'SCHEDULE_CREATION_ERROR',
               message: error.message || 'Failed to schedule workflow',
-              user_message: 'There was a problem scheduling the workflow. Please check your schedule settings.',
+              user_message:
+                'There was a problem scheduling the workflow. Please check your schedule settings.',
               suggestions: ['Check your schedule parameters', 'Verify the workflow exists'],
               retryable: true,
             },
@@ -351,7 +357,8 @@ export class WorkflowManagementAdapters {
         properties: {
           workflow_id: {
             type: 'string',
-            description: 'ID of the specific workflow to analyze (optional for workspace-wide analytics)',
+            description:
+              'ID of the specific workflow to analyze (optional for workspace-wide analytics)',
           },
           time_range: {
             type: 'string',
@@ -364,7 +371,14 @@ export class WorkflowManagementAdapters {
             description: 'Specific metrics to include',
             items: {
               type: 'string',
-              enum: ['executions', 'success_rate', 'average_duration', 'error_rate', 'resource_usage', 'cost'],
+              enum: [
+                'executions',
+                'success_rate',
+                'average_duration',
+                'error_rate',
+                'resource_usage',
+                'cost',
+              ],
             },
             default: ['executions', 'success_rate', 'average_duration', 'error_rate'],
           },
@@ -373,7 +387,11 @@ export class WorkflowManagementAdapters {
       },
       async (args: any, context: AdapterContext): Promise<AdapterResult> => {
         try {
-          const { workflow_id, time_range = '7d', metrics = ['executions', 'success_rate', 'average_duration', 'error_rate'] } = args
+          const {
+            workflow_id,
+            time_range = '7d',
+            metrics = ['executions', 'success_rate', 'average_duration', 'error_rate'],
+          } = args
 
           // Get analytics data
           const analytics = await this.getWorkflowAnalytics({
@@ -455,10 +473,17 @@ export class WorkflowManagementAdapters {
       },
       async (args: any, context: AdapterContext): Promise<AdapterResult> => {
         try {
-          const { action, workflow_id, version_name, version_description, from_version, to_version } = args
+          const {
+            action,
+            workflow_id,
+            version_name,
+            version_description,
+            from_version,
+            to_version,
+          } = args
 
           switch (action) {
-            case 'create_version':
+            case 'create_version': {
               if (!version_name) {
                 throw new Error('version_name is required for create_version action')
               }
@@ -473,18 +498,22 @@ export class WorkflowManagementAdapters {
                 data: newVersion,
                 message: `Created version '${version_name}' for workflow`,
               }
+            }
 
-            case 'list_versions':
+            case 'list_versions': {
               const versions = await this.listWorkflowVersions(workflow_id, context.workspace_id)
               return {
                 success: true,
                 data: { versions },
                 message: `Found ${versions.length} versions for workflow`,
               }
+            }
 
-            case 'compare_versions':
+            case 'compare_versions': {
               if (!from_version || !to_version) {
-                throw new Error('from_version and to_version are required for compare_versions action')
+                throw new Error(
+                  'from_version and to_version are required for compare_versions action'
+                )
               }
               const comparison = await this.compareWorkflowVersions({
                 workflow_id,
@@ -497,8 +526,9 @@ export class WorkflowManagementAdapters {
                 data: comparison,
                 message: `Compared versions ${from_version} and ${to_version}`,
               }
+            }
 
-            case 'restore_version':
+            case 'restore_version': {
               if (!to_version) {
                 throw new Error('to_version is required for restore_version action')
               }
@@ -512,6 +542,7 @@ export class WorkflowManagementAdapters {
                 data: restored,
                 message: `Restored workflow to version ${to_version}`,
               }
+            }
 
             default:
               throw new Error(`Unknown action: ${action}`)

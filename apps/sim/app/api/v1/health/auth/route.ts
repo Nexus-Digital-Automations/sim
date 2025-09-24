@@ -5,12 +5,12 @@
  * auth service status, token validation, and integration health.
  */
 
+import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
+import { db } from '../../../../../../packages/db'
 import { parlantLoggers } from '../../../../../../packages/parlant-server/logging'
 import { checkRateLimit, createRateLimitResponse } from '../../middleware'
-import { db } from '../../../../../../packages/db'
-import { sql } from 'drizzle-orm'
 
 const logger = createLogger('AuthHealthAPI')
 
@@ -51,7 +51,7 @@ async function checkAuthSystemHealth() {
         SELECT COUNT(*) as count
         FROM information_schema.tables
         WHERE table_name = 'verification_token'
-      `)
+      `),
     ])
 
     const duration = performance.now() - startTime
@@ -63,26 +63,29 @@ async function checkAuthSystemHealth() {
       details: {
         userTable: {
           accessible: true,
-          recordCount: parseInt((userTableCheck[0] as any)?.user_count || '0')
+          recordCount: Number.parseInt((userTableCheck[0] as any)?.user_count || '0'),
         },
         workspaceTable: {
           accessible: true,
-          recordCount: parseInt((workspaceTableCheck[0] as any)?.workspace_count || '0')
+          recordCount: Number.parseInt((workspaceTableCheck[0] as any)?.workspace_count || '0'),
         },
         authTables: {
-          sessionTable: sessionChecks[0].status === 'fulfilled' &&
-            parseInt(((sessionChecks[0].value as any)[0])?.count || '0') > 0,
-          accountTable: sessionChecks[1].status === 'fulfilled' &&
-            parseInt(((sessionChecks[1].value as any)[0])?.count || '0') > 0,
-          verificationTable: sessionChecks[2].status === 'fulfilled' &&
-            parseInt(((sessionChecks[2].value as any)[0])?.count || '0') > 0
+          sessionTable:
+            sessionChecks[0].status === 'fulfilled' &&
+            Number.parseInt((sessionChecks[0].value as any)[0]?.count || '0') > 0,
+          accountTable:
+            sessionChecks[1].status === 'fulfilled' &&
+            Number.parseInt((sessionChecks[1].value as any)[0]?.count || '0') > 0,
+          verificationTable:
+            sessionChecks[2].status === 'fulfilled' &&
+            Number.parseInt((sessionChecks[2].value as any)[0]?.count || '0') > 0,
         },
         connectivity: {
           databaseConnection: true,
-          queryResponseTime: duration
-        }
+          queryResponseTime: duration,
+        },
       },
-      duration
+      duration,
     }
   } catch (error) {
     const duration = performance.now() - startTime
@@ -95,10 +98,10 @@ async function checkAuthSystemHealth() {
       details: {
         connectivity: {
           databaseConnection: false,
-          queryResponseTime: duration
-        }
+          queryResponseTime: duration,
+        },
       },
-      duration
+      duration,
     }
   }
 }
@@ -115,7 +118,7 @@ async function checkOAuthIntegrationHealth() {
       stripeConfigured: !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET),
       nextAuthConfigured: !!(process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_URL),
       githubConfigured: !!(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET),
-      googleConfigured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+      googleConfigured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
     }
 
     // Check OAuth token table accessibility if it exists
@@ -124,7 +127,7 @@ async function checkOAuthIntegrationHealth() {
         SELECT COUNT(*) as count
         FROM information_schema.tables
         WHERE table_name LIKE '%oauth%' OR table_name LIKE '%token%'
-      `)
+      `),
     ])
 
     const duration = performance.now() - startTime
@@ -136,17 +139,19 @@ async function checkOAuthIntegrationHealth() {
       details: {
         providers: oauthConfig,
         tables: {
-          oauthTablesFound: oauthTableCheck[0].status === 'fulfilled' ?
-            parseInt(((oauthTableCheck[0].value as any)[0])?.count || '0') : 0
+          oauthTablesFound:
+            oauthTableCheck[0].status === 'fulfilled'
+              ? Number.parseInt((oauthTableCheck[0].value as any)[0]?.count || '0')
+              : 0,
         },
         configuration: {
           totalProvidersConfigured: Object.values(oauthConfig).filter(Boolean).length,
           missingConfigs: Object.entries(oauthConfig)
             .filter(([_, configured]) => !configured)
-            .map(([provider, _]) => provider)
-        }
+            .map(([provider, _]) => provider),
+        },
       },
-      duration
+      duration,
     }
   } catch (error) {
     const duration = performance.now() - startTime
@@ -156,7 +161,7 @@ async function checkOAuthIntegrationHealth() {
       timestamp: new Date().toISOString(),
       service: 'oauth',
       error: error instanceof Error ? error.message : 'OAuth integration check failed',
-      duration
+      duration,
     }
   }
 }
@@ -174,7 +179,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     logger.info('Authentication system health check requested', {
       url: request.url,
       requestId,
-      userAgent: request.headers.get('user-agent')
+      userAgent: request.headers.get('user-agent'),
     })
 
     // Check rate limit
@@ -186,32 +191,40 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Run auth system checks in parallel
     const [authSystemHealth, oauthHealth] = await Promise.allSettled([
       checkAuthSystemHealth(),
-      checkOAuthIntegrationHealth()
+      checkOAuthIntegrationHealth(),
     ])
 
-    const authResult = authSystemHealth.status === 'fulfilled' ?
-      authSystemHealth.value : {
-        status: 'unhealthy' as const,
-        service: 'auth',
-        error: 'Auth system check failed',
-        timestamp: new Date().toISOString(),
-        duration: 0
-      }
+    const authResult =
+      authSystemHealth.status === 'fulfilled'
+        ? authSystemHealth.value
+        : {
+            status: 'unhealthy' as const,
+            service: 'auth',
+            error: 'Auth system check failed',
+            timestamp: new Date().toISOString(),
+            duration: 0,
+          }
 
-    const oauthResult = oauthHealth.status === 'fulfilled' ?
-      oauthHealth.value : {
-        status: 'degraded' as const,
-        service: 'oauth',
-        error: 'OAuth check failed',
-        timestamp: new Date().toISOString(),
-        duration: 0
-      }
+    const oauthResult =
+      oauthHealth.status === 'fulfilled'
+        ? oauthHealth.value
+        : {
+            status: 'degraded' as const,
+            service: 'oauth',
+            error: 'OAuth check failed',
+            timestamp: new Date().toISOString(),
+            duration: 0,
+          }
 
     // Determine overall auth health
     let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy'
     if (authResult.status === 'unhealthy') {
       overallStatus = 'unhealthy'
-    } else if (authResult.status === 'degraded' || oauthResult.status === 'degraded' || oauthResult.status === 'unhealthy') {
+    } else if (
+      authResult.status === 'degraded' ||
+      oauthResult.status === 'degraded' ||
+      oauthResult.status === 'unhealthy'
+    ) {
       overallStatus = 'degraded'
     }
 
@@ -222,31 +235,35 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       requestId,
       components: {
         authSystem: authResult,
-        oauthIntegration: oauthResult
+        oauthIntegration: oauthResult,
       },
       summary: {
         coreAuthFunctional: authResult.status !== 'unhealthy',
         oauthIntegrationHealthy: oauthResult.status === 'healthy',
         totalProviders: oauthResult.details?.configuration?.totalProvidersConfigured || 0,
         userTableAccessible: authResult.details?.userTable?.accessible || false,
-        workspaceTableAccessible: authResult.details?.workspaceTable?.accessible || false
+        workspaceTableAccessible: authResult.details?.workspaceTable?.accessible || false,
       },
-      duration: performance.now() - startTime
+      duration: performance.now() - startTime,
     }
 
     // Log comprehensive auth health status
-    parlantLoggers.auth.info('Authentication system health check completed', {
-      operation: 'auth_health_check',
-      duration: response.duration,
-      status: overallStatus,
-      coreAuthStatus: authResult.status,
-      oauthStatus: oauthResult.status,
-      providersConfigured: response.summary.totalProviders
-    }, requestId)
+    parlantLoggers.auth.info(
+      'Authentication system health check completed',
+      {
+        operation: 'auth_health_check',
+        duration: response.duration,
+        status: overallStatus,
+        coreAuthStatus: authResult.status,
+        oauthStatus: oauthResult.status,
+        providersConfigured: response.summary.totalProviders,
+      },
+      requestId
+    )
 
     // Set HTTP status based on health
-    const httpStatus = overallStatus === 'unhealthy' ? 503 :
-                      overallStatus === 'degraded' ? 200 : 200
+    const httpStatus =
+      overallStatus === 'unhealthy' ? 503 : overallStatus === 'degraded' ? 200 : 200
 
     return NextResponse.json(response, {
       status: httpStatus,
@@ -256,19 +273,23 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         'X-Health-Status': overallStatus,
         'X-Service': 'auth',
         'X-Request-Id': requestId,
-        'X-Response-Time': `${response.duration}ms`
-      }
+        'X-Response-Time': `${response.duration}ms`,
+      },
     })
   } catch (error) {
     const duration = performance.now() - startTime
 
     logger.error('Authentication health check API error', { error, duration, requestId })
-    parlantLoggers.auth.error('Authentication health check failed', {
-      operation: 'auth_health_check',
-      duration,
-      errorType: 'system',
-      errorCode: error instanceof Error ? error.name : 'UNKNOWN_ERROR'
-    }, requestId)
+    parlantLoggers.auth.error(
+      'Authentication health check failed',
+      {
+        operation: 'auth_health_check',
+        duration,
+        errorType: 'system',
+        errorCode: error instanceof Error ? error.name : 'UNKNOWN_ERROR',
+      },
+      requestId
+    )
 
     return NextResponse.json(
       {
@@ -277,7 +298,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         timestamp: new Date().toISOString(),
         requestId,
         error: error instanceof Error ? error.message : 'Authentication health check failed',
-        duration
+        duration,
       },
       {
         status: 500,
@@ -285,8 +306,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           'Content-Type': 'application/json',
           'X-Health-Status': 'unhealthy',
           'X-Service': 'auth',
-          'X-Request-Id': requestId
-        }
+          'X-Request-Id': requestId,
+        },
       }
     )
   }
@@ -314,7 +335,7 @@ export async function GET_VALIDATE(request: NextRequest): Promise<NextResponse> 
     const validationResults = {
       userLookup: false,
       workspaceAccess: false,
-      sessionSupport: false
+      sessionSupport: false,
     }
 
     try {
@@ -340,7 +361,8 @@ export async function GET_VALIDATE(request: NextRequest): Promise<NextResponse> 
         FROM information_schema.tables
         WHERE table_name = 'session'
       `)
-      validationResults.sessionSupport = parseInt((sessionTableExists[0] as any)?.count || '0') > 0
+      validationResults.sessionSupport =
+        Number.parseInt((sessionTableExists[0] as any)?.count || '0') > 0
     } catch (error) {
       logger.warn('Session support validation failed', { error })
     }
@@ -348,8 +370,12 @@ export async function GET_VALIDATE(request: NextRequest): Promise<NextResponse> 
     const validationCount = Object.values(validationResults).filter(Boolean).length
     const totalTests = Object.keys(validationResults).length
 
-    const status = validationCount === totalTests ? 'healthy' :
-                   validationCount >= totalTests / 2 ? 'degraded' : 'unhealthy'
+    const status =
+      validationCount === totalTests
+        ? 'healthy'
+        : validationCount >= totalTests / 2
+          ? 'degraded'
+          : 'unhealthy'
 
     const response = {
       service: 'auth-validation',
@@ -360,18 +386,22 @@ export async function GET_VALIDATE(request: NextRequest): Promise<NextResponse> 
       summary: {
         testsRun: totalTests,
         testsPassed: validationCount,
-        successRate: (validationCount / totalTests * 100).toFixed(1) + '%'
+        successRate: `${((validationCount / totalTests) * 100).toFixed(1)}%`,
       },
-      duration: performance.now() - startTime
+      duration: performance.now() - startTime,
     }
 
-    parlantLoggers.auth.info('Authentication validation completed', {
-      operation: 'auth_validation',
-      duration: response.duration,
-      status,
-      testsRun: totalTests,
-      testsPassed: validationCount
-    }, requestId)
+    parlantLoggers.auth.info(
+      'Authentication validation completed',
+      {
+        operation: 'auth_validation',
+        duration: response.duration,
+        status,
+        testsRun: totalTests,
+        testsPassed: validationCount,
+      },
+      requestId
+    )
 
     return NextResponse.json(response, {
       status: status === 'unhealthy' ? 503 : 200,
@@ -379,8 +409,8 @@ export async function GET_VALIDATE(request: NextRequest): Promise<NextResponse> 
         'Content-Type': 'application/json',
         'X-Health-Status': status,
         'X-Service': 'auth-validation',
-        'X-Request-Id': requestId
-      }
+        'X-Request-Id': requestId,
+      },
     })
   } catch (error) {
     const duration = performance.now() - startTime
@@ -393,7 +423,7 @@ export async function GET_VALIDATE(request: NextRequest): Promise<NextResponse> 
         timestamp: new Date().toISOString(),
         requestId,
         error: error instanceof Error ? error.message : 'Authentication validation failed',
-        duration
+        duration,
       },
       { status: 500 }
     )

@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
 import { db } from '@sim/db'
 import * as schema from '@sim/db/schema'
-import { eq, and } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
+import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('UserWorkspacesAPI')
@@ -11,27 +10,18 @@ const logger = createLogger('UserWorkspacesAPI')
  * Get user's workspaces with permissions
  * Used by Parlant server for authentication bridge
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { userId: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { userId: string } }) {
   try {
     const { userId } = params
 
     if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
     }
 
     // Validate the request is authenticated (internal service call)
     const authHeader = request.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // For internal service calls, we trust the JWT from Parlant server
@@ -50,18 +40,12 @@ export async function GET(
           ownerId: schema.workspace.ownerId,
           createdAt: schema.workspace.createdAt,
           updatedAt: schema.workspace.updatedAt,
-        }
+        },
       })
       .from(schema.permissions)
-      .leftJoin(
-        schema.workspace,
-        eq(schema.permissions.entityId, schema.workspace.id)
-      )
+      .leftJoin(schema.workspace, eq(schema.permissions.entityId, schema.workspace.id))
       .where(
-        and(
-          eq(schema.permissions.userId, userId),
-          eq(schema.permissions.entityType, 'workspace')
-        )
+        and(eq(schema.permissions.userId, userId), eq(schema.permissions.entityType, 'workspace'))
       )
 
     // Transform permissions data into workspace objects
@@ -80,7 +64,7 @@ export async function GET(
           created_at: permission.workspace.createdAt?.toISOString(),
           updated_at: permission.workspace.updatedAt?.toISOString(),
           permissions: [],
-          role: permission.workspace.ownerId === userId ? 'owner' : 'member'
+          role: permission.workspace.ownerId === userId ? 'owner' : 'member',
         })
       }
 
@@ -95,18 +79,14 @@ export async function GET(
 
     return NextResponse.json({
       user_id: userId,
-      workspaces
+      workspaces,
     })
-
   } catch (error) {
     logger.error('Error fetching user workspaces:', {
       error: error instanceof Error ? error.message : error,
-      userId: params.userId
+      userId: params.userId,
     })
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1,31 +1,27 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
+  AlertCircle,
   Bot,
-  Settings,
+  Edit,
   FileText,
+  Info,
+  Loader2,
   MapPin,
+  Plus,
+  Save,
+  Settings,
+  Trash2,
   TrendingUp,
   X,
-  Save,
-  Info,
-  Plus,
-  Edit,
-  Trash2,
-  Loader2,
-  AlertCircle,
 } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -33,31 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { useAgentManagementStore } from '@/stores/agents'
-import type { ParlantAgent, Guideline, Journey, UpdateAgentRequest } from '@/stores/agents/types'
 import { createLogger } from '@/lib/logs/console/logger'
+import { useAgentManagementStore } from '@/stores/agents'
+import type { Guideline, Journey, ParlantAgent, UpdateAgentRequest } from '@/stores/agents/types'
 
 const logger = createLogger('AgentConfigurationPanel')
 
@@ -87,7 +66,11 @@ const VERBOSITY_OPTIONS = [
   { value: 'comprehensive', label: 'Comprehensive' },
 ]
 
-function GuidelineCard({ guideline, onEdit, onDelete }: {
+function GuidelineCard({
+  guideline,
+  onEdit,
+  onDelete,
+}: {
   guideline: Guideline
   onEdit: (guideline: Guideline) => void
   onDelete: (guideline: Guideline) => void
@@ -105,10 +88,7 @@ function GuidelineCard({ guideline, onEdit, onDelete }: {
           <div className='min-w-0 flex-1'>
             <div className='flex items-center gap-2'>
               <CardTitle className='truncate text-sm'>{guideline.title}</CardTitle>
-              <Badge
-                variant='outline'
-                className={`text-xs ${priorityColors[guideline.priority]}`}
-              >
+              <Badge variant='outline' className={`text-xs ${priorityColors[guideline.priority]}`}>
                 {guideline.priority}
               </Badge>
               {!guideline.enabled && (
@@ -117,9 +97,7 @@ function GuidelineCard({ guideline, onEdit, onDelete }: {
                 </Badge>
               )}
             </div>
-            <CardDescription className='mt-1 text-xs'>
-              {guideline.description}
-            </CardDescription>
+            <CardDescription className='mt-1 text-xs'>{guideline.description}</CardDescription>
           </div>
           <div className='ml-2 flex opacity-0 transition-opacity group-hover:opacity-100'>
             <Button
@@ -142,15 +120,17 @@ function GuidelineCard({ guideline, onEdit, onDelete }: {
         </div>
       </CardHeader>
       <CardContent className='pt-0'>
-        <p className='text-muted-foreground text-xs line-clamp-3'>
-          {guideline.content}
-        </p>
+        <p className='line-clamp-3 text-muted-foreground text-xs'>{guideline.content}</p>
       </CardContent>
     </Card>
   )
 }
 
-function JourneyCard({ journey, onEdit, onDelete }: {
+function JourneyCard({
+  journey,
+  onEdit,
+  onDelete,
+}: {
   journey: Journey
   onEdit: (journey: Journey) => void
   onDelete: (journey: Journey) => void
@@ -168,9 +148,7 @@ function JourneyCard({ journey, onEdit, onDelete }: {
                 </Badge>
               )}
             </div>
-            <CardDescription className='mt-1 text-xs'>
-              {journey.description}
-            </CardDescription>
+            <CardDescription className='mt-1 text-xs'>{journey.description}</CardDescription>
           </div>
           <div className='ml-2 flex opacity-0 transition-opacity group-hover:opacity-100'>
             <Button
@@ -244,7 +222,7 @@ export function AgentConfigurationPanel({
 
       // Load stats if not already loaded
       if (!agentStats[agent.id]) {
-        loadAgentStats(agent.id).catch(error => {
+        loadAgentStats(agent.id).catch((error) => {
           logger.error('Failed to load agent stats:', error)
         })
       }
@@ -264,12 +242,12 @@ export function AgentConfigurationPanel({
   }
 
   const updateFormData = (updates: Partial<UpdateAgentRequest>) => {
-    setFormData(prev => ({ ...prev, ...updates }))
+    setFormData((prev) => ({ ...prev, ...updates }))
     setHasChanges(true)
   }
 
   const updateConfiguration = (updates: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       configuration: { ...prev.configuration, ...updates },
     }))
@@ -351,12 +329,7 @@ export function AgentConfigurationPanel({
                     <AlertCircle className='h-4 w-4' />
                     <span className='text-sm'>{error}</span>
                   </div>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={clearError}
-                    className='h-8'
-                  >
+                  <Button variant='ghost' size='sm' onClick={clearError} className='h-8'>
                     <X className='h-4 w-4' />
                   </Button>
                 </div>
@@ -439,7 +412,9 @@ export function AgentConfigurationPanel({
                           <Label>Max Tokens</Label>
                           <Select
                             value={formData.configuration?.maxTokens?.toString()}
-                            onValueChange={(value) => updateConfiguration({ maxTokens: parseInt(value) })}
+                            onValueChange={(value) =>
+                              updateConfiguration({ maxTokens: Number.parseInt(value) })
+                            }
                           >
                             <SelectTrigger className='h-9 rounded-[8px]'>
                               <SelectValue />
@@ -514,7 +489,9 @@ export function AgentConfigurationPanel({
                       </div>
                       <Switch
                         checked={formData.configuration?.toolsEnabled}
-                        onCheckedChange={(checked) => updateConfiguration({ toolsEnabled: checked })}
+                        onCheckedChange={(checked) =>
+                          updateConfiguration({ toolsEnabled: checked })
+                        }
                       />
                     </div>
                   </div>
@@ -633,14 +610,18 @@ export function AgentConfigurationPanel({
                           <Card>
                             <CardHeader className='pb-3'>
                               <CardDescription>Active Conversations</CardDescription>
-                              <CardTitle className='text-2xl'>{stats.activeConversations}</CardTitle>
+                              <CardTitle className='text-2xl'>
+                                {stats.activeConversations}
+                              </CardTitle>
                             </CardHeader>
                           </Card>
 
                           <Card>
                             <CardHeader className='pb-3'>
                               <CardDescription>Avg Response Time</CardDescription>
-                              <CardTitle className='text-2xl'>{stats.averageResponseTime}ms</CardTitle>
+                              <CardTitle className='text-2xl'>
+                                {stats.averageResponseTime}ms
+                              </CardTitle>
                             </CardHeader>
                           </Card>
 

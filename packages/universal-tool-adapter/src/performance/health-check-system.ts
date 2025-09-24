@@ -13,8 +13,8 @@
  * @version 2.0.0
  */
 
-import { createLogger } from '../utils/logger'
 import { EventEmitter } from 'events'
+import { createLogger } from '../utils/logger'
 
 const logger = createLogger('HealthCheckSystem')
 
@@ -186,12 +186,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
     componentType: 'system' | 'service' | 'tool' | 'external',
     healthCheckFn: HealthCheckFunction
   ): void {
-    const checker = new HealthChecker(
-      componentId,
-      componentType,
-      healthCheckFn,
-      this.config
-    )
+    const checker = new HealthChecker(componentId, componentType, healthCheckFn, this.config)
 
     this.healthCheckers.set(componentId, checker)
 
@@ -246,7 +241,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
       components,
       issues,
       recoveryActions,
-      trends
+      trends,
     }
 
     // Store in history
@@ -287,19 +282,15 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
   /**
    * Get health history for analysis
    */
-  getHealthHistory(
-    startTime?: Date,
-    endTime?: Date,
-    componentId?: string
-  ): HealthStatus[] {
+  getHealthHistory(startTime?: Date, endTime?: Date, componentId?: string): HealthStatus[] {
     let history = [...this.healthHistory]
 
     if (startTime) {
-      history = history.filter(status => status.timestamp >= startTime)
+      history = history.filter((status) => status.timestamp >= startTime)
     }
 
     if (endTime) {
-      history = history.filter(status => status.timestamp <= endTime)
+      history = history.filter((status) => status.timestamp <= endTime)
     }
 
     return history
@@ -345,7 +336,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
       componentId,
       reason,
       timestamp: new Date(),
-      type: 'forced'
+      type: 'forced',
     })
 
     // Trigger recovery if self-healing is enabled
@@ -371,16 +362,17 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
   } {
     const recentHistory = this.healthHistory.slice(-100)
 
-    const averageScore = recentHistory.length > 0
-      ? recentHistory.reduce((sum, status) => sum + status.score, 0) / recentHistory.length
-      : 100
+    const averageScore =
+      recentHistory.length > 0
+        ? recentHistory.reduce((sum, status) => sum + status.score, 0) / recentHistory.length
+        : 100
 
     // Count components by state
     const componentCounts: Record<HealthState, number> = {
       healthy: 0,
       degraded: 0,
       unhealthy: 0,
-      unknown: 0
+      unknown: 0,
     }
 
     for (const checker of this.healthCheckers.values()) {
@@ -409,7 +401,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
       averageScore,
       componentCounts,
       topIssues,
-      recoveryStats
+      recoveryStats,
     }
   }
 
@@ -427,7 +419,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
       this.serviceCheckInterval,
       this.toolCheckInterval,
       this.externalCheckInterval,
-      this.cleanupInterval
+      this.cleanupInterval,
     ]
 
     for (const interval of intervals) {
@@ -437,10 +429,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
     }
 
     // Shutdown components
-    await Promise.all([
-      this.recoveryManager.shutdown(),
-      this.shutdownCircuitBreakers()
-    ])
+    await Promise.all([this.recoveryManager.shutdown(), this.shutdownCircuitBreakers()])
 
     this.emit('shutdown')
     logger.info('Health check system shutdown complete')
@@ -457,7 +446,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
       toolInterval: this.config.intervals.tool,
       externalInterval: this.config.intervals.external,
       failoverEnabled: this.config.failover.enabled,
-      selfHealingEnabled: this.config.selfHealing.enabled
+      selfHealingEnabled: this.config.selfHealing.enabled,
     })
 
     // Start health check intervals
@@ -486,37 +475,38 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
   }
 
   private async performSystemChecks(): Promise<void> {
-    const systemCheckers = Array.from(this.healthCheckers.values())
-      .filter(checker => checker.getType() === 'system')
+    const systemCheckers = Array.from(this.healthCheckers.values()).filter(
+      (checker) => checker.getType() === 'system'
+    )
 
     await this.performChecks(systemCheckers, 'system')
   }
 
   private async performServiceChecks(): Promise<void> {
-    const serviceCheckers = Array.from(this.healthCheckers.values())
-      .filter(checker => checker.getType() === 'service')
+    const serviceCheckers = Array.from(this.healthCheckers.values()).filter(
+      (checker) => checker.getType() === 'service'
+    )
 
     await this.performChecks(serviceCheckers, 'service')
   }
 
   private async performToolChecks(): Promise<void> {
-    const toolCheckers = Array.from(this.healthCheckers.values())
-      .filter(checker => checker.getType() === 'tool')
+    const toolCheckers = Array.from(this.healthCheckers.values()).filter(
+      (checker) => checker.getType() === 'tool'
+    )
 
     await this.performChecks(toolCheckers, 'tool')
   }
 
   private async performExternalChecks(): Promise<void> {
-    const externalCheckers = Array.from(this.healthCheckers.values())
-      .filter(checker => checker.getType() === 'external')
+    const externalCheckers = Array.from(this.healthCheckers.values()).filter(
+      (checker) => checker.getType() === 'external'
+    )
 
     await this.performChecks(externalCheckers, 'external')
   }
 
-  private async performChecks(
-    checkers: HealthChecker[],
-    checkType: string
-  ): Promise<void> {
+  private async performChecks(checkers: HealthChecker[], checkType: string): Promise<void> {
     if (this.isShuttingDown) return
 
     const promises = checkers.map(async (checker) => {
@@ -539,12 +529,11 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
         }
 
         return health
-
       } catch (error) {
         logger.error('Health check failed', {
           checkerId: checker.getId(),
           checkType,
-          error: error.message
+          error: error.message,
         })
 
         const circuitBreaker = this.circuitBreakers.get(checker.getId())
@@ -564,7 +553,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
       system: this.createDefaultComponentHealth(),
       services: {},
       tools: {},
-      external: {}
+      external: {},
     }
 
     for (const [id, checker] of this.healthCheckers.entries()) {
@@ -576,7 +565,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
       } else {
         const category = `${type}s` as keyof typeof components
         if (components[category] && typeof components[category] === 'object') {
-          (components[category] as Record<string, ComponentHealth>)[id] =
+          ;(components[category] as Record<string, ComponentHealth>)[id] =
             health || this.createDefaultComponentHealth()
         }
       }
@@ -603,8 +592,8 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
         averageResponseTime: 0,
         minResponseTime: 0,
         maxResponseTime: 0,
-        availability: 0
-      }
+        availability: 0,
+      },
     }
   }
 
@@ -613,7 +602,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
       components.system,
       ...Object.values(components.services),
       ...Object.values(components.tools),
-      ...Object.values(components.external)
+      ...Object.values(components.external),
     ]
 
     if (allComponents.length === 0) return 100
@@ -636,11 +625,11 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
       components.system,
       ...Object.values(components.services),
       ...Object.values(components.tools),
-      ...Object.values(components.external)
+      ...Object.values(components.external),
     ]
 
     for (const component of allComponents) {
-      issues.push(...component.issues.filter(issue => !issue.resolved))
+      issues.push(...component.issues.filter((issue) => !issue.resolved))
     }
 
     return issues.sort((a, b) => {
@@ -651,14 +640,12 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
 
   private calculateUptime(): number {
     const uptimeMs = Date.now() - this.startTime
-    return Math.round((uptimeMs / 1000) / 60) // uptime in minutes
+    return Math.round(uptimeMs / 1000 / 60) // uptime in minutes
   }
 
   private cleanupHistory(): void {
     const cutoff = Date.now() - this.config.monitoring.retentionPeriodMs
-    this.healthHistory = this.healthHistory.filter(
-      status => status.timestamp.getTime() > cutoff
-    )
+    this.healthHistory = this.healthHistory.filter((status) => status.timestamp.getTime() > cutoff)
   }
 
   private async checkAlerts(healthStatus: HealthStatus): Promise<void> {
@@ -671,7 +658,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
         message: `System health score ${score} is critical (threshold: ${critical})`,
         timestamp: new Date(),
         score,
-        components: healthStatus.components
+        components: healthStatus.components,
       })
     } else if (score <= degraded) {
       this.emit('healthAlert', {
@@ -679,7 +666,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
         message: `System health score ${score} is degraded (threshold: ${degraded})`,
         timestamp: new Date(),
         score,
-        components: healthStatus.components
+        components: healthStatus.components,
       })
     }
   }
@@ -695,9 +682,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
 /**
  * Health check function interface
  */
-export interface HealthCheckFunction {
-  (): Promise<HealthCheckResult>
-}
+export type HealthCheckFunction = () => Promise<HealthCheckResult>
 
 export interface HealthCheckResult {
   healthy: boolean
@@ -718,7 +703,7 @@ class HealthChecker {
     averageResponseTime: 0,
     minResponseTime: Number.MAX_SAFE_INTEGER,
     maxResponseTime: 0,
-    availability: 100
+    availability: 100,
   }
 
   private consecutiveFailures = 0
@@ -741,7 +726,7 @@ class HealthChecker {
         this.healthCheckFn(),
         new Promise<HealthCheckResult>((_, reject) =>
           setTimeout(() => reject(new Error('Health check timeout')), timeout)
-        )
+        ),
       ])
 
       const responseTime = Date.now() - startTime
@@ -761,15 +746,15 @@ class HealthChecker {
 
         this.lastHealth = health
         return health
+      }
+      this.consecutiveSuccesses = 0
+      this.consecutiveFailures++
 
-      } else {
-        this.consecutiveSuccesses = 0
-        this.consecutiveFailures++
+      const state = this.determineHealthState()
+      const score = this.calculateHealthScore(state)
 
-        const state = this.determineHealthState()
-        const score = this.calculateHealthScore(state)
-
-        const issues: HealthIssue[] = [{
+      const issues: HealthIssue[] = [
+        {
           id: `${this.id}_unhealthy_${Date.now()}`,
           severity: state === 'unhealthy' ? 'error' : 'warning',
           component: this.id,
@@ -777,21 +762,20 @@ class HealthChecker {
           message: result.message || 'Health check failed',
           timestamp: new Date(),
           resolved: false,
-          recommendedActions: this.getRecommendedActions(state)
-        }]
+          recommendedActions: this.getRecommendedActions(state),
+        },
+      ]
 
-        const health = this.buildComponentHealth(
-          state,
-          score,
-          responseTime,
-          result.message || 'Health check failed',
-          issues
-        )
+      const health = this.buildComponentHealth(
+        state,
+        score,
+        responseTime,
+        result.message || 'Health check failed',
+        issues
+      )
 
-        this.lastHealth = health
-        return health
-      }
-
+      this.lastHealth = health
+      return health
     } catch (error) {
       const responseTime = Date.now() - startTime
       this.updateMetrics(false, responseTime)
@@ -802,24 +786,20 @@ class HealthChecker {
       const state = this.determineHealthState()
       const score = this.calculateHealthScore(state)
 
-      const issues: HealthIssue[] = [{
-        id: `${this.id}_error_${Date.now()}`,
-        severity: 'error',
-        component: this.id,
-        type: 'health_check_error',
-        message: error.message,
-        timestamp: new Date(),
-        resolved: false,
-        recommendedActions: this.getRecommendedActions(state)
-      }]
+      const issues: HealthIssue[] = [
+        {
+          id: `${this.id}_error_${Date.now()}`,
+          severity: 'error',
+          component: this.id,
+          type: 'health_check_error',
+          message: error.message,
+          timestamp: new Date(),
+          resolved: false,
+          recommendedActions: this.getRecommendedActions(state),
+        },
+      ]
 
-      const health = this.buildComponentHealth(
-        state,
-        score,
-        responseTime,
-        error.message,
-        issues
-      )
+      const health = this.buildComponentHealth(state, score, responseTime, error.message, issues)
 
       this.lastHealth = health
       return health
@@ -830,24 +810,20 @@ class HealthChecker {
     this.consecutiveFailures = this.config.thresholds.consecutive
     this.consecutiveSuccesses = 0
 
-    const issues: HealthIssue[] = [{
-      id: `${this.id}_forced_unhealthy_${Date.now()}`,
-      severity: 'critical',
-      component: this.id,
-      type: 'forced_unhealthy',
-      message: reason,
-      timestamp: new Date(),
-      resolved: false,
-      recommendedActions: ['Investigate the forced unhealthy condition', 'Check system logs']
-    }]
+    const issues: HealthIssue[] = [
+      {
+        id: `${this.id}_forced_unhealthy_${Date.now()}`,
+        severity: 'critical',
+        component: this.id,
+        type: 'forced_unhealthy',
+        message: reason,
+        timestamp: new Date(),
+        resolved: false,
+        recommendedActions: ['Investigate the forced unhealthy condition', 'Check system logs'],
+      },
+    ]
 
-    this.lastHealth = this.buildComponentHealth(
-      'unhealthy',
-      0,
-      0,
-      reason,
-      issues
-    )
+    this.lastHealth = this.buildComponentHealth('unhealthy', 0, 0, reason, issues)
   }
 
   getId(): string {
@@ -883,7 +859,9 @@ class HealthChecker {
 
     this.metrics.minResponseTime = Math.min(this.metrics.minResponseTime, responseTime)
     this.metrics.maxResponseTime = Math.max(this.metrics.maxResponseTime, responseTime)
-    this.metrics.averageResponseTime = this.responseTimeHistory.reduce((sum, time) => sum + time, 0) / this.responseTimeHistory.length
+    this.metrics.averageResponseTime =
+      this.responseTimeHistory.reduce((sum, time) => sum + time, 0) /
+      this.responseTimeHistory.length
 
     // Update availability
     this.metrics.availability = (this.metrics.successfulChecks / this.metrics.totalChecks) * 100
@@ -908,13 +886,13 @@ class HealthChecker {
   private calculateHealthScore(state: HealthState): number {
     switch (state) {
       case 'healthy':
-        return Math.min(100, Math.max(90, 100 - (this.consecutiveFailures * 5)))
+        return Math.min(100, Math.max(90, 100 - this.consecutiveFailures * 5))
 
       case 'degraded':
-        return Math.min(89, Math.max(50, 80 - (this.consecutiveFailures * 10)))
+        return Math.min(89, Math.max(50, 80 - this.consecutiveFailures * 10))
 
       case 'unhealthy':
-        return Math.max(0, 30 - (this.consecutiveFailures * 5))
+        return Math.max(0, 30 - this.consecutiveFailures * 5)
 
       default:
         return 0
@@ -934,13 +912,13 @@ class HealthChecker {
       state,
       score,
       lastCheck: now,
-      lastSuccess: state === 'healthy' ? now : (this.lastHealth?.lastSuccess || now),
+      lastSuccess: state === 'healthy' ? now : this.lastHealth?.lastSuccess || now,
       responseTime,
       successRate: this.metrics.availability,
       consecutiveFailures: this.consecutiveFailures,
       consecutiveSuccesses: this.consecutiveSuccesses,
       issues,
-      metrics: { ...this.metrics }
+      metrics: { ...this.metrics },
     }
   }
 
@@ -1013,7 +991,7 @@ class CircuitBreaker {
       this.nextAttemptTime = new Date(Date.now() + this.config.recoveryTimeoutMs)
       logger.warn('Circuit breaker opened', {
         componentId: this.componentId,
-        failures: this.failures
+        failures: this.failures,
       })
     }
   }
@@ -1023,7 +1001,7 @@ class CircuitBreaker {
     this.nextAttemptTime = new Date(Date.now() + this.config.recoveryTimeoutMs)
     logger.warn('Circuit breaker force opened', {
       componentId: this.componentId,
-      reason
+      reason,
     })
   }
 
@@ -1039,7 +1017,7 @@ class CircuitBreaker {
           this.state = 'half-open'
           this.halfOpenRequests = 0
           logger.info('Circuit breaker transitioning to half-open', {
-            componentId: this.componentId
+            componentId: this.componentId,
           })
           return true
         }
@@ -1055,7 +1033,7 @@ class CircuitBreaker {
       state: this.state,
       failures: this.failures,
       nextAttemptTime: this.nextAttemptTime,
-      halfOpenRequests: this.halfOpenRequests
+      halfOpenRequests: this.halfOpenRequests,
     }
   }
 
@@ -1094,7 +1072,7 @@ class RecoveryManager {
       component: componentId,
       description: this.getRecoveryDescription(recoveryType, componentId),
       status: 'pending',
-      startedAt: new Date()
+      startedAt: new Date(),
     }
 
     this.activeRecoveries.set(actionId, action)
@@ -1103,7 +1081,7 @@ class RecoveryManager {
     logger.info('Recovery action initiated', {
       actionId,
       componentId,
-      recoveryType
+      recoveryType,
     })
 
     try {
@@ -1119,11 +1097,10 @@ class RecoveryManager {
         actionId,
         componentId,
         recoveryType,
-        result
+        result,
       })
 
       this.healthSystem.emit('recoveryCompleted', action)
-
     } catch (error) {
       action.status = 'failed'
       action.completedAt = new Date()
@@ -1133,7 +1110,7 @@ class RecoveryManager {
         actionId,
         componentId,
         recoveryType,
-        error: error.message
+        error: error.message,
       })
 
       this.healthSystem.emit('recoveryFailed', action)
@@ -1165,26 +1142,27 @@ class RecoveryManager {
     failed: number
     averageDurationMs: number
   } {
-    const completed = this.recoveryHistory.filter(action =>
-      action.status === 'completed' || action.status === 'failed'
+    const completed = this.recoveryHistory.filter(
+      (action) => action.status === 'completed' || action.status === 'failed'
     )
 
-    const successful = completed.filter(action => action.status === 'completed').length
-    const failed = completed.filter(action => action.status === 'failed').length
+    const successful = completed.filter((action) => action.status === 'completed').length
+    const failed = completed.filter((action) => action.status === 'failed').length
 
     const durations = completed
-      .filter(action => action.completedAt && action.startedAt)
-      .map(action => action.completedAt!.getTime() - action.startedAt.getTime())
+      .filter((action) => action.completedAt && action.startedAt)
+      .map((action) => action.completedAt!.getTime() - action.startedAt.getTime())
 
-    const averageDurationMs = durations.length > 0
-      ? durations.reduce((sum, duration) => sum + duration, 0) / durations.length
-      : 0
+    const averageDurationMs =
+      durations.length > 0
+        ? durations.reduce((sum, duration) => sum + duration, 0) / durations.length
+        : 0
 
     return {
       total: this.recoveryHistory.length,
       successful,
       failed,
-      averageDurationMs
+      averageDurationMs,
     }
   }
 
@@ -1198,7 +1176,7 @@ class RecoveryManager {
     const activeRecoveries = Array.from(this.activeRecoveries.values())
     if (activeRecoveries.length > 0) {
       logger.info('Waiting for active recoveries to complete', {
-        count: activeRecoveries.length
+        count: activeRecoveries.length,
       })
 
       await new Promise<void>((resolve) => {
@@ -1231,7 +1209,7 @@ class RecoveryManager {
       logger.error('Failed to process recovery from queue', {
         componentId,
         type,
-        error: error.message
+        error: error.message,
       })
     }
   }
@@ -1275,13 +1253,13 @@ class RecoveryManager {
 
   private async performRestart(componentId: string): Promise<string> {
     // Implementation would restart the component/service
-    await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate restart
+    await new Promise((resolve) => setTimeout(resolve, 2000)) // Simulate restart
     return 'Component restarted successfully'
   }
 
   private async performCleanup(componentId: string): Promise<string> {
     // Implementation would clean up resources, caches, etc.
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate cleanup
+    await new Promise((resolve) => setTimeout(resolve, 1000)) // Simulate cleanup
     return 'Component resources cleaned up'
   }
 
@@ -1309,7 +1287,7 @@ class RecoveryManager {
       cleanup: `Clean up resources for ${componentId}`,
       fallback: `Activate fallback for ${componentId}`,
       scale: `Scale up ${componentId} component`,
-      'circuit-breaker': `Reset circuit breaker for ${componentId}`
+      'circuit-breaker': `Reset circuit breaker for ${componentId}`,
     }
 
     return descriptions[recoveryType] || `Perform ${recoveryType} recovery for ${componentId}`
@@ -1326,12 +1304,12 @@ class TrendAnalyzer {
         direction: 'stable',
         confidence: 0,
         period: { start: new Date(), end: new Date() },
-        predictions: []
+        predictions: [],
       }
     }
 
-    const scores = history.map(status => status.score)
-    const timestamps = history.map(status => status.timestamp)
+    const scores = history.map((status) => status.score)
+    const timestamps = history.map((status) => status.timestamp)
 
     // Simple linear regression for trend
     const trend = this.calculateTrend(scores)
@@ -1346,9 +1324,9 @@ class TrendAnalyzer {
       confidence,
       period: {
         start: timestamps[0],
-        end: timestamps[timestamps.length - 1]
+        end: timestamps[timestamps.length - 1],
       },
-      predictions
+      predictions,
     }
   }
 
@@ -1374,12 +1352,12 @@ class TrendAnalyzer {
   private calculateConfidence(scores: number[], trend: number): number {
     // Simple confidence calculation based on variance
     const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length
-    const variance = scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / scores.length
+    const variance = scores.reduce((sum, score) => sum + (score - mean) ** 2, 0) / scores.length
     const stdDev = Math.sqrt(variance)
 
     // Lower variance = higher confidence in trend
     const maxConfidence = 100
-    const confidence = Math.max(0, maxConfidence - (stdDev * 2))
+    const confidence = Math.max(0, maxConfidence - stdDev * 2)
 
     return Math.min(100, confidence)
   }
@@ -1395,13 +1373,13 @@ class TrendAnalyzer {
 
     // Generate predictions for next 5 time periods
     for (let i = 1; i <= 5; i++) {
-      const predictedScore = Math.max(0, Math.min(100, lastScore + (trend * i)))
-      const futureTimestamp = new Date(lastTimestamp.getTime() + (i * 30 * 60 * 1000)) // 30 minutes ahead
+      const predictedScore = Math.max(0, Math.min(100, lastScore + trend * i))
+      const futureTimestamp = new Date(lastTimestamp.getTime() + i * 30 * 60 * 1000) // 30 minutes ahead
 
       predictions.push({
         timestamp: futureTimestamp,
         predictedScore,
-        confidence: Math.max(10, 90 - (i * 15)) // Confidence decreases with time
+        confidence: Math.max(10, 90 - i * 15), // Confidence decreases with time
       })
     }
 
@@ -1415,21 +1393,21 @@ export const DEFAULT_HEALTH_CHECK_CONFIG: HealthCheckConfig = {
     system: 30000, // 30 seconds
     service: 60000, // 1 minute
     tool: 120000, // 2 minutes
-    external: 300000 // 5 minutes
+    external: 300000, // 5 minutes
   },
 
   timeouts: {
     system: 10000, // 10 seconds
     service: 15000, // 15 seconds
     tool: 20000, // 20 seconds
-    external: 30000 // 30 seconds
+    external: 30000, // 30 seconds
   },
 
   thresholds: {
     consecutive: 3,
     successRate: 0.95, // 95%
     responseTime: 5000, // 5 seconds
-    recovery: 2
+    recovery: 2,
   },
 
   failover: {
@@ -1441,15 +1419,15 @@ export const DEFAULT_HEALTH_CHECK_CONFIG: HealthCheckConfig = {
     circuitBreakerConfig: {
       failureThreshold: 5,
       recoveryTimeoutMs: 60000, // 1 minute
-      halfOpenMaxRequests: 3
-    }
+      halfOpenMaxRequests: 3,
+    },
   },
 
   selfHealing: {
     enabled: true,
     strategies: ['restart', 'cleanup', 'fallback'],
     maxAttempts: 3,
-    healingIntervalMs: 30000 // 30 seconds
+    healingIntervalMs: 30000, // 30 seconds
   },
 
   monitoring: {
@@ -1457,7 +1435,7 @@ export const DEFAULT_HEALTH_CHECK_CONFIG: HealthCheckConfig = {
     retentionPeriodMs: 7 * 24 * 60 * 60 * 1000, // 7 days
     alertThresholds: {
       degraded: 70,
-      critical: 30
-    }
-  }
+      critical: 30,
+    },
+  },
 }

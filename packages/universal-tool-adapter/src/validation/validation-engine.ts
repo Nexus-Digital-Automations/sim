@@ -10,17 +10,15 @@
  */
 
 import { z } from 'zod'
-import type {
-  ValidationConfig,
-  ValidationResult,
-  ValidationError as ValidationErrorType,
-  BusinessRule,
-  ConditionalValidation
-} from '../types/adapter-interfaces'
-import type {
-  ParlantExecutionContext
-} from '../types/parlant-interfaces'
 import { ValidationError } from '../errors/adapter-errors'
+import type {
+  BusinessRule,
+  ConditionalValidation,
+  ValidationConfig,
+  ValidationError as ValidationErrorType,
+  ValidationResult,
+} from '../types/adapter-interfaces'
+import type { ParlantExecutionContext } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('ValidationEngine')
@@ -29,7 +27,6 @@ const logger = createLogger('ValidationEngine')
  * Built-in validation schemas for common data types
  */
 export class ValidationSchemas {
-
   // Basic type schemas
   static readonly string = z.string()
   static readonly number = z.number()
@@ -41,7 +38,10 @@ export class ValidationSchemas {
 
   // Extended string schemas
   static readonly nonEmptyString = z.string().min(1)
-  static readonly trimmedString = z.string().transform(s => s.trim()).pipe(z.string().min(1))
+  static readonly trimmedString = z
+    .string()
+    .transform((s) => s.trim())
+    .pipe(z.string().min(1))
   static readonly slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 
   // Number schemas with constraints
@@ -52,7 +52,7 @@ export class ValidationSchemas {
 
   // Array schemas
   static readonly nonEmptyArray = z.array(z.any()).min(1)
-  static readonly uniqueStringArray = z.array(z.string()).transform(arr => [...new Set(arr)])
+  static readonly uniqueStringArray = z.array(z.string()).transform((arr) => [...new Set(arr)])
 
   // Object schemas
   static readonly record = z.record(z.any())
@@ -67,7 +67,11 @@ export class ValidationSchemas {
   // File and media schemas
   static readonly fileName = z.string().regex(/^[^<>:"/\\|?*]+$/)
   static readonly mimeType = z.string().regex(/^\w+\/\w+$/)
-  static readonly fileSize = z.number().int().positive().max(100 * 1024 * 1024) // 100MB max
+  static readonly fileSize = z
+    .number()
+    .int()
+    .positive()
+    .max(100 * 1024 * 1024) // 100MB max
 
   // API and integration schemas
   static readonly httpMethod = z.enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'])
@@ -103,7 +107,7 @@ export class ValidationSchemas {
       const schema = condition(data) ? trueSchema : falseSchema
       const result = schema.safeParse(data)
       if (!result.success) {
-        result.error.issues.forEach(issue => ctx.addIssue(issue))
+        result.error.issues.forEach((issue) => ctx.addIssue(issue))
       }
     }) as z.ZodSchema<T>
   }
@@ -120,8 +124,8 @@ export class ValidationSchemas {
    */
   static workspaceResource(resourceSchema: z.ZodSchema<any>): z.ZodSchema<any> {
     return z.object({
-      workspaceId: this.workspaceId,
-      ...resourceSchema.shape
+      workspaceId: ValidationSchemas.workspaceId,
+      ...resourceSchema.shape,
     })
   }
 }
@@ -130,7 +134,6 @@ export class ValidationSchemas {
  * Business rule validators for domain-specific validation logic
  */
 export class BusinessRuleValidators {
-
   /**
    * Validate workspace access permissions
    */
@@ -204,7 +207,7 @@ export class BusinessRuleValidators {
 
     return {
       valid: missingDependencies.length === 0,
-      missingDependencies
+      missingDependencies,
     }
   }
 }
@@ -217,7 +220,6 @@ export class BusinessRuleValidators {
  * throughout the adapter system.
  */
 export class ValidationEngine {
-
   private readonly config: ValidationConfig
   private readonly businessRules: BusinessRule[]
   private readonly customValidators: Map<string, (value: any, context: any) => Promise<boolean>>
@@ -227,7 +229,7 @@ export class ValidationEngine {
       enableStrictValidation: true,
       enableBusinessRules: true,
       enableCustomValidators: true,
-      ...config
+      ...config,
     }
 
     this.businessRules = config.businessRules || []
@@ -235,7 +237,7 @@ export class ValidationEngine {
 
     logger.info('Validation engine initialized', {
       strictValidation: this.config.enableStrictValidation,
-      businessRulesCount: this.businessRules.length
+      businessRulesCount: this.businessRules.length,
     })
   }
 
@@ -258,7 +260,6 @@ export class ValidationEngine {
     schema: z.ZodSchema<T>,
     context: ParlantExecutionContext
   ): Promise<{ data: T; errors: ValidationErrorType[] }> {
-
     const startTime = Date.now()
     const errors: ValidationErrorType[] = []
 
@@ -269,11 +270,13 @@ export class ValidationEngine {
         validatedData = schema.parse(data)
       } catch (error) {
         if (error instanceof z.ZodError) {
-          errors.push(...error.errors.map(e => ({
-            field: e.path.join('.'),
-            message: e.message,
-            code: e.code
-          })))
+          errors.push(
+            ...error.errors.map((e) => ({
+              field: e.path.join('.'),
+              message: e.message,
+              code: e.code,
+            }))
+          )
         }
 
         // If strict validation is disabled, use original data
@@ -296,11 +299,10 @@ export class ValidationEngine {
       logger.debug('Input validation completed', {
         duration,
         errorCount: errors.length,
-        hasData: !!validatedData
+        hasData: !!validatedData,
       })
 
       return { data: validatedData!, errors }
-
     } catch (error) {
       logger.error('Input validation failed', { error: error.message })
       throw new ValidationError('Input validation failed', errors)
@@ -315,7 +317,6 @@ export class ValidationEngine {
     schema: z.ZodSchema<T>,
     context: ParlantExecutionContext
   ): Promise<{ data: T; errors: ValidationErrorType[] }> {
-
     const errors: ValidationErrorType[] = []
 
     try {
@@ -323,18 +324,19 @@ export class ValidationEngine {
       const validatedData = schema.parse(data)
 
       logger.debug('Output validation completed', {
-        hasData: !!validatedData
+        hasData: !!validatedData,
       })
 
       return { data: validatedData, errors }
-
     } catch (error) {
       if (error instanceof z.ZodError) {
-        errors.push(...error.errors.map(e => ({
-          field: e.path.join('.'),
-          message: e.message,
-          code: e.code
-        })))
+        errors.push(
+          ...error.errors.map((e) => ({
+            field: e.path.join('.'),
+            message: e.message,
+            code: e.code,
+          }))
+        )
       }
 
       // For output validation, we're more lenient - return original data with errors logged
@@ -350,7 +352,6 @@ export class ValidationEngine {
     data: any,
     context: ParlantExecutionContext
   ): Promise<ValidationErrorType[]> {
-
     const errors: ValidationErrorType[] = []
 
     for (const rule of this.businessRules) {
@@ -360,7 +361,7 @@ export class ValidationEngine {
           errors.push({
             field: rule.field || 'business_rule',
             message: rule.errorMessage || `Business rule violation: ${rule.name}`,
-            code: 'business_rule_violation'
+            code: 'business_rule_violation',
           })
         }
       } catch (error) {
@@ -368,7 +369,7 @@ export class ValidationEngine {
         errors.push({
           field: rule.field || 'business_rule',
           message: `Business rule error: ${error.message}`,
-          code: 'business_rule_error'
+          code: 'business_rule_error',
         })
       }
     }
@@ -384,7 +385,6 @@ export class ValidationEngine {
     data: any,
     context: ParlantExecutionContext
   ): Promise<boolean> {
-
     switch (rule.type) {
       case 'workspace_access':
         return BusinessRuleValidators.validateWorkspaceAccess(
@@ -416,12 +416,13 @@ export class ValidationEngine {
           context
         )
 
-      case 'data_dependencies':
+      case 'data_dependencies': {
         const depResult = await BusinessRuleValidators.validateDataDependencies(
           rule.dependencies || [],
           context
         )
         return depResult.valid
+      }
 
       case 'custom':
         if (rule.validator) {
@@ -442,7 +443,6 @@ export class ValidationEngine {
     data: any,
     context: ParlantExecutionContext
   ): Promise<ValidationErrorType[]> {
-
     const errors: ValidationErrorType[] = []
 
     for (const [name, validator] of this.customValidators) {
@@ -452,7 +452,7 @@ export class ValidationEngine {
           errors.push({
             field: 'custom_validation',
             message: `Custom validation failed: ${name}`,
-            code: 'custom_validation_error'
+            code: 'custom_validation_error',
           })
         }
       } catch (error) {
@@ -460,7 +460,7 @@ export class ValidationEngine {
         errors.push({
           field: 'custom_validation',
           message: `Custom validator error: ${error.message}`,
-          code: 'custom_validator_error'
+          code: 'custom_validator_error',
         })
       }
     }
@@ -476,7 +476,6 @@ export class ValidationEngine {
     conditionalValidation: ConditionalValidation,
     context: ParlantExecutionContext
   ): Promise<ValidationResult> {
-
     // Evaluate condition
     let conditionMet: boolean
     try {
@@ -484,11 +483,13 @@ export class ValidationEngine {
     } catch (error) {
       return {
         valid: false,
-        errors: [{
-          field: 'conditional',
-          message: `Condition evaluation failed: ${error.message}`,
-          code: 'condition_error'
-        }]
+        errors: [
+          {
+            field: 'conditional',
+            message: `Condition evaluation failed: ${error.message}`,
+            code: 'condition_error',
+          },
+        ],
       }
     }
 
@@ -504,21 +505,23 @@ export class ValidationEngine {
       if (error instanceof z.ZodError) {
         return {
           valid: false,
-          errors: error.errors.map(e => ({
+          errors: error.errors.map((e) => ({
             field: e.path.join('.'),
             message: e.message,
-            code: e.code
-          }))
+            code: e.code,
+          })),
         }
       }
 
       return {
         valid: false,
-        errors: [{
-          field: 'conditional',
-          message: error.message,
-          code: 'validation_error'
-        }]
+        errors: [
+          {
+            field: 'conditional',
+            message: error.message,
+            code: 'validation_error',
+          },
+        ],
       }
     }
   }
@@ -531,7 +534,6 @@ export class ValidationEngine {
     data: any,
     context: ParlantExecutionContext
   ): Promise<boolean> {
-
     // Simple implementation - in reality this would be much more sophisticated
     if (typeof condition === 'function') {
       return condition(data, context)
@@ -600,16 +602,16 @@ export class ValidationEngine {
       if (error instanceof z.ZodError) {
         return {
           success: false,
-          errors: error.errors.map(e => ({
+          errors: error.errors.map((e) => ({
             field: e.path.join('.'),
             message: e.message,
-            code: e.code
-          }))
+            code: e.code,
+          })),
         }
       }
       return {
         success: false,
-        errors: [{ field: 'unknown', message: error.message, code: 'unknown' }]
+        errors: [{ field: 'unknown', message: error.message, code: 'unknown' }],
       }
     }
   }
@@ -648,7 +650,7 @@ export class ValidationEngine {
    * Remove a business rule by name
    */
   public removeBusinessRule(name: string): boolean {
-    const index = this.businessRules.findIndex(rule => rule.name === name)
+    const index = this.businessRules.findIndex((rule) => rule.name === name)
     if (index !== -1) {
       this.businessRules.splice(index, 1)
       logger.debug(`Removed business rule: ${name}`)

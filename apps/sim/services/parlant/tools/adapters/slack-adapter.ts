@@ -6,21 +6,22 @@
  * Converts Sim's Slack block to Parlant-compatible format
  */
 
-import { UniversalToolAdapter, ParlantTool, ToolExecutionContext, AdapterExecutionResult } from '../adapter-framework'
 import type { BlockConfig } from '@/blocks/types'
 import type { ToolResponse } from '@/tools/types'
+import {
+  type ParlantTool,
+  type ToolExecutionContext,
+  UniversalToolAdapter,
+} from '../adapter-framework'
 
 export class SlackAdapter extends UniversalToolAdapter {
-  constructor(blockConfig: BlockConfig) {
-    super(blockConfig)
-  }
-
   protected transformToParlant(blockConfig: BlockConfig): ParlantTool {
     return {
       id: 'slack',
       name: 'Slack Messaging',
       description: 'Send messages, files, and interact with Slack workspaces and channels',
-      longDescription: 'Comprehensive Slack integration for sending messages to channels or users, uploading files, managing conversations, and automating workplace communication.',
+      longDescription:
+        'Comprehensive Slack integration for sending messages to channels or users, uploading files, managing conversations, and automating workplace communication.',
       category: 'communication',
       parameters: [
         {
@@ -29,20 +30,27 @@ export class SlackAdapter extends UniversalToolAdapter {
           type: 'string',
           required: true,
           constraints: {
-            enum: ['send_message', 'send_file', 'get_channel_info', 'list_channels', 'get_user_info']
+            enum: [
+              'send_message',
+              'send_file',
+              'get_channel_info',
+              'list_channels',
+              'get_user_info',
+            ],
           },
-          examples: ['send_message', 'send_file', 'list_channels']
+          examples: ['send_message', 'send_file', 'list_channels'],
         },
         {
           name: 'channel',
-          description: 'The Slack channel name or ID (with # prefix for channels, @ for direct messages)',
+          description:
+            'The Slack channel name or ID (with # prefix for channels, @ for direct messages)',
           type: 'string',
           required: false,
           examples: ['#general', '#random', '@john.doe', 'C1234567890'],
           dependsOn: {
             parameter: 'action',
-            value: ['send_message', 'send_file', 'get_channel_info']
-          }
+            value: ['send_message', 'send_file', 'get_channel_info'],
+          },
         },
         {
           name: 'message',
@@ -52,26 +60,23 @@ export class SlackAdapter extends UniversalToolAdapter {
           examples: [
             'Hello team! Meeting starts in 10 minutes.',
             'The deployment completed successfully ✅',
-            'New feature release is now live!'
+            'New feature release is now live!',
           ],
           dependsOn: {
             parameter: 'action',
-            value: 'send_message'
-          }
+            value: 'send_message',
+          },
         },
         {
           name: 'file_url',
           description: 'URL of the file to upload to Slack',
           type: 'string',
           required: false,
-          examples: [
-            'https://example.com/document.pdf',
-            'https://example.com/image.png'
-          ],
+          examples: ['https://example.com/document.pdf', 'https://example.com/image.png'],
           dependsOn: {
             parameter: 'action',
-            value: 'send_file'
-          }
+            value: 'send_file',
+          },
         },
         {
           name: 'file_name',
@@ -81,15 +86,15 @@ export class SlackAdapter extends UniversalToolAdapter {
           examples: ['meeting-notes.pdf', 'screenshot.png'],
           dependsOn: {
             parameter: 'action',
-            value: 'send_file'
-          }
+            value: 'send_file',
+          },
         },
         {
           name: 'thread_timestamp',
           description: 'Timestamp of the parent message to reply in thread (optional)',
           type: 'string',
           required: false,
-          examples: ['1234567890.123456']
+          examples: ['1234567890.123456'],
         },
         {
           name: 'user_id',
@@ -99,53 +104,53 @@ export class SlackAdapter extends UniversalToolAdapter {
           examples: ['U1234567890'],
           dependsOn: {
             parameter: 'action',
-            value: 'get_user_info'
-          }
+            value: 'get_user_info',
+          },
         },
         {
           name: 'bot_token',
           description: 'Slack Bot User OAuth Token for authentication',
           type: 'string',
           required: true,
-          examples: ['xoxb-your-bot-token']
-        }
+          examples: ['xoxb-your-bot-token'],
+        },
       ],
       outputs: [
         {
           name: 'success',
           description: 'Whether the Slack operation was successful',
-          type: 'boolean'
+          type: 'boolean',
         },
         {
           name: 'message_ts',
           description: 'Timestamp of the sent message (for message operations)',
           type: 'string',
-          optional: true
+          optional: true,
         },
         {
           name: 'channel_info',
           description: 'Information about the channel',
           type: 'object',
-          optional: true
+          optional: true,
         },
         {
           name: 'file_info',
           description: 'Information about the uploaded file',
           type: 'object',
-          optional: true
+          optional: true,
         },
         {
           name: 'user_info',
           description: 'Information about the user',
           type: 'object',
-          optional: true
+          optional: true,
         },
         {
           name: 'channels',
           description: 'List of channels (for list_channels operation)',
           type: 'array',
-          optional: true
-        }
+          optional: true,
+        },
       ],
       examples: [
         {
@@ -154,9 +159,9 @@ export class SlackAdapter extends UniversalToolAdapter {
             action: 'send_message',
             channel: '#general',
             message: 'Deployment completed successfully! 🚀',
-            bot_token: 'xoxb-your-token'
+            bot_token: 'xoxb-your-token',
           },
-          expectedOutput: 'Returns success status and message timestamp'
+          expectedOutput: 'Returns success status and message timestamp',
         },
         {
           scenario: 'Send a file to a channel with description',
@@ -165,9 +170,9 @@ export class SlackAdapter extends UniversalToolAdapter {
             channel: '#team-updates',
             file_url: 'https://example.com/report.pdf',
             file_name: 'weekly-report.pdf',
-            bot_token: 'xoxb-your-token'
+            bot_token: 'xoxb-your-token',
           },
-          expectedOutput: 'Returns file upload confirmation and file information'
+          expectedOutput: 'Returns file upload confirmation and file information',
         },
         {
           scenario: 'Reply to a message in a thread',
@@ -176,18 +181,18 @@ export class SlackAdapter extends UniversalToolAdapter {
             channel: '#general',
             message: 'Thanks for the update!',
             thread_timestamp: '1234567890.123456',
-            bot_token: 'xoxb-your-token'
+            bot_token: 'xoxb-your-token',
           },
-          expectedOutput: 'Sends reply in the specified thread'
+          expectedOutput: 'Sends reply in the specified thread',
         },
         {
           scenario: 'List all public channels',
           input: {
             action: 'list_channels',
-            bot_token: 'xoxb-your-token'
+            bot_token: 'xoxb-your-token',
           },
-          expectedOutput: 'Returns array of channel objects with names and IDs'
-        }
+          expectedOutput: 'Returns array of channel objects with names and IDs',
+        },
       ],
       usageHints: [
         'Bot token must have appropriate scopes (chat:write, files:write, channels:read, etc.)',
@@ -195,13 +200,13 @@ export class SlackAdapter extends UniversalToolAdapter {
         'Use @ prefix for direct messages to users',
         'Thread timestamps are used to reply to existing messages',
         'File uploads support various formats (images, documents, code files)',
-        'Rate limiting applies - avoid sending too many messages quickly'
+        'Rate limiting applies - avoid sending too many messages quickly',
       ],
       requiresAuth: {
         type: 'oauth',
         provider: 'slack',
-        scopes: ['chat:write', 'files:write', 'channels:read', 'users:read']
-      }
+        scopes: ['chat:write', 'files:write', 'channels:read', 'users:read'],
+      },
     }
   }
 
@@ -211,7 +216,7 @@ export class SlackAdapter extends UniversalToolAdapter {
   ): Promise<Record<string, any>> {
     const baseParams = {
       action: parlantParams.action,
-      token: parlantParams.bot_token
+      token: parlantParams.bot_token,
     }
 
     // Add action-specific parameters
@@ -221,7 +226,7 @@ export class SlackAdapter extends UniversalToolAdapter {
           ...baseParams,
           channel: parlantParams.channel,
           text: parlantParams.message,
-          thread_ts: parlantParams.thread_timestamp
+          thread_ts: parlantParams.thread_timestamp,
         }
 
       case 'send_file':
@@ -230,19 +235,19 @@ export class SlackAdapter extends UniversalToolAdapter {
           channels: parlantParams.channel,
           file_url: parlantParams.file_url,
           filename: parlantParams.file_name,
-          initial_comment: parlantParams.message // Optional comment with file
+          initial_comment: parlantParams.message, // Optional comment with file
         }
 
       case 'get_channel_info':
         return {
           ...baseParams,
-          channel: parlantParams.channel
+          channel: parlantParams.channel,
         }
 
       case 'get_user_info':
         return {
           ...baseParams,
-          user: parlantParams.user_id
+          user: parlantParams.user_id,
         }
 
       default:
@@ -257,8 +262,8 @@ export class SlackAdapter extends UniversalToolAdapter {
     try {
       const baseUrl = 'https://slack.com/api'
       const headers = {
-        'Authorization': `Bearer ${simParams.token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${simParams.token}`,
+        'Content-Type': 'application/json',
       }
 
       let endpoint: string
@@ -271,7 +276,7 @@ export class SlackAdapter extends UniversalToolAdapter {
           body = {
             channel: simParams.channel,
             text: simParams.text,
-            thread_ts: simParams.thread_ts
+            thread_ts: simParams.thread_ts,
           }
           break
 
@@ -281,7 +286,7 @@ export class SlackAdapter extends UniversalToolAdapter {
           body = {
             channels: simParams.channels,
             filename: simParams.filename,
-            initial_comment: simParams.initial_comment
+            initial_comment: simParams.initial_comment,
           }
           // Note: In real implementation, we'd fetch the file from file_url and upload it
           break
@@ -308,7 +313,7 @@ export class SlackAdapter extends UniversalToolAdapter {
       const response = await fetch(`${baseUrl}/${endpoint}`, {
         method: 'POST',
         headers,
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       })
 
       const data = await response.json()
@@ -323,15 +328,14 @@ export class SlackAdapter extends UniversalToolAdapter {
           success: true,
           action: simParams.action,
           response: data,
-          ...this.extractActionSpecificData(data, simParams.action)
+          ...this.extractActionSpecificData(data, simParams.action),
         },
         timing: {
           startTime: new Date().toISOString(),
           endTime: new Date().toISOString(),
-          duration: 0
-        }
+          duration: 0,
+        },
       }
-
     } catch (error) {
       return {
         success: false,
@@ -340,8 +344,8 @@ export class SlackAdapter extends UniversalToolAdapter {
         timing: {
           startTime: new Date().toISOString(),
           endTime: new Date().toISOString(),
-          duration: 0
-        }
+          duration: 0,
+        },
       }
     }
   }
@@ -356,7 +360,7 @@ export class SlackAdapter extends UniversalToolAdapter {
 
     const baseResult = {
       success: simResult.output.success,
-      action_performed: simResult.output.action
+      action_performed: simResult.output.action,
     }
 
     // Add action-specific results
@@ -367,32 +371,32 @@ export class SlackAdapter extends UniversalToolAdapter {
           ...baseResult,
           message_ts: simResult.output.message_ts,
           channel: simResult.output.channel,
-          message_sent: true
+          message_sent: true,
         }
 
       case 'send_file':
         return {
           ...baseResult,
           file_info: simResult.output.file_info,
-          file_uploaded: true
+          file_uploaded: true,
         }
 
       case 'get_channel_info':
         return {
           ...baseResult,
-          channel_info: simResult.output.channel_info
+          channel_info: simResult.output.channel_info,
         }
 
       case 'list_channels':
         return {
           ...baseResult,
-          channels: simResult.output.channels
+          channels: simResult.output.channels,
         }
 
       case 'get_user_info':
         return {
           ...baseResult,
-          user_info: simResult.output.user_info
+          user_info: simResult.output.user_info,
         }
 
       default:
@@ -408,17 +412,17 @@ export class SlackAdapter extends UniversalToolAdapter {
 
     // Different actions have different costs
     const actionCosts = {
-      'send_message': 1,
-      'send_file': 3,
-      'get_channel_info': 1,
-      'list_channels': 2,
-      'get_user_info': 1
+      send_message: 1,
+      send_file: 3,
+      get_channel_info: 1,
+      list_channels: 2,
+      get_user_info: 1,
     }
 
     return {
       apiCallsCount: 1,
       computeUnits: actionCosts[action] || 1,
-      slackApiCallsUsed: 1
+      slackApiCallsUsed: 1,
     }
   }
 
@@ -430,7 +434,7 @@ export class SlackAdapter extends UniversalToolAdapter {
       case 'send_message':
         return {
           message_ts: data.ts,
-          channel: data.channel
+          channel: data.channel,
         }
 
       case 'send_file':
@@ -440,8 +444,8 @@ export class SlackAdapter extends UniversalToolAdapter {
             name: data.file?.name,
             url: data.file?.url_private,
             size: data.file?.size,
-            mimetype: data.file?.mimetype
-          }
+            mimetype: data.file?.mimetype,
+          },
         }
 
       case 'get_channel_info':
@@ -452,20 +456,20 @@ export class SlackAdapter extends UniversalToolAdapter {
             topic: data.channel?.topic?.value,
             purpose: data.channel?.purpose?.value,
             member_count: data.channel?.num_members,
-            created: data.channel?.created
-          }
+            created: data.channel?.created,
+          },
         }
 
       case 'list_channels':
         return {
-          channels: data.channels?.map(channel => ({
+          channels: data.channels?.map((channel) => ({
             id: channel.id,
             name: channel.name,
             is_member: channel.is_member,
             topic: channel.topic?.value,
             purpose: channel.purpose?.value,
-            member_count: channel.num_members
-          }))
+            member_count: channel.num_members,
+          })),
         }
 
       case 'get_user_info':
@@ -476,8 +480,8 @@ export class SlackAdapter extends UniversalToolAdapter {
             real_name: data.user?.real_name,
             email: data.user?.profile?.email,
             title: data.user?.profile?.title,
-            status: data.user?.profile?.status_text
-          }
+            status: data.user?.profile?.status_text,
+          },
         }
 
       default:

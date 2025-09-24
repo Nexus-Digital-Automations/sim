@@ -11,17 +11,17 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { ZodError } from 'zod'
-import { createLogger } from '@/lib/logs/console/logger'
-import { checkRateLimit, createRateLimitResponse } from '../../../middleware'
-import { authenticateV1Request } from '../../../auth'
-import { agentService } from '@/lib/api/v1/agents/service'
 import {
-  CreateSessionRequestSchema,
-  SessionListQuerySchema,
   type CreateSessionRequest,
-  type SessionListQuery,
+  CreateSessionRequestSchema,
   type ErrorResponse,
+  type SessionListQuery,
+  SessionListQuerySchema,
 } from '@/lib/api/v1/agents/schemas'
+import { agentService } from '@/lib/api/v1/agents/service'
+import { createLogger } from '@/lib/logs/console/logger'
+import { authenticateV1Request } from '../../../auth'
+import { checkRateLimit, createRateLimitResponse } from '../../../middleware'
 
 const logger = createLogger('AgentSessionsAPI')
 
@@ -37,7 +37,7 @@ interface RouteParams {
 function createErrorResponse(
   error: string,
   message: string,
-  status: number = 400,
+  status = 400,
   details?: Record<string, any>,
   requestId?: string
 ): NextResponse<ErrorResponse> {
@@ -54,7 +54,7 @@ function createErrorResponse(
       headers: {
         'Content-Type': 'application/json',
         'X-Request-Id': requestId || 'unknown',
-      }
+      },
     }
   )
 }
@@ -65,10 +65,7 @@ function createErrorResponse(
  * Creates a new session with the specified agent.
  * Sessions provide isolated conversation contexts with workspace boundaries.
  */
-export async function POST(
-  request: NextRequest,
-  { params }: RouteParams
-): Promise<NextResponse> {
+export async function POST(request: NextRequest, { params }: RouteParams): Promise<NextResponse> {
   const startTime = performance.now()
   const requestId = `create-session-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
   const agentId = params.id
@@ -158,10 +155,9 @@ export async function POST(
         'Content-Type': 'application/json',
         'X-Request-Id': requestId,
         'X-Response-Time': `${duration}ms`,
-        'Location': `/api/v1/sessions/${session.id}`,
+        Location: `/api/v1/sessions/${session.id}`,
       },
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
 
@@ -187,7 +183,7 @@ export async function POST(
       if (error.message.includes('workspace')) {
         return createErrorResponse(
           'WORKSPACE_ACCESS_DENIED',
-          'You do not have access to the agent\'s workspace',
+          "You do not have access to the agent's workspace",
           403,
           undefined,
           requestId
@@ -211,10 +207,7 @@ export async function POST(
  * Lists sessions for the specified agent with optional filtering and pagination.
  * Supports status filtering, sorting, and standard pagination.
  */
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-): Promise<NextResponse> {
+export async function GET(request: NextRequest, { params }: RouteParams): Promise<NextResponse> {
   const startTime = performance.now()
   const requestId = `list-sessions-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
   const agentId = params.id
@@ -306,7 +299,6 @@ export async function GET(
         'X-Page-Offset': result.pagination.offset.toString(),
       },
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
 

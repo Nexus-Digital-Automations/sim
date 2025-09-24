@@ -12,8 +12,8 @@
  * @version 2.0.0
  */
 
-import { createLogger } from '../utils/logger'
 import { EventEmitter } from 'events'
+import { createLogger } from '../utils/logger'
 
 const logger = createLogger('ConnectionPoolSystem')
 
@@ -135,11 +135,10 @@ export class AdvancedConnectionPool extends EventEmitter {
         connectionId: connection.id,
         acquireTimeMs: acquireTime,
         totalConnections: this.connections.size,
-        availableConnections: this.availableConnections.length
+        availableConnections: this.availableConnections.length,
       })
 
       return connection
-
     } catch (error) {
       const acquireTime = Date.now() - startTime
       this.metricsCollector.recordAcquisition(acquireTime, false)
@@ -148,7 +147,7 @@ export class AdvancedConnectionPool extends EventEmitter {
       logger.error('Failed to acquire connection', {
         poolName: this.config.poolName,
         error: error.message,
-        acquireTimeMs: acquireTime
+        acquireTimeMs: acquireTime,
       })
 
       throw error
@@ -162,7 +161,7 @@ export class AdvancedConnectionPool extends EventEmitter {
     if (!this.connections.has(connection)) {
       logger.warn('Attempted to release unknown connection', {
         poolName: this.config.poolName,
-        connectionId: connection.id
+        connectionId: connection.id,
       })
       return
     }
@@ -179,7 +178,7 @@ export class AdvancedConnectionPool extends EventEmitter {
         logger.debug('Connection released to pool', {
           poolName: this.config.poolName,
           connectionId: connection.id,
-          availableConnections: this.availableConnections.length
+          availableConnections: this.availableConnections.length,
         })
       } else {
         await this.destroyConnection(connection)
@@ -187,12 +186,11 @@ export class AdvancedConnectionPool extends EventEmitter {
       }
 
       this.metricsCollector.recordRelease()
-
     } catch (error) {
       logger.error('Error releasing connection', {
         poolName: this.config.poolName,
         connectionId: connection.id,
-        error: error.message
+        error: error.message,
       })
 
       await this.destroyConnection(connection)
@@ -212,7 +210,7 @@ export class AdvancedConnectionPool extends EventEmitter {
       idleConnections: this.availableConnections.length,
       pendingRequests: this.pendingAcquisitions.length,
       circuitBreakerState: this.circuitBreaker.getState(),
-      healthScore: this.calculateHealthScore()
+      healthScore: this.calculateHealthScore(),
     }
   }
 
@@ -226,25 +224,25 @@ export class AdvancedConnectionPool extends EventEmitter {
       poolName: this.config.poolName,
       utilization: {
         connectionUtilization: (metrics.activeConnections / metrics.totalConnections) * 100,
-        poolCapacityUtilization: (metrics.totalConnections / this.config.maxConnections) * 100
+        poolCapacityUtilization: (metrics.totalConnections / this.config.maxConnections) * 100,
       },
       performance: {
         averageAcquireTimeMs: metrics.averageAcquireTimeMs,
         averageConnectionLifetimeMs: metrics.averageConnectionLifetimeMs,
-        throughput: this.calculateThroughput()
+        throughput: this.calculateThroughput(),
       },
       health: {
         score: metrics.healthScore,
         circuitBreakerState: metrics.circuitBreakerState,
-        errorRate: this.calculateErrorRate()
+        errorRate: this.calculateErrorRate(),
       },
       capacity: {
         total: metrics.totalConnections,
         active: metrics.activeConnections,
         idle: metrics.idleConnections,
         pending: metrics.pendingRequests,
-        max: this.config.maxConnections
-      }
+        max: this.config.maxConnections,
+      },
     }
   }
 
@@ -265,7 +263,7 @@ export class AdvancedConnectionPool extends EventEmitter {
       currentMin: this.config.minConnections,
       currentMax: this.config.maxConnections,
       newMin: newMinConnections,
-      newMax: newMaxConnections
+      newMax: newMaxConnections,
     })
 
     this.config.minConnections = newMinConnections
@@ -285,10 +283,10 @@ export class AdvancedConnectionPool extends EventEmitter {
   /**
    * Shutdown the pool gracefully
    */
-  async shutdown(timeoutMs: number = 30000): Promise<void> {
+  async shutdown(timeoutMs = 30000): Promise<void> {
     logger.info('Shutting down connection pool', {
       poolName: this.config.poolName,
-      timeoutMs
+      timeoutMs,
     })
 
     this.isShuttingDown = true
@@ -317,12 +315,12 @@ export class AdvancedConnectionPool extends EventEmitter {
       await Promise.race([shutdownPromise, timeoutPromise])
     } catch (error) {
       logger.warn('Shutdown timeout reached, forcing closure', {
-        poolName: this.config.poolName
+        poolName: this.config.poolName,
       })
     }
 
     // Force close all connections
-    await Promise.all([...this.connections].map(conn => this.destroyConnection(conn)))
+    await Promise.all([...this.connections].map((conn) => this.destroyConnection(conn)))
 
     this.emit('shutdown')
     logger.info('Connection pool shutdown complete', { poolName: this.config.poolName })
@@ -336,7 +334,7 @@ export class AdvancedConnectionPool extends EventEmitter {
     logger.info('Initializing connection pool', {
       poolName: this.config.poolName,
       minConnections: this.config.minConnections,
-      maxConnections: this.config.maxConnections
+      maxConnections: this.config.maxConnections,
     })
 
     // Create minimum connections
@@ -389,13 +387,14 @@ export class AdvancedConnectionPool extends EventEmitter {
       case 'least-connections':
         return this.availableConnections.sort((a, b) => a.usageCount - b.usageCount)[0]
 
-      case 'random':
+      case 'random': {
         const randomIndex = Math.floor(Math.random() * this.availableConnections.length)
         return this.availableConnections.splice(randomIndex, 1)[0]
+      }
 
-      case 'weighted':
+      case 'weighted': {
         // Simple weighted selection based on inverse usage count
-        const weights = this.availableConnections.map(conn => 1 / (conn.usageCount + 1))
+        const weights = this.availableConnections.map((conn) => 1 / (conn.usageCount + 1))
         const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
         const random = Math.random() * totalWeight
 
@@ -408,6 +407,7 @@ export class AdvancedConnectionPool extends EventEmitter {
         }
 
         return this.availableConnections.shift()!
+      }
 
       default:
         return this.availableConnections.shift()!
@@ -423,7 +423,7 @@ export class AdvancedConnectionPool extends EventEmitter {
   private async waitForAvailableConnection(): Promise<PooledConnection> {
     return new Promise<PooledConnection>((resolve, reject) => {
       const timeout = setTimeout(() => {
-        const index = this.pendingAcquisitions.findIndex(p => p.resolve === resolve)
+        const index = this.pendingAcquisitions.findIndex((p) => p.resolve === resolve)
         if (index >= 0) {
           this.pendingAcquisitions.splice(index, 1)
         }
@@ -439,7 +439,7 @@ export class AdvancedConnectionPool extends EventEmitter {
           clearTimeout(timeout)
           reject(error)
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     })
   }
@@ -467,11 +467,10 @@ export class AdvancedConnectionPool extends EventEmitter {
       logger.debug('New connection created', {
         poolName: this.config.poolName,
         connectionId: pooledConnection.id,
-        totalConnections: this.connections.size
+        totalConnections: this.connections.size,
       })
 
       return pooledConnection
-
     } finally {
       this.creationInProgress--
     }
@@ -493,14 +492,13 @@ export class AdvancedConnectionPool extends EventEmitter {
       logger.debug('Connection destroyed', {
         poolName: this.config.poolName,
         connectionId: connection.id,
-        totalConnections: this.connections.size
+        totalConnections: this.connections.size,
       })
-
     } catch (error) {
       logger.error('Error destroying connection', {
         poolName: this.config.poolName,
         connectionId: connection.id,
-        error: error.message
+        error: error.message,
       })
     }
   }
@@ -529,16 +527,19 @@ export class AdvancedConnectionPool extends EventEmitter {
       } catch (error) {
         logger.error('Failed to maintain minimum connections', {
           poolName: this.config.poolName,
-          error: error.message
+          error: error.message,
         })
       }
     }
   }
 
   private async removeExcessConnections(count: number): Promise<void> {
-    const toRemove = this.availableConnections.splice(0, Math.min(count, this.availableConnections.length))
+    const toRemove = this.availableConnections.splice(
+      0,
+      Math.min(count, this.availableConnections.length)
+    )
 
-    await Promise.all(toRemove.map(conn => this.destroyConnection(conn)))
+    await Promise.all(toRemove.map((conn) => this.destroyConnection(conn)))
   }
 
   private cleanup(): void {
@@ -558,7 +559,7 @@ export class AdvancedConnectionPool extends EventEmitter {
     }
 
     // Clean up timed out pending acquisitions
-    this.pendingAcquisitions = this.pendingAcquisitions.filter(pending => {
+    this.pendingAcquisitions = this.pendingAcquisitions.filter((pending) => {
       const timedOut = now - pending.timestamp > this.config.acquireTimeoutMs
       if (timedOut) {
         pending.reject(new Error('Acquisition timeout during cleanup'))
@@ -571,13 +572,13 @@ export class AdvancedConnectionPool extends EventEmitter {
   }
 
   private getActiveConnectionCount(): number {
-    return [...this.connections].filter(conn => conn.isActive).length
+    return [...this.connections].filter((conn) => conn.isActive).length
   }
 
   private calculateHealthScore(): number {
     if (this.connections.size === 0) return 100
 
-    const healthyConnections = [...this.connections].filter(conn => conn.isHealthy).length
+    const healthyConnections = [...this.connections].filter((conn) => conn.isHealthy).length
     return (healthyConnections / this.connections.size) * 100
   }
 
@@ -645,7 +646,7 @@ class PooledConnection implements Connection {
       logger.error('Connection execution failed', {
         poolName: this.poolName,
         connectionId: this.id,
-        error: error.message
+        error: error.message,
       })
       this.isHealthy = false
       throw error
@@ -726,7 +727,7 @@ class CircuitBreaker {
       this.nextAttemptTime = Date.now() + this.config.recoveryTimeoutMs
       logger.warn('Circuit breaker opened due to failure threshold exceeded', {
         failures: this.failures,
-        threshold: this.config.failureThreshold
+        threshold: this.config.failureThreshold,
       })
     }
   }
@@ -748,7 +749,7 @@ class HealthChecker {
   async checkAllConnections(connections: PooledConnection[]): Promise<void> {
     if (!this.config.enabled) return
 
-    const healthChecks = connections.map(conn => this.checkConnection(conn))
+    const healthChecks = connections.map((conn) => this.checkConnection(conn))
     await Promise.allSettled(healthChecks)
   }
 
@@ -763,13 +764,12 @@ class HealthChecker {
         connection.execute(async () => 'health-check'),
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Health check timeout')), this.config.timeoutMs)
-        )
+        ),
       ])
 
       // Reset failure count on successful health check
       connection.metadata.healthFailures = 0
       connection.isHealthy = true
-
     } catch (error) {
       const failures = (connection.metadata.healthFailures || 0) + 1
       connection.metadata.healthFailures = failures
@@ -779,7 +779,7 @@ class HealthChecker {
         logger.warn('Connection marked unhealthy after failed health checks', {
           connectionId: connection.id,
           failures,
-          maxFailures: this.config.maxFailures
+          maxFailures: this.config.maxFailures,
         })
       }
     }
@@ -844,7 +844,7 @@ class MetricsCollector {
       totalDestroyed: this.totalDestroyed,
       errorCount: this.errorCount,
       averageAcquireTimeMs: this.calculateAverageAcquisitionTime(),
-      averageConnectionLifetimeMs: this.calculateAverageConnectionLifetime()
+      averageConnectionLifetimeMs: this.calculateAverageConnectionLifetime(),
     }
   }
 
@@ -852,7 +852,8 @@ class MetricsCollector {
     const now = Date.now()
     const timeSinceLastCheck = now - this.lastThroughputCheck
 
-    if (timeSinceLastCheck >= 60000) { // 1 minute
+    if (timeSinceLastCheck >= 60000) {
+      // 1 minute
       this.requestsInLastMinute = this.totalAcquired
       this.lastThroughputCheck = now
     }
@@ -867,7 +868,10 @@ class MetricsCollector {
 
   private calculateAverageConnectionLifetime(): number {
     if (this.connectionLifetimes.length === 0) return 0
-    return this.connectionLifetimes.reduce((sum, time) => sum + time, 0) / this.connectionLifetimes.length
+    return (
+      this.connectionLifetimes.reduce((sum, time) => sum + time, 0) /
+      this.connectionLifetimes.length
+    )
   }
 }
 
@@ -891,22 +895,22 @@ export const DEFAULT_CONNECTION_POOL_CONFIG: ConnectionPoolConfig = {
     enabled: true,
     intervalMs: 60000, // 1 minute
     timeoutMs: 5000,
-    maxFailures: 3
+    maxFailures: 3,
   },
   circuitBreaker: {
     enabled: true,
     failureThreshold: 5,
     recoveryTimeoutMs: 60000, // 1 minute
-    halfOpenMaxRequests: 3
+    halfOpenMaxRequests: 3,
   },
   retry: {
     enabled: true,
     maxAttempts: 3,
     backoffMs: 1000,
-    jitter: true
+    jitter: true,
   },
   metrics: {
     enabled: true,
-    historySize: 1000
-  }
+    historySize: 1000,
+  },
 }

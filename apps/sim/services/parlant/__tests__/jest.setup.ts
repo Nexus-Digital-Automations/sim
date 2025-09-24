@@ -9,11 +9,11 @@ jest.setTimeout(300000) // 5 minutes
 
 // Mock external dependencies that aren't available in test environment
 jest.mock('@/lib/auth/internal', () => ({
-  generateInternalToken: jest.fn().mockResolvedValue('mock-internal-token')
+  generateInternalToken: jest.fn().mockResolvedValue('mock-internal-token'),
 }))
 
 jest.mock('@/lib/urls/utils', () => ({
-  getBaseUrl: jest.fn().mockReturnValue('http://localhost:3000')
+  getBaseUrl: jest.fn().mockReturnValue('http://localhost:3000'),
 }))
 
 // Setup console formatting for better test output
@@ -40,7 +40,7 @@ console.warn = (...args) => {
 global.testConfig = {
   timeout: 300000,
   retries: 3,
-  verbose: true
+  verbose: true,
 }
 
 // Setup global error handlers
@@ -59,12 +59,14 @@ beforeAll(() => {
   console.log(`📅 Test Session Started: ${new Date().toISOString()}`)
   console.log(`🔧 Node Version: ${process.version}`)
   console.log(`📊 Memory Usage: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB`)
-  console.log('=' .repeat(80))
+  console.log('='.repeat(80))
 })
 
 afterAll(() => {
-  console.log('=' .repeat(80))
+  console.log('='.repeat(80))
   console.log(`📅 Test Session Ended: ${new Date().toISOString()}`)
-  console.log(`📊 Final Memory Usage: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB`)
+  console.log(
+    `📊 Final Memory Usage: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB`
+  )
   console.log('🏁 Universal Tool Adapter System Integration Testing Complete')
 })

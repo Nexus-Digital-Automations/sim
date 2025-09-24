@@ -393,7 +393,7 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 7,
-      "total_reinitializations": 36,
+      "total_reinitializations": 42,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
@@ -410,7 +410,7 @@
         },
         "23:00-03:59": {
           "init": 7,
-          "reinit": 22
+          "reinit": 28
         },
         "04:00-08:59": {
           "init": 0,
@@ -419,7 +419,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T05:47:47.579Z"
+      "last_updated": "2025-09-24T06:12:34.072Z"
     },
     "approval_history": [
       {
@@ -655,6 +655,48 @@
       "status": "active",
       "reinitialized": "2025-09-24T05:47:47.577Z",
       "sessionId": "b88ff2e6f3d8e483",
+      "previousSessions": []
+    },
+    "result-formatting-agent": {
+      "lastHeartbeat": "2025-09-24T06:04:27.313Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:04:27.313Z",
+      "sessionId": "9f776837322dc084",
+      "previousSessions": []
+    },
+    "agent_continue_001": {
+      "lastHeartbeat": "2025-09-24T06:10:51.347Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:10:51.347Z",
+      "sessionId": "176b2987d432cffb",
+      "previousSessions": []
+    },
+    "conversational-interface-agent": {
+      "lastHeartbeat": "2025-09-24T06:12:32.846Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:12:32.846Z",
+      "sessionId": "0045194efdffd125",
+      "previousSessions": []
+    },
+    "conversion-engine-agent": {
+      "lastHeartbeat": "2025-09-24T06:12:33.428Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:12:33.428Z",
+      "sessionId": "d209171aaa255fc6",
+      "previousSessions": []
+    },
+    "WORKFLOW_PRESERVATION_AGENT": {
+      "lastHeartbeat": "2025-09-24T06:12:33.766Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:12:33.766Z",
+      "sessionId": "f75f1302c7f952b2",
+      "previousSessions": []
+    },
+    "parlant-journey-agent": {
+      "lastHeartbeat": "2025-09-24T06:12:34.067Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:12:34.067Z",
+      "sessionId": "d64ab90b1f60311b",
       "previousSessions": []
     }
   },

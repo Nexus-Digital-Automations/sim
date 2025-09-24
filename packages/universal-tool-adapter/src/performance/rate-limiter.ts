@@ -13,8 +13,8 @@
  * @version 2.0.0
  */
 
-import { createLogger } from '../utils/logger'
 import { EventEmitter } from 'events'
+import { createLogger } from '../utils/logger'
 
 const logger = createLogger('AdvancedRateLimiter')
 
@@ -122,10 +122,7 @@ export class AdvancedRateLimiter extends EventEmitter {
   /**
    * Check if request should be allowed based on rate limits
    */
-  async checkLimit(
-    key: string,
-    context: RateLimitContext
-  ): Promise<RateLimitResult> {
+  async checkLimit(key: string, context: RateLimitContext): Promise<RateLimitResult> {
     const startTime = Date.now()
 
     try {
@@ -155,16 +152,15 @@ export class AdvancedRateLimiter extends EventEmitter {
         allowed: result.allowed,
         remaining: result.remaining,
         algorithm: result.metadata.algorithm,
-        latency: Date.now() - startTime
+        latency: Date.now() - startTime,
       })
 
       return result
-
     } catch (error) {
       logger.error('Rate limit check failed', {
         key,
         error: error.message,
-        latency: Date.now() - startTime
+        latency: Date.now() - startTime,
       })
 
       // Fail open - allow request if rate limiter fails
@@ -178,8 +174,8 @@ export class AdvancedRateLimiter extends EventEmitter {
           limit: { requests: 999999, windowMs: 60000 },
           current: 0,
           windowStart: new Date(),
-          burstUsed: false
-        }
+          burstUsed: false,
+        },
       }
     }
   }
@@ -190,7 +186,7 @@ export class AdvancedRateLimiter extends EventEmitter {
   async waitForLimit(
     key: string,
     context: RateLimitContext,
-    maxWaitMs: number = 10000
+    maxWaitMs = 10000
   ): Promise<RateLimitResult> {
     const startTime = Date.now()
 
@@ -205,7 +201,7 @@ export class AdvancedRateLimiter extends EventEmitter {
       const waitMs = Math.min(result.retryAfterMs || 1000, maxWaitMs - (Date.now() - startTime))
 
       if (waitMs > 0) {
-        await new Promise(resolve => setTimeout(resolve, waitMs))
+        await new Promise((resolve) => setTimeout(resolve, waitMs))
       }
     }
 
@@ -231,7 +227,7 @@ export class AdvancedRateLimiter extends EventEmitter {
         denialRate: metrics.denialRate,
         averageWaitTimeMs: metrics.averageWaitTimeMs,
         currentRequestsPerSecond: metrics.currentRequestsPerSecond,
-        peakRequestsPerSecond: metrics.peakRequestsPerSecond
+        peakRequestsPerSecond: metrics.peakRequestsPerSecond,
       },
 
       usage: {
@@ -239,17 +235,17 @@ export class AdvancedRateLimiter extends EventEmitter {
         allowedRequests: metrics.allowedRequests,
         deniedRequests: metrics.deniedRequests,
         burstUsageCount: metrics.burstUsageCount,
-        dynamicAdjustments: metrics.dynamicAdjustments
+        dynamicAdjustments: metrics.dynamicAdjustments,
       },
 
       system: {
         activeLimiters: this.limiters.size,
         distributedEnabled: this.config.distributed.enabled,
         dynamicEnabled: this.config.dynamic.enabled,
-        systemLoad: this.systemMonitor?.getCurrentLoad() || 0
+        systemLoad: this.systemMonitor?.getCurrentLoad() || 0,
       },
 
-      limits: this.getLimitSummary()
+      limits: this.getLimitSummary(),
     }
   }
 
@@ -319,7 +315,7 @@ export class AdvancedRateLimiter extends EventEmitter {
         limit: null,
         current: 0,
         remaining: 0,
-        resetTime: null
+        resetTime: null,
       }
     }
 
@@ -328,7 +324,7 @@ export class AdvancedRateLimiter extends EventEmitter {
       limit: limiter.getLimit(),
       current: limiter.getCurrent(),
       remaining: limiter.getRemaining(),
-      resetTime: limiter.getResetTime()
+      resetTime: limiter.getResetTime(),
     }
   }
 
@@ -382,7 +378,7 @@ export class AdvancedRateLimiter extends EventEmitter {
     logger.info('Rate limiter initialized', {
       algorithm: this.config.algorithm,
       distributed: this.config.distributed.enabled,
-      dynamic: this.config.dynamic.enabled
+      dynamic: this.config.dynamic.enabled,
     })
   }
 
@@ -391,16 +387,13 @@ export class AdvancedRateLimiter extends EventEmitter {
       context.toolId || 'global',
       context.workspaceId || 'global',
       context.userId || 'global',
-      key
+      key,
     ]
 
     return parts.join(':')
   }
 
-  private async getLimiter(
-    key: string,
-    context: RateLimitContext
-  ): Promise<RateLimiterInstance> {
+  private async getLimiter(key: string, context: RateLimitContext): Promise<RateLimiterInstance> {
     let limiter = this.limiters.get(key)
 
     if (!limiter) {
@@ -487,7 +480,7 @@ export class AdvancedRateLimiter extends EventEmitter {
         key,
         denialRate: metrics.denialRate,
         threshold: this.config.monitoring.alertThreshold,
-        timestamp: new Date()
+        timestamp: new Date(),
       })
     }
   }
@@ -501,7 +494,7 @@ export class AdvancedRateLimiter extends EventEmitter {
         current: limiter.getCurrent(),
         remaining: limiter.getRemaining(),
         resetTime: limiter.getResetTime(),
-        algorithm: limiter.getAlgorithm()
+        algorithm: limiter.getAlgorithm(),
       }
     }
 
@@ -523,7 +516,7 @@ export class AdvancedRateLimiter extends EventEmitter {
     logger.info('Rate limits adjusted for system load', {
       loadFactor,
       adjustmentFactor,
-      activeLimiters: this.limiters.size
+      activeLimiters: this.limiters.size,
     })
   }
 }
@@ -632,8 +625,8 @@ class TokenBucketLimiter extends RateLimiterInstance {
         limit: this.limit,
         current: this.limit.requests - Math.floor(this.tokens),
         windowStart: new Date(this.lastRefill),
-        burstUsed
-      }
+        burstUsed,
+      },
     }
   }
 
@@ -667,7 +660,7 @@ class TokenBucketLimiter extends RateLimiterInstance {
 
   async adjustForLoad(loadFactor: number, adjustmentFactor: number): Promise<void> {
     // Reduce tokens based on system load
-    const adjustment = 1 - (loadFactor * adjustmentFactor)
+    const adjustment = 1 - loadFactor * adjustmentFactor
     this.tokens = Math.max(0, this.tokens * adjustment)
   }
 
@@ -699,7 +692,7 @@ class SlidingWindowLimiter extends RateLimiterInstance {
     const windowStart = now - this.limit.windowMs
 
     // Remove old requests outside the window
-    this.requestTimes = this.requestTimes.filter(time => time > windowStart)
+    this.requestTimes = this.requestTimes.filter((time) => time > windowStart)
 
     const currentRequests = this.requestTimes.length
     const allowed = currentRequests < this.limit.requests
@@ -719,8 +712,8 @@ class SlidingWindowLimiter extends RateLimiterInstance {
         limit: this.limit,
         current: currentRequests,
         windowStart: new Date(windowStart),
-        burstUsed: false
-      }
+        burstUsed: false,
+      },
     }
   }
 
@@ -739,7 +732,7 @@ class SlidingWindowLimiter extends RateLimiterInstance {
   getCurrent(): number {
     const now = Date.now()
     const windowStart = now - this.limit.windowMs
-    return this.requestTimes.filter(time => time > windowStart).length
+    return this.requestTimes.filter((time) => time > windowStart).length
   }
 
   getRemaining(): number {
@@ -795,15 +788,15 @@ class FixedWindowLimiter extends RateLimiterInstance {
       allowed,
       remaining: Math.max(0, this.limit.requests - this.requestCount),
       resetTime: new Date(this.windowStart + this.limit.windowMs),
-      retryAfterMs: allowed ? undefined : (this.windowStart + this.limit.windowMs) - now,
+      retryAfterMs: allowed ? undefined : this.windowStart + this.limit.windowMs - now,
       reason: allowed ? undefined : 'rate_limit_exceeded',
       metadata: {
         algorithm: 'fixed_window',
         limit: this.limit,
         current: this.requestCount,
         windowStart: new Date(this.windowStart),
-        burstUsed: false
-      }
+        burstUsed: false,
+      },
     }
   }
 
@@ -867,8 +860,8 @@ class LeakyBucketLimiter extends RateLimiterInstance {
         limit: this.limit,
         current: this.queue.length,
         windowStart: new Date(this.lastLeak),
-        burstUsed: false
-      }
+        burstUsed: false,
+      },
     }
   }
 
@@ -900,8 +893,8 @@ class LeakyBucketLimiter extends RateLimiterInstance {
   async adjustForLoad(loadFactor: number, adjustmentFactor: number): Promise<void> {
     // Slow down leak rate based on system load
     const now = Date.now()
-    const slowdownFactor = 1 + (loadFactor * adjustmentFactor)
-    this.lastLeak = now - ((now - this.lastLeak) / slowdownFactor)
+    const slowdownFactor = 1 + loadFactor * adjustmentFactor
+    this.lastLeak = now - (now - this.lastLeak) / slowdownFactor
   }
 
   private leak(): void {
@@ -968,7 +961,8 @@ class RateLimitMetricsCollector {
     const currentSecond = Math.floor(Date.now() / 1000)
     if (currentSecond !== this.lastSecond) {
       this.requestsPerSecond.push(this.currentSecondRequests)
-      if (this.requestsPerSecond.length > 60) { // Keep last 60 seconds
+      if (this.requestsPerSecond.length > 60) {
+        // Keep last 60 seconds
         this.requestsPerSecond.shift()
       }
       this.currentSecondRequests = 1
@@ -987,13 +981,12 @@ class RateLimitMetricsCollector {
   }
 
   getMetrics(key?: string): RateLimitMetrics {
-    const averageWaitTime = this.waitTimes.length > 0
-      ? this.waitTimes.reduce((sum, time) => sum + time, 0) / this.waitTimes.length
-      : 0
+    const averageWaitTime =
+      this.waitTimes.length > 0
+        ? this.waitTimes.reduce((sum, time) => sum + time, 0) / this.waitTimes.length
+        : 0
 
-    const peakRps = this.requestsPerSecond.length > 0
-      ? Math.max(...this.requestsPerSecond)
-      : 0
+    const peakRps = this.requestsPerSecond.length > 0 ? Math.max(...this.requestsPerSecond) : 0
 
     const currentRps = this.currentSecondRequests
 
@@ -1008,7 +1001,7 @@ class RateLimitMetricsCollector {
       currentRequestsPerSecond: currentRps,
       burstUsageCount: this.burstUsageCount,
       dynamicAdjustments: this.dynamicAdjustments,
-      lastResetTime: this.lastResetTime
+      lastResetTime: this.lastResetTime,
     }
   }
 }
@@ -1088,40 +1081,40 @@ export const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
   limits: {
     global: {
       requests: 1000,
-      windowMs: 60000 // 1 minute
+      windowMs: 60000, // 1 minute
     },
     workspace: {
       requests: 500,
-      windowMs: 60000
+      windowMs: 60000,
     },
     user: {
       requests: 100,
-      windowMs: 60000
-    }
+      windowMs: 60000,
+    },
   },
 
   burst: {
     enabled: true,
     multiplier: 1.5,
-    windowMs: 10000 // 10 seconds
+    windowMs: 10000, // 10 seconds
   },
 
   dynamic: {
     enabled: true,
     systemLoadThreshold: 0.8,
     adjustmentFactor: 0.3,
-    monitoringIntervalMs: 10000 // 10 seconds
+    monitoringIntervalMs: 10000, // 10 seconds
   },
 
   distributed: {
     enabled: false,
     keyPrefix: 'rate_limit:',
-    syncIntervalMs: 5000 // 5 seconds
+    syncIntervalMs: 5000, // 5 seconds
   },
 
   monitoring: {
     enabled: true,
     alertThreshold: 0.1, // 10% denial rate
-    metricsRetentionMs: 3600000 // 1 hour
-  }
+    metricsRetentionMs: 3600000, // 1 hour
+  },
 }

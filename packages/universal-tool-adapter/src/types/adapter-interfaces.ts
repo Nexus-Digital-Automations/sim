@@ -8,8 +8,8 @@
  * @version 1.0.0
  */
 
-import { z } from 'zod'
 import type { LucideIcon } from 'lucide-react'
+import type { z } from 'zod'
 
 // =============================================================================
 // Core Sim Tool Integration Types (from existing Sim system)
@@ -271,11 +271,7 @@ export interface MappingTransformation {
   config?: Record<string, any>
 
   // Custom transformation function
-  customTransform?: (
-    value: any,
-    config: Record<string, any>,
-    context: any
-  ) => Promise<any> | any
+  customTransform?: (value: any, config: Record<string, any>, context: any) => Promise<any> | any
 }
 
 /**
@@ -300,7 +296,17 @@ export interface MappingRule {
  */
 export interface ContextualValue {
   // Source of the contextual value
-  source: 'context' | 'user' | 'workspace' | 'session' | 'agent' | 'timestamp' | 'uuid' | 'original' | 'constant' | 'computed'
+  source:
+    | 'context'
+    | 'user'
+    | 'workspace'
+    | 'session'
+    | 'agent'
+    | 'timestamp'
+    | 'uuid'
+    | 'original'
+    | 'constant'
+    | 'computed'
 
   // Path to value (for context source)
   path?: string
@@ -366,7 +372,13 @@ export interface BusinessRule {
   name: string
 
   // Type of business rule
-  type: 'workspace_access' | 'user_permissions' | 'rate_limit' | 'resource_quota' | 'data_dependencies' | 'custom'
+  type:
+    | 'workspace_access'
+    | 'user_permissions'
+    | 'rate_limit'
+    | 'resource_quota'
+    | 'data_dependencies'
+    | 'custom'
 
   // Field this rule applies to
   field?: string
@@ -901,25 +913,17 @@ export type AdapterExecutionTypes =
 /**
  * All registry and discovery types
  */
-export type AdapterRegistryTypes =
-  | AdapterRegistryEntry
-  | ToolDiscoveryQuery
-  | DiscoveredTool
+export type AdapterRegistryTypes = AdapterRegistryEntry | ToolDiscoveryQuery | DiscoveredTool
 
 /**
  * All extension and plugin types
  */
-export type AdapterExtensionTypes =
-  | AdapterPlugin
-  | ExtensionPoint
-  | AdapterMigration
+export type AdapterExtensionTypes = AdapterPlugin | ExtensionPoint | AdapterMigration
 
 /**
  * All testing and development types
  */
-export type AdapterTestingTypes =
-  | AdapterTestConfig
-  | AdapterTestResult
+export type AdapterTestingTypes = AdapterTestConfig | AdapterTestResult
 
 /**
  * All advanced configuration types

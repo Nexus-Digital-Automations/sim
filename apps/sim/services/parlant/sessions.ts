@@ -14,23 +14,23 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { getParlantClient } from './client'
 import { getAgent } from './agents'
+import { getParlantClient } from './client'
 import {
-  ParlantValidationError,
+  ParlantErrorHandler,
   ParlantNotFoundError,
+  ParlantValidationError,
   ParlantWorkspaceError,
-  ParlantErrorHandler
 } from './errors'
 import type {
-  Session,
-  SessionCreateRequest,
-  SessionListQuery,
+  AuthContext,
   Event,
   EventCreateRequest,
   EventListQuery,
   PaginatedResponse,
-  AuthContext
+  Session,
+  SessionCreateRequest,
+  SessionListQuery,
 } from './types'
 
 const logger = createLogger('ParlantSessionService')
@@ -45,7 +45,7 @@ export async function createSession(
   logger.info(`Creating new session`, {
     agent_id: request.agent_id,
     workspace_id: request.workspace_id,
-    user_id: context.user_id
+    user_id: context.user_id,
   })
 
   // Validate request data
@@ -61,7 +61,7 @@ export async function createSession(
     const sessionData = {
       ...request,
       user_id: request.user_id || context.user_id,
-      status: 'active' as const
+      status: 'active' as const,
     }
 
     // Create session via Parlant server
@@ -71,7 +71,7 @@ export async function createSession(
       session_id: session.id,
       agent_id: session.agent_id,
       workspace_id: session.workspace_id,
-      user_id: session.user_id
+      user_id: session.user_id,
     })
 
     return session
@@ -79,7 +79,7 @@ export async function createSession(
     logger.error(`Failed to create session`, {
       agent_id: request.agent_id,
       workspace_id: request.workspace_id,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -89,10 +89,7 @@ export async function createSession(
 /**
  * Retrieve a session by ID with access validation
  */
-export async function getSession(
-  sessionId: string,
-  context: AuthContext
-): Promise<Session> {
+export async function getSession(sessionId: string, context: AuthContext): Promise<Session> {
   logger.info(`Retrieving session`, { session_id: sessionId, user_id: context.user_id })
 
   // Validate session ID format
@@ -108,7 +105,7 @@ export async function getSession(
     logger.info(`Session retrieved successfully`, {
       session_id: session.id,
       agent_id: session.agent_id,
-      status: session.status
+      status: session.status,
     })
 
     return session
@@ -119,7 +116,7 @@ export async function getSession(
 
     logger.error(`Failed to retrieve session`, {
       session_id: sessionId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -136,7 +133,7 @@ export async function listSessions(
   logger.info(`Listing sessions`, {
     workspace_id: query.workspace_id,
     agent_id: query.agent_id,
-    user_id: context.user_id
+    user_id: context.user_id,
   })
 
   // Validate query parameters
@@ -151,9 +148,10 @@ export async function listSessions(
       // Ensure workspace filtering if specified
       ...(query.workspace_id && { workspace_id: query.workspace_id }),
       // If no specific user filter, include user's sessions
-      ...((!query.user_id && !hasAdminPermission(context)) && {
-        user_id: context.user_id
-      })
+      ...(!query.user_id &&
+        !hasAdminPermission(context) && {
+          user_id: context.user_id,
+        }),
     }
 
     // If agent_id is specified, validate access to the agent
@@ -181,21 +179,21 @@ export async function listSessions(
         total,
         limit,
         offset,
-        has_more: offset + limit < total
-      }
+        has_more: offset + limit < total,
+      },
     }
 
     logger.info(`Sessions listed successfully`, {
       total,
       returned: paginatedSessions.length,
-      workspace_id: query.workspace_id
+      workspace_id: query.workspace_id,
     })
 
     return response
   } catch (error) {
     logger.error(`Failed to list sessions`, {
       query,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -213,7 +211,7 @@ export async function sendMessage(
   logger.info(`Sending message to session`, {
     session_id: sessionId,
     type: message.type,
-    user_id: context.user_id
+    user_id: context.user_id,
   })
 
   // Validate inputs
@@ -226,24 +224,19 @@ export async function sendMessage(
 
     // Ensure session is active
     if (session.status !== 'active') {
-      throw new ParlantValidationError(
-        `Cannot send message to ${session.status} session`
-      )
+      throw new ParlantValidationError(`Cannot send message to ${session.status} session`)
     }
 
     const client = getParlantClient()
 
     // Send message via Parlant server
-    const event = await client.post<Event>(
-      `/api/sessions/${sessionId}/events`,
-      message
-    )
+    const event = await client.post<Event>(`/api/sessions/${sessionId}/events`, message)
 
     logger.info(`Message sent successfully`, {
       session_id: sessionId,
       event_id: event.id,
       type: event.type,
-      offset: event.offset
+      offset: event.offset,
     })
 
     return event
@@ -251,7 +244,7 @@ export async function sendMessage(
     logger.error(`Failed to send message`, {
       session_id: sessionId,
       type: message.type,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -269,7 +262,7 @@ export async function getEvents(
   logger.info(`Getting events from session`, {
     session_id: sessionId,
     wait_for_data: query.wait_for_data,
-    user_id: context.user_id
+    user_id: context.user_id,
   })
 
   // Validate inputs
@@ -294,29 +287,26 @@ export async function getEvents(
       logger.info(`Events retrieved via long polling`, {
         session_id: sessionId,
         events_count: events.length,
-        timeout
+        timeout,
       })
 
       return events
     }
 
     // Standard event retrieval
-    const events = await client.get<Event[]>(
-      `/api/sessions/${sessionId}/events`,
-      query
-    )
+    const events = await client.get<Event[]>(`/api/sessions/${sessionId}/events`, query)
 
     logger.info(`Events retrieved successfully`, {
       session_id: sessionId,
       events_count: events.length,
-      offset: query.offset
+      offset: query.offset,
     })
 
     return events
   } catch (error) {
     logger.error(`Failed to get events`, {
       session_id: sessionId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -326,10 +316,7 @@ export async function getEvents(
 /**
  * End a session
  */
-export async function endSession(
-  sessionId: string,
-  context: AuthContext
-): Promise<Session> {
+export async function endSession(sessionId: string, context: AuthContext): Promise<Session> {
   logger.info(`Ending session`, { session_id: sessionId, user_id: context.user_id })
 
   try {
@@ -348,19 +335,19 @@ export async function endSession(
 
     // Update session status
     const updatedSession = await client.put<Session>(`/api/sessions/${sessionId}`, {
-      status: 'ended'
+      status: 'ended',
     })
 
     logger.info(`Session ended successfully`, {
       session_id: sessionId,
-      agent_id: updatedSession.agent_id
+      agent_id: updatedSession.agent_id,
     })
 
     return updatedSession
   } catch (error) {
     logger.error(`Failed to end session`, {
       session_id: sessionId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -370,10 +357,7 @@ export async function endSession(
 /**
  * Pause a session
  */
-export async function pauseSession(
-  sessionId: string,
-  context: AuthContext
-): Promise<Session> {
+export async function pauseSession(sessionId: string, context: AuthContext): Promise<Session> {
   logger.info(`Pausing session`, { session_id: sessionId, user_id: context.user_id })
 
   try {
@@ -392,19 +376,19 @@ export async function pauseSession(
 
     // Update session status
     const updatedSession = await client.put<Session>(`/api/sessions/${sessionId}`, {
-      status: 'paused'
+      status: 'paused',
     })
 
     logger.info(`Session paused successfully`, {
       session_id: sessionId,
-      agent_id: updatedSession.agent_id
+      agent_id: updatedSession.agent_id,
     })
 
     return updatedSession
   } catch (error) {
     logger.error(`Failed to pause session`, {
       session_id: sessionId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -414,10 +398,7 @@ export async function pauseSession(
 /**
  * Resume a paused session
  */
-export async function resumeSession(
-  sessionId: string,
-  context: AuthContext
-): Promise<Session> {
+export async function resumeSession(sessionId: string, context: AuthContext): Promise<Session> {
   logger.info(`Resuming session`, { session_id: sessionId, user_id: context.user_id })
 
   try {
@@ -440,19 +421,19 @@ export async function resumeSession(
 
     // Update session status
     const updatedSession = await client.put<Session>(`/api/sessions/${sessionId}`, {
-      status: 'active'
+      status: 'active',
     })
 
     logger.info(`Session resumed successfully`, {
       session_id: sessionId,
-      agent_id: updatedSession.agent_id
+      agent_id: updatedSession.agent_id,
     })
 
     return updatedSession
   } catch (error) {
     logger.error(`Failed to resume session`, {
       session_id: sessionId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -491,10 +472,10 @@ function validateSessionCreateRequest(request: SessionCreateRequest): void {
   }
 
   if (errors.length > 0) {
-    const validationErrors = errors.map(error => ({
+    const validationErrors = errors.map((error) => ({
       field: 'general',
       message: error,
-      code: 'VALIDATION_ERROR'
+      code: 'VALIDATION_ERROR',
     }))
 
     throw new ParlantValidationError('Session creation validation failed', validationErrors)
@@ -537,7 +518,7 @@ function validateEventCreateRequest(request: EventCreateRequest): void {
     'session_started',
     'session_ended',
     'session_paused',
-    'error'
+    'error',
   ]
 
   if (request.type && !validTypes.includes(request.type)) {
@@ -553,10 +534,10 @@ function validateEventCreateRequest(request: EventCreateRequest): void {
   }
 
   if (errors.length > 0) {
-    const validationErrors = errors.map(error => ({
+    const validationErrors = errors.map((error) => ({
       field: 'general',
       message: error,
-      code: 'VALIDATION_ERROR'
+      code: 'VALIDATION_ERROR',
     }))
 
     throw new ParlantValidationError('Event creation validation failed', validationErrors)
@@ -599,10 +580,7 @@ function validateSessionId(sessionId: string): void {
 /**
  * Validate session access for the given context
  */
-async function validateSessionAccess(
-  session: Session,
-  context: AuthContext
-): Promise<void> {
+async function validateSessionAccess(session: Session, context: AuthContext): Promise<void> {
   // Users can access their own sessions
   if (session.user_id === context.user_id) {
     return
@@ -631,13 +609,13 @@ async function filterSessionsByAccess(
 ): Promise<Session[]> {
   // Admin users get all sessions in their workspace
   if (hasAdminPermission(context)) {
-    return sessions.filter(session => session.workspace_id === context.workspace_id)
+    return sessions.filter((session) => session.workspace_id === context.workspace_id)
   }
 
   // Regular users get their own sessions in their workspace
-  return sessions.filter(session =>
-    session.user_id === context.user_id &&
-    session.workspace_id === context.workspace_id
+  return sessions.filter(
+    (session) =>
+      session.user_id === context.user_id && session.workspace_id === context.workspace_id
   )
 }
 
@@ -645,7 +623,9 @@ async function filterSessionsByAccess(
  * Check if user has admin permissions
  */
 function hasAdminPermission(context: AuthContext): boolean {
-  return context.permissions?.includes('workspace:admin') ||
-         context.permissions?.includes('sessions:admin') ||
-         false
+  return (
+    context.permissions?.includes('workspace:admin') ||
+    context.permissions?.includes('sessions:admin') ||
+    false
+  )
 }

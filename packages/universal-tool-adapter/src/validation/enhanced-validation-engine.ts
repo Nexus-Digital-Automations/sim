@@ -10,27 +10,15 @@
  */
 
 import { z } from 'zod'
+import type { SubBlockConfig } from '@/blocks/types'
 import type {
-  ValidationConfig,
-  ValidationResult,
-  ValidationError,
   BusinessRule,
-  ConditionalValidation,
-  ParameterMapping,
   ContextualValue,
-  AdapterExecutionContext
+  ParameterMapping,
+  ValidationError,
+  ValidationResult,
 } from '../types/adapter-interfaces'
-
-import type {
-  ParlantExecutionContext
-} from '../types/parlant-interfaces'
-
-import type {
-  SubBlockConfig,
-  SubBlockType,
-  ParamType
-} from '@/blocks/types'
-
+import type { ParlantExecutionContext } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('EnhancedValidationEngine')
@@ -39,7 +27,6 @@ const logger = createLogger('EnhancedValidationEngine')
  * Enhanced validation engine with comprehensive parameter processing
  */
 export class EnhancedValidationEngine {
-
   // Validation caches for performance
   private readonly schemaCache = new Map<string, z.ZodSchema<any>>()
   private readonly validationCache = new Map<string, ValidationResult>()
@@ -63,7 +50,7 @@ export class EnhancedValidationEngine {
       enableTypeConversion: true,
       conversionTimeout: 5000,
       validationTimeout: 10000,
-      ...config
+      ...config,
     }
 
     // Initialize built-in type converters
@@ -76,7 +63,7 @@ export class EnhancedValidationEngine {
       caching: this.config.enableCaching,
       asyncValidation: this.config.enableAsyncValidation,
       businessRules: this.config.enableBusinessRules,
-      typeConversion: this.config.enableTypeConversion
+      typeConversion: this.config.enableTypeConversion,
     })
   }
 
@@ -94,7 +81,7 @@ export class EnhancedValidationEngine {
     logger.debug('Starting parameter validation', {
       validationId,
       parameterCount: Object.keys(parameters).length,
-      mappingCount: parameterMappings.length
+      mappingCount: parameterMappings.length,
     })
 
     // Check cache
@@ -107,11 +94,7 @@ export class EnhancedValidationEngine {
     }
 
     try {
-      const result = await this.performValidation(
-        parameters,
-        parameterMappings,
-        context
-      )
+      const result = await this.performValidation(parameters, parameterMappings, context)
 
       // Cache successful validation
       if (this.config.enableCaching && result.valid) {
@@ -123,30 +106,31 @@ export class EnhancedValidationEngine {
         validationId,
         valid: result.valid,
         errorCount: result.errors.length,
-        duration
+        duration,
       })
 
       return result
-
     } catch (error) {
       logger.error('Parameter validation failed', {
         validationId,
         error: error.message,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       })
 
       return {
         valid: false,
-        errors: [{
-          field: 'validation_system',
-          message: `Validation system error: ${error.message}`,
-          code: 'VALIDATION_SYSTEM_ERROR'
-        }],
+        errors: [
+          {
+            field: 'validation_system',
+            message: `Validation system error: ${error.message}`,
+            code: 'VALIDATION_SYSTEM_ERROR',
+          },
+        ],
         transformedParameters: parameters,
         metadata: {
           validationId,
-          error: error.message
-        }
+          error: error.message,
+        },
       }
     }
   }
@@ -166,31 +150,19 @@ export class EnhancedValidationEngine {
       // Apply contextual value resolution
       let processedValue = value
       if (mapping.contextualValue) {
-        processedValue = await this.resolveContextualValue(
-          mapping.contextualValue,
-          value,
-          context
-        )
+        processedValue = await this.resolveContextualValue(mapping.contextualValue, value, context)
       }
 
       // Apply transformations
       if (mapping.transformations) {
         for (const transformation of mapping.transformations) {
-          processedValue = await this.applyTransformation(
-            processedValue,
-            transformation,
-            context
-          )
+          processedValue = await this.applyTransformation(processedValue, transformation, context)
         }
       }
 
       // Type conversion
       if (this.config.enableTypeConversion && mapping.targetType) {
-        processedValue = await this.convertType(
-          processedValue,
-          mapping.targetType,
-          parameterName
-        )
+        processedValue = await this.convertType(processedValue, mapping.targetType, parameterName)
       }
 
       // Validation
@@ -205,40 +177,41 @@ export class EnhancedValidationEngine {
       logger.debug('Single parameter validation completed', {
         parameter: parameterName,
         valid: validationResult.valid,
-        duration
+        duration,
       })
 
       return {
         valid: validationResult.valid,
         value: validationResult.valid ? processedValue : value,
         errors: validationResult.errors,
-        transformations: mapping.transformations?.map(t => t.type) || [],
+        transformations: mapping.transformations?.map((t) => t.type) || [],
         metadata: {
           originalValue: value,
           processedValue,
-          duration
-        }
+          duration,
+        },
       }
-
     } catch (error) {
       logger.error('Single parameter validation failed', {
         parameter: parameterName,
-        error: error.message
+        error: error.message,
       })
 
       return {
         valid: false,
         value,
-        errors: [{
-          field: parameterName,
-          message: error.message,
-          code: 'PARAMETER_VALIDATION_ERROR'
-        }],
+        errors: [
+          {
+            field: parameterName,
+            message: error.message,
+            code: 'PARAMETER_VALIDATION_ERROR',
+          },
+        ],
         transformations: [],
         metadata: {
           originalValue: value,
-          error: error.message
-        }
+          error: error.message,
+        },
       }
     }
   }
@@ -331,7 +304,7 @@ export class EnhancedValidationEngine {
       registeredTypeConverters: this.typeConverters.size,
       registeredCustomValidators: this.customValidators.size,
       cacheHitRate: this.calculateCacheHitRate(),
-      averageValidationTime: 0 // Would be tracked in a real implementation
+      averageValidationTime: 0, // Would be tracked in a real implementation
     }
   }
 
@@ -356,11 +329,14 @@ export class EnhancedValidationEngine {
       }
 
       // Validate required parameters
-      if (mapping.required && (paramValue === undefined || paramValue === null || paramValue === '')) {
+      if (
+        mapping.required &&
+        (paramValue === undefined || paramValue === null || paramValue === '')
+      ) {
         errors.push({
           field: mapping.parlantParameter,
           message: `${mapping.parlantParameter} is required`,
-          code: 'REQUIRED_FIELD_MISSING'
+          code: 'REQUIRED_FIELD_MISSING',
         })
         continue
       }
@@ -404,7 +380,7 @@ export class EnhancedValidationEngine {
       valid: errors.length === 0,
       errors,
       transformedParameters,
-      metadata: validationMetadata
+      metadata: validationMetadata,
     }
   }
 
@@ -424,11 +400,13 @@ export class EnhancedValidationEngine {
           mapping.validation.schema.parse(value)
         } catch (error) {
           if (error instanceof z.ZodError) {
-            errors.push(...error.errors.map(e => ({
-              field: parameterName,
-              message: e.message,
-              code: e.code
-            })))
+            errors.push(
+              ...error.errors.map((e) => ({
+                field: parameterName,
+                message: e.message,
+                code: e.code,
+              }))
+            )
           }
         }
       }
@@ -438,7 +416,7 @@ export class EnhancedValidationEngine {
         errors.push({
           field: parameterName,
           message: `Expected type ${mapping.validation.type}, got ${typeof value}`,
-          code: 'TYPE_MISMATCH'
+          code: 'TYPE_MISMATCH',
         })
       }
 
@@ -450,14 +428,14 @@ export class EnhancedValidationEngine {
             errors.push({
               field: parameterName,
               message: typeof customResult === 'string' ? customResult : 'Custom validation failed',
-              code: 'CUSTOM_VALIDATION_FAILED'
+              code: 'CUSTOM_VALIDATION_FAILED',
             })
           }
         } catch (error) {
           errors.push({
             field: parameterName,
             message: `Custom validation error: ${error.message}`,
-            code: 'CUSTOM_VALIDATION_ERROR'
+            code: 'CUSTOM_VALIDATION_ERROR',
           })
         }
       }
@@ -466,7 +444,7 @@ export class EnhancedValidationEngine {
     return {
       valid: errors.length === 0,
       errors,
-      transformedParameters: { [parameterName]: value }
+      transformedParameters: { [parameterName]: value },
     }
   }
 
@@ -491,7 +469,7 @@ export class EnhancedValidationEngine {
               errors.push({
                 field: mapping.parlantParameter,
                 message: rule.errorMessage || `Business rule '${rule.name}' failed`,
-                code: 'BUSINESS_RULE_VIOLATION'
+                code: 'BUSINESS_RULE_VIOLATION',
               })
             }
             continue
@@ -510,20 +488,19 @@ export class EnhancedValidationEngine {
             errors.push({
               field: mapping.parlantParameter,
               message: rule.errorMessage || `Business rule '${rule.name}' failed`,
-              code: 'BUSINESS_RULE_VIOLATION'
+              code: 'BUSINESS_RULE_VIOLATION',
             })
           }
-
         } catch (error) {
           logger.warn('Business rule evaluation failed', {
             rule: rule.name,
-            error: error.message
+            error: error.message,
           })
 
           errors.push({
             field: mapping.parlantParameter,
             message: `Business rule evaluation failed: ${error.message}`,
-            code: 'BUSINESS_RULE_ERROR'
+            code: 'BUSINESS_RULE_ERROR',
           })
         }
       }
@@ -575,17 +552,13 @@ export class EnhancedValidationEngine {
     // Validate parameter dependencies
     for (const mapping of parameterMappings) {
       if (mapping.conditions) {
-        const conditionsMet = await this.evaluateConditions(
-          mapping.conditions,
-          parameters,
-          context
-        )
+        const conditionsMet = await this.evaluateConditions(mapping.conditions, parameters, context)
 
         if (!conditionsMet && parameters[mapping.simParameter] !== undefined) {
           errors.push({
             field: mapping.parlantParameter,
             message: `Parameter conditions not met for ${mapping.parlantParameter}`,
-            code: 'CONDITION_NOT_MET'
+            code: 'CONDITION_NOT_MET',
           })
         }
       }
@@ -671,17 +644,13 @@ export class EnhancedValidationEngine {
     } catch (error) {
       logger.warn('Transformation failed', {
         type: transformation.type,
-        error: error.message
+        error: error.message,
       })
       throw error
     }
   }
 
-  private async convertType(
-    value: any,
-    targetType: string,
-    parameterName: string
-  ): Promise<any> {
+  private async convertType(value: any, targetType: string, parameterName: string): Promise<any> {
     if (!this.config.enableTypeConversion) {
       return value
     }
@@ -698,7 +667,7 @@ export class EnhancedValidationEngine {
       logger.warn('Type conversion failed', {
         targetType,
         parameter: parameterName,
-        error: error.message
+        error: error.message,
       })
       throw new Error(`Type conversion failed for ${parameterName}: ${error.message}`)
     }
@@ -715,11 +684,12 @@ export class EnhancedValidationEngine {
       case 'folder-selector':
         return z.string()
 
-      case 'slider':
+      case 'slider': {
         let numberSchema = z.number()
         if (subBlock.min !== undefined) numberSchema = numberSchema.min(subBlock.min)
         if (subBlock.max !== undefined) numberSchema = numberSchema.max(subBlock.max)
         return numberSchema
+      }
 
       case 'switch':
         return z.boolean()
@@ -727,8 +697,9 @@ export class EnhancedValidationEngine {
       case 'dropdown':
       case 'combobox':
         if (subBlock.options) {
-          const options = typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
-          const enumValues = options.map(opt => opt.id) as [string, ...string[]]
+          const options =
+            typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
+          const enumValues = options.map((opt) => opt.id) as [string, ...string[]]
           return z.enum(enumValues)
         }
         return z.string()
@@ -748,10 +719,7 @@ export class EnhancedValidationEngine {
     }
   }
 
-  private applyConditionalSchema(
-    schema: z.ZodTypeAny,
-    condition: any
-  ): z.ZodTypeAny {
+  private applyConditionalSchema(schema: z.ZodTypeAny, condition: any): z.ZodTypeAny {
     // For now, return the schema as-is
     // In a full implementation, this would apply conditional logic
     return schema
@@ -760,7 +728,7 @@ export class EnhancedValidationEngine {
   private validateType(value: any, expectedTypes: string | string[]): boolean {
     const types = Array.isArray(expectedTypes) ? expectedTypes : [expectedTypes]
 
-    return types.some(type => {
+    return types.some((type) => {
       switch (type) {
         case 'string':
           return typeof value === 'string'
@@ -795,7 +763,7 @@ export class EnhancedValidationEngine {
   ): Promise<boolean> {
     // Simplified condition evaluation
     // A full implementation would handle complex boolean logic
-    return conditions.every(condition => {
+    return conditions.every((condition) => {
       const fieldValue = parameters[condition.field]
       return fieldValue === condition.value
     })
@@ -806,12 +774,13 @@ export class EnhancedValidationEngine {
       case 'string':
         return value?.toString() || ''
 
-      case 'number':
+      case 'number': {
         const num = Number(value)
-        if (isNaN(num)) {
+        if (Number.isNaN(num)) {
           throw new Error(`Cannot convert "${value}" to number`)
         }
         return num
+      }
 
       case 'boolean':
         if (typeof value === 'boolean') return value
@@ -894,7 +863,7 @@ export class EnhancedValidationEngine {
   ): Promise<boolean> {
     // Implementation would check data dependencies
     if (rule.dependencies) {
-      return rule.dependencies.every(dep => {
+      return rule.dependencies.every((dep) => {
         return parameters[dep.id] !== undefined
       })
     }
@@ -955,7 +924,7 @@ export class EnhancedValidationEngine {
 
   private validateNumericRange(value: any, config: any): any {
     const num = Number(value)
-    if (isNaN(num)) {
+    if (Number.isNaN(num)) {
       throw new Error('Value must be a number')
     }
 
@@ -979,11 +948,7 @@ export class EnhancedValidationEngine {
     return value // Placeholder
   }
 
-  private processConditional(
-    value: any,
-    config: any,
-    context: ParlantExecutionContext
-  ): any {
+  private processConditional(value: any, config: any, context: ParlantExecutionContext): any {
     // Implementation would process conditional logic
     return value // Placeholder
   }
@@ -994,17 +959,14 @@ export class EnhancedValidationEngine {
     parameters: Record<string, any>,
     mappings: ParameterMapping[]
   ): string {
-    return `${JSON.stringify(parameters)}_${mappings.map(m => m.parlantParameter).join(',')}`
+    return `${JSON.stringify(parameters)}_${mappings.map((m) => m.parlantParameter).join(',')}`
   }
 
   private generateSchemaKey(subBlocks: SubBlockConfig[]): string {
-    return subBlocks.map(sb => `${sb.id}:${sb.type}:${sb.required}`).join('|')
+    return subBlocks.map((sb) => `${sb.id}:${sb.type}:${sb.required}`).join('|')
   }
 
-  private generateBusinessRuleKey(
-    rule: BusinessRule,
-    parameters: Record<string, any>
-  ): string {
+  private generateBusinessRuleKey(rule: BusinessRule, parameters: Record<string, any>): string {
     return `${rule.name}_${JSON.stringify(parameters)}`
   }
 
@@ -1017,7 +979,7 @@ export class EnhancedValidationEngine {
 
     this.validationCache.set(id, {
       result,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -1036,8 +998,8 @@ export class EnhancedValidationEngine {
 
   private generateUUID(): string {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = Math.random() * 16 | 0
-      const v = c == 'x' ? r : (r & 0x3 | 0x8)
+      const r = (Math.random() * 16) | 0
+      const v = c === 'x' ? r : (r & 0x3) | 0x8
       return v.toString(16)
     })
   }
@@ -1047,7 +1009,7 @@ export class EnhancedValidationEngine {
     this.typeConverters.set('string', async (value) => String(value || ''))
     this.typeConverters.set('number', async (value) => {
       const num = Number(value)
-      if (isNaN(num)) throw new Error(`Cannot convert to number: ${value}`)
+      if (Number.isNaN(num)) throw new Error(`Cannot convert to number: ${value}`)
       return num
     })
     this.typeConverters.set('boolean', async (value) => {

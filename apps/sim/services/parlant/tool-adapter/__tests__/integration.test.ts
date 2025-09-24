@@ -5,10 +5,9 @@
  * with Parlant integration and provide expected functionality.
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals'
-import { ParlantToolAdapterService } from '../service'
-import { globalToolAdapterRegistry } from '../adapter-registry'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals'
 import { globalConfigurationManager } from '../configuration'
+import { ParlantToolAdapterService } from '../service'
 import type { AdapterContext } from '../types'
 
 describe('Universal Tool Adapter System', () => {
@@ -50,7 +49,7 @@ describe('Universal Tool Adapter System', () => {
       expect(schemas.length).toBeGreaterThan(20) // Should have 20+ tools
 
       // Verify we have tools from each category
-      const categories = new Set(schemas.map(s => s.category))
+      const categories = new Set(schemas.map((s) => s.category))
       expect(categories).toContain('workflow-management')
       expect(categories).toContain('data-retrieval')
       expect(categories).toContain('external-integration')
@@ -86,11 +85,7 @@ describe('Universal Tool Adapter System', () => {
     })
 
     it('should handle tool not found gracefully', async () => {
-      const result = await service.executeTool(
-        'nonexistent_tool',
-        {},
-        testContext
-      )
+      const result = await service.executeTool('nonexistent_tool', {}, testContext)
 
       expect(result.success).toBe(false)
       expect(result.error?.code).toBe('TOOL_NOT_FOUND')
@@ -117,18 +112,18 @@ describe('Universal Tool Adapter System', () => {
           enabled: true,
           default_requests_per_minute: 2,
           default_concurrent_limit: 1,
-        }
+        },
       })
 
-      const promises = Array(5).fill(null).map(() =>
-        service.executeTool('get_blocks_metadata', {}, testContext)
-      )
+      const promises = Array(5)
+        .fill(null)
+        .map(() => service.executeTool('get_blocks_metadata', {}, testContext))
 
       const results = await Promise.all(promises)
 
       // Some requests should be rate limited
-      const rateLimitedResults = results.filter(r =>
-        !r.success && r.error?.code === 'RATE_LIMIT_EXCEEDED'
+      const rateLimitedResults = results.filter(
+        (r) => !r.success && r.error?.code === 'RATE_LIMIT_EXCEEDED'
       )
 
       expect(rateLimitedResults.length).toBeGreaterThan(0)
@@ -220,11 +215,7 @@ describe('Universal Tool Adapter System', () => {
       const originalFetch = global.fetch
       global.fetch = jest.fn().mockRejectedValue(new Error('Network error'))
 
-      const result = await service.executeTool(
-        'search_online',
-        { query: 'test' },
-        testContext
-      )
+      const result = await service.executeTool('search_online', { query: 'test' }, testContext)
 
       expect(result.success).toBe(false)
       expect(result.error?.code).toBe('NETWORK_ERROR')
@@ -234,11 +225,7 @@ describe('Universal Tool Adapter System', () => {
     })
 
     it('should provide helpful error suggestions', async () => {
-      const result = await service.executeTool(
-        'nonexistent_tool',
-        {},
-        testContext
-      )
+      const result = await service.executeTool('nonexistent_tool', {}, testContext)
 
       expect(result.error?.suggestions).toBeDefined()
       expect(result.error?.suggestions?.length).toBeGreaterThan(0)
@@ -250,7 +237,7 @@ describe('Universal Tool Adapter System', () => {
     it('should cache tool results when enabled', async () => {
       // Enable caching
       globalConfigurationManager.updateGlobalConfig({
-        caching: { enabled: true, default_ttl_seconds: 300 }
+        caching: { enabled: true, default_ttl_seconds: 300 },
       })
 
       const tool = 'get_blocks_metadata'
@@ -286,11 +273,7 @@ describe('Universal Tool Adapter System', () => {
       // Disable a tool
       globalConfigurationManager.setToolEnabled('get_blocks_metadata', false)
 
-      const result = await service.executeTool(
-        'get_blocks_metadata',
-        {},
-        testContext
-      )
+      const result = await service.executeTool('get_blocks_metadata', {}, testContext)
 
       expect(result.success).toBe(false)
       expect(result.error?.code).toBe('TOOL_DISABLED')
@@ -306,8 +289,8 @@ describe('Universal Tool Adapter System', () => {
             enabled: false,
             default_requests_per_minute: 1000,
             default_concurrent_limit: 100,
-          }
-        }
+          },
+        },
       })
 
       const config = globalConfigurationManager.getGlobalConfig(testContext.workspace_id)
@@ -326,9 +309,9 @@ describe('Universal Tool Adapter System', () => {
       const results = service.searchTools('workflow', testContext)
       expect(results.length).toBeGreaterThan(0)
 
-      const workflowTools = results.filter(tool =>
-        tool.name.includes('workflow') ||
-        tool.description.toLowerCase().includes('workflow')
+      const workflowTools = results.filter(
+        (tool) =>
+          tool.name.includes('workflow') || tool.description.toLowerCase().includes('workflow')
       )
       expect(workflowTools.length).toBeGreaterThan(0)
     })
@@ -357,11 +340,7 @@ describe('Universal Tool Adapter System', () => {
     })
 
     it('should handle context correctly', async () => {
-      const result = await service.executeTool(
-        'get_blocks_metadata',
-        {},
-        testContext
-      )
+      const result = await service.executeTool('get_blocks_metadata', {}, testContext)
 
       // Tool should have access to context
       expect(result.success).toBe(true)
@@ -410,11 +389,7 @@ describe('Performance Benchmarks', () => {
   })
 
   it('should execute tools within performance targets', async () => {
-    const tools = [
-      'get_blocks_metadata',
-      'advanced_search',
-      'validate_workflow',
-    ]
+    const tools = ['get_blocks_metadata', 'advanced_search', 'validate_workflow']
 
     for (const tool of tools) {
       const startTime = Date.now()
@@ -432,15 +407,15 @@ describe('Performance Benchmarks', () => {
     const concurrentExecutions = 10
     const startTime = Date.now()
 
-    const promises = Array(concurrentExecutions).fill(null).map((_, i) =>
-      service.executeTool('get_blocks_metadata', { test_id: i }, testContext)
-    )
+    const promises = Array(concurrentExecutions)
+      .fill(null)
+      .map((_, i) => service.executeTool('get_blocks_metadata', { test_id: i }, testContext))
 
     const results = await Promise.all(promises)
     const duration = Date.now() - startTime
 
     // All should succeed
-    expect(results.every(r => r.success)).toBe(true)
+    expect(results.every((r) => r.success)).toBe(true)
 
     // Should complete within reasonable time
     expect(duration).toBeLessThan(10000) // 10 seconds for 10 concurrent

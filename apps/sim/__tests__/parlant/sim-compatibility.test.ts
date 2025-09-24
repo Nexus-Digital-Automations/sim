@@ -8,50 +8,49 @@
  * Tests core Sim workflows, database operations, and API endpoints.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@sim/db'
-import { sql } from 'drizzle-orm'
 import {
+  account,
+  apiKey,
+  chat,
+  copilotChats,
+  customTools,
+  document,
+  embedding,
+  environment,
+  knowledgeBase,
+  marketplace,
+  mcpServers,
+  memory,
+  // Parlant tables (to ensure they don't interfere)
+  parlantAgent,
+  parlantEvent,
+  parlantSession,
+  permissions,
+  session,
+  settings,
+  subscription,
+  templateStars,
+  templates,
   // Existing Sim tables
   user,
-  session,
-  account,
-  workspace,
-  workspaceInvitation,
-  permissions,
+  userRateLimits,
+  userStats,
+  webhook,
   workflow,
   workflowBlocks,
+  workflowCheckpoints,
   workflowEdges,
-  workflowSubflows,
   workflowExecutionLogs,
   workflowExecutionSnapshots,
   workflowSchedule,
-  webhook,
-  apiKey,
-  knowledgeBase,
-  document,
-  embedding,
-  customTools,
-  mcpServers,
-  chat,
-  copilotChats,
-  workflowCheckpoints,
-  templates,
-  templateStars,
-  userStats,
-  subscription,
-  userRateLimits,
-  marketplace,
-  memory,
-  environment,
+  workflowSubflows,
+  workspace,
   workspaceEnvironment,
-  settings,
-  // Parlant tables (to ensure they don't interfere)
-  parlantAgent,
-  parlantSession,
-  parlantEvent,
+  workspaceInvitation,
 } from '@sim/db/schema'
-import { eq, count, and, desc } from 'drizzle-orm'
+import { and, count, desc, eq, sql } from 'drizzle-orm'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 interface SimTestContext {
   userId: string
@@ -367,11 +366,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .leftJoin(workspaceEnvironment, eq(workspaceEnvironment.workspaceId, workspace.id))
         .leftJoin(workspaceInvitation, eq(workspaceInvitation.workspaceId, workspace.id))
         .where(eq(workspace.id, ctx.workspaceId))
-        .groupBy(
-          workspace.name,
-          user.name,
-          workspaceEnvironment.id
-        )
+        .groupBy(workspace.name, user.name, workspaceEnvironment.id)
 
       expect(workspaceDetails[0].workspaceName).toBe('Sim Compatibility Workspace')
       expect(workspaceDetails[0].permissionCount).toBe(1)
@@ -379,8 +374,12 @@ describe('Sim Functionality Compatibility Tests', () => {
       expect(workspaceDetails[0].invitationCount).toBe(1)
 
       // Clean up
-      await db.delete(workspaceInvitation).where(eq(workspaceInvitation.workspaceId, ctx.workspaceId))
-      await db.delete(workspaceEnvironment).where(eq(workspaceEnvironment.workspaceId, ctx.workspaceId))
+      await db
+        .delete(workspaceInvitation)
+        .where(eq(workspaceInvitation.workspaceId, ctx.workspaceId))
+      await db
+        .delete(workspaceEnvironment)
+        .where(eq(workspaceEnvironment.workspaceId, ctx.workspaceId))
       await db.delete(permissions).where(eq(permissions.id, memberPermission[0].id))
     })
 
@@ -434,12 +433,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         })
         .from(session)
         .innerJoin(user, eq(session.userId, user.id))
-        .where(
-          and(
-            eq(session.id, userSession[0].id),
-            sql`${session.expiresAt} > NOW()`
-          )
-        )
+        .where(and(eq(session.id, userSession[0].id), sql`${session.expiresAt} > NOW()`))
 
       expect(validSession[0].userId).toBe(ctx.userId)
       expect(validSession[0].userName).toBe('Sim Compatibility User')
@@ -569,12 +563,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .leftJoin(workflowEdges, eq(workflowEdges.workflowId, workflow.id))
         .leftJoin(workflowSubflows, eq(workflowSubflows.workflowId, workflow.id))
         .where(eq(workflow.id, ctx.workflowId))
-        .groupBy(
-          workflow.id,
-          workflow.name,
-          workflow.isDeployed,
-          workflow.lastSynced
-        )
+        .groupBy(workflow.id, workflow.name, workflow.isDeployed, workflow.lastSynced)
 
       expect(workflowState[0].workflowName).toBe('Sim Compatibility Workflow')
       expect(workflowState[0].blockCount).toBe(2)
@@ -797,7 +786,9 @@ describe('Sim Functionality Compatibility Tests', () => {
             content: 'This is the first chunk of the test document for compatibility testing.',
             contentLength: 75,
             tokenCount: 18,
-            embedding: Array(1536).fill(0).map(() => Math.random() - 0.5), // Random embedding
+            embedding: Array(1536)
+              .fill(0)
+              .map(() => Math.random() - 0.5), // Random embedding
             embeddingModel: 'text-embedding-3-small',
             startOffset: 0,
             endOffset: 75,
@@ -811,10 +802,13 @@ describe('Sim Functionality Compatibility Tests', () => {
             documentId: doc[0].id,
             chunkIndex: 1,
             chunkHash: 'hash-chunk-1',
-            content: 'This is the second chunk containing more detailed information about the testing process.',
+            content:
+              'This is the second chunk containing more detailed information about the testing process.',
             contentLength: 95,
             tokenCount: 22,
-            embedding: Array(1536).fill(0).map(() => Math.random() - 0.5), // Random embedding
+            embedding: Array(1536)
+              .fill(0)
+              .map(() => Math.random() - 0.5), // Random embedding
             embeddingModel: 'text-embedding-3-small',
             startOffset: 75,
             endOffset: 170,
@@ -875,7 +869,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .limit(5)
 
       expect(searchResults).toHaveLength(2)
-      expect(searchResults.every(r => r.content.includes('compatibility'))).toBe(true)
+      expect(searchResults.every((r) => r.content.includes('compatibility'))).toBe(true)
     })
 
     it('should handle custom tools and MCP servers', async () => {
@@ -943,7 +937,7 @@ describe('Sim Functionality Compatibility Tests', () => {
           description: 'MCP server for compatibility testing',
           transport: 'http',
           url: 'http://localhost:8080/mcp',
-          headers: { 'Authorization': 'Bearer test-token' },
+          headers: { Authorization: 'Bearer test-token' },
           timeout: 30000,
           retries: 3,
           enabled: true,
@@ -985,8 +979,8 @@ describe('Sim Functionality Compatibility Tests', () => {
         )
 
       expect(workspaceTools.length).toBeGreaterThanOrEqual(2)
-      expect(workspaceTools.some(t => t.toolType === 'custom')).toBe(true)
-      expect(workspaceTools.some(t => t.toolType === 'mcp')).toBe(true)
+      expect(workspaceTools.some((t) => t.toolType === 'custom')).toBe(true)
+      expect(workspaceTools.some((t) => t.toolType === 'mcp')).toBe(true)
     })
 
     it('should handle copilot and chat functionality', async () => {
@@ -1005,7 +999,8 @@ describe('Sim Functionality Compatibility Tests', () => {
             },
             {
               role: 'assistant',
-              content: 'To test compatibility, you should verify that existing functionality continues to work after changes.',
+              content:
+                'To test compatibility, you should verify that existing functionality continues to work after changes.',
               timestamp: Date.now() + 1000,
             },
           ],
@@ -1134,12 +1129,7 @@ describe('Sim Functionality Compatibility Tests', () => {
           createdAt: memory.createdAt,
         })
         .from(memory)
-        .where(
-          and(
-            eq(memory.workflowId, ctx.workflowId),
-            eq(memory.type, 'agent')
-          )
-        )
+        .where(and(eq(memory.workflowId, ctx.workflowId), eq(memory.type, 'agent')))
 
       expect(agentMemories).toHaveLength(1)
       expect(agentMemories[0].memoryKey).toBe('user_preferences')
@@ -1394,7 +1384,7 @@ describe('Sim Functionality Compatibility Tests', () => {
           id: `market-${Date.now()}`,
           workflowId: ctx.workflowId,
           state: {
-            blocks: { 'start': { type: 'starter' } },
+            blocks: { start: { type: 'starter' } },
             edges: [],
             version: '1.0',
           },
@@ -1557,9 +1547,15 @@ describe('Sim Functionality Compatibility Tests', () => {
       // Final verification: Both systems can operate simultaneously
       const finalVerification = await Promise.all([
         // Sim query
-        db.select({ count: count() }).from(workflow).where(eq(workflow.workspaceId, ctx.workspaceId)),
+        db
+          .select({ count: count() })
+          .from(workflow)
+          .where(eq(workflow.workspaceId, ctx.workspaceId)),
         // Parlant query
-        db.select({ count: count() }).from(parlantAgent).where(eq(parlantAgent.workspaceId, ctx.workspaceId))
+        db
+          .select({ count: count() })
+          .from(parlantAgent)
+          .where(eq(parlantAgent.workspaceId, ctx.workspaceId)),
       ])
 
       expect(finalVerification[0][0].count).toBe(2) // Original + new workflow

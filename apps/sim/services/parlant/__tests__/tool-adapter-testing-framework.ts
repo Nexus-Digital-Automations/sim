@@ -14,11 +14,9 @@
  * - Acceptance criteria validation
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/testing-library/jest-dom'
-import { agentService, sessionService, createAuthContext } from '@/services/parlant'
-import { executeTool } from '@/tools'
-import type { ToolConfig, ToolResponse } from '@/tools/types'
-import type { Agent, Session, AuthContext } from '@/services/parlant/types'
+import { afterAll, beforeAll, describe, expect, test } from '@jest/testing-library/jest-dom'
+import { agentService, createAuthContext, sessionService } from '@/services/parlant'
+import type { Agent, AuthContext, Session } from '@/services/parlant/types'
 
 // =====================================================
 // CONSTANTS AND CONFIGURATION
@@ -27,8 +25,8 @@ import type { Agent, Session, AuthContext } from '@/services/parlant/types'
 const TEST_CONFIG = {
   // Test timeouts
   TOOL_EXECUTION_TIMEOUT: 30000, // 30 seconds
-  CONVERSATION_TIMEOUT: 60000,   // 1 minute
-  LOAD_TEST_TIMEOUT: 300000,     // 5 minutes
+  CONVERSATION_TIMEOUT: 60000, // 1 minute
+  LOAD_TEST_TIMEOUT: 300000, // 5 minutes
 
   // Load testing parameters
   CONCURRENT_TOOL_EXECUTIONS: 10,
@@ -42,36 +40,90 @@ const TEST_CONFIG = {
   TOOL_CATEGORIES: {
     SIMPLE: ['thinking', 'vision', 'memory', 'knowledge', 'file', 'wikipedia', 'arxiv'],
     MEDIUM: ['google', 'github', 'slack', 'discord', 'openai', 'mistral'],
-    COMPLEX: ['airtable', 'gmail', 'google_calendar', 'google_docs', 'jira', 'linear']
-  }
+    COMPLEX: ['airtable', 'gmail', 'google_calendar', 'google_docs', 'jira', 'linear'],
+  },
 }
 
 // All 65 Sim tools to test
 const ALL_SIM_TOOLS = [
   // API Integration Tools
-  'airtable', 'confluence', 'discord', 'github', 'gmail', 'google', 'google_calendar',
-  'google_docs', 'google_drive', 'google_form', 'google_sheets', 'jira', 'linear',
-  'notion', 'outlook', 'sharepoint', 'slack', 'telegram', 'twilio', 'x',
+  'airtable',
+  'confluence',
+  'discord',
+  'github',
+  'gmail',
+  'google',
+  'google_calendar',
+  'google_docs',
+  'google_drive',
+  'google_form',
+  'google_sheets',
+  'jira',
+  'linear',
+  'notion',
+  'outlook',
+  'sharepoint',
+  'slack',
+  'telegram',
+  'twilio',
+  'x',
 
   // Microsoft Tools
-  'microsoft_excel', 'microsoft_planner', 'microsoft_teams', 'onedrive',
+  'microsoft_excel',
+  'microsoft_planner',
+  'microsoft_teams',
+  'onedrive',
 
   // AI/ML Tools
-  'openai', 'mistral', 'perplexity', 'huggingface', 'elevenlabs', 'mem0', 'vision', 'thinking',
+  'openai',
+  'mistral',
+  'perplexity',
+  'huggingface',
+  'elevenlabs',
+  'mem0',
+  'vision',
+  'thinking',
 
   // Data & Search Tools
-  'arxiv', 'exa', 'firecrawl', 'jina', 'linkup', 'reddit', 'serper', 'tavily',
-  'wikipedia', 'youtube', 'hunter', 'typeform',
+  'arxiv',
+  'exa',
+  'firecrawl',
+  'jina',
+  'linkup',
+  'reddit',
+  'serper',
+  'tavily',
+  'wikipedia',
+  'youtube',
+  'hunter',
+  'typeform',
 
   // Database Tools
-  'postgresql', 'mysql', 'mongodb', 'supabase', 'pinecone', 'qdrant',
+  'postgresql',
+  'mysql',
+  'mongodb',
+  'supabase',
+  'pinecone',
+  'qdrant',
 
   // Workflow & Utility Tools
-  'browser_use', 'stagehand', 'function', 'parallel', 'workflow', 'file',
-  'http', 's3', 'memory', 'knowledge', 'clay',
+  'browser_use',
+  'stagehand',
+  'function',
+  'parallel',
+  'workflow',
+  'file',
+  'http',
+  's3',
+  'memory',
+  'knowledge',
+  'clay',
 
   // Communication Tools
-  'mail', 'sms', 'whatsapp', 'wealthbox'
+  'mail',
+  'sms',
+  'whatsapp',
+  'wealthbox',
 ]
 
 // =====================================================
@@ -117,40 +169,46 @@ class ToolAdapterTestingFramework {
       )
 
       // Create test agent for tool adapter testing
-      const agentResponse = await agentService.createAgent({
-        name: 'Tool Adapter Test Agent',
-        description: 'Agent for testing Universal Tool Adapter System integration',
-        workspace_id: TEST_CONFIG.TEST_WORKSPACE_ID,
-        config: {
-          model: 'gpt-4',
-          temperature: 0.1,
-          max_turns: 10
-        },
-        guidelines: [
-          {
-            name: 'Tool Testing Guidelines',
-            description: 'Guidelines for systematic tool testing',
-            content: `You are a tool testing agent. Your role is to:
+      const agentResponse = await agentService.createAgent(
+        {
+          name: 'Tool Adapter Test Agent',
+          description: 'Agent for testing Universal Tool Adapter System integration',
+          workspace_id: TEST_CONFIG.TEST_WORKSPACE_ID,
+          config: {
+            model: 'gpt-4',
+            temperature: 0.1,
+            max_turns: 10,
+          },
+          guidelines: [
+            {
+              name: 'Tool Testing Guidelines',
+              description: 'Guidelines for systematic tool testing',
+              content: `You are a tool testing agent. Your role is to:
 1. Test tool functionality systematically
 2. Validate parameter mapping from Sim to Parlant format
 3. Verify response transformation works correctly
 4. Check error handling provides helpful explanations
 5. Ensure results format properly for conversational contexts
-6. Validate natural language descriptions are accurate and helpful`
-          }
-        ]
-      }, authContext)
+6. Validate natural language descriptions are accurate and helpful`,
+            },
+          ],
+        },
+        authContext
+      )
 
       if (!agentResponse.success) {
         throw new Error(`Failed to create test agent: ${agentResponse.error}`)
       }
 
       // Create test session
-      const sessionResponse = await sessionService.createSession({
-        agent_id: agentResponse.data.id,
-        workspace_id: TEST_CONFIG.TEST_WORKSPACE_ID,
-        customer_id: 'tool-adapter-testing-session'
-      }, authContext)
+      const sessionResponse = await sessionService.createSession(
+        {
+          agent_id: agentResponse.data.id,
+          workspace_id: TEST_CONFIG.TEST_WORKSPACE_ID,
+          customer_id: 'tool-adapter-testing-session',
+        },
+        authContext
+      )
 
       if (!sessionResponse.success) {
         throw new Error(`Failed to create test session: ${sessionResponse.error}`)
@@ -159,13 +217,12 @@ class ToolAdapterTestingFramework {
       this.testAgent = {
         agent: agentResponse.data,
         session: sessionResponse.data,
-        authContext
+        authContext,
       }
 
       console.log('✅ Test environment setup complete')
       console.log(`📋 Agent ID: ${agentResponse.data.id}`)
       console.log(`📋 Session ID: ${sessionResponse.data.id}`)
-
     } catch (error) {
       console.error('❌ Failed to setup test environment:', error)
       throw error
@@ -178,10 +235,7 @@ class ToolAdapterTestingFramework {
     try {
       if (this.testAgent) {
         // Close test session
-        await sessionService.closeSession(
-          this.testAgent.session.id,
-          this.testAgent.authContext
-        )
+        await sessionService.closeSession(this.testAgent.session.id, this.testAgent.authContext)
 
         // Optionally delete test agent (comment out to preserve for debugging)
         // await agentService.deleteAgent(this.testAgent.agent.id, this.testAgent.authContext)
@@ -209,7 +263,7 @@ class ToolAdapterTestingFramework {
       responseTransformationValid: false,
       errorHandlingValid: false,
       conversationalFormatValid: false,
-      naturalLanguageDescriptionValid: false
+      naturalLanguageDescriptionValid: false,
     }
 
     try {
@@ -254,7 +308,6 @@ class ToolAdapterTestingFramework {
 
       result.executionTime = Date.now() - startTime
       console.log(`  ✅ Tool adapter test complete for ${toolId} (${result.executionTime}ms)`)
-
     } catch (error) {
       result.executionTime = Date.now() - startTime
       result.error = error instanceof Error ? error.message : String(error)
@@ -265,7 +318,9 @@ class ToolAdapterTestingFramework {
     return result
   }
 
-  private async testParameterMapping(toolId: string): Promise<{ success: boolean; error?: string }> {
+  private async testParameterMapping(
+    toolId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       // TODO: Once Universal Tool Adapter System is implemented, test:
       // 1. Sim tool parameters map correctly to Parlant format
@@ -274,13 +329,19 @@ class ToolAdapterTestingFramework {
       // 4. Parameter visibility controls work correctly
 
       // Placeholder implementation
-      return { success: false, error: 'Parameter mapping testing not yet implemented - waiting for Universal Tool Adapter System' }
+      return {
+        success: false,
+        error:
+          'Parameter mapping testing not yet implemented - waiting for Universal Tool Adapter System',
+      }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : String(error) }
     }
   }
 
-  private async testToolExecutionThroughParlant(toolId: string): Promise<{ success: boolean; error?: string }> {
+  private async testToolExecutionThroughParlant(
+    toolId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       // TODO: Once Universal Tool Adapter System is implemented, test:
       // 1. Tool can be called through Parlant agent
@@ -289,7 +350,11 @@ class ToolAdapterTestingFramework {
       // 4. Resource usage is within acceptable limits
 
       // Placeholder implementation
-      return { success: false, error: 'Parlant tool execution testing not yet implemented - waiting for Universal Tool Adapter System' }
+      return {
+        success: false,
+        error:
+          'Parlant tool execution testing not yet implemented - waiting for Universal Tool Adapter System',
+      }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : String(error) }
     }
@@ -304,13 +369,19 @@ class ToolAdapterTestingFramework {
       // 4. Retry logic works for retryable errors
 
       // Placeholder implementation
-      return { success: false, error: 'Error handling testing not yet implemented - waiting for Universal Tool Adapter System' }
+      return {
+        success: false,
+        error:
+          'Error handling testing not yet implemented - waiting for Universal Tool Adapter System',
+      }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : String(error) }
     }
   }
 
-  private async testConversationalFormat(toolId: string): Promise<{ success: boolean; error?: string }> {
+  private async testConversationalFormat(
+    toolId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       // TODO: Once Universal Tool Adapter System is implemented, test:
       // 1. Tool results format nicely in conversation
@@ -319,13 +390,19 @@ class ToolAdapterTestingFramework {
       // 4. File outputs are handled correctly
 
       // Placeholder implementation
-      return { success: false, error: 'Conversational format testing not yet implemented - waiting for Universal Tool Adapter System' }
+      return {
+        success: false,
+        error:
+          'Conversational format testing not yet implemented - waiting for Universal Tool Adapter System',
+      }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : String(error) }
     }
   }
 
-  private async testNaturalLanguageDescription(toolId: string): Promise<{ success: boolean; error?: string }> {
+  private async testNaturalLanguageDescription(
+    toolId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       // TODO: Once Universal Tool Adapter System is implemented, test:
       // 1. Tool has natural language description suitable for LLM
@@ -334,7 +411,11 @@ class ToolAdapterTestingFramework {
       // 4. Parameter descriptions are clear and actionable
 
       // Placeholder implementation
-      return { success: false, error: 'Natural language description testing not yet implemented - waiting for Universal Tool Adapter System' }
+      return {
+        success: false,
+        error:
+          'Natural language description testing not yet implemented - waiting for Universal Tool Adapter System',
+      }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : String(error) }
     }
@@ -368,7 +449,7 @@ class ToolAdapterTestingFramework {
         success: boolean
         executionTime: number
         error?: string
-      }>
+      }>,
     }
 
     try {
@@ -379,9 +460,10 @@ class ToolAdapterTestingFramework {
       // 4. Test context preservation between tool calls
       // 5. Validate final workflow outcome
 
-      console.log('⚠️  End-to-end workflow testing not yet implemented - waiting for Universal Tool Adapter System')
+      console.log(
+        '⚠️  End-to-end workflow testing not yet implemented - waiting for Universal Tool Adapter System'
+      )
       result.executionTime = Date.now() - startTime
-
     } catch (error) {
       result.executionTime = Date.now() - startTime
       result.error = error instanceof Error ? error.message : String(error)
@@ -416,7 +498,7 @@ class ToolAdapterTestingFramework {
         testName: 'Tool Recommendation Accuracy',
         success: recommendationTest.success,
         executionTime: recommendationTest.executionTime,
-        error: recommendationTest.error
+        error: recommendationTest.error,
       })
 
       // Test 2: Natural language tool usage
@@ -425,7 +507,7 @@ class ToolAdapterTestingFramework {
         testName: 'Natural Language Tool Usage',
         success: naturalLanguageTest.success,
         executionTime: naturalLanguageTest.executionTime,
-        error: naturalLanguageTest.error
+        error: naturalLanguageTest.error,
       })
 
       // Test 3: Context-aware tool selection
@@ -434,7 +516,7 @@ class ToolAdapterTestingFramework {
         testName: 'Context-Aware Tool Selection',
         success: contextAwareTest.success,
         executionTime: contextAwareTest.executionTime,
-        error: contextAwareTest.error
+        error: contextAwareTest.error,
       })
 
       // Test 4: Result presentation quality
@@ -443,62 +525,81 @@ class ToolAdapterTestingFramework {
         testName: 'Result Presentation Quality',
         success: presentationTest.success,
         executionTime: presentationTest.executionTime,
-        error: presentationTest.error
+        error: presentationTest.error,
       })
-
     } catch (error) {
       console.error('❌ Conversational AI testing failed:', error)
     }
 
-    const success = conversationTests.every(test => test.success)
+    const success = conversationTests.every((test) => test.success)
 
     return {
       success,
-      conversationTests
+      conversationTests,
     }
   }
 
-  private async testToolRecommendation(): Promise<{ success: boolean; executionTime: number; error?: string }> {
+  private async testToolRecommendation(): Promise<{
+    success: boolean
+    executionTime: number
+    error?: string
+  }> {
     const startTime = Date.now()
 
     // TODO: Test that agent recommends appropriate tools for given tasks
     return {
       success: false,
       executionTime: Date.now() - startTime,
-      error: 'Tool recommendation testing not yet implemented - waiting for Universal Tool Adapter System'
+      error:
+        'Tool recommendation testing not yet implemented - waiting for Universal Tool Adapter System',
     }
   }
 
-  private async testNaturalLanguageToolUsage(): Promise<{ success: boolean; executionTime: number; error?: string }> {
+  private async testNaturalLanguageToolUsage(): Promise<{
+    success: boolean
+    executionTime: number
+    error?: string
+  }> {
     const startTime = Date.now()
 
     // TODO: Test that tools can be invoked via natural language descriptions
     return {
       success: false,
       executionTime: Date.now() - startTime,
-      error: 'Natural language tool usage testing not yet implemented - waiting for Universal Tool Adapter System'
+      error:
+        'Natural language tool usage testing not yet implemented - waiting for Universal Tool Adapter System',
     }
   }
 
-  private async testContextAwareToolSelection(): Promise<{ success: boolean; executionTime: number; error?: string }> {
+  private async testContextAwareToolSelection(): Promise<{
+    success: boolean
+    executionTime: number
+    error?: string
+  }> {
     const startTime = Date.now()
 
     // TODO: Test that tool selection is contextually appropriate
     return {
       success: false,
       executionTime: Date.now() - startTime,
-      error: 'Context-aware tool selection testing not yet implemented - waiting for Universal Tool Adapter System'
+      error:
+        'Context-aware tool selection testing not yet implemented - waiting for Universal Tool Adapter System',
     }
   }
 
-  private async testResultPresentation(): Promise<{ success: boolean; executionTime: number; error?: string }> {
+  private async testResultPresentation(): Promise<{
+    success: boolean
+    executionTime: number
+    error?: string
+  }> {
     const startTime = Date.now()
 
     // TODO: Test that tool results are presented clearly in conversation
     return {
       success: false,
       executionTime: Date.now() - startTime,
-      error: 'Result presentation testing not yet implemented - waiting for Universal Tool Adapter System'
+      error:
+        'Result presentation testing not yet implemented - waiting for Universal Tool Adapter System',
     }
   }
 
@@ -530,7 +631,7 @@ class ToolAdapterTestingFramework {
         concurrentExecutions: number
         averageTime: number
         successRate: number
-      }>
+      }>,
     }
 
     try {
@@ -541,8 +642,9 @@ class ToolAdapterTestingFramework {
       // 4. Test long-running tool scenarios
       // 5. Test resource cleanup after tool execution
 
-      console.log('⚠️  Performance testing not yet implemented - waiting for Universal Tool Adapter System')
-
+      console.log(
+        '⚠️  Performance testing not yet implemented - waiting for Universal Tool Adapter System'
+      )
     } catch (error) {
       console.error('❌ Performance testing failed:', error)
     }
@@ -575,7 +677,8 @@ class ToolAdapterTestingFramework {
         testName: 'Workspace Boundary Enforcement',
         success: false,
         description: 'Tools should only access data within their workspace',
-        error: 'Workspace isolation testing not yet implemented - waiting for Universal Tool Adapter System'
+        error:
+          'Workspace isolation testing not yet implemented - waiting for Universal Tool Adapter System',
       })
 
       // Test 2: Cross-workspace tool calls are blocked
@@ -583,7 +686,8 @@ class ToolAdapterTestingFramework {
         testName: 'Cross-Workspace Call Prevention',
         success: false,
         description: 'Tools should not be able to access other workspace data',
-        error: 'Cross-workspace prevention testing not yet implemented - waiting for Universal Tool Adapter System'
+        error:
+          'Cross-workspace prevention testing not yet implemented - waiting for Universal Tool Adapter System',
       })
 
       // Test 3: User permissions are enforced
@@ -591,18 +695,18 @@ class ToolAdapterTestingFramework {
         testName: 'User Permission Enforcement',
         success: false,
         description: 'Tools should respect user-level permissions',
-        error: 'User permission testing not yet implemented - waiting for Universal Tool Adapter System'
+        error:
+          'User permission testing not yet implemented - waiting for Universal Tool Adapter System',
       })
-
     } catch (error) {
       console.error('❌ Workspace isolation testing failed:', error)
     }
 
-    const success = isolationTests.every(test => test.success)
+    const success = isolationTests.every((test) => test.success)
 
     return {
       success,
-      isolationTests
+      isolationTests,
     }
   }
 
@@ -626,33 +730,33 @@ class ToolAdapterTestingFramework {
         criteria: 'All 20+ Sim tools work through Parlant agents',
         met: false,
         details: `Found 65 tools total (not 20+). Universal Tool Adapter System not yet implemented.`,
-        evidence: { toolCount: ALL_SIM_TOOLS.length, toolsFound: ALL_SIM_TOOLS }
+        evidence: { toolCount: ALL_SIM_TOOLS.length, toolsFound: ALL_SIM_TOOLS },
       },
       {
         criteria: 'Tools have natural language descriptions',
         met: false,
         details: 'Natural language descriptions for conversational AI not yet implemented.',
-        evidence: null
+        evidence: null,
       },
       {
         criteria: 'Tool results format properly in conversations',
         met: false,
         details: 'Conversational result formatting not yet implemented.',
-        evidence: null
+        evidence: null,
       },
       {
         criteria: 'Error handling provides helpful explanations',
         met: false,
         details: 'User-friendly error handling for conversational context not yet implemented.',
-        evidence: null
-      }
+        evidence: null,
+      },
     ]
 
-    const allCriteriaMet = criteriaResults.every(result => result.met)
+    const allCriteriaMet = criteriaResults.every((result) => result.met)
 
     return {
       allCriteriaMet,
-      criteriaResults
+      criteriaResults,
     }
   }
 
@@ -676,10 +780,14 @@ class ToolAdapterTestingFramework {
     const summary = {
       totalTools: ALL_SIM_TOOLS.length,
       toolsTested: this.testResults.length,
-      testsPassed: this.testResults.filter(r => r.success).length,
-      testsFailed: this.testResults.filter(r => !r.success).length,
-      averageExecutionTime: this.testResults.reduce((sum, r) => sum + r.executionTime, 0) / this.testResults.length || 0,
-      overallSuccessRate: this.testResults.length ? (this.testResults.filter(r => r.success).length / this.testResults.length) * 100 : 0
+      testsPassed: this.testResults.filter((r) => r.success).length,
+      testsFailed: this.testResults.filter((r) => !r.success).length,
+      averageExecutionTime:
+        this.testResults.reduce((sum, r) => sum + r.executionTime, 0) / this.testResults.length ||
+        0,
+      overallSuccessRate: this.testResults.length
+        ? (this.testResults.filter((r) => r.success).length / this.testResults.length) * 100
+        : 0,
     }
 
     const recommendations = [
@@ -688,7 +796,7 @@ class ToolAdapterTestingFramework {
       'Create standardized adapter templates to ensure consistency',
       'Implement robust error handling and user-friendly error messages',
       'Focus on natural language descriptions that help agents understand tool capabilities',
-      'Build comprehensive conversational result formatting system'
+      'Build comprehensive conversational result formatting system',
     ]
 
     const nextSteps = [
@@ -697,14 +805,14 @@ class ToolAdapterTestingFramework {
       'Validate all 65 tools work through Parlant agents',
       'Test natural language descriptions and conversational formatting',
       'Validate workspace isolation and multi-tenant functionality',
-      'Conduct performance testing under various load conditions'
+      'Conduct performance testing under various load conditions',
     ]
 
     return {
       summary,
       detailedResults: this.testResults,
       recommendations,
-      nextSteps
+      nextSteps,
     }
   }
 }
@@ -726,105 +834,139 @@ describe('Universal Tool Adapter System - Integration Testing', () => {
   })
 
   describe('Individual Tool Adapter Tests', () => {
-    test('should test all simple tool adapters', async () => {
-      const simpleTools = TEST_CONFIG.TOOL_CATEGORIES.SIMPLE
-      const results = []
+    test(
+      'should test all simple tool adapters',
+      async () => {
+        const simpleTools = TEST_CONFIG.TOOL_CATEGORIES.SIMPLE
+        const results = []
 
-      for (const toolId of simpleTools) {
-        const result = await testFramework.testToolAdapter(toolId)
-        results.push(result)
-      }
+        for (const toolId of simpleTools) {
+          const result = await testFramework.testToolAdapter(toolId)
+          results.push(result)
+        }
 
-      // Currently expecting failure since adapters aren't implemented
-      const successfulTests = results.filter(r => r.success)
-      expect(successfulTests).toHaveLength(0) // Change to simpleTools.length once implemented
+        // Currently expecting failure since adapters aren't implemented
+        const successfulTests = results.filter((r) => r.success)
+        expect(successfulTests).toHaveLength(0) // Change to simpleTools.length once implemented
 
-      console.log(`Simple tool adapter tests: ${successfulTests.length}/${results.length} passed`)
-    }, TEST_CONFIG.LOAD_TEST_TIMEOUT)
+        console.log(`Simple tool adapter tests: ${successfulTests.length}/${results.length} passed`)
+      },
+      TEST_CONFIG.LOAD_TEST_TIMEOUT
+    )
 
-    test('should test all medium complexity tool adapters', async () => {
-      const mediumTools = TEST_CONFIG.TOOL_CATEGORIES.MEDIUM
-      const results = []
+    test(
+      'should test all medium complexity tool adapters',
+      async () => {
+        const mediumTools = TEST_CONFIG.TOOL_CATEGORIES.MEDIUM
+        const results = []
 
-      for (const toolId of mediumTools) {
-        const result = await testFramework.testToolAdapter(toolId)
-        results.push(result)
-      }
+        for (const toolId of mediumTools) {
+          const result = await testFramework.testToolAdapter(toolId)
+          results.push(result)
+        }
 
-      // Currently expecting failure since adapters aren't implemented
-      const successfulTests = results.filter(r => r.success)
-      expect(successfulTests).toHaveLength(0) // Change to mediumTools.length once implemented
+        // Currently expecting failure since adapters aren't implemented
+        const successfulTests = results.filter((r) => r.success)
+        expect(successfulTests).toHaveLength(0) // Change to mediumTools.length once implemented
 
-      console.log(`Medium tool adapter tests: ${successfulTests.length}/${results.length} passed`)
-    }, TEST_CONFIG.LOAD_TEST_TIMEOUT)
+        console.log(`Medium tool adapter tests: ${successfulTests.length}/${results.length} passed`)
+      },
+      TEST_CONFIG.LOAD_TEST_TIMEOUT
+    )
 
-    test('should test all complex tool adapters', async () => {
-      const complexTools = TEST_CONFIG.TOOL_CATEGORIES.COMPLEX
-      const results = []
+    test(
+      'should test all complex tool adapters',
+      async () => {
+        const complexTools = TEST_CONFIG.TOOL_CATEGORIES.COMPLEX
+        const results = []
 
-      for (const toolId of complexTools) {
-        const result = await testFramework.testToolAdapter(toolId)
-        results.push(result)
-      }
+        for (const toolId of complexTools) {
+          const result = await testFramework.testToolAdapter(toolId)
+          results.push(result)
+        }
 
-      // Currently expecting failure since adapters aren't implemented
-      const successfulTests = results.filter(r => r.success)
-      expect(successfulTests).toHaveLength(0) // Change to complexTools.length once implemented
+        // Currently expecting failure since adapters aren't implemented
+        const successfulTests = results.filter((r) => r.success)
+        expect(successfulTests).toHaveLength(0) // Change to complexTools.length once implemented
 
-      console.log(`Complex tool adapter tests: ${successfulTests.length}/${results.length} passed`)
-    }, TEST_CONFIG.LOAD_TEST_TIMEOUT)
+        console.log(
+          `Complex tool adapter tests: ${successfulTests.length}/${results.length} passed`
+        )
+      },
+      TEST_CONFIG.LOAD_TEST_TIMEOUT
+    )
   })
 
   describe('End-to-End Integration Tests', () => {
-    test('should execute multi-tool workflows successfully', async () => {
-      const workflow = ['thinking', 'google', 'memory']
-      const result = await testFramework.testEndToEndWorkflow(workflow)
+    test(
+      'should execute multi-tool workflows successfully',
+      async () => {
+        const workflow = ['thinking', 'google', 'memory']
+        const result = await testFramework.testEndToEndWorkflow(workflow)
 
-      // Currently expecting failure since adapters aren't implemented
-      expect(result.success).toBe(false) // Change to true once implemented
-    }, TEST_CONFIG.CONVERSATION_TIMEOUT)
+        // Currently expecting failure since adapters aren't implemented
+        expect(result.success).toBe(false) // Change to true once implemented
+      },
+      TEST_CONFIG.CONVERSATION_TIMEOUT
+    )
   })
 
   describe('Conversational AI Integration Tests', () => {
-    test('should handle conversational tool interactions', async () => {
-      const result = await testFramework.testConversationalInteractions()
+    test(
+      'should handle conversational tool interactions',
+      async () => {
+        const result = await testFramework.testConversationalInteractions()
 
-      // Currently expecting failure since adapters aren't implemented
-      expect(result.success).toBe(false) // Change to true once implemented
-    }, TEST_CONFIG.CONVERSATION_TIMEOUT)
+        // Currently expecting failure since adapters aren't implemented
+        expect(result.success).toBe(false) // Change to true once implemented
+      },
+      TEST_CONFIG.CONVERSATION_TIMEOUT
+    )
   })
 
   describe('Performance and Load Tests', () => {
-    test('should perform well under various load conditions', async () => {
-      const result = await testFramework.testPerformanceUnderLoad()
+    test(
+      'should perform well under various load conditions',
+      async () => {
+        const result = await testFramework.testPerformanceUnderLoad()
 
-      // Currently expecting failure since adapters aren't implemented
-      expect(result.success).toBe(false) // Change to true once implemented
-    }, TEST_CONFIG.LOAD_TEST_TIMEOUT)
+        // Currently expecting failure since adapters aren't implemented
+        expect(result.success).toBe(false) // Change to true once implemented
+      },
+      TEST_CONFIG.LOAD_TEST_TIMEOUT
+    )
   })
 
   describe('Workspace Isolation Tests', () => {
-    test('should enforce workspace isolation correctly', async () => {
-      const result = await testFramework.testWorkspaceIsolation()
+    test(
+      'should enforce workspace isolation correctly',
+      async () => {
+        const result = await testFramework.testWorkspaceIsolation()
 
-      // Currently expecting failure since adapters aren't implemented
-      expect(result.success).toBe(false) // Change to true once implemented
-    }, TEST_CONFIG.TOOL_EXECUTION_TIMEOUT)
+        // Currently expecting failure since adapters aren't implemented
+        expect(result.success).toBe(false) // Change to true once implemented
+      },
+      TEST_CONFIG.TOOL_EXECUTION_TIMEOUT
+    )
   })
 
   describe('Acceptance Criteria Validation', () => {
-    test('should meet all acceptance criteria', async () => {
-      const result = await testFramework.validateAcceptanceCriteria()
+    test(
+      'should meet all acceptance criteria',
+      async () => {
+        const result = await testFramework.validateAcceptanceCriteria()
 
-      // Currently expecting failure since adapters aren't implemented
-      expect(result.allCriteriaMet).toBe(false) // Change to true once implemented
+        // Currently expecting failure since adapters aren't implemented
+        expect(result.allCriteriaMet).toBe(false) // Change to true once implemented
 
-      // Log detailed results
-      console.log('Acceptance Criteria Results:')
-      result.criteriaResults.forEach(criteria => {
-        console.log(`  ${criteria.met ? '✅' : '❌'} ${criteria.criteria}: ${criteria.details}`)
-      })
-    }, TEST_CONFIG.TOOL_EXECUTION_TIMEOUT)
+        // Log detailed results
+        console.log('Acceptance Criteria Results:')
+        result.criteriaResults.forEach((criteria) => {
+          console.log(`  ${criteria.met ? '✅' : '❌'} ${criteria.criteria}: ${criteria.details}`)
+        })
+      },
+      TEST_CONFIG.TOOL_EXECUTION_TIMEOUT
+    )
   })
 
   describe('Comprehensive Test Report', () => {
@@ -842,10 +984,10 @@ describe('Universal Tool Adapter System - Integration Testing', () => {
       console.log(`  Average Execution Time: ${report.summary.averageExecutionTime.toFixed(2)}ms`)
 
       console.log('\n📋 Key Recommendations:')
-      report.recommendations.forEach(rec => console.log(`  • ${rec}`))
+      report.recommendations.forEach((rec) => console.log(`  • ${rec}`))
 
       console.log('\n🚀 Next Steps:')
-      report.nextSteps.forEach(step => console.log(`  • ${step}`))
+      report.nextSteps.forEach((step) => console.log(`  • ${step}`))
     })
   })
 })

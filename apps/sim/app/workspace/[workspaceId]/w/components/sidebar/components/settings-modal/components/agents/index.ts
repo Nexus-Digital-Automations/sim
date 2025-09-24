@@ -10,6 +10,6 @@
  * - Integration with Sim's existing design system
  */
 
+export { AgentConfigurationPanel } from './agent-configuration-panel'
 export { Agents } from './agents'
 export { CreateAgentModal } from './create-agent-modal'
-export { AgentConfigurationPanel } from './agent-configuration-panel'

@@ -7,34 +7,34 @@
 
 import { db } from '@sim/db'
 import {
-  // Core Sim tables
-  user,
-  workspace,
-  workflow,
-  knowledgeBase,
   apiKey,
-  customTools,
-  mcpServers,
   chat,
+  customTools,
+  knowledgeBase,
+  mcpServers,
   // Parlant tables
   parlantAgent,
-  parlantSession,
+  parlantAgentApiKey,
+  parlantAgentKnowledgeBase,
+  parlantAgentTool,
+  parlantAgentWorkflow,
+  parlantCannedResponse,
   parlantEvent,
   parlantGuideline,
   parlantJourney,
+  parlantJourneyGuideline,
   parlantJourneyState,
   parlantJourneyTransition,
-  parlantVariable,
-  parlantTool,
-  parlantTerm,
-  parlantCannedResponse,
-  parlantAgentTool,
-  parlantJourneyGuideline,
-  parlantAgentKnowledgeBase,
-  parlantToolIntegration,
-  parlantAgentWorkflow,
-  parlantAgentApiKey,
+  parlantSession,
   parlantSessionWorkflow,
+  parlantTerm,
+  parlantTool,
+  parlantToolIntegration,
+  parlantVariable,
+  // Core Sim tables
+  user,
+  workflow,
+  workspace,
 } from '@sim/db/schema'
 
 export interface SeedDataContext {
@@ -245,7 +245,8 @@ export class ParlantTestDataSeeder {
           description: 'Specialized agent for handling customer support inquiries',
           status: 'active',
           compositionMode: 'fluid',
-          systemPrompt: 'You are a helpful customer support agent. Always be polite, professional, and solution-oriented. If you cannot solve an issue, escalate it appropriately.',
+          systemPrompt:
+            'You are a helpful customer support agent. Always be polite, professional, and solution-oriented. If you cannot solve an issue, escalate it appropriately.',
           modelProvider: 'openai',
           modelName: 'gpt-4',
           temperature: 70,
@@ -275,7 +276,8 @@ export class ParlantTestDataSeeder {
           description: 'Agent focused on sales inquiries and lead qualification',
           status: 'active',
           compositionMode: 'strict',
-          systemPrompt: 'You are a sales assistant. Your goal is to qualify leads, understand customer needs, and guide them towards appropriate solutions. Be friendly but focused on business objectives.',
+          systemPrompt:
+            'You are a sales assistant. Your goal is to qualify leads, understand customer needs, and guide them towards appropriate solutions. Be friendly but focused on business objectives.',
           modelProvider: 'openai',
           modelName: 'gpt-4',
           temperature: 80,
@@ -305,7 +307,8 @@ export class ParlantTestDataSeeder {
           description: 'Deep technical knowledge agent for complex technical questions',
           status: 'active',
           compositionMode: 'fluid',
-          systemPrompt: 'You are a technical expert with deep knowledge of software development, APIs, and system architecture. Provide detailed, accurate technical guidance.',
+          systemPrompt:
+            'You are a technical expert with deep knowledge of software development, APIs, and system architecture. Provide detailed, accurate technical guidance.',
           modelProvider: 'openai',
           modelName: 'gpt-4',
           temperature: 40,
@@ -335,7 +338,8 @@ export class ParlantTestDataSeeder {
           description: 'Agent specialized in user onboarding and training',
           status: 'active',
           compositionMode: 'strict',
-          systemPrompt: 'You are an onboarding specialist. Help new users get started with our platform through step-by-step guidance and interactive tutorials.',
+          systemPrompt:
+            'You are an onboarding specialist. Help new users get started with our platform through step-by-step guidance and interactive tutorials.',
           modelProvider: 'openai',
           modelName: 'gpt-3.5-turbo',
           temperature: 85,
@@ -365,7 +369,8 @@ export class ParlantTestDataSeeder {
           description: 'Agent for research tasks and information gathering',
           status: 'inactive',
           compositionMode: 'fluid',
-          systemPrompt: 'You are a research assistant. Help users find relevant information, analyze data, and provide comprehensive research summaries.',
+          systemPrompt:
+            'You are a research assistant. Help users find relevant information, analyze data, and provide comprehensive research summaries.',
           modelProvider: 'anthropic',
           modelName: 'claude-3-sonnet',
           temperature: 60,
@@ -391,7 +396,7 @@ export class ParlantTestDataSeeder {
       ])
       .returning({ id: parlantAgent.id })
 
-    this.ctx.agentIds = agents.map(a => a.id)
+    this.ctx.agentIds = agents.map((a) => a.id)
     console.log(`✓ Created ${agents.length} Parlant agents`)
     return this.ctx.agentIds
   }
@@ -419,7 +424,11 @@ export class ParlantTestDataSeeder {
             type: 'object',
             properties: {
               query: { type: 'string', description: 'Search query for tickets' },
-              status: { type: 'string', enum: ['open', 'closed', 'pending'], description: 'Filter by ticket status' },
+              status: {
+                type: 'string',
+                enum: ['open', 'closed', 'pending'],
+                description: 'Filter by ticket status',
+              },
               dateRange: { type: 'string', description: 'Date range filter (e.g., "7d", "30d")' },
             },
             required: ['query'],
@@ -443,7 +452,8 @@ export class ParlantTestDataSeeder {
               totalCount: { type: 'number' },
             },
           },
-          usageGuidelines: 'Use this tool when customers reference previous tickets or when you need to find similar issues',
+          usageGuidelines:
+            'Use this tool when customers reference previous tickets or when you need to find similar issues',
           executionTimeout: 10000,
           rateLimitPerMinute: 30,
           rateLimitPerHour: 500,
@@ -488,7 +498,8 @@ export class ParlantTestDataSeeder {
               },
             },
           },
-          usageGuidelines: 'Use this tool to find documentation and help articles relevant to customer questions',
+          usageGuidelines:
+            'Use this tool to find documentation and help articles relevant to customer questions',
           executionTimeout: 8000,
           rateLimitPerMinute: 60,
           rateLimitPerHour: 1000,
@@ -540,9 +551,16 @@ export class ParlantTestDataSeeder {
             properties: {
               title: { type: 'string', description: 'Ticket title' },
               description: { type: 'string', description: 'Detailed ticket description' },
-              priority: { type: 'string', enum: ['low', 'medium', 'high', 'urgent'], default: 'medium' },
+              priority: {
+                type: 'string',
+                enum: ['low', 'medium', 'high', 'urgent'],
+                default: 'medium',
+              },
               category: { type: 'string', description: 'Ticket category' },
-              assignee: { type: 'string', description: 'Assign ticket to specific user (optional)' },
+              assignee: {
+                type: 'string',
+                description: 'Assign ticket to specific user (optional)',
+              },
             },
             required: ['title', 'description'],
           },
@@ -556,7 +574,8 @@ export class ParlantTestDataSeeder {
               url: { type: 'string' },
             },
           },
-          usageGuidelines: 'Use this tool when issues cannot be resolved immediately and need to be tracked',
+          usageGuidelines:
+            'Use this tool when issues cannot be resolved immediately and need to be tracked',
           executionTimeout: 12000,
           rateLimitPerMinute: 20,
           rateLimitPerHour: 200,
@@ -575,7 +594,11 @@ export class ParlantTestDataSeeder {
             properties: {
               workflowId: { type: 'string', description: 'ID of the workflow to trigger' },
               inputs: { type: 'object', description: 'Input data for the workflow' },
-              wait: { type: 'boolean', default: false, description: 'Wait for workflow completion' },
+              wait: {
+                type: 'boolean',
+                default: false,
+                description: 'Wait for workflow completion',
+              },
             },
             required: ['workflowId'],
           },
@@ -587,7 +610,8 @@ export class ParlantTestDataSeeder {
               result: { type: 'object' },
             },
           },
-          usageGuidelines: 'Use this tool to trigger complex multi-step processes defined in workflows',
+          usageGuidelines:
+            'Use this tool to trigger complex multi-step processes defined in workflows',
           executionTimeout: 30000,
           rateLimitPerMinute: 15,
           rateLimitPerHour: 150,
@@ -597,7 +621,7 @@ export class ParlantTestDataSeeder {
       ])
       .returning({ id: parlantTool.id })
 
-    this.ctx.toolIds = tools.map(t => t.id)
+    this.ctx.toolIds = tools.map((t) => t.id)
 
     // Create tool integrations
     await db.insert(parlantToolIntegration).values([
@@ -643,7 +667,8 @@ export class ParlantTestDataSeeder {
         {
           agentId: this.ctx.agentIds[0], // Customer Support Agent
           title: 'Customer Issue Resolution Journey',
-          description: 'Guide customers through issue identification, troubleshooting, and resolution',
+          description:
+            'Guide customers through issue identification, troubleshooting, and resolution',
           conditions: [
             'user.intent === "support"',
             'user.message.contains("problem") || user.message.contains("issue") || user.message.contains("help")',
@@ -668,10 +693,7 @@ export class ParlantTestDataSeeder {
           agentId: this.ctx.agentIds[3], // Onboarding Guide Agent
           title: 'User Onboarding Journey',
           description: 'Step-by-step user onboarding and platform introduction',
-          conditions: [
-            'user.isNew === true',
-            'user.completedOnboarding !== true',
-          ],
+          conditions: ['user.isNew === true', 'user.completedOnboarding !== true'],
           enabled: true,
           allowSkipping: true,
           allowRevisiting: true,
@@ -679,7 +701,7 @@ export class ParlantTestDataSeeder {
       ])
       .returning({ id: parlantJourney.id })
 
-    this.ctx.journeyIds = journeys.map(j => j.id)
+    this.ctx.journeyIds = journeys.map((j) => j.id)
 
     // Create journey states for each journey
     for (let i = 0; i < journeys.length; i++) {
@@ -694,7 +716,8 @@ export class ParlantTestDataSeeder {
               journeyId: journey.id,
               name: 'Issue Identification',
               stateType: 'chat',
-              chatPrompt: 'I understand you\'re experiencing an issue. Could you please describe what specific problem you\'re facing?',
+              chatPrompt:
+                "I understand you're experiencing an issue. Could you please describe what specific problem you're facing?",
               isInitial: true,
               allowSkip: false,
             },
@@ -702,7 +725,8 @@ export class ParlantTestDataSeeder {
               journeyId: journey.id,
               name: 'Information Gathering',
               stateType: 'chat',
-              chatPrompt: 'Thank you for that information. To help diagnose the issue, could you provide more details about when this started and what you were trying to do?',
+              chatPrompt:
+                'Thank you for that information. To help diagnose the issue, could you provide more details about when this started and what you were trying to do?',
               allowSkip: false,
             },
             {
@@ -717,7 +741,8 @@ export class ParlantTestDataSeeder {
               journeyId: journey.id,
               name: 'Solution Presentation',
               stateType: 'chat',
-              chatPrompt: 'Based on your description, I\'ve found some potential solutions. Let me walk you through them.',
+              chatPrompt:
+                "Based on your description, I've found some potential solutions. Let me walk you through them.",
               allowSkip: false,
             },
             {
@@ -812,7 +837,8 @@ export class ParlantTestDataSeeder {
               journeyId: journey.id,
               name: 'Welcome & Qualification',
               stateType: 'chat',
-              chatPrompt: 'Welcome! I\'m here to help you find the right solution for your needs. Could you tell me a bit about your business and what you\'re looking for?',
+              chatPrompt:
+                "Welcome! I'm here to help you find the right solution for your needs. Could you tell me a bit about your business and what you're looking for?",
               isInitial: true,
               allowSkip: false,
             },
@@ -820,14 +846,16 @@ export class ParlantTestDataSeeder {
               journeyId: journey.id,
               name: 'Needs Assessment',
               stateType: 'chat',
-              chatPrompt: 'That\'s helpful information. Let me ask a few questions to better understand your requirements and current challenges.',
+              chatPrompt:
+                "That's helpful information. Let me ask a few questions to better understand your requirements and current challenges.",
               allowSkip: false,
             },
             {
               journeyId: journey.id,
               name: 'Solution Recommendation',
               stateType: 'chat',
-              chatPrompt: 'Based on what you\'ve shared, I think I have some great options for you. Let me present the solutions that best fit your needs.',
+              chatPrompt:
+                "Based on what you've shared, I think I have some great options for you. Let me present the solutions that best fit your needs.",
               allowSkip: false,
             },
             {
@@ -841,7 +869,8 @@ export class ParlantTestDataSeeder {
               journeyId: journey.id,
               name: 'Next Steps',
               stateType: 'chat',
-              chatPrompt: 'Excellent! Let\'s discuss the next steps. I can set you up with a trial or connect you with our team for a detailed demo.',
+              chatPrompt:
+                "Excellent! Let's discuss the next steps. I can set you up with a trial or connect you with our team for a detailed demo.",
               allowSkip: false,
             },
             {
@@ -957,7 +986,10 @@ export class ParlantTestDataSeeder {
     ]
 
     for (const mapping of agentToolMappings) {
-      if (this.ctx.agentIds[mapping.agentIndex] && mapping.toolIndices.every(i => this.ctx.toolIds![i])) {
+      if (
+        this.ctx.agentIds[mapping.agentIndex] &&
+        mapping.toolIndices.every((i) => this.ctx.toolIds![i])
+      ) {
         await db.insert(parlantAgentTool).values(
           mapping.toolIndices.map((toolIndex, i) => ({
             agentId: this.ctx.agentIds![mapping.agentIndex],
@@ -1031,13 +1063,15 @@ export class ParlantTestDataSeeder {
         guidelines: [
           {
             condition: 'user.sentiment === "angry" || user.message.contains("frustrated")',
-            action: 'Show extra empathy, acknowledge their frustration, and prioritize quick resolution',
+            action:
+              'Show extra empathy, acknowledge their frustration, and prioritize quick resolution',
             priority: 150,
             toolIds: [this.ctx.toolIds[0], this.ctx.toolIds[3]], // ticket_search, create_ticket
           },
           {
             condition: 'user.issue.category === "billing"',
-            action: 'Handle with care, verify account details, and escalate to billing team if needed',
+            action:
+              'Handle with care, verify account details, and escalate to billing team if needed',
             priority: 140,
             toolIds: [this.ctx.toolIds[0]], // ticket_search
           },
@@ -1080,7 +1114,7 @@ export class ParlantTestDataSeeder {
         const createdGuidelines = await db
           .insert(parlantGuideline)
           .values(
-            agentGuidelines.guidelines.map(g => ({
+            agentGuidelines.guidelines.map((g) => ({
               agentId: this.ctx.agentIds![agentGuidelines.agentIndex],
               condition: g.condition,
               action: g.action,
@@ -1094,7 +1128,7 @@ export class ParlantTestDataSeeder {
         // Connect guidelines to journeys if applicable
         if (this.ctx.journeyIds && this.ctx.journeyIds.length > agentGuidelines.agentIndex) {
           await db.insert(parlantJourneyGuideline).values(
-            createdGuidelines.map(guideline => ({
+            createdGuidelines.map((guideline) => ({
               journeyId: this.ctx.journeyIds![agentGuidelines.agentIndex],
               guidelineId: guideline.id,
               enabled: true,
@@ -1121,9 +1155,16 @@ export class ParlantTestDataSeeder {
             name: term,
             description: `Definition and context for ${term} in the context of ${agentTerms.agentIndex === 0 ? 'customer support' : agentTerms.agentIndex === 1 ? 'sales' : agentTerms.agentIndex === 2 ? 'technical' : 'onboarding'}`,
             synonyms: [],
-            category: agentTerms.agentIndex === 0 ? 'support' : agentTerms.agentIndex === 1 ? 'sales' : agentTerms.agentIndex === 2 ? 'technical' : 'training',
+            category:
+              agentTerms.agentIndex === 0
+                ? 'support'
+                : agentTerms.agentIndex === 1
+                  ? 'sales'
+                  : agentTerms.agentIndex === 2
+                    ? 'technical'
+                    : 'training',
             examples: [`Example usage of ${term} in conversation`],
-            importance: 100 - (index * 10),
+            importance: 100 - index * 10,
           }))
         )
       }
@@ -1135,13 +1176,15 @@ export class ParlantTestDataSeeder {
         agentIndex: 0,
         responses: [
           {
-            template: 'Thank you for contacting support. I understand you\'re experiencing {{issue_type}}. Let me help you resolve this quickly.',
+            template:
+              "Thank you for contacting support. I understand you're experiencing {{issue_type}}. Let me help you resolve this quickly.",
             category: 'greeting',
             tags: ['support', 'greeting'],
             conditions: ['session.start === true'],
           },
           {
-            template: 'I\'ve escalated your case ({{ticket_id}}) to our specialized team. You should receive an update within {{sla_time}}.',
+            template:
+              "I've escalated your case ({{ticket_id}}) to our specialized team. You should receive an update within {{sla_time}}.",
             category: 'escalation',
             tags: ['escalation', 'timeline'],
             conditions: ['action.escalate === true'],
@@ -1152,13 +1195,15 @@ export class ParlantTestDataSeeder {
         agentIndex: 1,
         responses: [
           {
-            template: 'Welcome! I\'m excited to learn about {{company_name}} and how we can help you achieve {{business_goal}}.',
+            template:
+              "Welcome! I'm excited to learn about {{company_name}} and how we can help you achieve {{business_goal}}.",
             category: 'sales_greeting',
             tags: ['sales', 'welcome'],
             conditions: ['session.type === "sales"'],
           },
           {
-            template: 'Based on your needs, I recommend our {{plan_name}} plan. This includes {{key_features}} which aligns perfectly with {{user_requirements}}.',
+            template:
+              'Based on your needs, I recommend our {{plan_name}} plan. This includes {{key_features}} which aligns perfectly with {{user_requirements}}.',
             category: 'recommendation',
             tags: ['recommendation', 'plans'],
             conditions: ['assessment.completed === true'],
@@ -1170,7 +1215,7 @@ export class ParlantTestDataSeeder {
     for (const agentResponses of cannedResponses) {
       if (this.ctx.agentIds[agentResponses.agentIndex]) {
         await db.insert(parlantCannedResponse).values(
-          agentResponses.responses.map(response => ({
+          agentResponses.responses.map((response) => ({
             agentId: this.ctx.agentIds![agentResponses.agentIndex],
             template: response.template,
             category: response.category,
@@ -1321,7 +1366,7 @@ export class ParlantTestDataSeeder {
       ])
       .returning({ id: parlantSession.id })
 
-    this.ctx.sessionIds = sessions.map(s => s.id)
+    this.ctx.sessionIds = sessions.map((s) => s.id)
 
     // Create events for each session
     for (let i = 0; i < sessions.length; i++) {
@@ -1335,7 +1380,7 @@ export class ParlantTestDataSeeder {
         return {
           sessionId: session.id,
           offset: eventIndex + 1,
-          eventType: isCustomerMessage ? 'customer_message' as const : 'agent_message' as const,
+          eventType: isCustomerMessage ? ('customer_message' as const) : ('agent_message' as const),
           content: {
             message: messageContent,
             timestamp: Date.now() - (eventCount - eventIndex) * 60000, // Spread over time
@@ -1388,95 +1433,109 @@ export class ParlantTestDataSeeder {
     return this.ctx.sessionIds
   }
 
-  private generateRealisticMessage(sessionIndex: number, eventIndex: number, isCustomer: boolean): string {
+  private generateRealisticMessage(
+    sessionIndex: number,
+    eventIndex: number,
+    isCustomer: boolean
+  ): string {
     const sessionTypes = ['support', 'support', 'sales', 'sales', 'onboarding']
     const sessionType = sessionTypes[sessionIndex]
 
     if (sessionType === 'support') {
-      if (sessionIndex === 0) { // Login issue
+      if (sessionIndex === 0) {
+        // Login issue
         const customerMessages = [
           "Hi, I'm having trouble logging into my account. It keeps saying my password is wrong but I'm sure it's correct.",
           "I tried resetting my password but I'm not getting the reset email. This is really frustrating.",
           "Yes, I've checked my spam folder. Nothing there either.",
-          "Okay, let me try that... Actually, that worked! I can see the email now.",
+          'Okay, let me try that... Actually, that worked! I can see the email now.',
           "Perfect, I'm logged in now. Thank you so much for your help!",
-          "Everything looks good on my end. Thanks again!"
+          'Everything looks good on my end. Thanks again!',
         ]
         const agentMessages = [
           "Hello! I understand you're having trouble logging in. That can definitely be frustrating. Let me help you get this resolved quickly.",
           "I'm sorry to hear you're not receiving the reset email. Let me check a few things. First, could you confirm the email address associated with your account?",
-          "Thank you for checking. Sometimes there can be a delay with email delivery. Let me refresh the reset request from our end. You should receive a new email within the next 2-3 minutes.",
+          'Thank you for checking. Sometimes there can be a delay with email delivery. Let me refresh the reset request from our end. You should receive a new email within the next 2-3 minutes.',
           "Excellent! I'm glad that worked. Please try logging in with your new password and let me know if you encounter any other issues.",
           "Wonderful! I'm so glad we could get that resolved for you quickly. Is there anything else I can help you with today?",
-          "You're very welcome! If you have any other questions in the future, please don't hesitate to reach out. Have a great day!"
+          "You're very welcome! If you have any other questions in the future, please don't hesitate to reach out. Have a great day!",
         ]
-        return isCustomer ? customerMessages[Math.floor(eventIndex / 2)] || "Thanks for your help!" : agentMessages[Math.floor(eventIndex / 2)] || "You're welcome!"
-      } else { // API integration
-        const customerMessages = [
-          "Hi, I'm trying to integrate with your API but I'm getting authentication errors. Can you help?",
-          "I'm using the API key from my dashboard, but I keep getting a 401 unauthorized error.",
-          "I'm using it in the Authorization header as 'Bearer [api-key]'. Is that correct?",
-          "Ah, I see the issue now. Let me try that format instead."
-        ]
-        const agentMessages = [
-          "Hello! I'd be happy to help you with your API integration. Authentication errors are usually straightforward to resolve.",
-          "I see the issue. For our API, you should use the format 'Bearer sk-your-api-key' in the Authorization header, not just the raw key.",
-          "Actually, you don't need the 'Bearer' prefix for our API. Just use 'X-API-Key: your-api-key' as a header instead.",
-          "Perfect! That should resolve the authentication issue. Let me know if you run into any other problems with the integration."
-        ]
-        return isCustomer ? customerMessages[Math.floor(eventIndex / 2)] || "That worked, thanks!" : agentMessages[Math.floor(eventIndex / 2)] || "Glad I could help!"
+        return isCustomer
+          ? customerMessages[Math.floor(eventIndex / 2)] || 'Thanks for your help!'
+          : agentMessages[Math.floor(eventIndex / 2)] || "You're welcome!"
       }
-    } else if (sessionType === 'sales') {
-      if (sessionIndex === 2) { // Enterprise demo
+      const customerMessages = [
+        "Hi, I'm trying to integrate with your API but I'm getting authentication errors. Can you help?",
+        "I'm using the API key from my dashboard, but I keep getting a 401 unauthorized error.",
+        "I'm using it in the Authorization header as 'Bearer [api-key]'. Is that correct?",
+        'Ah, I see the issue now. Let me try that format instead.',
+      ]
+      const agentMessages = [
+        "Hello! I'd be happy to help you with your API integration. Authentication errors are usually straightforward to resolve.",
+        "I see the issue. For our API, you should use the format 'Bearer sk-your-api-key' in the Authorization header, not just the raw key.",
+        "Actually, you don't need the 'Bearer' prefix for our API. Just use 'X-API-Key: your-api-key' as a header instead.",
+        'Perfect! That should resolve the authentication issue. Let me know if you run into any other problems with the integration.',
+      ]
+      return isCustomer
+        ? customerMessages[Math.floor(eventIndex / 2)] || 'That worked, thanks!'
+        : agentMessages[Math.floor(eventIndex / 2)] || 'Glad I could help!'
+    }
+    if (sessionType === 'sales') {
+      if (sessionIndex === 2) {
+        // Enterprise demo
         const customerMessages = [
           "Hello, I'm interested in learning more about your enterprise solution. We're a team of about 200 people.",
           "We're currently using [competitor] but we're not happy with their pricing model and support quality.",
-          "Security and compliance are very important to us. Do you support SOC 2 and GDPR compliance?",
+          'Security and compliance are very important to us. Do you support SOC 2 and GDPR compliance?',
           "That sounds great. We'd also need SSO integration and advanced analytics. Do you offer those?",
-          "Perfect. What would be the next step to see a demo of these features?",
-          "That works for us. I'll send over our team's calendars and we can coordinate."
+          'Perfect. What would be the next step to see a demo of these features?',
+          "That works for us. I'll send over our team's calendars and we can coordinate.",
         ]
         const agentMessages = [
           "Welcome! I'm excited to learn more about your needs. For a team of 200, our Enterprise plan would be perfect. What's driving your search for a new solution?",
-          "I understand those pain points completely. Our enterprise customers often mention those exact issues as reasons for switching to us.",
+          'I understand those pain points completely. Our enterprise customers often mention those exact issues as reasons for switching to us.',
           "Absolutely! We're SOC 2 Type II certified and fully GDPR compliant. Security is one of our core strengths.",
-          "Yes, we offer both! Our SSO supports SAML, OIDC, and Active Directory, and our analytics dashboard provides deep insights into usage patterns and performance metrics.",
+          'Yes, we offer both! Our SSO supports SAML, OIDC, and Active Directory, and our analytics dashboard provides deep insights into usage patterns and performance metrics.',
           "I'd love to set up a customized demo for your team. We can show you exactly how these features work with your specific use case. Would a 45-minute session work?",
-          "Excellent! I'll send you a calendar link and a brief questionnaire to help us tailor the demo to your specific needs. Looking forward to showing you what we can do!"
+          "Excellent! I'll send you a calendar link and a brief questionnaire to help us tailor the demo to your specific needs. Looking forward to showing you what we can do!",
         ]
-        return isCustomer ? customerMessages[Math.floor(eventIndex / 2)] || "Sounds good!" : agentMessages[Math.floor(eventIndex / 2)] || "Great to work with you!"
-      } else { // Pricing inquiry
-        const customerMessages = [
-          "Hi, I'm a startup founder and I'm trying to understand your pricing. What options do you have for small teams?",
-          "We're just 5 people right now but we're planning to grow to about 15-20 by the end of the year.",
-          "What's the difference between the Professional and Enterprise plans?"
-        ]
-        const agentMessages = [
-          "Hello! I'd be happy to help you understand our pricing options for growing startups. Congratulations on your venture!",
-          "That's exciting growth! For a team of 5 scaling to 20, I'd recommend starting with our Professional plan and we can easily upgrade you as you grow.",
-          "Great question! Professional includes all core features plus advanced integrations, while Enterprise adds SSO, advanced analytics, and dedicated support. For most growing startups, Professional is the sweet spot."
-        ]
-        return isCustomer ? customerMessages[Math.floor(eventIndex / 2)] || "That makes sense, thanks!" : agentMessages[Math.floor(eventIndex / 2)] || "Happy to help with your decision!"
+        return isCustomer
+          ? customerMessages[Math.floor(eventIndex / 2)] || 'Sounds good!'
+          : agentMessages[Math.floor(eventIndex / 2)] || 'Great to work with you!'
       }
-    } else { // Onboarding
       const customerMessages = [
-        "Hi! I just signed up and I'm not sure where to start. This looks pretty comprehensive.",
-        "I'm trying to create my first workflow but I'm not sure how to connect the blocks together.",
-        "Okay, I see the connection points now. What about adding conditions?",
-        "Got it! This is starting to make sense. What should I do next?",
-        "That sounds perfect. I'll try building something simple first."
+        "Hi, I'm a startup founder and I'm trying to understand your pricing. What options do you have for small teams?",
+        "We're just 5 people right now but we're planning to grow to about 15-20 by the end of the year.",
+        "What's the difference between the Professional and Enterprise plans?",
       ]
       const agentMessages = [
-        "Welcome aboard! I'm here to help you get started. Let's begin with the basics - have you had a chance to explore the dashboard yet?",
-        "No worries! Connecting blocks is easy. You'll see small circular connection points on each block. Just drag from an output point to an input point on another block.",
-        "Excellent! For conditions, you can add decision blocks that route your workflow based on different criteria. Try adding one between your existing blocks.",
-        "You're doing great! Next, I'd recommend testing your workflow with our built-in simulator, then trying a real execution with sample data.",
-        "Perfect approach! Starting simple is always best. Feel free to reach out if you get stuck - I'm here to help anytime."
+        "Hello! I'd be happy to help you understand our pricing options for growing startups. Congratulations on your venture!",
+        "That's exciting growth! For a team of 5 scaling to 20, I'd recommend starting with our Professional plan and we can easily upgrade you as you grow.",
+        'Great question! Professional includes all core features plus advanced integrations, while Enterprise adds SSO, advanced analytics, and dedicated support. For most growing startups, Professional is the sweet spot.',
       ]
-      return isCustomer ? customerMessages[Math.floor(eventIndex / 2)] || "Thanks for the guidance!" : agentMessages[Math.floor(eventIndex / 2)] || "You're doing great!"
+      return isCustomer
+        ? customerMessages[Math.floor(eventIndex / 2)] || 'That makes sense, thanks!'
+        : agentMessages[Math.floor(eventIndex / 2)] || 'Happy to help with your decision!'
     }
+    const customerMessages = [
+      "Hi! I just signed up and I'm not sure where to start. This looks pretty comprehensive.",
+      "I'm trying to create my first workflow but I'm not sure how to connect the blocks together.",
+      'Okay, I see the connection points now. What about adding conditions?',
+      'Got it! This is starting to make sense. What should I do next?',
+      "That sounds perfect. I'll try building something simple first.",
+    ]
+    const agentMessages = [
+      "Welcome aboard! I'm here to help you get started. Let's begin with the basics - have you had a chance to explore the dashboard yet?",
+      "No worries! Connecting blocks is easy. You'll see small circular connection points on each block. Just drag from an output point to an input point on another block.",
+      'Excellent! For conditions, you can add decision blocks that route your workflow based on different criteria. Try adding one between your existing blocks.',
+      "You're doing great! Next, I'd recommend testing your workflow with our built-in simulator, then trying a real execution with sample data.",
+      "Perfect approach! Starting simple is always best. Feel free to reach out if you get stuck - I'm here to help anytime.",
+    ]
+    return isCustomer
+      ? customerMessages[Math.floor(eventIndex / 2)] || 'Thanks for the guidance!'
+      : agentMessages[Math.floor(eventIndex / 2)] || "You're doing great!"
 
-    return isCustomer ? "Thank you for your help!" : "Happy to assist you!"
+    return isCustomer ? 'Thank you for your help!' : 'Happy to assist you!'
   }
 
   private generateSessionVariables(sessionIndex: number, sessionId: string): any[] {
@@ -1500,7 +1559,8 @@ export class ParlantTestDataSeeder {
       },
     ]
 
-    if (sessionIndex < 2) { // Support sessions
+    if (sessionIndex < 2) {
+      // Support sessions
       return [
         ...baseVariables,
         {
@@ -1522,7 +1582,9 @@ export class ParlantTestDataSeeder {
           description: 'Resolution steps that have been attempted',
         },
       ]
-    } else if (sessionIndex < 4) { // Sales sessions
+    }
+    if (sessionIndex < 4) {
+      // Sales sessions
       return [
         ...baseVariables,
         {
@@ -1548,25 +1610,24 @@ export class ParlantTestDataSeeder {
           description: 'Company profile information gathered during conversation',
         },
       ]
-    } else { // Onboarding session
-      return [
-        ...baseVariables,
-        {
-          agentId: this.ctx.agentIds![3],
-          sessionId,
-          key: 'onboarding_progress',
-          scope: 'session',
-          value: {
-            completed_steps: ['signup', 'profile', 'first_workflow'],
-            current_step: 'workflow_testing',
-            total_steps: 8,
-            completion_rate: 0.625,
-          },
-          valueType: 'object',
-          description: 'User progress through onboarding flow',
-        },
-      ]
     }
+    return [
+      ...baseVariables,
+      {
+        agentId: this.ctx.agentIds![3],
+        sessionId,
+        key: 'onboarding_progress',
+        scope: 'session',
+        value: {
+          completed_steps: ['signup', 'profile', 'first_workflow'],
+          current_step: 'workflow_testing',
+          total_steps: 8,
+          completion_rate: 0.625,
+        },
+        valueType: 'object',
+        description: 'User progress through onboarding flow',
+      },
+    ]
   }
 
   /**

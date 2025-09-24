@@ -9,12 +9,7 @@
  */
 
 import type { ToolConfig } from '@/tools/types'
-import type {
-  ParameterMapping,
-  ValidationConfig,
-  ParameterContext,
-  UsageContext
-} from '../types/adapter-interfaces'
+import type { UsageContext } from '../types/adapter-interfaces'
 
 // =============================================================================
 // Parameter Parsing Types
@@ -89,10 +84,7 @@ export class ConversationalParameterParser {
   /**
    * Parse natural language input into structured parameters
    */
-  async parseParameters(
-    input: ConversationalInput,
-    tool: ToolConfig
-  ): Promise<ParsedParameters> {
+  async parseParameters(input: ConversationalInput, tool: ToolConfig): Promise<ParsedParameters> {
     const { rawMessage, context, previousParameters, toolId } = input
 
     // Step 1: Extract entities from the message
@@ -129,7 +121,7 @@ export class ConversationalParameterParser {
       confidence: this.calculateOverallConfidence(entities, patternMatches, inferredParameters),
       missingRequired: validationResult.missingRequired,
       clarificationNeeded: clarifications,
-      suggestions
+      suggestions,
     }
   }
 
@@ -141,7 +133,7 @@ export class ConversationalParameterParser {
     tool: ToolConfig,
     context?: UsageContext
   ): ConversationPrompt[] {
-    return missingParams.map(paramName => {
+    return missingParams.map((paramName) => {
       const paramConfig = tool.params?.[paramName]
       return this.createParameterPrompt(paramName, paramConfig, context)
     })
@@ -196,25 +188,23 @@ export class ConversationalParameterParser {
     // Run all entity extractors
     for (const [type, extractor] of this.entityExtractors.entries()) {
       const extractedEntities = await extractor.extract(text)
-      entities.push(...extractedEntities.map(entity => ({
-        ...entity,
-        type: type as any
-      })))
+      entities.push(
+        ...extractedEntities.map((entity) => ({
+          ...entity,
+          type: type as any,
+        }))
+      )
     }
 
     // Remove overlapping entities (keep highest confidence)
     return this.resolveEntityConflicts(entities)
   }
 
-  private matchToolPatterns(
-    text: string,
-    toolId: string,
-    tool: ToolConfig
-  ): Record<string, any> {
+  private matchToolPatterns(text: string, toolId: string, tool: ToolConfig): Record<string, any> {
     const patterns = this.patternMatchers.get(toolId) || []
     const matches: Record<string, any> = {}
 
-    patterns.forEach(pattern => {
+    patterns.forEach((pattern) => {
       for (const regex of pattern.patterns) {
         const match = text.match(regex)
         if (match) {
@@ -254,7 +244,7 @@ export class ConversationalParameterParser {
     })
 
     // Add entity extractions (highest priority)
-    entities.forEach(entity => {
+    entities.forEach((entity) => {
       const paramName = this.mapEntityToParameter(entity)
       if (paramName && entity.confidence > 0.7) {
         combined[paramName] = entity.value
@@ -267,7 +257,7 @@ export class ConversationalParameterParser {
   private async validateParameters(
     parameters: Record<string, any>,
     tool: ToolConfig
-  ): Promise<{ validParameters: Record<string, any>, missingRequired: string[] }> {
+  ): Promise<{ validParameters: Record<string, any>; missingRequired: string[] }> {
     const validParameters: Record<string, any> = {}
     const missingRequired: string[] = []
 
@@ -294,13 +284,13 @@ export class ConversationalParameterParser {
   }
 
   private generateClarifications(
-    validationResult: { validParameters: Record<string, any>, missingRequired: string[] },
+    validationResult: { validParameters: Record<string, any>; missingRequired: string[] },
     tool: ToolConfig,
     context?: UsageContext
   ): ParameterClarification[] {
     const clarifications: ParameterClarification[] = []
 
-    validationResult.missingRequired.forEach(paramName => {
+    validationResult.missingRequired.forEach((paramName) => {
       const paramConfig = tool.params?.[paramName]
       if (typeof paramConfig === 'object') {
         clarifications.push({
@@ -308,7 +298,7 @@ export class ConversationalParameterParser {
           type: 'missing',
           message: this.generateMissingParameterMessage(paramName, paramConfig, context),
           suggestions: this.generateParameterSuggestionTexts(paramName, paramConfig),
-          examples: this.generateParameterExamples(paramName, paramConfig)
+          examples: this.generateParameterExamples(paramName, paramConfig),
         })
       }
     })
@@ -374,30 +364,30 @@ export class ConversationalParameterParser {
         patterns: [
           /send (?:an? )?email to ([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i,
           /email ([^@\s]+@[^@\s]+\.[a-zA-Z]{2,})/i,
-          /message ([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i
+          /message ([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i,
         ],
         extractor: (match) => match[1],
-        validator: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+        validator: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
       },
       {
         parameter: 'subject',
         patterns: [
           /subject[:\s]+"([^"]+)"/i,
           /subject[:\s]+(.+?)(?:\s+(?:with|about|regarding)|\s*$)/i,
-          /about "([^"]+)"/i
+          /about "([^"]+)"/i,
         ],
         extractor: (match) => match[1].trim(),
-        validator: (value) => typeof value === 'string' && value.length > 0
+        validator: (value) => typeof value === 'string' && value.length > 0,
       },
       {
         parameter: 'body',
         patterns: [
           /(?:saying|message|content)[:\s]+"([^"]+)"/i,
-          /(?:tell them|saying)[:\s]+(.+?)(?:\s*$)/i
+          /(?:tell them|saying)[:\s]+(.+?)(?:\s*$)/i,
         ],
         extractor: (match) => match[1].trim(),
-        validator: (value) => typeof value === 'string' && value.length > 0
-      }
+        validator: (value) => typeof value === 'string' && value.length > 0,
+      },
     ]
 
     this.patternMatchers.set('gmail_send', emailPatterns)
@@ -411,18 +401,18 @@ export class ConversationalParameterParser {
         parameter: 'title',
         patterns: [
           /(?:schedule|create|book) (?:a )?(?:meeting|event|appointment) (?:called|titled|about) "([^"]+)"/i,
-          /(?:meeting|event) "([^"]+)"/i
+          /(?:meeting|event) "([^"]+)"/i,
         ],
-        extractor: (match) => match[1].trim()
+        extractor: (match) => match[1].trim(),
       },
       {
         parameter: 'start_time',
         patterns: [
           /(?:at|for) (\d{1,2}:\d{2}(?:\s*[ap]m)?)/i,
-          /(?:starting|beginning) (\d{1,2}:\d{2}(?:\s*[ap]m)?)/i
+          /(?:starting|beginning) (\d{1,2}:\d{2}(?:\s*[ap]m)?)/i,
         ],
-        extractor: (match) => this.parseTime(match[1])
-      }
+        extractor: (match) => this.parseTime(match[1]),
+      },
     ]
 
     this.patternMatchers.set('google_calendar_create', calendarPatterns)
@@ -433,19 +423,14 @@ export class ConversationalParameterParser {
     const dbPatterns: ExtractionPattern[] = [
       {
         parameter: 'table',
-        patterns: [
-          /from (?:the )?(\w+) table/i,
-          /in (?:the )?(\w+)(?: table)?/i
-        ],
-        extractor: (match) => match[1]
+        patterns: [/from (?:the )?(\w+) table/i, /in (?:the )?(\w+)(?: table)?/i],
+        extractor: (match) => match[1],
       },
       {
         parameter: 'where',
-        patterns: [
-          /where (.+?)(?:\s+(?:order|group|limit)|\s*$)/i
-        ],
-        extractor: (match) => match[1].trim()
-      }
+        patterns: [/where (.+?)(?:\s+(?:order|group|limit)|\s*$)/i],
+        extractor: (match) => match[1].trim(),
+      },
     ]
 
     this.patternMatchers.set('mysql_query', dbPatterns)
@@ -459,18 +444,18 @@ export class ConversationalParameterParser {
         parameter: 'title',
         patterns: [
           /(?:create|make) (?:a )?(?:document|page|note) (?:called|titled|named) "([^"]+)"/i,
-          /(?:document|page|note) "([^"]+)"/i
+          /(?:document|page|note) "([^"]+)"/i,
         ],
-        extractor: (match) => match[1].trim()
+        extractor: (match) => match[1].trim(),
       },
       {
         parameter: 'content',
         patterns: [
           /(?:with content|containing|write)[:\s]+"([^"]+)"/i,
-          /(?:content|text)[:\s]+(.+?)(?:\s*$)/i
+          /(?:content|text)[:\s]+(.+?)(?:\s*$)/i,
         ],
-        extractor: (match) => match[1].trim()
-      }
+        extractor: (match) => match[1].trim(),
+      },
     ]
 
     this.patternMatchers.set('notion_create', docPatterns)
@@ -488,15 +473,13 @@ export class ConversationalParameterParser {
 
     for (const entity of sorted) {
       // Check if this entity overlaps with any already resolved entity
-      const hasOverlap = resolved.some(existing =>
-        this.entitiesOverlap(entity, existing)
-      )
+      const hasOverlap = resolved.some((existing) => this.entitiesOverlap(entity, existing))
 
       if (!hasOverlap) {
         resolved.push(entity)
       } else {
         // Keep the one with higher confidence
-        const overlappingIndex = resolved.findIndex(existing =>
+        const overlappingIndex = resolved.findIndex((existing) =>
           this.entitiesOverlap(entity, existing)
         )
 
@@ -516,13 +499,13 @@ export class ConversationalParameterParser {
   private mapEntityToParameter(entity: ParameterEntity): string | null {
     // Map entity types to common parameter names
     const mappings: Record<string, string[]> = {
-      'email': ['to', 'from', 'cc', 'bcc', 'email', 'recipient'],
-      'url': ['url', 'link', 'website', 'endpoint'],
-      'date': ['date', 'start_date', 'end_date', 'due_date'],
-      'time': ['time', 'start_time', 'end_time'],
-      'number': ['amount', 'count', 'quantity', 'id', 'number'],
-      'boolean': ['enabled', 'active', 'public', 'private'],
-      'file': ['file', 'attachment', 'document']
+      email: ['to', 'from', 'cc', 'bcc', 'email', 'recipient'],
+      url: ['url', 'link', 'website', 'endpoint'],
+      date: ['date', 'start_date', 'end_date', 'due_date'],
+      time: ['time', 'start_time', 'end_time'],
+      number: ['amount', 'count', 'quantity', 'id', 'number'],
+      boolean: ['enabled', 'active', 'public', 'private'],
+      file: ['file', 'attachment', 'document'],
     }
 
     return mappings[entity.type]?.[0] || null
@@ -535,9 +518,10 @@ export class ConversationalParameterParser {
     switch (expectedType) {
       case 'string':
         return String(value)
-      case 'number':
+      case 'number': {
         const num = Number(value)
-        return isNaN(num) ? null : num
+        return Number.isNaN(num) ? null : num
+      }
       case 'boolean':
         return this.parseBoolean(value)
       case 'array':
@@ -571,7 +555,7 @@ export class ConversationalParameterParser {
     let weightedConfidence = 0
 
     // Entities contribute based on their confidence
-    entities.forEach(entity => {
+    entities.forEach((entity) => {
       totalWeight += 1
       weightedConfidence += entity.confidence
     })
@@ -592,21 +576,31 @@ export class ConversationalParameterParser {
   }
 
   // Parameter suggestion and clarification methods
-  private createParameterPrompt(paramName: string, paramConfig: any, context?: UsageContext): ConversationPrompt {
+  private createParameterPrompt(
+    paramName: string,
+    paramConfig: any,
+    context?: UsageContext
+  ): ConversationPrompt {
     return {
       parameter: paramName,
       message: `What would you like to use for ${paramName}?`,
       type: 'question',
-      hints: paramConfig?.description ? [paramConfig.description] : []
+      hints: paramConfig?.description ? [paramConfig.description] : [],
     }
   }
 
-  private async getContextualSuggestion(parameter: string, context: UsageContext): Promise<ParameterSuggestion | null> {
+  private async getContextualSuggestion(
+    parameter: string,
+    context: UsageContext
+  ): Promise<ParameterSuggestion | null> {
     // Implementation would analyze context for relevant suggestions
     return null
   }
 
-  private getHistoricalSuggestion(parameter: string, messageHistory: any[]): ParameterSuggestion | null {
+  private getHistoricalSuggestion(
+    parameter: string,
+    messageHistory: any[]
+  ): ParameterSuggestion | null {
     // Implementation would analyze message history for patterns
     return null
   }
@@ -616,7 +610,11 @@ export class ConversationalParameterParser {
     return null
   }
 
-  private generateMissingParameterMessage(paramName: string, paramConfig: any, context?: UsageContext): string {
+  private generateMissingParameterMessage(
+    paramName: string,
+    paramConfig: any,
+    context?: UsageContext
+  ): string {
     return `I need a value for ${paramName}. ${paramConfig.description || ''}`
   }
 
@@ -659,12 +657,12 @@ class EmailExtractor extends EntityExtractor {
     const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g
     const matches = [...text.matchAll(emailRegex)]
 
-    return matches.map(match => ({
+    return matches.map((match) => ({
       name: 'email',
       value: match[0],
       confidence: 0.95,
       position: [match.index!, match.index! + match[0].length] as [number, number],
-      source: match[0]
+      source: match[0],
     }))
   }
 }
@@ -674,12 +672,12 @@ class URLExtractor extends EntityExtractor {
     const urlRegex = /https?:\/\/[^\s<>"{}|\\^`[\]]+/g
     const matches = [...text.matchAll(urlRegex)]
 
-    return matches.map(match => ({
+    return matches.map((match) => ({
       name: 'url',
       value: match[0],
       confidence: 0.9,
       position: [match.index!, match.index! + match[0].length] as [number, number],
-      source: match[0]
+      source: match[0],
     }))
   }
 }
@@ -690,12 +688,12 @@ class DateExtractor extends EntityExtractor {
     const dateRegex = /\b\d{1,2}\/\d{1,2}\/\d{4}\b|\b\d{4}-\d{2}-\d{2}\b/g
     const matches = [...text.matchAll(dateRegex)]
 
-    return matches.map(match => ({
+    return matches.map((match) => ({
       name: 'date',
       value: new Date(match[0]).toISOString().split('T')[0],
       confidence: 0.8,
       position: [match.index!, match.index! + match[0].length] as [number, number],
-      source: match[0]
+      source: match[0],
     }))
   }
 }
@@ -705,12 +703,12 @@ class TimeExtractor extends EntityExtractor {
     const timeRegex = /\b\d{1,2}:\d{2}(?:\s*[ap]m)?\b/gi
     const matches = [...text.matchAll(timeRegex)]
 
-    return matches.map(match => ({
+    return matches.map((match) => ({
       name: 'time',
       value: match[0],
       confidence: 0.85,
       position: [match.index!, match.index! + match[0].length] as [number, number],
-      source: match[0]
+      source: match[0],
     }))
   }
 }
@@ -720,12 +718,12 @@ class NumberExtractor extends EntityExtractor {
     const numberRegex = /\b\d+(?:\.\d+)?\b/g
     const matches = [...text.matchAll(numberRegex)]
 
-    return matches.map(match => ({
+    return matches.map((match) => ({
       name: 'number',
-      value: parseFloat(match[0]),
+      value: Number.parseFloat(match[0]),
       confidence: 0.7,
       position: [match.index!, match.index! + match[0].length] as [number, number],
-      source: match[0]
+      source: match[0],
     }))
   }
 }
@@ -735,12 +733,12 @@ class BooleanExtractor extends EntityExtractor {
     const booleanRegex = /\b(?:true|false|yes|no|on|off|enabled?|disabled?)\b/gi
     const matches = [...text.matchAll(booleanRegex)]
 
-    return matches.map(match => ({
+    return matches.map((match) => ({
       name: 'boolean',
       value: ['true', 'yes', 'on', 'enabled', 'enable'].includes(match[0].toLowerCase()),
       confidence: 0.8,
       position: [match.index!, match.index! + match[0].length] as [number, number],
-      source: match[0]
+      source: match[0],
     }))
   }
 }
@@ -750,12 +748,12 @@ class FileExtractor extends EntityExtractor {
     const fileRegex = /\b[\w\-. ]+\.(?:pdf|doc|docx|txt|csv|xlsx|jpg|png|gif)\b/gi
     const matches = [...text.matchAll(fileRegex)]
 
-    return matches.map(match => ({
+    return matches.map((match) => ({
       name: 'file',
       value: match[0],
       confidence: 0.85,
       position: [match.index!, match.index! + match[0].length] as [number, number],
-      source: match[0]
+      source: match[0],
     }))
   }
 }

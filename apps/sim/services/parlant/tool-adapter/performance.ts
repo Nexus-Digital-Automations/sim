@@ -10,7 +10,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { AdapterContext, PerformanceMetadata } from './types'
+import type { AdapterContext } from './types'
 
 const logger = createLogger('AdapterPerformance')
 
@@ -57,7 +57,7 @@ export class AdapterPerformanceMonitor implements PerformanceMonitor {
         successfulExecutions: 0,
         failedExecutions: 0,
         totalDurationMs: 0,
-        minDurationMs: Infinity,
+        minDurationMs: Number.POSITIVE_INFINITY,
         maxDurationMs: 0,
         lastExecutionTime: null,
       }
@@ -105,7 +105,7 @@ export class AdapterPerformanceMonitor implements PerformanceMonitor {
       successfulExecutions: 0,
       failedExecutions: 0,
       averageDurationMs: 0,
-      minDurationMs: Infinity,
+      minDurationMs: Number.POSITIVE_INFINITY,
       maxDurationMs: 0,
       p95DurationMs: 0,
       p99DurationMs: 0,
@@ -124,7 +124,10 @@ export class AdapterPerformanceMonitor implements PerformanceMonitor {
       allMetrics.minDurationMs = Math.min(allMetrics.minDurationMs, metrics.minDurationMs)
       allMetrics.maxDurationMs = Math.max(allMetrics.maxDurationMs, metrics.maxDurationMs)
 
-      if (metrics.lastExecutionTime && (!lastExecution || metrics.lastExecutionTime > lastExecution)) {
+      if (
+        metrics.lastExecutionTime &&
+        (!lastExecution || metrics.lastExecutionTime > lastExecution)
+      ) {
         lastExecution = metrics.lastExecutionTime
       }
     }
@@ -181,7 +184,7 @@ export class AdapterPerformanceMonitor implements PerformanceMonitor {
       successfulExecutions: metrics.successfulExecutions,
       failedExecutions: metrics.failedExecutions,
       averageDurationMs: metrics.totalDurationMs / metrics.totalExecutions,
-      minDurationMs: metrics.minDurationMs === Infinity ? 0 : metrics.minDurationMs,
+      minDurationMs: metrics.minDurationMs === Number.POSITIVE_INFINITY ? 0 : metrics.minDurationMs,
       maxDurationMs: metrics.maxDurationMs,
       p95DurationMs: sortedDurations[p95Index] || 0,
       p99DurationMs: sortedDurations[p99Index] || 0,
@@ -240,7 +243,7 @@ export class AdapterCache {
   private maxSizeMB: number
   private currentSizeBytes = 0
 
-  constructor(maxSizeMB: number = 100) {
+  constructor(maxSizeMB = 100) {
     this.maxSizeMB = maxSizeMB
     this.setupCleanupInterval()
   }
@@ -262,7 +265,7 @@ export class AdapterCache {
     return entry.data as T
   }
 
-  async set<T>(key: string, data: T, ttlSeconds: number = 300): Promise<void> {
+  async set<T>(key: string, data: T, ttlSeconds = 300): Promise<void> {
     const dataStr = JSON.stringify(data)
     const sizeBytes = Buffer.byteLength(dataStr, 'utf8')
 
@@ -271,7 +274,7 @@ export class AdapterCache {
 
     const entry: CacheEntry = {
       data,
-      expiresAt: Date.now() + (ttlSeconds * 1000),
+      expiresAt: Date.now() + ttlSeconds * 1000,
       lastAccessed: Date.now(),
       sizeBytes,
     }
@@ -285,7 +288,12 @@ export class AdapterCache {
     this.cache.set(key, entry)
     this.currentSizeBytes += sizeBytes
 
-    logger.debug('Cache entry set', { key, sizeBytes, ttlSeconds, totalSize: this.currentSizeBytes })
+    logger.debug('Cache entry set', {
+      key,
+      sizeBytes,
+      ttlSeconds,
+      totalSize: this.currentSizeBytes,
+    })
   }
 
   async delete(key: string): Promise<boolean> {
@@ -337,8 +345,8 @@ export class AdapterCache {
     }
 
     // Sort entries by last accessed time (LRU)
-    const entries = Array.from(this.cache.entries()).sort((a, b) =>
-      a[1].lastAccessed - b[1].lastAccessed
+    const entries = Array.from(this.cache.entries()).sort(
+      (a, b) => a[1].lastAccessed - b[1].lastAccessed
     )
 
     // Remove oldest entries until we have enough space
@@ -358,24 +366,27 @@ export class AdapterCache {
 
   private setupCleanupInterval(): void {
     // Clean up expired entries every 5 minutes
-    setInterval(() => {
-      const now = Date.now()
-      let expiredCount = 0
-      let freedBytes = 0
+    setInterval(
+      () => {
+        const now = Date.now()
+        let expiredCount = 0
+        let freedBytes = 0
 
-      for (const [key, entry] of this.cache.entries()) {
-        if (now > entry.expiresAt) {
-          this.cache.delete(key)
-          this.currentSizeBytes -= entry.sizeBytes
-          expiredCount++
-          freedBytes += entry.sizeBytes
+        for (const [key, entry] of this.cache.entries()) {
+          if (now > entry.expiresAt) {
+            this.cache.delete(key)
+            this.currentSizeBytes -= entry.sizeBytes
+            expiredCount++
+            freedBytes += entry.sizeBytes
+          }
         }
-      }
 
-      if (expiredCount > 0) {
-        logger.debug('Cache cleanup completed', { expiredCount, freedBytes })
-      }
-    }, 5 * 60 * 1000)
+        if (expiredCount > 0) {
+          logger.debug('Cache cleanup completed', { expiredCount, freedBytes })
+        }
+      },
+      5 * 60 * 1000
+    )
   }
 }
 
@@ -400,7 +411,7 @@ export interface CacheStats {
 export class RateLimiter {
   private buckets = new Map<string, TokenBucket>()
 
-  async checkLimit(key: string, requestsPerMinute: number, maxConcurrent: number = 10): Promise<boolean> {
+  async checkLimit(key: string, requestsPerMinute: number, maxConcurrent = 10): Promise<boolean> {
     let bucket = this.buckets.get(key)
     if (!bucket) {
       bucket = new TokenBucket(requestsPerMinute, maxConcurrent)
@@ -410,7 +421,7 @@ export class RateLimiter {
     return bucket.consume()
   }
 
-  async waitForToken(key: string, requestsPerMinute: number, timeoutMs: number = 5000): Promise<boolean> {
+  async waitForToken(key: string, requestsPerMinute: number, timeoutMs = 5000): Promise<boolean> {
     const startTime = Date.now()
 
     while (Date.now() - startTime < timeoutMs) {
@@ -419,7 +430,7 @@ export class RateLimiter {
       }
 
       // Wait a bit before retrying
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
     }
 
     return false
@@ -490,7 +501,7 @@ class TokenBucket {
 export class ConnectionPool {
   private pools = new Map<string, Pool>()
 
-  getPool(serviceName: string, maxConnections: number = 10): Pool {
+  getPool(serviceName: string, maxConnections = 10): Pool {
     let pool = this.pools.get(serviceName)
     if (!pool) {
       pool = new Pool(serviceName, maxConnections)
@@ -571,7 +582,7 @@ class Connection {
   isHealthy(): boolean {
     // Consider connection stale after 5 minutes
     const maxAge = 5 * 60 * 1000
-    return this.healthy && (Date.now() - this.lastUsed) < maxAge
+    return this.healthy && Date.now() - this.lastUsed < maxAge
   }
 
   markUsed(): void {

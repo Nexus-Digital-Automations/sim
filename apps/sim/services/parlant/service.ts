@@ -12,34 +12,29 @@
  * applications while encapsulating all integration complexity.
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import { env } from '@/lib/env'
-import { getParlantClient, createParlantClient, closeParlantClient } from './client'
-import {
-  ParlantConfigError,
-  ParlantHealthError,
-  ParlantErrorHandler
-} from './errors'
+import { createLogger } from '@/lib/logs/console/logger'
+// Re-export agent and session functions for convenience
+import * as agents from './agents'
+import { closeParlantClient, getParlantClient } from './client'
+import { ParlantConfigError } from './errors'
+import * as sessions from './sessions'
 import type {
   Agent,
   AgentCreateRequest,
-  AgentUpdateRequest,
   AgentListQuery,
-  Session,
-  SessionCreateRequest,
-  SessionListQuery,
+  AgentUpdateRequest,
+  AuthContext,
   Event,
   EventCreateRequest,
   EventListQuery,
+  PaginatedResponse,
   ParlantClientConfig,
   ParlantHealthStatus,
-  AuthContext,
-  PaginatedResponse
+  Session,
+  SessionCreateRequest,
+  SessionListQuery,
 } from './types'
-
-// Re-export agent and session functions for convenience
-import * as agents from './agents'
-import * as sessions from './sessions'
 
 const logger = createLogger('ParlantService')
 
@@ -53,7 +48,7 @@ export class ParlantService {
 
   constructor(private config?: Partial<ParlantClientConfig>) {
     logger.info('Initializing Parlant service', {
-      baseUrl: config?.baseUrl || 'default'
+      baseUrl: config?.baseUrl || 'default',
     })
   }
 
@@ -85,11 +80,11 @@ export class ParlantService {
 
       logger.info('Parlant service initialized successfully', {
         baseUrl: client.getConfig().baseUrl,
-        healthStatus: this.lastHealthStatus?.status
+        healthStatus: this.lastHealthStatus?.status,
       })
     } catch (error) {
       logger.error('Failed to initialize Parlant service', {
-        error: (error as Error).message
+        error: (error as Error).message,
       })
 
       throw new ParlantConfigError(
@@ -124,7 +119,7 @@ export class ParlantService {
       logger.info('Parlant service shutdown completed')
     } catch (error) {
       logger.error('Error during Parlant service shutdown', {
-        error: (error as Error).message
+        error: (error as Error).message,
       })
     }
   }
@@ -161,17 +156,17 @@ export class ParlantService {
         checks: {
           server: {
             status: 'unhealthy',
-            message: (error as Error).message
+            message: (error as Error).message,
           },
           database: {
             status: 'unknown',
-            message: 'Could not determine database status'
+            message: 'Could not determine database status',
           },
           ai_providers: {
             openai: 'unknown',
-            anthropic: 'unknown'
-          }
-        }
+            anthropic: 'unknown',
+          },
+        },
       }
 
       this.lastHealthStatus = healthError
@@ -185,10 +180,7 @@ export class ParlantService {
   /**
    * Create a new agent
    */
-  async createAgent(
-    request: AgentCreateRequest,
-    context: AuthContext
-  ): Promise<Agent> {
+  async createAgent(request: AgentCreateRequest, context: AuthContext): Promise<Agent> {
     this.ensureInitialized()
     return agents.createAgent(request, context)
   }
@@ -224,10 +216,7 @@ export class ParlantService {
   /**
    * List agents
    */
-  async listAgents(
-    query: AgentListQuery,
-    context: AuthContext
-  ): Promise<PaginatedResponse<Agent>> {
+  async listAgents(query: AgentListQuery, context: AuthContext): Promise<PaginatedResponse<Agent>> {
     this.ensureInitialized()
     return agents.listAgents(query, context)
   }
@@ -235,10 +224,7 @@ export class ParlantService {
   /**
    * Get agent guidelines
    */
-  async getAgentGuidelines(
-    agentId: string,
-    context: AuthContext
-  ): Promise<any[]> {
+  async getAgentGuidelines(agentId: string, context: AuthContext): Promise<any[]> {
     this.ensureInitialized()
     return agents.getAgentGuidelines(agentId, context)
   }
@@ -260,10 +246,7 @@ export class ParlantService {
   /**
    * Create a new session
    */
-  async createSession(
-    request: SessionCreateRequest,
-    context: AuthContext
-  ): Promise<Session> {
+  async createSession(request: SessionCreateRequest, context: AuthContext): Promise<Session> {
     this.ensureInitialized()
     return sessions.createSession(request, context)
   }
@@ -369,7 +352,7 @@ export class ParlantService {
     this.config = { ...this.config, ...config }
 
     logger.info('Service configuration updated', {
-      updatedFields: Object.keys(config)
+      updatedFields: Object.keys(config),
     })
   }
 
@@ -391,9 +374,7 @@ export class ParlantService {
     try {
       new URL(baseUrl)
     } catch {
-      throw new ParlantConfigError(
-        `Invalid Parlant server URL: ${baseUrl}`
-      )
+      throw new ParlantConfigError(`Invalid Parlant server URL: ${baseUrl}`)
     }
   }
 
@@ -407,7 +388,7 @@ export class ParlantService {
         await this.performHealthCheck()
       } catch (error) {
         logger.warn('Health monitoring check failed', {
-          error: (error as Error).message
+          error: (error as Error).message,
         })
       }
     }, 30000)
@@ -420,9 +401,7 @@ export class ParlantService {
    */
   private ensureInitialized(): void {
     if (!this.initialized) {
-      throw new ParlantConfigError(
-        'Parlant service not initialized. Call initialize() first.'
-      )
+      throw new ParlantConfigError('Parlant service not initialized. Call initialize() first.')
     }
   }
 }

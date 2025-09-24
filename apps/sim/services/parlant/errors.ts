@@ -29,8 +29,8 @@ export class ParlantError extends Error {
 
   constructor(
     message: string,
-    code: string = 'PARLANT_ERROR',
-    statusCode: number = 500,
+    code = 'PARLANT_ERROR',
+    statusCode = 500,
     details: Record<string, any> = {},
     requestId?: string
   ) {
@@ -53,7 +53,7 @@ export class ParlantError extends Error {
       statusCode,
       details,
       requestId,
-      stack: this.stack
+      stack: this.stack,
     })
   }
 
@@ -66,17 +66,14 @@ export class ParlantError extends Error {
       message: this.message,
       details: this.details,
       request_id: this.requestId,
-      timestamp: this.timestamp.toISOString()
+      timestamp: this.timestamp.toISOString(),
     }
   }
 
   /**
    * Create error from HTTP response
    */
-  static fromHttpResponse(
-    response: any,
-    requestId?: string
-  ): ParlantError {
+  static fromHttpResponse(response: any, requestId?: string): ParlantError {
     const status = response.status || 500
     const data = response.data || {}
 
@@ -96,7 +93,7 @@ export class ParlantError extends Error {
 export class ParlantApiError extends ParlantError {
   constructor(
     message: string,
-    statusCode: number = 500,
+    statusCode = 500,
     details: Record<string, any> = {},
     requestId?: string
   ) {
@@ -114,7 +111,7 @@ export class ParlantConnectionError extends ParlantError {
   constructor(
     message: string,
     details: Record<string, any> = {},
-    isRetryable: boolean = true,
+    isRetryable = true,
     requestId?: string
   ) {
     super(message, 'PARLANT_CONNECTION_ERROR', 503, details, requestId)
@@ -128,7 +125,7 @@ export class ParlantConnectionError extends ParlantError {
  */
 export class ParlantAuthError extends ParlantError {
   constructor(
-    message: string = 'Authentication failed',
+    message = 'Authentication failed',
     details: Record<string, any> = {},
     requestId?: string
   ) {
@@ -144,7 +141,7 @@ export class ParlantValidationError extends ParlantError {
   public readonly validationErrors: ValidationError[]
 
   constructor(
-    message: string = 'Validation failed',
+    message = 'Validation failed',
     validationErrors: ValidationError[] = [],
     requestId?: string
   ) {
@@ -170,15 +167,11 @@ export class ParlantValidationError extends ParlantError {
       ([field, message]) => ({
         field,
         message,
-        code: 'INVALID_VALUE'
+        code: 'INVALID_VALUE',
       })
     )
 
-    return new ParlantValidationError(
-      'Request validation failed',
-      validationErrors,
-      requestId
-    )
+    return new ParlantValidationError('Request validation failed', validationErrors, requestId)
   }
 }
 
@@ -191,7 +184,7 @@ export class ParlantRateLimitError extends ParlantError {
   public readonly resetAt: Date
 
   constructor(
-    message: string = 'Rate limit exceeded',
+    message: string,
     retryAfter: number,
     limit: number,
     resetAt: Date,
@@ -204,7 +197,7 @@ export class ParlantRateLimitError extends ParlantError {
       {
         retry_after: retryAfter,
         limit,
-        reset_at: resetAt.toISOString()
+        reset_at: resetAt.toISOString(),
       },
       requestId
     )
@@ -219,14 +212,8 @@ export class ParlantRateLimitError extends ParlantError {
  * Resource not found errors
  */
 export class ParlantNotFoundError extends ParlantError {
-  constructor(
-    resource: string,
-    id?: string,
-    requestId?: string
-  ) {
-    const message = id
-      ? `${resource} with ID '${id}' not found`
-      : `${resource} not found`
+  constructor(resource: string, id?: string, requestId?: string) {
+    const message = id ? `${resource} with ID '${id}' not found` : `${resource} not found`
 
     super(message, 'PARLANT_NOT_FOUND_ERROR', 404, { resource, id }, requestId)
     this.name = 'ParlantNotFoundError'
@@ -237,18 +224,8 @@ export class ParlantNotFoundError extends ParlantError {
  * Workspace access errors
  */
 export class ParlantWorkspaceError extends ParlantError {
-  constructor(
-    message: string = 'Workspace access denied',
-    workspaceId?: string,
-    requestId?: string
-  ) {
-    super(
-      message,
-      'PARLANT_WORKSPACE_ERROR',
-      403,
-      { workspace_id: workspaceId },
-      requestId
-    )
+  constructor(message = 'Workspace access denied', workspaceId?: string, requestId?: string) {
+    super(message, 'PARLANT_WORKSPACE_ERROR', 403, { workspace_id: workspaceId }, requestId)
     this.name = 'ParlantWorkspaceError'
   }
 }
@@ -259,18 +236,8 @@ export class ParlantWorkspaceError extends ParlantError {
 export class ParlantHealthError extends ParlantError {
   public readonly healthStatus: any
 
-  constructor(
-    message: string = 'Parlant server unhealthy',
-    healthStatus?: any,
-    requestId?: string
-  ) {
-    super(
-      message,
-      'PARLANT_HEALTH_ERROR',
-      503,
-      { health_status: healthStatus },
-      requestId
-    )
+  constructor(message = 'Parlant server unhealthy', healthStatus?: any, requestId?: string) {
+    super(message, 'PARLANT_HEALTH_ERROR', 503, { health_status: healthStatus }, requestId)
     this.name = 'ParlantHealthError'
     this.healthStatus = healthStatus
   }
@@ -280,11 +247,7 @@ export class ParlantHealthError extends ParlantError {
  * Timeout errors
  */
 export class ParlantTimeoutError extends ParlantConnectionError {
-  constructor(
-    operation: string,
-    timeoutMs: number,
-    requestId?: string
-  ) {
+  constructor(operation: string, timeoutMs: number, requestId?: string) {
     super(
       `Operation '${operation}' timed out after ${timeoutMs}ms`,
       { operation, timeout_ms: timeoutMs },
@@ -299,18 +262,8 @@ export class ParlantTimeoutError extends ParlantConnectionError {
  * Configuration errors
  */
 export class ParlantConfigError extends ParlantError {
-  constructor(
-    message: string,
-    configKey?: string,
-    requestId?: string
-  ) {
-    super(
-      message,
-      'PARLANT_CONFIG_ERROR',
-      500,
-      { config_key: configKey },
-      requestId
-    )
+  constructor(message: string, configKey?: string, requestId?: string) {
+    super(message, 'PARLANT_CONFIG_ERROR', 500, { config_key: configKey }, requestId)
     this.name = 'ParlantConfigError'
   }
 }
@@ -347,8 +300,8 @@ export class ParlantErrorHandler {
   /**
    * Get retry delay for error (exponential backoff)
    */
-  static getRetryDelay(attempt: number, baseDelay: number = 1000): number {
-    const exponentialDelay = Math.min(baseDelay * Math.pow(2, attempt), 30000)
+  static getRetryDelay(attempt: number, baseDelay = 1000): number {
+    const exponentialDelay = Math.min(baseDelay * 2 ** attempt, 30000)
     const jitter = Math.random() * 1000 // Add jitter to prevent thundering herd
     return exponentialDelay + jitter
   }
@@ -410,11 +363,7 @@ export class ParlantErrorHandler {
         )
 
       case 404:
-        return new ParlantNotFoundError(
-          data.resource || 'Resource',
-          data.id,
-          requestId
-        )
+        return new ParlantNotFoundError(data.resource || 'Resource', data.id, requestId)
 
       case 429:
         return new ParlantRateLimitError(
@@ -434,12 +383,7 @@ export class ParlantErrorHandler {
         )
 
       default:
-        return new ParlantApiError(
-          data.message || `HTTP ${status} error`,
-          status,
-          data,
-          requestId
-        )
+        return new ParlantApiError(data.message || `HTTP ${status} error`, status, data, requestId)
     }
   }
 
@@ -452,7 +396,7 @@ export class ParlantErrorHandler {
       statusCode: error.statusCode,
       details: error.details,
       requestId: error.requestId,
-      ...context
+      ...context,
     }
 
     if (error.statusCode >= 500) {
@@ -479,9 +423,6 @@ export function extractRequestId(context?: any): string | undefined {
   if (!context) return undefined
 
   return (
-    context.request_id ||
-    context.requestId ||
-    context['x-request-id'] ||
-    context['X-Request-ID']
+    context.request_id || context.requestId || context['x-request-id'] || context['X-Request-ID']
   )
 }

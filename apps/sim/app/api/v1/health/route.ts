@@ -7,7 +7,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { parlantHealthChecker, healthChecks } from '../../../../../packages/parlant-server/health'
+import { healthChecks, parlantHealthChecker } from '../../../../../packages/parlant-server/health'
 import { checkRateLimit, createRateLimitResponse } from '../middleware'
 
 const logger = createLogger('HealthAPI')
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     logger.info('Health check request received', {
       url: request.url,
-      userAgent: request.headers.get('user-agent')
+      userAgent: request.headers.get('user-agent'),
     })
 
     // Check rate limit for this endpoint
@@ -41,13 +41,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       api: {
         responseTime: performance.now() - startTime,
         endpoint: '/api/v1/health',
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     }
 
     const response = {
       ...healthStatus,
-      metrics: apiMetrics
+      metrics: apiMetrics,
     }
 
     // Set appropriate HTTP status based on health
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     logger.info('Health check completed', {
       status: healthStatus.status,
       duration: performance.now() - startTime,
-      httpStatus
+      httpStatus,
     })
 
     return NextResponse.json(response, {
@@ -70,8 +70,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'X-Health-Status': healthStatus.status,
-        'X-Response-Time': `${apiMetrics.api.responseTime}ms`
-      }
+        'X-Response-Time': `${apiMetrics.api.responseTime}ms`,
+      },
     })
   } catch (error) {
     const duration = performance.now() - startTime
@@ -86,15 +86,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         services: {
           database: { status: 'unknown' },
           parlant: { status: 'unknown' },
-          integration: { status: 'unknown' }
-        }
+          integration: { status: 'unknown' },
+        },
       },
       {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
-          'X-Health-Status': 'unhealthy'
-        }
+          'X-Health-Status': 'unhealthy',
+        },
       }
     )
   }
@@ -128,14 +128,15 @@ export async function GET_SERVICE(request: NextRequest, service: string): Promis
       case 'integration':
         healthCheck = await healthChecks.integration()
         break
-      case 'quick':
+      case 'quick': {
         const isHealthy = await healthChecks.quick()
         return NextResponse.json({
           status: isHealthy ? 'healthy' : 'unhealthy',
           service: 'database',
           timestamp: new Date().toISOString(),
-          duration: performance.now() - startTime
+          duration: performance.now() - startTime,
         })
+      }
       default:
         return NextResponse.json(
           { error: 'Invalid service. Use: database, parlant, integration, or quick' },
@@ -148,8 +149,8 @@ export async function GET_SERVICE(request: NextRequest, service: string): Promis
       api: {
         responseTime: performance.now() - startTime,
         endpoint: `/api/v1/health?service=${service}`,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     }
 
     const httpStatus = healthCheck.status === 'unhealthy' ? 503 : 200
@@ -160,8 +161,8 @@ export async function GET_SERVICE(request: NextRequest, service: string): Promis
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'X-Health-Status': healthCheck.status,
-        'X-Service': service
-      }
+        'X-Service': service,
+      },
     })
   } catch (error) {
     logger.error(`Health check error for service ${service}`, { error })
@@ -172,7 +173,7 @@ export async function GET_SERVICE(request: NextRequest, service: string): Promis
         service,
         timestamp: new Date().toISOString(),
         error: error instanceof Error ? error.message : 'Service health check failed',
-        duration: performance.now() - startTime
+        duration: performance.now() - startTime,
       },
       { status: 500 }
     )

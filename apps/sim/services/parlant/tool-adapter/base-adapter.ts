@@ -10,14 +10,13 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  ToolAdapter,
   AdapterContext,
   AdapterResult,
-  AdapterError,
   ParlantToolSchema,
-  ValidationResult,
-  ToolRecommendation,
   PerformanceMetadata,
+  ToolAdapter,
+  ToolRecommendation,
+  ValidationResult,
 } from './types'
 
 export abstract class BaseToolAdapter implements ToolAdapter {
@@ -47,7 +46,8 @@ export abstract class BaseToolAdapter implements ToolAdapter {
       // Validate arguments
       const validation = await this.validateArgs(args)
       if (!validation.valid) {
-        return this.createErrorResult('VALIDATION_ERROR',
+        return this.createErrorResult(
+          'VALIDATION_ERROR',
           `Invalid arguments: ${validation.errors?.join(', ')}`,
           'Please check your input parameters and try again.',
           validation.errors || []
@@ -57,7 +57,8 @@ export abstract class BaseToolAdapter implements ToolAdapter {
       // Validate context
       const contextValidation = this.validateContext(context)
       if (!contextValidation.valid) {
-        return this.createErrorResult('CONTEXT_ERROR',
+        return this.createErrorResult(
+          'CONTEXT_ERROR',
           `Invalid context: ${contextValidation.errors?.join(', ')}`,
           'There was an issue with your session. Please try again.'
         )
@@ -83,7 +84,6 @@ export abstract class BaseToolAdapter implements ToolAdapter {
           cached: result.metadata?.cached || false,
         },
       }
-
     } catch (error: any) {
       const executionTime = Date.now() - startTime
 
@@ -140,7 +140,7 @@ export abstract class BaseToolAdapter implements ToolAdapter {
     message: string,
     userMessage: string,
     suggestions: string[] = [],
-    retryable: boolean = false
+    retryable = false
   ): AdapterResult {
     return {
       success: false,
@@ -232,9 +232,11 @@ export abstract class BaseToolAdapter implements ToolAdapter {
 /**
  * Utility function to measure execution time
  */
-export function measureExecutionTime<T>(fn: () => Promise<T>): Promise<{ result: T; duration: number }> {
+export function measureExecutionTime<T>(
+  fn: () => Promise<T>
+): Promise<{ result: T; duration: number }> {
   const start = Date.now()
-  return fn().then(result => ({
+  return fn().then((result) => ({
     result,
     duration: Date.now() - start,
   }))

@@ -32,7 +32,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         healthy: isHealthy,
         responseTime,
         debugMode,
-        userAgent: request.headers.get('user-agent')?.slice(0, 100)
+        userAgent: request.headers.get('user-agent')?.slice(0, 100),
       })
     }
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       status: isHealthy ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      responseTime: Math.round(responseTime)
+      responseTime: Math.round(responseTime),
     }
 
     const httpStatus = isHealthy ? 200 : 503
@@ -54,8 +54,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         'X-Response-Time': `${response.responseTime}ms`,
         // Add headers for monitoring systems
         'X-Service': 'parlant-server',
-        'X-Version': '1.0.0'
-      }
+        'X-Version': '1.0.0',
+      },
     })
   } catch (error) {
     const responseTime = performance.now() - startTime
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     logger.error('Health status check failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -71,15 +71,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
         error: 'Health check failed',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
           'X-Health-Status': 'unhealthy',
-          'X-Service': 'parlant-server'
-        }
+          'X-Service': 'parlant-server',
+        },
       }
     )
   }

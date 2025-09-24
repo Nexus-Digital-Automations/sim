@@ -12,17 +12,17 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { ZodError } from 'zod'
-import { createLogger } from '@/lib/logs/console/logger'
-import { checkRateLimit, createRateLimitResponse } from '../middleware'
-import { authenticateV1Request } from '../auth'
-import { agentService } from '@/lib/api/v1/agents/service'
 import {
-  CreateAgentRequestSchema,
+  type AgentListQuery,
   AgentListQuerySchema,
   type CreateAgentRequest,
-  type AgentListQuery,
+  CreateAgentRequestSchema,
   type ErrorResponse,
 } from '@/lib/api/v1/agents/schemas'
+import { agentService } from '@/lib/api/v1/agents/service'
+import { createLogger } from '@/lib/logs/console/logger'
+import { authenticateV1Request } from '../auth'
+import { checkRateLimit, createRateLimitResponse } from '../middleware'
 
 const logger = createLogger('AgentsAPI')
 
@@ -32,7 +32,7 @@ const logger = createLogger('AgentsAPI')
 function createErrorResponse(
   error: string,
   message: string,
-  status: number = 400,
+  status = 400,
   details?: Record<string, any>,
   requestId?: string
 ): NextResponse<ErrorResponse> {
@@ -49,7 +49,7 @@ function createErrorResponse(
       headers: {
         'Content-Type': 'application/json',
         'X-Request-Id': requestId || 'unknown',
-      }
+      },
     }
   )
 }
@@ -132,10 +132,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         'Content-Type': 'application/json',
         'X-Request-Id': requestId,
         'X-Response-Time': `${duration}ms`,
-        'Location': `/api/v1/agents/${agent.id}`,
+        Location: `/api/v1/agents/${agent.id}`,
       },
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
 
@@ -262,7 +261,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         'X-Page-Offset': result.pagination.offset.toString(),
       },
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
 
@@ -272,12 +270,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       duration: `${duration}ms`,
     })
 
-    return createErrorResponse(
-      'INTERNAL_ERROR',
-      'Failed to list agents',
-      500,
-      undefined,
-      requestId
-    )
+    return createErrorResponse('INTERNAL_ERROR', 'Failed to list agents', 500, undefined, requestId)
   }
 }

@@ -18,11 +18,11 @@
  */
 
 import type {
-  ToolRecommendationContext,
+  EnhancedToolDescription,
   ToolRecommendation,
-  EnhancedToolDescription
+  ToolRecommendationContext,
 } from './tool-adapter'
-import { toolRegistry, intelligenceEngine } from './tool-adapter'
+import { intelligenceEngine } from './tool-adapter'
 import type { AuthContext } from './types'
 
 // =============================================
@@ -110,10 +110,10 @@ export class IntentRecognizer {
       }
 
       // Boost scores based on entities
-      if (intent === 'send_email' && entities.some(e => e.type === 'email')) {
+      if (intent === 'send_email' && entities.some((e) => e.type === 'email')) {
         score += 0.3
       }
-      if (intent === 'make_api_call' && entities.some(e => e.type === 'url')) {
+      if (intent === 'make_api_call' && entities.some((e) => e.type === 'url')) {
         score += 0.3
       }
 
@@ -123,18 +123,15 @@ export class IntentRecognizer {
     }
 
     // Sort intents by score
-    const sortedIntents = Array.from(intentScores.entries())
-      .sort((a, b) => b[1] - a[1])
+    const sortedIntents = Array.from(intentScores.entries()).sort((a, b) => b[1] - a[1])
 
     const primaryIntent = sortedIntents[0]?.[0] || 'custom_logic'
     const primaryConfidence = Math.min(sortedIntents[0]?.[1] || 0, 1.0)
 
-    const secondaryIntents = sortedIntents
-      .slice(1, 4)
-      .map(([intent, score]) => ({
-        intent,
-        confidence: Math.min(score, 1.0)
-      }))
+    const secondaryIntents = sortedIntents.slice(1, 4).map(([intent, score]) => ({
+      intent,
+      confidence: Math.min(score, 1.0),
+    }))
 
     // Extract keywords
     const keywords = this.extractKeywords(normalizedInput)
@@ -148,7 +145,7 @@ export class IntentRecognizer {
       secondaryIntents,
       entities,
       keywords,
-      complexity
+      complexity,
     }
   }
 
@@ -159,48 +156,48 @@ export class IntentRecognizer {
     this.intentPatterns.set('send_email', [
       { pattern: /send.*email|email.*to|compose.*email/i, weight: 0.8 },
       { pattern: /notify.*email|alert.*email/i, weight: 0.6 },
-      { pattern: /@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i, weight: 0.4 }
+      { pattern: /@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i, weight: 0.4 },
     ])
 
     this.intentPatterns.set('read_email', [
       { pattern: /read.*email|check.*email|get.*email/i, weight: 0.8 },
-      { pattern: /inbox|messages.*from/i, weight: 0.6 }
+      { pattern: /inbox|messages.*from/i, weight: 0.6 },
     ])
 
     this.intentPatterns.set('send_message', [
       { pattern: /send.*message|message.*to|notify.*team/i, weight: 0.8 },
-      { pattern: /slack|teams|chat|tell.*team/i, weight: 0.6 }
+      { pattern: /slack|teams|chat|tell.*team/i, weight: 0.6 },
     ])
 
     this.intentPatterns.set('make_api_call', [
       { pattern: /api.*call|call.*api|http.*request|rest.*api/i, weight: 0.8 },
       { pattern: /fetch.*from|get.*from.*api|post.*to/i, weight: 0.6 },
-      { pattern: /https?:\/\/[^\s]+/i, weight: 0.4 }
+      { pattern: /https?:\/\/[^\s]+/i, weight: 0.4 },
     ])
 
     this.intentPatterns.set('process_data', [
       { pattern: /process.*data|analyze.*data|work.*with.*data/i, weight: 0.8 },
-      { pattern: /calculate|compute|transform|filter/i, weight: 0.6 }
+      { pattern: /calculate|compute|transform|filter/i, weight: 0.6 },
     ])
 
     this.intentPatterns.set('store_data', [
       { pattern: /save.*data|store.*data|database|persist/i, weight: 0.8 },
-      { pattern: /sql|mongodb|mysql|postgres/i, weight: 0.6 }
+      { pattern: /sql|mongodb|mysql|postgres/i, weight: 0.6 },
     ])
 
     this.intentPatterns.set('generate_content', [
       { pattern: /generate|create.*content|write|compose/i, weight: 0.8 },
-      { pattern: /document|report|template/i, weight: 0.6 }
+      { pattern: /document|report|template/i, weight: 0.6 },
     ])
 
     this.intentPatterns.set('schedule_task', [
       { pattern: /schedule|later|delay|timer|cron/i, weight: 0.8 },
-      { pattern: /every.*day|weekly|monthly/i, weight: 0.6 }
+      { pattern: /every.*day|weekly|monthly/i, weight: 0.6 },
     ])
 
     this.intentPatterns.set('search_information', [
       { pattern: /search|find|lookup|query/i, weight: 0.8 },
-      { pattern: /google|wikipedia|web.*search/i, weight: 0.6 }
+      { pattern: /google|wikipedia|web.*search/i, weight: 0.6 },
     ])
 
     // Entity patterns
@@ -228,8 +225,8 @@ export class IntentRecognizer {
           confidence: 0.9,
           position: {
             start: match.index,
-            end: match.index + match[0].length
-          }
+            end: match.index + match[0].length,
+          },
         })
       }
     }
@@ -241,11 +238,26 @@ export class IntentRecognizer {
    * Extract relevant keywords from input
    */
   private extractKeywords(input: string): string[] {
-    const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'])
+    const stopWords = new Set([
+      'the',
+      'a',
+      'an',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'for',
+      'of',
+      'with',
+      'by',
+    ])
     const words = input.toLowerCase().match(/\b\w+\b/g) || []
 
     return words
-      .filter(word => word.length > 2 && !stopWords.has(word))
+      .filter((word) => word.length > 2 && !stopWords.has(word))
       .filter((word, index, arr) => arr.indexOf(word) === index) // Remove duplicates
       .slice(0, 10) // Limit to 10 keywords
   }
@@ -320,8 +332,8 @@ export class AdvancedRecommendationEngine {
       userIntents: [
         ...context.userIntents,
         intentAnalysis.primaryIntent,
-        ...intentAnalysis.secondaryIntents.map(si => si.intent)
-      ]
+        ...intentAnalysis.secondaryIntents.map((si) => si.intent),
+      ],
     }
 
     // Get base recommendations from intelligence engine
@@ -351,7 +363,7 @@ export class AdvancedRecommendationEngine {
       intent: intentAnalysis,
       context: enhancedContext,
       recommendations: scoredRecommendations,
-      timestamp: new Date()
+      timestamp: new Date(),
     })
 
     return {
@@ -361,7 +373,7 @@ export class AdvancedRecommendationEngine {
       explanations,
       confidence: this.calculateOverallConfidence(scoredRecommendations),
       suggestions: this.generateUsageSuggestions(scoredRecommendations, intentAnalysis),
-      alternatives: await this.findAlternativeApproaches(intentAnalysis, enhancedContext)
+      alternatives: await this.findAlternativeApproaches(intentAnalysis, enhancedContext),
     }
   }
 
@@ -376,35 +388,37 @@ export class AdvancedRecommendationEngine {
   ): Promise<ToolRecommendation[]> {
     const userHistory = this.getUserHistory(authContext.user_id)
 
-    return baseRecommendations.map(rec => {
-      let adjustedConfidence = rec.confidence
+    return baseRecommendations
+      .map((rec) => {
+        let adjustedConfidence = rec.confidence
 
-      // Intent match bonus
-      if (this.toolMatchesIntent(rec.tool, intentAnalysis.primaryIntent)) {
-        adjustedConfidence *= 1.3
-      }
+        // Intent match bonus
+        if (this.toolMatchesIntent(rec.tool, intentAnalysis.primaryIntent)) {
+          adjustedConfidence *= 1.3
+        }
 
-      // User history bonus
-      const historyBonus = this.calculateHistoryBonus(rec.tool, userHistory)
-      adjustedConfidence += historyBonus
+        // User history bonus
+        const historyBonus = this.calculateHistoryBonus(rec.tool, userHistory)
+        adjustedConfidence += historyBonus
 
-      // Complexity match adjustment
-      const complexityMatch = this.calculateComplexityMatch(rec.tool, intentAnalysis.complexity)
-      adjustedConfidence *= complexityMatch
+        // Complexity match adjustment
+        const complexityMatch = this.calculateComplexityMatch(rec.tool, intentAnalysis.complexity)
+        adjustedConfidence *= complexityMatch
 
-      // Entity relevance bonus
-      const entityBonus = this.calculateEntityRelevance(rec.tool, intentAnalysis.entities)
-      adjustedConfidence += entityBonus
+        // Entity relevance bonus
+        const entityBonus = this.calculateEntityRelevance(rec.tool, intentAnalysis.entities)
+        adjustedConfidence += entityBonus
 
-      // Feedback learning adjustment
-      const feedbackAdjustment = this.applyFeedbackLearning(rec.tool, authContext.user_id)
-      adjustedConfidence *= feedbackAdjustment
+        // Feedback learning adjustment
+        const feedbackAdjustment = this.applyFeedbackLearning(rec.tool, authContext.user_id)
+        adjustedConfidence *= feedbackAdjustment
 
-      return {
-        ...rec,
-        confidence: Math.min(adjustedConfidence, 1.0)
-      }
-    }).sort((a, b) => b.confidence - a.confidence)
+        return {
+          ...rec,
+          confidence: Math.min(adjustedConfidence, 1.0),
+        }
+      })
+      .sort((a, b) => b.confidence - a.confidence)
   }
 
   /**
@@ -431,20 +445,23 @@ export class AdvancedRecommendationEngine {
       integrate_service: ['api', 'webhook', 'function'],
       create_document: ['google_docs', 'notion', 'confluence'],
       share_file: ['google_drive', 's3', 'onedrive', 'sharepoint'],
-      custom_logic: ['function', 'evaluator']
+      custom_logic: ['function', 'evaluator'],
     }
 
     const relevantTools = intentToolMap[intent] || []
-    return relevantTools.some(toolName => tool.id.includes(toolName))
+    return relevantTools.some((toolName) => tool.id.includes(toolName))
   }
 
   /**
    * Calculate bonus based on user's historical tool usage
    */
-  private calculateHistoryBonus(tool: EnhancedToolDescription, history: UserInteractionSession[]): number {
+  private calculateHistoryBonus(
+    tool: EnhancedToolDescription,
+    history: UserInteractionSession[]
+  ): number {
     const recentHistory = history.slice(-10) // Last 10 interactions
-    const toolUsageCount = recentHistory.filter(session =>
-      session.recommendations.some(rec => rec.tool.id === tool.id)
+    const toolUsageCount = recentHistory.filter((session) =>
+      session.recommendations.some((rec) => rec.tool.id === tool.id)
     ).length
 
     return Math.min(toolUsageCount * 0.05, 0.2) // Max 20% bonus
@@ -453,11 +470,14 @@ export class AdvancedRecommendationEngine {
   /**
    * Calculate how well tool complexity matches query complexity
    */
-  private calculateComplexityMatch(tool: EnhancedToolDescription, queryComplexity: 'simple' | 'moderate' | 'complex'): number {
+  private calculateComplexityMatch(
+    tool: EnhancedToolDescription,
+    queryComplexity: 'simple' | 'moderate' | 'complex'
+  ): number {
     const complexityScores = {
       simple: { simple: 1.0, moderate: 0.8, complex: 0.6 },
       moderate: { simple: 0.9, moderate: 1.0, complex: 0.9 },
-      complex: { simple: 0.7, moderate: 0.9, complex: 1.0 }
+      complex: { simple: 0.7, moderate: 0.9, complex: 1.0 },
     }
 
     return complexityScores[tool.complexity][queryComplexity] || 0.8
@@ -466,7 +486,10 @@ export class AdvancedRecommendationEngine {
   /**
    * Calculate bonus based on entity relevance
    */
-  private calculateEntityRelevance(tool: EnhancedToolDescription, entities: ExtractedEntity[]): number {
+  private calculateEntityRelevance(
+    tool: EnhancedToolDescription,
+    entities: ExtractedEntity[]
+  ): number {
     let bonus = 0
 
     for (const entity of entities) {
@@ -478,7 +501,8 @@ export class AdvancedRecommendationEngine {
           if (tool.id.includes('api') || tool.id.includes('http')) bonus += 0.1
           break
         case 'file':
-          if (tool.id.includes('file') || tool.id.includes('drive') || tool.id.includes('s3')) bonus += 0.1
+          if (tool.id.includes('file') || tool.id.includes('drive') || tool.id.includes('s3'))
+            bonus += 0.1
           break
         case 'date':
           if (tool.id.includes('schedule') || tool.id.includes('calendar')) bonus += 0.1
@@ -494,16 +518,16 @@ export class AdvancedRecommendationEngine {
    */
   private applyFeedbackLearning(tool: EnhancedToolDescription, userId: string): number {
     const feedback = this.recommendationFeedback.get(userId) || []
-    const toolFeedback = feedback.filter(f => f.toolId === tool.id)
+    const toolFeedback = feedback.filter((f) => f.toolId === tool.id)
 
     if (toolFeedback.length === 0) return 1.0
 
-    const positiveCount = toolFeedback.filter(f => f.rating >= 4).length
+    const positiveCount = toolFeedback.filter((f) => f.rating >= 4).length
     const totalCount = toolFeedback.length
     const positiveRatio = positiveCount / totalCount
 
     // Adjust confidence based on feedback ratio
-    return 0.7 + (positiveRatio * 0.6) // Range: 0.7 to 1.3
+    return 0.7 + positiveRatio * 0.6 // Range: 0.7 to 1.3
   }
 
   /**
@@ -520,25 +544,32 @@ export class AdvancedRecommendationEngine {
       primaryReason: this.getPrimaryReason(rec.tool, intentAnalysis),
       supportingReasons: this.getSupportingReasons(rec.tool, intentAnalysis, context),
       confidenceExplanation: this.explainConfidence(rec.confidence),
-      quickStartTips: this.generateQuickStartTips(rec.tool, intentAnalysis)
+      quickStartTips: this.generateQuickStartTips(rec.tool, intentAnalysis),
     }))
   }
 
   /**
    * Get primary reason for recommendation
    */
-  private getPrimaryReason(tool: EnhancedToolDescription, intentAnalysis: IntentRecognitionResult): string {
+  private getPrimaryReason(
+    tool: EnhancedToolDescription,
+    intentAnalysis: IntentRecognitionResult
+  ): string {
     if (this.toolMatchesIntent(tool, intentAnalysis.primaryIntent)) {
       return `Perfect match for ${intentAnalysis.primaryIntent.replace('_', ' ')}`
     }
 
     if (intentAnalysis.entities.length > 0) {
-      const relevantEntity = intentAnalysis.entities.find(entity => {
+      const relevantEntity = intentAnalysis.entities.find((entity) => {
         switch (entity.type) {
-          case 'email': return tool.id.includes('mail')
-          case 'url': return tool.id.includes('api')
-          case 'file': return tool.id.includes('file') || tool.id.includes('drive')
-          default: return false
+          case 'email':
+            return tool.id.includes('mail')
+          case 'url':
+            return tool.id.includes('api')
+          case 'file':
+            return tool.id.includes('file') || tool.id.includes('drive')
+          default:
+            return false
         }
       })
 
@@ -566,8 +597,8 @@ export class AdvancedRecommendationEngine {
     }
 
     // Keyword matches
-    const matchingKeywords = intentAnalysis.keywords.filter(keyword =>
-      tool.tags.some(tag => tag.includes(keyword) || keyword.includes(tag))
+    const matchingKeywords = intentAnalysis.keywords.filter((keyword) =>
+      tool.tags.some((tag) => tag.includes(keyword) || keyword.includes(tag))
     )
     if (matchingKeywords.length > 0) {
       reasons.push(`Related to: ${matchingKeywords.join(', ')}`)
@@ -594,7 +625,10 @@ export class AdvancedRecommendationEngine {
   /**
    * Generate quick start tips
    */
-  private generateQuickStartTips(tool: EnhancedToolDescription, intentAnalysis: IntentRecognitionResult): string[] {
+  private generateQuickStartTips(
+    tool: EnhancedToolDescription,
+    intentAnalysis: IntentRecognitionResult
+  ): string[] {
     const tips: string[] = []
 
     // Add tool-specific quick tips
@@ -626,10 +660,11 @@ export class AdvancedRecommendationEngine {
     if (recommendations.length === 0) return 0
 
     const topConfidence = recommendations[0]?.confidence || 0
-    const avgConfidence = recommendations.reduce((sum, rec) => sum + rec.confidence, 0) / recommendations.length
+    const avgConfidence =
+      recommendations.reduce((sum, rec) => sum + rec.confidence, 0) / recommendations.length
 
     // Weight towards top recommendation but consider overall quality
-    return (topConfidence * 0.7) + (avgConfidence * 0.3)
+    return topConfidence * 0.7 + avgConfidence * 0.3
   }
 
   /**
@@ -642,7 +677,9 @@ export class AdvancedRecommendationEngine {
     const suggestions: string[] = []
 
     if (recommendations.length > 1) {
-      suggestions.push(`Try "${recommendations[0].tool.name}" first - it has the highest confidence score`)
+      suggestions.push(
+        `Try "${recommendations[0].tool.name}" first - it has the highest confidence score`
+      )
     }
 
     if (intentAnalysis.complexity === 'complex') {
@@ -650,7 +687,9 @@ export class AdvancedRecommendationEngine {
     }
 
     if (intentAnalysis.entities.length > 0) {
-      suggestions.push('I noticed specific data in your request - tools are pre-configured where possible')
+      suggestions.push(
+        'I noticed specific data in your request - tools are pre-configured where possible'
+      )
     }
 
     return suggestions
@@ -671,7 +710,7 @@ export class AdvancedRecommendationEngine {
         approach: 'multi-step',
         description: 'Break this into multiple simpler steps',
         benefits: ['Easier to debug', 'More reliable', 'Reusable components'],
-        tools: ['function', 'api', 'slack'] // Example tools for steps
+        tools: ['function', 'api', 'slack'], // Example tools for steps
       })
     }
 
@@ -681,7 +720,7 @@ export class AdvancedRecommendationEngine {
         approach: 'automation',
         description: 'Set up automated workflow to run this regularly',
         benefits: ['Saves time', 'Consistent execution', 'Reduces errors'],
-        tools: ['schedule', 'webhook']
+        tools: ['schedule', 'webhook'],
       })
     }
 

@@ -9,18 +9,8 @@
  */
 
 import type { ToolConfig } from '@/tools/types'
-import type {
-  AdapterRegistryEntry,
-  ToolDiscoveryQuery,
-  DiscoveredTool,
-  AdapterExecutionContext
-} from '../types/adapter-interfaces'
-import type {
-  UsageContext,
-  UserIntent,
-  ToolRecommendation,
-  ConversationMessage
-} from './usage-guidelines'
+import type { DiscoveredTool, ToolDiscoveryQuery } from '../types/adapter-interfaces'
+import type { ConversationMessage, ToolRecommendation, UsageContext } from './usage-guidelines'
 
 // =============================================================================
 // Recommendation Types
@@ -67,7 +57,10 @@ export interface RecommendationEngine {
 
   // Learning and adaptation
   recordToolUsage(toolId: string, context: UsageContext, success: boolean): Promise<void>
-  adaptToUserFeedback(recommendations: ToolRecommendationWithDetails[], feedback: UserFeedback): Promise<void>
+  adaptToUserFeedback(
+    recommendations: ToolRecommendationWithDetails[],
+    feedback: UserFeedback
+  ): Promise<void>
 
   // Discovery and search
   discoverTools(query: ToolDiscoveryQuery, context: UsageContext): Promise<DiscoveredTool[]>
@@ -170,52 +163,52 @@ class IntentAnalysisEngine {
       target,
       urgency,
       complexity,
-      domain
+      domain,
     }
   }
 
   private loadIntentPatterns(): void {
     const patterns = {
-      'send_communication': [
+      send_communication: [
         /send (?:an? )?(?:email|message|text)/i,
         /message (?:someone|them)/i,
         /compose (?:an? )?(?:email|message)/i,
-        /write (?:an? )?(?:email|message)/i
+        /write (?:an? )?(?:email|message)/i,
       ],
-      'search_information': [
+      search_information: [
         /search (?:for|about)/i,
         /find (?:information|data|results)/i,
         /look (?:up|for)/i,
         /research (?:about|on)/i,
-        /discover/i
+        /discover/i,
       ],
-      'create_content': [
+      create_content: [
         /create (?:a|an)/i,
         /make (?:a|an)/i,
         /generate/i,
         /write (?:a|an)/i,
-        /compose (?:a|an)/i
+        /compose (?:a|an)/i,
       ],
-      'manage_data': [
+      manage_data: [
         /(?:store|save|insert) (?:data|information)/i,
         /update (?:the )?(?:database|record|data)/i,
         /delete (?:the )?(?:record|data)/i,
-        /query (?:the )?(?:database|data)/i
+        /query (?:the )?(?:database|data)/i,
       ],
-      'schedule_organize': [
+      schedule_organize: [
         /schedule (?:a|an)/i,
         /book (?:a|an)/i,
         /organize/i,
         /plan (?:a|an)/i,
-        /set up (?:a|an)/i
+        /set up (?:a|an)/i,
       ],
-      'analyze_process': [
+      analyze_process: [
         /analyze/i,
         /process (?:the )?(?:data|information)/i,
         /calculate/i,
         /compute/i,
-        /transform/i
-      ]
+        /transform/i,
+      ],
     }
 
     Object.entries(patterns).forEach(([intent, regexes]) => {
@@ -230,7 +223,7 @@ class IntentAnalysisEngine {
     this.intentPatterns.forEach((patterns, intent) => {
       let maxScore = 0
 
-      patterns.forEach(pattern => {
+      patterns.forEach((pattern) => {
         const match = lowerMessage.match(pattern)
         if (match) {
           // Score based on match quality and position
@@ -285,25 +278,29 @@ class IntentAnalysisEngine {
   }
 
   private extractAction(message: string, primaryIntent: string): string {
-    const actionWords = message.match(/\b(?:send|create|make|find|search|update|delete|schedule|analyze|process)\b/i)
+    const actionWords = message.match(
+      /\b(?:send|create|make|find|search|update|delete|schedule|analyze|process)\b/i
+    )
     return actionWords?.[0].toLowerCase() || this.getDefaultAction(primaryIntent)
   }
 
   private getDefaultAction(intent: string): string {
     const defaults: Record<string, string> = {
-      'send_communication': 'send',
-      'search_information': 'search',
-      'create_content': 'create',
-      'manage_data': 'manage',
-      'schedule_organize': 'schedule',
-      'analyze_process': 'analyze'
+      send_communication: 'send',
+      search_information: 'search',
+      create_content: 'create',
+      manage_data: 'manage',
+      schedule_organize: 'schedule',
+      analyze_process: 'analyze',
     }
     return defaults[intent] || 'execute'
   }
 
   private extractTarget(message: string, entities: Entity[]): string {
     // Look for target objects in entities or message
-    const targetEntity = entities.find(e => ['email', 'document', 'database', 'calendar'].includes(e.type))
+    const targetEntity = entities.find((e) =>
+      ['email', 'document', 'database', 'calendar'].includes(e.type)
+    )
     if (targetEntity) {
       return targetEntity.value
     }
@@ -313,7 +310,10 @@ class IntentAnalysisEngine {
     return targetMatch?.[1] || 'system'
   }
 
-  private assessUrgency(message: string, history: ConversationMessage[]): 'low' | 'medium' | 'high' {
+  private assessUrgency(
+    message: string,
+    history: ConversationMessage[]
+  ): 'low' | 'medium' | 'high' {
     const urgentWords = /\b(?:urgent|asap|immediately|critical|emergency|now|quickly|fast)\b/i
     const timeWords = /\b(?:today|tonight|this morning|this afternoon)\b/i
 
@@ -322,7 +322,7 @@ class IntentAnalysisEngine {
 
     // Check for urgency in recent conversation
     const recentMessages = history.slice(-3)
-    const hasUrgentContext = recentMessages.some(msg => urgentWords.test(msg.content))
+    const hasUrgentContext = recentMessages.some((msg) => urgentWords.test(msg.content))
 
     return hasUrgentContext ? 'medium' : 'low'
   }
@@ -338,7 +338,8 @@ class IntentAnalysisEngine {
     complexity += Math.min(entities.length / 5, 1) * 0.3
 
     // Complex keywords
-    const complexWords = /\b(?:multiple|several|complex|detailed|comprehensive|analyze|integrate|coordinate)\b/i
+    const complexWords =
+      /\b(?:multiple|several|complex|detailed|comprehensive|analyze|integrate|coordinate)\b/i
     if (complexWords.test(message)) complexity += 0.4
 
     if (complexity >= 0.7) return 'complex'
@@ -365,7 +366,8 @@ class ToolScoringEngine {
 
     for (const toolId of availableTools) {
       const score = await this.scoreIndividualTool(toolId, intent, context)
-      if (score.overall > 0.1) { // Minimum threshold
+      if (score.overall > 0.1) {
+        // Minimum threshold
         scores.set(toolId, score)
       }
     }
@@ -388,7 +390,7 @@ class ToolScoringEngine {
       contextualFit: this.scoreContextualFit(tool, context),
       historicalUsage: this.scoreHistoricalUsage(toolId, context.userId),
       userPreference: this.scoreUserPreference(toolId, context),
-      situationalRelevance: this.scoreSituationalRelevance(tool, intent, context)
+      situationalRelevance: this.scoreSituationalRelevance(tool, intent, context),
     }
 
     const weights = {
@@ -396,7 +398,7 @@ class ToolScoringEngine {
       contextualFit: 0.25,
       historicalUsage: 0.15,
       userPreference: 0.15,
-      situationalRelevance: 0.10
+      situationalRelevance: 0.1,
     }
 
     const overall = Object.entries(factors).reduce((sum, [key, value]) => {
@@ -412,9 +414,11 @@ class ToolScoringEngine {
     const intentMapping = this.getIntentToolMapping()
 
     const primaryMatch = intentMapping[intent.primary]?.includes(toolCategory) ? 0.8 : 0
-    const secondaryMatch = intent.secondary.some(sec =>
+    const secondaryMatch = intent.secondary.some((sec) =>
       intentMapping[sec]?.includes(toolCategory)
-    ) ? 0.4 : 0
+    )
+      ? 0.4
+      : 0
 
     return Math.max(primaryMatch, secondaryMatch)
   }
@@ -459,7 +463,11 @@ class ToolScoringEngine {
     return 0.3 // Lower score for unused tools
   }
 
-  private scoreSituationalRelevance(tool: ToolConfig, intent: IntentAnalysis, context: UsageContext): number {
+  private scoreSituationalRelevance(
+    tool: ToolConfig,
+    intent: IntentAnalysis,
+    context: UsageContext
+  ): number {
     let relevance = 0.5
 
     // Urgency relevance
@@ -499,22 +507,22 @@ class ToolScoringEngine {
 
   private getIntentToolMapping(): Record<string, string[]> {
     return {
-      'send_communication': ['communication'],
-      'search_information': ['search', 'data'],
-      'create_content': ['creation'],
-      'manage_data': ['data'],
-      'schedule_organize': ['scheduling'],
-      'analyze_process': ['data', 'general']
+      send_communication: ['communication'],
+      search_information: ['search', 'data'],
+      create_content: ['creation'],
+      manage_data: ['data'],
+      schedule_organize: ['scheduling'],
+      analyze_process: ['data', 'general'],
     }
   }
 
   private getTimeRelevance(tool: ToolConfig, timeOfDay: string): number {
     // Some tools are more relevant at certain times
     const timeRelevance: Record<string, string[]> = {
-      'morning': ['email', 'calendar', 'planning'],
-      'afternoon': ['data', 'analysis', 'communication'],
-      'evening': ['summary', 'reporting'],
-      'night': ['backup', 'batch']
+      morning: ['email', 'calendar', 'planning'],
+      afternoon: ['data', 'analysis', 'communication'],
+      evening: ['summary', 'reporting'],
+      night: ['backup', 'batch'],
     }
 
     const toolCategory = this.classifyTool(tool)
@@ -523,16 +531,16 @@ class ToolScoringEngine {
 
   private getDomainRelevance(tool: ToolConfig, domain: string): number {
     const domainMapping: Record<string, string[]> = {
-      'software_development': ['github', 'git', 'code', 'deploy'],
-      'marketing': ['social', 'email', 'analytics'],
-      'sales': ['crm', 'email', 'calendar'],
-      'finance': ['spreadsheet', 'calculator', 'database']
+      software_development: ['github', 'git', 'code', 'deploy'],
+      marketing: ['social', 'email', 'analytics'],
+      sales: ['crm', 'email', 'calendar'],
+      finance: ['spreadsheet', 'calculator', 'database'],
     }
 
     const relevantTerms = domainMapping[domain] || []
     const toolId = tool.id.toLowerCase()
 
-    return relevantTerms.some(term => toolId.includes(term)) ? 0.3 : 0
+    return relevantTerms.some((term) => toolId.includes(term)) ? 0.3 : 0
   }
 
   private getRecentUsageScore(history: ToolUsageHistory): number {
@@ -547,13 +555,13 @@ class ToolScoringEngine {
   private isToolFastExecution(tool: ToolConfig): boolean {
     // Fast execution tools for urgent requests
     const fastTools = ['send', 'message', 'notify', 'quick']
-    return fastTools.some(term => tool.id.toLowerCase().includes(term))
+    return fastTools.some((term) => tool.id.toLowerCase().includes(term))
   }
 
   private isToolPowerful(tool: ToolConfig): boolean {
     // Powerful tools for complex tasks
     const powerfulTools = ['analyze', 'process', 'transform', 'generate']
-    return powerfulTools.some(term => tool.id.toLowerCase().includes(term))
+    return powerfulTools.some((term) => tool.id.toLowerCase().includes(term))
   }
 }
 
@@ -612,7 +620,10 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
     return recommendations
   }
 
-  async explainRecommendation(toolId: string, context: UsageContext): Promise<RecommendationExplanation> {
+  async explainRecommendation(
+    toolId: string,
+    context: UsageContext
+  ): Promise<RecommendationExplanation> {
     const tool = this.toolRegistry.get(toolId)
     if (!tool) {
       throw new Error(`Tool ${toolId} not found`)
@@ -632,7 +643,7 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
       whenNotToUse: usageGuidance.whenNotToUse,
       confidence: 0.8, // Would be calculated based on factors
       similarTools,
-      prerequisites: usageGuidance.prerequisites
+      prerequisites: usageGuidance.prerequisites,
     }
   }
 
@@ -646,8 +657,8 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
       context: {
         intent: context.currentIntent?.primary || 'unknown',
         timeOfDay: context.timeOfDay,
-        domain: context.businessDomain
-      }
+        domain: context.businessDomain,
+      },
     })
   }
 
@@ -662,7 +673,7 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
         used: toolFeedback.used,
         helpful: toolFeedback.helpful,
         comment: toolFeedback.comment,
-        timestamp: new Date()
+        timestamp: new Date(),
       })
     }
   }
@@ -680,12 +691,12 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
           id: toolId,
           name: tool.name || toolId,
           description: tool.description || '',
-          category: this.toolScorer['classifyTool'](tool),
+          category: this.toolScorer.classifyTool(tool),
           tags: this.extractToolTags(tool),
           relevanceScore,
           usageStats: await this.getToolUsageStats(toolId),
           capabilities: this.extractToolCapabilities(tool),
-          requirements: this.extractToolRequirements(tool)
+          requirements: this.extractToolRequirements(tool),
         })
       }
     }
@@ -693,7 +704,10 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
     return discovered.sort((a, b) => b.relevanceScore - a.relevanceScore)
   }
 
-  async suggestToolCombinations(primaryTool: string, context: UsageContext): Promise<ToolCombination[]> {
+  async suggestToolCombinations(
+    primaryTool: string,
+    context: UsageContext
+  ): Promise<ToolCombination[]> {
     // Find tools commonly used together with the primary tool
     const combinations = await this.findToolCombinations(primaryTool, context)
     return combinations.slice(0, 3) // Top 3 combinations
@@ -721,20 +735,23 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
       usageInstructions: this.generateUsageInstructions(tool, intent),
       exampleUsage: this.generateExampleUsage(tool, intent, context),
       relevanceScore: score.overall,
-      confidenceFactors: score.factors
+      confidenceFactors: score.factors,
     }
   }
 
-  private generateRecommendationReason(tool: ToolConfig, score: ToolScore, intent: IntentAnalysis): string {
-    const highestFactor = Object.entries(score.factors)
-      .reduce((a, b) => a[1] > b[1] ? a : b)
+  private generateRecommendationReason(
+    tool: ToolConfig,
+    score: ToolScore,
+    intent: IntentAnalysis
+  ): string {
+    const highestFactor = Object.entries(score.factors).reduce((a, b) => (a[1] > b[1] ? a : b))
 
     const reasonMap: Record<string, string> = {
       intentMatch: `Perfect match for your intent to ${intent.action}`,
       contextualFit: 'Well-suited for your current context',
       historicalUsage: 'Based on your previous successful usage',
       userPreference: 'Aligned with your preferences',
-      situationalRelevance: 'Ideal for the current situation'
+      situationalRelevance: 'Ideal for the current situation',
     }
 
     return reasonMap[highestFactor[0]] || 'Recommended based on overall fit'
@@ -748,7 +765,7 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
     const suggestions: Record<string, any> = {}
 
     // Extract parameters from intent entities
-    intent.entities.forEach(entity => {
+    intent.entities.forEach((entity) => {
       const paramName = this.mapEntityToParameter(entity, tool)
       if (paramName) {
         suggestions[paramName] = entity.value
@@ -772,11 +789,11 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
     const currentTool = this.toolRegistry.get(toolId)
     if (!currentTool) return []
 
-    const currentCategory = this.toolScorer['classifyTool'](currentTool)
+    const currentCategory = this.toolScorer.classifyTool(currentTool)
     const alternatives: string[] = []
 
     for (const [altToolId, altTool] of this.toolRegistry.entries()) {
-      if (altToolId !== toolId && this.toolScorer['classifyTool'](altTool) === currentCategory) {
+      if (altToolId !== toolId && this.toolScorer.classifyTool(altTool) === currentCategory) {
         alternatives.push(altToolId)
       }
     }
@@ -799,7 +816,9 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
     const instructions: string[] = []
 
     // Basic usage instruction
-    instructions.push(`To use ${tool.name || tool.id}, you'll need to provide the required parameters.`)
+    instructions.push(
+      `To use ${tool.name || tool.id}, you'll need to provide the required parameters.`
+    )
 
     // Intent-specific instructions
     if (intent.urgency === 'high') {
@@ -819,15 +838,17 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
     context: UsageContext
   ): ConversationExample[] {
     // Generate contextual examples
-    return [{
-      userInput: `Help me ${intent.action} ${intent.target}`,
-      agentResponse: `I'll use ${tool.name} to help you with that.`,
-      toolCall: {
-        name: tool.id,
-        parameters: {}
+    return [
+      {
+        userInput: `Help me ${intent.action} ${intent.target}`,
+        agentResponse: `I'll use ${tool.name} to help you with that.`,
+        toolCall: {
+          name: tool.id,
+          parameters: {},
+        },
+        outcome: `Successfully completed the ${intent.action} operation`,
       },
-      outcome: `Successfully completed the ${intent.action} operation`
-    }]
+    ]
   }
 
   private calculateDiscoveryRelevance(
@@ -848,7 +869,7 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
 
     // Category matching
     if (query.category) {
-      const toolCategory = this.toolScorer['classifyTool'](tool)
+      const toolCategory = this.toolScorer.classifyTool(tool)
       if (toolCategory === query.category) {
         relevance += 0.3
       }
@@ -857,7 +878,7 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
     // Keyword matching
     if (query.keywords?.length) {
       const toolText = `${tool.name} ${tool.description}`.toLowerCase()
-      const matchingKeywords = query.keywords.filter(keyword =>
+      const matchingKeywords = query.keywords.filter((keyword) =>
         toolText.includes(keyword.toLowerCase())
       )
       relevance += (matchingKeywords.length / query.keywords.length) * 0.2
@@ -879,12 +900,14 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
     return {
       whenToUse: `Use when you need to ${tool.description?.toLowerCase() || 'perform this action'}`,
       whenNotToUse: 'Avoid when you need different functionality',
-      prerequisites: []
+      prerequisites: [],
     }
   }
 
   private findSimilarTools(toolId: string, count: number): string[] {
-    return Array.from(this.toolRegistry.keys()).filter(id => id !== toolId).slice(0, count)
+    return Array.from(this.toolRegistry.keys())
+      .filter((id) => id !== toolId)
+      .slice(0, count)
   }
 
   private async addAlternativeRecommendations(
@@ -908,7 +931,7 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
     return {
       executionCount: 0,
       successRate: 1,
-      averageRating: 5
+      averageRating: 5,
     }
   }
 
@@ -920,7 +943,10 @@ export class SmartToolRecommendationEngine implements RecommendationEngine {
     return []
   }
 
-  private async findToolCombinations(primaryTool: string, context: UsageContext): Promise<ToolCombination[]> {
+  private async findToolCombinations(
+    primaryTool: string,
+    context: UsageContext
+  ): Promise<ToolCombination[]> {
     return []
   }
 }

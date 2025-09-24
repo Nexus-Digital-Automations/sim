@@ -12,9 +12,9 @@
  *   npm run test:tool-adapters
  */
 
-import { ToolAdapterTestingFramework, ALL_SIM_TOOLS } from './tool-adapter-testing-framework'
 import { writeFileSync } from 'fs'
 import { join } from 'path'
+import { ALL_SIM_TOOLS, ToolAdapterTestingFramework } from './tool-adapter-testing-framework'
 
 interface TestRunConfiguration {
   // Test execution settings
@@ -63,14 +63,14 @@ const DEFAULT_CONFIG: TestRunConfiguration = {
   // Reporting
   generateDetailedReport: true,
   saveResultsToFile: true,
-  outputDirectory: './test-reports'
+  outputDirectory: './test-reports',
 }
 
 class ToolAdapterTestRunner {
   private config: TestRunConfiguration
   private framework: ToolAdapterTestingFramework
-  private startTime: number = 0
-  private endTime: number = 0
+  private startTime = 0
+  private endTime = 0
 
   constructor(config: Partial<TestRunConfiguration> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config }
@@ -79,11 +79,11 @@ class ToolAdapterTestRunner {
 
   async run(): Promise<void> {
     console.log('🚀 Universal Tool Adapter System - Comprehensive Integration Testing')
-    console.log('=' .repeat(80))
+    console.log('='.repeat(80))
     console.log(`📅 Test Run Started: ${new Date().toISOString()}`)
     console.log(`🔧 Testing ${this.getToolsToTest().length} tools`)
     console.log(`⚙️  Configuration:`, JSON.stringify(this.config, null, 2))
-    console.log('=' .repeat(80))
+    console.log('='.repeat(80))
 
     this.startTime = Date.now()
 
@@ -134,12 +134,10 @@ class ToolAdapterTestRunner {
 
       this.endTime = Date.now()
       console.log(`\n✅ Testing completed successfully in ${this.getTotalExecutionTime()}`)
-
     } catch (error) {
       this.endTime = Date.now()
       console.error(`\n❌ Testing failed after ${this.getTotalExecutionTime()}:`, error)
       throw error
-
     } finally {
       // Cleanup
       console.log('\n🧹 Phase 9: Cleanup')
@@ -152,7 +150,7 @@ class ToolAdapterTestRunner {
 
     // Remove skipped tools
     if (this.config.skipTools.length > 0) {
-      tools = tools.filter(tool => !this.config.skipTools.includes(tool))
+      tools = tools.filter((tool) => !this.config.skipTools.includes(tool))
     }
 
     return tools
@@ -195,7 +193,7 @@ class ToolAdapterTestRunner {
             errorHandlingValid: false,
             conversationalFormatValid: false,
             naturalLanguageDescriptionValid: false,
-            error: error instanceof Error ? error.message : String(error)
+            error: error instanceof Error ? error.message : String(error),
           }
         }
       })
@@ -204,15 +202,19 @@ class ToolAdapterTestRunner {
       results.push(...batchResults)
 
       // Progress update
-      const successfulInBatch = batchResults.filter(r => r.success).length
+      const successfulInBatch = batchResults.filter((r) => r.success).length
       console.log(`    📊 Batch complete: ${successfulInBatch}/${batchResults.length} successful`)
     }
 
-    const successful = results.filter(r => r.success).length
-    console.log(`  ✅ Individual tool testing complete: ${successful}/${results.length} tools passed`)
+    const successful = results.filter((r) => r.success).length
+    console.log(
+      `  ✅ Individual tool testing complete: ${successful}/${results.length} tools passed`
+    )
 
     if (successful === 0) {
-      console.log(`  ⚠️  All tests failed - this is expected since Universal Tool Adapter System is not yet implemented`)
+      console.log(
+        `  ⚠️  All tests failed - this is expected since Universal Tool Adapter System is not yet implemented`
+      )
     }
   }
 
@@ -224,7 +226,7 @@ class ToolAdapterTestRunner {
       ['thinking', 'google', 'memory'],
       ['vision', 'openai', 'file'],
       ['airtable', 'gmail', 'notion'],
-      ['github', 'jira', 'slack']
+      ['github', 'jira', 'slack'],
     ]
 
     for (const workflow of testWorkflows) {
@@ -247,7 +249,7 @@ class ToolAdapterTestRunner {
     const result = await this.framework.testConversationalInteractions()
 
     console.log(`  📊 Conversational tests: ${result.conversationTests.length} scenarios tested`)
-    result.conversationTests.forEach(test => {
+    result.conversationTests.forEach((test) => {
       const status = test.success ? '✅' : '❌'
       console.log(`    ${status} ${test.testName} (${test.executionTime}ms)`)
       if (!test.success && test.error) {
@@ -278,7 +280,7 @@ class ToolAdapterTestRunner {
     const result = await this.framework.testWorkspaceIsolation()
 
     console.log(`  📊 Isolation Tests: ${result.isolationTests.length} scenarios tested`)
-    result.isolationTests.forEach(test => {
+    result.isolationTests.forEach((test) => {
       const status = test.success ? '✅' : '❌'
       console.log(`    ${status} ${test.testName}: ${test.description}`)
       if (!test.success && test.error) {
@@ -295,7 +297,7 @@ class ToolAdapterTestRunner {
     const result = await this.framework.validateAcceptanceCriteria()
 
     console.log(`  📊 Acceptance Criteria: ${result.allCriteriaMet ? 'ALL MET' : 'NOT MET'}`)
-    result.criteriaResults.forEach(criteria => {
+    result.criteriaResults.forEach((criteria) => {
       const status = criteria.met ? '✅' : '❌'
       console.log(`    ${status} ${criteria.criteria}`)
       console.log(`      ${criteria.details}`)
@@ -311,7 +313,7 @@ class ToolAdapterTestRunner {
 
     // Console report
     console.log('\n📋 COMPREHENSIVE TEST REPORT')
-    console.log('=' .repeat(50))
+    console.log('='.repeat(50))
     console.log(`📊 Summary:`)
     console.log(`  Total Tools: ${report.summary.totalTools}`)
     console.log(`  Tools Tested: ${report.summary.toolsTested}`)
@@ -333,7 +335,10 @@ class ToolAdapterTestRunner {
     // Save detailed report to file
     if (this.config.saveResultsToFile) {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-      const reportPath = join(this.config.outputDirectory, `tool-adapter-test-report-${timestamp}.json`)
+      const reportPath = join(
+        this.config.outputDirectory,
+        `tool-adapter-test-report-${timestamp}.json`
+      )
 
       const detailedReport = {
         metadata: {
@@ -342,12 +347,12 @@ class ToolAdapterTestRunner {
           endTime: new Date(this.endTime).toISOString(),
           totalDuration: this.endTime - this.startTime,
           configuration: this.config,
-          toolsToTest: this.getToolsToTest()
+          toolsToTest: this.getToolsToTest(),
         },
         summary: report.summary,
         detailedResults: report.detailedResults,
         recommendations: report.recommendations,
-        nextSteps: report.nextSteps
+        nextSteps: report.nextSteps,
       }
 
       try {
@@ -393,7 +398,7 @@ async function main() {
         break
       case '--concurrent-limit':
         if (i + 1 < args.length) {
-          config.concurrentTestLimit = parseInt(args[i + 1])
+          config.concurrentTestLimit = Number.parseInt(args[i + 1])
           i++
         }
         break
@@ -433,7 +438,6 @@ Examples:
 
     console.log('\n🎉 All testing phases completed successfully!')
     process.exit(0)
-
   } catch (error) {
     console.error('\n💥 Test runner failed:', error)
     process.exit(1)
@@ -442,7 +446,7 @@ Examples:
 
 // Execute if run directly
 if (require.main === module) {
-  main().catch(error => {
+  main().catch((error) => {
     console.error('Fatal error:', error)
     process.exit(1)
   })

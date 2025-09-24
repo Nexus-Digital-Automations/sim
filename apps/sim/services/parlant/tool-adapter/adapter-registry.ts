@@ -7,11 +7,11 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  ToolAdapter,
   AdapterContext,
   ParlantToolSchema,
-  ToolCategory,
   PermissionLevel,
+  ToolAdapter,
+  ToolCategory,
   ToolRecommendation,
 } from './types'
 
@@ -68,7 +68,7 @@ export class ToolAdapterRegistry {
 
     // Cleanup if supported
     if (adapter.cleanup) {
-      adapter.cleanup().catch(error => {
+      adapter.cleanup().catch((error) => {
         logger.warn('Error during adapter cleanup', { toolName: name, error: error.message })
       })
     }
@@ -103,7 +103,7 @@ export class ToolAdapterRegistry {
    * Get all tool schemas for Parlant registration
    */
   getAllSchemas(): ParlantToolSchema[] {
-    return Array.from(this.adapters.values()).map(adapter => adapter.schema)
+    return Array.from(this.adapters.values()).map((adapter) => adapter.schema)
   }
 
   /**
@@ -112,7 +112,7 @@ export class ToolAdapterRegistry {
   getByCategory(category: ToolCategory): ToolAdapter[] {
     const toolNames = this.categories.get(category) || new Set()
     return Array.from(toolNames)
-      .map(name => this.adapters.get(name))
+      .map((name) => this.adapters.get(name))
       .filter((adapter): adapter is ToolAdapter => adapter !== undefined)
   }
 
@@ -122,7 +122,7 @@ export class ToolAdapterRegistry {
   getByPermissionLevel(level: PermissionLevel): ToolAdapter[] {
     const toolNames = this.permissions.get(level) || new Set()
     return Array.from(toolNames)
-      .map(name => this.adapters.get(name))
+      .map((name) => this.adapters.get(name))
       .filter((adapter): adapter is ToolAdapter => adapter !== undefined)
   }
 
@@ -144,7 +144,7 @@ export class ToolAdapterRegistry {
   search(query: string): ToolAdapter[] {
     const lowerQuery = query.toLowerCase()
 
-    return Array.from(this.adapters.values()).filter(adapter => {
+    return Array.from(this.adapters.values()).filter((adapter) => {
       return (
         adapter.schema.name.toLowerCase().includes(lowerQuery) ||
         adapter.schema.description.toLowerCase().includes(lowerQuery) ||
@@ -157,7 +157,10 @@ export class ToolAdapterRegistry {
   /**
    * Get contextual tool recommendations
    */
-  async getRecommendations(context: AdapterContext, maxResults: number = 10): Promise<ToolRecommendation[]> {
+  async getRecommendations(
+    context: AdapterContext,
+    maxResults = 10
+  ): Promise<ToolRecommendation[]> {
     const recommendations: ToolRecommendation[] = []
 
     const accessibleTools = this.getAccessibleTools(context)
@@ -177,9 +180,7 @@ export class ToolAdapterRegistry {
     }
 
     // Sort by confidence and return top results
-    return recommendations
-      .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, maxResults)
+    return recommendations.sort((a, b) => b.confidence - a.confidence).slice(0, maxResults)
   }
 
   /**
@@ -188,8 +189,8 @@ export class ToolAdapterRegistry {
   getToolsForWorkflow(workflowType: string): ToolAdapter[] {
     const workflowMappings: Record<string, ToolCategory[]> = {
       'data-analysis': ['data-retrieval', 'analysis', 'file-operations'],
-      'automation': ['automation', 'workflow-management', 'external-integration'],
-      'communication': ['communication', 'external-integration'],
+      automation: ['automation', 'workflow-management', 'external-integration'],
+      communication: ['communication', 'external-integration'],
       'content-creation': ['file-operations', 'analysis', 'external-integration'],
     }
 
@@ -226,8 +227,10 @@ export class ToolAdapterRegistry {
 
     // Calculate average estimated execution time
     if (this.adapters.size > 0) {
-      const totalTime = Array.from(this.adapters.values())
-        .reduce((sum, adapter) => sum + adapter.schema.performance.estimated_duration_ms, 0)
+      const totalTime = Array.from(this.adapters.values()).reduce(
+        (sum, adapter) => sum + adapter.schema.performance.estimated_duration_ms,
+        0
+      )
       stats.averageExecutionTime = totalTime / this.adapters.size
     }
 
@@ -241,8 +244,8 @@ export class ToolAdapterRegistry {
     logger.info('Cleaning up all tool adapters')
 
     const cleanupPromises = Array.from(this.adapters.values())
-      .filter(adapter => adapter.cleanup)
-      .map(adapter => adapter.cleanup!())
+      .filter((adapter) => adapter.cleanup)
+      .map((adapter) => adapter.cleanup!())
 
     await Promise.allSettled(cleanupPromises)
 

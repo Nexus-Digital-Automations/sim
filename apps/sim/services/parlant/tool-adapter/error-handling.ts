@@ -287,16 +287,12 @@ export class ErrorHandler {
 
   private isExternalServiceError(error: any): boolean {
     return (
-      error.response?.status >= 500 ||
-      error.message?.toLowerCase().includes('service unavailable')
+      error.response?.status >= 500 || error.message?.toLowerCase().includes('service unavailable')
     )
   }
 
   private isTimeoutError(error: any): boolean {
-    return (
-      error.code === 'ETIMEDOUT' ||
-      error.message?.toLowerCase().includes('timeout')
-    )
+    return error.code === 'ETIMEDOUT' || error.message?.toLowerCase().includes('timeout')
   }
 
   private updateCircuitBreaker(serviceName: string, error: any): void {
@@ -310,7 +306,7 @@ export class ErrorHandler {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 }
 
@@ -406,9 +402,12 @@ class CircuitBreaker {
 
   getStatus(): 'healthy' | 'degraded' | 'unhealthy' {
     switch (this.state) {
-      case 'closed': return 'healthy'
-      case 'half-open': return 'degraded'
-      case 'open': return 'unhealthy'
+      case 'closed':
+        return 'healthy'
+      case 'half-open':
+        return 'degraded'
+      case 'open':
+        return 'unhealthy'
     }
   }
 
@@ -426,10 +425,7 @@ export function withRetry<T>(
   operation: () => Promise<T>,
   options: Partial<RetryOptions> = {}
 ): Promise<T> {
-  const {
-    attempts = 3,
-    backoffMs = 1000,
-  } = options
+  const { attempts = 3, backoffMs = 1000 } = options
 
   return new Promise(async (resolve, reject) => {
     let lastError: any
@@ -443,8 +439,8 @@ export function withRetry<T>(
         lastError = error
 
         if (i < attempts - 1) {
-          const delay = backoffMs * Math.pow(2, i) // Exponential backoff
-          await new Promise(resolve => setTimeout(resolve, delay))
+          const delay = backoffMs * 2 ** i // Exponential backoff
+          await new Promise((resolve) => setTimeout(resolve, delay))
         }
       }
     }

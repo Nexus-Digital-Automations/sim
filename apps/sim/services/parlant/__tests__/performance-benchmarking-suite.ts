@@ -13,10 +13,10 @@
  * - Performance analytics and reporting
  */
 
-import { performance, PerformanceObserver } from 'perf_hooks'
+import { PerformanceObserver, performance } from 'perf_hooks'
+import type { ParlantTool, ToolExecutionContext } from '../tools/adapter-framework'
 import { globalAdapterRegistry } from '../tools/adapter-registry'
 import { COMPREHENSIVE_TEST_CONFIG, IMPLEMENTED_ADAPTERS } from './comprehensive-tool-adapter-tests'
-import type { ToolExecutionContext, ParlantTool } from '../tools/adapter-framework'
 
 // =====================================================
 // PERFORMANCE TEST CONFIGURATION
@@ -25,27 +25,27 @@ import type { ToolExecutionContext, ParlantTool } from '../tools/adapter-framewo
 const PERFORMANCE_CONFIG = {
   // Load test scenarios
   LOAD_SCENARIOS: {
-    LIGHT: { concurrency: 5, iterations: 50, duration: 30000 },      // 30 seconds
-    MODERATE: { concurrency: 10, iterations: 100, duration: 60000 },  // 1 minute
-    HEAVY: { concurrency: 20, iterations: 200, duration: 120000 },    // 2 minutes
-    BURST: { concurrency: 50, iterations: 100, duration: 30000 }      // High burst
+    LIGHT: { concurrency: 5, iterations: 50, duration: 30000 }, // 30 seconds
+    MODERATE: { concurrency: 10, iterations: 100, duration: 60000 }, // 1 minute
+    HEAVY: { concurrency: 20, iterations: 200, duration: 120000 }, // 2 minutes
+    BURST: { concurrency: 50, iterations: 100, duration: 30000 }, // High burst
   },
 
   // Performance thresholds
   THRESHOLDS: {
-    MAX_LATENCY_MS: 10000,           // 10 seconds max per operation
-    MAX_P95_LATENCY_MS: 5000,        // 95th percentile under 5 seconds
-    MIN_SUCCESS_RATE: 0.95,          // 95% success rate minimum
-    MAX_MEMORY_USAGE_MB: 512,        // 512MB max memory usage
-    MIN_THROUGHPUT_OPS_SEC: 1.0      // At least 1 operation per second
+    MAX_LATENCY_MS: 10000, // 10 seconds max per operation
+    MAX_P95_LATENCY_MS: 5000, // 95th percentile under 5 seconds
+    MIN_SUCCESS_RATE: 0.95, // 95% success rate minimum
+    MAX_MEMORY_USAGE_MB: 512, // 512MB max memory usage
+    MIN_THROUGHPUT_OPS_SEC: 1.0, // At least 1 operation per second
   },
 
   // Monitoring intervals
   MONITORING: {
-    MEMORY_CHECK_INTERVAL_MS: 1000,   // Check memory every second
-    GC_MONITORING: true,              // Monitor garbage collection
-    CPU_PROFILING: false              // Disable CPU profiling by default (heavy)
-  }
+    MEMORY_CHECK_INTERVAL_MS: 1000, // Check memory every second
+    GC_MONITORING: true, // Monitor garbage collection
+    CPU_PROFILING: false, // Disable CPU profiling by default (heavy)
+  },
 }
 
 // =====================================================
@@ -121,7 +121,7 @@ class PerformanceMonitor {
         const memoryUsage = process.memoryUsage()
         this.memorySnapshots.push({
           timestamp: Date.now(),
-          memory: memoryUsage
+          memory: memoryUsage,
         })
 
         // Keep only last 1000 snapshots to prevent memory leak
@@ -147,19 +147,19 @@ class PerformanceMonitor {
 
   calculateSummary(adapterId?: string): PerformanceSummary {
     const relevantMetrics = adapterId
-      ? this.metrics.filter(m => m.adapterId === adapterId)
+      ? this.metrics.filter((m) => m.adapterId === adapterId)
       : this.metrics
 
     if (relevantMetrics.length === 0) {
       return this.getEmptySummary()
     }
 
-    const successful = relevantMetrics.filter(m => m.success)
-    const durations = relevantMetrics.map(m => m.duration).sort((a, b) => a - b)
+    const successful = relevantMetrics.filter((m) => m.success)
+    const durations = relevantMetrics.map((m) => m.duration).sort((a, b) => a - b)
 
     const totalDuration = relevantMetrics.reduce((sum, m) => sum + m.duration, 0)
-    const startTime = Math.min(...relevantMetrics.map(m => m.startTime))
-    const endTime = Math.max(...relevantMetrics.map(m => m.endTime))
+    const startTime = Math.min(...relevantMetrics.map((m) => m.startTime))
+    const endTime = Math.max(...relevantMetrics.map((m) => m.endTime))
     const testDuration = (endTime - startTime) / 1000 // seconds
 
     // Calculate percentiles
@@ -172,10 +172,12 @@ class PerformanceMonitor {
 
     // Count errors
     const errors = new Map<string, number>()
-    relevantMetrics.filter(m => !m.success && m.error).forEach(m => {
-      const error = m.error!
-      errors.set(error, (errors.get(error) || 0) + 1)
-    })
+    relevantMetrics
+      .filter((m) => !m.success && m.error)
+      .forEach((m) => {
+        const error = m.error!
+        errors.set(error, (errors.get(error) || 0) + 1)
+      })
 
     return {
       totalOperations: relevantMetrics.length,
@@ -190,7 +192,7 @@ class PerformanceMonitor {
       maxLatency: Math.max(...durations),
       throughputOpsPerSec: testDuration > 0 ? relevantMetrics.length / testDuration : 0,
       memoryStats,
-      errors
+      errors,
     }
   }
 
@@ -201,20 +203,20 @@ class PerformanceMonitor {
         maxHeapUsed: 0,
         avgHeapTotal: 0,
         maxHeapTotal: 0,
-        peakRSS: 0
+        peakRSS: 0,
       }
     }
 
-    const heapUsedValues = metrics.map(m => m.memoryUsage.heapUsed)
-    const heapTotalValues = metrics.map(m => m.memoryUsage.heapTotal)
-    const rssValues = metrics.map(m => m.memoryUsage.rss)
+    const heapUsedValues = metrics.map((m) => m.memoryUsage.heapUsed)
+    const heapTotalValues = metrics.map((m) => m.memoryUsage.heapTotal)
+    const rssValues = metrics.map((m) => m.memoryUsage.rss)
 
     return {
       avgHeapUsed: heapUsedValues.reduce((a, b) => a + b, 0) / heapUsedValues.length,
       maxHeapUsed: Math.max(...heapUsedValues),
       avgHeapTotal: heapTotalValues.reduce((a, b) => a + b, 0) / heapTotalValues.length,
       maxHeapTotal: Math.max(...heapTotalValues),
-      peakRSS: Math.max(...rssValues)
+      peakRSS: Math.max(...rssValues),
     }
   }
 
@@ -236,9 +238,9 @@ class PerformanceMonitor {
         maxHeapUsed: 0,
         avgHeapTotal: 0,
         maxHeapTotal: 0,
-        peakRSS: 0
+        peakRSS: 0,
       },
-      errors: new Map()
+      errors: new Map(),
     }
   }
 
@@ -284,13 +286,17 @@ export class PerformanceBenchmarkingSuite {
       // Run all load scenarios
       for (const [scenarioName, config] of Object.entries(PERFORMANCE_CONFIG.LOAD_SCENARIOS)) {
         console.log(`📊 Running ${scenarioName} load scenario...`)
-        console.log(`   Concurrency: ${config.concurrency}, Iterations: ${config.iterations}, Duration: ${config.duration}ms`)
+        console.log(
+          `   Concurrency: ${config.concurrency}, Iterations: ${config.iterations}, Duration: ${config.duration}ms`
+        )
 
         const scenarioStartTime = Date.now()
         await this.runLoadScenario(scenarioName, config)
         const scenarioEndTime = Date.now()
 
-        console.log(`   ✅ ${scenarioName} completed in ${((scenarioEndTime - scenarioStartTime) / 1000).toFixed(2)}s`)
+        console.log(
+          `   ✅ ${scenarioName} completed in ${((scenarioEndTime - scenarioStartTime) / 1000).toFixed(2)}s`
+        )
 
         const summary = this.monitor.calculateSummary()
         scenarioResults.set(scenarioName, summary)
@@ -315,9 +321,15 @@ export class PerformanceBenchmarkingSuite {
       // Performance analysis
       const performanceThresholdsMet = this.checkPerformanceThresholds(overallSummary)
       const regressionDetected = false // Would need baseline data to detect regressions
-      const recommendations = this.generateRecommendations(overallSummary, scenarioResults, adapterResults)
+      const recommendations = this.generateRecommendations(
+        overallSummary,
+        scenarioResults,
+        adapterResults
+      )
 
-      const success = performanceThresholdsMet && overallSummary.successRate >= PERFORMANCE_CONFIG.THRESHOLDS.MIN_SUCCESS_RATE
+      const success =
+        performanceThresholdsMet &&
+        overallSummary.successRate >= PERFORMANCE_CONFIG.THRESHOLDS.MIN_SUCCESS_RATE
 
       console.log(`🎯 Performance benchmarks complete: ${success ? 'PASS' : 'FAIL'}`)
 
@@ -328,19 +340,21 @@ export class PerformanceBenchmarkingSuite {
         adapterResults,
         regressionDetected,
         performanceThresholdsMet,
-        recommendations
+        recommendations,
       }
-
     } finally {
       this.monitor.stopMonitoring()
     }
   }
 
-  private async runLoadScenario(scenarioName: string, config: {
-    concurrency: number
-    iterations: number
-    duration: number
-  }): Promise<void> {
+  private async runLoadScenario(
+    scenarioName: string,
+    config: {
+      concurrency: number
+      iterations: number
+      duration: number
+    }
+  ): Promise<void> {
     const promises: Promise<void>[] = []
     const startTime = Date.now()
 
@@ -352,7 +366,7 @@ export class PerformanceBenchmarkingSuite {
     // Wait for all workers or timeout
     await Promise.race([
       Promise.all(promises),
-      this.sleep(config.duration + 10000) // Add 10s buffer
+      this.sleep(config.duration + 10000), // Add 10s buffer
     ])
   }
 
@@ -402,7 +416,7 @@ export class PerformanceBenchmarkingSuite {
       // Execute through registry for proper metrics and caching
       const result = await this.registry.executeTool(adapterId, testParams, context, {
         useCache: false, // Disable caching for performance testing
-        timeout: PERFORMANCE_CONFIG.THRESHOLDS.MAX_LATENCY_MS
+        timeout: PERFORMANCE_CONFIG.THRESHOLDS.MAX_LATENCY_MS,
       })
 
       const operationEnd = performance.now()
@@ -420,10 +434,9 @@ export class PerformanceBenchmarkingSuite {
           heapUsed: memoryAfter.heapUsed,
           heapTotal: memoryAfter.heapTotal,
           external: memoryAfter.external,
-          rss: memoryAfter.rss
-        }
+          rss: memoryAfter.rss,
+        },
       })
-
     } catch (error) {
       const operationEnd = performance.now()
       const memoryAfter = process.memoryUsage()
@@ -440,8 +453,8 @@ export class PerformanceBenchmarkingSuite {
           heapUsed: memoryAfter.heapUsed,
           heapTotal: memoryAfter.heapTotal,
           external: memoryAfter.external,
-          rss: memoryAfter.rss
-        }
+          rss: memoryAfter.rss,
+        },
       })
     }
   }
@@ -514,8 +527,8 @@ export class PerformanceBenchmarkingSuite {
       metadata: {
         performanceTest: true,
         operationId,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     }
   }
 
@@ -527,17 +540,27 @@ export class PerformanceBenchmarkingSuite {
       p95LatencyOk: summary.p95Latency <= thresholds.MAX_P95_LATENCY_MS,
       successRateOk: summary.successRate >= thresholds.MIN_SUCCESS_RATE,
       throughputOk: summary.throughputOpsPerSec >= thresholds.MIN_THROUGHPUT_OPS_SEC,
-      memoryOk: summary.memoryStats.maxHeapUsed <= (thresholds.MAX_MEMORY_USAGE_MB * 1024 * 1024)
+      memoryOk: summary.memoryStats.maxHeapUsed <= thresholds.MAX_MEMORY_USAGE_MB * 1024 * 1024,
     }
 
     const allThresholdsMet = Object.values(checks).every(Boolean)
 
     console.log(`📊 Performance Threshold Check:`)
-    console.log(`   Average Latency: ${summary.averageLatency.toFixed(2)}ms ${checks.avgLatencyOk ? '✅' : '❌'}`)
-    console.log(`   P95 Latency: ${summary.p95Latency.toFixed(2)}ms ${checks.p95LatencyOk ? '✅' : '❌'}`)
-    console.log(`   Success Rate: ${(summary.successRate * 100).toFixed(2)}% ${checks.successRateOk ? '✅' : '❌'}`)
-    console.log(`   Throughput: ${summary.throughputOpsPerSec.toFixed(2)} ops/sec ${checks.throughputOk ? '✅' : '❌'}`)
-    console.log(`   Memory Usage: ${(summary.memoryStats.maxHeapUsed / 1024 / 1024).toFixed(2)}MB ${checks.memoryOk ? '✅' : '❌'}`)
+    console.log(
+      `   Average Latency: ${summary.averageLatency.toFixed(2)}ms ${checks.avgLatencyOk ? '✅' : '❌'}`
+    )
+    console.log(
+      `   P95 Latency: ${summary.p95Latency.toFixed(2)}ms ${checks.p95LatencyOk ? '✅' : '❌'}`
+    )
+    console.log(
+      `   Success Rate: ${(summary.successRate * 100).toFixed(2)}% ${checks.successRateOk ? '✅' : '❌'}`
+    )
+    console.log(
+      `   Throughput: ${summary.throughputOpsPerSec.toFixed(2)} ops/sec ${checks.throughputOk ? '✅' : '❌'}`
+    )
+    console.log(
+      `   Memory Usage: ${(summary.memoryStats.maxHeapUsed / 1024 / 1024).toFixed(2)}MB ${checks.memoryOk ? '✅' : '❌'}`
+    )
 
     return allThresholdsMet
   }
@@ -563,37 +586,45 @@ export class PerformanceBenchmarkingSuite {
     }
 
     // Memory recommendations
-    if (overallSummary.memoryStats.maxHeapUsed > 256 * 1024 * 1024) { // 256MB
+    if (overallSummary.memoryStats.maxHeapUsed > 256 * 1024 * 1024) {
+      // 256MB
       recommendations.push('Monitor memory usage - heap exceeded 256MB during testing')
     }
 
     // Adapter-specific recommendations
-    const slowestAdapter = Array.from(adapterResults.entries())
-      .sort((a, b) => b[1].averageLatency - a[1].averageLatency)[0]
+    const slowestAdapter = Array.from(adapterResults.entries()).sort(
+      (a, b) => b[1].averageLatency - a[1].averageLatency
+    )[0]
 
     if (slowestAdapter && slowestAdapter[1].averageLatency > 2000) {
-      recommendations.push(`Optimize ${slowestAdapter[0]} adapter - slowest average latency (${slowestAdapter[1].averageLatency.toFixed(2)}ms)`)
+      recommendations.push(
+        `Optimize ${slowestAdapter[0]} adapter - slowest average latency (${slowestAdapter[1].averageLatency.toFixed(2)}ms)`
+      )
     }
 
     // Scenario-specific recommendations
-    const worstScenario = Array.from(scenarioResults.entries())
-      .sort((a, b) => a[1].successRate - b[1].successRate)[0]
+    const worstScenario = Array.from(scenarioResults.entries()).sort(
+      (a, b) => a[1].successRate - b[1].successRate
+    )[0]
 
     if (worstScenario && worstScenario[1].successRate < 0.9) {
-      recommendations.push(`Investigate ${worstScenario[0]} scenario failures - only ${(worstScenario[1].successRate * 100).toFixed(2)}% success rate`)
+      recommendations.push(
+        `Investigate ${worstScenario[0]} scenario failures - only ${(worstScenario[1].successRate * 100).toFixed(2)}% success rate`
+      )
     }
 
     // Error pattern analysis
     if (overallSummary.errors.size > 0) {
-      const topError = Array.from(overallSummary.errors.entries())
-        .sort((a, b) => b[1] - a[1])[0]
+      const topError = Array.from(overallSummary.errors.entries()).sort((a, b) => b[1] - a[1])[0]
       recommendations.push(`Address top error: "${topError[0]}" (${topError[1]} occurrences)`)
     }
 
     // General recommendations
     if (recommendations.length === 0) {
       recommendations.push('Performance is within acceptable thresholds - monitor for regressions')
-      recommendations.push('Consider implementing performance baselines and automated regression detection')
+      recommendations.push(
+        'Consider implementing performance baselines and automated regression detection'
+      )
     }
 
     recommendations.push('Set up continuous performance monitoring in production')
@@ -603,7 +634,7 @@ export class PerformanceBenchmarkingSuite {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   // =====================================================
@@ -639,25 +670,25 @@ Performance Status: ${benchmarkResults.success ? '✅ PASS' : '❌ NEEDS IMPROVE
         p95: overallSummary.p95Latency,
         p99: overallSummary.p99Latency,
         min: overallSummary.minLatency,
-        max: overallSummary.maxLatency
+        max: overallSummary.maxLatency,
       },
       throughput_analysis: {
         ops_per_second: overallSummary.throughputOpsPerSec,
         total_operations: overallSummary.totalOperations,
-        success_rate: overallSummary.successRate
+        success_rate: overallSummary.successRate,
       },
       memory_analysis: {
         avg_heap_mb: overallSummary.memoryStats.avgHeapUsed / 1024 / 1024,
         max_heap_mb: overallSummary.memoryStats.maxHeapUsed / 1024 / 1024,
-        peak_rss_mb: overallSummary.memoryStats.peakRSS / 1024 / 1024
+        peak_rss_mb: overallSummary.memoryStats.peakRSS / 1024 / 1024,
       },
       error_analysis: {
         total_errors: overallSummary.failedOperations,
         error_rate: 1 - overallSummary.successRate,
         top_errors: Array.from(overallSummary.errors.entries())
           .sort((a, b) => b[1] - a[1])
-          .slice(0, 5)
-      }
+          .slice(0, 5),
+      },
     }
 
     const charts_data = {
@@ -667,21 +698,21 @@ Performance Status: ${benchmarkResults.success ? '✅ PASS' : '❌ NEEDS IMPROVE
           overallSummary.p50Latency,
           overallSummary.p95Latency,
           overallSummary.p99Latency,
-          overallSummary.maxLatency
-        ]
+          overallSummary.maxLatency,
+        ],
       },
       adapter_performance: Array.from(adapterResults.entries()).map(([name, summary]) => ({
         adapter: name,
         avg_latency: summary.averageLatency,
         success_rate: summary.successRate * 100,
-        throughput: summary.throughputOpsPerSec
+        throughput: summary.throughputOpsPerSec,
       })),
       scenario_performance: Array.from(scenarioResults.entries()).map(([name, summary]) => ({
         scenario: name,
         avg_latency: summary.averageLatency,
         success_rate: summary.successRate * 100,
-        ops_count: summary.totalOperations
-      }))
+        ops_count: summary.totalOperations,
+      })),
     }
 
     return {
@@ -689,7 +720,7 @@ Performance Status: ${benchmarkResults.success ? '✅ PASS' : '❌ NEEDS IMPROVE
       detailed_metrics: overallSummary,
       performance_analysis,
       recommendations: benchmarkResults.recommendations,
-      charts_data
+      charts_data,
     }
   }
 }

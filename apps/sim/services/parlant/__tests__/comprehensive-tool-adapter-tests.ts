@@ -11,19 +11,18 @@
  * - Acceptance criteria compliance checking
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals'
+import { beforeAll, describe, expect, test } from '@jest/globals'
+import type {
+  ParlantTool,
+  ToolAdapterTestResult,
+  ToolExecutionContext,
+} from '../tools/adapter-framework'
 import { globalAdapterRegistry } from '../tools/adapter-registry'
-import { OpenAIAdapter } from '../tools/adapters/openai-adapter'
-import { SlackAdapter } from '../tools/adapters/slack-adapter'
-import { PostgreSQLAdapter } from '../tools/adapters/postgresql-adapter'
 import { GitHubAdapter } from '../tools/adapters/github-adapter'
 import { GoogleSheetsAdapter } from '../tools/adapters/google-sheets-adapter'
-import type {
-  ToolExecutionContext,
-  AdapterExecutionResult,
-  ParlantTool,
-  ToolAdapterTestResult
-} from '../tools/adapter-framework'
+import { OpenAIAdapter } from '../tools/adapters/openai-adapter'
+import { PostgreSQLAdapter } from '../tools/adapters/postgresql-adapter'
+import { SlackAdapter } from '../tools/adapters/slack-adapter'
 
 // =====================================================
 // COMPREHENSIVE TEST CONFIGURATION
@@ -31,22 +30,22 @@ import type {
 
 const COMPREHENSIVE_TEST_CONFIG = {
   // Test execution timeouts
-  INDIVIDUAL_ADAPTER_TIMEOUT: 45000,    // 45 seconds per adapter
-  PERFORMANCE_TEST_TIMEOUT: 300000,     // 5 minutes for load tests
-  END_TO_END_TIMEOUT: 120000,           // 2 minutes for workflows
-  WORKSPACE_ISOLATION_TIMEOUT: 60000,   // 1 minute for isolation tests
+  INDIVIDUAL_ADAPTER_TIMEOUT: 45000, // 45 seconds per adapter
+  PERFORMANCE_TEST_TIMEOUT: 300000, // 5 minutes for load tests
+  END_TO_END_TIMEOUT: 120000, // 2 minutes for workflows
+  WORKSPACE_ISOLATION_TIMEOUT: 60000, // 1 minute for isolation tests
 
   // Performance test parameters
   CONCURRENT_EXECUTIONS: [1, 5, 10, 20], // Different concurrency levels
-  LOAD_TEST_ITERATIONS: 50,              // Iterations per concurrency level
-  PERFORMANCE_THRESHOLD_MS: 10000,       // 10 second max execution time
-  SUCCESS_RATE_THRESHOLD: 0.95,          // 95% success rate requirement
+  LOAD_TEST_ITERATIONS: 50, // Iterations per concurrency level
+  PERFORMANCE_THRESHOLD_MS: 10000, // 10 second max execution time
+  SUCCESS_RATE_THRESHOLD: 0.95, // 95% success rate requirement
 
   // Test workspaces for isolation testing
   TEST_WORKSPACES: {
     PRIMARY: 'workspace-test-primary-001',
     SECONDARY: 'workspace-test-secondary-002',
-    ISOLATED: 'workspace-test-isolated-003'
+    ISOLATED: 'workspace-test-isolated-003',
   },
 
   // Mock API keys and credentials for testing
@@ -55,18 +54,12 @@ const COMPREHENSIVE_TEST_CONFIG = {
     SLACK_BOT_TOKEN: 'xoxb-test-token-for-testing-only',
     GITHUB_TOKEN: 'ghp_test-token-for-testing-only',
     POSTGRESQL_URL: 'postgresql://test:test@localhost:5432/test_db',
-    GOOGLE_SHEETS_KEY: 'test-google-sheets-api-key'
-  }
+    GOOGLE_SHEETS_KEY: 'test-google-sheets-api-key',
+  },
 }
 
 // List of implemented adapters to test
-const IMPLEMENTED_ADAPTERS = [
-  'openai_embeddings',
-  'slack',
-  'postgresql',
-  'github',
-  'google_sheets'
-]
+const IMPLEMENTED_ADAPTERS = ['openai_embeddings', 'slack', 'postgresql', 'github', 'google_sheets']
 
 // =====================================================
 // COMPREHENSIVE TEST FRAMEWORK CLASS
@@ -94,7 +87,6 @@ class ComprehensiveToolAdapterTestFramework {
 
       console.log('✅ Test framework initialized successfully')
       console.log(`📊 Registered ${IMPLEMENTED_ADAPTERS.length} adapters for testing`)
-
     } catch (error) {
       console.error('❌ Failed to initialize test framework:', error)
       throw error
@@ -112,7 +104,7 @@ class ComprehensiveToolAdapterTestFramework {
       new SlackAdapter(this.createMockBlockConfig('slack')),
       new PostgreSQLAdapter(this.createMockBlockConfig('postgresql')),
       new GitHubAdapter(this.createMockBlockConfig('github')),
-      new GoogleSheetsAdapter(this.createMockBlockConfig('google_sheets'))
+      new GoogleSheetsAdapter(this.createMockBlockConfig('google_sheets')),
     ]
 
     for (const adapter of adapters) {
@@ -121,9 +113,9 @@ class ComprehensiveToolAdapterTestFramework {
         features: {
           caching: true,
           retries: true,
-          monitoring: true
+          monitoring: true,
         },
-        tags: ['integration-test']
+        tags: ['integration-test'],
       })
     }
   }
@@ -135,8 +127,8 @@ class ComprehensiveToolAdapterTestFramework {
       category: 'tools',
       subBlocks: [],
       tools: {
-        access: ['read', 'write']
-      }
+        access: ['read', 'write'],
+      },
     }
   }
 
@@ -149,7 +141,9 @@ class ComprehensiveToolAdapterTestFramework {
       )
     }
 
-    console.log(`📊 Registry health: ${health.healthyAdapters}/${health.totalAdapters} adapters healthy`)
+    console.log(
+      `📊 Registry health: ${health.healthyAdapters}/${health.totalAdapters} adapters healthy`
+    )
   }
 
   // =====================================================
@@ -169,7 +163,7 @@ class ComprehensiveToolAdapterTestFramework {
       errorHandlingValid: false,
       conversationalFormatValid: false,
       naturalLanguageDescriptionValid: false,
-      details: {}
+      details: {},
     }
 
     try {
@@ -217,8 +211,9 @@ class ComprehensiveToolAdapterTestFramework {
         result.naturalLanguageDescriptionValid
 
       result.executionTime = Date.now() - startTime
-      console.log(`  ✅ Adapter test complete for ${adapterId}: ${result.success ? 'PASS' : 'FAIL'} (${result.executionTime}ms)`)
-
+      console.log(
+        `  ✅ Adapter test complete for ${adapterId}: ${result.success ? 'PASS' : 'FAIL'} (${result.executionTime}ms)`
+      )
     } catch (error) {
       result.executionTime = Date.now() - startTime
       result.error = error instanceof Error ? error.message : String(error)
@@ -229,7 +224,9 @@ class ComprehensiveToolAdapterTestFramework {
     return result
   }
 
-  private async testNaturalLanguageDescription(adapterId: string): Promise<{ success: boolean; error?: string; details?: any }> {
+  private async testNaturalLanguageDescription(
+    adapterId: string
+  ): Promise<{ success: boolean; error?: string; details?: any }> {
     try {
       const adapter = this.adapterRegistry.getAdapter(adapterId)!
       const parlantTool = adapter.getParlantTool()
@@ -242,7 +239,9 @@ class ComprehensiveToolAdapterTestFramework {
         hasExamples: !!parlantTool.examples && parlantTool.examples.length > 0,
         hasUsageHints: !!parlantTool.usageHints && parlantTool.usageHints.length > 0,
         hasCategory: !!parlantTool.category,
-        parametersHaveDescriptions: parlantTool.parameters.every(p => p.description && p.description.length > 5)
+        parametersHaveDescriptions: parlantTool.parameters.every(
+          (p) => p.description && p.description.length > 5
+        ),
       }
 
       const passedChecks = Object.values(checks).filter(Boolean).length
@@ -256,18 +255,20 @@ class ComprehensiveToolAdapterTestFramework {
           passedChecks,
           totalChecks,
           score: passedChecks / totalChecks,
-          tool: parlantTool
-        }
+          tool: parlantTool,
+        },
       }
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
 
-  private async testParameterMapping(adapterId: string): Promise<{ success: boolean; error?: string; details?: any }> {
+  private async testParameterMapping(
+    adapterId: string
+  ): Promise<{ success: boolean; error?: string; details?: any }> {
     try {
       const adapter = this.adapterRegistry.getAdapter(adapterId)!
       const parlantTool = adapter.getParlantTool()
@@ -276,7 +277,7 @@ class ComprehensiveToolAdapterTestFramework {
       const testParams = this.generateTestParameters(parlantTool)
 
       // Test parameter validation
-      const validationResult = await adapter['validateParameters'](testParams)
+      const validationResult = await adapter.validateParameters(testParams)
 
       // Test parameter transformation (using adapter's protected method via any cast)
       const context = this.createTestContext()
@@ -285,8 +286,12 @@ class ComprehensiveToolAdapterTestFramework {
       const checks = {
         validationPasses: validationResult.valid,
         hasTransformedParams: !!transformedParams && typeof transformedParams === 'object',
-        preservesRequiredFields: this.checkRequiredFieldsPreserved(parlantTool, testParams, transformedParams),
-        handlesOptionalFields: true // Assume true for now
+        preservesRequiredFields: this.checkRequiredFieldsPreserved(
+          parlantTool,
+          testParams,
+          transformedParams
+        ),
+        handlesOptionalFields: true, // Assume true for now
       }
 
       const success = Object.values(checks).every(Boolean)
@@ -297,18 +302,20 @@ class ComprehensiveToolAdapterTestFramework {
           checks,
           testParams,
           transformedParams,
-          validationResult
-        }
+          validationResult,
+        },
       }
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
 
-  private async testToolExecution(adapterId: string): Promise<{ success: boolean; error?: string; details?: any }> {
+  private async testToolExecution(
+    adapterId: string
+  ): Promise<{ success: boolean; error?: string; details?: any }> {
     try {
       const adapter = this.adapterRegistry.getAdapter(adapterId)!
       const parlantTool = adapter.getParlantTool()
@@ -319,13 +326,13 @@ class ComprehensiveToolAdapterTestFramework {
 
       // For safety, we'll test the parameter transformation and validation
       // without actually executing the tool (which might make real API calls)
-      const validationResult = await adapter['validateParameters'](testParams)
+      const validationResult = await adapter.validateParameters(testParams)
 
       if (!validationResult.valid) {
         return {
           success: false,
           error: `Parameter validation failed: ${validationResult.errors.join(', ')}`,
-          details: { validationResult, testParams }
+          details: { validationResult, testParams },
         }
       }
 
@@ -339,7 +346,7 @@ class ComprehensiveToolAdapterTestFramework {
         parametersValid: validationResult.valid,
         parametersTransformed: !!transformedParams,
         resultTransformed: !!transformedResult,
-        resultHasExpectedStructure: this.validateResultStructure(transformedResult, parlantTool)
+        resultHasExpectedStructure: this.validateResultStructure(transformedResult, parlantTool),
       }
 
       const success = Object.values(checks).every(Boolean)
@@ -351,18 +358,20 @@ class ComprehensiveToolAdapterTestFramework {
           testParams,
           transformedParams,
           transformedResult,
-          mockResponse: mockSimResponse
-        }
+          mockResponse: mockSimResponse,
+        },
       }
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
 
-  private async testErrorHandling(adapterId: string): Promise<{ success: boolean; error?: string; details?: any }> {
+  private async testErrorHandling(
+    adapterId: string
+  ): Promise<{ success: boolean; error?: string; details?: any }> {
     try {
       const adapter = this.adapterRegistry.getAdapter(adapterId)!
 
@@ -371,14 +380,14 @@ class ComprehensiveToolAdapterTestFramework {
         {
           name: 'missing_required_params',
           params: {}, // Empty params should trigger validation error
-          expectedError: true
+          expectedError: true,
         },
         // Test invalid parameter types
         {
           name: 'invalid_param_types',
           params: { invalidParam: 'invalid' },
-          expectedError: true
-        }
+          expectedError: true,
+        },
       ]
 
       const results = []
@@ -392,7 +401,7 @@ class ComprehensiveToolAdapterTestFramework {
             expectedError: test.expectedError,
             actualError: !result.success,
             errorMessage: result.error,
-            passed: test.expectedError === !result.success
+            passed: test.expectedError === !result.success,
           })
         } catch (error) {
           results.push({
@@ -400,28 +409,30 @@ class ComprehensiveToolAdapterTestFramework {
             expectedError: test.expectedError,
             actualError: true,
             errorMessage: error instanceof Error ? error.message : String(error),
-            passed: test.expectedError
+            passed: test.expectedError,
           })
         }
       }
 
-      const success = results.every(r => r.passed)
+      const success = results.every((r) => r.passed)
 
       return {
         success,
         details: {
-          errorTests: results
-        }
+          errorTests: results,
+        },
       }
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
 
-  private async testConversationalFormat(adapterId: string): Promise<{ success: boolean; error?: string; details?: any }> {
+  private async testConversationalFormat(
+    adapterId: string
+  ): Promise<{ success: boolean; error?: string; details?: any }> {
     try {
       const adapter = this.adapterRegistry.getAdapter(adapterId)!
       const parlantTool = adapter.getParlantTool()
@@ -435,7 +446,10 @@ class ComprehensiveToolAdapterTestFramework {
         resultIsSerializable: this.isResultSerializable(transformedResult),
         resultHasUserFriendlyStructure: this.hasUserFriendlyStructure(transformedResult),
         resultSizeReasonable: this.hasReasonableSize(transformedResult),
-        resultMatchesOutputDefs: this.matchesOutputDefinitions(transformedResult, parlantTool.outputs)
+        resultMatchesOutputDefs: this.matchesOutputDefinitions(
+          transformedResult,
+          parlantTool.outputs
+        ),
       }
 
       const success = Object.values(checks).every(Boolean)
@@ -445,13 +459,13 @@ class ComprehensiveToolAdapterTestFramework {
         details: {
           checks,
           transformedResult,
-          resultSize: JSON.stringify(transformedResult).length
-        }
+          resultSize: JSON.stringify(transformedResult).length,
+        },
       }
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
@@ -494,29 +508,30 @@ class ComprehensiveToolAdapterTestFramework {
       }
 
       // Calculate overall metrics
-      const executionTimes = overallResults.map(r => r.executionTime).filter(t => t > 0)
-      const successCount = overallResults.filter(r => r.success).length
+      const executionTimes = overallResults.map((r) => r.executionTime).filter((t) => t > 0)
+      const successCount = overallResults.filter((r) => r.success).length
       const totalDuration = overallResults.reduce((sum, r) => sum + r.executionTime, 0)
 
       const overallMetrics = {
-        averageExecutionTime: executionTimes.reduce((a, b) => a + b, 0) / executionTimes.length || 0,
+        averageExecutionTime:
+          executionTimes.reduce((a, b) => a + b, 0) / executionTimes.length || 0,
         maxExecutionTime: Math.max(...executionTimes, 0),
         minExecutionTime: Math.min(...executionTimes, 0),
         successRate: successCount / overallResults.length,
-        throughput: overallResults.length / (totalDuration / 1000) // ops per second
+        throughput: overallResults.length / (totalDuration / 1000), // ops per second
       }
 
       // Performance test per adapter
       for (const adapterId of IMPLEMENTED_ADAPTERS) {
-        const adapterResults = overallResults.filter(r => r.adapterId === adapterId)
+        const adapterResults = overallResults.filter((r) => r.adapterId === adapterId)
         if (adapterResults.length > 0) {
-          const adapterTimes = adapterResults.map(r => r.executionTime)
+          const adapterTimes = adapterResults.map((r) => r.executionTime)
           adapterPerformance.set(adapterId, {
             averageTime: adapterTimes.reduce((a, b) => a + b, 0) / adapterTimes.length,
             maxTime: Math.max(...adapterTimes),
             minTime: Math.min(...adapterTimes),
-            successRate: adapterResults.filter(r => r.success).length / adapterResults.length,
-            totalExecutions: adapterResults.length
+            successRate: adapterResults.filter((r) => r.success).length / adapterResults.length,
+            totalExecutions: adapterResults.length,
           })
         }
       }
@@ -525,16 +540,17 @@ class ComprehensiveToolAdapterTestFramework {
 
       console.log(`  📊 Performance test complete: ${success ? 'PASS' : 'FAIL'}`)
       console.log(`     Success rate: ${(overallMetrics.successRate * 100).toFixed(2)}%`)
-      console.log(`     Average execution time: ${overallMetrics.averageExecutionTime.toFixed(2)}ms`)
+      console.log(
+        `     Average execution time: ${overallMetrics.averageExecutionTime.toFixed(2)}ms`
+      )
       console.log(`     Throughput: ${overallMetrics.throughput.toFixed(2)} ops/sec`)
 
       return {
         success,
         overallMetrics,
         concurrencyResults,
-        adapterPerformance
+        adapterPerformance,
       }
-
     } catch (error) {
       console.error('❌ Performance testing failed:', error)
       return {
@@ -544,10 +560,10 @@ class ComprehensiveToolAdapterTestFramework {
           maxExecutionTime: 0,
           minExecutionTime: 0,
           successRate: 0,
-          throughput: 0
+          throughput: 0,
         },
         concurrencyResults: [],
-        adapterPerformance: new Map()
+        adapterPerformance: new Map(),
       }
     }
   }
@@ -570,7 +586,11 @@ class ComprehensiveToolAdapterTestFramework {
     for (let batch = 0; batch < batches; batch++) {
       const promises = []
 
-      for (let i = 0; i < concurrency && (batch * concurrency + i) < COMPREHENSIVE_TEST_CONFIG.LOAD_TEST_ITERATIONS; i++) {
+      for (
+        let i = 0;
+        i < concurrency && batch * concurrency + i < COMPREHENSIVE_TEST_CONFIG.LOAD_TEST_ITERATIONS;
+        i++
+      ) {
         const adapterId = IMPLEMENTED_ADAPTERS[i % IMPLEMENTED_ADAPTERS.length]
         promises.push(this.runSinglePerformanceTest(adapterId))
       }
@@ -584,8 +604,8 @@ class ComprehensiveToolAdapterTestFramework {
     }
 
     const totalTime = Date.now() - startTime
-    const executionTimes = results.map(r => r.executionTime).filter(t => t > 0)
-    const successCount = results.filter(r => r.success).length
+    const executionTimes = results.map((r) => r.executionTime).filter((t) => t > 0)
+    const successCount = results.filter((r) => r.success).length
 
     return {
       concurrency,
@@ -593,7 +613,7 @@ class ComprehensiveToolAdapterTestFramework {
       successRate: successCount / results.length,
       throughput: results.length / (totalTime / 1000),
       errors,
-      results
+      results,
     }
   }
 
@@ -614,21 +634,21 @@ class ComprehensiveToolAdapterTestFramework {
       // Use registry execution for proper metrics and caching
       const result = await this.adapterRegistry.executeTool(adapterId, testParams, context, {
         useCache: false, // Disable caching for performance testing
-        timeout: COMPREHENSIVE_TEST_CONFIG.PERFORMANCE_THRESHOLD_MS
+        timeout: COMPREHENSIVE_TEST_CONFIG.PERFORMANCE_THRESHOLD_MS,
       })
 
       return {
         adapterId,
         success: result.success,
         executionTime: Date.now() - startTime,
-        error: result.error
+        error: result.error,
       }
     } catch (error) {
       return {
         adapterId,
         success: false,
         executionTime: Date.now() - startTime,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
@@ -660,21 +680,20 @@ class ComprehensiveToolAdapterTestFramework {
 
       // Test 3: Authentication scope validation
       isolationTests.push(await this.testAuthenticationScope())
-
     } catch (error) {
       console.error('❌ Workspace isolation testing failed:', error)
     }
 
-    const success = isolationTests.every(test => test.success)
+    const success = isolationTests.every((test) => test.success)
 
     console.log(`🔒 Workspace isolation test complete: ${success ? 'PASS' : 'FAIL'}`)
-    isolationTests.forEach(test => {
+    isolationTests.forEach((test) => {
       console.log(`     ${test.success ? '✅' : '❌'} ${test.testName}`)
     })
 
     return {
       success,
-      isolationTests
+      isolationTests,
     }
   }
 
@@ -694,8 +713,16 @@ class ComprehensiveToolAdapterTestFramework {
       const context2 = this.createTestContext(COMPREHENSIVE_TEST_CONFIG.TEST_WORKSPACES.SECONDARY)
 
       // Execute same tool with different workspace contexts
-      const result1 = await this.adapterRegistry.executeTool(IMPLEMENTED_ADAPTERS[0], testParams, context1)
-      const result2 = await this.adapterRegistry.executeTool(IMPLEMENTED_ADAPTERS[0], testParams, context2)
+      const result1 = await this.adapterRegistry.executeTool(
+        IMPLEMENTED_ADAPTERS[0],
+        testParams,
+        context1
+      )
+      const result2 = await this.adapterRegistry.executeTool(
+        IMPLEMENTED_ADAPTERS[0],
+        testParams,
+        context2
+      )
 
       // Verify both executions respect their workspace contexts
       const success = result1.success && result2.success
@@ -707,8 +734,8 @@ class ComprehensiveToolAdapterTestFramework {
         details: {
           workspace1Result: result1,
           workspace2Result: result2,
-          contextIsolationMaintained: true // We can't fully test this without real workspace data
-        }
+          contextIsolationMaintained: true, // We can't fully test this without real workspace data
+        },
       }
     } catch (error) {
       return {
@@ -716,7 +743,7 @@ class ComprehensiveToolAdapterTestFramework {
         success: false,
         description: 'Tools should execute within their respective workspace boundaries',
         details: {},
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
@@ -733,14 +760,19 @@ class ComprehensiveToolAdapterTestFramework {
       const contexts = [
         this.createTestContext(COMPREHENSIVE_TEST_CONFIG.TEST_WORKSPACES.PRIMARY, 'user-1'),
         this.createTestContext(COMPREHENSIVE_TEST_CONFIG.TEST_WORKSPACES.PRIMARY, 'user-2'),
-        this.createTestContext(COMPREHENSIVE_TEST_CONFIG.TEST_WORKSPACES.SECONDARY, 'user-1')
+        this.createTestContext(COMPREHENSIVE_TEST_CONFIG.TEST_WORKSPACES.SECONDARY, 'user-1'),
       ]
 
       const executions = []
       for (let i = 0; i < contexts.length; i++) {
-        const adapter = this.adapterRegistry.getAdapter(IMPLEMENTED_ADAPTERS[i % IMPLEMENTED_ADAPTERS.length])!
+        const adapter = this.adapterRegistry.getAdapter(
+          IMPLEMENTED_ADAPTERS[i % IMPLEMENTED_ADAPTERS.length]
+        )!
         const parlantTool = adapter.getParlantTool()
-        const testParams = this.generateSafeTestParameters(IMPLEMENTED_ADAPTERS[i % IMPLEMENTED_ADAPTERS.length], parlantTool)
+        const testParams = this.generateSafeTestParameters(
+          IMPLEMENTED_ADAPTERS[i % IMPLEMENTED_ADAPTERS.length],
+          parlantTool
+        )
 
         const result = await this.adapterRegistry.executeTool(
           IMPLEMENTED_ADAPTERS[i % IMPLEMENTED_ADAPTERS.length],
@@ -750,17 +782,17 @@ class ComprehensiveToolAdapterTestFramework {
 
         executions.push({
           contextId: `${contexts[i].workspaceId}-${contexts[i].userId}`,
-          success: result.success
+          success: result.success,
         })
       }
 
-      const success = executions.every(e => e.success)
+      const success = executions.every((e) => e.success)
 
       return {
         testName: 'Context Isolation Validation',
         success,
         description: 'Different execution contexts should be properly isolated',
-        details: { executions }
+        details: { executions },
       }
     } catch (error) {
       return {
@@ -768,7 +800,7 @@ class ComprehensiveToolAdapterTestFramework {
         success: false,
         description: 'Different execution contexts should be properly isolated',
         details: {},
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
@@ -786,8 +818,8 @@ class ComprehensiveToolAdapterTestFramework {
       success: true, // Assume success since we can't fully test without real auth
       description: 'Authentication should be scoped to appropriate workspace and user permissions',
       details: {
-        note: 'Authentication scope testing requires real credentials and is handled by the authentication system'
-      }
+        note: 'Authentication scope testing requires real credentials and is handled by the authentication system',
+      },
     }
   }
 
@@ -812,54 +844,54 @@ class ComprehensiveToolAdapterTestFramework {
     const criteriaResults = [
       {
         criteria: 'All 20+ Sim tools work through Parlant agents',
-        met: IMPLEMENTED_ADAPTERS.length >= 5 && testResults.every(r => r.success),
-        details: `${IMPLEMENTED_ADAPTERS.length} adapters implemented and ${testResults.filter(r => r.success).length}/${testResults.length} passing tests`,
+        met: IMPLEMENTED_ADAPTERS.length >= 5 && testResults.every((r) => r.success),
+        details: `${IMPLEMENTED_ADAPTERS.length} adapters implemented and ${testResults.filter((r) => r.success).length}/${testResults.length} passing tests`,
         evidence: {
           implementedAdapters: IMPLEMENTED_ADAPTERS.length,
-          passingTests: testResults.filter(r => r.success).length,
-          totalTests: testResults.length
-        }
+          passingTests: testResults.filter((r) => r.success).length,
+          totalTests: testResults.length,
+        },
       },
       {
         criteria: 'Tools have natural language descriptions',
-        met: testResults.every(r => r.naturalLanguageDescriptionValid),
-        details: `${testResults.filter(r => r.naturalLanguageDescriptionValid).length}/${testResults.length} adapters have proper natural language descriptions`,
+        met: testResults.every((r) => r.naturalLanguageDescriptionValid),
+        details: `${testResults.filter((r) => r.naturalLanguageDescriptionValid).length}/${testResults.length} adapters have proper natural language descriptions`,
         evidence: {
-          validDescriptions: testResults.filter(r => r.naturalLanguageDescriptionValid).length,
-          totalAdapters: testResults.length
-        }
+          validDescriptions: testResults.filter((r) => r.naturalLanguageDescriptionValid).length,
+          totalAdapters: testResults.length,
+        },
       },
       {
         criteria: 'Tool results format properly in conversations',
-        met: testResults.every(r => r.conversationalFormatValid),
-        details: `${testResults.filter(r => r.conversationalFormatValid).length}/${testResults.length} adapters format results properly for conversations`,
+        met: testResults.every((r) => r.conversationalFormatValid),
+        details: `${testResults.filter((r) => r.conversationalFormatValid).length}/${testResults.length} adapters format results properly for conversations`,
         evidence: {
-          validFormats: testResults.filter(r => r.conversationalFormatValid).length,
-          totalAdapters: testResults.length
-        }
+          validFormats: testResults.filter((r) => r.conversationalFormatValid).length,
+          totalAdapters: testResults.length,
+        },
       },
       {
         criteria: 'Error handling provides helpful explanations',
-        met: testResults.every(r => r.errorHandlingValid),
-        details: `${testResults.filter(r => r.errorHandlingValid).length}/${testResults.length} adapters have proper error handling`,
+        met: testResults.every((r) => r.errorHandlingValid),
+        details: `${testResults.filter((r) => r.errorHandlingValid).length}/${testResults.length} adapters have proper error handling`,
         evidence: {
-          validErrorHandling: testResults.filter(r => r.errorHandlingValid).length,
-          totalAdapters: testResults.length
-        }
-      }
+          validErrorHandling: testResults.filter((r) => r.errorHandlingValid).length,
+          totalAdapters: testResults.length,
+        },
+      },
     ]
 
-    const allCriteriaMet = criteriaResults.every(result => result.met)
+    const allCriteriaMet = criteriaResults.every((result) => result.met)
 
     console.log('📋 Acceptance Criteria Results:')
-    criteriaResults.forEach(criteria => {
+    criteriaResults.forEach((criteria) => {
       console.log(`  ${criteria.met ? '✅' : '❌'} ${criteria.criteria}`)
       console.log(`     ${criteria.details}`)
     })
 
     return {
       allCriteriaMet,
-      criteriaResults
+      criteriaResults,
     }
   }
 
@@ -886,7 +918,10 @@ class ComprehensiveToolAdapterTestFramework {
     return params
   }
 
-  private generateSafeTestParameters(adapterId: string, parlantTool: ParlantTool): Record<string, any> {
+  private generateSafeTestParameters(
+    adapterId: string,
+    parlantTool: ParlantTool
+  ): Record<string, any> {
     const params = this.generateTestParameters(parlantTool)
 
     // Override with safe test values to avoid making real API calls
@@ -920,7 +955,7 @@ class ComprehensiveToolAdapterTestFramework {
     switch (type) {
       case 'string':
         if (paramName.toLowerCase().includes('key') || paramName.toLowerCase().includes('token')) {
-          return 'test-' + paramName.toLowerCase()
+          return `test-${paramName.toLowerCase()}`
         }
         return `test-${paramName}`
       case 'number':
@@ -944,8 +979,8 @@ class ComprehensiveToolAdapterTestFramework {
       sessionId: 'test-session-001',
       metadata: {
         testRun: true,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     }
   }
 
@@ -955,17 +990,21 @@ class ComprehensiveToolAdapterTestFramework {
       output: {
         mockData: `Mock response for ${adapterId}`,
         timestamp: new Date().toISOString(),
-        adapterId
+        adapterId,
       },
       timing: {
         startTime: new Date().toISOString(),
         endTime: new Date().toISOString(),
-        duration: 100
-      }
+        duration: 100,
+      },
     }
   }
 
-  private checkRequiredFieldsPreserved(parlantTool: ParlantTool, original: any, transformed: any): boolean {
+  private checkRequiredFieldsPreserved(
+    parlantTool: ParlantTool,
+    original: any,
+    transformed: any
+  ): boolean {
     // Basic check - in real implementation, this would be more sophisticated
     return typeof transformed === 'object' && transformed !== null
   }
@@ -1027,7 +1066,7 @@ class ComprehensiveToolAdapterTestFramework {
     }
   } {
     const testResults = Array.from(this.testResults.values())
-    const passingTests = testResults.filter(r => r.success)
+    const passingTests = testResults.filter((r) => r.success)
 
     const summary = {
       totalAdapters: 65, // From the original test framework - total Sim tools
@@ -1035,21 +1074,27 @@ class ComprehensiveToolAdapterTestFramework {
       testedAdapters: testResults.length,
       passingAdapters: passingTests.length,
       overallSuccessRate: testResults.length ? (passingTests.length / testResults.length) * 100 : 0,
-      avgExecutionTime: testResults.length ? testResults.reduce((sum, r) => sum + r.executionTime, 0) / testResults.length : 0
+      avgExecutionTime: testResults.length
+        ? testResults.reduce((sum, r) => sum + r.executionTime, 0) / testResults.length
+        : 0,
     }
 
     const productionReadiness = {
       ready: summary.overallSuccessRate >= 95 && summary.implementedAdapters >= 10,
       blockers: [],
-      recommendations: []
+      recommendations: [],
     }
 
     if (summary.implementedAdapters < 10) {
-      productionReadiness.blockers.push(`Only ${summary.implementedAdapters} adapters implemented, need at least 10 for production`)
+      productionReadiness.blockers.push(
+        `Only ${summary.implementedAdapters} adapters implemented, need at least 10 for production`
+      )
     }
 
     if (summary.overallSuccessRate < 95) {
-      productionReadiness.blockers.push(`Success rate of ${summary.overallSuccessRate.toFixed(2)}% is below 95% threshold`)
+      productionReadiness.blockers.push(
+        `Success rate of ${summary.overallSuccessRate.toFixed(2)}% is below 95% threshold`
+      )
     }
 
     productionReadiness.recommendations = [
@@ -1057,7 +1102,7 @@ class ComprehensiveToolAdapterTestFramework {
       'Add comprehensive error handling for all failure scenarios',
       'Set up monitoring and alerting for adapter performance',
       'Implement rate limiting and circuit breakers',
-      'Add comprehensive logging for debugging and analytics'
+      'Add comprehensive logging for debugging and analytics',
     ]
 
     return {
@@ -1066,7 +1111,7 @@ class ComprehensiveToolAdapterTestFramework {
       performanceMetrics: Object.fromEntries(this.performanceMetrics),
       isolationResults: this.isolationTestResults,
       acceptanceCriteria: null, // Will be filled by validateAcceptanceCriteria
-      productionReadiness
+      productionReadiness,
     }
   }
 }
@@ -1084,61 +1129,81 @@ describe('Comprehensive Universal Tool Adapter System Integration Tests', () => 
   }, 60000) // 1 minute timeout for setup
 
   describe('Individual Adapter Comprehensive Tests', () => {
-    test.each(IMPLEMENTED_ADAPTERS)('should comprehensively test %s adapter', async (adapterId) => {
-      const result = await testFramework.testIndividualAdapter(adapterId)
+    test.each(IMPLEMENTED_ADAPTERS)(
+      'should comprehensively test %s adapter',
+      async (adapterId) => {
+        const result = await testFramework.testIndividualAdapter(adapterId)
 
-      // Log detailed results
-      console.log(`\n📊 Comprehensive test results for ${adapterId}:`)
-      console.log(`   Natural Language Description: ${result.naturalLanguageDescriptionValid ? '✅' : '❌'}`)
-      console.log(`   Parameter Mapping: ${result.parameterMappingValid ? '✅' : '❌'}`)
-      console.log(`   Response Transformation: ${result.responseTransformationValid ? '✅' : '❌'}`)
-      console.log(`   Error Handling: ${result.errorHandlingValid ? '✅' : '❌'}`)
-      console.log(`   Conversational Format: ${result.conversationalFormatValid ? '✅' : '❌'}`)
-      console.log(`   Overall: ${result.success ? '✅ PASS' : '❌ FAIL'}`)
+        // Log detailed results
+        console.log(`\n📊 Comprehensive test results for ${adapterId}:`)
+        console.log(
+          `   Natural Language Description: ${result.naturalLanguageDescriptionValid ? '✅' : '❌'}`
+        )
+        console.log(`   Parameter Mapping: ${result.parameterMappingValid ? '✅' : '❌'}`)
+        console.log(
+          `   Response Transformation: ${result.responseTransformationValid ? '✅' : '❌'}`
+        )
+        console.log(`   Error Handling: ${result.errorHandlingValid ? '✅' : '❌'}`)
+        console.log(`   Conversational Format: ${result.conversationalFormatValid ? '✅' : '❌'}`)
+        console.log(`   Overall: ${result.success ? '✅ PASS' : '❌ FAIL'}`)
 
-      // At minimum, natural language description should be valid
-      expect(result.naturalLanguageDescriptionValid).toBe(true)
-      // All other tests should pass for a complete implementation
-      if (!result.success && result.error) {
-        console.warn(`Test failed with error: ${result.error}`)
-      }
-
-    }, COMPREHENSIVE_TEST_CONFIG.INDIVIDUAL_ADAPTER_TIMEOUT)
+        // At minimum, natural language description should be valid
+        expect(result.naturalLanguageDescriptionValid).toBe(true)
+        // All other tests should pass for a complete implementation
+        if (!result.success && result.error) {
+          console.warn(`Test failed with error: ${result.error}`)
+        }
+      },
+      COMPREHENSIVE_TEST_CONFIG.INDIVIDUAL_ADAPTER_TIMEOUT
+    )
   })
 
   describe('Performance and Load Testing', () => {
-    test('should perform well under various load conditions', async () => {
-      const result = await testFramework.runPerformanceTests()
+    test(
+      'should perform well under various load conditions',
+      async () => {
+        const result = await testFramework.runPerformanceTests()
 
-      console.log(`\n📈 Performance Test Results:`)
-      console.log(`   Success Rate: ${(result.overallMetrics.successRate * 100).toFixed(2)}%`)
-      console.log(`   Average Execution Time: ${result.overallMetrics.averageExecutionTime.toFixed(2)}ms`)
-      console.log(`   Max Execution Time: ${result.overallMetrics.maxExecutionTime.toFixed(2)}ms`)
-      console.log(`   Throughput: ${result.overallMetrics.throughput.toFixed(2)} ops/sec`)
+        console.log(`\n📈 Performance Test Results:`)
+        console.log(`   Success Rate: ${(result.overallMetrics.successRate * 100).toFixed(2)}%`)
+        console.log(
+          `   Average Execution Time: ${result.overallMetrics.averageExecutionTime.toFixed(2)}ms`
+        )
+        console.log(`   Max Execution Time: ${result.overallMetrics.maxExecutionTime.toFixed(2)}ms`)
+        console.log(`   Throughput: ${result.overallMetrics.throughput.toFixed(2)} ops/sec`)
 
-      // Performance assertions
-      expect(result.overallMetrics.successRate).toBeGreaterThanOrEqual(0.8) // 80% minimum success rate
-      expect(result.overallMetrics.averageExecutionTime).toBeLessThan(COMPREHENSIVE_TEST_CONFIG.PERFORMANCE_THRESHOLD_MS)
+        // Performance assertions
+        expect(result.overallMetrics.successRate).toBeGreaterThanOrEqual(0.8) // 80% minimum success rate
+        expect(result.overallMetrics.averageExecutionTime).toBeLessThan(
+          COMPREHENSIVE_TEST_CONFIG.PERFORMANCE_THRESHOLD_MS
+        )
 
-      // Log per-adapter performance
-      result.adapterPerformance.forEach((metrics, adapterId) => {
-        console.log(`   ${adapterId}: ${metrics.averageTime.toFixed(2)}ms avg, ${(metrics.successRate * 100).toFixed(2)}% success`)
-      })
-
-    }, COMPREHENSIVE_TEST_CONFIG.PERFORMANCE_TEST_TIMEOUT)
+        // Log per-adapter performance
+        result.adapterPerformance.forEach((metrics, adapterId) => {
+          console.log(
+            `   ${adapterId}: ${metrics.averageTime.toFixed(2)}ms avg, ${(metrics.successRate * 100).toFixed(2)}% success`
+          )
+        })
+      },
+      COMPREHENSIVE_TEST_CONFIG.PERFORMANCE_TEST_TIMEOUT
+    )
   })
 
   describe('Workspace Isolation and Security', () => {
-    test('should enforce workspace isolation correctly', async () => {
-      const result = await testFramework.testWorkspaceIsolation()
+    test(
+      'should enforce workspace isolation correctly',
+      async () => {
+        const result = await testFramework.testWorkspaceIsolation()
 
-      console.log(`\n🔒 Workspace Isolation Test Results:`)
-      result.isolationTests.forEach(test => {
-        console.log(`   ${test.success ? '✅' : '❌'} ${test.testName}: ${test.description}`)
-      })
+        console.log(`\n🔒 Workspace Isolation Test Results:`)
+        result.isolationTests.forEach((test) => {
+          console.log(`   ${test.success ? '✅' : '❌'} ${test.testName}: ${test.description}`)
+        })
 
-      expect(result.success).toBe(true)
-    }, COMPREHENSIVE_TEST_CONFIG.WORKSPACE_ISOLATION_TIMEOUT)
+        expect(result.success).toBe(true)
+      },
+      COMPREHENSIVE_TEST_CONFIG.WORKSPACE_ISOLATION_TIMEOUT
+    )
   })
 
   describe('Acceptance Criteria Validation', () => {
@@ -1146,19 +1211,23 @@ describe('Comprehensive Universal Tool Adapter System Integration Tests', () => 
       const result = await testFramework.validateAcceptanceCriteria()
 
       console.log(`\n✅ Acceptance Criteria Validation:`)
-      result.criteriaResults.forEach(criteria => {
+      result.criteriaResults.forEach((criteria) => {
         console.log(`   ${criteria.met ? '✅' : '❌'} ${criteria.criteria}`)
         console.log(`      ${criteria.details}`)
       })
 
       // Log overall status
-      console.log(`\n🎯 Overall Acceptance Status: ${result.allCriteriaMet ? '✅ ALL CRITERIA MET' : '❌ CRITERIA NOT MET'}`)
+      console.log(
+        `\n🎯 Overall Acceptance Status: ${result.allCriteriaMet ? '✅ ALL CRITERIA MET' : '❌ CRITERIA NOT MET'}`
+      )
 
       // For now, we don't enforce all criteria to be met since system is still in development
       // expect(result.allCriteriaMet).toBe(true)
 
       // But we can check individual aspects
-      const implementationCriteria = result.criteriaResults.find(c => c.criteria.includes('20+ Sim tools'))
+      const implementationCriteria = result.criteriaResults.find((c) =>
+        c.criteria.includes('20+ Sim tools')
+      )
       if (implementationCriteria) {
         expect(implementationCriteria.evidence.implementedAdapters).toBeGreaterThanOrEqual(5)
       }
@@ -1177,15 +1246,17 @@ describe('Comprehensive Universal Tool Adapter System Integration Tests', () => 
       console.log(`   Overall Success Rate: ${report.summary.overallSuccessRate.toFixed(2)}%`)
       console.log(`   Average Execution Time: ${report.summary.avgExecutionTime.toFixed(2)}ms`)
 
-      console.log(`\n🚀 Production Ready: ${report.productionReadiness.ready ? '✅ YES' : '❌ NOT YET'}`)
+      console.log(
+        `\n🚀 Production Ready: ${report.productionReadiness.ready ? '✅ YES' : '❌ NOT YET'}`
+      )
 
       if (report.productionReadiness.blockers.length > 0) {
         console.log(`\n⚠️  Blockers:`)
-        report.productionReadiness.blockers.forEach(blocker => console.log(`   • ${blocker}`))
+        report.productionReadiness.blockers.forEach((blocker) => console.log(`   • ${blocker}`))
       }
 
       console.log(`\n💡 Recommendations:`)
-      report.productionReadiness.recommendations.forEach(rec => console.log(`   • ${rec}`))
+      report.productionReadiness.recommendations.forEach((rec) => console.log(`   • ${rec}`))
 
       // Assertions for report structure
       expect(report.summary.implementedAdapters).toBeGreaterThanOrEqual(5)

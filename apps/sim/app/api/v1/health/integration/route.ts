@@ -26,7 +26,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     logger.info('Integration health check request received', {
       url: request.url,
       requestId,
-      userAgent: request.headers.get('user-agent')
+      userAgent: request.headers.get('user-agent'),
     })
 
     // Check rate limit
@@ -56,9 +56,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         recommendations: {
           immediate: comprehensiveResult.summary.criticalIssues,
           suggested: comprehensiveResult.summary.recommendations,
-          next_steps: generateNextSteps(comprehensiveResult)
+          next_steps: generateNextSteps(comprehensiveResult),
         },
-        duration: comprehensiveResult.duration
+        duration: comprehensiveResult.duration,
       }
     } else if (component) {
       // Check specific component
@@ -84,8 +84,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         default:
           return NextResponse.json(
             {
-              error: 'Invalid component. Use: sim-tables, parlant-schema, workspace-isolation, or api-integration',
-              availableComponents: ['sim-tables', 'parlant-schema', 'workspace-isolation', 'api-integration']
+              error:
+                'Invalid component. Use: sim-tables, parlant-schema, workspace-isolation, or api-integration',
+              availableComponents: [
+                'sim-tables',
+                'parlant-schema',
+                'workspace-isolation',
+                'api-integration',
+              ],
             },
             { status: 400 }
           )
@@ -100,7 +106,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         requestId,
         details: componentResult.details,
         recommendations: generateComponentRecommendations(componentResult),
-        duration: componentResult.duration
+        duration: componentResult.duration,
       }
     } else {
       // Quick integration overview using cached results
@@ -121,7 +127,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             healthy: comprehensiveResult.summary.healthyChecks,
             degraded: comprehensiveResult.summary.degradedChecks,
             unhealthy: comprehensiveResult.summary.unhealthyChecks,
-            readinessScore: calculateReadinessScore(comprehensiveResult.summary)
+            readinessScore: calculateReadinessScore(comprehensiveResult.summary),
           },
           components: Object.fromEntries(
             Object.entries(comprehensiveResult.components).map(([name, result]) => [
@@ -129,19 +135,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
               {
                 status: result.status,
                 lastCheck: result.timestamp,
-                duration: result.duration
-              }
+                duration: result.duration,
+              },
             ])
           ),
-          duration: comprehensiveResult.duration
+          duration: comprehensiveResult.duration,
         }
       } else {
         // Use cached results for quick overview
         const components = Array.from(cachedResults.entries())
         const statuses = components.map(([_, result]) => result.status)
 
-        const overallStatus = statuses.includes('unhealthy') ? 'unhealthy' :
-                             statuses.includes('degraded') ? 'degraded' : 'healthy'
+        const overallStatus = statuses.includes('unhealthy')
+          ? 'unhealthy'
+          : statuses.includes('degraded')
+            ? 'degraded'
+            : 'healthy'
 
         response = {
           service: 'integration',
@@ -151,15 +160,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           requestId,
           summary: {
             totalComponents: components.length,
-            healthy: statuses.filter(s => s === 'healthy').length,
-            degraded: statuses.filter(s => s === 'degraded').length,
-            unhealthy: statuses.filter(s => s === 'unhealthy').length,
+            healthy: statuses.filter((s) => s === 'healthy').length,
+            degraded: statuses.filter((s) => s === 'degraded').length,
+            unhealthy: statuses.filter((s) => s === 'unhealthy').length,
             readinessScore: calculateReadinessScore({
               totalChecks: components.length,
-              healthyChecks: statuses.filter(s => s === 'healthy').length,
-              degradedChecks: statuses.filter(s => s === 'degraded').length,
-              unhealthyChecks: statuses.filter(s => s === 'unhealthy').length
-            })
+              healthyChecks: statuses.filter((s) => s === 'healthy').length,
+              degradedChecks: statuses.filter((s) => s === 'degraded').length,
+              unhealthyChecks: statuses.filter((s) => s === 'unhealthy').length,
+            }),
           },
           components: Object.fromEntries(
             components.map(([name, result]) => [
@@ -168,51 +177,61 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
                 status: result.status,
                 lastCheck: result.timestamp,
                 duration: result.duration,
-                cached: true
-              }
+                cached: true,
+              },
             ])
           ),
-          duration: performance.now() - startTime
+          duration: performance.now() - startTime,
         }
       }
     }
 
     // Log integration health check
-    parlantLoggers.integration.info('Integration health check completed', {
-      operation: 'integration_health_check',
-      mode: response.mode,
-      status: response.status,
-      duration: response.duration,
-      component: component || 'all',
-      comprehensive
-    }, requestId)
+    parlantLoggers.integration.info(
+      'Integration health check completed',
+      {
+        operation: 'integration_health_check',
+        mode: response.mode,
+        status: response.status,
+        duration: response.duration,
+        component: component || 'all',
+        comprehensive,
+      },
+      requestId
+    )
 
     // Set HTTP status based on health
-    const httpStatus = response.status === 'unhealthy' ? 503 :
-                      response.status === 'degraded' ? 200 : 200
+    const httpStatus =
+      response.status === 'unhealthy' ? 503 : response.status === 'degraded' ? 200 : 200
 
     return NextResponse.json(response, {
       status: httpStatus,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': comprehensive ? 'no-cache, no-store, must-revalidate' : 'private, max-age=60',
+        'Cache-Control': comprehensive
+          ? 'no-cache, no-store, must-revalidate'
+          : 'private, max-age=60',
         'X-Health-Status': response.status,
         'X-Service': 'integration',
         'X-Request-Id': requestId,
         'X-Response-Time': `${response.duration}ms`,
-        'X-Mode': response.mode
-      }
+        'X-Mode': response.mode,
+      },
     })
   } catch (error) {
     const duration = performance.now() - startTime
 
     logger.error('Integration health check API error', { error, duration, requestId })
-    parlantLoggers.integration.error('Integration health check failed', {
-      operation: 'integration_health_check',
-      duration,
-      errorType: 'system',
-      errorCode: error instanceof Error ? error.name : 'UNKNOWN_ERROR'
-    }, requestId)
+    parlantLoggers.integration.error(
+      'Integration health check failed',
+      {
+        operation: 'integration_health_check',
+        duration,
+        errorType: 'system',
+        errorCode: error instanceof Error ? error.name : 'UNKNOWN_ERROR',
+      },
+      requestId
+    )
 
     return NextResponse.json(
       {
@@ -221,7 +240,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         timestamp: new Date().toISOString(),
         requestId,
         error: error instanceof Error ? error.message : 'Integration health check failed',
-        duration
+        duration,
       },
       {
         status: 500,
@@ -229,8 +248,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           'Content-Type': 'application/json',
           'X-Health-Status': 'unhealthy',
           'X-Service': 'integration',
-          'X-Request-Id': requestId
-        }
+          'X-Request-Id': requestId,
+        },
       }
     )
   }
@@ -263,20 +282,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       timestamp: new Date().toISOString(),
       requestId,
       message: 'Integration health cache cleared successfully',
-      duration: performance.now() - startTime
+      duration: performance.now() - startTime,
     }
 
-    parlantLoggers.integration.info('Integration health cache reset', {
-      operation: 'integration_cache_reset',
-      duration: response.duration
-    }, requestId)
+    parlantLoggers.integration.info(
+      'Integration health cache reset',
+      {
+        operation: 'integration_cache_reset',
+        duration: response.duration,
+      },
+      requestId
+    )
 
     return NextResponse.json(response, {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'X-Request-Id': requestId
-      }
+        'X-Request-Id': requestId,
+      },
     })
   } catch (error) {
     const duration = performance.now() - startTime
@@ -290,7 +313,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         timestamp: new Date().toISOString(),
         requestId,
         error: error instanceof Error ? error.message : 'Cache reset failed',
-        duration
+        duration,
       },
       { status: 500 }
     )
@@ -309,26 +332,38 @@ function generateNextSteps(comprehensiveResult: any): string[] {
       case 'unhealthy':
         switch (name) {
           case 'sim-table-access':
-            nextSteps.push('Verify database connection and ensure core Sim tables (user, workspace, workflow) are accessible')
+            nextSteps.push(
+              'Verify database connection and ensure core Sim tables (user, workspace, workflow) are accessible'
+            )
             break
           case 'parlant-schema':
-            nextSteps.push('Run Parlant database migration to create required tables and foreign key constraints')
+            nextSteps.push(
+              'Run Parlant database migration to create required tables and foreign key constraints'
+            )
             break
           case 'workspace-isolation':
-            nextSteps.push('Ensure workspace table has proper structure and contains workspace data for multi-tenancy')
+            nextSteps.push(
+              'Ensure workspace table has proper structure and contains workspace data for multi-tenancy'
+            )
             break
           case 'api-integration':
-            nextSteps.push('Review API endpoint configuration and environment variables for integration services')
+            nextSteps.push(
+              'Review API endpoint configuration and environment variables for integration services'
+            )
             break
         }
         break
       case 'degraded':
         switch (name) {
           case 'parlant-schema':
-            nextSteps.push('Complete Parlant schema setup - some tables or constraints may be missing')
+            nextSteps.push(
+              'Complete Parlant schema setup - some tables or constraints may be missing'
+            )
             break
           case 'workspace-isolation':
-            nextSteps.push('Verify Parlant-workspace foreign key relationships are properly configured')
+            nextSteps.push(
+              'Verify Parlant-workspace foreign key relationships are properly configured'
+            )
             break
         }
         break
@@ -359,7 +394,9 @@ function generateComponentRecommendations(componentResult: any): string[] {
     switch (componentResult.component) {
       case 'sim-table-access':
         if (!componentResult.details.coreTablesAccessible) {
-          recommendations.push('Ensure database connection is stable and core tables are accessible')
+          recommendations.push(
+            'Ensure database connection is stable and core tables are accessible'
+          )
           recommendations.push('Verify database user has proper permissions for table access')
         }
         break
@@ -368,7 +405,9 @@ function generateComponentRecommendations(componentResult: any): string[] {
           recommendations.push('Run Parlant database migration to create required tables')
         }
         if (!componentResult.details.schema?.foreignKeysConfigured) {
-          recommendations.push('Configure foreign key constraints to link Parlant data with Sim workspaces')
+          recommendations.push(
+            'Configure foreign key constraints to link Parlant data with Sim workspaces'
+          )
         }
         break
     }
@@ -386,6 +425,6 @@ function calculateReadinessScore(summary: any): number {
   const degraded = summary.degradedChecks || 0
 
   // Full points for healthy, half points for degraded, no points for unhealthy
-  const score = ((healthy * 100) + (degraded * 50)) / total
+  const score = (healthy * 100 + degraded * 50) / total
   return Math.round(score)
 }

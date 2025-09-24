@@ -39,86 +39,74 @@
  * ```
  */
 
-// Core services
-export { ParlantClient, getParlantClient, createParlantClient, closeParlantClient } from './client'
 export { AgentService, agentService } from './agent-service'
-export { SessionService, sessionService } from './session-service'
-
+// Core services
+export { closeParlantClient, createParlantClient, getParlantClient, ParlantClient } from './client'
 // Configuration and utilities
-export { parlantConfig, serviceConfig, getParlantConfig, validateConfig } from './config'
-
+export { getParlantConfig, parlantConfig, serviceConfig, validateConfig } from './config'
 // Error handling
 export {
-  ParlantError,
-  ParlantNetworkError,
-  ParlantAuthError,
-  ParlantValidationError,
-  ParlantRateLimitError,
-  ParlantServerError,
-  ParlantConfigError,
-  ParlantTimeoutError,
-  ParlantErrorHandler,
   errorHandler,
+  formatErrorForUser,
+  getRequestId,
   isParlantError,
   isRetryableError,
-  getRequestId,
-  formatErrorForUser
+  ParlantAuthError,
+  ParlantConfigError,
+  ParlantError,
+  ParlantErrorHandler,
+  ParlantNetworkError,
+  ParlantRateLimitError,
+  ParlantServerError,
+  ParlantTimeoutError,
+  ParlantValidationError,
 } from './error-handler'
-
+export { SessionService, sessionService } from './session-service'
 // Type definitions
+// Re-export commonly used types with aliases for convenience
 export type {
   // Core types
   Agent,
-  Session,
-  Event,
-  Guideline,
-  Journey,
-  JourneyStep,
+  Agent as ParlantAgent,
   AgentConfig,
-
   // Request/response types
   AgentCreateRequest,
-  AgentUpdateRequest,
+  AgentCreateRequest as CreateAgentRequest,
   AgentListQuery,
-  SessionCreateRequest,
-  SessionListQuery,
-  EventCreateRequest,
-  EventListQuery,
-
+  AgentUpdateRequest,
   // API response types
   ApiResponse,
-  PaginatedResponse,
-  ParlantHealthStatus,
-  HealthCheck,
-
-  // Configuration types
-  ParlantClientConfig,
-  WorkspaceContext,
   AuthContext,
-  LongPollingOptions,
-
-  // Error types
-  ParlantApiErrorDetails,
-  ValidationError,
-  RateLimitInfo,
-
+  Event,
+  Event as ParlantEvent,
+  EventCreateRequest,
+  EventCreateRequest as CreateEventRequest,
+  EventListQuery,
   // Event types
   EventType,
+  Guideline,
+  HealthCheck,
+  Journey,
+  JourneyStep,
+  LongPollingOptions,
+  PaginatedResponse,
+  // Error types
+  ParlantApiErrorDetails,
+  // Configuration types
+  ParlantClientConfig,
+  ParlantHealthStatus,
+  RateLimitInfo,
+  Session,
+  Session as ParlantSession,
+  SessionCreateRequest,
+  SessionCreateRequest as CreateSessionRequest,
+  SessionListQuery,
   StreamingEvent,
-
   // Tool types (for future extension)
   Tool,
-  ToolExecution
-} from './types'
-
-// Re-export commonly used types with aliases for convenience
-export type {
-  Agent as ParlantAgent,
-  Session as ParlantSession,
-  Event as ParlantEvent,
-  AgentCreateRequest as CreateAgentRequest,
-  SessionCreateRequest as CreateSessionRequest,
-  EventCreateRequest as CreateEventRequest
+  ToolExecution,
+  ValidationError,
+  WorkspaceContext,
 } from './types'
 
 /**
@@ -142,7 +130,7 @@ export async function checkParlantHealth(): Promise<{
       healthy: health.status === 'healthy',
       status: health.status,
       details: health,
-      latency
+      latency,
     }
   } catch (error) {
     return {
@@ -150,9 +138,9 @@ export async function checkParlantHealth(): Promise<{
       status: 'error',
       details: {
         error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      latency: Date.now() - startTime
+      latency: Date.now() - startTime,
     }
   }
 }
@@ -191,9 +179,9 @@ export async function initializeParlantIntegration(config?: {
       services: {
         client,
         agentService,
-        sessionService
+        sessionService,
       },
-      health
+      health,
     }
   } catch (error) {
     return {
@@ -201,9 +189,9 @@ export async function initializeParlantIntegration(config?: {
       services: {
         client: getParlantClient(),
         agentService,
-        sessionService
+        sessionService,
       },
-      error: error instanceof Error ? error.message : 'Initialization failed'
+      error: error instanceof Error ? error.message : 'Initialization failed',
     }
   }
 }
@@ -222,7 +210,7 @@ export function createAuthContext(
     user_id: userId,
     workspace_id: workspaceId,
     key_type: keyType,
-    permissions
+    permissions,
   }
 }
 
@@ -243,16 +231,19 @@ export const parlantUtils = {
       temperature?: number
     }
   ) {
-    return agentService.createAgent({
-      name,
-      description: options?.description,
-      workspace_id: workspaceId,
-      config: {
-        model: options?.model || 'gpt-3.5-turbo',
-        temperature: options?.temperature || 0.7,
-        max_turns: 50
-      }
-    }, auth)
+    return agentService.createAgent(
+      {
+        name,
+        description: options?.description,
+        workspace_id: workspaceId,
+        config: {
+          model: options?.model || 'gpt-3.5-turbo',
+          temperature: options?.temperature || 0.7,
+          max_turns: 50,
+        },
+      },
+      auth
+    )
   },
 
   /**
@@ -266,20 +257,18 @@ export const parlantUtils = {
     customerId?: string
   ) {
     // Create session
-    const session = await sessionService.createSession({
-      agent_id: agentId,
-      workspace_id: workspaceId,
-      customer_id: customerId
-    }, auth)
+    const session = await sessionService.createSession(
+      {
+        agent_id: agentId,
+        workspace_id: workspaceId,
+        customer_id: customerId,
+      },
+      auth
+    )
 
     // Send initial message if provided
     if (initialMessage) {
-      await sessionService.sendMessage(
-        session.data.id,
-        initialMessage,
-        undefined,
-        auth
-      )
+      await sessionService.sendMessage(session.data.id, initialMessage, undefined, auth)
     }
 
     return session
@@ -288,16 +277,12 @@ export const parlantUtils = {
   /**
    * Get conversation history
    */
-  async getConversationHistory(
-    sessionId: string,
-    auth: AuthContext,
-    limit?: number
-  ) {
+  async getConversationHistory(sessionId: string, auth: AuthContext, limit?: number) {
     return sessionService.getEvents(
       sessionId,
       {
         type: 'customer_message',
-        limit: limit || 50
+        limit: limit || 50,
       },
       auth
     )
@@ -306,21 +291,12 @@ export const parlantUtils = {
   /**
    * Search for agents by capability or description
    */
-  async findAgentsForTask(
-    task: string,
-    workspaceId: string,
-    auth: AuthContext
-  ) {
-    return agentService.searchAgents(
-      task,
-      workspaceId,
-      auth,
-      {
-        status: 'active',
-        limit: 10
-      }
-    )
-  }
+  async findAgentsForTask(task: string, workspaceId: string, auth: AuthContext) {
+    return agentService.searchAgents(task, workspaceId, auth, {
+      status: 'active',
+      limit: 10,
+    })
+  },
 }
 
 /**
@@ -331,7 +307,7 @@ export const version = {
   minor: 0,
   patch: 0,
   build: 'integration-bridge',
-  toString: () => '1.0.0-integration-bridge'
+  toString: () => '1.0.0-integration-bridge',
 }
 
 /**
@@ -350,5 +326,5 @@ export default {
   createAuthContext,
 
   // Version
-  version
+  version,
 }

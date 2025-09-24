@@ -6,20 +6,19 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
+import { type ParlantClient, parlantClient } from './client'
 import type {
-  Session,
-  SessionCreateRequest,
-  SessionListQuery,
+  ApiResponse,
+  AuthContext,
   Event,
   EventCreateRequest,
   EventListQuery,
-  ApiResponse,
+  LongPollingOptions,
   PaginatedResponse,
-  AuthContext,
-  LongPollingOptions
+  Session,
+  SessionCreateRequest,
+  SessionListQuery,
 } from './types'
-import { ParlantClient } from './client'
-import { parlantClient } from './client'
 
 const logger = createLogger('SessionService')
 
@@ -54,26 +53,22 @@ export class SessionService {
       agentId: request.agent_id,
       workspaceId: request.workspace_id,
       customerId: request.customer_id,
-      userId: auth.user_id
+      userId: auth.user_id,
     })
 
     try {
       const sessionData = {
         ...request,
-        user_id: auth.user_id // Ensure user ID from auth context
+        user_id: auth.user_id, // Ensure user ID from auth context
       }
 
-      const response = await this.client.post<Session>(
-        '/sessions',
-        sessionData,
-        { auth }
-      )
+      const response = await this.client.post<Session>('/sessions', sessionData, { auth })
 
       if (response.success && response.data) {
         logger.info('Session created successfully', {
           sessionId: response.data.id,
           agentId: response.data.agent_id,
-          workspaceId: response.data.workspace_id
+          workspaceId: response.data.workspace_id,
         })
       }
 
@@ -81,12 +76,12 @@ export class SessionService {
       return {
         success: response.success,
         data: response.data!,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to create session', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        request
+        request,
       })
       throw error
     }
@@ -95,34 +90,28 @@ export class SessionService {
   /**
    * Get a session by ID
    */
-  async getSession(
-    sessionId: string,
-    auth: AuthContext
-  ): Promise<ApiResponse<Session>> {
+  async getSession(sessionId: string, auth: AuthContext): Promise<ApiResponse<Session>> {
     logger.debug('Getting session', { sessionId, userId: auth.user_id })
 
     try {
-      const response = await this.client.get<Session>(
-        `/sessions/${sessionId}`,
-        { auth }
-      )
+      const response = await this.client.get<Session>(`/sessions/${sessionId}`, { auth })
 
       if (response.success && response.data) {
         logger.debug('Session retrieved successfully', {
           sessionId: response.data.id,
-          status: response.data.status
+          status: response.data.status,
         })
       }
 
       return {
         success: response.success,
         data: response.data!,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to get session', {
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -144,7 +133,7 @@ export class SessionService {
       offset = 0,
       sortBy = 'created_at',
       sortOrder = 'desc',
-      includeInactive = false
+      includeInactive = false,
     } = params
 
     logger.debug('Listing sessions', {
@@ -154,7 +143,7 @@ export class SessionService {
       status,
       limit,
       offset,
-      authUserId: auth.user_id
+      authUserId: auth.user_id,
     })
 
     try {
@@ -162,7 +151,7 @@ export class SessionService {
         limit: limit.toString(),
         offset: offset.toString(),
         sortBy,
-        sortOrder
+        sortOrder,
       })
 
       if (agent_id) queryParams.set('agent_id', agent_id)
@@ -171,16 +160,15 @@ export class SessionService {
       if (status) queryParams.set('status', status)
       if (includeInactive) queryParams.set('include_inactive', 'true')
 
-      const response = await this.client.get<Session[]>(
-        `/sessions?${queryParams.toString()}`,
-        { auth }
-      )
+      const response = await this.client.get<Session[]>(`/sessions?${queryParams.toString()}`, {
+        auth,
+      })
 
       if (response.success && response.data) {
         logger.debug('Sessions listed successfully', {
           count: response.data.length,
           workspace_id,
-          agent_id
+          agent_id,
         })
 
         // Convert to paginated response format
@@ -192,8 +180,8 @@ export class SessionService {
             total: response.data.length, // This would come from headers in a real implementation
             limit,
             offset,
-            has_more: response.data.length === limit
-          }
+            has_more: response.data.length === limit,
+          },
         }
       }
 
@@ -205,13 +193,13 @@ export class SessionService {
           total: 0,
           limit,
           offset,
-          has_more: false
-        }
+          has_more: false,
+        },
       }
     } catch (error) {
       logger.error('Failed to list sessions', {
         params,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -220,35 +208,28 @@ export class SessionService {
   /**
    * End a session
    */
-  async endSession(
-    sessionId: string,
-    auth: AuthContext
-  ): Promise<ApiResponse<Session>> {
+  async endSession(sessionId: string, auth: AuthContext): Promise<ApiResponse<Session>> {
     logger.info('Ending session', { sessionId, userId: auth.user_id })
 
     try {
-      const response = await this.client.post<Session>(
-        `/sessions/${sessionId}/end`,
-        {},
-        { auth }
-      )
+      const response = await this.client.post<Session>(`/sessions/${sessionId}/end`, {}, { auth })
 
       if (response.success && response.data) {
         logger.info('Session ended successfully', {
           sessionId: response.data.id,
-          status: response.data.status
+          status: response.data.status,
         })
       }
 
       return {
         success: response.success,
         data: response.data!,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to end session', {
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -257,35 +238,28 @@ export class SessionService {
   /**
    * Pause a session
    */
-  async pauseSession(
-    sessionId: string,
-    auth: AuthContext
-  ): Promise<ApiResponse<Session>> {
+  async pauseSession(sessionId: string, auth: AuthContext): Promise<ApiResponse<Session>> {
     logger.info('Pausing session', { sessionId, userId: auth.user_id })
 
     try {
-      const response = await this.client.post<Session>(
-        `/sessions/${sessionId}/pause`,
-        {},
-        { auth }
-      )
+      const response = await this.client.post<Session>(`/sessions/${sessionId}/pause`, {}, { auth })
 
       if (response.success && response.data) {
         logger.info('Session paused successfully', {
           sessionId: response.data.id,
-          status: response.data.status
+          status: response.data.status,
         })
       }
 
       return {
         success: response.success,
         data: response.data!,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to pause session', {
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -294,10 +268,7 @@ export class SessionService {
   /**
    * Resume a paused session
    */
-  async resumeSession(
-    sessionId: string,
-    auth: AuthContext
-  ): Promise<ApiResponse<Session>> {
+  async resumeSession(sessionId: string, auth: AuthContext): Promise<ApiResponse<Session>> {
     logger.info('Resuming session', { sessionId, userId: auth.user_id })
 
     try {
@@ -310,19 +281,19 @@ export class SessionService {
       if (response.success && response.data) {
         logger.info('Session resumed successfully', {
           sessionId: response.data.id,
-          status: response.data.status
+          status: response.data.status,
         })
       }
 
       return {
         success: response.success,
         data: response.data!,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to resume session', {
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -340,35 +311,33 @@ export class SessionService {
       sessionId,
       eventType: event.type,
       source: event.source,
-      userId: auth.user_id
+      userId: auth.user_id,
     })
 
     try {
-      const response = await this.client.post<Event>(
-        `/sessions/${sessionId}/events`,
-        event,
-        { auth }
-      )
+      const response = await this.client.post<Event>(`/sessions/${sessionId}/events`, event, {
+        auth,
+      })
 
       if (response.success && response.data) {
         logger.info('Event added successfully', {
           eventId: response.data.id,
           sessionId: response.data.session_id,
           type: response.data.type,
-          offset: response.data.offset
+          offset: response.data.offset,
         })
       }
 
       return {
         success: response.success,
         data: response.data!,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to add event', {
         sessionId,
         event,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -387,14 +356,14 @@ export class SessionService {
       sessionId,
       messageLength: message.length,
       hasMetadata: !!metadata,
-      userId: auth?.user_id
+      userId: auth?.user_id,
     })
 
     const event: EventCreateRequest = {
       type: 'customer_message',
       content: message,
       source: 'customer',
-      metadata
+      metadata,
     }
 
     return this.addEvent(sessionId, event, auth!)
@@ -405,16 +374,11 @@ export class SessionService {
    */
   async getEvents(
     sessionId: string,
-    query: Omit<EventListQuery, 'session_id'> = {},
+    query: Omit<EventListQuery, 'session_id'>,
     auth: AuthContext,
     longPoll?: LongPollingOptions
   ): Promise<PaginatedResponse<Event>> {
-    const {
-      type,
-      source,
-      offset = 0,
-      limit = 50
-    } = query
+    const { type, source, offset = 0, limit = 50 } = query
 
     logger.debug('Getting session events', {
       sessionId,
@@ -423,13 +387,13 @@ export class SessionService {
       offset,
       limit,
       longPoll,
-      userId: auth.user_id
+      userId: auth.user_id,
     })
 
     try {
       const queryParams = new URLSearchParams({
         offset: offset.toString(),
-        limit: limit.toString()
+        limit: limit.toString(),
       })
 
       if (type) queryParams.set('type', type)
@@ -444,7 +408,7 @@ export class SessionService {
         `/sessions/${sessionId}/events?${queryParams.toString()}`,
         {
           auth,
-          timeout: longPoll?.timeout || undefined
+          timeout: longPoll?.timeout || undefined,
         }
       )
 
@@ -452,7 +416,7 @@ export class SessionService {
         logger.debug('Events retrieved successfully', {
           sessionId,
           count: response.data.length,
-          hasMore: response.data.length === limit
+          hasMore: response.data.length === limit,
         })
 
         return {
@@ -463,8 +427,8 @@ export class SessionService {
             total: response.data.length, // This would come from headers in a real implementation
             limit,
             offset,
-            has_more: response.data.length === limit
-          }
+            has_more: response.data.length === limit,
+          },
         }
       }
 
@@ -476,14 +440,14 @@ export class SessionService {
           total: 0,
           limit,
           offset,
-          has_more: false
-        }
+          has_more: false,
+        },
       }
     } catch (error) {
       logger.error('Failed to get session events', {
         sessionId,
         query,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -495,20 +459,19 @@ export class SessionService {
   async getSessionStats(
     sessionId: string,
     auth: AuthContext
-  ): Promise<ApiResponse<{
-    totalEvents: number
-    messageCount: number
-    duration?: number
-    lastActivity: string
-    eventBreakdown: Record<string, number>
-  }>> {
+  ): Promise<
+    ApiResponse<{
+      totalEvents: number
+      messageCount: number
+      duration?: number
+      lastActivity: string
+      eventBreakdown: Record<string, number>
+    }>
+  > {
     logger.debug('Getting session stats', { sessionId, userId: auth.user_id })
 
     try {
-      const response = await this.client.get(
-        `/sessions/${sessionId}/stats`,
-        { auth }
-      )
+      const response = await this.client.get(`/sessions/${sessionId}/stats`, { auth })
 
       if (response.success) {
         logger.debug('Session stats retrieved successfully', { sessionId })
@@ -517,12 +480,12 @@ export class SessionService {
       return {
         success: response.success,
         data: response.data!,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to get session stats', {
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -531,17 +494,11 @@ export class SessionService {
   /**
    * Delete a session and all its events
    */
-  async deleteSession(
-    sessionId: string,
-    auth: AuthContext
-  ): Promise<ApiResponse<void>> {
+  async deleteSession(sessionId: string, auth: AuthContext): Promise<ApiResponse<void>> {
     logger.warn('Deleting session', { sessionId, userId: auth.user_id })
 
     try {
-      const response = await this.client.delete<void>(
-        `/sessions/${sessionId}`,
-        { auth }
-      )
+      const response = await this.client.delete<void>(`/sessions/${sessionId}`, { auth })
 
       if (response.success) {
         logger.info('Session deleted successfully', { sessionId })
@@ -550,12 +507,12 @@ export class SessionService {
       return {
         success: response.success,
         data: undefined,
-        timestamp: response.timestamp
+        timestamp: response.timestamp,
       }
     } catch (error) {
       logger.error('Failed to delete session', {
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }

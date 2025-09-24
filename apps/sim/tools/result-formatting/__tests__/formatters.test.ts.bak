@@ -1,0 +1,1322 @@
+/**
+ * Universal Tool Adapter System - Formatter Tests
+ *
+ * Comprehensive test suite for all result formatters ensuring correct behavior,
+ * quality standards, and conversational presentation.
+ */
+
+import { describe, it, expect, beforeEach, jest } from '@jest/globals'
+import type { ToolResponse, ToolConfig } from '@/tools/types'
+import type { FormatContext } from '../types'
+
+import { TextFormatter } from '../formatters/text-formatter'
+import { TableFormatter } from '../formatters/table-formatter'
+import { JsonFormatter } from '../formatters/json-formatter'
+import { ChartFormatter } from '../formatters/chart-formatter'
+import { CardFormatter } from '../formatters/card-formatter'
+import { ImageFormatter } from '../formatters/image-formatter'
+
+// Mock logger to avoid console output in tests
+jest.mock('@/lib/logs/console/logger', () => ({
+  createLogger: () => ({
+    info: jest.fn(),
+    debug: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  }),
+}))
+
+describe('Result Formatters', () => {
+  let mockToolConfig: ToolConfig
+  let mockContext: FormatContext
+
+  beforeEach(() => {
+    mockToolConfig = {
+      id: 'test_tool',
+      name: 'Test Tool',
+      description: 'A tool for testing purposes',
+      version: '1.0.0',
+      params: {},
+      request: {
+        url: '/api/test',
+        method: 'POST',
+        headers: () => ({ 'Content-Type': 'application/json' }),
+      },
+    }
+
+    mockContext = {
+      toolId: 'test_tool',
+      toolConfig: mockToolConfig,
+      displayMode: 'detailed',
+      targetAudience: 'general',
+      locale: 'en-US',
+      timezone: 'UTC',
+    }
+  })
+
+  describe('TextFormatter', () => {
+    let formatter: TextFormatter
+
+    beforeEach(() => {
+      formatter = new TextFormatter()
+    })
+
+    it('should format successful string result', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: 'Hello, world!',
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(true)
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.format).toBe('text')
+      expect(formatted.content.type).toBe('text')
+      expect(formatted.content.text).toBe('Hello, world!')
+      expect(formatted.summary.headline).toContain('Test Tool completed successfully')
+      expect(formatted.metadata.qualityScore).toBeGreaterThan(0.5)
+    })
+
+    it('should format error result', async () => {
+      const result: ToolResponse = {
+        success: false,
+        output: {},
+        error: 'Something went wrong',
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.format).toBe('text')
+      expect(formatted.content.text).toContain('Something went wrong')
+      expect(formatted.summary.headline).toContain('failed with an error')
+    })
+
+    it('should format object result', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          id: 123,
+          name: 'John Doe',
+          email: 'john@example.com',
+          status: 'active',
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.content.text).toContain('Id: 123')
+      expect(formatted.content.text).toContain('Name: John Doe')
+      expect(formatted.content.text).toContain('Email: john@example.com')
+      expect(formatted.content.text).toContain('Status: active')
+    })
+
+    it('should format array result', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: ['apple', 'banana', 'cherry'],
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.content.text).toContain('3 items')
+      expect(formatted.content.text).toContain('1. apple')
+      expect(formatted.content.text).toContain('2. banana')
+      expect(formatted.content.text).toContain('3. cherry')
+    })
+
+    it('should generate appropriate suggestions', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: { results: [], total: 0 },
+      }
+
+      const searchContext = { ...mockContext, toolId: 'search_tool' }
+      const formatted = await formatter.format(result, searchContext)
+
+      expect(formatted.summary.suggestions).toContain('Try different search terms')
+    })
+
+    it('should handle markdown representation for rich text', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: 'This is a long text with multiple paragraphs.\n\nIt has URLs like https://example.com and lists:\n* Item 1\n* Item 2',
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.representations).toHaveLength(2)
+      const markdownRep = formatted.representations.find(r => r.format === 'markdown')
+      expect(markdownRep).toBeDefined()
+      expect(markdownRep?.content.markdown).toContain('[https://example.com](https://example.com)')
+    })
+  })
+
+  describe('TableFormatter', () => {
+    let formatter: TableFormatter
+
+    beforeEach(() => {
+      formatter = new TableFormatter()
+    })
+
+    it('should format array of objects as table', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: [
+          { id: 1, name: 'Alice', age: 30, active: true },
+          { id: 2, name: 'Bob', age: 25, active: false },
+          { id: 3, name: 'Charlie', age: 35, active: true },
+        ],
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(true)
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.format).toBe('table')
+      expect(formatted.content.type).toBe('table')
+      expect(formatted.content.rows).toHaveLength(3)
+      expect(formatted.content.columns).toHaveLength(4) // id, name, age, active
+      expect(formatted.summary.headline).toContain('3 records')
+    })
+
+    it('should detect appropriate column types', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: [
+          { id: 1, email: 'test@example.com', created: '2023-01-01T00:00:00Z', score: 95.5, active: true },
+        ],
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+      const content = formatted.content as any
+
+      const idColumn = content.columns.find((c: any) => c.key === 'id')
+      const emailColumn = content.columns.find((c: any) => c.key === 'email')
+      const dateColumn = content.columns.find((c: any) => c.key === 'created')
+      const scoreColumn = content.columns.find((c: any) => c.key === 'score')
+      const boolColumn = content.columns.find((c: any) => c.key === 'active')
+
+      expect(idColumn.type).toBe('number')
+      expect(emailColumn.type).toBe('email')
+      expect(dateColumn.type).toBe('date')
+      expect(scoreColumn.type).toBe('number')
+      expect(boolColumn.type).toBe('boolean')
+    })
+
+    it('should handle empty array', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: [],
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.content.rows).toHaveLength(0)
+      expect(formatted.content.columns).toHaveLength(0)
+      expect(formatted.summary.headline).toContain('0 records')
+    })
+
+    it('should create chart representation for numeric data', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: [
+          { category: 'A', value: 10 },
+          { category: 'B', value: 20 },
+          { category: 'C', value: 15 },
+        ],
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+      const chartRep = formatted.representations.find(r => r.format === 'chart')
+
+      expect(chartRep).toBeDefined()
+      expect(chartRep?.content.chartType).toBe('bar')
+    })
+
+    it('should add pagination for large datasets', async () => {
+      const largeData = Array.from({ length: 100 }, (_, i) => ({ id: i, name: `Item ${i}` }))
+      const result: ToolResponse = {
+        success: true,
+        output: largeData,
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+      const content = formatted.content as any
+
+      expect(content.pagination).toBeDefined()
+      expect(content.pagination.totalRows).toBe(100)
+      expect(content.pagination.pageSize).toBe(25)
+      expect(content.pagination.totalPages).toBe(4)
+    })
+
+    it('should not format non-tabular data', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: 'Just a string',
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(false)
+    })
+  })
+
+  describe('JsonFormatter', () => {
+    let formatter: JsonFormatter
+
+    beforeEach(() => {
+      formatter = new JsonFormatter()
+    })
+
+    it('should format complex nested object', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          user: {
+            id: 123,
+            profile: {
+              name: 'John Doe',
+              preferences: {
+                theme: 'dark',
+                language: 'en',
+              },
+            },
+            activities: [
+              { type: 'login', timestamp: '2023-01-01T10:00:00Z' },
+              { type: 'logout', timestamp: '2023-01-01T18:00:00Z' },
+            ],
+          },
+          meta: {
+            total: 2,
+            page: 1,
+          },
+        },
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(true)
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.format).toBe('json')
+      expect(formatted.content.type).toBe('json')
+      expect(formatted.content.data).toEqual(result.output)
+      expect(formatted.content.schema).toBeDefined()
+      expect(formatted.content.displayHints?.highlightFields).toContain('total')
+    })
+
+    it('should generate appropriate schema', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          id: 123,
+          name: 'Test',
+          tags: ['a', 'b', 'c'],
+          metadata: {
+            created: '2023-01-01',
+            version: 1,
+          },
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+      const schema = formatted.content.schema
+
+      expect(schema.type).toBe('object')
+      expect(schema.properties.id.type).toBe('number')
+      expect(schema.properties.name.type).toBe('string')
+      expect(schema.properties.tags.type).toBe('array')
+      expect(schema.properties.metadata.type).toBe('object')
+    })
+
+    it('should detect string formats', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          email: 'test@example.com',
+          website: 'https://example.com',
+          date: '2023-01-01T10:00:00Z',
+          uuid: '550e8400-e29b-41d4-a716-446655440000',
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+      const schema = formatted.content.schema
+
+      expect(schema.properties.email.format).toBe('email')
+      expect(schema.properties.website.format).toBe('url')
+      expect(schema.properties.date.format).toBe('date-time')
+      expect(schema.properties.uuid.format).toBe('uuid')
+    })
+
+    it('should prefer JSON for deeply nested data', async () => {
+      const deepData = {
+        level1: {
+          level2: {
+            level3: {
+              level4: {
+                value: 'deep',
+              },
+            },
+          },
+        },
+      }
+
+      const result: ToolResponse = {
+        success: true,
+        output: deepData,
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(true)
+    })
+
+    it('should create table representation for suitable data', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          users: [
+            { id: 1, name: 'Alice' },
+            { id: 2, name: 'Bob' },
+          ],
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+      const tableRep = formatted.representations.find(r => r.format === 'table')
+
+      expect(tableRep).toBeDefined()
+    })
+
+    it('should not format simple data types', async () => {
+      const stringResult: ToolResponse = { success: true, output: 'simple string' }
+      const numberResult: ToolResponse = { success: true, output: 42 }
+
+      expect(formatter.canFormat(stringResult, mockContext)).toBe(false)
+      expect(formatter.canFormat(numberResult, mockContext)).toBe(false)
+    })
+  })
+
+  describe('Formatter Quality and Validation', () => {
+    it('should generate high-quality summaries', async () => {
+      const formatter = new TextFormatter()
+      const result: ToolResponse = {
+        success: true,
+        output: { message: 'Task completed', id: 'task_123', status: 'done' },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      // Check summary quality
+      expect(formatted.summary.headline).toBeTruthy()
+      expect(formatted.summary.headline.length).toBeGreaterThan(10)
+      expect(formatted.summary.description).toBeTruthy()
+      expect(formatted.summary.description.length).toBeGreaterThan(20)
+      expect(formatted.summary.highlights).toBeDefined()
+      expect(formatted.summary.suggestions).toBeDefined()
+    })
+
+    it('should maintain quality scores above threshold', async () => {
+      const formatters = [new TextFormatter(), new TableFormatter(), new JsonFormatter()]
+
+      for (const formatter of formatters) {
+        const result: ToolResponse = {
+          success: true,
+          output: { test: 'data', value: 123 },
+        }
+
+        if (formatter.canFormat(result, mockContext)) {
+          const formatted = await formatter.format(result, mockContext)
+          expect(formatted.metadata.qualityScore).toBeGreaterThanOrEqual(0.5)
+        }
+      }
+    })
+
+    it('should provide multiple representations when appropriate', async () => {
+      const tableFormatter = new TableFormatter()
+      const result: ToolResponse = {
+        success: true,
+        output: [
+          { name: 'Product A', sales: 100 },
+          { name: 'Product B', sales: 150 },
+        ],
+      }
+
+      const formatted = await tableFormatter.format(result, mockContext)
+
+      expect(formatted.representations.length).toBeGreaterThan(1)
+      expect(formatted.representations.some(r => r.format === 'chart')).toBe(true)
+      expect(formatted.representations.some(r => r.format === 'json')).toBe(true)
+    })
+
+    it('should handle edge cases gracefully', async () => {
+      const formatter = new TextFormatter()
+
+      // Empty result
+      const emptyResult: ToolResponse = { success: true, output: null }
+      const emptyFormatted = await formatter.format(emptyResult, mockContext)
+      expect(emptyFormatted.summary.headline).toBeTruthy()
+
+      // Very large result
+      const largeData = Array.from({ length: 1000 }, (_, i) => ({ id: i }))
+      const largeResult: ToolResponse = { success: true, output: largeData }
+      const largeFormatted = await formatter.format(largeResult, mockContext)
+      expect(largeFormatted.summary.highlights).toContain('1000 items')
+    })
+  })
+
+  describe('Context-Aware Formatting', () => {
+    it('should adapt to display mode', async () => {
+      const formatter = new JsonFormatter()
+      const result: ToolResponse = {
+        success: true,
+        output: { deep: { nested: { data: { value: 1 } } } },
+      }
+
+      const compactContext = { ...mockContext, displayMode: 'compact' as const }
+      const detailedContext = { ...mockContext, displayMode: 'detailed' as const }
+
+      const compactFormatted = await formatter.format(result, compactContext)
+      const detailedFormatted = await formatter.format(result, detailedContext)
+
+      expect(compactFormatted.content.displayHints?.maxDepth).toBeLessThan(
+        detailedFormatted.content.displayHints?.maxDepth || 0
+      )
+    })
+
+    it('should consider target audience', async () => {
+      const formatter = new TextFormatter()
+      const result: ToolResponse = {
+        success: true,
+        output: { api_response: 'success', status_code: 200 },
+      }
+
+      const technicalContext = { ...mockContext, targetAudience: 'technical' as const }
+      const businessContext = { ...mockContext, targetAudience: 'business' as const }
+
+      const technicalFormatted = await formatter.format(result, technicalContext)
+      const businessFormatted = await formatter.format(result, businessContext)
+
+      // Both should work, but might have different presentations
+      expect(technicalFormatted.summary.headline).toBeTruthy()
+      expect(businessFormatted.summary.headline).toBeTruthy()
+    })
+
+    it('should handle different locales', async () => {
+      const formatter = new TextFormatter()
+      const result: ToolResponse = {
+        success: true,
+        output: { count: 1234.56 },
+      }
+
+      const usContext = { ...mockContext, locale: 'en-US' }
+      const formatted = await formatter.format(result, usContext)
+
+      expect(formatted.content.text).toContain('1,234.56')
+    })
+  })
+
+  describe('Performance and Reliability', () => {
+    it('should complete formatting within reasonable time', async () => {
+      const formatter = new TextFormatter()
+      const largeResult: ToolResponse = {
+        success: true,
+        output: Array.from({ length: 10000 }, (_, i) => ({ id: i, data: `item_${i}` })),
+      }
+
+      const startTime = Date.now()
+      const formatted = await formatter.format(largeResult, mockContext)
+      const duration = Date.now() - startTime
+
+      expect(duration).toBeLessThan(5000) // Should complete in under 5 seconds
+      expect(formatted.metadata.processingTime).toBeLessThan(duration)
+    })
+
+    it('should handle malformed data gracefully', async () => {
+      const formatter = new JsonFormatter()
+
+      const circularObj: any = { name: 'test' }
+      circularObj.self = circularObj
+
+      // This should not cause infinite recursion
+      const result: ToolResponse = {
+        success: true,
+        output: { circular: circularObj },
+      }
+
+      // The formatter should handle this without throwing
+      await expect(formatter.format(result, mockContext)).resolves.toBeDefined()
+    })
+
+    it('should maintain consistent behavior across multiple calls', async () => {
+      const formatter = new TableFormatter()
+      const result: ToolResponse = {
+        success: true,
+        output: [
+          { id: 1, name: 'Alice' },
+          { id: 2, name: 'Bob' },
+        ],
+      }
+
+      const formatted1 = await formatter.format(result, mockContext)
+      const formatted2 = await formatter.format(result, mockContext)
+
+      expect(formatted1.format).toBe(formatted2.format)
+      expect(formatted1.content.columns).toEqual(formatted2.content.columns)
+      expect(formatted1.content.rows).toEqual(formatted2.content.rows)
+    })
+  })
+
+  describe('ChartFormatter', () => {
+    let formatter: ChartFormatter
+
+    beforeEach(() => {
+      formatter = new ChartFormatter()
+    })
+
+    it('should format numerical array data as chart', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: [
+          { category: 'Q1', revenue: 100000, expenses: 80000 },
+          { category: 'Q2', revenue: 120000, expenses: 90000 },
+          { category: 'Q3', revenue: 110000, expenses: 85000 },
+          { category: 'Q4', revenue: 140000, expenses: 95000 },
+        ],
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(true)
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.format).toBe('chart')
+      expect(formatted.content.type).toBe('chart')
+      expect(['bar', 'line', 'pie', 'scatter']).toContain(formatted.content.chartType)
+      expect(formatted.content.data).toHaveLength(4)
+      expect(formatted.summary.headline).toContain('chart')
+    })
+
+    it('should select appropriate chart type for time series data', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: [
+          { x: '2023-01-01', y: 100 },
+          { x: '2023-01-02', y: 110 },
+          { x: '2023-01-03', y: 95 },
+        ],
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.content.chartType).toBe('line')
+    })
+
+    it('should create multiple representations for chart data', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: [
+          { name: 'Product A', sales: 1000 },
+          { name: 'Product B', sales: 1500 },
+        ],
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.representations.length).toBeGreaterThan(1)
+      expect(formatted.representations.some(r => r.format === 'table')).toBe(true)
+      expect(formatted.representations.some(r => r.format === 'text')).toBe(true)
+    })
+
+    it('should calculate statistics for numerical data', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: [
+          { category: 'A', value: 10 },
+          { category: 'B', value: 20 },
+          { category: 'C', value: 15 },
+        ],
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.summary.highlights).toContain('3 data points')
+      expect(formatted.summary.description).toContain('ranges from')
+    })
+
+    it('should not format non-numerical data', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: ['text', 'more text', 'even more text'],
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(false)
+    })
+
+    it('should handle insufficient data gracefully', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: [{ value: 42 }], // Only one data point
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(false)
+    })
+
+    it('should generate appropriate chart config', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: [
+          { category: 'A', revenue: 100, expenses: 80 },
+          { category: 'B', revenue: 120, expenses: 90 },
+        ],
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+      const config = formatted.content.config
+
+      expect(config.xAxis).toBeDefined()
+      expect(config.yAxis).toBeDefined()
+      expect(config.colors).toBeDefined()
+      expect(config.tooltips).toBe(true)
+      expect(config.responsive).toBe(true)
+    })
+  })
+
+  describe('CardFormatter', () => {
+    let formatter: CardFormatter
+
+    beforeEach(() => {
+      formatter = new CardFormatter()
+    })
+
+    it('should format object data as card', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          id: 'user_123',
+          name: 'John Doe',
+          email: 'john@example.com',
+          role: 'admin',
+          lastLogin: '2023-01-15T10:30:00Z',
+          profileImage: 'https://example.com/avatar.jpg',
+        },
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(true)
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.format).toBe('card')
+      expect(formatted.content.type).toBe('card')
+      expect(formatted.content.title).toContain('John Doe')
+      expect(formatted.content.fields).toBeDefined()
+      expect(formatted.content.fields.length).toBeGreaterThan(0)
+    })
+
+    it('should identify and use header image', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          title: 'Product Launch',
+          description: 'New product announcement',
+          image: 'https://example.com/product.jpg',
+          status: 'active',
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.content.headerImage).toBe('https://example.com/product.jpg')
+    })
+
+    it('should organize fields by priority', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          id: 'item_456',
+          name: 'Important Item',
+          description: 'This is very important',
+          metadata: { created: '2023-01-01' },
+          internal_id: 'xyz789',
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+      const fields = formatted.content.fields
+
+      // Priority fields should come first
+      const nameField = fields.find(f => f.key === 'name')
+      const internalField = fields.find(f => f.key === 'internal_id')
+
+      expect(nameField).toBeDefined()
+      expect(internalField).toBeDefined()
+      expect(fields.indexOf(nameField!)).toBeLessThan(fields.indexOf(internalField!))
+    })
+
+    it('should handle nested object fields', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          user: {
+            profile: {
+              name: 'Alice Smith',
+              settings: {
+                theme: 'dark',
+                notifications: true,
+              },
+            },
+          },
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.content.fields.some(f => f.key.includes('profile'))).toBe(true)
+    })
+
+    it('should detect and format different field types', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          email: 'test@example.com',
+          website: 'https://example.com',
+          count: 42,
+          active: true,
+          created: '2023-01-01T10:00:00Z',
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+      const fields = formatted.content.fields
+
+      expect(fields.find(f => f.key === 'email')?.type).toBe('email')
+      expect(fields.find(f => f.key === 'website')?.type).toBe('url')
+      expect(fields.find(f => f.key === 'count')?.type).toBe('number')
+      expect(fields.find(f => f.key === 'active')?.type).toBe('boolean')
+      expect(fields.find(f => f.key === 'created')?.type).toBe('date')
+    })
+
+    it('should provide multiple representations', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          id: 123,
+          name: 'Test Item',
+          data: [1, 2, 3, 4, 5],
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.representations.length).toBeGreaterThan(1)
+      expect(formatted.representations.some(r => r.format === 'json')).toBe(true)
+    })
+
+    it('should not format simple data types', async () => {
+      const stringResult: ToolResponse = { success: true, output: 'simple string' }
+      const arrayResult: ToolResponse = { success: true, output: [1, 2, 3] }
+
+      expect(formatter.canFormat(stringResult, mockContext)).toBe(false)
+      expect(formatter.canFormat(arrayResult, mockContext)).toBe(false)
+    })
+
+    it('should generate quality scores based on data richness', async () => {
+      const richResult: ToolResponse = {
+        success: true,
+        output: {
+          name: 'Rich Data',
+          description: 'Lots of information',
+          image: 'https://example.com/image.jpg',
+          metadata: { tags: ['important', 'featured'] },
+          stats: { views: 1000, likes: 50 },
+        },
+      }
+
+      const simpleResult: ToolResponse = {
+        success: true,
+        output: { id: 123, name: 'Simple' },
+      }
+
+      const richFormatted = await formatter.format(richResult, mockContext)
+      const simpleFormatted = await formatter.format(simpleResult, mockContext)
+
+      expect(richFormatted.metadata.qualityScore).toBeGreaterThan(simpleFormatted.metadata.qualityScore)
+    })
+  })
+
+  describe('ImageFormatter', () => {
+    let formatter: ImageFormatter
+
+    beforeEach(() => {
+      formatter = new ImageFormatter()
+    })
+
+    it('should format image URL results', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          imageUrl: 'https://example.com/image.jpg',
+          title: 'Generated Image',
+          description: 'AI-generated artwork',
+          metadata: {
+            width: 1024,
+            height: 768,
+            format: 'JPEG',
+          },
+        },
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(true)
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.format).toBe('image')
+      expect(formatted.content.type).toBe('image')
+      expect(formatted.content.url).toBe('https://example.com/image.jpg')
+      expect(formatted.content.title).toBe('Generated Image')
+    })
+
+    it('should handle base64 image data', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          image_data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+          name: 'Small Pixel',
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.content.url).toContain('data:image/png;base64,')
+      expect(formatted.content.title).toBe('Small Pixel')
+    })
+
+    it('should extract image metadata when available', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          url: 'https://example.com/photo.jpg',
+          width: 1920,
+          height: 1080,
+          size: 2048000,
+          format: 'JPEG',
+          created_at: '2023-01-01T12:00:00Z',
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.content.metadata.width).toBe(1920)
+      expect(formatted.content.metadata.height).toBe(1080)
+      expect(formatted.content.metadata.format).toBe('JPEG')
+      expect(formatted.content.metadata.fileSize).toBe(2048000)
+    })
+
+    it('should detect images in nested data structures', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          response: {
+            data: {
+              images: [
+                {
+                  url: 'https://example.com/image1.jpg',
+                  thumbnail: 'https://example.com/thumb1.jpg',
+                },
+              ],
+            },
+          },
+        },
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(true)
+    })
+
+    it('should handle multiple images', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          images: [
+            { url: 'https://example.com/image1.jpg', title: 'First' },
+            { url: 'https://example.com/image2.jpg', title: 'Second' },
+          ],
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.content.gallery).toBeDefined()
+      expect(formatted.content.gallery?.length).toBe(2)
+    })
+
+    it('should provide appropriate alt text', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          image_url: 'https://example.com/chart.png',
+          description: 'Sales performance chart for Q1 2023',
+          alt: 'Bar chart showing monthly sales data',
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+
+      expect(formatted.content.alt).toBe('Bar chart showing monthly sales data')
+    })
+
+    it('should create text representation for accessibility', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          url: 'https://example.com/diagram.svg',
+          title: 'System Architecture',
+          description: 'Detailed system architecture diagram',
+        },
+      }
+
+      const formatted = await formatter.format(result, mockContext)
+      const textRep = formatted.representations.find(r => r.format === 'text')
+
+      expect(textRep).toBeDefined()
+      expect(textRep?.content.text).toContain('System Architecture')
+    })
+
+    it('should not format non-image data', async () => {
+      const result: ToolResponse = {
+        success: true,
+        output: {
+          document_url: 'https://example.com/document.pdf',
+          title: 'Important Document',
+        },
+      }
+
+      expect(formatter.canFormat(result, mockContext)).toBe(false)
+    })
+
+    it('should validate image URLs', async () => {
+      const validResult: ToolResponse = {
+        success: true,
+        output: { image: 'https://example.com/valid.jpg' },
+      }
+
+      const invalidResult: ToolResponse = {
+        success: true,
+        output: { image: 'not-a-valid-url' },
+      }
+
+      expect(formatter.canFormat(validResult, mockContext)).toBe(true)
+      expect(formatter.canFormat(invalidResult, mockContext)).toBe(false)
+    })
+
+    it('should generate quality scores based on image metadata', async () => {
+      const highQualityResult: ToolResponse = {
+        success: true,
+        output: {
+          url: 'https://example.com/hd-image.jpg',
+          title: 'High Quality Image',
+          description: 'Professional photograph',
+          width: 4096,
+          height: 2160,
+          format: 'JPEG',
+        },
+      }
+
+      const basicResult: ToolResponse = {
+        success: true,
+        output: { image_url: 'https://example.com/basic.jpg' },
+      }
+
+      const highQualityFormatted = await formatter.format(highQualityResult, mockContext)
+      const basicFormatted = await formatter.format(basicResult, mockContext)
+
+      expect(highQualityFormatted.metadata.qualityScore).toBeGreaterThan(basicFormatted.metadata.qualityScore)
+    })
+  })
+
+  describe('Integration and Service Tests', () => {
+    describe('ResultFormatterService Integration', () => {
+      it('should select the most appropriate formatter for data', async () => {
+        const { ResultFormatterService } = await import('../core/formatter-service')
+
+        const service = new ResultFormatterService({
+          defaultFormat: 'text',
+          defaultDisplayMode: 'detailed',
+          cache: { enabled: false, ttl: 0, maxEntries: 0, compressionEnabled: false },
+          analytics: { enabled: false, trackUserInteractions: false, retentionPeriod: 0 },
+          quality: { minQualityScore: 0.5, enableQualityValidation: true, fallbackOnLowQuality: true },
+          performance: { maxProcessingTime: 5000, concurrentFormatters: 2, retryAttempts: 1 },
+          features: { aiSummaries: false, smartFormatDetection: true, adaptiveDisplayMode: false, realtimeUpdates: false },
+        })
+
+        // Register formatters
+        service.registerFormatter(new TextFormatter())
+        service.registerFormatter(new TableFormatter())
+        service.registerFormatter(new JsonFormatter())
+        service.registerFormatter(new ChartFormatter())
+
+        // Test tabular data - should prefer table formatter
+        const tabularResult: ToolResponse = {
+          success: true,
+          output: [
+            { name: 'Alice', age: 30, role: 'Engineer' },
+            { name: 'Bob', age: 25, role: 'Designer' },
+          ],
+        }
+
+        const tabularFormatted = await service.formatResult(tabularResult, mockToolConfig)
+        expect(tabularFormatted.format).toBe('table')
+
+        // Test numerical data - should prefer chart formatter
+        const numericalResult: ToolResponse = {
+          success: true,
+          output: [
+            { month: 'Jan', sales: 1000, profit: 200 },
+            { month: 'Feb', sales: 1200, profit: 250 },
+            { month: 'Mar', sales: 1100, profit: 230 },
+          ],
+        }
+
+        const numericalFormatted = await service.formatResult(numericalResult, mockToolConfig)
+        expect(numericalFormatted.format).toBe('chart')
+
+        // Test complex object - should prefer JSON formatter
+        const complexResult: ToolResponse = {
+          success: true,
+          output: {
+            user: {
+              profile: { name: 'John', preferences: { theme: 'dark' } },
+              activities: [{ type: 'login', time: '2023-01-01' }],
+            },
+            metadata: { version: '1.0', settings: { debug: true } },
+          },
+        }
+
+        const complexFormatted = await service.formatResult(complexResult, mockToolConfig)
+        expect(complexFormatted.format).toBe('json')
+      })
+
+      it('should handle formatter registration and deregistration', async () => {
+        const { ResultFormatterService } = await import('../core/formatter-service')
+
+        const service = new ResultFormatterService({
+          defaultFormat: 'text',
+          defaultDisplayMode: 'detailed',
+          cache: { enabled: false, ttl: 0, maxEntries: 0, compressionEnabled: false },
+          analytics: { enabled: false, trackUserInteractions: false, retentionPeriod: 0 },
+          quality: { minQualityScore: 0.5, enableQualityValidation: true, fallbackOnLowQuality: true },
+          performance: { maxProcessingTime: 5000, concurrentFormatters: 2, retryAttempts: 1 },
+          features: { aiSummaries: false, smartFormatDetection: true, adaptiveDisplayMode: false, realtimeUpdates: false },
+        })
+
+        const textFormatter = new TextFormatter()
+
+        service.registerFormatter(textFormatter)
+        expect(service.getAvailableFormats()).toContain('text')
+
+        service.unregisterFormatter('text_formatter')
+        expect(service.getAvailableFormats()).not.toContain('text')
+      })
+
+      it('should fallback gracefully when preferred formatter fails', async () => {
+        const { ResultFormatterService } = await import('../core/formatter-service')
+
+        const service = new ResultFormatterService({
+          defaultFormat: 'text',
+          defaultDisplayMode: 'detailed',
+          cache: { enabled: false, ttl: 0, maxEntries: 0, compressionEnabled: false },
+          analytics: { enabled: false, trackUserInteractions: false, retentionPeriod: 0 },
+          quality: { minQualityScore: 0.1, enableQualityValidation: true, fallbackOnLowQuality: true },
+          performance: { maxProcessingTime: 5000, concurrentFormatters: 2, retryAttempts: 1 },
+          features: { aiSummaries: false, smartFormatDetection: true, adaptiveDisplayMode: false, realtimeUpdates: false },
+        })
+
+        // Register only text formatter
+        service.registerFormatter(new TextFormatter())
+
+        // Try to format data that would normally prefer table format
+        const tabularResult: ToolResponse = {
+          success: true,
+          output: [
+            { name: 'Alice', age: 30 },
+            { name: 'Bob', age: 25 },
+          ],
+        }
+
+        const formatted = await service.formatResult(tabularResult, mockToolConfig)
+
+        // Should fallback to text formatter since table formatter not registered
+        expect(formatted.format).toBe('text')
+        expect(formatted.content.text).toContain('Alice')
+      })
+    })
+
+    describe('FormatterRegistry Tests', () => {
+      it('should maintain formatter priorities correctly', async () => {
+        const { FormatterRegistry } = await import('../core/formatter-registry')
+
+        const registry = new FormatterRegistry()
+
+        const textFormatter = new TextFormatter() // priority 10
+        const tableFormatter = new TableFormatter() // priority 60
+        const chartFormatter = new ChartFormatter() // priority 80
+
+        registry.registerFormatter(textFormatter)
+        registry.registerFormatter(tableFormatter)
+        registry.registerFormatter(chartFormatter)
+
+        const result: ToolResponse = {
+          success: true,
+          output: [{ x: 1, y: 100 }, { x: 2, y: 200 }], // This data can be formatted by multiple formatters
+        }
+
+        const matches = registry.findCompatibleFormatters(result, mockContext)
+
+        // Should be ordered by priority (highest first)
+        expect(matches[0].priority).toBeGreaterThanOrEqual(matches[1].priority)
+        expect(matches[1].priority).toBeGreaterThanOrEqual(matches[2]?.priority || 0)
+      })
+
+      it('should filter formatters by tool compatibility', async () => {
+        const { FormatterRegistry } = await import('../core/formatter-registry')
+
+        const registry = new FormatterRegistry()
+        registry.registerFormatter(new ChartFormatter()) // Has preferredTools for analytics, metrics, etc.
+        registry.registerFormatter(new TextFormatter()) // Universal compatibility
+
+        const analyticsContext = { ...mockContext, toolId: 'analytics' }
+        const genericContext = { ...mockContext, toolId: 'generic_tool' }
+
+        const numericalData: ToolResponse = {
+          success: true,
+          output: [{ metric: 'sales', value: 1000 }, { metric: 'profit', value: 200 }],
+        }
+
+        const analyticsMatches = registry.findCompatibleFormatters(numericalData, analyticsContext)
+        const genericMatches = registry.findCompatibleFormatters(numericalData, genericContext)
+
+        // Analytics context should boost chart formatter priority
+        const analyticsChartMatch = analyticsMatches.find(m => m.id === 'chart_formatter')
+        const genericChartMatch = genericMatches.find(m => m.id === 'chart_formatter')
+
+        expect(analyticsChartMatch?.priority).toBeGreaterThan(genericChartMatch?.priority || 0)
+      })
+    })
+
+    describe('Cross-Formatter Consistency', () => {
+      const allFormatters = [
+        new TextFormatter(),
+        new TableFormatter(),
+        new JsonFormatter(),
+        new ChartFormatter(),
+        new CardFormatter(),
+        new ImageFormatter(),
+      ]
+
+      it('should maintain consistent metadata structure across all formatters', async () => {
+        const testData: ToolResponse = {
+          success: true,
+          output: { test: 'data', value: 123, active: true },
+        }
+
+        for (const formatter of allFormatters) {
+          if (formatter.canFormat(testData, mockContext)) {
+            const formatted = await formatter.format(testData, mockContext)
+
+            // All formatters should provide consistent metadata
+            expect(formatted.metadata).toBeDefined()
+            expect(formatted.metadata.formattedAt).toBeDefined()
+            expect(formatted.metadata.processingTime).toBeDefined()
+            expect(formatted.metadata.version).toBeDefined()
+            expect(formatted.metadata.qualityScore).toBeGreaterThanOrEqual(0)
+            expect(formatted.metadata.qualityScore).toBeLessThanOrEqual(1)
+          }
+        }
+      })
+
+      it('should provide meaningful summaries across all formatters', async () => {
+        const testData: ToolResponse = {
+          success: true,
+          output: { message: 'Operation completed', count: 5, items: ['a', 'b', 'c'] },
+        }
+
+        for (const formatter of allFormatters) {
+          if (formatter.canFormat(testData, mockContext)) {
+            const formatted = await formatter.format(testData, mockContext)
+
+            // All formatters should provide meaningful summaries
+            expect(formatted.summary.headline).toBeTruthy()
+            expect(formatted.summary.headline.length).toBeGreaterThan(5)
+            expect(formatted.summary.description).toBeTruthy()
+            expect(formatted.summary.description.length).toBeGreaterThan(10)
+            expect(Array.isArray(formatted.summary.highlights)).toBe(true)
+            expect(Array.isArray(formatted.summary.suggestions)).toBe(true)
+          }
+        }
+      })
+
+      it('should handle error cases consistently across formatters', async () => {
+        const errorData: ToolResponse = {
+          success: false,
+          output: null,
+          error: 'Something went wrong',
+        }
+
+        // Only text formatter should handle error cases
+        const textFormatter = new TextFormatter()
+        expect(textFormatter.canFormat(errorData, mockContext)).toBe(true)
+
+        const formatted = await textFormatter.format(errorData, mockContext)
+        expect(formatted.summary.headline).toContain('failed')
+        expect(formatted.content.text).toContain('Something went wrong')
+      })
+    })
+
+    describe('Performance and Quality Validation', () => {
+      it('should complete formatting within performance thresholds', async () => {
+        const largeDataset: ToolResponse = {
+          success: true,
+          output: Array.from({ length: 1000 }, (_, i) => ({
+            id: i,
+            name: `Item ${i}`,
+            value: Math.random() * 1000,
+            category: `Category ${i % 10}`,
+            active: i % 2 === 0,
+          })),
+        }
+
+        const formatters = [new TextFormatter(), new TableFormatter(), new JsonFormatter()]
+
+        for (const formatter of formatters) {
+          if (formatter.canFormat(largeDataset, mockContext)) {
+            const startTime = Date.now()
+            const formatted = await formatter.format(largeDataset, mockContext)
+            const duration = Date.now() - startTime
+
+            // Should complete within 5 seconds for large dataset
+            expect(duration).toBeLessThan(5000)
+            expect(formatted.metadata.processingTime).toBeLessThan(duration)
+            expect(formatted.metadata.qualityScore).toBeGreaterThan(0.5)
+          }
+        }
+      })
+
+      it('should maintain quality scores above minimum thresholds', async () => {
+        const qualityTestCases = [
+          { output: { name: 'Rich Data', description: 'Detailed info', metadata: { tags: ['important'] } } },
+          { output: [{ id: 1, name: 'Item 1', stats: { views: 100 } }] },
+          { output: { simple: 'value' } },
+        ]
+
+        for (const testCase of qualityTestCases) {
+          const result: ToolResponse = { success: true, output: testCase.output }
+
+          for (const formatter of allFormatters) {
+            if (formatter.canFormat(result, mockContext)) {
+              const formatted = await formatter.format(result, mockContext)
+
+              // Quality scores should be reasonable
+              expect(formatted.metadata.qualityScore).toBeGreaterThanOrEqual(0.3)
+              expect(formatted.metadata.qualityScore).toBeLessThanOrEqual(1.0)
+            }
+          }
+        }
+      })
+    })
+  })
+})

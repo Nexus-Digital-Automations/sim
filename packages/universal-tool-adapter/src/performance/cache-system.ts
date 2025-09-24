@@ -12,8 +12,8 @@
  * @version 2.0.0
  */
 
+import type { AdapterExecutionContext } from '../types/adapter-interfaces'
 import { createLogger } from '../utils/logger'
-import type { AdapterExecutionContext, AdapterExecutionResult } from '../types/adapter-interfaces'
 
 const logger = createLogger('AdvancedCacheSystem')
 
@@ -123,12 +123,11 @@ export class AdvancedCacheSystem {
 
       this.recordCacheMiss(performance.now() - startTime)
       return null
-
     } catch (error) {
       logger.error('Cache get operation failed', {
         key: keyStr,
         error: error.message,
-        latency: performance.now() - startTime
+        latency: performance.now() - startTime,
       })
       return null
     }
@@ -173,14 +172,13 @@ export class AdvancedCacheSystem {
       logger.debug('Cache set operation completed', {
         key: keyStr,
         latency: performance.now() - startTime,
-        strategy: this.config.strategies.writeThrough ? 'write-through' : 'cache-aside'
+        strategy: this.config.strategies.writeThrough ? 'write-through' : 'cache-aside',
       })
-
     } catch (error) {
       logger.error('Cache set operation failed', {
         key: keyStr,
         error: error.message,
-        latency: performance.now() - startTime
+        latency: performance.now() - startTime,
       })
       throw error
     }
@@ -230,7 +228,9 @@ export class AdvancedCacheSystem {
     // Invalidate from Redis cache
     if (this.config.levels.redis.enabled && this.redisClient) {
       try {
-        const keys = await this.redisClient.keys(`${this.config.levels.redis.keyPrefix}*${pattern}*`)
+        const keys = await this.redisClient.keys(
+          `${this.config.levels.redis.keyPrefix}*${pattern}*`
+        )
         if (keys.length > 0) {
           await this.redisClient.del(keys)
           invalidatedCount += keys.length
@@ -251,20 +251,20 @@ export class AdvancedCacheSystem {
     context: AdapterExecutionContext,
     args: any,
     toolId: string,
-    version: string = '1.0'
+    version = '1.0'
   ): CacheKey {
     const parametersHash = this.hashObject(args)
     const contextHash = this.hashObject({
       userId: context.userId,
       workspaceId: context.workspaceId,
-      features: context.features
+      features: context.features,
     })
 
     return {
       toolId,
       parametersHash,
       contextHash,
-      version
+      version,
     }
   }
 
@@ -284,15 +284,18 @@ export class AdvancedCacheSystem {
       memory: {
         entries: this.memoryCache.size,
         sizeMB: this.currentMemoryUsage / (1024 * 1024),
-        utilizationPercent: (this.currentMemoryUsage / (this.config.levels.memory.maxSizeMB * 1024 * 1024)) * 100
+        utilizationPercent:
+          (this.currentMemoryUsage / (this.config.levels.memory.maxSizeMB * 1024 * 1024)) * 100,
       },
-      redis: this.redisClient ? {
-        connected: this.redisClient.status === 'ready',
-        keyCount: 0 // Would require Redis info command
-      } : null,
+      redis: this.redisClient
+        ? {
+            connected: this.redisClient.status === 'ready',
+            keyCount: 0, // Would require Redis info command
+          }
+        : null,
       hitRate: this.metrics.hitRate,
       missRate: this.metrics.missRate,
-      popularKeys: this.getPopularKeys(10)
+      popularKeys: this.getPopularKeys(10),
     }
   }
 
@@ -346,10 +349,10 @@ export class AdvancedCacheSystem {
 
     const entry: MemoryCacheEntry = {
       data,
-      expiresAt: Date.now() + (ttlSeconds * 1000),
+      expiresAt: Date.now() + ttlSeconds * 1000,
       lastAccessed: Date.now(),
       sizeBytes,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     }
 
     // Remove old entry if exists
@@ -455,7 +458,7 @@ export class AdvancedCacheSystem {
       required,
       freedBytes,
       freedCount,
-      remainingEntries: this.memoryCache.size
+      remainingEntries: this.memoryCache.size,
     })
   }
 
@@ -486,7 +489,8 @@ export class AdvancedCacheSystem {
   }
 
   private updateMetrics(): void {
-    this.metrics.memoryUtilization = (this.currentMemoryUsage / (this.config.levels.memory.maxSizeMB * 1024 * 1024)) * 100
+    this.metrics.memoryUtilization =
+      (this.currentMemoryUsage / (this.config.levels.memory.maxSizeMB * 1024 * 1024)) * 100
     this.metrics.popularKeys = this.getPopularKeys(10)
   }
 
@@ -497,7 +501,7 @@ export class AdvancedCacheSystem {
       .map(([key, hits]) => ({
         key,
         hits,
-        lastAccess: this.keyLastAccess.get(key) || new Date()
+        lastAccess: this.keyLastAccess.get(key) || new Date(),
       }))
   }
 
@@ -513,7 +517,7 @@ export class AdvancedCacheSystem {
       averageLatencyMs: 0,
       memoryUtilization: 0,
       redisUtilization: 0,
-      popularKeys: []
+      popularKeys: [],
     }
   }
 
@@ -529,9 +533,12 @@ export class AdvancedCacheSystem {
 
   private startCleanupJobs(): void {
     // Clean up expired memory entries every 2 minutes
-    setInterval(() => {
-      this.cleanupExpiredMemoryEntries()
-    }, 2 * 60 * 1000)
+    setInterval(
+      () => {
+        this.cleanupExpiredMemoryEntries()
+      },
+      2 * 60 * 1000
+    )
 
     // Update metrics every 30 seconds
     setInterval(() => {
@@ -567,16 +574,19 @@ export class AdvancedCacheSystem {
     }
 
     // Collect and store analytics data every 5 minutes
-    setInterval(() => {
-      this.collectAnalytics()
-    }, 5 * 60 * 1000)
+    setInterval(
+      () => {
+        this.collectAnalytics()
+      },
+      5 * 60 * 1000
+    )
   }
 
   private collectAnalytics(): void {
     const analytics = {
       timestamp: new Date(),
       metrics: this.getMetrics(),
-      statistics: this.getStatistics()
+      statistics: this.getStatistics(),
     }
 
     // Store analytics data (implementation would depend on storage system)
@@ -585,13 +595,16 @@ export class AdvancedCacheSystem {
 
   private initializeCacheWarming(): void {
     // Start cache warming on a schedule
-    setInterval(() => {
-      for (const strategy of this.config.warming.strategies) {
-        this.warmCache(strategy).catch(error => {
-          logger.error('Cache warming failed', { strategy, error: error.message })
-        })
-      }
-    }, 15 * 60 * 1000) // Every 15 minutes
+    setInterval(
+      () => {
+        for (const strategy of this.config.warming.strategies) {
+          this.warmCache(strategy).catch((error) => {
+            logger.error('Cache warming failed', { strategy, error: error.message })
+          })
+        }
+      },
+      15 * 60 * 1000
+    ) // Every 15 minutes
   }
 
   private async warmPopularContent(): Promise<void> {
@@ -625,26 +638,26 @@ export const DEFAULT_CACHE_CONFIG: CacheConfiguration = {
       enabled: true,
       maxSizeMB: 256,
       maxEntries: 10000,
-      ttlSeconds: 300
+      ttlSeconds: 300,
     },
     redis: {
       enabled: false,
       ttlSeconds: 1800,
-      keyPrefix: 'tool_adapter:'
-    }
+      keyPrefix: 'tool_adapter:',
+    },
   },
   strategies: {
     writeThrough: false,
     writeBack: false,
-    cacheAside: true
+    cacheAside: true,
   },
   warming: {
     enabled: true,
     strategies: ['popular'],
-    batchSize: 100
+    batchSize: 100,
   },
   analytics: {
     enabled: true,
-    metricsRetentionDays: 30
-  }
+    metricsRetentionDays: 30,
+  },
 }

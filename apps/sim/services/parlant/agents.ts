@@ -16,19 +16,18 @@
 import { createLogger } from '@/lib/logs/console/logger'
 import { getParlantClient } from './client'
 import {
-  ParlantValidationError,
+  ParlantErrorHandler,
   ParlantNotFoundError,
+  ParlantValidationError,
   ParlantWorkspaceError,
-  ParlantErrorHandler
 } from './errors'
 import type {
   Agent,
   AgentCreateRequest,
-  AgentUpdateRequest,
   AgentListQuery,
-  PaginatedResponse,
+  AgentUpdateRequest,
   AuthContext,
-  WorkspaceContext
+  PaginatedResponse,
 } from './types'
 
 const logger = createLogger('ParlantAgentService')
@@ -43,7 +42,7 @@ export async function createAgent(
   logger.info(`Creating new agent`, {
     name: request.name,
     workspace_id: request.workspace_id,
-    user_id: context.user_id
+    user_id: context.user_id,
   })
 
   // Validate request data
@@ -59,7 +58,7 @@ export async function createAgent(
     const agentData = {
       ...request,
       user_id: context.user_id,
-      status: 'active' as const
+      status: 'active' as const,
     }
 
     // Create agent via Parlant server
@@ -69,7 +68,7 @@ export async function createAgent(
       agent_id: agent.id,
       name: agent.name,
       workspace_id: agent.workspace_id,
-      user_id: agent.user_id
+      user_id: agent.user_id,
     })
 
     return agent
@@ -77,7 +76,7 @@ export async function createAgent(
     logger.error(`Failed to create agent`, {
       name: request.name,
       workspace_id: request.workspace_id,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -87,10 +86,7 @@ export async function createAgent(
 /**
  * Retrieve an agent by ID with workspace validation
  */
-export async function getAgent(
-  agentId: string,
-  context: AuthContext
-): Promise<Agent> {
+export async function getAgent(agentId: string, context: AuthContext): Promise<Agent> {
   logger.info(`Retrieving agent`, { agent_id: agentId, user_id: context.user_id })
 
   // Validate agent ID format
@@ -106,7 +102,7 @@ export async function getAgent(
     logger.info(`Agent retrieved successfully`, {
       agent_id: agent.id,
       name: agent.name,
-      workspace_id: agent.workspace_id
+      workspace_id: agent.workspace_id,
     })
 
     return agent
@@ -117,7 +113,7 @@ export async function getAgent(
 
     logger.error(`Failed to retrieve agent`, {
       agent_id: agentId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -135,7 +131,7 @@ export async function updateAgent(
   logger.info(`Updating agent`, {
     agent_id: agentId,
     user_id: context.user_id,
-    fields: Object.keys(request)
+    fields: Object.keys(request),
   })
 
   // Validate inputs
@@ -154,14 +150,14 @@ export async function updateAgent(
     logger.info(`Agent updated successfully`, {
       agent_id: updatedAgent.id,
       name: updatedAgent.name,
-      updated_fields: Object.keys(request)
+      updated_fields: Object.keys(request),
     })
 
     return updatedAgent
   } catch (error) {
     logger.error(`Failed to update agent`, {
       agent_id: agentId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -171,10 +167,7 @@ export async function updateAgent(
 /**
  * Delete an agent with proper cleanup
  */
-export async function deleteAgent(
-  agentId: string,
-  context: AuthContext
-): Promise<void> {
+export async function deleteAgent(agentId: string, context: AuthContext): Promise<void> {
   logger.info(`Deleting agent`, { agent_id: agentId, user_id: context.user_id })
 
   // Validate agent ID
@@ -200,12 +193,12 @@ export async function deleteAgent(
     logger.info(`Agent deleted successfully`, {
       agent_id: agentId,
       name: agent.name,
-      workspace_id: agent.workspace_id
+      workspace_id: agent.workspace_id,
     })
   } catch (error) {
     logger.error(`Failed to delete agent`, {
       agent_id: agentId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -222,7 +215,7 @@ export async function listAgents(
   logger.info(`Listing agents`, {
     workspace_id: query.workspace_id,
     user_id: context.user_id,
-    filters: Object.keys(query).filter(k => k !== 'limit' && k !== 'offset')
+    filters: Object.keys(query).filter((k) => k !== 'limit' && k !== 'offset'),
   })
 
   // Validate query parameters
@@ -240,9 +233,10 @@ export async function listAgents(
     const params = {
       ...query,
       // If no workspace_id specified, filter by user's accessible workspaces
-      ...((!query.workspace_id && context.workspace_id) && {
-        workspace_id: context.workspace_id
-      })
+      ...(!query.workspace_id &&
+        context.workspace_id && {
+          workspace_id: context.workspace_id,
+        }),
     }
 
     // Get agents from Parlant server
@@ -265,21 +259,21 @@ export async function listAgents(
         total,
         limit,
         offset,
-        has_more: offset + limit < total
-      }
+        has_more: offset + limit < total,
+      },
     }
 
     logger.info(`Agents listed successfully`, {
       total,
       returned: paginatedAgents.length,
-      workspace_id: query.workspace_id
+      workspace_id: query.workspace_id,
     })
 
     return response
   } catch (error) {
     logger.error(`Failed to list agents`, {
       query,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -289,10 +283,7 @@ export async function listAgents(
 /**
  * Get agent guidelines
  */
-export async function getAgentGuidelines(
-  agentId: string,
-  context: AuthContext
-): Promise<any[]> {
+export async function getAgentGuidelines(agentId: string, context: AuthContext): Promise<any[]> {
   logger.info(`Getting agent guidelines`, { agent_id: agentId, user_id: context.user_id })
 
   // First validate agent access
@@ -304,14 +295,14 @@ export async function getAgentGuidelines(
 
     logger.info(`Agent guidelines retrieved`, {
       agent_id: agentId,
-      guidelines_count: guidelines.length
+      guidelines_count: guidelines.length,
     })
 
     return guidelines
   } catch (error) {
     logger.error(`Failed to get agent guidelines`, {
       agent_id: agentId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -342,14 +333,14 @@ export async function addAgentGuideline(
 
     logger.info(`Guideline added to agent`, {
       agent_id: agentId,
-      guideline_id: newGuideline.id
+      guideline_id: newGuideline.id,
     })
 
     return newGuideline
   } catch (error) {
     logger.error(`Failed to add guideline to agent`, {
       agent_id: agentId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     throw ParlantErrorHandler.normalize(error)
@@ -393,10 +384,10 @@ function validateAgentCreateRequest(request: AgentCreateRequest): void {
   }
 
   if (errors.length > 0) {
-    const validationErrors = errors.map(error => ({
+    const validationErrors = errors.map((error) => ({
       field: 'general',
       message: error,
-      code: 'VALIDATION_ERROR'
+      code: 'VALIDATION_ERROR',
     }))
 
     throw new ParlantValidationError('Agent creation validation failed', validationErrors)
@@ -427,10 +418,10 @@ function validateAgentUpdateRequest(request: AgentUpdateRequest): void {
   }
 
   if (errors.length > 0) {
-    const validationErrors = errors.map(error => ({
+    const validationErrors = errors.map((error) => ({
       field: 'general',
       message: error,
-      code: 'VALIDATION_ERROR'
+      code: 'VALIDATION_ERROR',
     }))
 
     throw new ParlantValidationError('Agent update validation failed', validationErrors)
@@ -474,10 +465,7 @@ function validateAgentId(agentId: string): void {
 /**
  * Validate workspace access for the given context
  */
-async function validateWorkspaceAccess(
-  workspaceId: string,
-  context: AuthContext
-): Promise<void> {
+async function validateWorkspaceAccess(workspaceId: string, context: AuthContext): Promise<void> {
   // If context has workspace_id and it matches, access is granted
   if (context.workspace_id === workspaceId) {
     return
@@ -518,7 +506,7 @@ async function filterAgentsByWorkspaceAccess(
   }
 
   // Filter agents by workspace access
-  return agents.filter(agent => {
+  return agents.filter((agent) => {
     try {
       // This would normally be async, but for performance we'll do a sync check
       return agent.workspace_id === context.workspace_id || agent.user_id === context.user_id

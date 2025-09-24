@@ -69,7 +69,16 @@ export interface ParameterDefinition {
  */
 export interface ParameterType {
   // Base type
-  baseType: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'file' | 'date' | 'enum' | 'union'
+  baseType:
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'array'
+    | 'object'
+    | 'file'
+    | 'date'
+    | 'enum'
+    | 'union'
 
   // Subtype for arrays and objects
   itemType?: ParameterType
@@ -86,7 +95,18 @@ export interface ParameterType {
   unionTypes?: ParameterType[]
 
   // Format hints for strings
-  format?: 'email' | 'url' | 'uuid' | 'date' | 'time' | 'datetime' | 'phone' | 'json' | 'markdown' | 'html' | 'regex'
+  format?:
+    | 'email'
+    | 'url'
+    | 'uuid'
+    | 'date'
+    | 'time'
+    | 'datetime'
+    | 'phone'
+    | 'json'
+    | 'markdown'
+    | 'html'
+    | 'regex'
 
   // MIME types for files
   acceptedMimeTypes?: string[]
@@ -187,15 +207,18 @@ export interface NaturalLanguageConfig {
   keywords?: string[]
 
   // Localization support
-  localization?: Record<string, {
-    usageDescription: string
-    exampleUsage: string[]
-    conversationalHints: {
-      whenToUse: string
-      parameters: string
-      results: string
+  localization?: Record<
+    string,
+    {
+      usageDescription: string
+      exampleUsage: string[]
+      conversationalHints: {
+        whenToUse: string
+        parameters: string
+        results: string
+      }
     }
-  }>
+  >
 }
 
 // =============================================================================
@@ -661,7 +684,12 @@ export interface ToolFeedback {
 
   // Specific issues
   issues?: Array<{
-    type: 'incorrect_result' | 'slow_execution' | 'confusing_interface' | 'missing_feature' | 'error'
+    type:
+      | 'incorrect_result'
+      | 'slow_execution'
+      | 'confusing_interface'
+      | 'missing_feature'
+      | 'error'
     description: string
     severity: 'low' | 'medium' | 'high' | 'critical'
   }>
@@ -787,7 +815,10 @@ export type ExtractToolResult<T extends ParlantTool> = Awaited<ReturnType<T['exe
  * Generic tool interface with typed parameters and results
  */
 export interface TypedParlantTool<TParams = any, TResult = any> extends ParlantTool {
-  execute(context: ParlantExecutionContext, args: TParams): Promise<ParlantToolResult & { data?: TResult }>
+  execute(
+    context: ParlantExecutionContext,
+    args: TParams
+  ): Promise<ParlantToolResult & { data?: TResult }>
 }
 
 /**
@@ -855,7 +886,4 @@ export type ParlantExecutionTypes =
 /**
  * All advanced integration types
  */
-export type ParlantAdvancedTypes =
-  | ToolComposition
-  | ToolAuthProvider
-  | AuthResult
+export type ParlantAdvancedTypes = ToolComposition | ToolAuthProvider | AuthResult

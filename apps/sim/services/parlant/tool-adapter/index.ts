@@ -14,14 +14,13 @@
  * - Configuration-driven customization
  */
 
-export * from './types'
-export * from './base-adapter'
 export * from './adapter-registry'
+export * from './adapters'
+export * from './base-adapter'
 export * from './configuration'
 export * from './error-handling'
+export { createToolAdapter, registerToolAdapter } from './factory'
 export * from './performance'
-export * from './adapters'
-
 // Main entry points
 export { ParlantToolAdapterService } from './service'
-export { createToolAdapter, registerToolAdapter } from './factory'
+export * from './types'

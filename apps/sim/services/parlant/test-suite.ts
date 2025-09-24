@@ -14,30 +14,30 @@
  * and validate the complete integration stack.
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/testing-framework'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/testing-framework'
 import {
-  ParlantClient,
-  getParlantClient,
   createAgent,
-  getAgent,
-  updateAgent,
-  deleteAgent,
-  listAgents,
   createSession,
-  getSession,
-  listSessions,
-  sendMessage,
-  getEvents,
+  deleteAgent,
   endSession,
+  getAgent,
+  getEvents,
+  getParlantClient,
+  getSession,
+  isParlantError,
+  listAgents,
+  listSessions,
+  ParlantClient,
+  ParlantConnectionError,
+  ParlantNotFoundError,
+  ParlantService,
+  ParlantValidationError,
   pauseSession,
   resumeSession,
-  ParlantService,
-  isParlantError,
-  ParlantValidationError,
-  ParlantNotFoundError,
-  ParlantConnectionError
+  sendMessage,
+  updateAgent,
 } from './index'
-import type { AuthContext, Agent, Session, Event } from './types'
+import type { AuthContext } from './types'
 
 describe('Sim-Parlant Integration Bridge', () => {
   let testAuthContext: AuthContext
@@ -49,11 +49,11 @@ describe('Sim-Parlant Integration Bridge', () => {
   const TEST_CONFIG = {
     baseUrl: process.env.PARLANT_SERVER_URL || 'http://localhost:8001',
     timeout: 10000,
-    maxRetries: 2
+    maxRetries: 2,
   }
 
-  const TEST_WORKSPACE_ID = 'test-workspace-' + Date.now()
-  const TEST_USER_ID = 'test-user-' + Date.now()
+  const TEST_WORKSPACE_ID = `test-workspace-${Date.now()}`
+  const TEST_USER_ID = `test-user-${Date.now()}`
 
   beforeAll(async () => {
     console.log('🧪 Setting up Parlant integration test suite')
@@ -63,7 +63,7 @@ describe('Sim-Parlant Integration Bridge', () => {
       user_id: TEST_USER_ID,
       workspace_id: TEST_WORKSPACE_ID,
       key_type: 'workspace',
-      permissions: ['workspace:admin', 'agents:create', 'sessions:create']
+      permissions: ['workspace:admin', 'agents:create', 'sessions:create'],
     }
 
     // Initialize Parlant service
@@ -138,7 +138,7 @@ describe('Sim-Parlant Integration Bridge', () => {
     it('should handle request timeout', async () => {
       const fastTimeoutClient = new ParlantClient({
         ...TEST_CONFIG,
-        timeout: 1 // 1ms timeout
+        timeout: 1, // 1ms timeout
       })
 
       try {
@@ -155,7 +155,7 @@ describe('Sim-Parlant Integration Bridge', () => {
       const invalidClient = new ParlantClient({
         baseUrl: 'http://invalid-host-that-does-not-exist:9999',
         timeout: 5000,
-        maxRetries: 1
+        maxRetries: 1,
       })
 
       try {
@@ -172,20 +172,20 @@ describe('Sim-Parlant Integration Bridge', () => {
   describe('Agent Management', () => {
     it('should create an agent', async () => {
       const agentRequest = {
-        name: 'Test Agent - ' + Date.now(),
+        name: `Test Agent - ${Date.now()}`,
         description: 'A test agent for validation',
         workspace_id: TEST_WORKSPACE_ID,
         guidelines: [
           {
             condition: 'user asks for help',
-            action: 'provide helpful assistance'
-          }
+            action: 'provide helpful assistance',
+          },
         ],
         config: {
           temperature: 0.7,
           max_turns: 10,
-          model: 'gpt-3.5-turbo'
-        }
+          model: 'gpt-3.5-turbo',
+        },
       }
 
       try {
@@ -216,7 +216,7 @@ describe('Sim-Parlant Integration Bridge', () => {
     it('should validate agent creation input', async () => {
       const invalidRequest = {
         name: '', // Invalid: empty name
-        workspace_id: 'invalid-workspace-id' // Invalid: not a UUID
+        workspace_id: 'invalid-workspace-id', // Invalid: not a UUID
       }
 
       try {
@@ -276,8 +276,8 @@ describe('Sim-Parlant Integration Bridge', () => {
         description: 'Updated description for testing',
         config: {
           temperature: 0.5,
-          max_turns: 20
-        }
+          max_turns: 20,
+        },
       }
 
       try {
@@ -299,11 +299,14 @@ describe('Sim-Parlant Integration Bridge', () => {
 
     it('should list agents with filtering', async () => {
       try {
-        const response = await listAgents({
-          workspace_id: TEST_WORKSPACE_ID,
-          status: 'active',
-          limit: 10
-        }, testAuthContext)
+        const response = await listAgents(
+          {
+            workspace_id: TEST_WORKSPACE_ID,
+            status: 'active',
+            limit: 10,
+          },
+          testAuthContext
+        )
 
         expect(response).toBeDefined()
         expect(response.data).toBeInstanceOf(Array)
@@ -331,7 +334,7 @@ describe('Sim-Parlant Integration Bridge', () => {
       const sessionRequest = {
         agent_id: testAgentId,
         workspace_id: TEST_WORKSPACE_ID,
-        customer_id: 'test-customer-123'
+        customer_id: 'test-customer-123',
       }
 
       try {
@@ -386,7 +389,7 @@ describe('Sim-Parlant Integration Bridge', () => {
       const message = {
         type: 'customer_message' as const,
         content: 'Hello, this is a test message!',
-        source: 'customer' as const
+        source: 'customer' as const,
       }
 
       try {
@@ -415,10 +418,14 @@ describe('Sim-Parlant Integration Bridge', () => {
       }
 
       try {
-        const events = await getEvents(testSessionId, {
-          session_id: testSessionId,
-          limit: 10
-        }, testAuthContext)
+        const events = await getEvents(
+          testSessionId,
+          {
+            session_id: testSessionId,
+            limit: 10,
+          },
+          testAuthContext
+        )
 
         expect(events).toBeInstanceOf(Array)
         console.log(`✅ Retrieved ${events.length} events`)
@@ -448,17 +455,20 @@ describe('Sim-Parlant Integration Bridge', () => {
 
       try {
         const startTime = Date.now()
-        const events = await getEvents(testSessionId, {
-          session_id: testSessionId,
-          wait_for_data: true,
-          timeout: timeoutMs
-        }, testAuthContext)
+        const events = await getEvents(
+          testSessionId,
+          {
+            session_id: testSessionId,
+            wait_for_data: true,
+            timeout: timeoutMs,
+          },
+          testAuthContext
+        )
 
         const duration = Date.now() - startTime
 
         expect(events).toBeInstanceOf(Array)
         console.log(`✅ Long polling completed in ${duration}ms with ${events.length} events`)
-
       } catch (error) {
         if (isParlantError(error)) {
           // Timeout is expected for long polling if no new events
@@ -485,7 +495,6 @@ describe('Sim-Parlant Integration Bridge', () => {
         const resumedSession = await resumeSession(testSessionId, testAuthContext)
         expect(resumedSession.status).toBe('active')
         console.log('✅ Session resumed successfully')
-
       } catch (error) {
         if (isParlantError(error)) {
           console.warn(`⚠️  Session state management failed: ${error.code}`)
@@ -508,7 +517,6 @@ describe('Sim-Parlant Integration Bridge', () => {
 
         // Clear test session ID since it's now ended
         testSessionId = null
-
       } catch (error) {
         if (isParlantError(error)) {
           console.warn(`⚠️  Session ending failed: ${error.code}`)
@@ -520,10 +528,13 @@ describe('Sim-Parlant Integration Bridge', () => {
 
     it('should list sessions with filtering', async () => {
       try {
-        const response = await listSessions({
-          workspace_id: TEST_WORKSPACE_ID,
-          limit: 10
-        }, testAuthContext)
+        const response = await listSessions(
+          {
+            workspace_id: TEST_WORKSPACE_ID,
+            limit: 10,
+          },
+          testAuthContext
+        )
 
         expect(response).toBeDefined()
         expect(response.data).toBeInstanceOf(Array)
@@ -543,10 +554,13 @@ describe('Sim-Parlant Integration Bridge', () => {
   describe('Error Handling', () => {
     it('should handle validation errors properly', async () => {
       try {
-        await createAgent({
-          name: '', // Invalid
-          workspace_id: 'invalid' // Invalid
-        } as any, testAuthContext)
+        await createAgent(
+          {
+            name: '', // Invalid
+            workspace_id: 'invalid', // Invalid
+          } as any,
+          testAuthContext
+        )
 
         throw new Error('Expected validation error')
       } catch (error) {
@@ -623,40 +637,54 @@ describe('Sim-Parlant Integration Bridge', () => {
 
       try {
         // 1. Create agent
-        const agent = await createAgent({
-          name: 'E2E Test Agent - ' + Date.now(),
-          description: 'End-to-end test agent',
-          workspace_id: TEST_WORKSPACE_ID,
-          guidelines: [
-            {
-              condition: 'user greets',
-              action: 'respond with friendly greeting'
-            }
-          ]
-        }, testAuthContext)
+        const agent = await createAgent(
+          {
+            name: `E2E Test Agent - ${Date.now()}`,
+            description: 'End-to-end test agent',
+            workspace_id: TEST_WORKSPACE_ID,
+            guidelines: [
+              {
+                condition: 'user greets',
+                action: 'respond with friendly greeting',
+              },
+            ],
+          },
+          testAuthContext
+        )
 
         console.log('✅ Step 1: Agent created')
 
         // 2. Create session
-        const session = await createSession({
-          agent_id: agent.id,
-          workspace_id: TEST_WORKSPACE_ID
-        }, testAuthContext)
+        const session = await createSession(
+          {
+            agent_id: agent.id,
+            workspace_id: TEST_WORKSPACE_ID,
+          },
+          testAuthContext
+        )
 
         console.log('✅ Step 2: Session created')
 
         // 3. Send message
-        const message = await sendMessage(session.id, {
-          type: 'customer_message',
-          content: 'Hello, I need help!'
-        }, testAuthContext)
+        const message = await sendMessage(
+          session.id,
+          {
+            type: 'customer_message',
+            content: 'Hello, I need help!',
+          },
+          testAuthContext
+        )
 
         console.log('✅ Step 3: Message sent')
 
         // 4. Get events
-        const events = await getEvents(session.id, {
-          session_id: session.id
-        }, testAuthContext)
+        const events = await getEvents(
+          session.id,
+          {
+            session_id: session.id,
+          },
+          testAuthContext
+        )
 
         console.log(`✅ Step 4: Retrieved ${events.length} events`)
 
@@ -669,7 +697,6 @@ describe('Sim-Parlant Integration Bridge', () => {
         console.log('✅ Step 6: Agent deleted')
 
         console.log('🎉 Complete integration test PASSED!')
-
       } catch (error) {
         if (isParlantError(error)) {
           console.warn(`⚠️  Integration test failed: ${error.code} - ${error.message}`)
@@ -700,7 +727,7 @@ export async function runParlantIntegrationTests(): Promise<{
     passed: 0,
     failed: 0,
     skipped: 0,
-    results: []
+    results: [],
   }
 }
 
@@ -710,14 +737,14 @@ export async function runManualTests(): Promise<void> {
 
   const testConfig = {
     baseUrl: process.env.PARLANT_SERVER_URL || 'http://localhost:8001',
-    timeout: 10000
+    timeout: 10000,
   }
 
   const authContext: AuthContext = {
     user_id: 'manual-test-user',
     workspace_id: 'manual-test-workspace',
     key_type: 'workspace',
-    permissions: ['workspace:admin']
+    permissions: ['workspace:admin'],
   }
 
   try {
@@ -730,24 +757,25 @@ export async function runManualTests(): Promise<void> {
     // Test 2: Agent Creation (if server supports it)
     console.log('🤖 Testing agent creation...')
     try {
-      const agent = await createAgent({
-        name: 'Manual Test Agent',
-        description: 'Created during manual testing',
-        workspace_id: authContext.workspace_id!,
-      }, authContext)
+      const agent = await createAgent(
+        {
+          name: 'Manual Test Agent',
+          description: 'Created during manual testing',
+          workspace_id: authContext.workspace_id!,
+        },
+        authContext
+      )
 
       console.log(`Agent created: ${agent.id}`)
 
       // Clean up
       await deleteAgent(agent.id, authContext)
       console.log('Agent cleaned up')
-
     } catch (error) {
       console.log('Agent creation not available or failed:', (error as Error).message)
     }
 
     console.log('✅ Manual tests completed')
-
   } catch (error) {
     console.error('❌ Manual tests failed:', error)
   }
