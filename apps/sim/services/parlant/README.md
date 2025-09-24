@@ -1,6 +1,16 @@
 # Sim-Parlant Integration Bridge
 
-The Sim-Parlant Integration Bridge provides a comprehensive API layer for integrating Parlant AI agents within the Sim platform. This service layer handles agent lifecycle management, conversation sessions, and real-time messaging with proper workspace isolation and authentication.
+The Sim-Parlant Integration Bridge provides a comprehensive API layer for integrating Parlant AI agents within the Sim platform. This service layer handles agent lifecycle management, conversation sessions, real-time messaging, and **Universal Tool Adapter System** with natural language intelligence.
+
+## 🚀 New: Universal Tool Adapter System
+
+The Universal Tool Adapter System enables Parlant agents to use all 70+ Sim tools through natural language conversations. Key features:
+
+- **Natural Language Tool Discovery**: Agents understand "send email" → Gmail tool
+- **Conversational Parameter Collection**: Step-by-step tool configuration
+- **Smart Recommendations**: Context-aware tool suggestions
+- **Learning & Analytics**: Improves recommendations over time
+- **Seamless Integration**: Works with existing Sim workflow tools
 
 ## Architecture Overview
 

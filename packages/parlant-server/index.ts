@@ -2,7 +2,8 @@
  * Parlant Server Monitoring & Health Checks - Main Export
  *
  * This module provides a unified interface to all monitoring, health checking,
- * logging, metrics, and alerting functionality for the Parlant server integration.
+ * logging, metrics, alerting functionality, and the comprehensive Universal Tool
+ * Adapter Error Handling System for the Parlant server integration.
  */
 
 // Core monitoring components
@@ -61,6 +62,97 @@ export {
   type AlertCategory,
   type ErrorClassification
 } from './alerts'
+
+// Universal Tool Adapter Error Handling System
+export {
+  // Main error system
+  errorSystem,
+  UniversalErrorSystem,
+  initializeErrorSystem,
+  setupBasicErrorHandling,
+  setupFullErrorHandling,
+
+  // Core types and enums
+  ErrorCategory,
+  ErrorSeverity,
+  ErrorImpact,
+  RecoveryStrategy,
+  UserSkillLevel,
+  ExplanationFormat,
+
+  // Error classes
+  BaseToolError,
+  ToolAdapterError,
+  ToolExecutionError,
+  ToolAuthenticationError,
+  UserInputError,
+  SystemResourceError,
+  ExternalServiceError,
+
+  // Error creation functions
+  createToolAdapterError,
+  createToolExecutionError,
+  createToolAuthenticationError,
+  createUserInputError,
+  createSystemResourceError,
+  createExternalServiceError,
+
+  // Main handling functions
+  handleError as handleToolError,
+  explainError,
+  executeWithRecovery,
+
+  // Monitoring functions
+  recordError as recordToolError,
+  recordSuccess as recordToolSuccess,
+  recordMetric,
+  getSystemHealth as getToolSystemHealth,
+
+  // Analytics functions
+  analyzeTrends,
+  identifyErrorPatterns,
+  performRootCauseAnalysis,
+  generateAnalyticsReport,
+
+  // Decorators
+  WithRetry,
+  MonitorPerformance as MonitorToolPerformance,
+
+  // Configuration types
+  ErrorSystemConfig,
+  DEFAULT_ERROR_SYSTEM_CONFIG,
+  ErrorHandlingResult,
+  SystemHealthWithErrors,
+  ErrorDashboardData,
+
+  // Error taxonomy and classification
+  errorClassifier,
+  classifyError,
+  getErrorStats,
+  ErrorSubcategories,
+  DEFAULT_ERROR_PATTERNS,
+
+  // Error tracking and alerting
+  parlantErrorTracker,
+  errorTracker,
+  DEFAULT_ALERT_RULES,
+
+  // Error recovery services
+  errorRecoveryService,
+  DEFAULT_RETRY_CONFIGS,
+  CircuitBreakerState,
+
+  // Error monitoring services
+  errorMonitoringService,
+  AlertLevel,
+  MetricType,
+
+  // Error analytics services
+  errorAnalyticsService,
+
+  // Error explanations
+  errorExplanationService
+} from './error-system'
 
 /**
  * Initialize all monitoring systems
