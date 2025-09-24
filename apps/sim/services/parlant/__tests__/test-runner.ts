@@ -1,20 +1,20 @@
 #!/usr/bin/env tsx
 
 /**
- * Universal Tool Adapter System - Test Runner
- * ===========================================
+ * Workflow to Journey Mapping System - Test Runner
+ * ===============================================
  *
- * Standalone test runner for comprehensive testing of the Universal Tool Adapter System.
- * Can be executed independently of Jest for CI/CD integration and manual testing.
+ * Comprehensive test runner for the Workflow to Journey Mapping System integration testing.
+ * Orchestrates all testing suites for validation and production readiness.
  *
  * Usage:
  *   npx tsx apps/sim/services/parlant/__tests__/test-runner.ts
- *   npm run test:tool-adapters
+ *   npm run test:workflow-journey
  */
 
-import { writeFileSync } from 'fs'
+import { spawn } from 'child_process'
+import { writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
-import { ALL_SIM_TOOLS, ToolAdapterTestingFramework } from './tool-adapter-testing-framework'
 
 interface TestRunConfiguration {
   // Test execution settings

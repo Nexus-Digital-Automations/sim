@@ -1,6 +1,6 @@
-# Universal Tool Adapter System - Integration Testing Suite
+# Workflow to Journey Mapping System - Integration Testing Framework
 
-This directory contains the comprehensive integration testing framework for the Universal Tool Adapter System feature.
+This directory contains the comprehensive integration testing framework for the Workflow to Journey Mapping System feature, validating ReactFlow workflow to Parlant journey conversion accuracy and functionality.
 
 ## 🎯 Mission Complete
 
