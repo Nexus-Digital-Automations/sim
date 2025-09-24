@@ -10,25 +10,22 @@
 
 // Context Provider
 export {
-  ContextualHelpProvider,
-  useContextualHelp,
-  type ContextualHelpState,
   type ContextualHelpContextType,
-  type ContextualHelpProviderProps
+  ContextualHelpProvider,
+  type ContextualHelpProviderProps,
+  type ContextualHelpState,
+  useContextualHelp,
 } from './ContextualHelpProvider'
-
+export {
+  HelpSearchPanel,
+  type HelpSearchPanelProps,
+} from './HelpSearchPanel'
 // UI Components
 export {
   HelpTooltip,
-  type HelpTooltipProps
+  type HelpTooltipProps,
 } from './HelpTooltip'
-
 export {
   InteractiveGuidancePanel,
-  type InteractiveGuidancePanelProps
+  type InteractiveGuidancePanelProps,
 } from './InteractiveGuidancePanel'
-
-export {
-  HelpSearchPanel,
-  type HelpSearchPanelProps
-} from './HelpSearchPanel'

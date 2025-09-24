@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { validateWorkspaceAccess } from '@/lib/auth/chat-middleware'
-import { getUserAccessibleAgents, createAgent } from '@/lib/parlant/agents'
 import { createLogger } from '@/lib/logs/console/logger'
+import { createAgent, getUserAccessibleAgents } from '@/lib/parlant/agents'
 
 const logger = createLogger('ChatAgentsAPI')
 
@@ -36,8 +36,8 @@ export async function GET(
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
+    const page = Number.parseInt(searchParams.get('page') || '1')
+    const limit = Math.min(Number.parseInt(searchParams.get('limit') || '50'), 100)
     const search = searchParams.get('search') || undefined
     const status = searchParams.get('status') || undefined
 
@@ -45,18 +45,19 @@ export async function GET(
     const agents = await getUserAccessibleAgents(session.user.id, workspaceId)
 
     // Apply client-side filtering (in production, this would be done in the service)
-    let filteredAgents = agents.filter(agent => agent.is_active)
+    let filteredAgents = agents.filter((agent) => agent.is_active)
 
     if (search) {
       const searchLower = search.toLowerCase()
-      filteredAgents = filteredAgents.filter(agent =>
-        agent.name.toLowerCase().includes(searchLower) ||
-        agent.description?.toLowerCase().includes(searchLower)
+      filteredAgents = filteredAgents.filter(
+        (agent) =>
+          agent.name.toLowerCase().includes(searchLower) ||
+          agent.description?.toLowerCase().includes(searchLower)
       )
     }
 
     if (status && status !== 'all') {
-      filteredAgents = filteredAgents.filter(agent => agent.status === status)
+      filteredAgents = filteredAgents.filter((agent) => agent.status === status)
     }
 
     // Apply pagination
@@ -70,7 +71,7 @@ export async function GET(
       totalAgents: filteredAgents.length,
       returnedAgents: paginatedAgents.length,
       page,
-      limit
+      limit,
     })
 
     return NextResponse.json({
@@ -79,10 +80,9 @@ export async function GET(
         page,
         limit,
         total: filteredAgents.length,
-        totalPages: Math.ceil(filteredAgents.length / limit)
-      }
+        totalPages: Math.ceil(filteredAgents.length / limit),
+      },
     })
-
   } catch (error) {
     logger.error('Failed to fetch workspace agents', { error })
     return NextResponse.json(
@@ -165,7 +165,7 @@ export async function POST(
       name: name.trim(),
       description: description?.trim(),
       guidelines,
-      tools
+      tools,
     })
 
     if (!agent) {
@@ -179,11 +179,10 @@ export async function POST(
       workspaceId,
       agentId: agent.id,
       agentName: agent.name,
-      createdBy: session.user.id
+      createdBy: session.user.id,
     })
 
     return NextResponse.json({ agent }, { status: 201 })
-
   } catch (error) {
     logger.error('Failed to create agent', { error })
     return NextResponse.json(

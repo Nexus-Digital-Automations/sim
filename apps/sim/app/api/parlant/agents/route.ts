@@ -10,18 +10,17 @@
  * - Performance monitoring and logging
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
-import {
-  listAgents,
-  createAgent,
-  updateAgent,
-  deleteAgent,
-  getAgent
-} from '@/services/parlant/agents'
-import type { AgentCreateRequest, AgentUpdateRequest, AgentListQuery, AuthContext } from '@/services/parlant/types'
+import { createAgent, deleteAgent, listAgents, updateAgent } from '@/services/parlant/agents'
 import { withAgentAccessControl } from '@/services/parlant/middleware/access-control'
+import type {
+  AgentCreateRequest,
+  AgentListQuery,
+  AgentUpdateRequest,
+  AuthContext,
+} from '@/services/parlant/types'
 
 const logger = createLogger('ParlantAgentsAPI')
 
@@ -37,10 +36,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const query: AgentListQuery = {
       workspace_id: searchParams.get('workspace_id') || undefined,
-      status: searchParams.get('status') as any || undefined,
-      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50,
-      offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0,
-      search: searchParams.get('search') || undefined
+      status: (searchParams.get('status') as any) || undefined,
+      limit: searchParams.get('limit') ? Number.parseInt(searchParams.get('limit')!) : 50,
+      offset: searchParams.get('offset') ? Number.parseInt(searchParams.get('offset')!) : 0,
+      search: searchParams.get('search') || undefined,
     }
 
     // Validate access control
@@ -52,13 +51,13 @@ export async function GET(request: NextRequest) {
     if (!authContext || !accessResult.allowed) {
       logger.warn('Access denied for list agents request', {
         reason: accessResult.reason,
-        workspace_id: query.workspace_id
+        workspace_id: query.workspace_id,
       })
       return NextResponse.json(
         {
           error: accessResult.reason || 'Access denied',
           success: false,
-          rate_limit: accessResult.rate_limit
+          rate_limit: accessResult.rate_limit,
         },
         { status: accessResult.reason?.includes('Authentication') ? 401 : 403 }
       )
@@ -67,7 +66,7 @@ export async function GET(request: NextRequest) {
     logger.info('Listing agents', {
       user_id: authContext.user_id,
       workspace_id: authContext.workspace_id,
-      query
+      query,
     })
 
     // Call service layer
@@ -78,17 +77,16 @@ export async function GET(request: NextRequest) {
     logger.info('Agents listed successfully', {
       duration_ms: Math.round(duration),
       count: result.data.length,
-      total: result.pagination.total
+      total: result.pagination.total,
     })
 
     return NextResponse.json(result)
-
   } catch (error) {
     const duration = performance.now() - startTime
     logger.error('Failed to list agents', {
       duration_ms: Math.round(duration),
       error: (error as Error).message,
-      stack: (error as Error).stack
+      stack: (error as Error).stack,
     })
 
     // Handle specific error types
@@ -97,7 +95,7 @@ export async function GET(request: NextRequest) {
         {
           error: 'Invalid request parameters',
           details: (error as any).details,
-          success: false
+          success: false,
         },
         { status: 400 }
       )
@@ -107,7 +105,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Workspace access denied',
-          success: false
+          success: false,
         },
         { status: 403 }
       )
@@ -117,7 +115,7 @@ export async function GET(request: NextRequest) {
       {
         error: 'Internal server error',
         success: false,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     )
@@ -149,7 +147,7 @@ export async function POST(request: NextRequest) {
       description: body.description,
       workspace_id: body.workspace_id || session.session?.activeOrganizationId,
       guidelines: body.guidelines,
-      config: body.config
+      config: body.config,
     }
 
     // Build auth context
@@ -157,13 +155,13 @@ export async function POST(request: NextRequest) {
       user_id: session.user.id,
       workspace_id: createRequest.workspace_id,
       key_type: 'workspace',
-      permissions: [] // TODO: Get user permissions from session
+      permissions: [], // TODO: Get user permissions from session
     }
 
     logger.info('Creating new agent', {
       user_id: authContext.user_id,
       workspace_id: authContext.workspace_id,
-      name: createRequest.name
+      name: createRequest.name,
     })
 
     // Call service layer
@@ -174,21 +172,23 @@ export async function POST(request: NextRequest) {
     logger.info('Agent created successfully', {
       duration_ms: Math.round(duration),
       agent_id: result.id,
-      name: result.name
+      name: result.name,
     })
 
-    return NextResponse.json({
-      data: result,
-      success: true,
-      timestamp: new Date().toISOString()
-    }, { status: 201 })
-
+    return NextResponse.json(
+      {
+        data: result,
+        success: true,
+        timestamp: new Date().toISOString(),
+      },
+      { status: 201 }
+    )
   } catch (error) {
     const duration = performance.now() - startTime
     logger.error('Failed to create agent', {
       duration_ms: Math.round(duration),
       error: (error as Error).message,
-      stack: (error as Error).stack
+      stack: (error as Error).stack,
     })
 
     // Handle specific error types
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
         {
           error: 'Invalid agent data',
           details: (error as any).details,
-          success: false
+          success: false,
         },
         { status: 400 }
       )
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Workspace access denied',
-          success: false
+          success: false,
         },
         { status: 403 }
       )
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       {
         error: 'Internal server error',
         success: false,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     )
@@ -258,12 +258,12 @@ export async function PUT(request: NextRequest) {
       user_id: session.user.id,
       workspace_id: session.session?.activeOrganizationId,
       key_type: 'workspace',
-      permissions: [] // TODO: Get user permissions from session
+      permissions: [], // TODO: Get user permissions from session
     }
 
     logger.info('Batch updating agents', {
       user_id: authContext.user_id,
-      count: updates.length
+      count: updates.length,
     })
 
     // Process updates
@@ -278,7 +278,7 @@ export async function PUT(request: NextRequest) {
       } catch (error) {
         errors.push({
           agent_id: update.id,
-          error: (error as Error).message
+          error: (error as Error).message,
         })
       }
     }
@@ -288,28 +288,27 @@ export async function PUT(request: NextRequest) {
     logger.info('Batch agent update completed', {
       duration_ms: Math.round(duration),
       successful: results.length,
-      failed: errors.length
+      failed: errors.length,
     })
 
     return NextResponse.json({
       data: results,
       errors: errors.length > 0 ? errors : undefined,
       success: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
     logger.error('Failed to batch update agents', {
       duration_ms: Math.round(duration),
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     return NextResponse.json(
       {
         error: 'Internal server error',
         success: false,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     )
@@ -350,12 +349,12 @@ export async function DELETE(request: NextRequest) {
       user_id: session.user.id,
       workspace_id: session.session?.activeOrganizationId,
       key_type: 'workspace',
-      permissions: [] // TODO: Get user permissions from session
+      permissions: [], // TODO: Get user permissions from session
     }
 
     logger.info('Batch deleting agents', {
       user_id: authContext.user_id,
-      count: agentIds.length
+      count: agentIds.length,
     })
 
     // Process deletions
@@ -369,7 +368,7 @@ export async function DELETE(request: NextRequest) {
       } catch (error) {
         errors.push({
           agent_id: agentId,
-          error: (error as Error).message
+          error: (error as Error).message,
         })
       }
     }
@@ -379,28 +378,27 @@ export async function DELETE(request: NextRequest) {
     logger.info('Batch agent deletion completed', {
       duration_ms: Math.round(duration),
       successful: results.length,
-      failed: errors.length
+      failed: errors.length,
     })
 
     return NextResponse.json({
       data: results,
       errors: errors.length > 0 ? errors : undefined,
       success: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
     logger.error('Failed to batch delete agents', {
       duration_ms: Math.round(duration),
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     return NextResponse.json(
       {
         error: 'Internal server error',
         success: false,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     )

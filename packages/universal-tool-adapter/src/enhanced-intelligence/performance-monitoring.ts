@@ -18,7 +18,6 @@
  */
 
 import { createLogger } from '../utils/logger'
-import type { IntelligenceMetrics } from './intelligence-integration-layer'
 
 const logger = createLogger('IntelligencePerformanceMonitoring')
 
@@ -84,9 +83,9 @@ export interface PerformanceAlert {
 
 export interface PerformanceThresholds {
   latency: {
-    description: number      // ms
-    recommendation: number   // ms
-    errorHandling: number   // ms
+    description: number // ms
+    recommendation: number // ms
+    errorHandling: number // ms
     contextAnalysis: number // ms
   }
   throughput: {
@@ -136,22 +135,22 @@ export class IntelligencePerformanceMonitor {
 
   private readonly thresholds: PerformanceThresholds = {
     latency: {
-      description: 200,      // 200ms max for description generation
-      recommendation: 500,   // 500ms max for recommendations
-      errorHandling: 100,    // 100ms max for error handling
-      contextAnalysis: 300,  // 300ms max for context analysis
+      description: 200, // 200ms max for description generation
+      recommendation: 500, // 500ms max for recommendations
+      errorHandling: 100, // 100ms max for error handling
+      contextAnalysis: 300, // 300ms max for context analysis
     },
     throughput: {
       minOperationsPerSecond: 10, // Minimum 10 ops/sec under load
     },
     quality: {
       minUserSatisfaction: 3.5, // Out of 5
-      minAccuracy: 0.7,         // 70% accuracy minimum
+      minAccuracy: 0.7, // 70% accuracy minimum
     },
     resources: {
-      maxMemoryMB: 500,         // 500MB max memory usage
-      maxCpuPercent: 70,        // 70% max CPU usage
-      minCacheHitRate: 0.6,     // 60% minimum cache hit rate
+      maxMemoryMB: 500, // 500MB max memory usage
+      maxCpuPercent: 70, // 70% max CPU usage
+      minCacheHitRate: 0.6, // 60% minimum cache hit rate
     },
   }
 
@@ -207,8 +206,8 @@ export class IntelligencePerformanceMonitor {
     history.push(record)
 
     // Keep only recent history (last hour)
-    const cutoff = Date.now() - (60 * 60 * 1000)
-    const filteredHistory = history.filter(r => r.timestamp > cutoff)
+    const cutoff = Date.now() - 60 * 60 * 1000
+    const filteredHistory = history.filter((r) => r.timestamp > cutoff)
     this.operationHistory.set(operation, filteredHistory)
 
     // Update real-time metrics
@@ -312,13 +311,13 @@ export class IntelligencePerformanceMonitor {
       // Status indicators
       status: {
         alerts: activeAlerts.length,
-        criticalAlerts: activeAlerts.filter(a => a.severity === 'critical').length,
+        criticalAlerts: activeAlerts.filter((a) => a.severity === 'critical').length,
         systemHealth: metrics.systemHealth.overallHealth,
         uptime: Date.now() - this.startTime,
       },
 
       // Top recommendations
-      recommendations: topRecommendations.map(r => ({
+      recommendations: topRecommendations.map((r) => ({
         title: r.title,
         priority: r.priority,
         expectedImpact: r.expectedImpact,
@@ -459,7 +458,7 @@ const optimizedConfig = {
     message: string
     appliedChanges: string[]
   }> {
-    const recommendation = this.optimizationRecommendations.find(r => r.id === recommendationId)
+    const recommendation = this.optimizationRecommendations.find((r) => r.id === recommendationId)
     if (!recommendation) {
       return {
         success: false,
@@ -505,7 +504,7 @@ const optimizedConfig = {
       }
 
       // Remove the implemented recommendation
-      const index = this.optimizationRecommendations.findIndex(r => r.id === recommendationId)
+      const index = this.optimizationRecommendations.findIndex((r) => r.id === recommendationId)
       if (index !== -1) {
         this.optimizationRecommendations.splice(index, 1)
       }
@@ -578,10 +577,14 @@ const optimizedConfig = {
   private updateRealTimeMetrics(operation: string, record: OperationRecord): void {
     // Update latency metrics using exponential moving average
     const alpha = 0.1
-    const currentLatency = this.currentMetrics.operationLatency[operation as keyof typeof this.currentMetrics.operationLatency]
+    const currentLatency =
+      this.currentMetrics.operationLatency[
+        operation as keyof typeof this.currentMetrics.operationLatency
+      ]
     if (typeof currentLatency === 'number') {
-      this.currentMetrics.operationLatency[operation as keyof typeof this.currentMetrics.operationLatency] =
-        currentLatency * (1 - alpha) + record.durationMs * alpha
+      this.currentMetrics.operationLatency[
+        operation as keyof typeof this.currentMetrics.operationLatency
+      ] = currentLatency * (1 - alpha) + record.durationMs * alpha
     }
 
     // Update throughput metrics
@@ -594,11 +597,13 @@ const optimizedConfig = {
     const cutoff = now - windowMs
 
     for (const [operation, history] of this.operationHistory.entries()) {
-      const recentOps = history.filter(r => r.timestamp > cutoff).length
+      const recentOps = history.filter((r) => r.timestamp > cutoff).length
       const opsPerSecond = recentOps / (windowMs / 1000)
 
       if (operation in this.currentMetrics.operationsPerSecond) {
-        this.currentMetrics.operationsPerSecond[operation as keyof typeof this.currentMetrics.operationsPerSecond] = opsPerSecond
+        this.currentMetrics.operationsPerSecond[
+          operation as keyof typeof this.currentMetrics.operationsPerSecond
+        ] = opsPerSecond
       }
     }
   }
@@ -609,7 +614,9 @@ const optimizedConfig = {
 
     // Check latency health
     Object.values(metrics.operationLatency).forEach((latency, index) => {
-      const thresholdKey = Object.keys(this.thresholds.latency)[index] as keyof typeof this.thresholds.latency
+      const thresholdKey = Object.keys(this.thresholds.latency)[
+        index
+      ] as keyof typeof this.thresholds.latency
       if (latency > this.thresholds.latency[thresholdKey]) {
         healthScore -= 10
       }
@@ -668,10 +675,13 @@ const optimizedConfig = {
     // Check error rate alerts
     if (!record.success) {
       const recentHistory = this.operationHistory.get(operation) || []
-      const recentFailures = recentHistory.filter(r => !r.success && r.timestamp > Date.now() - 300000) // Last 5 minutes
+      const recentFailures = recentHistory.filter(
+        (r) => !r.success && r.timestamp > Date.now() - 300000
+      ) // Last 5 minutes
       const failureRate = recentFailures.length / Math.max(recentHistory.length, 1)
 
-      if (failureRate > 0.1) { // 10% failure rate
+      if (failureRate > 0.1) {
+        // 10% failure rate
         this.createPerformanceAlert({
           type: 'error',
           severity: failureRate > 0.2 ? 'high' : 'medium',
@@ -692,7 +702,8 @@ const optimizedConfig = {
     if (resources.memoryMB > this.thresholds.resources.maxMemoryMB) {
       this.createPerformanceAlert({
         type: 'resource',
-        severity: resources.memoryMB > this.thresholds.resources.maxMemoryMB * 1.5 ? 'critical' : 'high',
+        severity:
+          resources.memoryMB > this.thresholds.resources.maxMemoryMB * 1.5 ? 'critical' : 'high',
         message: 'High memory usage detected',
         metric: 'memory_usage',
         currentValue: resources.memoryMB,
@@ -706,7 +717,8 @@ const optimizedConfig = {
     if (resources.cpuPercent > this.thresholds.resources.maxCpuPercent) {
       this.createPerformanceAlert({
         type: 'resource',
-        severity: resources.cpuPercent > this.thresholds.resources.maxCpuPercent * 1.2 ? 'high' : 'medium',
+        severity:
+          resources.cpuPercent > this.thresholds.resources.maxCpuPercent * 1.2 ? 'high' : 'medium',
         message: 'High CPU usage detected',
         metric: 'cpu_usage',
         currentValue: resources.cpuPercent,
@@ -733,7 +745,10 @@ const optimizedConfig = {
   private createPerformanceAlert(alertData: Omit<PerformanceAlert, 'id' | 'timestamp'>): void {
     // Check if similar alert already exists
     const existingAlert = this.performanceAlerts.find(
-      a => a.metric === alertData.metric && a.type === alertData.type && a.severity === alertData.severity
+      (a) =>
+        a.metric === alertData.metric &&
+        a.type === alertData.type &&
+        a.severity === alertData.severity
     )
 
     if (existingAlert) {
@@ -751,8 +766,8 @@ const optimizedConfig = {
     this.performanceAlerts.push(alert)
 
     // Keep only recent alerts (last 24 hours)
-    const cutoff = Date.now() - (24 * 60 * 60 * 1000)
-    const recentAlerts = this.performanceAlerts.filter(a => a.timestamp.getTime() > cutoff)
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000
+    const recentAlerts = this.performanceAlerts.filter((a) => a.timestamp.getTime() > cutoff)
     this.performanceAlerts.length = 0
     this.performanceAlerts.push(...recentAlerts)
 
@@ -827,10 +842,11 @@ const optimizedConfig = {
     if (!this.autoOptimizationEnabled) return
 
     const autoRecommendations = this.optimizationRecommendations.filter(
-      r => r.implementation.automatic && r.priority === 'high'
+      (r) => r.implementation.automatic && r.priority === 'high'
     )
 
-    for (const recommendation of autoRecommendations.slice(0, 1)) { // Implement max 1 per cycle
+    for (const recommendation of autoRecommendations.slice(0, 1)) {
+      // Implement max 1 per cycle
       await this.implementOptimizationRecommendation(recommendation.id)
     }
   }
@@ -881,17 +897,17 @@ const optimizedConfig = {
     let totalErrors = 0
 
     for (const history of this.operationHistory.values()) {
-      const recentOps = history.filter(r => r.timestamp > Date.now() - 300000) // Last 5 minutes
+      const recentOps = history.filter((r) => r.timestamp > Date.now() - 300000) // Last 5 minutes
       totalOps += recentOps.length
-      totalErrors += recentOps.filter(r => !r.success).length
+      totalErrors += recentOps.filter((r) => !r.success).length
     }
 
     return totalOps > 0 ? totalErrors / totalOps : 0
   }
 
   private getActiveAlerts(): PerformanceAlert[] {
-    const cutoff = Date.now() - (60 * 60 * 1000) // Last hour
-    return this.performanceAlerts.filter(a => a.timestamp.getTime() > cutoff)
+    const cutoff = Date.now() - 60 * 60 * 1000 // Last hour
+    return this.performanceAlerts.filter((a) => a.timestamp.getTime() > cutoff)
   }
 
   private getOptimizationRecommendations(): OptimizationRecommendation[] {
@@ -946,19 +962,19 @@ const optimizedConfig = {
   private getOverallAlertLevel(): 'none' | 'info' | 'warning' | 'critical' {
     const activeAlerts = this.getActiveAlerts()
 
-    if (activeAlerts.some(a => a.severity === 'critical')) return 'critical'
-    if (activeAlerts.some(a => a.severity === 'high')) return 'warning'
+    if (activeAlerts.some((a) => a.severity === 'critical')) return 'critical'
+    if (activeAlerts.some((a) => a.severity === 'high')) return 'warning'
     if (activeAlerts.length > 0) return 'info'
     return 'none'
   }
 
   private cleanupOldData(): void {
     const retentionHours = this.config.metricsRetentionHours || 24
-    const cutoff = Date.now() - (retentionHours * 60 * 60 * 1000)
+    const cutoff = Date.now() - retentionHours * 60 * 60 * 1000
 
     // Clean operation history
     for (const [operation, history] of this.operationHistory.entries()) {
-      const recentHistory = history.filter(r => r.timestamp > cutoff)
+      const recentHistory = history.filter((r) => r.timestamp > cutoff)
       this.operationHistory.set(operation, recentHistory)
     }
 
@@ -972,12 +988,16 @@ const optimizedConfig = {
     // Implementation would adjust cache parameters
   }
 
-  private async applyConfigurationOptimizations(recommendation: OptimizationRecommendation): Promise<void> {
+  private async applyConfigurationOptimizations(
+    recommendation: OptimizationRecommendation
+  ): Promise<void> {
     logger.info('Applying configuration optimizations', { recommendationId: recommendation.id })
     // Implementation would adjust system configuration
   }
 
-  private async applyScalingOptimizations(recommendation: OptimizationRecommendation): Promise<void> {
+  private async applyScalingOptimizations(
+    recommendation: OptimizationRecommendation
+  ): Promise<void> {
     logger.info('Applying scaling optimizations', { recommendationId: recommendation.id })
     // Implementation would adjust scaling parameters
   }
@@ -1001,10 +1021,7 @@ const optimizedConfig = {
         'User satisfaction is stable',
       ],
       riskFactors: [],
-      opportunities: [
-        'Implement cache warming',
-        'Optimize algorithm parameters',
-      ],
+      opportunities: ['Implement cache warming', 'Optimize algorithm parameters'],
     }
   }
 
@@ -1031,10 +1048,12 @@ const optimizedConfig = {
     const opsPerSecond = this.calculateOperationsPerSecond()
     const errorRate = this.calculateErrorRate()
 
-    return `System health: ${metrics.systemHealth.overallHealth}. ` +
-           `Avg response time: ${avgResponseTime.toFixed(0)}ms. ` +
-           `Throughput: ${opsPerSecond.toFixed(1)} ops/sec. ` +
-           `Error rate: ${(errorRate * 100).toFixed(2)}%.`
+    return (
+      `System health: ${metrics.systemHealth.overallHealth}. ` +
+      `Avg response time: ${avgResponseTime.toFixed(0)}ms. ` +
+      `Throughput: ${opsPerSecond.toFixed(1)} ops/sec. ` +
+      `Error rate: ${(errorRate * 100).toFixed(2)}%.`
+    )
   }
 
   private updateOptimizationRecommendations(): void {

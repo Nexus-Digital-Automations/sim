@@ -1,8 +1,8 @@
+import { db } from '@sim/db'
+import { member } from '@sim/db/schema'
+import { eq } from 'drizzle-orm'
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
-import { db } from '@sim/db'
-import { eq } from 'drizzle-orm'
-import { member } from '@sim/db/schema'
 
 /**
  * Main chat page - redirects to workspace-specific chat

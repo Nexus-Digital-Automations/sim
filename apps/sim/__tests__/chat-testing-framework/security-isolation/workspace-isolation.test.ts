@@ -17,12 +17,15 @@
  * - Authentication boundary enforcement
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
-import { Client as SocketIOClient, io } from 'socket.io-client'
-import { createParlantSocketClient, type ParlantSocketClient } from '@/app/chat/workspace/[workspaceId]/agent/[agentId]/components/socket-client'
+import { io, type Client as SocketIOClient } from 'socket.io-client'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createLogger } from '@/lib/logs/console/logger'
+import {
+  createParlantSocketClient,
+  type ParlantSocketClient,
+} from '@/app/chat/workspace/[workspaceId]/agent/[agentId]/components/socket-client'
 
 const logger = createLogger('WorkspaceIsolationTests')
 
@@ -53,7 +56,7 @@ interface TestClient {
 describe('Workspace Isolation Security Tests', () => {
   let testServer: TestSocketServer
   let aliceClientA: TestClient // Alice in Workspace A
-  let bobClientA: TestClient   // Bob in Workspace A
+  let bobClientA: TestClient // Bob in Workspace A
   let charlieClientB: TestClient // Charlie in Workspace B
 
   beforeEach(async () => {
@@ -69,7 +72,7 @@ describe('Workspace Isolation Security Tests', () => {
     await Promise.all([
       waitForConnection(aliceClientA.socketClient),
       waitForConnection(bobClientA.socketClient),
-      waitForConnection(charlieClientB.socketClient)
+      waitForConnection(charlieClientB.socketClient),
     ])
 
     logger.info('Test setup completed - all clients connected')
@@ -114,18 +117,18 @@ describe('Workspace Isolation Security Tests', () => {
       aliceClientA.nativeSocket.emit('send-workspace-message', {
         workspaceId: WORKSPACE_A,
         content: messageFromA,
-        channelId: 'general'
+        channelId: 'general',
       })
 
       // Send message in Workspace B
       charlieClientB.nativeSocket.emit('send-workspace-message', {
         workspaceId: WORKSPACE_B,
         content: messageFromB,
-        channelId: 'general'
+        channelId: 'general',
       })
 
       // Wait for message propagation
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // Verify workspace isolation
       expect(aliceReceivedMessages).toContain(messageFromA)
@@ -151,10 +154,10 @@ describe('Workspace Isolation Security Tests', () => {
       aliceClientA.nativeSocket.emit('send-workspace-message', {
         workspaceId: WORKSPACE_A,
         content: directMessage,
-        recipientId: USER_BOB
+        recipientId: USER_BOB,
       })
 
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // Verify Charlie in Workspace B doesn't receive the direct message
       expect(charlieReceivedMessages).not.toContain(directMessage)
@@ -175,10 +178,10 @@ describe('Workspace Isolation Security Tests', () => {
         agentId: AGENT_A1,
         workspaceId: WORKSPACE_A,
         status: 'PROCESSING',
-        metadata: { reason: 'Handling user request' }
+        metadata: { reason: 'Handling user request' },
       })
 
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       // Verify no cross-workspace status leakage
       expect(charlieStatusUpdates).toHaveLength(0)
@@ -199,11 +202,11 @@ describe('Workspace Isolation Security Tests', () => {
           totalSessions: 150,
           totalMessages: 1200,
           averageResponseTime: 350,
-          successRate: 0.95
-        }
+          successRate: 0.95,
+        },
       })
 
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       // Verify performance metrics don't leak across workspaces
       expect(charliePerformanceUpdates).toHaveLength(0)
@@ -228,7 +231,7 @@ describe('Workspace Isolation Security Tests', () => {
         sessionId,
         agentId: AGENT_A1,
         workspaceId: WORKSPACE_A,
-        userId: USER_ALICE
+        userId: USER_ALICE,
       })
 
       // End session in Workspace A
@@ -236,10 +239,10 @@ describe('Workspace Isolation Security Tests', () => {
         sessionId,
         agentId: AGENT_A1,
         workspaceId: WORKSPACE_A,
-        endReason: 'User ended conversation'
+        endReason: 'User ended conversation',
       })
 
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       // Verify no session event leakage
       expect(charlieSessionEvents).toHaveLength(0)
@@ -265,7 +268,7 @@ describe('Workspace Isolation Security Tests', () => {
         workspaceId: WORKSPACE_A,
         toolCallId,
         toolName: 'search_database',
-        parameters: { query: 'test query' }
+        parameters: { query: 'test query' },
       })
 
       testServer.io.to(`parlant:session:${sessionId}`).emit('tool-call-completed', {
@@ -275,10 +278,10 @@ describe('Workspace Isolation Security Tests', () => {
         toolCallId,
         toolName: 'search_database',
         result: { results: ['result1', 'result2'] },
-        processingTime: 1500
+        processingTime: 1500,
       })
 
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       // Verify tool call isolation
       expect(charlieToolEvents).toHaveLength(0)
@@ -300,8 +303,14 @@ describe('Workspace Isolation Security Tests', () => {
 
     it('should verify room isolation at Socket.io level', async () => {
       // Get room information from server
-      const workspaceARooms = await getSocketRooms(testServer.io, `parlant:workspace:${WORKSPACE_A}`)
-      const workspaceBRooms = await getSocketRooms(testServer.io, `parlant:workspace:${WORKSPACE_B}`)
+      const workspaceARooms = await getSocketRooms(
+        testServer.io,
+        `parlant:workspace:${WORKSPACE_A}`
+      )
+      const workspaceBRooms = await getSocketRooms(
+        testServer.io,
+        `parlant:workspace:${WORKSPACE_B}`
+      )
 
       // Verify users are in correct workspace rooms
       const aliceSocketId = aliceClientA.nativeSocket.id
@@ -326,7 +335,7 @@ describe('Workspace Isolation Security Tests', () => {
       // Update Alice's presence in Workspace A
       aliceClientA.socketClient.updatePresence(WORKSPACE_A, 'busy', 'In a meeting')
 
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       // Verify presence isolation
       expect(charliePresenceUpdates).toHaveLength(0)
@@ -341,7 +350,7 @@ describe('Workspace Isolation Security Tests', () => {
         authToken: 'invalid-token',
         userId: 'fake-user',
         workspaceId: WORKSPACE_A,
-        agentId: AGENT_A1
+        agentId: AGENT_A1,
       })
 
       let connectionFailed = false
@@ -376,7 +385,7 @@ async function createTestSocketServer(): Promise<TestSocketServer> {
   const httpServer = createServer()
   const io = new SocketIOServer(httpServer, {
     cors: { origin: '*' },
-    transports: ['websocket']
+    transports: ['websocket'],
   })
 
   // Mock authentication middleware for tests
@@ -433,9 +442,9 @@ async function createTestClient(
       token: `test-token-${userId}`,
       userId,
       workspaceId,
-      agentId
+      agentId,
     },
-    transports: ['websocket']
+    transports: ['websocket'],
   })
 
   const socketClient = createParlantSocketClient({
@@ -444,7 +453,7 @@ async function createTestClient(
     userId,
     workspaceId,
     agentId,
-    timeout: 5000
+    timeout: 5000,
   })
 
   return { socketClient, nativeSocket, userId, workspaceId, agentId }
@@ -454,7 +463,7 @@ async function waitForConnection(socketClient: ParlantSocketClient): Promise<voi
   await socketClient.connect()
 
   // Wait a bit for connection to stabilize
-  await new Promise(resolve => setTimeout(resolve, 100))
+  await new Promise((resolve) => setTimeout(resolve, 100))
 }
 
 async function attemptCrossWorkspaceRoomJoin(
@@ -480,7 +489,7 @@ async function attemptCrossWorkspaceRoomJoin(
     // Attempt to join room in different workspace
     client.nativeSocket.emit('parlant:join-agent-room', {
       agentId: targetAgentId,
-      workspaceId: targetWorkspaceId
+      workspaceId: targetWorkspaceId,
     })
   })
 }
@@ -495,7 +504,7 @@ async function attemptUnauthorizedWorkspaceJoin(
     }, 2000)
 
     client.nativeSocket.emit('join-workspace-messaging', {
-      workspaceId: unauthorizedWorkspaceId
+      workspaceId: unauthorizedWorkspaceId,
     })
 
     client.nativeSocket.once('workspace-messaging-error', (data) => {

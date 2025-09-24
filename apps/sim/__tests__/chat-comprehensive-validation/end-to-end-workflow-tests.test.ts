@@ -12,19 +12,12 @@
  * - Performance under realistic user loads
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
-import { launch, Browser, Page, BrowserContext } from 'puppeteer'
-import { Server } from 'socket.io'
 import { createServer } from 'http'
 import { db } from '@sim/db'
+import { type Browser, type BrowserContext, launch, type Page } from 'puppeteer'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import type { EndToEndTestResult, PerformanceMetrics } from '@/types'
 import { ComprehensiveTestReporter } from '../../utils/test-reporter'
-import type {
-  EndToEndTestResult,
-  UserJourney,
-  ConversationFlow,
-  AgentHandoffScenario,
-  PerformanceMetrics,
-} from '@/types'
 
 interface TestEnvironment {
   browser: Browser
@@ -57,14 +50,14 @@ interface UserStep {
 describe('End-to-End Chat Workflow Testing Suite', () => {
   let testEnv: TestEnvironment
   let reporter: ComprehensiveTestReporter
-  let testResults: EndToEndTestResult[] = []
+  const testResults: EndToEndTestResult[] = []
 
   beforeAll(async () => {
     reporter = new ComprehensiveTestReporter({
       outputDir: './test-reports/end-to-end',
       includeScreenshots: true,
       includePerformanceMetrics: true,
-      reportFormats: ['html', 'json', 'junit']
+      reportFormats: ['html', 'json', 'junit'],
     })
 
     await reporter.startTestSuite(
@@ -292,8 +285,8 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       },
       summary: {
         totalTests: results.length,
-        passed: results.filter(r => r.success).length,
-        failed: results.filter(r => !r.success).length,
+        passed: results.filter((r) => r.success).length,
+        failed: results.filter((r) => !r.success).length,
         averageExecutionTime: results.reduce((sum, r) => sum + r.executionTime, 0) / results.length,
       },
       results: results,
@@ -302,7 +295,10 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
     console.log('📊 End-to-End Test Report:', JSON.stringify(report, null, 2))
   }
 
-  async function executeUserScenario(page: Page, scenario: UserScenario): Promise<EndToEndTestResult> {
+  async function executeUserScenario(
+    page: Page,
+    scenario: UserScenario
+  ): Promise<EndToEndTestResult> {
     const startTime = Date.now()
     let success = true
     let error: string | null = null
@@ -368,7 +364,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
         }
         break
 
-      case 'verify':
+      case 'verify': {
         const element = await page.waitForSelector(step.target!, { timeout: step.timeout || 10000 })
         if (step.value) {
           const text = await element?.textContent()
@@ -377,11 +373,13 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
           }
         }
         break
+      }
 
-      case 'screenshot':
+      case 'screenshot': {
         const screenshot = await page.screenshot({ fullPage: true })
         screenshots.push(`data:image/png;base64,${screenshot.toString('base64')}`)
         break
+      }
     }
 
     const stepEndTime = performance.now()
@@ -1082,13 +1080,17 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       await page.setRequestInterception(true)
       let errorSimulated = false
 
-      page.on('request', request => {
-        if (request.url().includes('/api/chat/') && request.method() === 'POST' && !errorSimulated) {
+      page.on('request', (request) => {
+        if (
+          request.url().includes('/api/chat/') &&
+          request.method() === 'POST' &&
+          !errorSimulated
+        ) {
           errorSimulated = true
           request.respond({
             status: 500,
             contentType: 'application/json',
-            body: JSON.stringify({ error: 'Internal Server Error' })
+            body: JSON.stringify({ error: 'Internal Server Error' }),
           })
         } else {
           request.continue()
@@ -1183,7 +1185,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
 
       // Performance assertions
       const totalResponseTime = result.performanceMetrics
-        .filter(m => m.action === 'wait')
+        .filter((m) => m.action === 'wait')
         .reduce((sum, m) => sum + m.executionTime, 0)
 
       expect(totalResponseTime).toBeLessThan(30000) // All responses within 30 seconds
@@ -1198,13 +1200,18 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
 
       // Simulate long conversation by sending many messages
       for (let i = 1; i <= 20; i++) {
-        await page.type('[data-testid="chat-input"]', `Message number ${i} in this long conversation`)
+        await page.type(
+          '[data-testid="chat-input"]',
+          `Message number ${i} in this long conversation`
+        )
         await page.click('[data-testid="send-button"]')
         await page.waitForTimeout(1000) // Wait between messages
 
         // Wait for response every few messages to build history
         if (i % 5 === 0) {
-          await page.waitForSelector(`[data-testid="assistant-message"]:nth-child(${i * 2})`, { timeout: 15000 })
+          await page.waitForSelector(`[data-testid="assistant-message"]:nth-child(${i * 2})`, {
+            timeout: 15000,
+          })
         }
       }
 

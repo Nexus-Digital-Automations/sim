@@ -7,7 +7,10 @@ import { initializeParlantHooks } from '@/socket-server/integrations/parlant-hoo
 import { type AuthenticatedSocket, authenticateSocket } from '@/socket-server/middleware/auth'
 import { initializeChatSecurity } from '@/socket-server/middleware/chat-security'
 import { initializeParlantSecurity } from '@/socket-server/middleware/parlant-security'
-import { chatMetricsCollector, chatPerformanceOptimizer } from '@/socket-server/monitoring/chat-metrics'
+import {
+  chatMetricsCollector,
+  chatPerformanceOptimizer,
+} from '@/socket-server/monitoring/chat-metrics'
 import { RoomManager } from '@/socket-server/rooms/manager'
 import { createHttpHandler } from '@/socket-server/routes/http'
 
@@ -115,12 +118,15 @@ httpServer.listen(PORT, '0.0.0.0', () => {
   logger.info(`🏥 Health check available at: http://localhost:${PORT}/health`)
 
   // Start periodic metrics logging every 5 minutes
-  setInterval(() => {
-    chatMetricsCollector.logMetrics()
+  setInterval(
+    () => {
+      chatMetricsCollector.logMetrics()
 
-    // Apply automatic optimizations if needed
-    chatPerformanceOptimizer.applyAutomaticOptimizations()
-  }, 5 * 60 * 1000) // 5 minutes
+      // Apply automatic optimizations if needed
+      chatPerformanceOptimizer.applyAutomaticOptimizations()
+    },
+    5 * 60 * 1000
+  ) // 5 minutes
 
   // Log initial metrics after 30 seconds
   setTimeout(() => {

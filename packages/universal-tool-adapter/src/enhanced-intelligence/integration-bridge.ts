@@ -19,16 +19,16 @@
  */
 
 import type { ToolConfig } from '@/tools/types'
-import type {
-  ContextualRecommendationRequest,
-  ContextualRecommendation,
-  AdvancedUsageContext
-} from './contextual-recommendation-engine'
-import type { RecommendationExplanation } from './recommendation-explanation-engine'
-import { ContextualRecommendationEngine } from './contextual-recommendation-engine'
-import { RecommendationExplanationEngine } from './recommendation-explanation-engine'
-import { RecommendationAPI } from './recommendation-api'
 import { createLogger } from '../utils/logger'
+import type {
+  AdvancedUsageContext,
+  ContextualRecommendation,
+  ContextualRecommendationRequest,
+} from './contextual-recommendation-engine'
+import { ContextualRecommendationEngine } from './contextual-recommendation-engine'
+import { RecommendationAPI } from './recommendation-api'
+import type { RecommendationExplanation } from './recommendation-explanation-engine'
+import { RecommendationExplanationEngine } from './recommendation-explanation-engine'
 
 const logger = createLogger('IntegrationBridge')
 
@@ -218,7 +218,11 @@ export interface RecommendationOutcome {
 
 export interface ConversationIntegration {
   // Conversation flow
-  insertionPoint: 'before_tool_selection' | 'during_tool_selection' | 'after_tool_execution' | 'on_error'
+  insertionPoint:
+    | 'before_tool_selection'
+    | 'during_tool_selection'
+    | 'after_tool_execution'
+    | 'on_error'
   presentationStyle: 'inline' | 'sidebar' | 'modal' | 'contextual_hints'
 
   // User interaction
@@ -360,7 +364,7 @@ export class IntegrationBridge {
         recommendationSettings: agentConfig.recommendationSettings || this.getDefaultSettings(),
         personalizationLevel: agentConfig.personalizationLevel || this.getDefaultPersonalization(),
         performanceMetrics: this.createEmptyMetrics(),
-        usageAnalytics: this.createEmptyAnalytics()
+        usageAnalytics: this.createEmptyAnalytics(),
       }
 
       // Initialize tool configurations
@@ -384,12 +388,11 @@ export class IntegrationBridge {
         processingTime: 0,
         cacheHit: false,
         algorithmUsed: 'registration',
-        confidenceScore: 1.0
+        confidenceScore: 1.0,
       })
 
       logger.info('Parlant agent registered successfully', { agentId })
       return integration
-
     } catch (error) {
       logger.error('Error registering Parlant agent', { error, agentId })
       throw error
@@ -413,7 +416,7 @@ export class IntegrationBridge {
 
       logger.debug('Getting conversation recommendations', {
         agentId,
-        conversationId: conversationContext.conversationId
+        conversationId: conversationContext.conversationId,
       })
 
       // Update conversation state
@@ -462,23 +465,22 @@ export class IntegrationBridge {
         processingTime: Date.now() - startTime,
         cacheHit: false,
         algorithmUsed: 'contextual',
-        confidenceScore: this.calculateAverageConfidence(filteredRecommendations)
+        confidenceScore: this.calculateAverageConfidence(filteredRecommendations),
       })
 
       logger.info('Conversation recommendations generated', {
         agentId,
         conversationId: conversationContext.conversationId,
         recommendationCount: filteredRecommendations.length,
-        processingTime: Date.now() - startTime
+        processingTime: Date.now() - startTime,
       })
 
       return conversationResult
-
     } catch (error) {
       logger.error('Error getting conversation recommendations', {
         error,
         agentId,
-        conversationId: conversationContext.conversationId
+        conversationId: conversationContext.conversationId,
       })
 
       // Return empty result with error
@@ -502,7 +504,7 @@ export class IntegrationBridge {
       logger.debug('Handling tool selection', {
         agentId,
         toolId: selection.toolId,
-        source: selection.selectionSource
+        source: selection.selectionSource,
       })
 
       // Record selection event
@@ -518,7 +520,7 @@ export class IntegrationBridge {
         processingTime: 0,
         cacheHit: false,
         algorithmUsed: 'selection',
-        confidenceScore: selection.confidence || 1.0
+        confidenceScore: selection.confidence || 1.0,
       })
 
       // Update user behavior models
@@ -538,12 +540,11 @@ export class IntegrationBridge {
         usage_guidance: this.generateUsageGuidance(toolConfig, selection),
         expectedOutcome: this.predictOutcome(toolConfig, selection),
         monitoringEnabled: true,
-        feedbackPrompts: this.generateFeedbackPrompts(toolConfig)
+        feedbackPrompts: this.generateFeedbackPrompts(toolConfig),
       }
 
       logger.info('Tool selection handled', { agentId, toolId: selection.toolId })
       return result
-
     } catch (error) {
       logger.error('Error handling tool selection', { error, agentId, selection })
       throw error
@@ -553,10 +554,7 @@ export class IntegrationBridge {
   /**
    * Process tool execution feedback
    */
-  async processExecutionFeedback(
-    agentId: string,
-    feedback: ExecutionFeedback
-  ): Promise<void> {
+  async processExecutionFeedback(agentId: string, feedback: ExecutionFeedback): Promise<void> {
     try {
       const integration = this.parlantIntegrations.get(agentId)
       if (!integration) {
@@ -566,7 +564,7 @@ export class IntegrationBridge {
       logger.debug('Processing execution feedback', {
         agentId,
         toolId: feedback.toolId,
-        success: feedback.success
+        success: feedback.success,
       })
 
       // Create recommendation outcome
@@ -576,7 +574,7 @@ export class IntegrationBridge {
         executionSuccess: feedback.success,
         userSatisfaction: feedback.userSatisfaction || (feedback.success ? 0.8 : 0.2),
         timeToExecution: feedback.executionTime,
-        reasonForChoice: feedback.notes
+        reasonForChoice: feedback.notes,
       }
 
       // Record outcome event
@@ -592,7 +590,7 @@ export class IntegrationBridge {
         processingTime: feedback.executionTime,
         cacheHit: false,
         algorithmUsed: 'execution',
-        confidenceScore: feedback.success ? 0.9 : 0.1
+        confidenceScore: feedback.success ? 0.9 : 0.1,
       })
 
       // Update recommendation models with feedback
@@ -606,7 +604,6 @@ export class IntegrationBridge {
       this.analyticsEngine.recordExecution(agentId, feedback)
 
       logger.info('Execution feedback processed', { agentId, toolId: feedback.toolId })
-
     } catch (error) {
       logger.error('Error processing execution feedback', { error, agentId, feedback })
     }
@@ -627,11 +624,10 @@ export class IntegrationBridge {
           totalGenerated: analytics.totalRecommendations,
           adoptionRate: analytics.recommendationToUsageRate,
           accuracyScore: metrics.recommendationAccuracy,
-          userSatisfaction: metrics.userSatisfactionScore
+          userSatisfaction: metrics.userSatisfactionScore,
         },
-        integration_health: this.assessIntegrationHealth(agentId)
+        integration_health: this.assessIntegrationHealth(agentId),
       }
-
     } catch (error) {
       logger.error('Error getting integration analytics', { error, agentId })
       return this.createEmptyAnalytics()
@@ -654,7 +650,7 @@ export class IntegrationBridge {
           enhancedConfig,
           integrationStatus: 'active',
           lastUpdated: new Date(),
-          version: '1.0.0'
+          version: '1.0.0',
         }
 
         integration.toolConfigurations.set(toolId, toolIntegrationConfig)
@@ -676,7 +672,7 @@ export class IntegrationBridge {
       currentSession: context.sessionInfo,
       maxRecommendations: integration.recommendationSettings.maxRecommendations,
       includeExplanations: integration.recommendationSettings.includeExplanations,
-      enableABTesting: true
+      enableABTesting: true,
     }
   }
 
@@ -684,7 +680,7 @@ export class IntegrationBridge {
     recommendations: ContextualRecommendation[],
     integration: ParlantIntegration
   ): ContextualRecommendation[] {
-    return recommendations.filter(rec => {
+    return recommendations.filter((rec) => {
       // Apply confidence threshold
       if (rec.confidence < integration.recommendationSettings.confidenceThreshold) {
         return false
@@ -710,11 +706,12 @@ export class IntegrationBridge {
     integration: ParlantIntegration,
     context: ConversationContext
   ): ConversationRecommendationResult {
-    const formattedRecommendations = recommendations.map(rec => ({
+    const formattedRecommendations = recommendations.map((rec) => ({
       ...rec,
       explanation: explanations.get(rec.toolId),
-      parlant_integration: integration.toolConfigurations.get(rec.toolId)?.enhancedConfig.parlantIntegration,
-      conversation_specific: this.generateConversationSpecificGuidance(rec, context)
+      parlant_integration: integration.toolConfigurations.get(rec.toolId)?.enhancedConfig
+        .parlantIntegration,
+      conversation_specific: this.generateConversationSpecificGuidance(rec, context),
     }))
 
     return {
@@ -722,14 +719,17 @@ export class IntegrationBridge {
       conversation_context: context,
       presentation_config: this.generatePresentationConfig(integration, context),
       interaction_guidance: this.generateInteractionGuidance(integration, context),
-      analytics_metadata: this.generateAnalyticsMetadata(recommendations, integration)
+      analytics_metadata: this.generateAnalyticsMetadata(recommendations, integration),
     }
   }
 
   private initializeEventHandlers(): void {
     // Register default event handlers
     this.registerEventHandler('agent_registered', this.handleAgentRegistration.bind(this))
-    this.registerEventHandler('recommendations_generated', this.handleRecommendationsGenerated.bind(this))
+    this.registerEventHandler(
+      'recommendations_generated',
+      this.handleRecommendationsGenerated.bind(this)
+    )
     this.registerEventHandler('tool_selected', this.handleToolSelected.bind(this))
     this.registerEventHandler('tool_executed', this.handleToolExecuted.bind(this))
   }
@@ -769,21 +769,21 @@ export class IntegrationBridge {
   private async handleRecommendationsGenerated(event: RecommendationEvent): Promise<void> {
     logger.debug('Processing recommendations generated event', {
       agentId: event.agentId,
-      count: event.recommendations?.length || 0
+      count: event.recommendations?.length || 0,
     })
   }
 
   private async handleToolSelected(event: RecommendationEvent): Promise<void> {
     logger.debug('Processing tool selected event', {
       agentId: event.agentId,
-      toolId: event.selectedTool
+      toolId: event.selectedTool,
     })
   }
 
   private async handleToolExecuted(event: RecommendationEvent): Promise<void> {
     logger.debug('Processing tool executed event', {
       agentId: event.agentId,
-      success: event.outcome?.executionSuccess
+      success: event.outcome?.executionSuccess,
     })
   }
 
@@ -801,7 +801,7 @@ export class IntegrationBridge {
       batchRequestsEnabled: true,
       respectUserPreferences: true,
       enforceBusinessRules: true,
-      auditRecommendations: true
+      auditRecommendations: true,
     }
   }
 
@@ -813,8 +813,8 @@ export class IntegrationBridge {
       privacySettings: {
         shareData: false,
         anonymizeData: true,
-        retentionPeriod: '90_days'
-      }
+        retentionPeriod: '90_days',
+      },
     }
   }
 
@@ -835,7 +835,7 @@ export class IntegrationBridge {
       productivityGain: 0,
       taskEfficiencyImprovement: 0,
       userRetention: 0,
-      featureAdoption: 0
+      featureAdoption: 0,
     }
   }
 
@@ -853,7 +853,7 @@ export class IntegrationBridge {
       adaptationSpeed: 0,
       toolEffectivenessScores: new Map(),
       toolRecommendationFrequency: new Map(),
-      toolUserSatisfaction: new Map()
+      toolUserSatisfaction: new Map(),
     }
   }
 
@@ -881,27 +881,86 @@ export class IntegrationBridge {
   }
 
   // Additional helper method stubs...
-  private async getOriginalToolConfig(toolId: string): Promise<ToolConfig | null> { return null }
-  private async enhanceToolConfig(config: ToolConfig, integration: ParlantIntegration): Promise<EnhancedToolConfig> { return {} as any }
-  private updateConversationState(context: ConversationContext): void { }
-  private async buildAdvancedContext(context: ConversationContext, integration: ParlantIntegration): Promise<AdvancedUsageContext> { return {} as any }
-  private async getUserBehaviorHistory(userId: string): Promise<any> { return {} }
-  private calculateAverageConfidence(recommendations: ContextualRecommendation[]): number { return 0.8 }
-  private createErrorResult(error: string): ConversationRecommendationResult { return {} as any }
-  private async updateUserBehaviorModel(selection: ToolSelection): Promise<void> { }
-  private getEnhancedToolConfig(toolId: string, integration: ParlantIntegration): EnhancedToolConfig { return {} as any }
-  private prepareExecutionContext(selection: ToolSelection, integration: ParlantIntegration): any { return {} }
-  private generateUsageGuidance(config: EnhancedToolConfig, selection: ToolSelection): string[] { return [] }
-  private predictOutcome(config: EnhancedToolConfig, selection: ToolSelection): string { return 'Success expected' }
-  private generateFeedbackPrompts(config: EnhancedToolConfig): string[] { return [] }
-  private convertToModelFeedback(feedback: ExecutionFeedback): any { return {} }
-  private isToolAllowedInWorkspace(toolId: string, workspaceId: string): boolean { return true }
-  private generateConversationSpecificGuidance(rec: ContextualRecommendation, context: ConversationContext): any { return {} }
-  private generatePresentationConfig(integration: ParlantIntegration, context: ConversationContext): any { return {} }
-  private generateInteractionGuidance(integration: ParlantIntegration, context: ConversationContext): any { return {} }
-  private generateAnalyticsMetadata(recommendations: ContextualRecommendation[], integration: ParlantIntegration): any { return {} }
-  private assessIntegrationHealth(agentId?: string): any { return { status: 'healthy', score: 0.9 } }
-  private createEmptyAnalytics(): IntegrationAnalytics { return {} as any }
+  private async getOriginalToolConfig(toolId: string): Promise<ToolConfig | null> {
+    return null
+  }
+  private async enhanceToolConfig(
+    config: ToolConfig,
+    integration: ParlantIntegration
+  ): Promise<EnhancedToolConfig> {
+    return {} as any
+  }
+  private updateConversationState(context: ConversationContext): void {}
+  private async buildAdvancedContext(
+    context: ConversationContext,
+    integration: ParlantIntegration
+  ): Promise<AdvancedUsageContext> {
+    return {} as any
+  }
+  private async getUserBehaviorHistory(userId: string): Promise<any> {
+    return {}
+  }
+  private calculateAverageConfidence(recommendations: ContextualRecommendation[]): number {
+    return 0.8
+  }
+  private createErrorResult(error: string): ConversationRecommendationResult {
+    return {} as any
+  }
+  private async updateUserBehaviorModel(selection: ToolSelection): Promise<void> {}
+  private getEnhancedToolConfig(
+    toolId: string,
+    integration: ParlantIntegration
+  ): EnhancedToolConfig {
+    return {} as any
+  }
+  private prepareExecutionContext(selection: ToolSelection, integration: ParlantIntegration): any {
+    return {}
+  }
+  private generateUsageGuidance(config: EnhancedToolConfig, selection: ToolSelection): string[] {
+    return []
+  }
+  private predictOutcome(config: EnhancedToolConfig, selection: ToolSelection): string {
+    return 'Success expected'
+  }
+  private generateFeedbackPrompts(config: EnhancedToolConfig): string[] {
+    return []
+  }
+  private convertToModelFeedback(feedback: ExecutionFeedback): any {
+    return {}
+  }
+  private isToolAllowedInWorkspace(toolId: string, workspaceId: string): boolean {
+    return true
+  }
+  private generateConversationSpecificGuidance(
+    rec: ContextualRecommendation,
+    context: ConversationContext
+  ): any {
+    return {}
+  }
+  private generatePresentationConfig(
+    integration: ParlantIntegration,
+    context: ConversationContext
+  ): any {
+    return {}
+  }
+  private generateInteractionGuidance(
+    integration: ParlantIntegration,
+    context: ConversationContext
+  ): any {
+    return {}
+  }
+  private generateAnalyticsMetadata(
+    recommendations: ContextualRecommendation[],
+    integration: ParlantIntegration
+  ): any {
+    return {}
+  }
+  private assessIntegrationHealth(agentId?: string): any {
+    return { status: 'healthy', score: 0.9 }
+  }
+  private createEmptyAnalytics(): IntegrationAnalytics {
+    return {} as any
+  }
 }
 
 // =============================================================================
@@ -1134,9 +1193,7 @@ interface PrivacySettings {
 /**
  * Create integration bridge for Parlant agents
  */
-export function createIntegrationBridge(
-  config?: IntegrationBridgeConfig
-): IntegrationBridge {
+export function createIntegrationBridge(config?: IntegrationBridgeConfig): IntegrationBridge {
   return new IntegrationBridge(config)
 }
 
@@ -1152,27 +1209,27 @@ export function createProductionIntegrationBridge(): IntegrationBridge {
       cache: {
         l1Cache: { maxSize: 10000, ttl: 300000, updateThreshold: 0.8 },
         strategy: 'adaptive',
-        compressionEnabled: true
-      }
+        compressionEnabled: true,
+      },
     },
     api: {
       performance: {
         requestDeduplication: true,
         requestBatching: true,
         maxBatchSize: 100,
-        responseCompression: true
+        responseCompression: true,
       },
       security: {
         rateLimiting: { enabled: true, maxRequests: 5000, windowSize: 60000 },
         requireAuthentication: true,
-        inputValidation: true
+        inputValidation: true,
       },
       monitoring: {
         metricsEnabled: true,
         detailedMetrics: true,
-        alertingEnabled: true
-      }
-    }
+        alertingEnabled: true,
+      },
+    },
   }
 
   return new IntegrationBridge(config)

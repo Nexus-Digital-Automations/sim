@@ -10,20 +10,15 @@
 
 'use client'
 
-import React, { ErrorBoundary } from 'react'
+import React from 'react'
 import { AlertTriangle, MessageCircle, RefreshCw } from 'lucide-react'
-
-import { createLogger } from '@/lib/logs/console/logger'
-import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-
-import { SimChatProvider } from '../providers/sim-chat-provider'
-import { SimChatWidget } from './sim-chat-widget'
-import {
-  SimChatWidgetConfig,
-  SimChatWidgetProps,
-} from '../types/parlant-widget.types'
+import { Button } from '@/components/ui/button'
+import { createLogger } from '@/lib/logs/console/logger'
 import { getEnvironmentConfig } from '../config/widget-config'
+import { SimChatProvider } from '../providers/sim-chat-provider'
+import type { SimChatWidgetConfig, SimChatWidgetProps } from '../types/parlant-widget.types'
+import { SimChatWidget } from './sim-chat-widget'
 
 const logger = createLogger('SimChatContainer')
 
@@ -77,10 +72,7 @@ export function SimChatContainer({
   return (
     <ChatErrorBoundary>
       <SimChatProvider defaultConfig={defaultConfig}>
-        <SimChatWidget
-          config={defaultConfig}
-          {...widgetProps}
-        />
+        <SimChatWidget config={defaultConfig} {...widgetProps} />
         {debug && process.env.NODE_ENV === 'development' && (
           <ChatDebugPanel workspaceId={workspaceId} agentId={agentId} />
         )}
@@ -127,24 +119,24 @@ class ChatErrorBoundary extends React.Component<
  */
 function ChatErrorFallback({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="fixed bottom-4 right-4 max-w-md">
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
+    <div className='fixed right-4 bottom-4 max-w-md'>
+      <Alert variant='destructive'>
+        <AlertTriangle className='h-4 w-4' />
         <AlertDescription>
-          <div className="space-y-3">
+          <div className='space-y-3'>
             <div>
-              <p className="font-medium">Chat Widget Error</p>
-              <p className="text-sm mt-1">
+              <p className='font-medium'>Chat Widget Error</p>
+              <p className='mt-1 text-sm'>
                 The chat widget encountered an unexpected error. Please try again.
               </p>
             </div>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={onRetry}
-              className="flex items-center space-x-2"
+              className='flex items-center space-x-2'
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className='h-4 w-4' />
               <span>Retry</span>
             </Button>
           </div>
@@ -157,17 +149,14 @@ function ChatErrorFallback({ onRetry }: { onRetry: () => void }) {
 /**
  * Debug panel for development
  */
-function ChatDebugPanel({ workspaceId, agentId }: {
-  workspaceId: string
-  agentId: string
-}) {
+function ChatDebugPanel({ workspaceId, agentId }: { workspaceId: string; agentId: string }) {
   return (
-    <div className="fixed bottom-20 right-4 bg-background border border-border rounded-lg p-3 text-xs font-mono shadow-lg max-w-sm">
-      <div className="flex items-center space-x-2 mb-2">
-        <MessageCircle className="w-3 h-3" />
-        <span className="font-semibold">Chat Debug</span>
+    <div className='fixed right-4 bottom-20 max-w-sm rounded-lg border border-border bg-background p-3 font-mono text-xs shadow-lg'>
+      <div className='mb-2 flex items-center space-x-2'>
+        <MessageCircle className='h-3 w-3' />
+        <span className='font-semibold'>Chat Debug</span>
       </div>
-      <div className="space-y-1 text-muted-foreground">
+      <div className='space-y-1 text-muted-foreground'>
         <div>Workspace: {workspaceId}</div>
         <div>Agent: {agentId}</div>
         <div>Environment: {process.env.NODE_ENV}</div>
@@ -188,13 +177,7 @@ export function SimpleSimChat({
   workspaceId: string
   agentId: string
 } & Partial<SimChatContainerProps>) {
-  return (
-    <SimChatContainer
-      workspaceId={workspaceId}
-      agentId={agentId}
-      {...props}
-    />
-  )
+  return <SimChatContainer workspaceId={workspaceId} agentId={agentId} {...props} />
 }
 
 /**
@@ -215,10 +198,10 @@ export function SimChatButton({
   return (
     <Button
       onClick={onClick}
-      className={`fixed bottom-4 right-4 w-14 h-14 rounded-full shadow-lg ${className}`}
+      className={`fixed right-4 bottom-4 h-14 w-14 rounded-full shadow-lg ${className}`}
       {...props}
     >
-      <MessageCircle className="w-6 h-6" />
+      <MessageCircle className='h-6 w-6' />
     </Button>
   )
 }

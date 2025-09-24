@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Agent, Guideline, Journey } from '@/apps/sim/services/parlant/types'
-import { Button } from '@/components/ui/button'
+import { formatDistanceToNow } from 'date-fns'
+import { Activity, Brain, Info, Route, Settings, Star, Target, TrendingUp } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -12,26 +14,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import {
-  Brain,
-  Calendar,
-  Clock,
-  GitBranch,
-  MessageCircle,
-  Settings,
-  Star,
-  TrendingUp,
-  Users,
-  Zap,
-  Activity,
-  Target,
-  Route,
-  Info
-} from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import type { Agent, Guideline, Journey } from '@/apps/sim/services/parlant/types'
 
 interface AgentProfileModalProps {
   agent: Agent | null
@@ -75,7 +60,7 @@ export function AgentProfileModal({
   onClose,
   onSelect,
   metrics,
-  className = ''
+  className = '',
 }: AgentProfileModalProps) {
   const [selectedTab, setSelectedTab] = useState('overview')
 
@@ -96,7 +81,7 @@ export function AgentProfileModal({
 
   const renderStarRating = (rating: number) => {
     return (
-      <div className="flex items-center space-x-1">
+      <div className='flex items-center space-x-1'>
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
@@ -107,9 +92,7 @@ export function AgentProfileModal({
             }`}
           />
         ))}
-        <span className="text-sm text-muted-foreground ml-2">
-          {rating.toFixed(1)} / 5.0
-        </span>
+        <span className='ml-2 text-muted-foreground text-sm'>{rating.toFixed(1)} / 5.0</span>
       </div>
     )
   }
@@ -124,29 +107,32 @@ export function AgentProfileModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`max-w-4xl max-h-[90vh] overflow-hidden ${className}`}>
-        <DialogHeader className="pb-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <DialogTitle className="text-2xl font-bold flex items-center space-x-3">
+      <DialogContent className={`max-h-[90vh] max-w-4xl overflow-hidden ${className}`}>
+        <DialogHeader className='pb-4'>
+          <div className='flex items-start justify-between'>
+            <div className='flex-1'>
+              <DialogTitle className='flex items-center space-x-3 font-bold text-2xl'>
                 <span>{agent.name}</span>
                 <Badge
-                  variant="outline"
+                  variant='outline'
                   className={`${getStatusColor(agent.status)} border-transparent`}
                 >
-                  {agent.status === 'active' ? 'Ready' :
-                   agent.status === 'training' ? 'Learning' : 'Offline'}
+                  {agent.status === 'active'
+                    ? 'Ready'
+                    : agent.status === 'training'
+                      ? 'Learning'
+                      : 'Offline'}
                 </Badge>
               </DialogTitle>
-              <DialogDescription className="text-base mt-2">
+              <DialogDescription className='mt-2 text-base'>
                 {agent.description || 'No description available'}
               </DialogDescription>
             </div>
 
             {metrics && (
-              <div className="ml-4 text-right">
+              <div className='ml-4 text-right'>
                 {renderStarRating(metrics.rating)}
-                <div className="text-sm text-muted-foreground mt-1">
+                <div className='mt-1 text-muted-foreground text-sm'>
                   {metrics.totalSessions} conversations
                 </div>
               </div>
@@ -154,53 +140,53 @@ export function AgentProfileModal({
           </div>
         </DialogHeader>
 
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="flex-1 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview" className="flex items-center space-x-2">
-              <Info className="h-4 w-4" />
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className='flex-1 overflow-hidden'>
+          <TabsList className='grid w-full grid-cols-4'>
+            <TabsTrigger value='overview' className='flex items-center space-x-2'>
+              <Info className='h-4 w-4' />
               <span>Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="performance" className="flex items-center space-x-2">
-              <TrendingUp className="h-4 w-4" />
+            <TabsTrigger value='performance' className='flex items-center space-x-2'>
+              <TrendingUp className='h-4 w-4' />
               <span>Performance</span>
             </TabsTrigger>
-            <TabsTrigger value="capabilities" className="flex items-center space-x-2">
-              <Brain className="h-4 w-4" />
+            <TabsTrigger value='capabilities' className='flex items-center space-x-2'>
+              <Brain className='h-4 w-4' />
               <span>Capabilities</span>
             </TabsTrigger>
-            <TabsTrigger value="journeys" className="flex items-center space-x-2">
-              <Route className="h-4 w-4" />
+            <TabsTrigger value='journeys' className='flex items-center space-x-2'>
+              <Route className='h-4 w-4' />
               <span>Journeys</span>
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-y-auto mt-4">
-            <TabsContent value="overview" className="space-y-6 m-0">
+          <div className='mt-4 flex-1 overflow-y-auto'>
+            <TabsContent value='overview' className='m-0 space-y-6'>
               {/* Basic Information */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Settings className="h-5 w-5" />
+                  <CardTitle className='flex items-center space-x-2'>
+                    <Settings className='h-5 w-5' />
                     <span>Agent Information</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <CardContent className='space-y-4'>
+                  <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
                     <div>
-                      <div className="text-sm font-medium text-muted-foreground">Created</div>
-                      <div className="text-sm">{formatRelativeTime(agent.created_at)}</div>
+                      <div className='font-medium text-muted-foreground text-sm'>Created</div>
+                      <div className='text-sm'>{formatRelativeTime(agent.created_at)}</div>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-muted-foreground">Last Updated</div>
-                      <div className="text-sm">{formatRelativeTime(agent.updated_at)}</div>
+                      <div className='font-medium text-muted-foreground text-sm'>Last Updated</div>
+                      <div className='text-sm'>{formatRelativeTime(agent.updated_at)}</div>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-muted-foreground">Guidelines</div>
-                      <div className="text-sm">{agent.guidelines?.length || 0}</div>
+                      <div className='font-medium text-muted-foreground text-sm'>Guidelines</div>
+                      <div className='text-sm'>{agent.guidelines?.length || 0}</div>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-muted-foreground">Journeys</div>
-                      <div className="text-sm">{agent.journeys?.length || 0}</div>
+                      <div className='font-medium text-muted-foreground text-sm'>Journeys</div>
+                      <div className='text-sm'>{agent.journeys?.length || 0}</div>
                     </div>
                   </div>
 
@@ -208,30 +194,32 @@ export function AgentProfileModal({
                     <>
                       <Separator />
                       <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-2">Configuration</div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className='mb-2 font-medium text-muted-foreground text-sm'>
+                          Configuration
+                        </div>
+                        <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
                           {agent.config.model && (
                             <div>
-                              <div className="text-xs text-muted-foreground">Model</div>
-                              <div className="text-sm font-mono">{agent.config.model}</div>
+                              <div className='text-muted-foreground text-xs'>Model</div>
+                              <div className='font-mono text-sm'>{agent.config.model}</div>
                             </div>
                           )}
                           {agent.config.temperature !== undefined && (
                             <div>
-                              <div className="text-xs text-muted-foreground">Temperature</div>
-                              <div className="text-sm">{agent.config.temperature}</div>
+                              <div className='text-muted-foreground text-xs'>Temperature</div>
+                              <div className='text-sm'>{agent.config.temperature}</div>
                             </div>
                           )}
                           {agent.config.max_turns && (
                             <div>
-                              <div className="text-xs text-muted-foreground">Max Turns</div>
-                              <div className="text-sm">{agent.config.max_turns}</div>
+                              <div className='text-muted-foreground text-xs'>Max Turns</div>
+                              <div className='text-sm'>{agent.config.max_turns}</div>
                             </div>
                           )}
                           {agent.config.tool_choice && (
                             <div>
-                              <div className="text-xs text-muted-foreground">Tool Choice</div>
-                              <div className="text-sm">{agent.config.tool_choice}</div>
+                              <div className='text-muted-foreground text-xs'>Tool Choice</div>
+                              <div className='text-sm'>{agent.config.tool_choice}</div>
                             </div>
                           )}
                         </div>
@@ -243,8 +231,10 @@ export function AgentProfileModal({
                     <>
                       <Separator />
                       <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-2">System Prompt</div>
-                        <div className="text-sm p-3 bg-muted rounded-md font-mono">
+                        <div className='mb-2 font-medium text-muted-foreground text-sm'>
+                          System Prompt
+                        </div>
+                        <div className='rounded-md bg-muted p-3 font-mono text-sm'>
                           {agent.config.system_prompt}
                         </div>
                       </div>
@@ -257,28 +247,28 @@ export function AgentProfileModal({
               {metrics && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Activity className="h-5 w-5" />
+                    <CardTitle className='flex items-center space-x-2'>
+                      <Activity className='h-5 w-5' />
                       <span>Quick Stats</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">{metrics.totalSessions}</div>
-                        <div className="text-sm text-muted-foreground">Total Sessions</div>
+                    <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+                      <div className='text-center'>
+                        <div className='font-bold text-2xl'>{metrics.totalSessions}</div>
+                        <div className='text-muted-foreground text-sm'>Total Sessions</div>
                       </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">{metrics.totalMessages}</div>
-                        <div className="text-sm text-muted-foreground">Messages</div>
+                      <div className='text-center'>
+                        <div className='font-bold text-2xl'>{metrics.totalMessages}</div>
+                        <div className='text-muted-foreground text-sm'>Messages</div>
                       </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">{metrics.successRate}%</div>
-                        <div className="text-sm text-muted-foreground">Success Rate</div>
+                      <div className='text-center'>
+                        <div className='font-bold text-2xl'>{metrics.successRate}%</div>
+                        <div className='text-muted-foreground text-sm'>Success Rate</div>
                       </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">{metrics.avgResponseTime}ms</div>
-                        <div className="text-sm text-muted-foreground">Avg Response</div>
+                      <div className='text-center'>
+                        <div className='font-bold text-2xl'>{metrics.avgResponseTime}ms</div>
+                        <div className='text-muted-foreground text-sm'>Avg Response</div>
                       </div>
                     </div>
                   </CardContent>
@@ -286,30 +276,34 @@ export function AgentProfileModal({
               )}
             </TabsContent>
 
-            <TabsContent value="performance" className="space-y-6 m-0">
+            <TabsContent value='performance' className='m-0 space-y-6'>
               {metrics && (
                 <>
                   {/* Performance Overview */}
                   <Card>
                     <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <TrendingUp className="h-5 w-5" />
+                      <CardTitle className='flex items-center space-x-2'>
+                        <TrendingUp className='h-5 w-5' />
                         <span>Performance Overview</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="text-center">
-                          <div className="text-3xl font-bold text-green-600">{metrics.successRate}%</div>
-                          <div className="text-sm text-muted-foreground">Success Rate</div>
+                    <CardContent className='space-y-6'>
+                      <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
+                        <div className='text-center'>
+                          <div className='font-bold text-3xl text-green-600'>
+                            {metrics.successRate}%
+                          </div>
+                          <div className='text-muted-foreground text-sm'>Success Rate</div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-3xl font-bold">{metrics.avgResponseTime}ms</div>
-                          <div className="text-sm text-muted-foreground">Avg Response Time</div>
+                        <div className='text-center'>
+                          <div className='font-bold text-3xl'>{metrics.avgResponseTime}ms</div>
+                          <div className='text-muted-foreground text-sm'>Avg Response Time</div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-3xl font-bold">{metrics.averageSessionLength}min</div>
-                          <div className="text-sm text-muted-foreground">Avg Session Length</div>
+                        <div className='text-center'>
+                          <div className='font-bold text-3xl'>
+                            {metrics.averageSessionLength}min
+                          </div>
+                          <div className='text-muted-foreground text-sm'>Avg Session Length</div>
                         </div>
                       </div>
 
@@ -317,7 +311,7 @@ export function AgentProfileModal({
 
                       {/* Rating Breakdown */}
                       <div>
-                        <h4 className="font-medium mb-3">Rating Breakdown</h4>
+                        <h4 className='mb-3 font-medium'>Rating Breakdown</h4>
                         {renderStarRating(metrics.rating)}
                       </div>
 
@@ -325,51 +319,72 @@ export function AgentProfileModal({
 
                       {/* User Feedback */}
                       <div>
-                        <h4 className="font-medium mb-3">User Feedback</h4>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm">Positive</span>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                        <h4 className='mb-3 font-medium'>User Feedback</h4>
+                        <div className='space-y-2'>
+                          <div className='flex items-center justify-between'>
+                            <span className='text-sm'>Positive</span>
+                            <div className='flex items-center space-x-2'>
+                              <div className='h-2 w-24 overflow-hidden rounded-full bg-muted'>
                                 <div
-                                  className="h-full bg-green-500"
+                                  className='h-full bg-green-500'
                                   style={{
-                                    width: `${(metrics.userFeedback.positive /
-                                      (metrics.userFeedback.positive + metrics.userFeedback.neutral + metrics.userFeedback.negative)) * 100}%`
+                                    width: `${
+                                      (metrics.userFeedback.positive /
+                                        (metrics.userFeedback.positive +
+                                          metrics.userFeedback.neutral +
+                                          metrics.userFeedback.negative)) *
+                                      100
+                                    }%`,
                                   }}
                                 />
                               </div>
-                              <span className="text-sm font-medium">{metrics.userFeedback.positive}</span>
+                              <span className='font-medium text-sm'>
+                                {metrics.userFeedback.positive}
+                              </span>
                             </div>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm">Neutral</span>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                          <div className='flex items-center justify-between'>
+                            <span className='text-sm'>Neutral</span>
+                            <div className='flex items-center space-x-2'>
+                              <div className='h-2 w-24 overflow-hidden rounded-full bg-muted'>
                                 <div
-                                  className="h-full bg-yellow-500"
+                                  className='h-full bg-yellow-500'
                                   style={{
-                                    width: `${(metrics.userFeedback.neutral /
-                                      (metrics.userFeedback.positive + metrics.userFeedback.neutral + metrics.userFeedback.negative)) * 100}%`
+                                    width: `${
+                                      (metrics.userFeedback.neutral /
+                                        (metrics.userFeedback.positive +
+                                          metrics.userFeedback.neutral +
+                                          metrics.userFeedback.negative)) *
+                                      100
+                                    }%`,
                                   }}
                                 />
                               </div>
-                              <span className="text-sm font-medium">{metrics.userFeedback.neutral}</span>
+                              <span className='font-medium text-sm'>
+                                {metrics.userFeedback.neutral}
+                              </span>
                             </div>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm">Negative</span>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                          <div className='flex items-center justify-between'>
+                            <span className='text-sm'>Negative</span>
+                            <div className='flex items-center space-x-2'>
+                              <div className='h-2 w-24 overflow-hidden rounded-full bg-muted'>
                                 <div
-                                  className="h-full bg-red-500"
+                                  className='h-full bg-red-500'
                                   style={{
-                                    width: `${(metrics.userFeedback.negative /
-                                      (metrics.userFeedback.positive + metrics.userFeedback.neutral + metrics.userFeedback.negative)) * 100}%`
+                                    width: `${
+                                      (metrics.userFeedback.negative /
+                                        (metrics.userFeedback.positive +
+                                          metrics.userFeedback.neutral +
+                                          metrics.userFeedback.negative)) *
+                                      100
+                                    }%`,
                                   }}
                                 />
                               </div>
-                              <span className="text-sm font-medium">{metrics.userFeedback.negative}</span>
+                              <span className='font-medium text-sm'>
+                                {metrics.userFeedback.negative}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -380,10 +395,10 @@ export function AgentProfileModal({
                         <>
                           <Separator />
                           <div>
-                            <h4 className="font-medium mb-3">Top Topics</h4>
-                            <div className="flex flex-wrap gap-2">
+                            <h4 className='mb-3 font-medium'>Top Topics</h4>
+                            <div className='flex flex-wrap gap-2'>
                               {metrics.topTopics.map((topic, index) => (
-                                <Badge key={index} variant="secondary">
+                                <Badge key={index} variant='secondary'>
                                   {topic}
                                 </Badge>
                               ))}
@@ -397,49 +412,51 @@ export function AgentProfileModal({
               )}
             </TabsContent>
 
-            <TabsContent value="capabilities" className="space-y-6 m-0">
+            <TabsContent value='capabilities' className='m-0 space-y-6'>
               {/* Guidelines */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Target className="h-5 w-5" />
+                  <CardTitle className='flex items-center space-x-2'>
+                    <Target className='h-5 w-5' />
                     <span>Guidelines ({agent.guidelines?.length || 0})</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {agent.guidelines && agent.guidelines.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className='space-y-4'>
                       {agent.guidelines.map((guideline: Guideline, index) => (
-                        <div key={guideline.id} className="p-4 border rounded-lg">
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex items-center space-x-2">
-                              <Badge variant="outline">#{index + 1}</Badge>
+                        <div key={guideline.id} className='rounded-lg border p-4'>
+                          <div className='mb-2 flex items-start justify-between'>
+                            <div className='flex items-center space-x-2'>
+                              <Badge variant='outline'>#{index + 1}</Badge>
                               {guideline.priority && (
-                                <Badge variant="secondary">
-                                  Priority: {guideline.priority}
-                                </Badge>
+                                <Badge variant='secondary'>Priority: {guideline.priority}</Badge>
                               )}
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className='text-muted-foreground text-xs'>
                               {formatRelativeTime(guideline.created_at)}
                             </div>
                           </div>
-                          <div className="space-y-2">
+                          <div className='space-y-2'>
                             <div>
-                              <div className="text-sm font-medium text-muted-foreground">Condition</div>
-                              <div className="text-sm">{guideline.condition}</div>
+                              <div className='font-medium text-muted-foreground text-sm'>
+                                Condition
+                              </div>
+                              <div className='text-sm'>{guideline.condition}</div>
                             </div>
                             <div>
-                              <div className="text-sm font-medium text-muted-foreground">Action</div>
-                              <div className="text-sm">{guideline.action}</div>
+                              <div className='font-medium text-muted-foreground text-sm'>
+                                Action
+                              </div>
+                              <div className='text-sm'>{guideline.action}</div>
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <div className='py-8 text-center text-muted-foreground'>
+                      <Target className='mx-auto mb-4 h-12 w-12 opacity-50' />
                       <p>No guidelines configured for this agent</p>
                     </div>
                   )}
@@ -447,41 +464,41 @@ export function AgentProfileModal({
               </Card>
             </TabsContent>
 
-            <TabsContent value="journeys" className="space-y-6 m-0">
+            <TabsContent value='journeys' className='m-0 space-y-6'>
               {/* Journeys */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Route className="h-5 w-5" />
+                  <CardTitle className='flex items-center space-x-2'>
+                    <Route className='h-5 w-5' />
                     <span>Journeys ({agent.journeys?.length || 0})</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {agent.journeys && agent.journeys.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className='space-y-4'>
                       {agent.journeys.map((journey: Journey) => (
-                        <div key={journey.id} className="p-4 border rounded-lg">
-                          <div className="flex items-start justify-between mb-2">
-                            <h4 className="font-medium">{journey.title}</h4>
-                            <div className="text-xs text-muted-foreground">
+                        <div key={journey.id} className='rounded-lg border p-4'>
+                          <div className='mb-2 flex items-start justify-between'>
+                            <h4 className='font-medium'>{journey.title}</h4>
+                            <div className='text-muted-foreground text-xs'>
                               {formatRelativeTime(journey.created_at)}
                             </div>
                           </div>
 
                           {journey.description && (
-                            <p className="text-sm text-muted-foreground mb-3">
+                            <p className='mb-3 text-muted-foreground text-sm'>
                               {journey.description}
                             </p>
                           )}
 
                           {journey.conditions.length > 0 && (
-                            <div className="mb-3">
-                              <div className="text-sm font-medium text-muted-foreground mb-1">
+                            <div className='mb-3'>
+                              <div className='mb-1 font-medium text-muted-foreground text-sm'>
                                 Conditions
                               </div>
-                              <div className="flex flex-wrap gap-1">
+                              <div className='flex flex-wrap gap-1'>
                                 {journey.conditions.map((condition, index) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
+                                  <Badge key={index} variant='outline' className='text-xs'>
                                     {condition}
                                   </Badge>
                                 ))}
@@ -491,19 +508,19 @@ export function AgentProfileModal({
 
                           {journey.steps && journey.steps.length > 0 && (
                             <div>
-                              <div className="text-sm font-medium text-muted-foreground mb-2">
+                              <div className='mb-2 font-medium text-muted-foreground text-sm'>
                                 Steps ({journey.steps.length})
                               </div>
-                              <div className="space-y-2">
+                              <div className='space-y-2'>
                                 {journey.steps.map((step, index) => (
-                                  <div key={step.id} className="flex items-start space-x-2 text-sm">
-                                    <Badge variant="outline" className="text-xs px-1">
+                                  <div key={step.id} className='flex items-start space-x-2 text-sm'>
+                                    <Badge variant='outline' className='px-1 text-xs'>
                                       {step.order}
                                     </Badge>
-                                    <div className="flex-1">
-                                      <div className="font-medium">{step.title}</div>
+                                    <div className='flex-1'>
+                                      <div className='font-medium'>{step.title}</div>
                                       {step.description && (
-                                        <div className="text-muted-foreground">
+                                        <div className='text-muted-foreground'>
                                           {step.description}
                                         </div>
                                       )}
@@ -517,8 +534,8 @@ export function AgentProfileModal({
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Route className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <div className='py-8 text-center text-muted-foreground'>
+                      <Route className='mx-auto mb-4 h-12 w-12 opacity-50' />
                       <p>No journeys configured for this agent</p>
                     </div>
                   )}
@@ -528,15 +545,11 @@ export function AgentProfileModal({
           </div>
         </Tabs>
 
-        <DialogFooter className="pt-4">
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className='pt-4'>
+          <Button variant='outline' onClick={onClose}>
             Close
           </Button>
-          {onSelect && (
-            <Button onClick={() => onSelect(agent)}>
-              Select Agent
-            </Button>
-          )}
+          {onSelect && <Button onClick={() => onSelect(agent)}>Select Agent</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

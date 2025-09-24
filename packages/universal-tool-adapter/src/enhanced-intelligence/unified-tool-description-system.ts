@@ -20,43 +20,36 @@
  * @version 1.0.0
  */
 
+import {
+  type ToolIntegrationExample,
+  ToolIntegrationExamplesCollection,
+} from '../examples/tool-integration-examples'
+import {
+  type GuidelineDefinition,
+  GuidelinesFramework,
+} from '../usage-guidelines/guidelines-framework'
+import { createLogger } from '../utils/logger'
 import type {
   EnhancedDescriptionSchema,
   NaturalLanguageDescriptionFramework,
+  SearchContext,
+  SkillLevel,
   ToolCategory,
   UserRole,
-  SkillLevel,
-  DescriptionContext,
-  SearchContext,
-  DescriptionSearchResult
 } from './natural-language-description-framework'
-
 import {
-  SimToolMetadata,
-  SimToolCategory,
   SimToolCatalog,
-  SimToolClassifier
+  type SimToolCategory,
+  SimToolClassifier,
+  type SimToolMetadata,
 } from './sim-tool-catalog'
-
 import {
+  type PersonalizedToolDescription,
+  type ToolRecommendationResult,
   ToolSelectionIntelligenceEngine,
-  ToolSelectionQuery,
-  ToolRecommendationResult,
-  UserContext,
-  PersonalizedToolDescription
+  type ToolSelectionQuery,
+  type UserContext,
 } from './tool-selection-intelligence'
-
-import {
-  ToolIntegrationExamplesCollection,
-  ToolIntegrationExample
-} from '../examples/tool-integration-examples'
-
-import {
-  GuidelineDefinition,
-  GuidelinesFramework
-} from '../usage-guidelines/guidelines-framework'
-
-import { createLogger } from '../utils/logger'
 
 const logger = createLogger('UnifiedToolDescriptionSystem')
 
@@ -184,7 +177,7 @@ export class UnifiedToolDescriptionSystem {
     logger.info('Unified Tool Description System initialized', {
       totalTools: this.toolCatalog.getAllTools().length,
       totalExamples: this.getSystemCapabilities().totalExamples,
-      cacheEnabled: !!config.cacheSettings?.enabled
+      cacheEnabled: !!config.cacheSettings?.enabled,
     })
   }
 
@@ -201,7 +194,7 @@ export class UnifiedToolDescriptionSystem {
       hasIntent: !!query.intent,
       hasToolId: !!query.toolId,
       category: query.category,
-      userRole: query.userContext.role
+      userRole: query.userContext.role,
     })
 
     try {
@@ -238,7 +231,7 @@ export class UnifiedToolDescriptionSystem {
         systemVersion: '1.0.0',
         qualityScore: await this.calculateResponseQuality(response),
         cacheStatus: 'miss',
-        generatedAt: new Date()
+        generatedAt: new Date(),
       }
 
       // Cache the response
@@ -247,14 +240,15 @@ export class UnifiedToolDescriptionSystem {
       logger.info('Query processed successfully', {
         queryType: response.responseMetadata.queryType,
         processingTime: response.responseMetadata.processingTime,
-        resultsCount: (response.alternativeTools?.length || 0) + (response.primaryTool ? 1 : 0)
+        resultsCount: (response.alternativeTools?.length || 0) + (response.primaryTool ? 1 : 0),
       })
 
       return response
-
     } catch (error) {
       logger.error('Query processing failed:', error)
-      throw new Error(`Tool query failed: ${error instanceof Error ? error.message : String(error)}`)
+      throw new Error(
+        `Tool query failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -299,16 +293,10 @@ export class UnifiedToolDescriptionSystem {
       : []
 
     // Generate situational guidance
-    const situationalGuidance = await this.generateSituationalGuidance(
-      toolMetadata,
-      userContext
-    )
+    const situationalGuidance = await this.generateSituationalGuidance(toolMetadata, userContext)
 
     // Create learning path
-    const learningPath = await this.createLearningPath(
-      toolMetadata,
-      userContext
-    )
+    const learningPath = await this.createLearningPath(toolMetadata, userContext)
 
     // Calculate scores
     const scores = await this.calculateToolScores(toolMetadata, userContext)
@@ -324,7 +312,7 @@ export class UnifiedToolDescriptionSystem {
       appropriatenessScore: scores.appropriatenessScore,
       confidenceScore: scores.confidenceScore,
       situationalGuidance,
-      learningPath
+      learningPath,
     }
   }
 
@@ -346,9 +334,9 @@ export class UnifiedToolDescriptionSystem {
         includeAlternatives: preferences.includeAlternatives ?? true,
         includeReasons: preferences.includeReasons ?? true,
         includeStepByStep: preferences.includeStepByStep ?? false,
-        riskTolerance: preferences.riskTolerance || 'moderate'
+        riskTolerance: preferences.riskTolerance || 'moderate',
       },
-      constraints: preferences.constraints
+      constraints: preferences.constraints,
     }
 
     return this.selectionEngine.selectToolsForUser(selectionQuery)
@@ -395,9 +383,18 @@ export class UnifiedToolDescriptionSystem {
         'tool_recommendation',
         'tool_description',
         'usage_guidelines',
-        'integration_examples'
+        'integration_examples',
       ],
-      supportedUserRoles: ['developer', 'business_user', 'admin', 'analyst', 'manager', 'researcher', 'designer', 'qa_tester'],
+      supportedUserRoles: [
+        'developer',
+        'business_user',
+        'admin',
+        'analyst',
+        'manager',
+        'researcher',
+        'designer',
+        'qa_tester',
+      ],
       supportedSkillLevels: ['beginner', 'intermediate', 'advanced', 'expert'],
       supportedCategories: [
         'workflow_management',
@@ -408,14 +405,14 @@ export class UnifiedToolDescriptionSystem {
         'search_research',
         'user_management',
         'block_metadata',
-        'debugging'
+        'debugging',
       ],
       totalTools: allTools.length,
       totalExamples: this.countTotalExamples(),
       totalGuidelines: this.countTotalGuidelines(),
       averageDescriptionQuality: 8.5, // Would be calculated from actual data
       averageUserSatisfaction: 8.2,
-      systemReliability: 99.5
+      systemReliability: 99.5,
     }
   }
 
@@ -433,11 +430,9 @@ export class UnifiedToolDescriptionSystem {
     )
 
     // Get related tools
-    const relatedTools = await this.findRelatedTools(
-      query.toolId!,
-      query.userContext,
-      { maxResults: 3 }
-    )
+    const relatedTools = await this.findRelatedTools(query.toolId!, query.userContext, {
+      maxResults: 3,
+    })
 
     return {
       primaryTool: toolDescription,
@@ -446,7 +441,7 @@ export class UnifiedToolDescriptionSystem {
       guidelines: query.includeGuidelines ? toolDescription.usageGuidelines : undefined,
       queryAnalysis,
       contextAnalysis: await this.analyzeContext(query.userContext),
-      responseMetadata: {} as ResponseMetadata // Will be populated by caller
+      responseMetadata: {} as ResponseMetadata, // Will be populated by caller
     }
   }
 
@@ -455,10 +450,7 @@ export class UnifiedToolDescriptionSystem {
     queryAnalysis: QueryAnalysisResult
   ): Promise<UnifiedToolResponse> {
     // Use recommendation engine for intent-based queries
-    const recommendations = await this.recommendTools(
-      query.intent!,
-      query.userContext
-    )
+    const recommendations = await this.recommendTools(query.intent!, query.userContext)
 
     // Convert recommendations to tool descriptions
     const primaryTool = recommendations.primaryRecommendation
@@ -466,7 +458,7 @@ export class UnifiedToolDescriptionSystem {
       : undefined
 
     const alternativeTools = await Promise.all(
-      recommendations.alternativeRecommendations.map(rec =>
+      recommendations.alternativeRecommendations.map((rec) =>
         this.convertRecommendationToDescription(rec)
       )
     )
@@ -477,7 +469,7 @@ export class UnifiedToolDescriptionSystem {
       recommendations,
       queryAnalysis,
       contextAnalysis: await this.analyzeContext(query.userContext),
-      responseMetadata: {} as ResponseMetadata
+      responseMetadata: {} as ResponseMetadata,
     }
   }
 
@@ -493,9 +485,9 @@ export class UnifiedToolDescriptionSystem {
 
     // Convert top tools to descriptions
     const toolDescriptions = await Promise.all(
-      rankedTools.slice(0, query.outputPreferences?.maxResults || 5).map(tool =>
-        this.getComprehensiveToolDescription(tool.toolId, query.userContext)
-      )
+      rankedTools
+        .slice(0, query.outputPreferences?.maxResults || 5)
+        .map((tool) => this.getComprehensiveToolDescription(tool.toolId, query.userContext))
     )
 
     // Get category examples and guidelines
@@ -509,7 +501,7 @@ export class UnifiedToolDescriptionSystem {
       examples,
       queryAnalysis,
       contextAnalysis: await this.analyzeContext(query.userContext),
-      responseMetadata: {} as ResponseMetadata
+      responseMetadata: {} as ResponseMetadata,
     }
   }
 
@@ -521,16 +513,16 @@ export class UnifiedToolDescriptionSystem {
       query.searchTerms!.join(' '),
       {
         userRole: query.userContext.role,
-        skillLevel: query.userContext.skillLevel
+        skillLevel: query.userContext.skillLevel,
       },
       query.userContext
     )
 
     // Convert search results to tool descriptions
     const toolDescriptions = await Promise.all(
-      searchResults.slice(0, query.outputPreferences?.maxResults || 5).map(result =>
-        this.getComprehensiveToolDescription(result.toolId, query.userContext)
-      )
+      searchResults
+        .slice(0, query.outputPreferences?.maxResults || 5)
+        .map((result) => this.getComprehensiveToolDescription(result.toolId, query.userContext))
     )
 
     return {
@@ -538,7 +530,7 @@ export class UnifiedToolDescriptionSystem {
       alternativeTools: toolDescriptions.slice(1),
       queryAnalysis,
       contextAnalysis: await this.analyzeContext(query.userContext),
-      responseMetadata: {} as ResponseMetadata
+      responseMetadata: {} as ResponseMetadata,
     }
   }
 
@@ -547,9 +539,7 @@ export class UnifiedToolDescriptionSystem {
     queryAnalysis: QueryAnalysisResult
   ): Promise<UnifiedToolResponse> {
     // Generate recommendations based on user context
-    const recommendations = await this.generateDiscoveryRecommendations(
-      query.userContext
-    )
+    const recommendations = await this.generateDiscoveryRecommendations(query.userContext)
 
     // Get popular tools for user role
     const popularTools = await this.getPopularToolsForRole(
@@ -563,7 +553,7 @@ export class UnifiedToolDescriptionSystem {
       relatedTools: popularTools,
       queryAnalysis,
       contextAnalysis: await this.analyzeContext(query.userContext),
-      responseMetadata: {} as ResponseMetadata
+      responseMetadata: {} as ResponseMetadata,
     }
   }
 
@@ -571,7 +561,9 @@ export class UnifiedToolDescriptionSystem {
   // Utility Methods
   // =============================================================================
 
-  private createNLFramework(config?: NaturalLanguageFrameworkConfig): NaturalLanguageDescriptionFramework {
+  private createNLFramework(
+    config?: NaturalLanguageFrameworkConfig
+  ): NaturalLanguageDescriptionFramework {
     // This would create the actual framework instance
     // For now, returning a mock implementation
     return {
@@ -587,7 +579,7 @@ export class UnifiedToolDescriptionSystem {
             primaryUseCase: 'General purpose',
             keyCapability: 'Tool functionality',
             complexityLevel: 'moderate' as const,
-            quickTags: []
+            quickTags: [],
           },
           detailed: {
             overview: 'Detailed tool overview',
@@ -596,7 +588,7 @@ export class UnifiedToolDescriptionSystem {
             workingPrinciple: 'How it works',
             benefits: [],
             limitations: [],
-            integrationInfo: { integratedWith: [], apiEndpoints: [] }
+            integrationInfo: { integratedWith: [], apiEndpoints: [] },
           },
           expert: {
             technicalArchitecture: {
@@ -604,46 +596,46 @@ export class UnifiedToolDescriptionSystem {
               dependencies: [],
               integrationPoints: [],
               scalabilityFactors: [],
-              performanceConsiderations: []
+              performanceConsiderations: [],
             },
             advancedConfiguration: {
               configurableParameters: [],
               advancedOptions: [],
               customizationPoints: [],
-              extensionMechanisms: []
+              extensionMechanisms: [],
             },
             performanceProfile: {
               responseTime: { average: 0, p95: 0, p99: 0 },
               throughput: { average: 0, p95: 0, p99: 0 },
               resourceUsage: { cpu: 0, memory: 0, network: 0 },
-              scalabilityLimits: { maxConcurrentUsers: 0, maxDataSize: 0 }
+              scalabilityLimits: { maxConcurrentUsers: 0, maxDataSize: 0 },
             },
             securityProfile: {
               authenticationRequirements: [],
               authorizationModel: '',
               dataProtection: [],
               auditingCapabilities: [],
-              complianceFrameworks: []
+              complianceFrameworks: [],
             },
             troubleshooting: {
               commonIssues: [],
               diagnosticSteps: [],
               resolutionProcedures: [],
-              escalationPaths: []
+              escalationPaths: [],
             },
             extensibilityInfo: {
               extensionPoints: [],
-              customization: []
-            }
+              customization: [],
+            },
           },
-          contextual: {}
+          contextual: {},
         },
         contextualDescriptions: {
           roleAdaptations: {},
           skillAdaptations: {},
           domainAdaptations: {},
           workflowAdaptations: {},
-          situationalAdaptations: {}
+          situationalAdaptations: {},
         },
         usageGuidance: {
           stepByStepGuides: [],
@@ -651,39 +643,39 @@ export class UnifiedToolDescriptionSystem {
           bestPractices: [],
           commonPitfalls: [],
           optimizationTips: [],
-          relatedWorkflows: []
+          relatedWorkflows: [],
         },
         interactiveElements: {
           conversationalPatterns: [],
           interactiveExamples: [],
           quickActions: [],
           dynamicHelp: [],
-          progressTracking: { milestones: [], currentProgress: 0 }
+          progressTracking: { milestones: [], currentProgress: 0 },
         },
         adaptiveFeatures: {
           personalizationSettings: {
             userPreferences: { preferredStyle: '', verbosity: '', examples: true },
             adaptationRules: [],
             contentFilters: [],
-            presentationSettings: { format: '', layout: '', interactivity: true }
+            presentationSettings: { format: '', layout: '', interactivity: true },
           },
           learningProgress: {
             completedTasks: [],
-            skillLevel: 'intermediate' as SkillLevel
+            skillLevel: 'intermediate' as SkillLevel,
           },
           usageAnalytics: {
             usageCount: 0,
             successRate: 0,
-            averageTime: 0
+            averageTime: 0,
           },
           recommendationEngine: {
             algorithm: '',
-            weightings: {}
+            weightings: {},
           },
           dynamicContentGeneration: {
             enabled: true,
-            updateFrequency: ''
-          }
+            updateFrequency: '',
+          },
         },
         qualityMetadata: {
           accuracyMetrics: {
@@ -692,7 +684,7 @@ export class UnifiedToolDescriptionSystem {
             contextualRelevance: 8,
             userComprehension: 8,
             lastValidated: new Date(),
-            validationMethod: []
+            validationMethod: [],
           },
           completenessScore: { overall: 85, sections: {} },
           userFeedback: { averageRating: 0, commonSuggestions: [] },
@@ -701,8 +693,8 @@ export class UnifiedToolDescriptionSystem {
           freshnessIndicators: {
             lastUpdated: new Date(),
             contentAge: 0,
-            needsUpdate: false
-          }
+            needsUpdate: false,
+          },
         },
         versionInfo: {
           version: '1.0.0',
@@ -712,16 +704,16 @@ export class UnifiedToolDescriptionSystem {
             status: '',
             approver: '',
             date: new Date(),
-            comments: ''
+            comments: '',
           },
           publicationInfo: {
             publishedDate: new Date(),
             publisher: '',
-            audience: ''
-          }
-        }
+            audience: '',
+          },
+        },
       }),
-      searchDescriptions: async (query, context) => []
+      searchDescriptions: async (query, context) => [],
     } as any
   }
 
@@ -729,7 +721,7 @@ export class UnifiedToolDescriptionSystem {
     return {
       id: metadata.toolId,
       name: metadata.toolName,
-      version: metadata.version
+      version: metadata.version,
     }
   }
 
@@ -740,7 +732,7 @@ export class UnifiedToolDescriptionSystem {
       category: query.category,
       searchTerms: query.searchTerms,
       userRole: query.userContext.role,
-      skillLevel: query.userContext.skillLevel
+      skillLevel: query.userContext.skillLevel,
     })
   }
 
@@ -752,7 +744,7 @@ export class UnifiedToolDescriptionSystem {
       // Update cache status in metadata
       cached.responseMetadata = {
         ...cached.responseMetadata,
-        cacheStatus: 'hit'
+        cacheStatus: 'hit',
       }
     }
     return cached || null
@@ -778,7 +770,7 @@ export class UnifiedToolDescriptionSystem {
       scope: this.determineQueryScope(query),
       confidence: 0.85,
       extractedKeywords: this.extractKeywords(query),
-      inferredIntent: await this.inferIntent(query)
+      inferredIntent: await this.inferIntent(query),
     }
   }
 
@@ -796,7 +788,8 @@ export class UnifiedToolDescriptionSystem {
     if (query.intent && query.intent.length > 100) complexity += 1
     if (query.searchTerms && query.searchTerms.length > 5) complexity += 1
     if (query.includeExamples && query.includeGuidelines) complexity += 1
-    if (query.outputPreferences?.maxResults && query.outputPreferences.maxResults > 10) complexity += 1
+    if (query.outputPreferences?.maxResults && query.outputPreferences.maxResults > 10)
+      complexity += 1
 
     return complexity >= 3 ? 'complex' : complexity >= 1 ? 'moderate' : 'simple'
   }
@@ -811,11 +804,16 @@ export class UnifiedToolDescriptionSystem {
     const keywords: string[] = []
 
     if (query.intent) {
-      keywords.push(...query.intent.toLowerCase().split(/\W+/).filter(word => word.length > 2))
+      keywords.push(
+        ...query.intent
+          .toLowerCase()
+          .split(/\W+/)
+          .filter((word) => word.length > 2)
+      )
     }
 
     if (query.searchTerms) {
-      keywords.push(...query.searchTerms.map(term => term.toLowerCase()))
+      keywords.push(...query.searchTerms.map((term) => term.toLowerCase()))
     }
 
     return [...new Set(keywords)]
@@ -828,15 +826,15 @@ export class UnifiedToolDescriptionSystem {
     if (keywords.length === 0) return 'general_exploration'
 
     // Simple intent inference based on keywords
-    if (keywords.some(k => ['build', 'create', 'make'].includes(k))) {
+    if (keywords.some((k) => ['build', 'create', 'make'].includes(k))) {
       return 'creation_intent'
     }
 
-    if (keywords.some(k => ['run', 'execute', 'process'].includes(k))) {
+    if (keywords.some((k) => ['run', 'execute', 'process'].includes(k))) {
       return 'execution_intent'
     }
 
-    if (keywords.some(k => ['find', 'search', 'discover'].includes(k))) {
+    if (keywords.some((k) => ['find', 'search', 'discover'].includes(k))) {
       return 'discovery_intent'
     }
 
@@ -873,29 +871,49 @@ export class UnifiedToolDescriptionSystem {
       userProfile: {
         role: userContext.role,
         skillLevel: userContext.skillLevel,
-        experience: userContext.experience || { usedTools: [], preferredToolTypes: [], avoidedTools: [], technicalSkills: [], domainExpertise: [], learningPreferences: [] }
+        experience: userContext.experience || {
+          usedTools: [],
+          preferredToolTypes: [],
+          avoidedTools: [],
+          technicalSkills: [],
+          domainExpertise: [],
+          learningPreferences: [],
+        },
       },
       sessionContext: {
         sessionId: 'session-001',
         startTime: new Date(),
-        previousQueries: []
+        previousQueries: [],
       },
       organizationalContext: {
         organizationSize: 'medium',
         industry: 'technology',
-        complianceRequirements: []
-      }
+        complianceRequirements: [],
+      },
     }
   }
 
-  private async convertRecommendationToDescription(recommendation: any): Promise<ToolDescriptionResult> {
-    return await this.getComprehensiveToolDescription(
-      recommendation.toolId,
-      { role: 'developer', skillLevel: 'intermediate', experience: { usedTools: [], preferredToolTypes: [], avoidedTools: [], technicalSkills: [], domainExpertise: [], learningPreferences: [] } }
-    )
+  private async convertRecommendationToDescription(
+    recommendation: any
+  ): Promise<ToolDescriptionResult> {
+    return await this.getComprehensiveToolDescription(recommendation.toolId, {
+      role: 'developer',
+      skillLevel: 'intermediate',
+      experience: {
+        usedTools: [],
+        preferredToolTypes: [],
+        avoidedTools: [],
+        technicalSkills: [],
+        domainExpertise: [],
+        learningPreferences: [],
+      },
+    })
   }
 
-  private async rankToolsForUser(tools: SimToolMetadata[], userContext: UserContext): Promise<SimToolMetadata[]> {
+  private async rankToolsForUser(
+    tools: SimToolMetadata[],
+    userContext: UserContext
+  ): Promise<SimToolMetadata[]> {
     // Simple ranking by appropriateness for user skill level
     return tools.sort((a, b) => {
       const aScore = this.calculateUserFitScore(a, userContext)
@@ -924,28 +942,44 @@ export class UnifiedToolDescriptionSystem {
     return score
   }
 
-  private async findRelatedTools(toolId: string, userContext: UserContext, options: { maxResults: number }): Promise<ToolDescriptionResult[]> {
+  private async findRelatedTools(
+    toolId: string,
+    userContext: UserContext,
+    options: { maxResults: number }
+  ): Promise<ToolDescriptionResult[]> {
     const tool = this.toolCatalog.getToolMetadata(toolId)
     if (!tool) return []
 
-    const relatedTools = this.toolCatalog.getToolsByCategory(tool.category)
-      .filter(t => t.toolId !== toolId)
+    const relatedTools = this.toolCatalog
+      .getToolsByCategory(tool.category)
+      .filter((t) => t.toolId !== toolId)
       .slice(0, options.maxResults)
 
     return Promise.all(
-      relatedTools.map(t => this.getComprehensiveToolDescription(t.toolId, userContext))
+      relatedTools.map((t) => this.getComprehensiveToolDescription(t.toolId, userContext))
     )
   }
 
-  private async combineSearchResults(nlResults: any[], classificationResults: any[], userContext: UserContext): Promise<ToolSearchResult[]> {
+  private async combineSearchResults(
+    nlResults: any[],
+    classificationResults: any[],
+    userContext: UserContext
+  ): Promise<ToolSearchResult[]> {
     // Simplified combination logic
     return []
   }
 
   private countTotalExamples(): number {
     const categories: SimToolCategory[] = [
-      'workflow_management', 'task_management', 'planning', 'data_storage',
-      'api_integration', 'search_research', 'user_management', 'block_metadata', 'debugging'
+      'workflow_management',
+      'task_management',
+      'planning',
+      'data_storage',
+      'api_integration',
+      'search_research',
+      'user_management',
+      'block_metadata',
+      'debugging',
     ]
 
     return categories.reduce((total, category) => {
@@ -957,16 +991,24 @@ export class UnifiedToolDescriptionSystem {
     return this.guidelinesFramework.getAllGuidelines().length
   }
 
-  private async generateSituationalGuidance(tool: SimToolMetadata, userContext: UserContext): Promise<SituationalGuidance> {
+  private async generateSituationalGuidance(
+    tool: SimToolMetadata,
+    userContext: UserContext
+  ): Promise<SituationalGuidance> {
     return {
       currentSituation: `Using ${tool.toolName} as a ${userContext.role}`,
       applicableScenarios: [`${tool.primaryUseCases[0] || 'General usage'} scenario`],
-      contextualTips: [`Focus on ${tool.keyCapabilities[0] || 'core functionality'} for best results`],
-      environmentalConsiderations: ['Check system requirements', 'Verify permissions']
+      contextualTips: [
+        `Focus on ${tool.keyCapabilities[0] || 'core functionality'} for best results`,
+      ],
+      environmentalConsiderations: ['Check system requirements', 'Verify permissions'],
     }
   }
 
-  private async createLearningPath(tool: SimToolMetadata, userContext: UserContext): Promise<LearningPath> {
+  private async createLearningPath(
+    tool: SimToolMetadata,
+    userContext: UserContext
+  ): Promise<LearningPath> {
     return {
       currentLevel: userContext.skillLevel,
       targetLevel: this.getNextSkillLevel(userContext.skillLevel),
@@ -974,11 +1016,11 @@ export class UnifiedToolDescriptionSystem {
         'Review tool documentation',
         'Try basic example',
         'Practice common use cases',
-        'Explore advanced features'
+        'Explore advanced features',
       ],
       estimatedTime: tool.estimatedSetupTime,
       prerequisites: [`Basic understanding of ${tool.category} tools`],
-      resources: [`${tool.toolName} documentation`, 'Integration examples', 'Community forums']
+      resources: [`${tool.toolName} documentation`, 'Integration examples', 'Community forums'],
     }
   }
 
@@ -987,52 +1029,71 @@ export class UnifiedToolDescriptionSystem {
       beginner: 'intermediate',
       intermediate: 'advanced',
       advanced: 'expert',
-      expert: 'expert'
+      expert: 'expert',
     }
     return progression[current]
   }
 
-  private async generateBestPractices(tool: SimToolMetadata, userContext: UserContext): Promise<BestPractice[]> {
+  private async generateBestPractices(
+    tool: SimToolMetadata,
+    userContext: UserContext
+  ): Promise<BestPractice[]> {
     return [
       {
         category: 'Setup',
         practice: 'Verify all prerequisites before using',
         reason: 'Prevents common setup issues',
-        example: `Check ${tool.toolName} requirements`
+        example: `Check ${tool.toolName} requirements`,
       },
       {
         category: 'Usage',
         practice: 'Start with simple use cases',
         reason: 'Build confidence and understanding',
-        example: 'Use basic features before advanced ones'
-      }
+        example: 'Use basic features before advanced ones',
+      },
     ]
   }
 
-  private async calculateToolScores(tool: SimToolMetadata, userContext: UserContext): Promise<{ relevanceScore: number; appropriatenessScore: number; confidenceScore: number }> {
+  private async calculateToolScores(
+    tool: SimToolMetadata,
+    userContext: UserContext
+  ): Promise<{ relevanceScore: number; appropriatenessScore: number; confidenceScore: number }> {
     return {
       relevanceScore: 0.8,
       appropriatenessScore: this.calculateUserFitScore(tool, userContext),
-      confidenceScore: 0.75
+      confidenceScore: 0.75,
     }
   }
 
-  private async generateDiscoveryRecommendations(userContext: UserContext): Promise<ToolDescriptionResult[]> {
+  private async generateDiscoveryRecommendations(
+    userContext: UserContext
+  ): Promise<ToolDescriptionResult[]> {
     const popularTools = await this.getPopularToolsForRole(userContext.role, 3)
     return popularTools
   }
 
-  private async getPopularToolsForRole(role: UserRole, maxResults: number): Promise<ToolDescriptionResult[]> {
+  private async getPopularToolsForRole(
+    role: UserRole,
+    maxResults: number
+  ): Promise<ToolDescriptionResult[]> {
     const allTools = this.toolCatalog.getAllTools()
-    const roleTools = allTools.filter(tool => tool.targetUsers.includes(role))
+    const roleTools = allTools
+      .filter((tool) => tool.targetUsers.includes(role))
       .slice(0, maxResults)
 
     return Promise.all(
-      roleTools.map(tool =>
+      roleTools.map((tool) =>
         this.getComprehensiveToolDescription(tool.toolId, {
           role,
           skillLevel: 'intermediate',
-          experience: { usedTools: [], preferredToolTypes: [], avoidedTools: [], technicalSkills: [], domainExpertise: [], learningPreferences: [] }
+          experience: {
+            usedTools: [],
+            preferredToolTypes: [],
+            avoidedTools: [],
+            technicalSkills: [],
+            domainExpertise: [],
+            learningPreferences: [],
+          },
         })
       )
     )
@@ -1204,9 +1265,8 @@ export async function queryTool(
 ): Promise<UnifiedToolResponse> {
   const system = createUnifiedToolDescriptionSystem()
 
-  const unifiedQuery: UnifiedToolQuery = typeof query === 'string'
-    ? { intent: query, userContext }
-    : query
+  const unifiedQuery: UnifiedToolQuery =
+    typeof query === 'string' ? { intent: query, userContext } : query
 
   return system.queryTools(unifiedQuery)
 }

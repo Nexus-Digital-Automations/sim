@@ -4,11 +4,11 @@
 
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
-import { ParlantChatbox, ParlantChatProvider, useSimChat } from '../'
+import React, { useEffect, useState } from 'react'
+import { ParlantChatbox, ParlantChatProvider } from '../'
 import { useChatAnalytics, useChatKeyboardShortcuts, useChatWidget } from '../hooks'
-import { ChatDebugger, ConfigValidator, preloadChatResources } from '../utils'
 import type { SimChatConfig, SimChatEventHandlers } from '../types'
+import { ChatDebugger, ConfigValidator, preloadChatResources } from '../utils'
 
 /**
  * Example 1: Chat with analytics and monitoring
@@ -46,16 +46,16 @@ export function AnalyticsChatExample() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="p-4 bg-muted rounded-lg">
-        <h3 className="font-semibold mb-2">Analytics Dashboard</h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+    <div className='space-y-4'>
+      <div className='rounded-lg bg-muted p-4'>
+        <h3 className='mb-2 font-semibold'>Analytics Dashboard</h3>
+        <div className='grid grid-cols-2 gap-4 text-sm'>
           <div>Messages: {analytics.analytics.messageCount}</div>
           <div>Intents: {analytics.analytics.commonIntents.length}</div>
         </div>
         <button
           onClick={() => analytics.setUserSatisfaction(5)}
-          className="mt-2 px-3 py-1 bg-green-500 text-white rounded text-xs"
+          className='mt-2 rounded bg-green-500 px-3 py-1 text-white text-xs'
         >
           Mark Satisfied
         </button>
@@ -81,33 +81,35 @@ export function ControlledChatExample() {
   const [chatPosition, setChatPosition] = useState<'bottom-right' | 'bottom-left'>('bottom-right')
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div className='space-y-4'>
+      <div className='flex gap-2'>
         <button
           onClick={widget.toggleOpen}
-          className="px-4 py-2 bg-brand-primary text-white rounded-md"
+          className='rounded-md bg-brand-primary px-4 py-2 text-white'
         >
           {widget.isOpen ? 'Close' : 'Open'} Chat
         </button>
         <button
           onClick={widget.minimize}
           disabled={!widget.isOpen}
-          className="px-4 py-2 bg-gray-500 text-white rounded-md disabled:opacity-50"
+          className='rounded-md bg-gray-500 px-4 py-2 text-white disabled:opacity-50'
         >
           Minimize
         </button>
         <select
           value={chatPosition}
           onChange={(e) => setChatPosition(e.target.value as any)}
-          className="px-3 py-2 border rounded-md"
+          className='rounded-md border px-3 py-2'
         >
-          <option value="bottom-right">Bottom Right</option>
-          <option value="bottom-left">Bottom Left</option>
+          <option value='bottom-right'>Bottom Right</option>
+          <option value='bottom-left'>Bottom Left</option>
         </select>
       </div>
 
       {widget.isOpen && !widget.isMinimized && (
-        <div className={`fixed ${chatPosition === 'bottom-right' ? 'bottom-4 right-4' : 'bottom-4 left-4'} z-50`}>
+        <div
+          className={`fixed ${chatPosition === 'bottom-right' ? 'right-4 bottom-4' : 'bottom-4 left-4'} z-50`}
+        >
           <ParlantChatProvider config={widget.config}>
             <ParlantChatbox
               {...widget.config}
@@ -157,13 +159,13 @@ export function MultiAgentChatExample() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div className='space-y-4'>
+      <div className='flex gap-2'>
         {Object.entries(agents).map(([key, agent]) => (
           <button
             key={key}
             onClick={() => setActiveAgent(key)}
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
+            className={`rounded-md px-3 py-2 font-medium text-sm ${
               activeAgent === key
                 ? 'bg-brand-primary text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -217,27 +219,29 @@ export function AccessibleChatExample() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* Screen reader announcements */}
-      <div className="sr-only" aria-live="polite" aria-atomic="true">
+      <div className='sr-only' aria-live='polite' aria-atomic='true'>
         {announcement}
       </div>
 
-      <div className="p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
-        <h3 className="font-semibold text-blue-800 mb-2">Keyboard Shortcuts</h3>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li><kbd className="px-2 py-1 bg-blue-100 rounded">Ctrl+K</kbd> - Toggle chat</li>
-          <li><kbd className="px-2 py-1 bg-blue-100 rounded">Ctrl+/</kbd> - Focus chat input</li>
-          <li><kbd className="px-2 py-1 bg-blue-100 rounded">Escape</kbd> - Close chat</li>
+      <div className='rounded border-blue-400 border-l-4 bg-blue-50 p-4'>
+        <h3 className='mb-2 font-semibold text-blue-800'>Keyboard Shortcuts</h3>
+        <ul className='space-y-1 text-blue-700 text-sm'>
+          <li>
+            <kbd className='rounded bg-blue-100 px-2 py-1'>Ctrl+K</kbd> - Toggle chat
+          </li>
+          <li>
+            <kbd className='rounded bg-blue-100 px-2 py-1'>Ctrl+/</kbd> - Focus chat input
+          </li>
+          <li>
+            <kbd className='rounded bg-blue-100 px-2 py-1'>Escape</kbd> - Close chat
+          </li>
         </ul>
       </div>
 
       <ParlantChatProvider config={config}>
-        <ParlantChatbox
-          {...config}
-          isOpen={isOpen}
-          onOpenChange={setIsOpen}
-        />
+        <ParlantChatbox {...config} isOpen={isOpen} onOpenChange={setIsOpen} />
       </ParlantChatProvider>
     </div>
   )
@@ -266,17 +270,17 @@ export function ValidatedChatExample() {
 
   if (!validation.isValid) {
     return (
-      <div className="space-y-4">
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <h3 className="font-semibold text-red-800 mb-2">Configuration Errors</h3>
-          <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
+      <div className='space-y-4'>
+        <div className='rounded-lg border border-red-200 bg-red-50 p-4'>
+          <h3 className='mb-2 font-semibold text-red-800'>Configuration Errors</h3>
+          <ul className='list-inside list-disc space-y-1 text-red-700 text-sm'>
             {validation.errors.map((error, index) => (
               <li key={index}>{error}</li>
             ))}
           </ul>
           <button
             onClick={handleFixConfiguration}
-            className="mt-3 px-3 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+            className='mt-3 rounded-md bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700'
           >
             Fix Configuration
           </button>
@@ -286,11 +290,11 @@ export function ValidatedChatExample() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {validation.warnings.length > 0 && (
-        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <h3 className="font-semibold text-yellow-800 mb-2">Configuration Warnings</h3>
-          <ul className="list-disc list-inside text-sm text-yellow-700 space-y-1">
+        <div className='rounded-lg border border-yellow-200 bg-yellow-50 p-4'>
+          <h3 className='mb-2 font-semibold text-yellow-800'>Configuration Warnings</h3>
+          <ul className='list-inside list-disc space-y-1 text-sm text-yellow-700'>
             {validation.warnings.map((warning, index) => (
               <li key={index}>{warning}</li>
             ))}
@@ -298,8 +302,8 @@ export function ValidatedChatExample() {
         </div>
       )}
 
-      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-        <p className="text-sm text-green-700">✅ Configuration is valid!</p>
+      <div className='rounded-lg border border-green-200 bg-green-50 p-3'>
+        <p className='text-green-700 text-sm'>✅ Configuration is valid!</p>
       </div>
 
       <ParlantChatProvider config={config}>
@@ -328,18 +332,18 @@ export function PerformanceOptimizedChatExample() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div className='space-y-4'>
+      <div className='flex gap-2'>
         <button
           onClick={handlePreloadResources}
           disabled={isPreloaded}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:opacity-50"
+          className='rounded-md bg-blue-600 px-4 py-2 text-white disabled:opacity-50'
         >
           {isPreloaded ? 'Resources Preloaded ✅' : 'Preload Resources'}
         </button>
         <button
           onClick={() => setShowChat(!showChat)}
-          className="px-4 py-2 bg-brand-primary text-white rounded-md"
+          className='rounded-md bg-brand-primary px-4 py-2 text-white'
         >
           {showChat ? 'Hide Chat' : 'Show Chat'}
         </button>
@@ -349,9 +353,9 @@ export function PerformanceOptimizedChatExample() {
         <ParlantChatProvider config={config}>
           <React.Suspense
             fallback={
-              <div className="p-8 text-center">
-                <div className="animate-spin w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading optimized chat...</p>
+              <div className='p-8 text-center'>
+                <div className='mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-brand-primary border-t-transparent' />
+                <p className='text-muted-foreground'>Loading optimized chat...</p>
               </div>
             }
           >

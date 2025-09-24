@@ -5,7 +5,11 @@
  * including default settings, validation, and theme integration.
  */
 
-import { SimChatWidgetConfig, SimChatTheme, ParlantClassNames } from '../types/parlant-widget.types'
+import type {
+  ParlantClassNames,
+  SimChatTheme,
+  SimChatWidgetConfig,
+} from '../types/parlant-widget.types'
 
 // Default configuration values
 export const DEFAULT_WIDGET_CONFIG: SimChatWidgetConfig = {
@@ -154,12 +158,11 @@ export function generateTailwindClasses(config: SimChatWidgetConfig): ParlantCla
       size === 'large' && 'w-[500px] h-[700px]',
       'max-w-[90vw] max-h-[80vh]',
       'rounded-lg overflow-hidden',
-    ].filter(Boolean).join(' '),
+    ]
+      .filter(Boolean)
+      .join(' '),
 
-    chatbox: [
-      'flex flex-col h-full',
-      'bg-background text-foreground',
-    ].join(' '),
+    chatbox: ['flex flex-col h-full', 'bg-background text-foreground'].join(' '),
 
     messagesArea: [
       'flex-1 overflow-y-auto p-4 space-y-3',
@@ -167,15 +170,9 @@ export function generateTailwindClasses(config: SimChatWidgetConfig): ParlantCla
       'scrollbar-thumb-muted scrollbar-track-transparent',
     ].join(' '),
 
-    agentMessage: [
-      'flex items-start space-x-2 max-w-[85%]',
-      'animate-fade-up',
-    ].join(' '),
+    agentMessage: ['flex items-start space-x-2 max-w-[85%]', 'animate-fade-up'].join(' '),
 
-    customerMessage: [
-      'flex items-end space-x-2 max-w-[85%] ml-auto',
-      'animate-fade-up',
-    ].join(' '),
+    customerMessage: ['flex items-end space-x-2 max-w-[85%] ml-auto', 'animate-fade-up'].join(' '),
 
     textarea: [
       'flex-1 resize-none border-0 bg-transparent',
@@ -195,9 +192,7 @@ export function generateTailwindClasses(config: SimChatWidgetConfig): ParlantCla
       'border border-border/20',
     ].join(' '),
 
-    popupButtonIcon: [
-      'w-6 h-6 transition-transform duration-200',
-    ].join(' '),
+    popupButtonIcon: ['w-6 h-6 transition-transform duration-200'].join(' '),
 
     chatDescription: [
       'text-sm text-muted-foreground',
@@ -205,10 +200,9 @@ export function generateTailwindClasses(config: SimChatWidgetConfig): ParlantCla
       'border-b border-border/50',
     ].join(' '),
 
-    bottomLine: [
-      'flex items-center space-x-2 p-3',
-      'bg-background border-t border-border/50',
-    ].join(' '),
+    bottomLine: ['flex items-center space-x-2 p-3', 'bg-background border-t border-border/50'].join(
+      ' '
+    ),
   }
 }
 
@@ -245,7 +239,10 @@ export function validateWidgetConfig(config: Partial<SimChatWidgetConfig>): {
   }
 
   // Position validation
-  if (config.position && !['bottom-right', 'bottom-left', 'top-right', 'top-left'].includes(config.position)) {
+  if (
+    config.position &&
+    !['bottom-right', 'bottom-left', 'top-right', 'top-left'].includes(config.position)
+  ) {
     errors.push('position must be one of: bottom-right, bottom-left, top-right, top-left')
   }
 
@@ -304,7 +301,9 @@ export function getEnvironmentConfig(): Partial<SimChatWidgetConfig> {
 /**
  * Generate position styles based on configuration
  */
-export function getPositionStyles(position: SimChatWidgetConfig['position'] = 'bottom-right'): React.CSSProperties {
+export function getPositionStyles(
+  position: SimChatWidgetConfig['position'] = 'bottom-right'
+): React.CSSProperties {
   return WIDGET_POSITIONS[position] || WIDGET_POSITIONS['bottom-right']
 }
 

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createLogger } from '@/lib/logs/console/logger'
-import { useChatSocket, type ChatMessage, type ChatPresence } from '@/contexts/chat-socket-context'
+import { type ChatMessage, type ChatPresence, useChatSocket } from '@/contexts/chat-socket-context'
 
 const logger = createLogger('RealTimeChat')
 
@@ -99,7 +99,17 @@ export function RealTimeChat({
       .finally(() => {
         setIsJoining(false)
       })
-  }, [socketConnected, sessionId, agentId, workspaceId, isJoining, currentSession, joinChatSession, requestHistory, onError])
+  }, [
+    socketConnected,
+    sessionId,
+    agentId,
+    workspaceId,
+    isJoining,
+    currentSession,
+    joinChatSession,
+    requestHistory,
+    onError,
+  ])
 
   // Leave session on unmount
   useEffect(() => {
@@ -115,9 +125,9 @@ export function RealTimeChat({
     // Message received handler
     onMessageReceived((message: ChatMessage) => {
       if (message.sessionId === sessionId) {
-        setMessages(prev => {
+        setMessages((prev) => {
           // Avoid duplicates by checking if message already exists
-          const exists = prev.find(m => m.id === message.id)
+          const exists = prev.find((m) => m.id === message.id)
           if (exists) return prev
           return [...prev, message]
         })
@@ -134,24 +144,24 @@ export function RealTimeChat({
     // Typing indicator handler
     onTypingIndicator((indicator) => {
       if (indicator.sessionId === sessionId && indicator.userId && indicator.userId !== userId) {
-        setTypingUsers(prev => ({
+        setTypingUsers((prev) => ({
           ...prev,
           [indicator.userId!]: {
             name: 'User', // This would come from participant data
             isTyping: indicator.isTyping,
             lastUpdate: Date.now(),
-          }
+          },
         }))
 
         // Clear typing indicator after timeout
         if (indicator.isTyping) {
           setTimeout(() => {
-            setTypingUsers(prev => ({
+            setTypingUsers((prev) => ({
               ...prev,
               [indicator.userId!]: {
                 ...prev[indicator.userId!],
                 isTyping: false,
-              }
+              },
             }))
           }, 3000)
         }
@@ -161,17 +171,15 @@ export function RealTimeChat({
     // Presence updated handler
     onPresenceUpdated((presence) => {
       if (presence.sessionId === sessionId) {
-        setParticipants(prev =>
-          prev.map(p => p.userId === presence.userId ? presence : p)
-        )
+        setParticipants((prev) => prev.map((p) => (p.userId === presence.userId ? presence : p)))
       }
     })
 
     // User joined handler
     onUserJoined((presence) => {
       if (presence.sessionId === sessionId) {
-        setParticipants(prev => {
-          const exists = prev.find(p => p.userId === presence.userId)
+        setParticipants((prev) => {
+          const exists = prev.find((p) => p.userId === presence.userId)
           if (exists) return prev
           return [...prev, presence]
         })
@@ -180,16 +188,14 @@ export function RealTimeChat({
 
     // User left handler
     onUserLeft((data) => {
-      setParticipants(prev =>
-        prev.filter(p => p.userId !== data.userId)
-      )
+      setParticipants((prev) => prev.filter((p) => p.userId !== data.userId))
     })
 
     // Agent streaming handler
     onAgentStreamChunk((data) => {
       if (!data.isComplete) {
         // Update streaming message
-        setStreamingMessages(prev => {
+        setStreamingMessages((prev) => {
           const newMap = new Map(prev)
           const currentContent = newMap.get(data.messageId) || ''
           newMap.set(data.messageId, currentContent + data.chunk)
@@ -197,7 +203,7 @@ export function RealTimeChat({
         })
       } else {
         // Finalize streaming message
-        setStreamingMessages(prev => {
+        setStreamingMessages((prev) => {
           const newMap = new Map(prev)
           newMap.delete(data.messageId)
           return newMap
@@ -211,7 +217,20 @@ export function RealTimeChat({
       logger.error('Chat socket error:', error)
       onError?.(error.message)
     })
-  }, [sessionId, userId, onMessageReceived, onMessageSent, onTypingIndicator, onPresenceUpdated, onUserJoined, onUserLeft, onAgentStreamChunk, onSocketError, onError, scrollToBottom])
+  }, [
+    sessionId,
+    userId,
+    onMessageReceived,
+    onMessageSent,
+    onTypingIndicator,
+    onPresenceUpdated,
+    onUserJoined,
+    onUserLeft,
+    onAgentStreamChunk,
+    onSocketError,
+    onError,
+    scrollToBottom,
+  ])
 
   // Update presence to active on focus
   useEffect(() => {
@@ -237,61 +256,70 @@ export function RealTimeChat({
   }, [isConnected, updatePresence])
 
   // Handle input change and typing indicators
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value)
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInputValue(e.target.value)
 
-    // Send typing indicator
-    if (isConnected) {
-      sendTyping(true)
+      // Send typing indicator
+      if (isConnected) {
+        sendTyping(true)
 
-      // Clear existing timeout
+        // Clear existing timeout
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current)
+        }
+
+        // Set new timeout to stop typing indicator
+        typingTimeoutRef.current = setTimeout(() => {
+          sendTyping(false)
+        }, 2000)
+      }
+    },
+    [isConnected, sendTyping]
+  )
+
+  // Handle message submission
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault()
+
+      if (!inputValue.trim() || !isConnected) {
+        return
+      }
+
+      logger.debug('Sending message:', inputValue)
+      setIsLoading(true)
+
+      // Send message through socket
+      sendMessage(inputValue.trim(), {
+        senderName: userName,
+        timestamp: Date.now(),
+      })
+
+      // Clear input
+      setInputValue('')
+
+      // Stop typing indicator
+      sendTyping(false)
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
 
-      // Set new timeout to stop typing indicator
-      typingTimeoutRef.current = setTimeout(() => {
-        sendTyping(false)
-      }, 2000)
-    }
-  }, [isConnected, sendTyping])
-
-  // Handle message submission
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!inputValue.trim() || !isConnected) {
-      return
-    }
-
-    logger.debug('Sending message:', inputValue)
-    setIsLoading(true)
-
-    // Send message through socket
-    sendMessage(inputValue.trim(), {
-      senderName: userName,
-      timestamp: Date.now(),
-    })
-
-    // Clear input
-    setInputValue('')
-
-    // Stop typing indicator
-    sendTyping(false)
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-
-    setIsLoading(false)
-  }, [inputValue, isConnected, sendMessage, userName, sendTyping])
+      setIsLoading(false)
+    },
+    [inputValue, isConnected, sendMessage, userName, sendTyping]
+  )
 
   // Handle key press for sending
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit(e as any)
-    }
-  }, [handleSubmit])
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        handleSubmit(e as any)
+      }
+    },
+    [handleSubmit]
+  )
 
   // Format message timestamp
   const formatTimestamp = useCallback((timestamp: number) => {
@@ -310,11 +338,11 @@ export function RealTimeChat({
   // Connection status display
   if (!socketConnected) {
     return (
-      <div className={`flex flex-col h-full ${className}`}>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Connecting to chat server...</p>
+      <div className={`flex h-full flex-col ${className}`}>
+        <div className='flex flex-1 items-center justify-center'>
+          <div className='text-center'>
+            <div className='mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-blue-500 border-b-2' />
+            <p className='text-gray-600'>Connecting to chat server...</p>
           </div>
         </div>
       </div>
@@ -323,11 +351,11 @@ export function RealTimeChat({
 
   if (isJoining) {
     return (
-      <div className={`flex flex-col h-full ${className}`}>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Joining chat session...</p>
+      <div className={`flex h-full flex-col ${className}`}>
+        <div className='flex flex-1 items-center justify-center'>
+          <div className='text-center'>
+            <div className='mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-blue-500 border-b-2' />
+            <p className='text-gray-600'>Joining chat session...</p>
           </div>
         </div>
       </div>
@@ -336,13 +364,13 @@ export function RealTimeChat({
 
   if (!isConnected) {
     return (
-      <div className={`flex flex-col h-full ${className}`}>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">Failed to connect to chat session</p>
+      <div className={`flex h-full flex-col ${className}`}>
+        <div className='flex flex-1 items-center justify-center'>
+          <div className='text-center'>
+            <p className='mb-4 text-red-600'>Failed to connect to chat session</p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              className='rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600'
             >
               Retry
             </button>
@@ -353,39 +381,46 @@ export function RealTimeChat({
   }
 
   return (
-    <div className={`flex flex-col h-full bg-white border border-gray-200 rounded-lg ${className}`}>
+    <div className={`flex h-full flex-col rounded-lg border border-gray-200 bg-white ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className='flex items-center justify-between border-gray-200 border-b p-4'>
         <div>
-          <h3 className="text-lg font-semibold">Chat Session</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className='font-semibold text-lg'>Chat Session</h3>
+          <p className='text-gray-600 text-sm'>
             {participants.length} participant{participants.length !== 1 ? 's' : ''}
             {agentId && ' • AI Assistant Active'}
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          <span className="text-sm text-gray-600">
+        <div className='flex items-center space-x-2'>
+          <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+          <span className='text-gray-600 text-sm'>
             {isConnected ? 'Connected' : 'Disconnected'}
           </span>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className='flex-1 space-y-4 overflow-y-auto p-4'>
         {messages.map((message) => (
-          <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-              message.type === 'user'
-                ? 'bg-blue-500 text-white'
-                : message.type === 'assistant'
-                ? 'bg-gray-200 text-gray-800'
-                : 'bg-yellow-100 text-yellow-800'
-            }`}>
-              <p className="text-sm">{message.content}</p>
-              <p className={`text-xs mt-1 ${
-                message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
-              }`}>
+          <div
+            key={message.id}
+            className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`max-w-xs rounded-lg px-4 py-2 lg:max-w-md ${
+                message.type === 'user'
+                  ? 'bg-blue-500 text-white'
+                  : message.type === 'assistant'
+                    ? 'bg-gray-200 text-gray-800'
+                    : 'bg-yellow-100 text-yellow-800'
+              }`}
+            >
+              <p className='text-sm'>{message.content}</p>
+              <p
+                className={`mt-1 text-xs ${
+                  message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
+                }`}
+              >
                 {formatTimestamp(message.timestamp)}
                 {message.metadata?.senderName && ` • ${message.metadata.senderName}`}
               </p>
@@ -395,11 +430,11 @@ export function RealTimeChat({
 
         {/* Streaming messages */}
         {Array.from(streamingMessages.entries()).map(([messageId, content]) => (
-          <div key={messageId} className="flex justify-start">
-            <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gray-200 text-gray-800">
-              <p className="text-sm">{content}</p>
-              <p className="text-xs mt-1 text-gray-500">
-                <span className="animate-pulse">●</span> Streaming...
+          <div key={messageId} className='flex justify-start'>
+            <div className='max-w-xs rounded-lg bg-gray-200 px-4 py-2 text-gray-800 lg:max-w-md'>
+              <p className='text-sm'>{content}</p>
+              <p className='mt-1 text-gray-500 text-xs'>
+                <span className='animate-pulse'>●</span> Streaming...
               </p>
             </div>
           </div>
@@ -407,10 +442,11 @@ export function RealTimeChat({
 
         {/* Typing indicators */}
         {typingUsersDisplay && (
-          <div className="flex justify-start">
-            <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gray-100 text-gray-600">
-              <p className="text-sm">
-                <span className="animate-pulse">●●●</span> {typingUsersDisplay} {typingUsersDisplay.includes(',') ? 'are' : 'is'} typing...
+          <div className='flex justify-start'>
+            <div className='max-w-xs rounded-lg bg-gray-100 px-4 py-2 text-gray-600 lg:max-w-md'>
+              <p className='text-sm'>
+                <span className='animate-pulse'>●●●</span> {typingUsersDisplay}{' '}
+                {typingUsersDisplay.includes(',') ? 'are' : 'is'} typing...
               </p>
             </div>
           </div>
@@ -420,25 +456,25 @@ export function RealTimeChat({
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200">
-        <form onSubmit={handleSubmit} className="flex space-x-2">
+      <div className='border-gray-200 border-t p-4'>
+        <form onSubmit={handleSubmit} className='flex space-x-2'>
           <input
             ref={inputRef}
-            type="text"
+            type='text'
             value={inputValue}
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder='Type your message...'
+            className='flex-1 rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500'
             disabled={!isConnected || isLoading}
           />
           <button
-            type="submit"
+            type='submit'
             disabled={!inputValue.trim() || !isConnected || isLoading}
-            className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-md transition-colors"
+            className='rounded-md bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600 disabled:bg-gray-300'
           >
             {isLoading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div className='h-4 w-4 animate-spin rounded-full border-white border-b-2' />
             ) : (
               'Send'
             )}

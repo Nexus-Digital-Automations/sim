@@ -328,19 +328,22 @@ export function getChatRateLimitStats(): {
  */
 export function initializeChatSecurity(): void {
   // Cleanup expired rate limit entries every 5 minutes
-  setInterval(() => {
-    const now = Date.now()
-    for (const [socketId, operations] of socketRateLimits.entries()) {
-      for (const [operation, data] of operations.entries()) {
-        if (data.resetTime <= now) {
-          operations.delete(operation)
+  setInterval(
+    () => {
+      const now = Date.now()
+      for (const [socketId, operations] of socketRateLimits.entries()) {
+        for (const [operation, data] of operations.entries()) {
+          if (data.resetTime <= now) {
+            operations.delete(operation)
+          }
+        }
+        if (operations.size === 0) {
+          socketRateLimits.delete(socketId)
         }
       }
-      if (operations.size === 0) {
-        socketRateLimits.delete(socketId)
-      }
-    }
-  }, 5 * 60 * 1000) // 5 minutes
+    },
+    5 * 60 * 1000
+  ) // 5 minutes
 
   logger.info('Chat security monitoring initialized')
 }

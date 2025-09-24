@@ -10,14 +10,10 @@
  * - Performance monitoring and logging
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
-import {
-  getAgent,
-  updateAgent,
-  deleteAgent
-} from '@/services/parlant/agents'
+import { deleteAgent, getAgent, updateAgent } from '@/services/parlant/agents'
 import type { AgentUpdateRequest, AuthContext } from '@/services/parlant/types'
 
 const logger = createLogger('ParlantAgentAPI')
@@ -50,12 +46,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
       user_id: session.user.id,
       workspace_id: session.session?.activeOrganizationId,
       key_type: 'workspace',
-      permissions: [] // TODO: Get user permissions from session
+      permissions: [], // TODO: Get user permissions from session
     }
 
     logger.info('Retrieving agent', {
       user_id: authContext.user_id,
-      agent_id: agentId
+      agent_id: agentId,
     })
 
     // Call service layer
@@ -66,21 +62,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
     logger.info('Agent retrieved successfully', {
       duration_ms: Math.round(duration),
       agent_id: result.id,
-      name: result.name
+      name: result.name,
     })
 
     return NextResponse.json({
       data: result,
       success: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
     logger.error('Failed to retrieve agent', {
       duration_ms: Math.round(duration),
       agent_id: agentId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     // Handle specific error types
@@ -88,7 +83,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error: 'Agent not found',
-          success: false
+          success: false,
         },
         { status: 404 }
       )
@@ -98,7 +93,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error: 'Workspace access denied',
-          success: false
+          success: false,
         },
         { status: 403 }
       )
@@ -108,7 +103,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       {
         error: 'Internal server error',
         success: false,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     )
@@ -141,7 +136,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       description: body.description,
       guidelines: body.guidelines,
       config: body.config,
-      status: body.status
+      status: body.status,
     }
 
     // Build auth context
@@ -149,13 +144,13 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       user_id: session.user.id,
       workspace_id: session.session?.activeOrganizationId,
       key_type: 'workspace',
-      permissions: [] // TODO: Get user permissions from session
+      permissions: [], // TODO: Get user permissions from session
     }
 
     logger.info('Updating agent', {
       user_id: authContext.user_id,
       agent_id: agentId,
-      fields: Object.keys(updateRequest).filter(k => updateRequest[k] !== undefined)
+      fields: Object.keys(updateRequest).filter((k) => updateRequest[k] !== undefined),
     })
 
     // Call service layer
@@ -166,21 +161,20 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     logger.info('Agent updated successfully', {
       duration_ms: Math.round(duration),
       agent_id: result.id,
-      name: result.name
+      name: result.name,
     })
 
     return NextResponse.json({
       data: result,
       success: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
     logger.error('Failed to update agent', {
       duration_ms: Math.round(duration),
       agent_id: agentId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     // Handle specific error types
@@ -189,7 +183,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         {
           error: 'Invalid agent data',
           details: (error as any).details,
-          success: false
+          success: false,
         },
         { status: 400 }
       )
@@ -199,7 +193,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error: 'Agent not found',
-          success: false
+          success: false,
         },
         { status: 404 }
       )
@@ -209,7 +203,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error: 'Workspace access denied',
-          success: false
+          success: false,
         },
         { status: 403 }
       )
@@ -219,7 +213,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       {
         error: 'Internal server error',
         success: false,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     )
@@ -250,12 +244,12 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       user_id: session.user.id,
       workspace_id: session.session?.activeOrganizationId,
       key_type: 'workspace',
-      permissions: [] // TODO: Get user permissions from session
+      permissions: [], // TODO: Get user permissions from session
     }
 
     logger.info('Deleting agent', {
       user_id: authContext.user_id,
-      agent_id: agentId
+      agent_id: agentId,
     })
 
     // Call service layer
@@ -265,20 +259,19 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     const duration = performance.now() - startTime
     logger.info('Agent deleted successfully', {
       duration_ms: Math.round(duration),
-      agent_id: agentId
+      agent_id: agentId,
     })
 
     return NextResponse.json({
       success: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     const duration = performance.now() - startTime
     logger.error('Failed to delete agent', {
       duration_ms: Math.round(duration),
       agent_id: agentId,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     // Handle specific error types
@@ -286,7 +279,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error: 'Agent not found',
-          success: false
+          success: false,
         },
         { status: 404 }
       )
@@ -296,7 +289,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error: 'Workspace access denied',
-          success: false
+          success: false,
         },
         { status: 403 }
       )
@@ -306,7 +299,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       {
         error: 'Internal server error',
         success: false,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     )

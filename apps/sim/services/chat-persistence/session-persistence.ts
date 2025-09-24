@@ -1,5 +1,5 @@
-import { BrowserSessionManager, ConversationManager } from '@packages/db/chat-persistence-queries'
 import { db } from '@packages/db'
+import { BrowserSessionManager, ConversationManager } from '@packages/db/chat-persistence-queries'
 import { parlantSession } from '@packages/db/parlant-schema'
 import { eq } from 'drizzle-orm'
 import { v4 as uuidv4 } from 'uuid'
@@ -148,9 +148,7 @@ export class SessionPersistenceService {
 
       // Verify Parlant session is still valid
       if (browserSession.parlantSessionId) {
-        const parlantSessionValid = await this.verifyParlantSession(
-          browserSession.parlantSessionId
-        )
+        const parlantSessionValid = await this.verifyParlantSession(browserSession.parlantSessionId)
 
         if (!parlantSessionValid) {
           // Parlant session expired, but we can create a new one
@@ -236,10 +234,7 @@ export class SessionPersistenceService {
   /**
    * Link session to conversation
    */
-  async linkToConversation(
-    conversationId: string,
-    parlantSessionId?: string
-  ): Promise<boolean> {
+  async linkToConversation(conversationId: string, parlantSessionId?: string): Promise<boolean> {
     if (!this.sessionToken) {
       return false
     }
@@ -253,10 +248,7 @@ export class SessionPersistenceService {
 
       // Link in conversation manager if Parlant session provided
       if (parlantSessionId) {
-        await this.conversationManager.linkSessionToConversation(
-          conversationId,
-          parlantSessionId
-        )
+        await this.conversationManager.linkSessionToConversation(conversationId, parlantSessionId)
       }
 
       return true
@@ -290,7 +282,9 @@ export class SessionPersistenceService {
   /**
    * Update UI preferences
    */
-  async updateUIPreferences(preferences: Partial<ChatSessionState['uiPreferences']>): Promise<void> {
+  async updateUIPreferences(
+    preferences: Partial<ChatSessionState['uiPreferences']>
+  ): Promise<void> {
     await this.updateSessionState({ uiPreferences: preferences })
   }
 
@@ -402,16 +396,16 @@ class SessionPersistenceFactory {
   private static instance: SessionPersistenceService | null = null
 
   static getInstance(): SessionPersistenceService {
-    if (!this.instance) {
-      this.instance = new SessionPersistenceService()
+    if (!SessionPersistenceFactory.instance) {
+      SessionPersistenceFactory.instance = new SessionPersistenceService()
     }
-    return this.instance
+    return SessionPersistenceFactory.instance
   }
 
   static destroyInstance(): void {
-    if (this.instance) {
-      this.instance.destroySession()
-      this.instance = null
+    if (SessionPersistenceFactory.instance) {
+      SessionPersistenceFactory.instance.destroySession()
+      SessionPersistenceFactory.instance = null
     }
   }
 }

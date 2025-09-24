@@ -6,17 +6,17 @@
  * handling works seamlessly across different user skill levels and contexts.
  */
 
-import { describe, expect, it, beforeEach, afterEach, jest } from '@jest/globals'
-import {
-  ErrorIntelligenceService,
-  type ExplanationContext,
-  type UserInteraction,
-  type LearningFeedback,
-  SupportedLanguage,
-  CommunicationStyle,
-} from '../../../parlant-server/error-intelligence'
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
 import { UserSkillLevel } from '../../../parlant-server/error-explanations'
 import type { BaseToolError } from '../../../parlant-server/error-handler'
+import {
+  CommunicationStyle,
+  ErrorIntelligenceService,
+  type ExplanationContext,
+  type LearningFeedback,
+  SupportedLanguage,
+  type UserInteraction,
+} from '../../../parlant-server/error-intelligence'
 import { ErrorCategory } from '../../../parlant-server/error-taxonomy'
 
 // Mock dependencies
@@ -181,7 +181,7 @@ describe('Error Intelligence System Integration', () => {
 
       try {
         const explanations = await Promise.all(
-          skillLevels.map(skillLevel =>
+          skillLevels.map((skillLevel) =>
             errorIntelligenceService.generateIntelligentExplanation(mockError, {
               ...baseContext,
               userSkillLevel: skillLevel,
@@ -227,7 +227,7 @@ describe('Error Intelligence System Integration', () => {
 
       try {
         const explanations = await Promise.all(
-          languages.map(language =>
+          languages.map((language) =>
             errorIntelligenceService.generateIntelligentExplanation(mockError, {
               ...baseContext,
               preferredLanguage: language,
@@ -307,7 +307,7 @@ describe('Error Intelligence System Integration', () => {
         expect(explanation.conversationalFlow).toBeDefined()
         expect(explanation.conversationalFlow.length).toBeGreaterThan(0)
 
-        const greetingNode = explanation.conversationalFlow.find(node => node.id === 'greeting')
+        const greetingNode = explanation.conversationalFlow.find((node) => node.id === 'greeting')
         expect(greetingNode).toBeDefined()
         expect(greetingNode!.message).toContain('DataProcessor')
         expect(greetingNode!.expectedResponses).toContain('yes')
@@ -329,7 +329,7 @@ describe('Error Intelligence System Integration', () => {
 
       try {
         const translations = await Promise.all(
-          languages.map(language =>
+          languages.map((language) =>
             errorIntelligenceService.translateErrorMessage(mockError, language, baseContext)
           )
         )
@@ -404,8 +404,7 @@ describe('Error Intelligence System Integration', () => {
         await errorIntelligenceService.recordUserInteraction(interaction)
 
         // Validate interaction recording
-        expect(() => errorIntelligenceService.recordUserInteraction(interaction))
-          .not.toThrow()
+        expect(() => errorIntelligenceService.recordUserInteraction(interaction)).not.toThrow()
 
         testMetrics.passingTests++
         testMetrics.learningCapability = true
@@ -436,8 +435,7 @@ describe('Error Intelligence System Integration', () => {
         await errorIntelligenceService.processLearningFeedback(feedback)
 
         // Validate feedback processing
-        expect(() => errorIntelligenceService.processLearningFeedback(feedback))
-          .not.toThrow()
+        expect(() => errorIntelligenceService.processLearningFeedback(feedback)).not.toThrow()
 
         testMetrics.passingTests++
       } catch (error) {
@@ -526,19 +524,21 @@ describe('Error Intelligence System Integration', () => {
 
         // Validate performance tracking
         expect(performanceTests).toHaveLength(4)
-        performanceTests.forEach(test => {
+        performanceTests.forEach((test) => {
           expect(test.responseTime).toBeGreaterThan(0)
           expect(test.effectiveness).toBeGreaterThan(0)
           expect(test.effectiveness).toBeLessThanOrEqual(1)
         })
 
         // Calculate overall performance score
-        const avgResponseTime = performanceTests.reduce((sum, test) => sum + test.responseTime, 0) /
-                               performanceTests.length
-        const avgEffectiveness = performanceTests.reduce((sum, test) => sum + test.effectiveness, 0) /
-                               performanceTests.length
+        const avgResponseTime =
+          performanceTests.reduce((sum, test) => sum + test.responseTime, 0) /
+          performanceTests.length
+        const avgEffectiveness =
+          performanceTests.reduce((sum, test) => sum + test.effectiveness, 0) /
+          performanceTests.length
 
-        testMetrics.performanceScore = (avgEffectiveness * 100) - (avgResponseTime / 10)
+        testMetrics.performanceScore = avgEffectiveness * 100 - avgResponseTime / 10
 
         testMetrics.passingTests++
       } catch (error) {
@@ -700,4 +700,4 @@ describe('Error Intelligence System Integration', () => {
 /**
  * Export the test metrics for external analysis
  */
-export { ErrorIntelligenceIntegrationMetrics }
+export type { ErrorIntelligenceIntegrationMetrics }

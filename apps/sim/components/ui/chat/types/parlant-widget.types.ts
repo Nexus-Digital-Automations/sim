@@ -5,7 +5,7 @@
  * widget with Sim's frontend architecture, including custom theming and configuration.
  */
 
-import { JSX, ReactElement } from 'react'
+import type { JSX, ReactElement } from 'react'
 
 // Re-export core types from parlant-chat-react for convenience
 export interface MessageInterface {
@@ -62,10 +62,7 @@ export interface ParlantComponents {
   popupButton?: (props: PopupButtonComponentProps) => ReactElement
   agentMessage?: (props: MessageComponentProps) => ReactElement
   customerMessage?: (props: MessageComponentProps) => ReactElement
-  header?: (props: {
-    changeIsExpanded: () => void
-    agentName: string | undefined
-  }) => ReactElement
+  header?: (props: { changeIsExpanded: () => void; agentName: string | undefined }) => ReactElement
 }
 
 // Sim-specific Widget Configuration
@@ -211,7 +208,13 @@ export interface AgentInfo {
 
 // Analytics and Logging
 export interface ChatAnalyticsEvent {
-  type: 'chat_opened' | 'chat_closed' | 'message_sent' | 'message_received' | 'session_started' | 'session_ended'
+  type:
+    | 'chat_opened'
+    | 'chat_closed'
+    | 'message_sent'
+    | 'message_received'
+    | 'session_started'
+    | 'session_ended'
   timestamp: Date
   sessionId: string
   userId?: string

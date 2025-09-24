@@ -1,6 +1,6 @@
 import { db } from '@sim/db'
-import { eq, and } from 'drizzle-orm'
 import { member } from '@sim/db/schema'
+import { and, eq } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 import { getUserCanAccessAgent } from './agents'
 
@@ -51,17 +51,16 @@ export async function getConversationById(conversationId: string): Promise<Conve
       updated_at: new Date(),
       message_count: 0,
       is_archived: false,
-      metadata: {}
+      metadata: {},
     }
 
     logger.info('Fetched conversation', {
       conversationId,
       agentId: mockConversation.agent_id,
-      workspaceId: mockConversation.workspace_id
+      workspaceId: mockConversation.workspace_id,
     })
 
     return mockConversation
-
   } catch (error) {
     logger.error('Failed to fetch conversation', { error, conversationId })
     return null
@@ -97,12 +96,7 @@ export async function getUserCanAccessConversation(
     const membership = await db
       .select()
       .from(member)
-      .where(
-        and(
-          eq(member.userId, userId),
-          eq(member.organizationId, conversation.workspace_id)
-        )
-      )
+      .where(and(eq(member.userId, userId), eq(member.organizationId, conversation.workspace_id)))
       .limit(1)
 
     const hasAccess = membership.length > 0
@@ -112,11 +106,10 @@ export async function getUserCanAccessConversation(
       conversationId,
       isOwner: conversation.user_id === userId,
       hasWorkspaceAccess: hasAccess,
-      finalAccess: hasAccess
+      finalAccess: hasAccess,
     })
 
     return hasAccess
-
   } catch (error) {
     logger.error('Conversation access check failed', { error, userId, conversationId })
     return false
@@ -143,18 +136,13 @@ export async function getUserConversations(
     const membership = await db
       .select()
       .from(member)
-      .where(
-        and(
-          eq(member.userId, userId),
-          eq(member.organizationId, workspaceId)
-        )
-      )
+      .where(and(eq(member.userId, userId), eq(member.organizationId, workspaceId)))
       .limit(1)
 
     if (membership.length === 0) {
       logger.warn('User does not have access to workspace for conversations', {
         userId,
-        workspaceId
+        workspaceId,
       })
       return { conversations: [], total: 0 }
     }
@@ -169,11 +157,10 @@ export async function getUserConversations(
       agentFilter: agentId,
       page,
       limit,
-      conversationCount: conversations.length
+      conversationCount: conversations.length,
     })
 
     return { conversations, total: conversations.length }
-
   } catch (error) {
     logger.error('Failed to fetch user conversations', { error, userId, workspaceId, options })
     return { conversations: [], total: 0 }
@@ -196,7 +183,7 @@ export async function createConversation(
       logger.warn('User cannot create conversation - no agent access', {
         userId,
         agentId,
-        workspaceId
+        workspaceId,
       })
       return null
     }
@@ -209,12 +196,14 @@ export async function createConversation(
       agent_id: agentId,
       user_id: userId,
       workspace_id: workspaceId,
-      title: initialMessage?.substring(0, 50) + (initialMessage && initialMessage.length > 50 ? '...' : '') || 'New Conversation',
+      title:
+        initialMessage?.substring(0, 50) +
+          (initialMessage && initialMessage.length > 50 ? '...' : '') || 'New Conversation',
       created_at: new Date(),
       updated_at: new Date(),
       message_count: initialMessage ? 1 : 0,
       is_archived: false,
-      metadata: {}
+      metadata: {},
     }
 
     logger.info('Created new conversation', {
@@ -222,18 +211,17 @@ export async function createConversation(
       agentId,
       userId,
       workspaceId,
-      hasInitialMessage: !!initialMessage
+      hasInitialMessage: !!initialMessage,
     })
 
     return newConversation
-
   } catch (error) {
     logger.error('Failed to create conversation', {
       error,
       userId,
       agentId,
       workspaceId,
-      initialMessage: initialMessage?.substring(0, 100)
+      initialMessage: initialMessage?.substring(0, 100),
     })
     return null
   }
@@ -264,17 +252,16 @@ export async function updateConversation(
     const updatedConversation: Conversation = {
       ...conversation,
       ...updates,
-      updated_at: new Date()
+      updated_at: new Date(),
     }
 
     logger.info('Updated conversation', {
       conversationId,
       updatedBy: userId,
-      updates: Object.keys(updates)
+      updates: Object.keys(updates),
     })
 
     return updatedConversation
-
   } catch (error) {
     logger.error('Failed to update conversation', { error, userId, conversationId, updates })
     return null
@@ -302,12 +289,7 @@ export async function deleteConversation(userId: string, conversationId: string)
       const membership = await db
         .select()
         .from(member)
-        .where(
-          and(
-            eq(member.userId, userId),
-            eq(member.organizationId, conversation.workspace_id)
-          )
-        )
+        .where(and(eq(member.userId, userId), eq(member.organizationId, conversation.workspace_id)))
         .limit(1)
 
       const userRole = membership[0]?.role
@@ -316,7 +298,7 @@ export async function deleteConversation(userId: string, conversationId: string)
           userId,
           conversationId,
           userRole,
-          conversationOwner: conversation.user_id
+          conversationOwner: conversation.user_id,
         })
         return false
       }
@@ -328,11 +310,10 @@ export async function deleteConversation(userId: string, conversationId: string)
     logger.info('Deleted conversation', {
       conversationId,
       deletedBy: userId,
-      workspaceId: conversation.workspace_id
+      workspaceId: conversation.workspace_id,
     })
 
     return true
-
   } catch (error) {
     logger.error('Failed to delete conversation', { error, userId, conversationId })
     return false
@@ -355,7 +336,7 @@ export async function getConversationMessages(
     if (!canAccess) {
       logger.warn('User cannot access conversation messages - no access', {
         userId,
-        conversationId
+        conversationId,
       })
       return { messages: [], total: 0 }
     }
@@ -369,17 +350,16 @@ export async function getConversationMessages(
       userId,
       page,
       limit,
-      messageCount: messages.length
+      messageCount: messages.length,
     })
 
     return { messages, total: messages.length }
-
   } catch (error) {
     logger.error('Failed to fetch conversation messages', {
       error,
       userId,
       conversationId,
-      options
+      options,
     })
     return { messages: [], total: 0 }
   }

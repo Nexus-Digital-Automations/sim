@@ -8,35 +8,29 @@
  * @version 1.0.0
  */
 
+import type { ConversationMessage } from '../natural-language/usage-guidelines'
 import type {
   AdapterRegistryEntry,
-  ToolDiscoveryQuery,
   DiscoveredTool,
-  AdapterConfiguration
+  ToolDiscoveryQuery,
 } from '../types/adapter-interfaces'
 import type { ParlantTool } from '../types/parlant-interfaces'
-import type {
-  UsageContext,
-  UserProfile,
-  ConversationMessage
-} from '../natural-language/usage-guidelines'
 import { createLogger } from '../utils/logger'
-import { NLPProcessor } from './nlp-processor'
-import { RoleBasedAdapter, SkillLevelAdapter, DomainAdapter } from './contextual-adapters'
+import { DomainAdapter, RoleBasedAdapter, SkillLevelAdapter } from './contextual-adapters'
+import type {
+  DescriptionLevels,
+  EnhancedDescriptionSchema,
+  ExtendedUsageContext,
+  ExtendedUserProfile,
+} from './description-templates'
 import { IntelligentTemplateEngine } from './intelligent-template-engine'
+import { NLPProcessor } from './nlp-processor'
 import {
-  SemanticSearchEngine,
   createSemanticSearchEngine,
   DEFAULT_SEMANTIC_SEARCH_CONFIG,
   type SemanticSearchConfig,
-  type EnhancedSemanticSearchResult
+  type SemanticSearchEngine,
 } from './semantic-search-engine'
-import {
-  EnhancedDescriptionSchema,
-  DescriptionLevels,
-  ExtendedUsageContext,
-  ExtendedUserProfile
-} from './description-templates'
 
 const logger = createLogger('RegistryIntegration')
 
@@ -156,7 +150,7 @@ export class NaturalLanguageRegistryIntegration {
     logger.info('Initializing Natural Language Registry Integration', {
       nlpEnabled: config.nlp.enabled,
       contextualAdaptation: config.contextualAdaptation.enabled,
-      templateEngine: config.templateEngine.enabled
+      templateEngine: config.templateEngine.enabled,
     })
 
     // Initialize core components
@@ -164,7 +158,7 @@ export class NaturalLanguageRegistryIntegration {
       enableAdvancedAnalysis: config.nlp.enhancedAnalysis,
       qualityThreshold: config.nlp.qualityThreshold,
       enableSemanticAnalysis: true,
-      vocabularyEnhancement: true
+      vocabularyEnhancement: true,
     })
 
     this.roleAdapter = new RoleBasedAdapter()
@@ -187,10 +181,7 @@ export class NaturalLanguageRegistryIntegration {
 
     try {
       // Generate natural language configuration
-      const naturalLanguageConfig = await this.generateNaturalLanguageConfig(
-        entry,
-        userContext
-      )
+      const naturalLanguageConfig = await this.generateNaturalLanguageConfig(entry, userContext)
 
       // Create enhanced entry
       const enhancedEntry: AdapterRegistryEntry = {
@@ -202,15 +193,15 @@ export class NaturalLanguageRegistryIntegration {
             nlpProcessed: true,
             contextuallyAdapted: !!userContext,
             lastEnhanced: new Date(),
-            semanticKeywords: naturalLanguageConfig.keywords || []
-          }
+            semanticKeywords: naturalLanguageConfig.keywords || [],
+          },
         },
         metadata: {
           ...entry.metadata,
           naturalLanguageCapabilities: true,
           semanticSearchReady: true,
-          contextualAdaptationSupported: true
-        }
+          contextualAdaptationSupported: true,
+        },
       }
 
       // Cache the enhanced configuration if enabled
@@ -220,11 +211,10 @@ export class NaturalLanguageRegistryIntegration {
 
       logger.info(`Enhanced adapter entry successfully: ${entry.id}`)
       return enhancedEntry
-
     } catch (error) {
       logger.error(`Failed to enhance adapter entry: ${entry.id}`, {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       })
       return entry // Return original entry if enhancement fails
     }
@@ -240,7 +230,7 @@ export class NaturalLanguageRegistryIntegration {
     logger.debug('Performing enhanced tool discovery', {
       queryType: query.naturalLanguageQuery ? 'natural_language' : 'structured',
       entriesCount: availableEntries.length,
-      semanticSearch: query.semanticSearch
+      semanticSearch: query.semanticSearch,
     })
 
     const startTime = Date.now()
@@ -248,12 +238,12 @@ export class NaturalLanguageRegistryIntegration {
     try {
       // Process entries in parallel for better performance
       const enhancedEntries = await Promise.all(
-        availableEntries.map(entry => this.processEntryForDiscovery(entry, query))
+        availableEntries.map((entry) => this.processEntryForDiscovery(entry, query))
       )
 
       // Filter out null results and sort by relevance
       const validEntries = enhancedEntries
-        .filter(entry => entry !== null)
+        .filter((entry) => entry !== null)
         .sort((a, b) => b.relevanceScore - a.relevanceScore)
 
       // Apply semantic search if requested
@@ -271,15 +261,14 @@ export class NaturalLanguageRegistryIntegration {
       logger.info('Enhanced tool discovery completed', {
         resultsCount: results.length,
         duration,
-        semanticSearchUsed: query.semanticSearch
+        semanticSearchUsed: query.semanticSearch,
       })
 
       return results
-
     } catch (error) {
       logger.error('Enhanced tool discovery failed', {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       })
       throw error
     }
@@ -295,7 +284,7 @@ export class NaturalLanguageRegistryIntegration {
   ): Promise<SemanticSearchResult[]> {
     logger.debug('Performing semantic search on tool descriptions', {
       query: searchQuery,
-      entriesCount: availableEntries.length
+      entriesCount: availableEntries.length,
     })
 
     try {
@@ -307,7 +296,7 @@ export class NaturalLanguageRegistryIntegration {
       )
 
       // Convert enhanced results to our SemanticSearchResult format
-      const results: SemanticSearchResult[] = enhancedResults.map(result => ({
+      const results: SemanticSearchResult[] = enhancedResults.map((result) => ({
         toolId: result.toolId,
         title: result.title,
         description: result.description,
@@ -318,22 +307,21 @@ export class NaturalLanguageRegistryIntegration {
         adaptedContent: {
           roleBasedDescription: result.adaptationData?.roleSpecificGuidance,
           skillLevelDescription: result.adaptationData?.skillLevelAdvice,
-          domainSpecificDescription: result.adaptationData?.domainContext
-        }
+          domainSpecificDescription: result.adaptationData?.domainContext,
+        },
       }))
 
       logger.info('Semantic search completed', {
         query: searchQuery,
         resultsCount: results.length,
-        topScore: results[0]?.relevanceScore || 0
+        topScore: results[0]?.relevanceScore || 0,
       })
 
       return results
-
     } catch (error) {
       logger.error('Semantic search failed', {
         query: searchQuery,
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -367,7 +355,7 @@ export class NaturalLanguageRegistryIntegration {
     logger.debug('Performing advanced semantic search', {
       query,
       hasFilters: !!options?.filters,
-      hasRanking: !!options?.ranking
+      hasRanking: !!options?.ranking,
     })
 
     try {
@@ -384,19 +372,19 @@ export class NaturalLanguageRegistryIntegration {
           timestamp: new Date(),
           sessionId: userContext?.sessionContext?.sessionId,
           previousQueries: [],
-          userFeedback: []
+          userFeedback: [],
         },
         filters: {
           categories: options?.filters?.categories || [],
           tags: options?.filters?.tags || [],
           capabilities: options?.filters?.capabilities || [],
-          domains: []
+          domains: [],
         },
         rankingPreferences: {
           prioritizePopular: options?.ranking?.prioritizePopular || false,
           prioritizeRecentlyUsed: options?.ranking?.prioritizeRecent || false,
-          personalizedRanking: options?.ranking?.personalizedRanking || !!userContext
-        }
+          personalizedRanking: options?.ranking?.personalizedRanking || !!userContext,
+        },
       }
 
       // Perform advanced search
@@ -406,7 +394,7 @@ export class NaturalLanguageRegistryIntegration {
       )
 
       // Convert results
-      const results: SemanticSearchResult[] = searchResult.results.map(result => ({
+      const results: SemanticSearchResult[] = searchResult.results.map((result) => ({
         toolId: result.toolId,
         title: result.title,
         description: result.description,
@@ -417,8 +405,8 @@ export class NaturalLanguageRegistryIntegration {
         adaptedContent: {
           roleBasedDescription: result.adaptationData?.roleSpecificGuidance,
           skillLevelDescription: result.adaptationData?.skillLevelAdvice,
-          domainSpecificDescription: result.adaptationData?.domainContext
-        }
+          domainSpecificDescription: result.adaptationData?.domainContext,
+        },
       }))
 
       // Get suggestions
@@ -430,13 +418,12 @@ export class NaturalLanguageRegistryIntegration {
       return {
         results: results.slice(0, options?.maxResults || 20),
         suggestions: suggestionResult.suggestions,
-        analytics: searchResult.searchMetadata
+        analytics: searchResult.searchMetadata,
       }
-
     } catch (error) {
       logger.error('Advanced semantic search failed', {
         query,
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -458,13 +445,12 @@ export class NaturalLanguageRegistryIntegration {
       return [
         ...suggestions.suggestions,
         ...suggestions.contextualSuggestions,
-        ...suggestions.popularQueries
+        ...suggestions.popularQueries,
       ].slice(0, 10) // Return top 10 suggestions
-
     } catch (error) {
       logger.error('Failed to get search suggestions', {
         partialQuery,
-        error: error.message
+        error: error.message,
       })
       return []
     }
@@ -483,14 +469,13 @@ export class NaturalLanguageRegistryIntegration {
     try {
       await this.semanticSearchEngine.recordFeedback({
         ...feedback,
-        timestamp: new Date()
+        timestamp: new Date(),
       })
 
       logger.debug('Search feedback recorded successfully')
-
     } catch (error) {
       logger.error('Failed to record search feedback', {
-        error: error.message
+        error: error.message,
       })
     }
   }
@@ -519,7 +504,7 @@ export class NaturalLanguageRegistryIntegration {
       const adaptations = await Promise.all([
         this.roleAdapter.adapt(baseSchema, userContext),
         this.skillAdapter.adapt(baseSchema, userContext),
-        this.domainAdapter.adapt(baseSchema, userContext)
+        this.domainAdapter.adapt(baseSchema, userContext),
       ])
 
       // Generate enhanced descriptions using template engine
@@ -527,19 +512,17 @@ export class NaturalLanguageRegistryIntegration {
         tool,
         userContext,
         adaptations,
-        baseSchema
+        baseSchema,
       }
 
-      const enhancedDescriptions = await this.templateEngine.generateEnhancedDescriptions(
-        templateContext
-      )
+      const enhancedDescriptions =
+        await this.templateEngine.generateEnhancedDescriptions(templateContext)
 
       logger.debug(`Generated adapted description successfully: ${tool.id}`)
       return enhancedDescriptions
-
     } catch (error) {
       logger.error(`Failed to generate adapted description: ${tool.id}`, {
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -572,7 +555,7 @@ export class NaturalLanguageRegistryIntegration {
 
     logger.info(`Batch enhancing ${entries.length} tools`, {
       concurrency,
-      failFast: options?.failFast
+      failFast: options?.failFast,
     })
 
     // Process in batches to avoid overwhelming the system
@@ -592,21 +575,23 @@ export class NaturalLanguageRegistryIntegration {
       })
 
       const batchResults = await Promise.all(batchPromises)
-      enhanced.push(...batchResults.filter(result => result !== null))
+      enhanced.push(...batchResults.filter((result) => result !== null))
     }
 
     const duration = Date.now() - startTime
-    const analytics = options?.includeAnalytics ? {
-      totalProcessed: entries.length,
-      successRate: enhanced.length / entries.length,
-      averageProcessingTime: duration / entries.length
-    } : undefined
+    const analytics = options?.includeAnalytics
+      ? {
+          totalProcessed: entries.length,
+          successRate: enhanced.length / entries.length,
+          averageProcessingTime: duration / entries.length,
+        }
+      : undefined
 
     logger.info('Batch enhancement completed', {
       enhanced: enhanced.length,
       failed: failed.length,
       duration,
-      successRate: analytics?.successRate
+      successRate: analytics?.successRate,
     })
 
     return { enhanced, failed, analytics }
@@ -622,7 +607,7 @@ export class NaturalLanguageRegistryIntegration {
     const analysis = await this.nlpProcessor.analyzeToolComprehensively({
       name: entry.simTool.name,
       description: entry.config.description || '',
-      parameters: entry.simTool.parameters || {}
+      parameters: entry.simTool.parameters || {},
     })
 
     // Generate base natural language configuration
@@ -632,7 +617,7 @@ export class NaturalLanguageRegistryIntegration {
       conversationalHints: analysis.conversationalElements,
       exampleUsage: analysis.exampleUsage,
       keywords: analysis.keyInformation.concepts,
-      contextualTips: analysis.recommendations
+      contextualTips: analysis.recommendations,
     }
 
     // Apply contextual adaptation if user context is provided
@@ -677,25 +662,24 @@ export class NaturalLanguageRegistryIntegration {
         usageStats: {
           executionCount: entry.statistics?.executionCount || 0,
           successRate: entry.statistics?.successRate || 0,
-          averageRating: 0 // Would be calculated from actual ratings
+          averageRating: 0, // Would be calculated from actual ratings
         },
         capabilities: this.extractCapabilities(entry),
         requirements: this.extractRequirements(entry),
         performance: {
           averageExecutionTimeMs: entry.statistics?.averageExecutionTimeMs || 0,
           healthStatus: entry.health?.status || 'unknown',
-          lastUsed: entry.statistics?.lastUsed
+          lastUsed: entry.statistics?.lastUsed,
         },
         naturalLanguage,
         semanticMetadata,
-        adaptationData
+        adaptationData,
       }
 
       return enhancedTool
-
     } catch (error) {
       logger.warn(`Failed to process entry for discovery: ${entry.id}`, {
-        error: error.message
+        error: error.message,
       })
       return null
     }
@@ -712,20 +696,21 @@ export class NaturalLanguageRegistryIntegration {
       const queryAnalysis = await this.nlpProcessor.extractKeyInformation({
         name: 'query',
         description: query.naturalLanguageQuery,
-        parameters: {}
+        parameters: {},
       })
 
       const toolAnalysis = await this.nlpProcessor.extractKeyInformation({
         name: entry.simTool.name,
         description: entry.config.description || '',
-        parameters: entry.simTool.parameters || {}
+        parameters: entry.simTool.parameters || {},
       })
 
       // Calculate semantic similarity
-      score += this.calculateSemanticSimilarity(
-        queryAnalysis.keyInformation.concepts,
-        toolAnalysis.keyInformation.concepts
-      ) * 50
+      score +=
+        this.calculateSemanticSimilarity(
+          queryAnalysis.keyInformation.concepts,
+          toolAnalysis.keyInformation.concepts
+        ) * 50
     }
 
     // Traditional query matching
@@ -739,7 +724,7 @@ export class NaturalLanguageRegistryIntegration {
     }
 
     if (query.tags) {
-      const matchingTags = query.tags.filter(tag => entry.metadata.tags.includes(tag))
+      const matchingTags = query.tags.filter((tag) => entry.metadata.tags.includes(tag))
       score += matchingTags.length * 5
     }
 
@@ -757,7 +742,7 @@ export class NaturalLanguageRegistryIntegration {
     const analysis = await this.nlpProcessor.analyzeToolComprehensively({
       name: entry.simTool.name,
       description: entry.config.description || '',
-      parameters: entry.simTool.parameters || {}
+      parameters: entry.simTool.parameters || {},
     })
 
     return {
@@ -766,7 +751,7 @@ export class NaturalLanguageRegistryIntegration {
       conversationalHints: analysis.conversationalElements,
       exampleUsage: analysis.exampleUsage,
       keywords: analysis.keyInformation.concepts,
-      contextualTips: analysis.recommendations
+      contextualTips: analysis.recommendations,
     }
   }
 
@@ -777,7 +762,7 @@ export class NaturalLanguageRegistryIntegration {
     const analysis = await this.nlpProcessor.analyzeToolComprehensively({
       name: entry.simTool.name,
       description: entry.config.description || '',
-      parameters: entry.simTool.parameters || {}
+      parameters: entry.simTool.parameters || {},
     })
 
     const concepts = analysis.keyInformation.concepts
@@ -788,7 +773,7 @@ export class NaturalLanguageRegistryIntegration {
       const queryAnalysis = await this.nlpProcessor.extractKeyInformation({
         name: 'query',
         description: query.naturalLanguageQuery,
-        parameters: {}
+        parameters: {},
       })
       similarity = this.calculateSemanticSimilarity(concepts, queryAnalysis.keyInformation.concepts)
     }
@@ -797,7 +782,7 @@ export class NaturalLanguageRegistryIntegration {
       concepts,
       relationships,
       similarity,
-      relevanceScore: await this.calculateRelevanceScore(entry, query)
+      relevanceScore: await this.calculateRelevanceScore(entry, query),
     }
   }
 
@@ -810,13 +795,13 @@ export class NaturalLanguageRegistryIntegration {
       userProfile,
       conversationHistory: [],
       sessionContext: {},
-      environment: 'production'
+      environment: 'production',
     }
 
     const [roleAdaptation, skillAdaptation, domainAdaptation] = await Promise.all([
       this.roleAdapter.adapt(baseSchema, context),
       this.skillAdapter.adapt(baseSchema, context),
-      this.domainAdapter.adapt(baseSchema, context)
+      this.domainAdapter.adapt(baseSchema, context),
     ])
 
     return {
@@ -826,8 +811,8 @@ export class NaturalLanguageRegistryIntegration {
       personalizationHints: [
         ...(roleAdaptation.adaptedContent?.tips || []),
         ...(skillAdaptation.adaptedContent?.tips || []),
-        ...(domainAdaptation.adaptedContent?.tips || [])
-      ]
+        ...(domainAdaptation.adaptedContent?.tips || []),
+      ],
     }
   }
 
@@ -839,11 +824,11 @@ export class NaturalLanguageRegistryIntegration {
     const queryAnalysis = await this.nlpProcessor.extractKeyInformation({
       name: 'search_query',
       description: query,
-      parameters: {}
+      parameters: {},
     })
 
     // Re-score tools based on semantic similarity
-    const enhancedTools = tools.map(tool => {
+    const enhancedTools = tools.map((tool) => {
       const semanticScore = this.calculateSemanticSimilarity(
         queryAnalysis.keyInformation.concepts,
         tool.semanticMetadata.concepts
@@ -851,11 +836,11 @@ export class NaturalLanguageRegistryIntegration {
 
       return {
         ...tool,
-        relevanceScore: (tool.relevanceScore * 0.6) + (semanticScore * 0.4), // Weighted combination
+        relevanceScore: tool.relevanceScore * 0.6 + semanticScore * 0.4, // Weighted combination
         semanticMetadata: {
           ...tool.semanticMetadata,
-          similarity: semanticScore
-        }
+          similarity: semanticScore,
+        },
       }
     })
 
@@ -867,15 +852,17 @@ export class NaturalLanguageRegistryIntegration {
     userProfile: ExtendedUserProfile
   ): Promise<EnhancedDiscoveredTool[]> {
     // Apply user-specific adaptations to the results
-    return Promise.all(results.map(async (result) => {
-      if (!result.adaptationData) {
-        result.adaptationData = await this.generateAdaptationData(
-          { id: result.id } as AdapterRegistryEntry,
-          userProfile
-        )
-      }
-      return result
-    }))
+    return Promise.all(
+      results.map(async (result) => {
+        if (!result.adaptationData) {
+          result.adaptationData = await this.generateAdaptationData(
+            { id: result.id } as AdapterRegistryEntry,
+            userProfile
+          )
+        }
+        return result
+      })
+    )
   }
 
   private async performSemanticMatchingForEntry(
@@ -887,11 +874,11 @@ export class NaturalLanguageRegistryIntegration {
     const toolAnalysis = await this.nlpProcessor.analyzeToolComprehensively({
       name: entry.simTool.name,
       description: entry.config.description || '',
-      parameters: entry.simTool.parameters || {}
+      parameters: entry.simTool.parameters || {},
     })
 
-    const conceptMatches = queryAnalysis.keyInformation.concepts.filter(
-      concept => toolAnalysis.keyInformation.concepts.includes(concept)
+    const conceptMatches = queryAnalysis.keyInformation.concepts.filter((concept) =>
+      toolAnalysis.keyInformation.concepts.includes(concept)
     )
 
     const semanticSimilarity = this.calculateSemanticSimilarity(
@@ -903,8 +890,10 @@ export class NaturalLanguageRegistryIntegration {
       ? await this.calculateContextualRelevance(entry, userContext)
       : 0.5
 
-    const relevanceScore = (semanticSimilarity * 0.5) + (contextualRelevance * 0.3) +
-                          (conceptMatches.length / Math.max(queryAnalysis.keyInformation.concepts.length, 1) * 0.2)
+    const relevanceScore =
+      semanticSimilarity * 0.5 +
+      contextualRelevance * 0.3 +
+      (conceptMatches.length / Math.max(queryAnalysis.keyInformation.concepts.length, 1)) * 0.2
 
     const adaptedContent = userContext?.userProfile
       ? await this.generateAdaptationData(entry, userContext.userProfile)
@@ -921,8 +910,8 @@ export class NaturalLanguageRegistryIntegration {
       adaptedContent: {
         roleBasedDescription: adaptedContent.roleSpecificGuidance,
         skillLevelDescription: adaptedContent.skillLevelAdvice,
-        domainSpecificDescription: adaptedContent.domainContext
-      }
+        domainSpecificDescription: adaptedContent.domainContext,
+      },
     }
   }
 
@@ -930,7 +919,7 @@ export class NaturalLanguageRegistryIntegration {
     const analysis = await this.nlpProcessor.analyzeToolComprehensively({
       name: tool.simTool?.name || tool.name,
       description: tool.config?.description || tool.description || '',
-      parameters: tool.simTool?.parameters || tool.parameters || {}
+      parameters: tool.simTool?.parameters || tool.parameters || {},
     })
 
     return {
@@ -938,37 +927,43 @@ export class NaturalLanguageRegistryIntegration {
       basicInfo: {
         name: tool.simTool?.name || tool.name,
         category: tool.metadata?.category || 'utility',
-        tags: tool.metadata?.tags || []
+        tags: tool.metadata?.tags || [],
       },
       descriptions: {
-        brief: analysis.enhancedDescription.substring(0, 100) + '...',
+        brief: `${analysis.enhancedDescription.substring(0, 100)}...`,
         detailed: analysis.enhancedDescription,
-        expert: analysis.enhancedDescription + '\n\nAdvanced Usage: ' + analysis.usagePatterns.join(', ')
+        expert: `${analysis.enhancedDescription}\n\nAdvanced Usage: ${analysis.usagePatterns.join(', ')}`,
       },
       usageContext: {
         commonScenarios: analysis.usagePatterns,
         bestPractices: analysis.recommendations,
-        limitations: analysis.keyInformation.limitations || []
+        limitations: analysis.keyInformation.limitations || [],
       },
       conversationalElements: analysis.conversationalElements,
       examples: analysis.exampleUsage,
       metadata: {
         lastUpdated: new Date(),
         version: '1.0.0',
-        confidence: 0.85
-      }
+        confidence: 0.85,
+      },
     }
   }
 
   private async adaptConfigToContext(config: any, context: ExtendedUsageContext): Promise<any> {
     // Apply contextual adaptations to the configuration
     const adaptations = await Promise.all([
-      this.roleAdapter.adapt({
-        descriptions: { detailed: config.description }
-      } as EnhancedDescriptionSchema, context),
-      this.skillAdapter.adapt({
-        descriptions: { detailed: config.description }
-      } as EnhancedDescriptionSchema, context)
+      this.roleAdapter.adapt(
+        {
+          descriptions: { detailed: config.description },
+        } as EnhancedDescriptionSchema,
+        context
+      ),
+      this.skillAdapter.adapt(
+        {
+          descriptions: { detailed: config.description },
+        } as EnhancedDescriptionSchema,
+        context
+      ),
     ])
 
     return {
@@ -976,15 +971,15 @@ export class NaturalLanguageRegistryIntegration {
       skillAppropriateExplanation: adaptations[1].adaptedContent?.description,
       personalizedTips: [
         ...(adaptations[0].adaptedContent?.tips || []),
-        ...(adaptations[1].adaptedContent?.tips || [])
-      ]
+        ...(adaptations[1].adaptedContent?.tips || []),
+      ],
     }
   }
 
   private calculateSemanticSimilarity(concepts1: string[], concepts2: string[]): number {
     if (!concepts1.length || !concepts2.length) return 0
 
-    const intersection = concepts1.filter(concept => concepts2.includes(concept))
+    const intersection = concepts1.filter((concept) => concepts2.includes(concept))
     const union = [...new Set([...concepts1, ...concepts2])]
 
     return intersection.length / union.length
@@ -1031,24 +1026,22 @@ export class NaturalLanguageRegistryIntegration {
       developer: ['development', 'coding', 'technical', 'api'],
       business_user: ['business', 'workflow', 'process', 'management'],
       analyst: ['analysis', 'data', 'reporting', 'insights'],
-      admin: ['configuration', 'settings', 'management', 'system']
+      admin: ['configuration', 'settings', 'management', 'system'],
     }
 
     const relevantTags = roleMappings[role] || []
-    const matches = entry.metadata.tags.filter(tag => relevantTags.includes(tag.toLowerCase()))
+    const matches = entry.metadata.tags.filter((tag) => relevantTags.includes(tag.toLowerCase()))
 
     return matches.length / Math.max(relevantTags.length, 1)
   }
 
   private calculateDomainRelevance(entry: AdapterRegistryEntry, domain: string): number {
     const domainKeywords = domain.toLowerCase().split(/[^a-z]+/)
-    const entryText = [
-      entry.simTool.name,
-      entry.config.description || '',
-      ...entry.metadata.tags
-    ].join(' ').toLowerCase()
+    const entryText = [entry.simTool.name, entry.config.description || '', ...entry.metadata.tags]
+      .join(' ')
+      .toLowerCase()
 
-    const matches = domainKeywords.filter(keyword => entryText.includes(keyword))
+    const matches = domainKeywords.filter((keyword) => entryText.includes(keyword))
     return matches.length / Math.max(domainKeywords.length, 1)
   }
 
@@ -1079,7 +1072,7 @@ export class NaturalLanguageRegistryIntegration {
   private cacheEnhancedEntry(entryId: string, enhanced: AdapterRegistryEntry): void {
     this.descriptionCache.set(entryId, {
       entry: enhanced,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // Set TTL cleanup
@@ -1106,7 +1099,7 @@ export class NaturalLanguageRegistryIntegration {
   } {
     return {
       descriptionCache: { size: this.descriptionCache.size },
-      searchCache: { size: this.searchCache.size }
+      searchCache: { size: this.searchCache.size },
     }
   }
 }
@@ -1119,28 +1112,28 @@ export const DEFAULT_REGISTRY_INTEGRATION_CONFIG: RegistryIntegrationConfig = {
     enabled: true,
     enhancedAnalysis: true,
     semanticCaching: true,
-    qualityThreshold: 0.7
+    qualityThreshold: 0.7,
   },
   contextualAdaptation: {
     enabled: true,
     roleBasedAdaptation: true,
     skillLevelAdaptation: true,
     domainAdaptation: true,
-    personalization: true
+    personalization: true,
   },
   templateEngine: {
     enabled: true,
     dynamicGeneration: true,
     multiLevelDescriptions: true,
-    personalizationEnabled: true
+    personalizationEnabled: true,
   },
   semanticSearch: DEFAULT_SEMANTIC_SEARCH_CONFIG,
   performance: {
     cacheResults: true,
     cacheTTL: 300000, // 5 minutes
     asyncProcessing: true,
-    batchProcessing: true
-  }
+    batchProcessing: true,
+  },
 }
 
 /**

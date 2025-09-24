@@ -7,21 +7,13 @@ import {
   logSecurityEvent,
   validateMessageContent,
 } from '@/socket-server/middleware/parlant-security'
-import {
-  checkChatRateLimit,
-  logChatSecurityEvent,
-  validateChatMessage,
-  validateChatSession,
-  chatConnectionTracker,
-} from '@/socket-server/middleware/chat-security'
-import { chatMetricsCollector } from '@/socket-server/monitoring/chat-metrics'
 import type { RoomManager } from '@/socket-server/rooms/manager'
 import {
   ParlantEventType,
-  ParlantMessageType,
   type ParlantMessageEvent,
+  ParlantMessageType,
   type ParlantSessionEvent,
-  ParlantSessionStatus,
+  type ParlantSessionStatus,
 } from '@/socket-server/types/parlant-events'
 
 const logger = createLogger('ChatHandlers')
@@ -142,9 +134,7 @@ export function setupChatHandlers(socket: AuthenticatedSocket, roomManager: Room
       try {
         const access = await validateParlantAccess(userId, workspaceId, agentId, sessionId)
         if (!access.canAccessSession) {
-          logger.warn(
-            `User ${userId} (${userName}) denied access to chat session ${sessionId}`
-          )
+          logger.warn(`User ${userId} (${userName}) denied access to chat session ${sessionId}`)
           socket.emit('chat:join-session-error', {
             error: 'Access denied to chat session',
             sessionId,
@@ -261,7 +251,7 @@ export function setupChatHandlers(socket: AuthenticatedSocket, roomManager: Room
       if (!sessionData || sessionData.sessionId !== message.sessionId) {
         socket.emit('chat:send-message-error', {
           error: 'Not joined to this chat session',
-          sessionId: message.sessionId
+          sessionId: message.sessionId,
         })
         return
       }
@@ -326,104 +316,110 @@ export function setupChatHandlers(socket: AuthenticatedSocket, roomManager: Room
   /**
    * Handle typing indicators
    */
-  socket.on('chat:typing', async ({ sessionId, isTyping }: { sessionId: string; isTyping: boolean }) => {
-    try {
-      const userId = socket.userId
-      const userName = socket.userName
+  socket.on(
+    'chat:typing',
+    async ({ sessionId, isTyping }: { sessionId: string; isTyping: boolean }) => {
+      try {
+        const userId = socket.userId
+        const userName = socket.userName
 
-      if (!userId || !userName) {
-        return
-      }
+        if (!userId || !userName) {
+          return
+        }
 
-      // Rate limiting for typing indicators
-      const rateLimit = checkRateLimit(socket, 'typing')
-      if (!rateLimit.allowed) {
-        return // Silently ignore typing when rate limited
-      }
+        // Rate limiting for typing indicators
+        const rateLimit = checkRateLimit(socket, 'typing')
+        if (!rateLimit.allowed) {
+          return // Silently ignore typing when rate limited
+        }
 
-      // Validate session access
-      const sessionData = socket.data.currentChatSession
-      if (!sessionData || sessionData.sessionId !== sessionId) {
-        return
-      }
+        // Validate session access
+        const sessionData = socket.data.currentChatSession
+        if (!sessionData || sessionData.sessionId !== sessionId) {
+          return
+        }
 
-      const typingIndicator: TypingIndicator = {
-        sessionId,
-        userId,
-        isTyping,
-        timestamp: Date.now(),
-      }
-
-      // Broadcast typing indicator to session room (excluding sender)
-      const sessionRoomId = `chat:session:${sessionId}`
-      socket.to(sessionRoomId).emit('chat:typing-indicator', typingIndicator)
-
-      // Create Parlant typing event
-      const parlantEvent: ParlantMessageEvent = {
-        type: ParlantEventType.MESSAGE_TYPING,
-        sessionId,
-        messageId: `typing_${Date.now()}`,
-        messageType: ParlantMessageType.SYSTEM_MESSAGE,
-        content: '',
-        workspaceId: sessionData.workspaceId,
-        userId,
-        timestamp: Date.now(),
-        data: {
+        const typingIndicator: TypingIndicator = {
+          sessionId,
+          userId,
           isTyping,
-        },
-        metadata: {
-          typingIndicator: true,
-          userName,
-        },
+          timestamp: Date.now(),
+        }
+
+        // Broadcast typing indicator to session room (excluding sender)
+        const sessionRoomId = `chat:session:${sessionId}`
+        socket.to(sessionRoomId).emit('chat:typing-indicator', typingIndicator)
+
+        // Create Parlant typing event
+        const parlantEvent: ParlantMessageEvent = {
+          type: ParlantEventType.MESSAGE_TYPING,
+          sessionId,
+          messageId: `typing_${Date.now()}`,
+          messageType: ParlantMessageType.SYSTEM_MESSAGE,
+          content: '',
+          workspaceId: sessionData.workspaceId,
+          userId,
+          timestamp: Date.now(),
+          data: {
+            isTyping,
+          },
+          metadata: {
+            typingIndicator: true,
+            userName,
+          },
+        }
+
+        // Broadcast to Parlant session room if exists
+        const parlantSessionRoomId = `parlant:session:${sessionId}`
+        roomManager.emitToWorkflow(parlantSessionRoomId, 'parlant:message-event', parlantEvent)
+
+        logger.debug(`Typing indicator from ${userId} in session ${sessionId}: ${isTyping}`)
+      } catch (error) {
+        logger.error('Error handling typing indicator:', error)
       }
-
-      // Broadcast to Parlant session room if exists
-      const parlantSessionRoomId = `parlant:session:${sessionId}`
-      roomManager.emitToWorkflow(parlantSessionRoomId, 'parlant:message-event', parlantEvent)
-
-      logger.debug(`Typing indicator from ${userId} in session ${sessionId}: ${isTyping}`)
-    } catch (error) {
-      logger.error('Error handling typing indicator:', error)
     }
-  })
+  )
 
   /**
    * Update user presence status
    */
-  socket.on('chat:update-presence', async ({ sessionId, status }: { sessionId: string; status: 'active' | 'idle' | 'away' }) => {
-    try {
-      const userId = socket.userId
-      const userName = socket.userName
+  socket.on(
+    'chat:update-presence',
+    async ({ sessionId, status }: { sessionId: string; status: 'active' | 'idle' | 'away' }) => {
+      try {
+        const userId = socket.userId
+        const userName = socket.userName
 
-      if (!userId || !userName) {
-        return
+        if (!userId || !userName) {
+          return
+        }
+
+        // Validate session access
+        const sessionData = socket.data.currentChatSession
+        if (!sessionData || sessionData.sessionId !== sessionId) {
+          return
+        }
+
+        const presence: ChatPresence = {
+          sessionId,
+          userId,
+          userName,
+          socketId: socket.id,
+          joinedAt: sessionData.joinedAt || Date.now(),
+          lastActivity: Date.now(),
+          status,
+        }
+
+        // Broadcast presence update to session room
+        const sessionRoomId = `chat:session:${sessionId}`
+        socket.to(sessionRoomId).emit('chat:presence-updated', presence)
+
+        logger.debug(`Presence updated for ${userId} in session ${sessionId}: ${status}`)
+      } catch (error) {
+        logger.error('Error updating chat presence:', error)
       }
-
-      // Validate session access
-      const sessionData = socket.data.currentChatSession
-      if (!sessionData || sessionData.sessionId !== sessionId) {
-        return
-      }
-
-      const presence: ChatPresence = {
-        sessionId,
-        userId,
-        userName,
-        socketId: socket.id,
-        joinedAt: sessionData.joinedAt || Date.now(),
-        lastActivity: Date.now(),
-        status,
-      }
-
-      // Broadcast presence update to session room
-      const sessionRoomId = `chat:session:${sessionId}`
-      socket.to(sessionRoomId).emit('chat:presence-updated', presence)
-
-      logger.debug(`Presence updated for ${userId} in session ${sessionId}: ${status}`)
-    } catch (error) {
-      logger.error('Error updating chat presence:', error)
     }
-  })
+  )
 
   /**
    * Leave chat session room
@@ -474,112 +470,133 @@ export function setupChatHandlers(socket: AuthenticatedSocket, roomManager: Room
   /**
    * Request session history
    */
-  socket.on('chat:request-history', async ({ sessionId, limit, offset }: { sessionId: string; limit?: number; offset?: number }) => {
-    try {
-      const userId = socket.userId
+  socket.on(
+    'chat:request-history',
+    async ({
+      sessionId,
+      limit,
+      offset,
+    }: {
+      sessionId: string
+      limit?: number
+      offset?: number
+    }) => {
+      try {
+        const userId = socket.userId
 
-      if (!userId) {
-        socket.emit('chat:request-history-error', { error: 'Authentication required' })
-        return
-      }
+        if (!userId) {
+          socket.emit('chat:request-history-error', { error: 'Authentication required' })
+          return
+        }
 
-      // Validate session access
-      const sessionData = socket.data.currentChatSession
-      if (!sessionData || sessionData.sessionId !== sessionId) {
-        socket.emit('chat:request-history-error', {
-          error: 'Not joined to this chat session',
-          sessionId
+        // Validate session access
+        const sessionData = socket.data.currentChatSession
+        if (!sessionData || sessionData.sessionId !== sessionId) {
+          socket.emit('chat:request-history-error', {
+            error: 'Not joined to this chat session',
+            sessionId,
+          })
+          return
+        }
+
+        // Rate limiting for history requests
+        const rateLimit = checkRateLimit(socket, 'historyRequest')
+        if (!rateLimit.allowed) {
+          socket.emit('chat:request-history-error', {
+            error: 'Rate limit exceeded',
+            retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000),
+          })
+          return
+        }
+
+        // TODO: Fetch actual chat history from database
+        // For now, return empty history as this would be implemented
+        // when integrating with the chat storage system
+        const history: ChatMessage[] = []
+
+        socket.emit('chat:history-response', {
+          sessionId,
+          messages: history,
+          limit: limit || 50,
+          offset: offset || 0,
+          hasMore: false,
+          timestamp: Date.now(),
         })
-        return
-      }
 
-      // Rate limiting for history requests
-      const rateLimit = checkRateLimit(socket, 'historyRequest')
-      if (!rateLimit.allowed) {
+        logger.info(`Chat history requested for session ${sessionId} by user ${userId}`)
+      } catch (error) {
+        logger.error('Error requesting chat history:', error)
         socket.emit('chat:request-history-error', {
-          error: 'Rate limit exceeded',
-          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000),
+          error: 'Failed to fetch chat history',
+          sessionId,
         })
-        return
       }
-
-      // TODO: Fetch actual chat history from database
-      // For now, return empty history as this would be implemented
-      // when integrating with the chat storage system
-      const history: ChatMessage[] = []
-
-      socket.emit('chat:history-response', {
-        sessionId,
-        messages: history,
-        limit: limit || 50,
-        offset: offset || 0,
-        hasMore: false,
-        timestamp: Date.now(),
-      })
-
-      logger.info(`Chat history requested for session ${sessionId} by user ${userId}`)
-    } catch (error) {
-      logger.error('Error requesting chat history:', error)
-      socket.emit('chat:request-history-error', {
-        error: 'Failed to fetch chat history',
-        sessionId,
-      })
     }
-  })
+  )
 
   /**
    * Handle agent message streaming (from Parlant to chat)
    */
-  socket.on('chat:agent-message-stream', async ({ sessionId, messageId, chunk, isComplete }: {
-    sessionId: string;
-    messageId: string;
-    chunk: string;
-    isComplete: boolean;
-  }) => {
-    try {
-      // This would typically be called by the Parlant agent service
-      // when streaming responses to the chat interface
+  socket.on(
+    'chat:agent-message-stream',
+    async ({
+      sessionId,
+      messageId,
+      chunk,
+      isComplete,
+    }: {
+      sessionId: string
+      messageId: string
+      chunk: string
+      isComplete: boolean
+    }) => {
+      try {
+        // This would typically be called by the Parlant agent service
+        // when streaming responses to the chat interface
 
-      const sessionData = socket.data.currentChatSession
-      if (!sessionData || sessionData.sessionId !== sessionId) {
-        return
-      }
-
-      const streamEvent = {
-        sessionId,
-        messageId,
-        chunk,
-        isComplete,
-        timestamp: Date.now(),
-      }
-
-      // Broadcast stream chunk to session room
-      const sessionRoomId = `chat:session:${sessionId}`
-      roomManager.emitToWorkflow(sessionRoomId, 'chat:agent-stream-chunk', streamEvent)
-
-      if (isComplete) {
-        // Create final message event
-        const completeMessage: ChatMessage = {
-          id: messageId,
-          content: chunk, // This would be the complete message content
-          type: 'assistant',
-          sessionId,
-          agentId: sessionData.agentId,
-          timestamp: Date.now(),
-          metadata: {
-            isStreaming: false,
-            isComplete: true,
-          },
+        const sessionData = socket.data.currentChatSession
+        if (!sessionData || sessionData.sessionId !== sessionId) {
+          return
         }
 
-        roomManager.emitToWorkflow(sessionRoomId, 'chat:message-received', completeMessage)
-      }
+        const streamEvent = {
+          sessionId,
+          messageId,
+          chunk,
+          isComplete,
+          timestamp: Date.now(),
+        }
 
-      logger.debug(`Agent message stream for session ${sessionId}: ${chunk.length} chars, complete: ${isComplete}`)
-    } catch (error) {
-      logger.error('Error handling agent message stream:', error)
+        // Broadcast stream chunk to session room
+        const sessionRoomId = `chat:session:${sessionId}`
+        roomManager.emitToWorkflow(sessionRoomId, 'chat:agent-stream-chunk', streamEvent)
+
+        if (isComplete) {
+          // Create final message event
+          const completeMessage: ChatMessage = {
+            id: messageId,
+            content: chunk, // This would be the complete message content
+            type: 'assistant',
+            sessionId,
+            agentId: sessionData.agentId,
+            timestamp: Date.now(),
+            metadata: {
+              isStreaming: false,
+              isComplete: true,
+            },
+          }
+
+          roomManager.emitToWorkflow(sessionRoomId, 'chat:message-received', completeMessage)
+        }
+
+        logger.debug(
+          `Agent message stream for session ${sessionId}: ${chunk.length} chars, complete: ${isComplete}`
+        )
+      } catch (error) {
+        logger.error('Error handling agent message stream:', error)
+      }
     }
-  })
+  )
 
   /**
    * Handle socket disconnection cleanup
@@ -681,7 +698,11 @@ export class ChatRoomManager {
   /**
    * Broadcast session status change
    */
-  async broadcastSessionStatusChange(sessionId: string, status: ParlantSessionStatus, metadata?: any): Promise<void> {
+  async broadcastSessionStatusChange(
+    sessionId: string,
+    status: ParlantSessionStatus,
+    metadata?: any
+  ): Promise<void> {
     try {
       const sessionRoomId = `chat:session:${sessionId}`
 

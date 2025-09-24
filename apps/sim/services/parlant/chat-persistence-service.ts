@@ -7,13 +7,7 @@
  */
 
 import { db } from '@sim/db'
-import {
-  parlantAgent,
-  parlantEvent,
-  parlantSession,
-  user,
-  workspace,
-} from '@sim/db/schema'
+import { parlantAgent, parlantEvent, parlantSession, user } from '@sim/db/schema'
 import { and, count, desc, eq, gte, ilike, lte, or, sql } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 
@@ -186,7 +180,7 @@ export class ChatPersistenceService {
     sessionId: string,
     messageType: ChatMessageType,
     content: any,
-    metadata: Record<string, any> = {},
+    metadata: Record<string, any>,
     workspaceId: string,
     userId?: string
   ): Promise<ChatHistoryEntry> {
@@ -212,12 +206,7 @@ export class ChatPersistenceService {
           eventCount: parlantSession.eventCount,
         })
         .from(parlantSession)
-        .where(
-          and(
-            eq(parlantSession.id, sessionId),
-            eq(parlantSession.workspaceId, workspaceId)
-          )
-        )
+        .where(and(eq(parlantSession.id, sessionId), eq(parlantSession.workspaceId, workspaceId)))
         .limit(1)
 
       if (session.length === 0) {
@@ -347,7 +336,7 @@ export class ChatPersistenceService {
       ]
 
       if (messageTypes && messageTypes.length > 0) {
-        conditions.push(or(...messageTypes.map(type => eq(parlantEvent.eventType, type))))
+        conditions.push(or(...messageTypes.map((type) => eq(parlantEvent.eventType, type))))
       }
 
       if (fromOffset !== undefined) {
@@ -400,7 +389,7 @@ export class ChatPersistenceService {
       })
 
       return {
-        data: events.map(event => ({
+        data: events.map((event) => ({
           id: event.id,
           sessionId: event.sessionId,
           agentId: event.agentId,
@@ -475,7 +464,7 @@ export class ChatPersistenceService {
       if (sessionId) conditions.push(eq(parlantEvent.sessionId, sessionId))
 
       if (messageType && messageType.length > 0) {
-        conditions.push(or(...messageType.map(type => eq(parlantEvent.eventType, type))))
+        conditions.push(or(...messageType.map((type) => eq(parlantEvent.eventType, type))))
       }
 
       if (dateFrom) conditions.push(gte(parlantEvent.createdAt, dateFrom))
@@ -524,7 +513,9 @@ export class ChatPersistenceService {
         .orderBy(
           sortOrder === 'desc'
             ? desc(sortBy === 'timestamp' ? parlantEvent.createdAt : parlantEvent.offset)
-            : (sortBy === 'timestamp' ? parlantEvent.createdAt : parlantEvent.offset)
+            : sortBy === 'timestamp'
+              ? parlantEvent.createdAt
+              : parlantEvent.offset
         )
         .limit(Math.min(limit, this.SEARCH_RESULTS_LIMIT))
         .offset(offset)
@@ -539,7 +530,7 @@ export class ChatPersistenceService {
       })
 
       return {
-        data: searchResults.map(result => ({
+        data: searchResults.map((result) => ({
           id: result.id,
           sessionId: result.sessionId,
           agentId: result.agentId,
@@ -654,15 +645,17 @@ export class ChatPersistenceService {
         .orderBy(
           sortOrder === 'desc'
             ? desc(
-                sortBy === 'started' ? parlantSession.startedAt :
-                sortBy === 'activity' ? parlantSession.lastActivityAt :
-                parlantSession.messageCount
+                sortBy === 'started'
+                  ? parlantSession.startedAt
+                  : sortBy === 'activity'
+                    ? parlantSession.lastActivityAt
+                    : parlantSession.messageCount
               )
-            : (
-                sortBy === 'started' ? parlantSession.startedAt :
-                sortBy === 'activity' ? parlantSession.lastActivityAt :
-                parlantSession.messageCount
-              )
+            : sortBy === 'started'
+              ? parlantSession.startedAt
+              : sortBy === 'activity'
+                ? parlantSession.lastActivityAt
+                : parlantSession.messageCount
         )
         .limit(limit)
         .offset(offset)
@@ -671,11 +664,14 @@ export class ChatPersistenceService {
       // This would be optimized with a more complex query in production
       const sessionSummaries: ChatSessionSummary[] = await Promise.all(
         summaries.map(async (summary) => {
-          const duration = summary.endedAt && summary.startedAt
-            ? Math.floor((summary.endedAt.getTime() - summary.startedAt.getTime()) / 1000)
-            : summary.lastActivityAt && summary.startedAt
-              ? Math.floor((summary.lastActivityAt.getTime() - summary.startedAt.getTime()) / 1000)
-              : undefined
+          const duration =
+            summary.endedAt && summary.startedAt
+              ? Math.floor((summary.endedAt.getTime() - summary.startedAt.getTime()) / 1000)
+              : summary.lastActivityAt && summary.startedAt
+                ? Math.floor(
+                    (summary.lastActivityAt.getTime() - summary.startedAt.getTime()) / 1000
+                  )
+                : undefined
 
           return {
             sessionId: summary.sessionId,
@@ -728,9 +724,7 @@ export class ChatPersistenceService {
   /**
    * Export chat data in various formats
    */
-  async exportChatData(
-    options: ChatExportOptions
-  ): Promise<{
+  async exportChatData(options: ChatExportOptions): Promise<{
     format: string
     data: string | Buffer
     filename: string
@@ -751,20 +745,23 @@ export class ChatPersistenceService {
         workspaceId: options.workspaceId,
         format: options.format,
         sessionIds: options.sessionIds?.length,
-        dateRange: options.dateFrom && options.dateTo ? `${options.dateFrom} to ${options.dateTo}` : undefined,
+        dateRange:
+          options.dateFrom && options.dateTo
+            ? `${options.dateFrom} to ${options.dateTo}`
+            : undefined,
       })
 
       // Build export query conditions
       const conditions = [eq(parlantSession.workspaceId, options.workspaceId)]
 
       if (options.sessionIds && options.sessionIds.length > 0) {
-        conditions.push(or(...options.sessionIds.map(id => eq(parlantSession.id, id))))
+        conditions.push(or(...options.sessionIds.map((id) => eq(parlantSession.id, id))))
       }
       if (options.agentIds && options.agentIds.length > 0) {
-        conditions.push(or(...options.agentIds.map(id => eq(parlantSession.agentId, id))))
+        conditions.push(or(...options.agentIds.map((id) => eq(parlantSession.agentId, id))))
       }
       if (options.userIds && options.userIds.length > 0) {
-        conditions.push(or(...options.userIds.map(id => eq(parlantSession.userId, id))))
+        conditions.push(or(...options.userIds.map((id) => eq(parlantSession.userId, id))))
       }
       if (options.dateFrom) conditions.push(gte(parlantEvent.createdAt, options.dateFrom))
       if (options.dateTo) conditions.push(lte(parlantEvent.createdAt, options.dateTo))
@@ -807,7 +804,7 @@ export class ChatPersistenceService {
         allExportData.push(...batch)
         offset += this.EXPORT_BATCH_SIZE
         messageCount += batch.length
-        sessionCount = new Set(batch.map(row => row.sessionId)).size
+        sessionCount = new Set(batch.map((row) => row.sessionId)).size
 
         if (options.maxSessions && sessionCount >= options.maxSessions) break
       }
@@ -885,9 +882,7 @@ export class ChatPersistenceService {
   /**
    * Archive old chat sessions based on retention policy
    */
-  async archiveChatSessions(
-    config: ChatArchivalConfig
-  ): Promise<{
+  async archiveChatSessions(config: ChatArchivalConfig): Promise<{
     archivedSessions: number
     archivedMessages: number
     deletedSessions: number
@@ -1075,7 +1070,8 @@ export class ChatPersistenceService {
       // Calculate averages
       const totalSessions = sessionStats?.totalSessions || 0
       const totalMessages = messageStats?.totalMessages || 0
-      const averageMessagesPerSession = totalSessions > 0 ? Math.round(totalMessages / totalSessions) : 0
+      const averageMessagesPerSession =
+        totalSessions > 0 ? Math.round(totalMessages / totalSessions) : 0
 
       // Get daily activity (last 30 days)
       const thirtyDaysAgo = new Date()
@@ -1114,16 +1110,21 @@ export class ChatPersistenceService {
         activeSessions: sessionStats?.activeSessions || 0,
         averageSessionDuration: 0, // Would need session duration calculation
         averageMessagesPerSession,
-        mostActiveAgent: mostActiveAgent ? {
-          agentId: mostActiveAgent.agentId,
-          name: mostActiveAgent.name,
-          sessionCount: mostActiveAgent.sessionCount,
-        } : undefined,
-        messageTypeBreakdown: messageTypeBreakdown.reduce((acc, item) => {
-          acc[item.eventType as ChatMessageType] = item.count
-          return acc
-        }, {} as Record<ChatMessageType, number>),
-        dailyActivity: dailyActivity.map(item => ({
+        mostActiveAgent: mostActiveAgent
+          ? {
+              agentId: mostActiveAgent.agentId,
+              name: mostActiveAgent.name,
+              sessionCount: mostActiveAgent.sessionCount,
+            }
+          : undefined,
+        messageTypeBreakdown: messageTypeBreakdown.reduce(
+          (acc, item) => {
+            acc[item.eventType as ChatMessageType] = item.count
+            return acc
+          },
+          {} as Record<ChatMessageType, number>
+        ),
+        dailyActivity: dailyActivity.map((item) => ({
           date: item.date,
           sessionCount: item.sessionCount,
           messageCount: item.messageCount,
@@ -1159,14 +1160,16 @@ export class ChatPersistenceService {
     const headers = Object.keys(data[0])
     const csvRows = [
       headers.join(','),
-      ...data.map(row =>
-        headers.map(header => {
-          const value = row[header]
-          if (value == null) return ''
-          if (typeof value === 'object') return `"${JSON.stringify(value).replace(/"/g, '""')}"`
-          return `"${String(value).replace(/"/g, '""')}"`
-        }).join(',')
-      )
+      ...data.map((row) =>
+        headers
+          .map((header) => {
+            const value = row[header]
+            if (value == null) return ''
+            if (typeof value === 'object') return `"${JSON.stringify(value).replace(/"/g, '""')}"`
+            return `"${String(value).replace(/"/g, '""')}"`
+          })
+          .join(',')
+      ),
     ]
     return csvRows.join('\n')
   }

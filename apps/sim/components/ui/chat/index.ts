@@ -5,68 +5,64 @@
  * hooks, types, and utilities for easy integration throughout Sim.
  */
 
+export { SimChatButton, SimChatContainer, SimpleSimChat } from './components/sim-chat-container'
 // Main Components
 export { SimChatWidget } from './components/sim-chat-widget'
-export { SimChatContainer, SimpleSimChat, SimChatButton } from './components/sim-chat-container'
-
-// Providers & Context
-export { SimChatProvider, useSimChat, useChatActions, useChatState, useChatConfig as useChatConfigContext } from './providers/sim-chat-provider'
-
-// Hooks
-export { default as useChatConfig, useChatTheme, useAgentConfig } from './hooks/use-chat-config'
-
-// Types
-export type {
-  // Core Types
-  SimChatWidgetConfig,
-  SimChatWidgetProps,
-  SimChatWidgetState,
-  SimChatWidgetActions,
-  SimChatContextValue,
-  SimChatProviderProps,
-  SimChatTheme,
-  SimBrandingConfig,
-
-  // Message & Interface Types
-  MessageInterface,
-  MessageComponentProps,
-  PopupButtonComponentProps,
-
-  // Parlant Integration Types
-  ParlantChatProps,
-  ParlantClassNames,
-  ParlantComponents,
-
-  // Configuration Types
-  WorkspaceIntegration,
-  AgentInfo,
-
-  // Analytics & Logging Types
-  ChatAnalyticsEvent,
-  ChatLogEntry,
-
-  // Error Types
-  ChatWidgetError,
-  ChatErrorDetails,
-} from './types/parlant-widget.types'
-
 // Configuration Utilities
 export {
+  createThemeCSS,
   // Default Configuration
   DEFAULT_WIDGET_CONFIG,
-  WIDGET_SIZES,
-  WIDGET_POSITIONS,
-
-  // Configuration Functions
-  mergeWithDefaults,
-  validateWidgetConfig,
   generateTailwindClasses,
   generateThemeCSSProperties,
   getEnvironmentConfig,
   getPositionStyles,
   getSizeStyles,
-  createThemeCSS,
+  // Configuration Functions
+  mergeWithDefaults,
+  validateWidgetConfig,
+  WIDGET_POSITIONS,
+  WIDGET_SIZES,
 } from './config/widget-config'
+// Hooks
+export { default as useChatConfig, useAgentConfig, useChatTheme } from './hooks/use-chat-config'
+// Providers & Context
+export {
+  SimChatProvider,
+  useChatActions,
+  useChatConfig as useChatConfigContext,
+  useChatState,
+  useSimChat,
+} from './providers/sim-chat-provider'
+// Types
+export type {
+  AgentInfo,
+  // Analytics & Logging Types
+  ChatAnalyticsEvent,
+  ChatErrorDetails,
+  ChatLogEntry,
+  // Error Types
+  ChatWidgetError,
+  MessageComponentProps,
+  // Message & Interface Types
+  MessageInterface,
+  // Parlant Integration Types
+  ParlantChatProps,
+  ParlantClassNames,
+  ParlantComponents,
+  PopupButtonComponentProps,
+  SimBrandingConfig,
+  SimChatContextValue,
+  SimChatProviderProps,
+  SimChatTheme,
+  SimChatWidgetActions,
+  // Core Types
+  SimChatWidgetConfig,
+  SimChatWidgetProps,
+  SimChatWidgetState,
+  // Configuration Types
+  WorkspaceIntegration,
+} from './types/parlant-widget.types'
 
 // CSS Theme Import
 // Note: Import this CSS file in your app's main CSS file or layout

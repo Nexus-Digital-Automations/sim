@@ -10,8 +10,8 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
-import { parlantSession, parlantEvent, parlantAgent } from './parlant-schema'
-import { workspace, user } from './schema'
+import { parlantEvent, parlantSession } from './parlant-schema'
+import { user, workspace } from './schema'
 
 /**
  * Chat Persistence Schema Extension
@@ -33,7 +33,7 @@ export const messageStatusEnum = pgEnum('message_status', [
   'sent',
   'delivered',
   'read',
-  'failed'
+  'failed',
 ])
 
 export const conversationTypeEnum = pgEnum('conversation_type', [
@@ -41,7 +41,7 @@ export const conversationTypeEnum = pgEnum('conversation_type', [
   'group',
   'workflow',
   'support',
-  'onboarding'
+  'onboarding',
 ])
 
 export const messageTypeEnum = pgEnum('message_type', [
@@ -51,7 +51,7 @@ export const messageTypeEnum = pgEnum('message_type', [
   'system',
   'error',
   'media',
-  'file'
+  'file',
 ])
 
 /**
@@ -70,8 +70,7 @@ export const chatMessage = pgTable(
       .references(() => workspace.id, { onDelete: 'cascade' }),
 
     // Message identification and ordering
-    eventId: uuid('event_id')
-      .references(() => parlantEvent.id, { onDelete: 'cascade' }), // Link to underlying event
+    eventId: uuid('event_id').references(() => parlantEvent.id, { onDelete: 'cascade' }), // Link to underlying event
     sequenceNumber: integer('sequence_number').notNull(), // Sequential ordering within session
 
     // Message content and metadata
@@ -149,19 +148,13 @@ export const chatMessage = pgTable(
 
     // Message status and delivery tracking
     statusIdx: index('chat_message_status_idx').on(table.status),
-    sessionStatusIdx: index('chat_message_session_status_idx').on(
-      table.sessionId,
-      table.status
-    ),
+    sessionStatusIdx: index('chat_message_session_status_idx').on(table.sessionId, table.status),
     deliveredAtIdx: index('chat_message_delivered_at_idx').on(table.deliveredAt),
 
     // Threading and conversation context
     threadIdx: index('chat_message_thread_idx').on(table.threadId),
     parentMessageIdx: index('chat_message_parent_idx').on(table.parentMessageId),
-    threadCreatedIdx: index('chat_message_thread_created_idx').on(
-      table.threadId,
-      table.createdAt
-    ),
+    threadCreatedIdx: index('chat_message_thread_created_idx').on(table.threadId, table.createdAt),
 
     // Sender-based queries
     senderTypeIdx: index('chat_message_sender_type_idx').on(table.senderType),
@@ -173,10 +166,7 @@ export const chatMessage = pgTable(
 
     // Message type filtering
     messageTypeIdx: index('chat_message_type_idx').on(table.messageType),
-    sessionTypeIdx: index('chat_message_session_type_idx').on(
-      table.sessionId,
-      table.messageType
-    ),
+    sessionTypeIdx: index('chat_message_session_type_idx').on(table.sessionId, table.messageType),
 
     // Tool integration indexes
     toolCallIdx: index('chat_message_tool_call_idx').on(table.toolCallId),
@@ -192,10 +182,7 @@ export const chatMessage = pgTable(
 
     // Soft delete filtering
     deletedAtIdx: index('chat_message_deleted_at_idx').on(table.deletedAt),
-    activeSessionIdx: index('chat_message_active_session_idx').on(
-      table.sessionId,
-      table.deletedAt
-    ),
+    activeSessionIdx: index('chat_message_active_session_idx').on(table.sessionId, table.deletedAt),
   })
 )
 
@@ -219,8 +206,7 @@ export const chatConversation = pgTable(
     // Participant management
     participantIds: text('participant_ids').array().default([]), // User IDs
     agentIds: uuid('agent_ids').array().default([]), // Agent IDs participating
-    createdBy: text('created_by')
-      .references(() => user.id, { onDelete: 'set null' }),
+    createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
 
     // Conversation state and settings
     isActive: boolean('is_active').notNull().default(true),
@@ -238,8 +224,9 @@ export const chatConversation = pgTable(
     lastActivityAt: timestamp('last_activity_at'),
 
     // Session management
-    currentSessionId: uuid('current_session_id')
-      .references(() => parlantSession.id, { onDelete: 'set null' }),
+    currentSessionId: uuid('current_session_id').references(() => parlantSession.id, {
+      onDelete: 'set null',
+    }),
     sessionIds: uuid('session_ids').array().default([]), // All associated session IDs
 
     // Conversation metadata
@@ -327,12 +314,13 @@ export const chatBrowserSession = pgTable(
     workspaceId: text('workspace_id')
       .notNull()
       .references(() => workspace.id, { onDelete: 'cascade' }),
-    userId: text('user_id')
-      .references(() => user.id, { onDelete: 'cascade' }),
-    conversationId: uuid('conversation_id')
-      .references(() => chatConversation.id, { onDelete: 'cascade' }),
-    parlantSessionId: uuid('parlant_session_id')
-      .references(() => parlantSession.id, { onDelete: 'cascade' }),
+    userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+    conversationId: uuid('conversation_id').references(() => chatConversation.id, {
+      onDelete: 'cascade',
+    }),
+    parlantSessionId: uuid('parlant_session_id').references(() => parlantSession.id, {
+      onDelete: 'cascade',
+    }),
 
     // Session state persistence
     chatState: jsonb('chat_state').notNull().default('{}'), // Full chat interface state
@@ -377,10 +365,7 @@ export const chatBrowserSession = pgTable(
       table.workspaceId,
       table.isActive
     ),
-    userActiveIdx: index('chat_browser_session_user_active_idx').on(
-      table.userId,
-      table.isActive
-    ),
+    userActiveIdx: index('chat_browser_session_user_active_idx').on(table.userId, table.isActive),
 
     // Session state queries
     conversationSessionIdx: index('chat_browser_session_conversation_idx').on(
@@ -428,8 +413,9 @@ export const chatSearchIndex = pgTable(
     workspaceId: text('workspace_id')
       .notNull()
       .references(() => workspace.id, { onDelete: 'cascade' }),
-    conversationId: uuid('conversation_id')
-      .references(() => chatConversation.id, { onDelete: 'cascade' }),
+    conversationId: uuid('conversation_id').references(() => chatConversation.id, {
+      onDelete: 'cascade',
+    }),
     sessionId: uuid('session_id')
       .notNull()
       .references(() => parlantSession.id, { onDelete: 'cascade' }),
@@ -474,10 +460,7 @@ export const chatSearchIndex = pgTable(
       table.conversationId,
       table.searchableContent
     ),
-    sessionSearchIdx: index('chat_search_session_idx').on(
-      table.sessionId,
-      table.searchableContent
-    ),
+    sessionSearchIdx: index('chat_search_session_idx').on(table.sessionId, table.searchableContent),
 
     // Keyword and entity search
     keywordsIdx: index('chat_search_keywords_idx').on(table.keywords),
@@ -574,10 +557,7 @@ export const chatExportRequest = pgTable(
 
     // Status and processing tracking
     statusIdx: index('chat_export_status_idx').on(table.status),
-    processingIdx: index('chat_export_processing_idx').on(
-      table.status,
-      table.processingStartedAt
-    ),
+    processingIdx: index('chat_export_processing_idx').on(table.status, table.processingStartedAt),
 
     // Cleanup and maintenance
     expiresAtIdx: index('chat_export_expires_at_idx').on(table.expiresAt),

@@ -1,8 +1,8 @@
+import { db } from '@sim/db'
+import { member } from '@sim/db/schema'
+import { and, eq } from 'drizzle-orm'
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
-import { db } from '@sim/db'
-import { and, eq } from 'drizzle-orm'
-import { member } from '@sim/db/schema'
 import { ChatHistory } from '../components/chat-history'
 
 interface ChatHistoryPageProps {
@@ -27,9 +27,7 @@ export default async function ChatHistoryPage({ params, searchParams }: ChatHist
   const membership = await db
     .select()
     .from(member)
-    .where(
-      and(eq(member.userId, session.user.id), eq(member.organizationId, workspaceId))
-    )
+    .where(and(eq(member.userId, session.user.id), eq(member.organizationId, workspaceId)))
     .limit(1)
 
   if (membership.length === 0) {
@@ -39,17 +37,15 @@ export default async function ChatHistoryPage({ params, searchParams }: ChatHist
   return (
     <div className='container mx-auto py-8'>
       <div className='mb-8'>
-        <h1 className='text-3xl font-bold tracking-tight'>Chat History</h1>
-        <p className='text-muted-foreground mt-2'>
-          Browse and search your past conversations
-        </p>
+        <h1 className='font-bold text-3xl tracking-tight'>Chat History</h1>
+        <p className='mt-2 text-muted-foreground'>Browse and search your past conversations</p>
       </div>
 
       <ChatHistory
         workspaceId={workspaceId}
         userId={session.user.id}
         agentFilter={agentFilter}
-        currentPage={parseInt(page)}
+        currentPage={Number.parseInt(page)}
       />
     </div>
   )

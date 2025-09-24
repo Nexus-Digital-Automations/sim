@@ -4,7 +4,7 @@
 
 'use client'
 
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, type ReactNode, useContext } from 'react'
 import { useChatConnection, useChatWidget } from './hooks'
 import type { SimChatConfig, SimChatContextType } from './types'
 
@@ -27,11 +27,7 @@ export default function ParlantChatProvider({ children, config }: ParlantChatPro
     ...connection,
   }
 
-  return (
-    <SimChatContext.Provider value={contextValue}>
-      {children}
-    </SimChatContext.Provider>
-  )
+  return <SimChatContext.Provider value={contextValue}>{children}</SimChatContext.Provider>
 }
 
 /**

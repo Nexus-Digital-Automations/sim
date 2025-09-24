@@ -13,11 +13,9 @@ export default async function WorkspaceChatPage({ params }: WorkspaceChatPagePro
 
   return (
     <div className='flex h-full items-center justify-center'>
-      <div className='max-w-2xl mx-auto text-center'>
-        <h1 className='text-3xl font-bold tracking-tight mb-6'>
-          Welcome to Sim Chat
-        </h1>
-        <p className='text-lg text-muted-foreground mb-8'>
+      <div className='mx-auto max-w-2xl text-center'>
+        <h1 className='mb-6 font-bold text-3xl tracking-tight'>Welcome to Sim Chat</h1>
+        <p className='mb-8 text-lg text-muted-foreground'>
           Choose an agent to start a conversation or create a new one
         </p>
         <AgentSelector workspaceId={workspaceId} />

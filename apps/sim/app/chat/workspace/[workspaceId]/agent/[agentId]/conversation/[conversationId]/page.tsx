@@ -1,11 +1,11 @@
+import { db } from '@sim/db'
+import { member } from '@sim/db/schema'
+import { and, eq } from 'drizzle-orm'
 import { notFound, redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
-import { db } from '@sim/db'
-import { and, eq } from 'drizzle-orm'
-import { member } from '@sim/db/schema'
-import { ParlantChatInterface } from '../components/parlant-chat-interface'
 import { getAgentById, getUserCanAccessAgent } from '@/lib/parlant/agents'
 import { getConversationById, getUserCanAccessConversation } from '@/lib/parlant/conversations'
+import { ParlantChatInterface } from '../components/parlant-chat-interface'
 
 interface ConversationPageProps {
   params: Promise<{
@@ -31,9 +31,7 @@ export default async function ConversationPage({ params }: ConversationPageProps
   const membership = await db
     .select()
     .from(member)
-    .where(
-      and(eq(member.userId, session.user.id), eq(member.organizationId, workspaceId))
-    )
+    .where(and(eq(member.userId, session.user.id), eq(member.organizationId, workspaceId)))
     .limit(1)
 
   if (membership.length === 0) {

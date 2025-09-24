@@ -6,9 +6,10 @@
  */
 
 export { AgentCard } from './agent-card'
-export { AgentSearch } from './agent-search'
 export { AgentProfileModal } from './agent-profile-modal'
-export { AgentSelectionInterface } from './agent-selection-interface'
-
+export { AgentSearch } from './agent-search'
 // Export default as the main interface component
-export { AgentSelectionInterface as default } from './agent-selection-interface'
+export {
+  AgentSelectionInterface,
+  AgentSelectionInterface as default,
+} from './agent-selection-interface'

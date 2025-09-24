@@ -17,15 +17,9 @@
  * - Workflow orchestration across agents
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import { EventEmitter } from 'events'
-import type {
-  Agent,
-  Session,
-  AuthContext,
-  Event,
-  EventType
-} from '../types'
+import { createLogger } from '@/lib/logs/console/logger'
+import type { AuthContext, Event } from '../types'
 import type { AgentSessionContext } from './agent-session-manager'
 import { agentSessionManager } from './agent-session-manager'
 
@@ -122,7 +116,13 @@ export interface WorkflowStep {
 export interface HandoffTrigger {
   id: string
   name: string
-  condition: 'keyword_detected' | 'complexity_threshold' | 'user_request' | 'error_rate' | 'timeout' | 'workload'
+  condition:
+    | 'keyword_detected'
+    | 'complexity_threshold'
+    | 'user_request'
+    | 'error_rate'
+    | 'timeout'
+    | 'workload'
   parameters: Record<string, any>
   targetSpecialization: AgentSpecialization
   priority: number
@@ -223,14 +223,14 @@ export class MultiAgentCoordinator extends EventEmitter {
     logger.info(`Creating agent team`, {
       name: teamConfig.name,
       workspaceId: teamConfig.workspaceId,
-      memberCount: teamConfig.members.length
+      memberCount: teamConfig.members.length,
     })
 
     const team: AgentTeam = {
       id: `team_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date(),
       lastModified: new Date(),
-      ...teamConfig
+      ...teamConfig,
     }
 
     // Validate team members
@@ -244,7 +244,7 @@ export class MultiAgentCoordinator extends EventEmitter {
       handoffsBySpecialization: {} as Record<AgentSpecialization, number>,
       teamEfficiency: 1.0,
       userSatisfactionScore: 0,
-      escalationRate: 0
+      escalationRate: 0,
     })
 
     // Store team
@@ -259,7 +259,7 @@ export class MultiAgentCoordinator extends EventEmitter {
     logger.info(`Agent team created successfully`, {
       teamId: team.id,
       name: team.name,
-      memberCount: team.members.length
+      memberCount: team.members.length,
     })
 
     return team
@@ -298,7 +298,11 @@ export class MultiAgentCoordinator extends EventEmitter {
       )
 
       // Find best available agent
-      const bestAgent = await this.findBestAvailableAgent(team, requiredSpecialization, context.urgency)
+      const bestAgent = await this.findBestAvailableAgent(
+        team,
+        requiredSpecialization,
+        context.urgency
+      )
 
       if (!bestAgent) {
         throw new Error('No available agents in team')
@@ -311,7 +315,7 @@ export class MultiAgentCoordinator extends EventEmitter {
         primaryAgentId: bestAgent.agentId,
         specialization: bestAgent.specialization,
         context,
-        auth
+        auth,
       })
 
       // Update workload
@@ -324,20 +328,19 @@ export class MultiAgentCoordinator extends EventEmitter {
         teamId,
         sessionId,
         agentId: bestAgent.agentId,
-        specialization: bestAgent.specialization
+        specialization: bestAgent.specialization,
       })
 
       return {
         assignedAgentId: bestAgent.agentId,
         specialization: bestAgent.specialization,
-        estimatedResponseTime: this.estimateResponseTime(bestAgent)
+        estimatedResponseTime: this.estimateResponseTime(bestAgent),
       }
-
     } catch (error) {
       logger.error(`Failed to assign session to team`, {
         teamId,
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -373,8 +376,12 @@ export class MultiAgentCoordinator extends EventEmitter {
     try {
       // Find target agent
       const targetAgent = handoffRequest.targetAgentId
-        ? team.members.find(m => m.agentId === handoffRequest.targetAgentId)
-        : await this.findBestAvailableAgent(team, handoffRequest.targetSpecialization, handoffRequest.urgency)
+        ? team.members.find((m) => m.agentId === handoffRequest.targetAgentId)
+        : await this.findBestAvailableAgent(
+            team,
+            handoffRequest.targetSpecialization,
+            handoffRequest.urgency
+          )
 
       if (!targetAgent) {
         throw new Error('No suitable target agent found for handoff')
@@ -388,8 +395,8 @@ export class MultiAgentCoordinator extends EventEmitter {
           customMetadata: {
             handoff_from: coordination.primaryAgentId,
             handoff_reason: handoffRequest.reason,
-            original_session: sessionId
-          }
+            original_session: sessionId,
+          },
         }
       )
 
@@ -407,10 +414,10 @@ export class MultiAgentCoordinator extends EventEmitter {
         metadata: {
           urgency: handoffRequest.urgency,
           team_id: team.id,
-          handoff_type: 'manual'
+          handoff_type: 'manual',
         },
         handoffAt: new Date(),
-        success: false
+        success: false,
       }
 
       // Execute handoff
@@ -436,22 +443,21 @@ export class MultiAgentCoordinator extends EventEmitter {
         sessionId,
         fromAgent: handoffContext.fromAgentId,
         toAgent: handoffContext.toAgentId,
-        reason: handoffRequest.reason
+        reason: handoffRequest.reason,
       })
 
       // Emit handoff event
       this.emit('handoff:completed', {
         sessionId,
         handoffContext,
-        team
+        team,
       })
 
       return handoffContext
-
     } catch (error) {
       logger.error(`Failed to complete agent handoff`, {
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -486,7 +492,7 @@ export class MultiAgentCoordinator extends EventEmitter {
       return { shouldHandoff: false, confidence: 0, reason: 'Team not found' }
     }
 
-    const currentAgent = team.members.find(m => m.agentId === coordination.primaryAgentId)
+    const currentAgent = team.members.find((m) => m.agentId === coordination.primaryAgentId)
     if (!currentAgent) {
       return { shouldHandoff: false, confidence: 0, reason: 'Current agent not found' }
     }
@@ -495,17 +501,19 @@ export class MultiAgentCoordinator extends EventEmitter {
     for (const trigger of currentAgent.handoffTriggers) {
       if (!trigger.active) continue
 
-      const triggerResult = await this.evaluateHandoffTrigger(
-        trigger,
-        { sessionId, recentMessages, currentPerformance, currentAgent }
-      )
+      const triggerResult = await this.evaluateHandoffTrigger(trigger, {
+        sessionId,
+        recentMessages,
+        currentPerformance,
+        currentAgent,
+      })
 
       if (triggerResult.shouldTrigger) {
         return {
           shouldHandoff: true,
           recommendedSpecialization: trigger.targetSpecialization,
           confidence: triggerResult.confidence,
-          reason: `Auto-handoff triggered: ${trigger.name}`
+          reason: `Auto-handoff triggered: ${trigger.name}`,
         }
       }
     }
@@ -550,7 +558,7 @@ export class MultiAgentCoordinator extends EventEmitter {
       escalationId,
       sessionId,
       coordination,
-      request: escalationRequest
+      request: escalationRequest,
     })
 
     logger.info(`Escalation created`, { escalationId, sessionId })
@@ -558,7 +566,7 @@ export class MultiAgentCoordinator extends EventEmitter {
     return {
       escalationId,
       estimatedWaitTime: this.calculateHumanWaitTime(escalationRequest.urgency),
-      status: 'queued'
+      status: 'queued',
     }
   }
 
@@ -573,8 +581,9 @@ export class MultiAgentCoordinator extends EventEmitter {
    * Get all active coordinations for a team
    */
   public getActiveCoordinations(teamId: string): CoordinationSession[] {
-    return Array.from(this.activeCoordinations.values())
-      .filter(coord => coord.teamId === teamId && coord.status === 'active')
+    return Array.from(this.activeCoordinations.values()).filter(
+      (coord) => coord.teamId === teamId && coord.status === 'active'
+    )
   }
 
   // Private helper methods
@@ -599,7 +608,11 @@ export class MultiAgentCoordinator extends EventEmitter {
     if (keywords.includes('technical') || keywords.includes('error') || keywords.includes('bug')) {
       return 'technical_support'
     }
-    if (keywords.includes('billing') || keywords.includes('payment') || keywords.includes('invoice')) {
+    if (
+      keywords.includes('billing') ||
+      keywords.includes('payment') ||
+      keywords.includes('invoice')
+    ) {
       return 'customer_service'
     }
     if (keywords.includes('code') || keywords.includes('programming') || keywords.includes('api')) {
@@ -615,7 +628,7 @@ export class MultiAgentCoordinator extends EventEmitter {
     urgency: 'low' | 'medium' | 'high' = 'medium'
   ): Promise<AgentTeamMember | undefined> {
     // Filter by specialization and availability
-    let candidates = team.members.filter(member => {
+    let candidates = team.members.filter((member) => {
       const isAvailable = this.agentAvailability.get(member.agentId) === 'available'
       const hasCapacity = (this.workloadTracking.get(member.agentId) || 0) < member.maxWorkload
       const matchesSpecialization = !specialization || member.specialization === specialization
@@ -625,7 +638,7 @@ export class MultiAgentCoordinator extends EventEmitter {
 
     if (candidates.length === 0 && specialization) {
       // Fallback to general agents if no specialists available
-      candidates = team.members.filter(member => {
+      candidates = team.members.filter((member) => {
         const isAvailable = this.agentAvailability.get(member.agentId) === 'available'
         const hasCapacity = (this.workloadTracking.get(member.agentId) || 0) < member.maxWorkload
         return isAvailable && hasCapacity && member.specialization === 'general'
@@ -667,7 +680,7 @@ export class MultiAgentCoordinator extends EventEmitter {
       createdAt: new Date(),
       handoffHistory: [],
       escalated: false,
-      metadata: config.context.metadata || {}
+      metadata: config.context.metadata || {},
     }
 
     this.activeCoordinations.set(coordination.id, coordination)
@@ -675,18 +688,24 @@ export class MultiAgentCoordinator extends EventEmitter {
   }
 
   private findCoordinationBySession(sessionId: string): CoordinationSession | undefined {
-    return Array.from(this.activeCoordinations.values())
-      .find(coord => coord.sessionId === sessionId)
+    return Array.from(this.activeCoordinations.values()).find(
+      (coord) => coord.sessionId === sessionId
+    )
   }
 
-  private async generateConversationSummary(session: AgentSessionContext | undefined): Promise<string> {
+  private async generateConversationSummary(
+    session: AgentSessionContext | undefined
+  ): Promise<string> {
     if (!session || session.conversationHistory.length === 0) {
       return 'No conversation history available.'
     }
 
     const recentMessages = session.conversationHistory.slice(-10)
     const summary = recentMessages
-      .map(event => `${event.source}: ${typeof event.content === 'string' ? event.content : JSON.stringify(event.content)}`)
+      .map(
+        (event) =>
+          `${event.source}: ${typeof event.content === 'string' ? event.content : JSON.stringify(event.content)}`
+      )
       .join('\n')
 
     return `Recent conversation:\n${summary}`
@@ -706,13 +725,12 @@ export class MultiAgentCoordinator extends EventEmitter {
 
       logger.info(`Handoff executed successfully`, {
         fromAgent: handoffContext.fromAgentId,
-        toAgent: handoffContext.toAgentId
+        toAgent: handoffContext.toAgentId,
       })
-
     } catch (error) {
       handoffContext.success = false
       logger.error(`Failed to execute handoff`, {
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -728,38 +746,44 @@ export class MultiAgentCoordinator extends EventEmitter {
     }
   ): Promise<{ shouldTrigger: boolean; confidence: number }> {
     switch (trigger.condition) {
-      case 'keyword_detected':
+      case 'keyword_detected': {
         const keywords = trigger.parameters.keywords as string[]
-        const hasKeywords = context.recentMessages.some(msg =>
-          keywords.some(keyword =>
-            typeof msg.content === 'string' && msg.content.toLowerCase().includes(keyword.toLowerCase())
+        const hasKeywords = context.recentMessages.some((msg) =>
+          keywords.some(
+            (keyword) =>
+              typeof msg.content === 'string' &&
+              msg.content.toLowerCase().includes(keyword.toLowerCase())
           )
         )
         return { shouldTrigger: hasKeywords, confidence: hasKeywords ? 0.8 : 0 }
+      }
 
-      case 'complexity_threshold':
+      case 'complexity_threshold': {
         const complexityScore = this.calculateComplexityScore(context.recentMessages)
         const threshold = trigger.parameters.threshold as number
         return {
           shouldTrigger: complexityScore > threshold,
-          confidence: Math.min(complexityScore / threshold, 1)
+          confidence: Math.min(complexityScore / threshold, 1),
         }
+      }
 
-      case 'error_rate':
+      case 'error_rate': {
         const errorRate = context.currentPerformance.errorRate
         const maxErrorRate = trigger.parameters.maxErrorRate as number
         return {
           shouldTrigger: errorRate > maxErrorRate,
-          confidence: Math.min(errorRate / maxErrorRate, 1)
+          confidence: Math.min(errorRate / maxErrorRate, 1),
         }
+      }
 
-      case 'workload':
+      case 'workload': {
         const currentWorkload = this.workloadTracking.get(context.currentAgent.agentId) || 0
         const maxWorkload = context.currentAgent.maxWorkload
         return {
           shouldTrigger: currentWorkload >= maxWorkload,
-          confidence: currentWorkload / maxWorkload
+          confidence: currentWorkload / maxWorkload,
         }
+      }
 
       default:
         return { shouldTrigger: false, confidence: 0 }
@@ -774,9 +798,12 @@ export class MultiAgentCoordinator extends EventEmitter {
     for (const message of messages) {
       if (typeof message.content === 'string') {
         score += message.content.length / 100 // Length factor
-        score += technicalTerms.reduce((count, term) =>
-          count + (message.content as string).toLowerCase().split(term).length - 1, 0
-        ) * 0.5 // Technical term factor
+        score +=
+          technicalTerms.reduce(
+            (count, term) =>
+              count + (message.content as string).toLowerCase().split(term).length - 1,
+            0
+          ) * 0.5 // Technical term factor
       }
     }
 
@@ -790,8 +817,8 @@ export class MultiAgentCoordinator extends EventEmitter {
 
     // Update availability based on workload
     const agent = Array.from(this.teams.values())
-      .flatMap(team => team.members)
-      .find(member => member.agentId === agentId)
+      .flatMap((team) => team.members)
+      .find((member) => member.agentId === agentId)
 
     if (agent) {
       if (newWorkload >= agent.maxWorkload) {
@@ -815,7 +842,9 @@ export class MultiAgentCoordinator extends EventEmitter {
 
     if (handoffContext.completedAt) {
       const handoffTime = handoffContext.completedAt.getTime() - handoffContext.handoffAt.getTime()
-      metrics.averageHandoffTime = (metrics.averageHandoffTime * (metrics.totalHandoffs - 1) + handoffTime) / metrics.totalHandoffs
+      metrics.averageHandoffTime =
+        (metrics.averageHandoffTime * (metrics.totalHandoffs - 1) + handoffTime) /
+        metrics.totalHandoffs
     }
 
     this.coordinationMetrics.set(teamId, metrics)
@@ -829,10 +858,10 @@ export class MultiAgentCoordinator extends EventEmitter {
 
   private calculateHumanWaitTime(urgency: string): number {
     const baseTimes = {
-      'low': 3600000, // 1 hour
-      'medium': 1800000, // 30 minutes
-      'high': 900000, // 15 minutes
-      'critical': 300000 // 5 minutes
+      low: 3600000, // 1 hour
+      medium: 1800000, // 30 minutes
+      high: 900000, // 15 minutes
+      critical: 300000, // 5 minutes
     }
     return baseTimes[urgency as keyof typeof baseTimes] || baseTimes.medium
   }

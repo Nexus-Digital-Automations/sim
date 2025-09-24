@@ -17,15 +17,9 @@
  * - Automated performance reporting
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import { EventEmitter } from 'events'
-import type {
-  Agent,
-  Session,
-  Event,
-  AuthContext
-} from '../types'
-import type { AgentSessionContext } from './agent-session-manager'
+import { createLogger } from '@/lib/logs/console/logger'
+import type { Event } from '../types'
 
 const logger = createLogger('AgentPerformanceMonitor')
 
@@ -215,7 +209,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
       agentId: dataPoint.agentId,
       metric: dataPoint.metric,
       value: dataPoint.value,
-      category: dataPoint.category
+      category: dataPoint.category,
     })
   }
 
@@ -233,7 +227,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
     } = {
       trackResponseTime: true,
       trackQuality: true,
-      trackSatisfaction: false
+      trackSatisfaction: false,
     }
   ): void {
     logger.info(`Starting session monitoring`, { sessionId, agentId })
@@ -250,7 +244,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
       userEngagement: 0,
       goalAchievement: 0,
       overallQualityScore: 0,
-      qualityFactors: []
+      qualityFactors: [],
     })
 
     // Set up real-time monitoring
@@ -264,7 +258,9 @@ export class AgentPerformanceMonitor extends EventEmitter {
   /**
    * Stop monitoring a session and calculate final metrics
    */
-  public async stopSessionMonitoring(sessionId: string): Promise<ConversationQualityMetrics | null> {
+  public async stopSessionMonitoring(
+    sessionId: string
+  ): Promise<ConversationQualityMetrics | null> {
     logger.info(`Stopping session monitoring`, { sessionId })
 
     // Clear monitoring interval
@@ -287,12 +283,12 @@ export class AgentPerformanceMonitor extends EventEmitter {
         metric: 'overall_quality_score',
         value: qualityMetrics.overallQualityScore,
         unit: 'score',
-        metadata: { final_assessment: true }
+        metadata: { final_assessment: true },
       })
 
       logger.info(`Session monitoring completed`, {
         sessionId,
-        overallQualityScore: qualityMetrics.overallQualityScore
+        overallQualityScore: qualityMetrics.overallQualityScore,
       })
     }
 
@@ -348,7 +344,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
         professionalismScore,
         responseTimeConsistency,
         userEngagement,
-        goalAchievement
+        goalAchievement,
       })
 
       // Generate quality factors
@@ -359,7 +355,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
         professionalismScore,
         responseTimeConsistency,
         userEngagement,
-        goalAchievement
+        goalAchievement,
       })
 
       // Update metrics
@@ -373,7 +369,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
         userEngagement,
         goalAchievement,
         overallQualityScore,
-        qualityFactors
+        qualityFactors,
       }
 
       this.qualityMetrics.set(sessionId, updatedMetrics)
@@ -391,16 +387,15 @@ export class AgentPerformanceMonitor extends EventEmitter {
           coherence: coherenceScore,
           relevance: relevanceScore,
           helpfulness: helpfulnessScore,
-          professionalism: professionalismScore
-        }
+          professionalism: professionalismScore,
+        },
       })
 
       return updatedMetrics
-
     } catch (error) {
       logger.error(`Failed to analyze conversation quality`, {
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -420,12 +415,12 @@ export class AgentPerformanceMonitor extends EventEmitter {
       '1h': 60 * 60 * 1000,
       '24h': 24 * 60 * 60 * 1000,
       '7d': 7 * 24 * 60 * 60 * 1000,
-      '30d': 30 * 24 * 60 * 60 * 1000
+      '30d': 30 * 24 * 60 * 60 * 1000,
     }
 
     const cutoff = new Date(now.getTime() - timeframes[timeframe])
     const agentMetrics = this.metrics.get(agentId) || []
-    const recentMetrics = agentMetrics.filter(m => m.timestamp >= cutoff)
+    const recentMetrics = agentMetrics.filter((m) => m.timestamp >= cutoff)
 
     // Calculate summary statistics
     const summary: AgentPerformanceSummary = {
@@ -441,7 +436,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
       conversationQualityScore: this.calculateAverageMetric(recentMetrics, 'conversation_quality'),
       trendAnalysis: this.calculateTrendAnalysis(agentId, recentMetrics),
       recommendations: this.generateRecommendations(agentId, recentMetrics),
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     }
 
     this.summaries.set(agentId, summary)
@@ -450,7 +445,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
       agentId,
       totalSessions: summary.totalSessions,
       avgResponseTime: summary.averageResponseTime,
-      satisfactionScore: summary.userSatisfactionScore
+      satisfactionScore: summary.userSatisfactionScore,
     })
 
     return summary
@@ -459,7 +454,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
   /**
    * Get SLA compliance metrics
    */
-  public getSLAMetrics(agentId: string, period: string = 'current_month'): SLAMetrics | undefined {
+  public getSLAMetrics(agentId: string, period = 'current_month'): SLAMetrics | undefined {
     return this.slaMetrics.get(agentId)
   }
 
@@ -470,7 +465,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
     const alertId = `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     const fullAlert: PerformanceAlert = {
       id: alertId,
-      ...alert
+      ...alert,
     }
 
     this.alerts.set(alertId, fullAlert)
@@ -479,7 +474,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
       alertId,
       metric: alert.metric,
       threshold: alert.threshold,
-      severity: alert.severity
+      severity: alert.severity,
     })
 
     return alertId
@@ -502,8 +497,9 @@ export class AgentPerformanceMonitor extends EventEmitter {
     const insights = this.generateInsights(summary)
     const optimizations = this.generateOptimizations(summary)
     const trends = this.generateTrendInsights(summary.trendAnalysis)
-    const agentAlerts = Array.from(this.alerts.values())
-      .filter(alert => !alert.agentId || alert.agentId === agentId)
+    const agentAlerts = Array.from(this.alerts.values()).filter(
+      (alert) => !alert.agentId || alert.agentId === agentId
+    )
 
     return { insights, optimizations, trends, alerts: agentAlerts }
   }
@@ -517,7 +513,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
       user_satisfaction: 4.0, // out of 5
       goal_completion: 0.8, // 80%
       error_rate: 0.05, // 5%
-      escalation_rate: 0.1 // 10%
+      escalation_rate: 0.1, // 10%
     })
   }
 
@@ -532,11 +528,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
     logger.debug('Global monitoring started')
   }
 
-  private collectSessionMetrics(
-    sessionId: string,
-    agentId: string,
-    options: any
-  ): void {
+  private collectSessionMetrics(sessionId: string, agentId: string, options: any): void {
     // Collect real-time metrics during session
     const currentTime = new Date()
 
@@ -551,7 +543,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
         metric: 'current_response_time',
         value: responseTime,
         unit: 'ms',
-        metadata: { realtime: true }
+        metadata: { realtime: true },
       })
     }
 
@@ -560,7 +552,9 @@ export class AgentPerformanceMonitor extends EventEmitter {
     }
   }
 
-  private async calculateFinalQualityMetrics(sessionId: string): Promise<ConversationQualityMetrics | null> {
+  private async calculateFinalQualityMetrics(
+    sessionId: string
+  ): Promise<ConversationQualityMetrics | null> {
     const metrics = this.qualityMetrics.get(sessionId)
     if (!metrics) return null
 
@@ -574,12 +568,14 @@ export class AgentPerformanceMonitor extends EventEmitter {
     let coherenceScore = 0.8
 
     // Check for context consistency
-    const agentMessages = messages.filter(m => m.source === 'agent')
+    const agentMessages = messages.filter((m) => m.source === 'agent')
     if (agentMessages.length > 1) {
       // Simple heuristic: longer responses tend to be more coherent
-      const avgLength = agentMessages.reduce((sum, m) =>
-        sum + (typeof m.content === 'string' ? m.content.length : 0), 0
-      ) / agentMessages.length
+      const avgLength =
+        agentMessages.reduce(
+          (sum, m) => sum + (typeof m.content === 'string' ? m.content.length : 0),
+          0
+        ) / agentMessages.length
 
       coherenceScore = Math.min(1.0, avgLength / 200)
     }
@@ -592,8 +588,8 @@ export class AgentPerformanceMonitor extends EventEmitter {
     let relevanceScore = 0.75
 
     // Check if agent responses address user questions
-    const userMessages = messages.filter(m => m.source === 'customer')
-    const agentMessages = messages.filter(m => m.source === 'agent')
+    const userMessages = messages.filter((m) => m.source === 'customer')
+    const agentMessages = messages.filter((m) => m.source === 'agent')
 
     if (userMessages.length > 0 && agentMessages.length > 0) {
       // Simple heuristic based on response patterns
@@ -626,15 +622,17 @@ export class AgentPerformanceMonitor extends EventEmitter {
     const responseTimes: number[] = []
     for (let i = 1; i < messages.length; i++) {
       const timeDiff = messages[i].created_at
-        ? new Date(messages[i].created_at).getTime() - new Date(messages[i-1].created_at).getTime()
+        ? new Date(messages[i].created_at).getTime() -
+          new Date(messages[i - 1].created_at).getTime()
         : 0
       if (timeDiff > 0) responseTimes.push(timeDiff)
     }
 
     if (responseTimes.length > 1) {
       const avg = responseTimes.reduce((sum, t) => sum + t, 0) / responseTimes.length
-      const variance = responseTimes.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / responseTimes.length
-      consistency = Math.max(0, 1 - (Math.sqrt(variance) / avg))
+      const variance =
+        responseTimes.reduce((sum, t) => sum + (t - avg) ** 2, 0) / responseTimes.length
+      consistency = Math.max(0, 1 - Math.sqrt(variance) / avg)
     }
 
     return consistency
@@ -642,7 +640,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
 
   private analyzeUserEngagement(messages: Event[]): number {
     // Simple engagement calculation based on conversation length
-    const userMessages = messages.filter(m => m.source === 'customer')
+    const userMessages = messages.filter((m) => m.source === 'customer')
     return Math.min(1.0, userMessages.length / 10)
   }
 
@@ -653,9 +651,12 @@ export class AgentPerformanceMonitor extends EventEmitter {
     if (userGoals && userGoals.length > 0) {
       // Would analyze if goals were mentioned and addressed
       const lastMessages = messages.slice(-3)
-      const hasResolution = lastMessages.some(m =>
-        typeof m.content === 'string' &&
-        (m.content.includes('resolved') || m.content.includes('completed') || m.content.includes('success'))
+      const hasResolution = lastMessages.some(
+        (m) =>
+          typeof m.content === 'string' &&
+          (m.content.includes('resolved') ||
+            m.content.includes('completed') ||
+            m.content.includes('success'))
       )
       achievementScore = hasResolution ? 0.9 : 0.6
     }
@@ -666,17 +667,17 @@ export class AgentPerformanceMonitor extends EventEmitter {
   private calculateOverallQualityScore(scores: Record<string, number>): number {
     const weights = {
       coherenceScore: 0.15,
-      relevanceScore: 0.20,
+      relevanceScore: 0.2,
       helpfulnessScore: 0.25,
-      professionalismScore: 0.10,
-      responseTimeConsistency: 0.10,
-      userEngagement: 0.10,
-      goalAchievement: 0.10
+      professionalismScore: 0.1,
+      responseTimeConsistency: 0.1,
+      userEngagement: 0.1,
+      goalAchievement: 0.1,
     }
 
     return Object.entries(scores).reduce((sum, [key, value]) => {
       const weight = weights[key as keyof typeof weights] || 0
-      return sum + (value * weight)
+      return sum + value * weight
     }, 0)
   }
 
@@ -688,7 +689,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
         factor,
         score,
         impact: score >= 0.8 ? 'positive' : score <= 0.6 ? 'negative' : 'neutral',
-        description: `${factor.replace(/([A-Z])/g, ' $1').toLowerCase()} score: ${(score * 100).toFixed(1)}%`
+        description: `${factor.replace(/([A-Z])/g, ' $1').toLowerCase()} score: ${(score * 100).toFixed(1)}%`,
       })
     })
 
@@ -696,30 +697,32 @@ export class AgentPerformanceMonitor extends EventEmitter {
   }
 
   private calculateUniqueSessions(metrics: PerformanceDataPoint[]): number {
-    const sessions = new Set(metrics.map(m => m.sessionId).filter(Boolean))
+    const sessions = new Set(metrics.map((m) => m.sessionId).filter(Boolean))
     return sessions.size
   }
 
   private calculateAverageMetric(metrics: PerformanceDataPoint[], category: string): number {
-    const categoryMetrics = metrics.filter(m => m.category === category)
+    const categoryMetrics = metrics.filter((m) => m.category === category)
     if (categoryMetrics.length === 0) return 0
 
     return categoryMetrics.reduce((sum, m) => sum + m.value, 0) / categoryMetrics.length
   }
 
   private calculateErrorRate(metrics: PerformanceDataPoint[]): number {
-    const errorMetrics = metrics.filter(m => m.category === 'error_rate')
+    const errorMetrics = metrics.filter((m) => m.category === 'error_rate')
     return errorMetrics.length > 0 ? this.calculateAverageMetric(metrics, 'error_rate') : 0
   }
 
   private calculateEscalationRate(metrics: PerformanceDataPoint[]): number {
-    const escalationMetrics = metrics.filter(m => m.category === 'escalation_rate')
-    return escalationMetrics.length > 0 ? this.calculateAverageMetric(metrics, 'escalation_rate') : 0
+    const escalationMetrics = metrics.filter((m) => m.category === 'escalation_rate')
+    return escalationMetrics.length > 0
+      ? this.calculateAverageMetric(metrics, 'escalation_rate')
+      : 0
   }
 
   private calculateResourceEfficiency(metrics: PerformanceDataPoint[]): number {
     // Simplified resource efficiency calculation
-    const resourceMetrics = metrics.filter(m => m.category === 'resource_usage')
+    const resourceMetrics = metrics.filter((m) => m.category === 'resource_usage')
     return resourceMetrics.length > 0 ? this.calculateAverageMetric(metrics, 'resource_usage') : 1.0
   }
 
@@ -732,12 +735,15 @@ export class AgentPerformanceMonitor extends EventEmitter {
       predictions: {
         nextWeekVolume: 100,
         nextWeekSatisfaction: 4.2,
-        nextWeekResponseTime: 2000
-      }
+        nextWeekResponseTime: 2000,
+      },
     }
   }
 
-  private generateRecommendations(agentId: string, metrics: PerformanceDataPoint[]): PerformanceRecommendation[] {
+  private generateRecommendations(
+    agentId: string,
+    metrics: PerformanceDataPoint[]
+  ): PerformanceRecommendation[] {
     const recommendations: PerformanceRecommendation[] = []
 
     // Analyze metrics and generate recommendations
@@ -751,7 +757,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
         description: 'Average response time is above optimal threshold',
         expectedImpact: 'Reduce response time by 20-30%',
         implementationEffort: 'medium',
-        automated: false
+        automated: false,
       })
     }
 
@@ -759,12 +765,12 @@ export class AgentPerformanceMonitor extends EventEmitter {
   }
 
   private checkAlerts(dataPoint: PerformanceDataPoint): void {
-    const relevantAlerts = Array.from(this.alerts.values())
-      .filter(alert =>
+    const relevantAlerts = Array.from(this.alerts.values()).filter(
+      (alert) =>
         alert.enabled &&
         alert.metric === dataPoint.metric &&
         (!alert.agentId || alert.agentId === dataPoint.agentId)
-      )
+    )
 
     for (const alert of relevantAlerts) {
       let triggered = false
@@ -785,7 +791,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
         this.emit('performance:alert', {
           alert,
           dataPoint,
-          message: `Alert triggered: ${alert.metric} ${alert.condition} ${alert.threshold}`
+          message: `Alert triggered: ${alert.metric} ${alert.condition} ${alert.threshold}`,
         })
       }
     }
@@ -811,7 +817,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
         this.emit('sla:violation', {
           agentId,
           metric: 'response_time',
-          compliance: sla.responseTimeSLA.compliance
+          compliance: sla.responseTimeSLA.compliance,
         })
       }
     }
@@ -822,7 +828,7 @@ export class AgentPerformanceMonitor extends EventEmitter {
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days
 
     for (const [agentId, metrics] of this.metrics.entries()) {
-      const filteredMetrics = metrics.filter(m => m.timestamp > cutoff)
+      const filteredMetrics = metrics.filter((m) => m.timestamp > cutoff)
       this.metrics.set(agentId, filteredMetrics)
     }
   }

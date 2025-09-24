@@ -9,12 +9,12 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeAll, afterAll, jest } from '@jest/globals'
-import { IntelligenceTestingFramework } from './intelligence-testing-framework.test'
-import { AutomatedTestingSuite } from './automated-testing-suite.test'
-import { UserExperienceTestingFramework } from './user-experience-testing.test'
-import { QualityMonitoringSystem } from './quality-monitoring-system.test'
+import { afterAll, beforeAll, describe, expect, jest, test } from '@jest/globals'
 import { AnalyticsFeedbackSystem } from './analytics-feedback-system.test'
+import { AutomatedTestingSuite } from './automated-testing-suite.test'
+import { IntelligenceTestingFramework } from './intelligence-testing-framework.test'
+import { QualityMonitoringSystem } from './quality-monitoring-system.test'
+import { UserExperienceTestingFramework } from './user-experience-testing.test'
 
 // =============================================================================
 // Master Test Runner
@@ -56,7 +56,7 @@ export class MasterTestRunner {
         automated: null,
         userExperience: null,
         qualityMonitoring: null,
-        analytics: null
+        analytics: null,
       },
       summary: {
         totalTests: 0,
@@ -65,22 +65,22 @@ export class MasterTestRunner {
         skippedTests: 0,
         criticalIssues: 0,
         warnings: 0,
-        recommendations: []
+        recommendations: [],
       },
       executionMetadata: {
         environment: 'test',
         nodeVersion: process.version,
         testFramework: 'jest',
         parallelExecution: true,
-        executionContext: 'ci/cd'
+        executionContext: 'ci/cd',
       },
       qualityGate: {
         passed: false,
         score: 0,
         threshold: 85,
         blockers: [],
-        warnings: []
-      }
+        warnings: [],
+      },
     }
 
     try {
@@ -131,7 +131,6 @@ export class MasterTestRunner {
       this.displayFinalResults(masterReport)
 
       return masterReport
-
     } catch (error) {
       console.error('❌ Master Test Suite Failed:', error)
 
@@ -216,10 +215,11 @@ export class MasterTestRunner {
       results.automated?.overallHealthScore || 0,
       results.userExperience?.overallUXScore || 0,
       results.qualityMonitoring?.overallQualityScore || 0,
-      this.calculateAnalyticsScore(results.analytics) || 0
-    ].filter(score => score > 0)
+      this.calculateAnalyticsScore(results.analytics) || 0,
+    ].filter((score) => score > 0)
 
-    report.overallScore = scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0
+    report.overallScore =
+      scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0
 
     // Aggregate test counts
     report.summary.totalTests = this.aggregateTestCounts(results)
@@ -243,12 +243,14 @@ export class MasterTestRunner {
       score: report.overallScore,
       threshold: 85,
       blockers: [],
-      warnings: []
+      warnings: [],
     }
 
     // Check overall score threshold
     if (report.overallScore < qualityGate.threshold) {
-      qualityGate.blockers.push(`Overall score ${report.overallScore.toFixed(1)}% below threshold of ${qualityGate.threshold}%`)
+      qualityGate.blockers.push(
+        `Overall score ${report.overallScore.toFixed(1)}% below threshold of ${qualityGate.threshold}%`
+      )
     }
 
     // Check critical issues
@@ -276,7 +278,8 @@ export class MasterTestRunner {
     }
 
     // Determine if quality gate passes
-    qualityGate.passed = qualityGate.blockers.length === 0 && report.overallScore >= qualityGate.threshold
+    qualityGate.passed =
+      qualityGate.blockers.length === 0 && report.overallScore >= qualityGate.threshold
 
     return qualityGate
   }
@@ -285,7 +288,7 @@ export class MasterTestRunner {
    * Display comprehensive final results
    */
   private displayFinalResults(report: MasterTestReport): void {
-    console.log('\n' + '='.repeat(80))
+    console.log(`\n${'='.repeat(80)}`)
     console.log('🎯 ENHANCED TOOL INTELLIGENCE TESTING COMPLETE')
     console.log('='.repeat(80))
 
@@ -306,25 +309,36 @@ export class MasterTestRunner {
 
     console.log(`\n🎯 QUALITY GATE:`)
     console.log(`   • Status: ${report.qualityGate.passed ? '✅ PASSED' : '❌ FAILED'}`)
-    console.log(`   • Score: ${report.qualityGate.score.toFixed(1)}% (Threshold: ${report.qualityGate.threshold}%)`)
+    console.log(
+      `   • Score: ${report.qualityGate.score.toFixed(1)}% (Threshold: ${report.qualityGate.threshold}%)`
+    )
 
     if (report.qualityGate.blockers.length > 0) {
       console.log(`   • Blockers:`)
-      report.qualityGate.blockers.forEach(blocker => console.log(`     - ${blocker}`))
+      report.qualityGate.blockers.forEach((blocker) => console.log(`     - ${blocker}`))
     }
 
     if (report.qualityGate.warnings.length > 0) {
       console.log(`   • Warnings:`)
-      report.qualityGate.warnings.forEach(warning => console.log(`     - ${warning}`))
+      report.qualityGate.warnings.forEach((warning) => console.log(`     - ${warning}`))
     }
 
     console.log(`\n📈 PHASE RESULTS:`)
     const results = report.testResults
-    if (results.intelligence) console.log(`   • Intelligence Testing: ${results.intelligence.overallScore.toFixed(1)}%`)
-    if (results.automated) console.log(`   • Automated Testing: ${results.automated.overallHealthScore.toFixed(1)}%`)
-    if (results.userExperience) console.log(`   • User Experience: ${results.userExperience.overallUXScore.toFixed(1)}%`)
-    if (results.qualityMonitoring) console.log(`   • Quality Monitoring: ${results.qualityMonitoring.overallQualityScore.toFixed(1)}%`)
-    if (results.analytics) console.log(`   • Analytics Collection: ${this.calculateAnalyticsScore(results.analytics).toFixed(1)}%`)
+    if (results.intelligence)
+      console.log(`   • Intelligence Testing: ${results.intelligence.overallScore.toFixed(1)}%`)
+    if (results.automated)
+      console.log(`   • Automated Testing: ${results.automated.overallHealthScore.toFixed(1)}%`)
+    if (results.userExperience)
+      console.log(`   • User Experience: ${results.userExperience.overallUXScore.toFixed(1)}%`)
+    if (results.qualityMonitoring)
+      console.log(
+        `   • Quality Monitoring: ${results.qualityMonitoring.overallQualityScore.toFixed(1)}%`
+      )
+    if (results.analytics)
+      console.log(
+        `   • Analytics Collection: ${this.calculateAnalyticsScore(results.analytics).toFixed(1)}%`
+      )
 
     if (report.summary.recommendations.length > 0) {
       console.log(`\n💡 TOP RECOMMENDATIONS:`)
@@ -345,7 +359,9 @@ export class MasterTestRunner {
 
     // Intelligence testing recommendations
     if (results.intelligence && results.intelligence.overallScore < 90) {
-      recommendations.push('Improve natural language processing accuracy for better tool recommendations')
+      recommendations.push(
+        'Improve natural language processing accuracy for better tool recommendations'
+      )
     }
 
     // Automated testing recommendations
@@ -365,7 +381,9 @@ export class MasterTestRunner {
 
     // Analytics recommendations
     if (results.analytics && results.analytics.userInsights?.length > 0) {
-      const highPriorityInsights = results.analytics.userInsights.filter((insight: any) => insight.priority === 'high')
+      const highPriorityInsights = results.analytics.userInsights.filter(
+        (insight: any) => insight.priority === 'high'
+      )
       if (highPriorityInsights.length > 0) {
         recommendations.push('Implement high-priority user insights from analytics data')
       }
@@ -373,7 +391,9 @@ export class MasterTestRunner {
 
     // Cross-cutting recommendations
     if (this.detectCrossPhaseIssues(results)) {
-      recommendations.push('Address cross-system integration issues affecting multiple testing phases')
+      recommendations.push(
+        'Address cross-system integration issues affecting multiple testing phases'
+      )
     }
 
     return recommendations
@@ -401,7 +421,7 @@ export class MasterTestRunner {
       overallQualityScore: 0,
       failed: true,
       error: error.toString(),
-      timestamp: new Date()
+      timestamp: new Date(),
     }
   }
 
@@ -504,7 +524,9 @@ export class MasterTestRunner {
     let criticalIssues = 0
 
     if (results.qualityMonitoring?.qualityAlerts) {
-      criticalIssues += results.qualityMonitoring.qualityAlerts.filter((alert: any) => alert.severity === 'critical').length
+      criticalIssues += results.qualityMonitoring.qualityAlerts.filter(
+        (alert: any) => alert.severity === 'critical'
+      ).length
     }
 
     if (results.automated?.testResults?.regression?.regressions) {
@@ -518,7 +540,9 @@ export class MasterTestRunner {
     let warnings = 0
 
     if (results.qualityMonitoring?.qualityAlerts) {
-      warnings += results.qualityMonitoring.qualityAlerts.filter((alert: any) => alert.severity === 'warning').length
+      warnings += results.qualityMonitoring.qualityAlerts.filter(
+        (alert: any) => alert.severity === 'warning'
+      ).length
     }
 
     return warnings
@@ -526,9 +550,11 @@ export class MasterTestRunner {
 
   private detectCrossPhaseIssues(results: any): boolean {
     // Check for issues that span multiple testing phases
-    const performanceIssues = (results.automated?.testResults?.performance?.bottlenecks?.length || 0) > 0
-    const uxPerformanceIssues = (results.userExperience?.testResults?.satisfaction?.tests || [])
-      .some((test: any) => test.testName.includes('performance'))
+    const performanceIssues =
+      (results.automated?.testResults?.performance?.bottlenecks?.length || 0) > 0
+    const uxPerformanceIssues = (
+      results.userExperience?.testResults?.satisfaction?.tests || []
+    ).some((test: any) => test.testName.includes('performance'))
 
     return performanceIssues && uxPerformanceIssues
   }
@@ -541,7 +567,7 @@ export class MasterTestRunner {
       overallScore: report.overallScore,
       qualityGatePassed: report.qualityGate.passed,
       criticalIssues: report.summary.criticalIssues,
-      warnings: report.summary.warnings
+      warnings: report.summary.warnings,
     }
 
     this.testExecutionHistory.push(record)
@@ -593,24 +619,24 @@ export class MasterTestRunner {
         total: report.summary.totalTests,
         passed: report.summary.passedTests,
         failed: report.summary.failedTests,
-        skipped: report.summary.skippedTests
+        skipped: report.summary.skippedTests,
       },
       qualityGate: {
         passed: report.qualityGate.passed,
         score: report.qualityGate.score,
-        threshold: report.qualityGate.threshold
+        threshold: report.qualityGate.threshold,
       },
       issues: {
         critical: report.summary.criticalIssues,
         warnings: report.summary.warnings,
-        blockers: report.qualityGate.blockers
+        blockers: report.qualityGate.blockers,
       },
       recommendations: report.summary.recommendations,
       artifacts: {
         reportUrl: `./test-reports/${report.executionId}.json`,
         logsUrl: `./test-logs/${report.executionId}.log`,
-        metricsUrl: `./test-metrics/${report.executionId}.json`
-      }
+        metricsUrl: `./test-metrics/${report.executionId}.json`,
+      },
     }
   }
 }
@@ -758,7 +784,13 @@ describe('Master Test Runner for Enhanced Tool Intelligence', () => {
   }, 300000) // 5 minute timeout
 
   test('should run individual test phases', async () => {
-    const phases: TestPhase[] = ['intelligence', 'automated', 'userExperience', 'qualityMonitoring', 'analytics']
+    const phases: TestPhase[] = [
+      'intelligence',
+      'automated',
+      'userExperience',
+      'qualityMonitoring',
+      'analytics',
+    ]
 
     for (const phase of phases) {
       const result = await masterRunner.runPhase(phase)
@@ -817,7 +849,9 @@ describe('Master Test Runner for Enhanced Tool Intelligence', () => {
 
     // If quality gate failed, there should be reasons
     if (!qualityGate.passed) {
-      expect(qualityGate.blockers.length > 0 || qualityGate.score < qualityGate.threshold).toBe(true)
+      expect(qualityGate.blockers.length > 0 || qualityGate.score < qualityGate.threshold).toBe(
+        true
+      )
     }
   }, 300000)
 
@@ -832,7 +866,7 @@ describe('Master Test Runner for Enhanced Tool Intelligence', () => {
     }
 
     // Each recommendation should be a non-empty string
-    report.summary.recommendations.forEach(rec => {
+    report.summary.recommendations.forEach((rec) => {
       expect(typeof rec).toBe('string')
       expect(rec.length).toBeGreaterThan(0)
     })

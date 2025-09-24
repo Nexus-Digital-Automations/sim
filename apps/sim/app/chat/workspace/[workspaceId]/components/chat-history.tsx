@@ -1,46 +1,44 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
-import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 import {
-  MessageSquare,
+  Archive,
   Bot,
   Calendar,
-  Search,
-  Filter,
-  Archive,
-  Trash2,
-  Clock,
   ChevronDown,
-  MoreVertical,
+  Clock,
+  Download,
   Eye,
-  Download
+  Filter,
+  MessageSquare,
+  MoreVertical,
+  Search,
+  Trash2,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from '@/components/ui/table'
-import { Skeleton } from '@/components/ui/skeleton'
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('ChatHistory')
@@ -88,7 +86,9 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
   const [agentFilter, setAgentFilter] = useState<string[]>([])
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month' | 'year'>('all')
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards')
-  const [sortBy, setSortBy] = useState<'updated_at' | 'created_at' | 'message_count' | 'title'>('updated_at')
+  const [sortBy, setSortBy] = useState<'updated_at' | 'created_at' | 'message_count' | 'title'>(
+    'updated_at'
+  )
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedConversations, setSelectedConversations] = useState<string[]>([])
 
@@ -106,7 +106,7 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
 
       const [conversationsResponse, agentsResponse] = await Promise.all([
         fetch(`/api/parlant/conversations?workspaceId=${workspaceId}&limit=100`),
-        fetch(`/api/parlant/agents?workspaceId=${workspaceId}`)
+        fetch(`/api/parlant/agents?workspaceId=${workspaceId}`),
       ])
 
       if (conversationsResponse.ok) {
@@ -131,9 +131,10 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
    * Filter and sort conversations based on current filters
    */
   const filteredConversations = useMemo(() => {
-    let filtered = conversations.filter(conversation => {
+    const filtered = conversations.filter((conversation) => {
       // Text search
-      const matchesSearch = searchQuery === '' ||
+      const matchesSearch =
+        searchQuery === '' ||
         conversation.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         conversation.agent_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         conversation.last_message_preview.toLowerCase().includes(searchQuery.toLowerCase())
@@ -173,7 +174,8 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
 
     // Sort conversations
     filtered.sort((a, b) => {
-      let aVal: any, bVal: any
+      let aVal: any
+      let bVal: any
 
       switch (sortBy) {
         case 'title':
@@ -195,9 +197,8 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
 
       if (sortOrder === 'asc') {
         return aVal < bVal ? -1 : aVal > bVal ? 1 : 0
-      } else {
-        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0
       }
+      return aVal > bVal ? -1 : aVal < bVal ? 1 : 0
     })
 
     return filtered
@@ -213,16 +214,20 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
       switch (action) {
         case 'archive':
           await Promise.all(
-            selectedConversations.map(id =>
+            selectedConversations.map((id) =>
               fetch(`/api/parlant/conversations/${id}/archive`, { method: 'POST' })
             )
           )
           break
 
         case 'delete':
-          if (confirm(`Are you sure you want to delete ${selectedConversations.length} conversations?`)) {
+          if (
+            confirm(
+              `Are you sure you want to delete ${selectedConversations.length} conversations?`
+            )
+          ) {
             await Promise.all(
-              selectedConversations.map(id =>
+              selectedConversations.map((id) =>
                 fetch(`/api/parlant/conversations/${id}`, { method: 'DELETE' })
               )
             )
@@ -233,7 +238,9 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
 
         case 'export':
           // TODO: Implement export functionality
-          logger.info('Export requested for conversations', { conversationIds: selectedConversations })
+          logger.info('Export requested for conversations', {
+            conversationIds: selectedConversations,
+          })
           break
       }
 
@@ -269,18 +276,17 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
       {/* Header */}
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-2xl font-bold'>Chat History</h1>
+          <h1 className='font-bold text-2xl'>Chat History</h1>
           <p className='text-muted-foreground'>
-            {filteredConversations.length} conversation{filteredConversations.length !== 1 ? 's' : ''}
+            {filteredConversations.length} conversation
+            {filteredConversations.length !== 1 ? 's' : ''}
             {searchQuery && ` matching "${searchQuery}"`}
           </p>
         </div>
 
         {selectedConversations.length > 0 && (
           <div className='flex items-center gap-2'>
-            <Badge variant='secondary'>
-              {selectedConversations.length} selected
-            </Badge>
+            <Badge variant='secondary'>{selectedConversations.length} selected</Badge>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -309,11 +315,7 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={() => setSelectedConversations([])}
-            >
+            <Button variant='ghost' size='sm' onClick={() => setSelectedConversations([])}>
               Clear Selection
             </Button>
           </div>
@@ -321,10 +323,10 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
       </div>
 
       {/* Filters and Search */}
-      <div className='flex flex-col sm:flex-row gap-4'>
+      <div className='flex flex-col gap-4 sm:flex-row'>
         {/* Search */}
         <div className='relative flex-1'>
-          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+          <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground' />
           <Input
             placeholder='Search conversations, agents, or messages...'
             value={searchQuery}
@@ -379,7 +381,7 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
                     if (checked) {
                       setAgentFilter([...agentFilter, agent.id])
                     } else {
-                      setAgentFilter(agentFilter.filter(id => id !== agent.id))
+                      setAgentFilter(agentFilter.filter((id) => id !== agent.id))
                     }
                   }}
                 >
@@ -416,7 +418,7 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
       </div>
 
       {/* View Mode Toggle and Sort */}
-      <div className='flex justify-between items-center'>
+      <div className='flex items-center justify-between'>
         <div className='flex gap-1'>
           <Button
             variant={viewMode === 'cards' ? 'default' : 'outline'}
@@ -448,7 +450,7 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
               { key: 'updated_at', label: 'Last Activity' },
               { key: 'created_at', label: 'Created Date' },
               { key: 'title', label: 'Title' },
-              { key: 'message_count', label: 'Message Count' }
+              { key: 'message_count', label: 'Message Count' },
             ].map((option) => (
               <DropdownMenuCheckboxItem
                 key={option.key}
@@ -471,19 +473,16 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
 
       {/* Content */}
       {filteredConversations.length === 0 ? (
-        <div className='text-center py-12'>
-          <MessageSquare className='h-16 w-16 mx-auto mb-4 text-muted-foreground/50' />
-          <h3 className='text-lg font-semibold mb-2'>No conversations found</h3>
-          <p className='text-muted-foreground mb-4'>
+        <div className='py-12 text-center'>
+          <MessageSquare className='mx-auto mb-4 h-16 w-16 text-muted-foreground/50' />
+          <h3 className='mb-2 font-semibold text-lg'>No conversations found</h3>
+          <p className='mb-4 text-muted-foreground'>
             {searchQuery || statusFilter !== 'all' || agentFilter.length > 0
               ? 'Try adjusting your search or filters'
-              : 'Start chatting with agents to see your conversation history here'
-            }
+              : 'Start chatting with agents to see your conversation history here'}
           </p>
           <Button asChild>
-            <Link href={`/chat/workspace/${workspaceId}`}>
-              Start New Chat
-            </Link>
+            <Link href={`/chat/workspace/${workspaceId}`}>Start New Chat</Link>
           </Button>
         </div>
       ) : viewMode === 'cards' ? (
@@ -498,7 +497,9 @@ export function ChatHistory({ workspaceId }: ChatHistoryProps) {
                 if (selected) {
                   setSelectedConversations([...selectedConversations, conversation.id])
                 } else {
-                  setSelectedConversations(selectedConversations.filter(id => id !== conversation.id))
+                  setSelectedConversations(
+                    selectedConversations.filter((id) => id !== conversation.id)
+                  )
                 }
               }}
               formatTimeAgo={formatTimeAgo}
@@ -529,12 +530,20 @@ interface ConversationCardProps {
   formatTimeAgo: (timestamp: string) => string
 }
 
-function ConversationCard({ conversation, workspaceId, isSelected, onSelect, formatTimeAgo }: ConversationCardProps) {
+function ConversationCard({
+  conversation,
+  workspaceId,
+  isSelected,
+  onSelect,
+  formatTimeAgo,
+}: ConversationCardProps) {
   return (
-    <Card className={`cursor-pointer hover:shadow-md transition-all ${isSelected ? 'ring-2 ring-primary' : ''}`}>
+    <Card
+      className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? 'ring-2 ring-primary' : ''}`}
+    >
       <CardHeader className='pb-3'>
         <div className='flex items-start justify-between'>
-          <div className='flex items-center gap-3 flex-1 min-w-0'>
+          <div className='flex min-w-0 flex-1 items-center gap-3'>
             <input
               type='checkbox'
               checked={isSelected}
@@ -542,20 +551,18 @@ function ConversationCard({ conversation, workspaceId, isSelected, onSelect, for
                 e.stopPropagation()
                 onSelect(e.target.checked)
               }}
-              className='w-4 h-4 rounded border-input'
+              className='h-4 w-4 rounded border-input'
             />
 
-            <div className='flex items-center gap-2 flex-1 min-w-0'>
+            <div className='flex min-w-0 flex-1 items-center gap-2'>
               <Avatar className='h-8 w-8 flex-shrink-0'>
                 <AvatarFallback className='text-xs'>
                   {conversation.agent_name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className='min-w-0'>
-                <CardTitle className='text-sm truncate'>{conversation.title}</CardTitle>
-                <p className='text-xs text-muted-foreground truncate'>
-                  {conversation.agent_name}
-                </p>
+                <CardTitle className='truncate text-sm'>{conversation.title}</CardTitle>
+                <p className='truncate text-muted-foreground text-xs'>{conversation.agent_name}</p>
               </div>
             </div>
           </div>
@@ -568,18 +575,20 @@ function ConversationCard({ conversation, workspaceId, isSelected, onSelect, for
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
               <DropdownMenuItem asChild>
-                <Link href={`/chat/workspace/${workspaceId}/agent/${conversation.agent_id}/conversation/${conversation.id}`}>
-                  <Eye className='h-4 w-4 mr-2' />
+                <Link
+                  href={`/chat/workspace/${workspaceId}/agent/${conversation.agent_id}/conversation/${conversation.id}`}
+                >
+                  <Eye className='mr-2 h-4 w-4' />
                   View
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Archive className='h-4 w-4 mr-2' />
+                <Archive className='mr-2 h-4 w-4' />
                 Archive
               </DropdownMenuItem>
               <DropdownMenuItem className='text-destructive focus:text-destructive'>
-                <Trash2 className='h-4 w-4 mr-2' />
+                <Trash2 className='mr-2 h-4 w-4' />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -588,9 +597,11 @@ function ConversationCard({ conversation, workspaceId, isSelected, onSelect, for
       </CardHeader>
 
       <CardContent className='pt-0'>
-        <Link href={`/chat/workspace/${workspaceId}/agent/${conversation.agent_id}/conversation/${conversation.id}`}>
+        <Link
+          href={`/chat/workspace/${workspaceId}/agent/${conversation.agent_id}/conversation/${conversation.id}`}
+        >
           <div className='space-y-3'>
-            <p className='text-sm text-muted-foreground line-clamp-2'>
+            <p className='line-clamp-2 text-muted-foreground text-sm'>
               {conversation.last_message_preview}
             </p>
 
@@ -631,20 +642,28 @@ interface ConversationTableProps {
   formatTimeAgo: (timestamp: string) => string
 }
 
-function ConversationTable({ conversations, workspaceId, selectedConversations, onSelectConversations, formatTimeAgo }: ConversationTableProps) {
-  const isAllSelected = conversations.length > 0 && selectedConversations.length === conversations.length
-  const isIndeterminate = selectedConversations.length > 0 && selectedConversations.length < conversations.length
+function ConversationTable({
+  conversations,
+  workspaceId,
+  selectedConversations,
+  onSelectConversations,
+  formatTimeAgo,
+}: ConversationTableProps) {
+  const isAllSelected =
+    conversations.length > 0 && selectedConversations.length === conversations.length
+  const isIndeterminate =
+    selectedConversations.length > 0 && selectedConversations.length < conversations.length
 
   const toggleAll = () => {
     if (isAllSelected) {
       onSelectConversations([])
     } else {
-      onSelectConversations(conversations.map(c => c.id))
+      onSelectConversations(conversations.map((c) => c.id))
     }
   }
 
   return (
-    <div className='border rounded-md'>
+    <div className='rounded-md border'>
       <Table>
         <TableHeader>
           <TableRow>
@@ -656,7 +675,7 @@ function ConversationTable({ conversations, workspaceId, selectedConversations, 
                   if (el) el.indeterminate = isIndeterminate
                 }}
                 onChange={toggleAll}
-                className='w-4 h-4 rounded border-input'
+                className='h-4 w-4 rounded border-input'
               />
             </TableHead>
             <TableHead>Conversation</TableHead>
@@ -664,7 +683,7 @@ function ConversationTable({ conversations, workspaceId, selectedConversations, 
             <TableHead>Messages</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Last Activity</TableHead>
-            <TableHead className='w-[50px]'></TableHead>
+            <TableHead className='w-[50px]' />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -678,18 +697,22 @@ function ConversationTable({ conversations, workspaceId, selectedConversations, 
                     if (e.target.checked) {
                       onSelectConversations([...selectedConversations, conversation.id])
                     } else {
-                      onSelectConversations(selectedConversations.filter(id => id !== conversation.id))
+                      onSelectConversations(
+                        selectedConversations.filter((id) => id !== conversation.id)
+                      )
                     }
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  className='w-4 h-4 rounded border-input'
+                  className='h-4 w-4 rounded border-input'
                 />
               </TableCell>
               <TableCell>
-                <Link href={`/chat/workspace/${workspaceId}/agent/${conversation.agent_id}/conversation/${conversation.id}`}>
+                <Link
+                  href={`/chat/workspace/${workspaceId}/agent/${conversation.agent_id}/conversation/${conversation.id}`}
+                >
                   <div>
-                    <p className='font-medium truncate max-w-[200px]'>{conversation.title}</p>
-                    <p className='text-sm text-muted-foreground truncate max-w-[200px]'>
+                    <p className='max-w-[200px] truncate font-medium'>{conversation.title}</p>
+                    <p className='max-w-[200px] truncate text-muted-foreground text-sm'>
                       {conversation.last_message_preview}
                     </p>
                   </div>
@@ -711,7 +734,7 @@ function ConversationTable({ conversations, workspaceId, selectedConversations, 
                   {conversation.status}
                 </Badge>
               </TableCell>
-              <TableCell className='text-sm text-muted-foreground'>
+              <TableCell className='text-muted-foreground text-sm'>
                 {formatTimeAgo(conversation.updated_at)}
               </TableCell>
               <TableCell>
@@ -723,18 +746,20 @@ function ConversationTable({ conversations, workspaceId, selectedConversations, 
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align='end'>
                     <DropdownMenuItem asChild>
-                      <Link href={`/chat/workspace/${workspaceId}/agent/${conversation.agent_id}/conversation/${conversation.id}`}>
-                        <Eye className='h-4 w-4 mr-2' />
+                      <Link
+                        href={`/chat/workspace/${workspaceId}/agent/${conversation.agent_id}/conversation/${conversation.id}`}
+                      >
+                        <Eye className='mr-2 h-4 w-4' />
                         View
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>
-                      <Archive className='h-4 w-4 mr-2' />
+                      <Archive className='mr-2 h-4 w-4' />
                       Archive
                     </DropdownMenuItem>
                     <DropdownMenuItem className='text-destructive focus:text-destructive'>
-                      <Trash2 className='h-4 w-4 mr-2' />
+                      <Trash2 className='mr-2 h-4 w-4' />
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -756,7 +781,7 @@ function ChatHistorySkeleton() {
     <div className='space-y-6'>
       <div className='flex items-center justify-between'>
         <div>
-          <Skeleton className='h-8 w-48 mb-2' />
+          <Skeleton className='mb-2 h-8 w-48' />
           <Skeleton className='h-4 w-64' />
         </div>
       </div>
@@ -775,13 +800,13 @@ function ChatHistorySkeleton() {
               <div className='flex items-center gap-3'>
                 <Skeleton className='h-8 w-8 rounded-full' />
                 <div className='flex-1'>
-                  <Skeleton className='h-4 w-32 mb-2' />
+                  <Skeleton className='mb-2 h-4 w-32' />
                   <Skeleton className='h-3 w-20' />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <Skeleton className='h-4 w-full mb-2' />
+              <Skeleton className='mb-2 h-4 w-full' />
               <Skeleton className='h-4 w-3/4' />
             </CardContent>
           </Card>

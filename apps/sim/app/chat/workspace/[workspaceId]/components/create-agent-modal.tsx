@@ -13,44 +13,33 @@
  * - Integration with Parlant agent creation API
  */
 
-import { useState, useEffect } from 'react'
-import { X, Plus, Trash2, Wand2, Settings, Brain, HelpCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useEffect, useState } from 'react'
+import { Brain, HelpCircle, Plus, Trash2, Wand2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from '@/components/ui/tabs'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '@/components/ui/tooltip'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from '@/hooks/use-toast'
-import type { AgentCreateRequest, AgentConfig, Guideline } from '@/services/parlant/types'
+import type { AgentConfig, AgentCreateRequest, Guideline } from '@/services/parlant/types'
 
 interface CreateAgentModalProps {
   workspaceId: string
@@ -64,10 +53,30 @@ interface GuidelineInput extends Omit<Guideline, 'id' | 'agent_id' | 'created_at
 }
 
 const AVAILABLE_MODELS = [
-  { id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI', description: 'Most capable model for complex tasks' },
-  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI', description: 'Faster, cost-effective option' },
-  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', provider: 'Anthropic', description: 'Excellent for analysis and reasoning' },
-  { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', provider: 'Anthropic', description: 'Fast and efficient for simple tasks' }
+  {
+    id: 'gpt-4o',
+    name: 'GPT-4o',
+    provider: 'OpenAI',
+    description: 'Most capable model for complex tasks',
+  },
+  {
+    id: 'gpt-4o-mini',
+    name: 'GPT-4o Mini',
+    provider: 'OpenAI',
+    description: 'Faster, cost-effective option',
+  },
+  {
+    id: 'claude-3-5-sonnet-20241022',
+    name: 'Claude 3.5 Sonnet',
+    provider: 'Anthropic',
+    description: 'Excellent for analysis and reasoning',
+  },
+  {
+    id: 'claude-3-haiku-20240307',
+    name: 'Claude 3 Haiku',
+    provider: 'Anthropic',
+    description: 'Fast and efficient for simple tasks',
+  },
 ]
 
 const CAPABILITY_OPTIONS = [
@@ -82,24 +91,41 @@ const CAPABILITY_OPTIONS = [
   'Summarization',
   'Research',
   'Planning',
-  'Decision Making'
+  'Decision Making',
 ]
 
 const TOOL_CATEGORIES = [
   { id: 'communication', name: 'Communication', tools: ['Email', 'Slack', 'Teams', 'Discord'] },
   { id: 'productivity', name: 'Productivity', tools: ['Calendar', 'Tasks', 'Notes', 'Documents'] },
-  { id: 'data', name: 'Data & Analytics', tools: ['Database', 'Spreadsheets', 'Charts', 'Reports'] },
-  { id: 'development', name: 'Development', tools: ['GitHub', 'Code Analysis', 'Testing', 'Deployment'] },
-  { id: 'knowledge', name: 'Knowledge', tools: ['Web Search', 'Documents', 'Wikipedia', 'Research'] }
+  {
+    id: 'data',
+    name: 'Data & Analytics',
+    tools: ['Database', 'Spreadsheets', 'Charts', 'Reports'],
+  },
+  {
+    id: 'development',
+    name: 'Development',
+    tools: ['GitHub', 'Code Analysis', 'Testing', 'Deployment'],
+  },
+  {
+    id: 'knowledge',
+    name: 'Knowledge',
+    tools: ['Web Search', 'Documents', 'Wikipedia', 'Research'],
+  },
 ]
 
-export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreated }: CreateAgentModalProps) {
+export function CreateAgentModal({
+  workspaceId,
+  open,
+  onOpenChange,
+  onAgentCreated,
+}: CreateAgentModalProps) {
   // Form state
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     capabilities: [] as string[],
-    enabledTools: [] as string[]
+    enabledTools: [] as string[],
   })
 
   // Agent configuration state
@@ -108,7 +134,7 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
     temperature: 0.7,
     max_turns: 50,
     system_prompt: '',
-    tool_choice: 'auto'
+    tool_choice: 'auto',
   })
 
   // Guidelines state
@@ -116,7 +142,7 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
   const [newGuideline, setNewGuideline] = useState({
     condition: '',
     action: '',
-    priority: 1
+    priority: 1,
   })
 
   // UI state
@@ -131,14 +157,14 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
         name: '',
         description: '',
         capabilities: [],
-        enabledTools: []
+        enabledTools: [],
       })
       setConfig({
         model: 'gpt-4o-mini',
         temperature: 0.7,
         max_turns: 50,
         system_prompt: '',
-        tool_choice: 'auto'
+        tool_choice: 'auto',
       })
       setGuidelines([])
       setCurrentTab('basic')
@@ -188,7 +214,7 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
       toast({
         title: 'Validation Error',
         description: 'Please fix the errors in the form',
-        variant: 'destructive'
+        variant: 'destructive',
       })
       return
     }
@@ -201,15 +227,15 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
         description: formData.description || undefined,
         workspace_id: workspaceId,
         guidelines: guidelines.map(({ tempId, ...guideline }) => guideline),
-        config
+        config,
       }
 
       const response = await fetch('/api/parlant/agents', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(createRequest)
+        body: JSON.stringify(createRequest),
       })
 
       if (!response.ok) {
@@ -221,18 +247,17 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
 
       toast({
         title: 'Agent Created',
-        description: `${result.data.name} has been created successfully`
+        description: `${result.data.name} has been created successfully`,
       })
 
       onAgentCreated()
       onOpenChange(false)
-
     } catch (error) {
       console.error('Failed to create agent:', error)
       toast({
         title: 'Error',
         description: (error as Error).message,
-        variant: 'destructive'
+        variant: 'destructive',
       })
     } finally {
       setLoading(false)
@@ -247,17 +272,17 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
       toast({
         title: 'Invalid Guideline',
         description: 'Both condition and action are required',
-        variant: 'destructive'
+        variant: 'destructive',
       })
       return
     }
 
     const guideline: GuidelineInput = {
       ...newGuideline,
-      tempId: `temp_${Date.now()}`
+      tempId: `temp_${Date.now()}`,
     }
 
-    setGuidelines(prev => [...prev, guideline])
+    setGuidelines((prev) => [...prev, guideline])
     setNewGuideline({ condition: '', action: '', priority: 1 })
   }
 
@@ -265,18 +290,18 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
    * Remove guideline
    */
   const removeGuideline = (tempId: string) => {
-    setGuidelines(prev => prev.filter(g => g.tempId !== tempId))
+    setGuidelines((prev) => prev.filter((g) => g.tempId !== tempId))
   }
 
   /**
    * Toggle capability selection
    */
   const toggleCapability = (capability: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       capabilities: prev.capabilities.includes(capability)
-        ? prev.capabilities.filter(c => c !== capability)
-        : [...prev.capabilities, capability]
+        ? prev.capabilities.filter((c) => c !== capability)
+        : [...prev.capabilities, capability],
     }))
   }
 
@@ -284,20 +309,20 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
    * Toggle tool selection
    */
   const toggleTool = (tool: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       enabledTools: prev.enabledTools.includes(tool)
-        ? prev.enabledTools.filter(t => t !== tool)
-        : [...prev.enabledTools, tool]
+        ? prev.enabledTools.filter((t) => t !== tool)
+        : [...prev.enabledTools, tool],
     }))
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className='max-h-[90vh] max-w-4xl overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
+          <DialogTitle className='flex items-center gap-2'>
+            <Brain className='h-5 w-5' />
             Create New Agent
           </DialogTitle>
           <DialogDescription>
@@ -306,50 +331,54 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-            <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="basic">Basic Info</TabsTrigger>
-              <TabsTrigger value="config">Configuration</TabsTrigger>
-              <TabsTrigger value="guidelines">Guidelines</TabsTrigger>
-              <TabsTrigger value="tools">Tools & Capabilities</TabsTrigger>
+          <Tabs value={currentTab} onValueChange={setCurrentTab} className='w-full'>
+            <TabsList className='grid w-full grid-cols-4'>
+              <TabsTrigger value='basic'>Basic Info</TabsTrigger>
+              <TabsTrigger value='config'>Configuration</TabsTrigger>
+              <TabsTrigger value='guidelines'>Guidelines</TabsTrigger>
+              <TabsTrigger value='tools'>Tools & Capabilities</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="basic" className="space-y-4 mt-6">
-              <div className="grid gap-4">
+            <TabsContent value='basic' className='mt-6 space-y-4'>
+              <div className='grid gap-4'>
                 <div>
-                  <Label htmlFor="name">Agent Name *</Label>
+                  <Label htmlFor='name'>Agent Name *</Label>
                   <Input
-                    id="name"
+                    id='name'
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Enter agent name..."
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder='Enter agent name...'
                     className={errors.name ? 'border-red-500' : ''}
                   />
-                  {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
+                  {errors.name && <p className='mt-1 text-red-500 text-sm'>{errors.name}</p>}
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor='description'>Description</Label>
                   <Textarea
-                    id="description"
+                    id='description'
                     value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Describe what this agent does..."
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, description: e.target.value }))
+                    }
+                    placeholder='Describe what this agent does...'
                     rows={3}
                     className={errors.description ? 'border-red-500' : ''}
                   />
-                  {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
+                  {errors.description && (
+                    <p className='mt-1 text-red-500 text-sm'>{errors.description}</p>
+                  )}
                 </div>
               </div>
             </TabsContent>
 
-            <TabsContent value="config" className="space-y-6 mt-6">
-              <div className="grid gap-6">
+            <TabsContent value='config' className='mt-6 space-y-6'>
+              <div className='grid gap-6'>
                 <div>
                   <Label>AI Model</Label>
                   <Select
                     value={config.model}
-                    onValueChange={(value) => setConfig(prev => ({ ...prev, model: value }))}
+                    onValueChange={(value) => setConfig((prev) => ({ ...prev, model: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -358,8 +387,8 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
                       {AVAILABLE_MODELS.map((model) => (
                         <SelectItem key={model.id} value={model.id}>
                           <div>
-                            <div className="font-medium">{model.name}</div>
-                            <div className="text-xs text-muted-foreground">{model.description}</div>
+                            <div className='font-medium'>{model.name}</div>
+                            <div className='text-muted-foreground text-xs'>{model.description}</div>
                           </div>
                         </SelectItem>
                       ))}
@@ -368,12 +397,12 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className='mb-2 flex items-center gap-2'>
                     <Label>Temperature: {config.temperature}</Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                          <HelpCircle className='h-4 w-4 text-muted-foreground' />
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Controls randomness. Lower = more focused, Higher = more creative</p>
@@ -383,7 +412,9 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
                   </div>
                   <Slider
                     value={[config.temperature!]}
-                    onValueChange={([value]) => setConfig(prev => ({ ...prev, temperature: value }))}
+                    onValueChange={([value]) =>
+                      setConfig((prev) => ({ ...prev, temperature: value }))
+                    }
                     min={0}
                     max={2}
                     step={0.1}
@@ -391,71 +422,85 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
                 </div>
 
                 <div>
-                  <Label htmlFor="max_turns">Maximum Conversation Turns</Label>
+                  <Label htmlFor='max_turns'>Maximum Conversation Turns</Label>
                   <Input
-                    id="max_turns"
-                    type="number"
+                    id='max_turns'
+                    type='number'
                     value={config.max_turns}
-                    onChange={(e) => setConfig(prev => ({ ...prev, max_turns: parseInt(e.target.value) }))}
+                    onChange={(e) =>
+                      setConfig((prev) => ({ ...prev, max_turns: Number.parseInt(e.target.value) }))
+                    }
                     min={1}
                     max={200}
                     className={errors.max_turns ? 'border-red-500' : ''}
                   />
-                  {errors.max_turns && <p className="text-sm text-red-500 mt-1">{errors.max_turns}</p>}
+                  {errors.max_turns && (
+                    <p className='mt-1 text-red-500 text-sm'>{errors.max_turns}</p>
+                  )}
                 </div>
 
                 <div>
-                  <Label htmlFor="system_prompt">System Prompt</Label>
+                  <Label htmlFor='system_prompt'>System Prompt</Label>
                   <Textarea
-                    id="system_prompt"
+                    id='system_prompt'
                     value={config.system_prompt}
-                    onChange={(e) => setConfig(prev => ({ ...prev, system_prompt: e.target.value }))}
+                    onChange={(e) =>
+                      setConfig((prev) => ({ ...prev, system_prompt: e.target.value }))
+                    }
                     placeholder="Define the agent's personality and behavior..."
                     rows={4}
                     className={errors.system_prompt ? 'border-red-500' : ''}
                   />
-                  {errors.system_prompt && <p className="text-sm text-red-500 mt-1">{errors.system_prompt}</p>}
+                  {errors.system_prompt && (
+                    <p className='mt-1 text-red-500 text-sm'>{errors.system_prompt}</p>
+                  )}
                 </div>
               </div>
             </TabsContent>
 
-            <TabsContent value="guidelines" className="space-y-4 mt-6">
+            <TabsContent value='guidelines' className='mt-6 space-y-4'>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Add Guideline</CardTitle>
+                  <CardTitle className='text-base'>Add Guideline</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className='space-y-4'>
                   <div>
-                    <Label htmlFor="condition">When (Condition)</Label>
+                    <Label htmlFor='condition'>When (Condition)</Label>
                     <Input
-                      id="condition"
+                      id='condition'
                       value={newGuideline.condition}
-                      onChange={(e) => setNewGuideline(prev => ({ ...prev, condition: e.target.value }))}
-                      placeholder="e.g., user asks about pricing"
+                      onChange={(e) =>
+                        setNewGuideline((prev) => ({ ...prev, condition: e.target.value }))
+                      }
+                      placeholder='e.g., user asks about pricing'
                     />
                   </div>
                   <div>
-                    <Label htmlFor="action">Then (Action)</Label>
+                    <Label htmlFor='action'>Then (Action)</Label>
                     <Input
-                      id="action"
+                      id='action'
                       value={newGuideline.action}
-                      onChange={(e) => setNewGuideline(prev => ({ ...prev, action: e.target.value }))}
-                      placeholder="e.g., provide pricing information and direct to sales team"
+                      onChange={(e) =>
+                        setNewGuideline((prev) => ({ ...prev, action: e.target.value }))
+                      }
+                      placeholder='e.g., provide pricing information and direct to sales team'
                     />
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
+                  <div className='flex items-center gap-4'>
+                    <div className='flex-1'>
                       <Label>Priority: {newGuideline.priority}</Label>
                       <Slider
                         value={[newGuideline.priority]}
-                        onValueChange={([value]) => setNewGuideline(prev => ({ ...prev, priority: value }))}
+                        onValueChange={([value]) =>
+                          setNewGuideline((prev) => ({ ...prev, priority: value }))
+                        }
                         min={1}
                         max={10}
                         step={1}
                       />
                     </div>
-                    <Button type="button" onClick={addGuideline} className="gap-2">
-                      <Plus className="h-4 w-4" />
+                    <Button type='button' onClick={addGuideline} className='gap-2'>
+                      <Plus className='h-4 w-4' />
                       Add
                     </Button>
                   </div>
@@ -463,26 +508,28 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
               </Card>
 
               {guidelines.length > 0 && (
-                <div className="space-y-2">
+                <div className='space-y-2'>
                   <Label>Current Guidelines</Label>
                   {guidelines.map((guideline) => (
                     <Card key={guideline.tempId}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">When: {guideline.condition}</p>
-                            <p className="text-sm text-muted-foreground">Then: {guideline.action}</p>
-                            <Badge variant="outline" className="mt-2 text-xs">
+                      <CardContent className='p-4'>
+                        <div className='flex items-start justify-between gap-4'>
+                          <div className='flex-1'>
+                            <p className='font-medium text-sm'>When: {guideline.condition}</p>
+                            <p className='text-muted-foreground text-sm'>
+                              Then: {guideline.action}
+                            </p>
+                            <Badge variant='outline' className='mt-2 text-xs'>
                               Priority: {guideline.priority}
                             </Badge>
                           </div>
                           <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
+                            type='button'
+                            variant='ghost'
+                            size='sm'
                             onClick={() => removeGuideline(guideline.tempId)}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className='h-4 w-4' />
                           </Button>
                         </div>
                       </CardContent>
@@ -492,21 +539,21 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
               )}
             </TabsContent>
 
-            <TabsContent value="tools" className="space-y-6 mt-6">
+            <TabsContent value='tools' className='mt-6 space-y-6'>
               <div>
                 <Label>Capabilities</Label>
-                <p className="text-sm text-muted-foreground mb-3">
+                <p className='mb-3 text-muted-foreground text-sm'>
                   Select the primary capabilities for your agent
                 </p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className='grid grid-cols-3 gap-2'>
                   {CAPABILITY_OPTIONS.map((capability) => (
                     <Button
                       key={capability}
-                      type="button"
+                      type='button'
                       variant={formData.capabilities.includes(capability) ? 'default' : 'outline'}
-                      size="sm"
+                      size='sm'
                       onClick={() => toggleCapability(capability)}
-                      className="justify-start text-xs"
+                      className='justify-start text-xs'
                     >
                       {capability}
                     </Button>
@@ -516,25 +563,25 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
 
               <div>
                 <Label>Available Tools</Label>
-                <p className="text-sm text-muted-foreground mb-3">
+                <p className='mb-3 text-muted-foreground text-sm'>
                   Enable tools that your agent can use
                 </p>
-                <div className="space-y-4">
+                <div className='space-y-4'>
                   {TOOL_CATEGORIES.map((category) => (
                     <Card key={category.id}>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm">{category.name}</CardTitle>
+                      <CardHeader className='pb-3'>
+                        <CardTitle className='text-sm'>{category.name}</CardTitle>
                       </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="grid grid-cols-4 gap-2">
+                      <CardContent className='pt-0'>
+                        <div className='grid grid-cols-4 gap-2'>
                           {category.tools.map((tool) => (
                             <Button
                               key={tool}
-                              type="button"
+                              type='button'
                               variant={formData.enabledTools.includes(tool) ? 'default' : 'outline'}
-                              size="sm"
+                              size='sm'
                               onClick={() => toggleTool(tool)}
-                              className="text-xs"
+                              className='text-xs'
                             >
                               {tool}
                             </Button>
@@ -548,12 +595,12 @@ export function CreateAgentModal({ workspaceId, open, onOpenChange, onAgentCreat
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-between pt-6 mt-6 border-t">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <div className='mt-6 flex justify-between border-t pt-6'>
+            <Button type='button' variant='outline' onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="gap-2">
-              {loading && <Wand2 className="h-4 w-4 animate-spin" />}
+            <Button type='submit' disabled={loading} className='gap-2'>
+              {loading && <Wand2 className='h-4 w-4 animate-spin' />}
               Create Agent
             </Button>
           </div>

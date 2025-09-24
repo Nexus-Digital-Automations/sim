@@ -18,8 +18,11 @@
  * @version 1.0.0
  */
 
-import type { SimToolMetadata, SimToolCategory } from '../enhanced-intelligence/sim-tool-catalog'
-import type { EnhancedDescriptionSchema, UserRole, SkillLevel } from '../enhanced-intelligence/natural-language-description-framework'
+import type {
+  SkillLevel,
+  UserRole,
+} from '../enhanced-intelligence/natural-language-description-framework'
+import type { SimToolCategory } from '../enhanced-intelligence/sim-tool-catalog'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('ToolIntegrationExamples')
@@ -163,18 +166,14 @@ export class ToolIntegrationExamplesCollection {
    * Get examples filtered by skill level
    */
   getExamplesBySkillLevel(skillLevel: SkillLevel): ToolIntegrationExample[] {
-    return Array.from(this.examples.values()).filter(
-      example => example.skillLevel === skillLevel
-    )
+    return Array.from(this.examples.values()).filter((example) => example.skillLevel === skillLevel)
   }
 
   /**
    * Get examples filtered by user role
    */
   getExamplesByRole(role: UserRole): ToolIntegrationExample[] {
-    return Array.from(this.examples.values()).filter(
-      example => example.targetRole.includes(role)
-    )
+    return Array.from(this.examples.values()).filter((example) => example.targetRole.includes(role))
   }
 
   /**
@@ -182,10 +181,11 @@ export class ToolIntegrationExamplesCollection {
    */
   searchExamples(query: string): ToolIntegrationExample[] {
     const searchTerm = query.toLowerCase()
-    return Array.from(this.examples.values()).filter(example =>
-      example.exampleTitle.toLowerCase().includes(searchTerm) ||
-      example.exampleDescription.toLowerCase().includes(searchTerm) ||
-      example.toolId.toLowerCase().includes(searchTerm)
+    return Array.from(this.examples.values()).filter(
+      (example) =>
+        example.exampleTitle.toLowerCase().includes(searchTerm) ||
+        example.exampleDescription.toLowerCase().includes(searchTerm) ||
+        example.toolId.toLowerCase().includes(searchTerm)
     )
   }
 
@@ -250,7 +250,8 @@ export class ToolIntegrationExamplesCollection {
       toolId: 'run_workflow',
       toolCategory: 'workflow_management',
       exampleTitle: 'Running Workflows with User Input',
-      exampleDescription: 'Demonstrates how to execute workflows with proper input handling and error management',
+      exampleDescription:
+        'Demonstrates how to execute workflows with proper input handling and error management',
       targetRole: ['developer', 'business_user', 'analyst'],
       skillLevel: 'beginner',
       complexity: 'basic',
@@ -287,13 +288,22 @@ async function executeWorkflowWithInput(workflowInput: string) {
 // Usage example
 executeWorkflowWithInput('{"customerData": {"name": "John Doe", "email": "john@example.com"}}')
 `,
-          explanation: 'This example shows the basic pattern for executing workflows with input data.',
+          explanation:
+            'This example shows the basic pattern for executing workflows with input data.',
           annotations: [
             { line: 5, type: 'info', message: 'Tool instance requires unique ID for tracking' },
-            { line: 8, type: 'important', message: 'workflow_input should be properly formatted JSON' },
-            { line: 13, type: 'tip', message: 'Always use handleAccept() for user-initiated execution' }
+            {
+              line: 8,
+              type: 'important',
+              message: 'workflow_input should be properly formatted JSON',
+            },
+            {
+              line: 13,
+              type: 'tip',
+              message: 'Always use handleAccept() for user-initiated execution',
+            },
           ],
-          dependencies: ['@/lib/copilot/tools/client/workflow/run-workflow']
+          dependencies: ['@/lib/copilot/tools/client/workflow/run-workflow'],
         },
         supportingCode: [
           {
@@ -321,8 +331,8 @@ function monitorWorkflowExecution(toolCallId: string) {
 `,
             explanation: 'Supporting utilities for input validation and execution monitoring',
             annotations: [],
-            dependencies: []
-          }
+            dependencies: [],
+          },
         ],
         errorHandlingExample: {
           language: 'typescript',
@@ -367,9 +377,9 @@ async function robustWorkflowExecution(input: string) {
           explanation: 'Comprehensive error handling for workflow execution',
           annotations: [
             { line: 4, type: 'warning', message: 'Always validate input before execution' },
-            { line: 12, type: 'tip', message: 'Provide specific error messages for common issues' }
+            { line: 12, type: 'tip', message: 'Provide specific error messages for common issues' },
           ],
-          dependencies: []
+          dependencies: [],
         },
         validationExample: {
           language: 'typescript',
@@ -420,7 +430,7 @@ async function validateWorkflowExecution(
 `,
           explanation: 'Pre-execution validation to prevent common issues',
           annotations: [],
-          dependencies: ['@/stores/execution/store', '@/stores/workflows/registry/store']
+          dependencies: ['@/stores/execution/store', '@/stores/workflows/registry/store'],
         },
         languageVariants: {
           javascript: {
@@ -447,9 +457,9 @@ async function executeWorkflow(workflowInput) {
 `,
             explanation: 'JavaScript variant without TypeScript type annotations',
             annotations: [],
-            dependencies: []
-          }
-        }
+            dependencies: [],
+          },
+        },
       },
 
       configurationExample: {
@@ -470,55 +480,56 @@ async function executeWorkflow(workflowInput) {
     "includeOutput": true
   }
 }`,
-            description: 'Default configuration for workflow execution'
-          }
+            description: 'Default configuration for workflow execution',
+          },
         ],
         environmentVariables: [
           {
             name: 'WORKFLOW_TIMEOUT',
             description: 'Maximum execution time in milliseconds',
             defaultValue: '300000',
-            required: false
+            required: false,
           },
           {
             name: 'WORKFLOW_DEBUG',
             description: 'Enable debug logging for workflow execution',
             defaultValue: 'false',
-            required: false
-          }
+            required: false,
+          },
         ],
         systemRequirements: [
           {
             component: 'Node.js',
             version: '>=16.0.0',
-            description: 'Required for workflow execution runtime'
+            description: 'Required for workflow execution runtime',
           },
           {
             component: 'Memory',
             version: '>=2GB',
-            description: 'Minimum RAM for complex workflow execution'
-          }
+            description: 'Minimum RAM for complex workflow execution',
+          },
         ],
         toolConfiguration: {
           toolId: 'run_workflow',
           settings: {
             enableInterrupts: true,
             requireConfirmation: false,
-            defaultExecutionMode: 'foreground'
-          }
+            defaultExecutionMode: 'foreground',
+          },
         },
         integrationConfiguration: {
           apiEndpoints: [],
           webhooks: [],
-          permissions: ['workflow:execute', 'workflow:read']
-        }
+          permissions: ['workflow:execute', 'workflow:read'],
+        },
       },
 
       usageScenarios: [
         {
           scenarioId: 'data_processing_workflow',
           scenarioName: 'Data Processing Pipeline',
-          scenarioDescription: 'Execute a workflow that processes customer data through multiple stages',
+          scenarioDescription:
+            'Execute a workflow that processes customer data through multiple stages',
           useCase: 'Automated data transformation and validation',
           stepByStepGuide: [
             {
@@ -526,42 +537,43 @@ async function executeWorkflow(workflowInput) {
               title: 'Prepare Input Data',
               instruction: 'Format customer data as JSON with required fields',
               example: '{"customers": [{"name": "John", "email": "john@example.com"}]}',
-              expectedOutcome: 'Valid JSON structure ready for processing'
+              expectedOutcome: 'Valid JSON structure ready for processing',
             },
             {
               stepNumber: 2,
               title: 'Initialize Workflow Tool',
               instruction: 'Create RunWorkflowClientTool instance with unique ID',
               example: 'const tool = new RunWorkflowClientTool("data-process-001")',
-              expectedOutcome: 'Tool instance ready for execution'
+              expectedOutcome: 'Tool instance ready for execution',
             },
             {
               stepNumber: 3,
               title: 'Execute Workflow',
               instruction: 'Call handleAccept() with prepared input data',
               example: 'await tool.handleAccept({ workflow_input: jsonData })',
-              expectedOutcome: 'Workflow begins processing data'
+              expectedOutcome: 'Workflow begins processing data',
             },
             {
               stepNumber: 4,
               title: 'Monitor Progress',
               instruction: 'Watch for state changes and completion',
               example: 'tool.onStateChange((state) => console.log(state))',
-              expectedOutcome: 'Real-time progress updates'
-            }
+              expectedOutcome: 'Real-time progress updates',
+            },
           ],
-          expectedOutcome: 'Successfully processed customer data with validation and transformation',
+          expectedOutcome:
+            'Successfully processed customer data with validation and transformation',
           successCriteria: [
             'Workflow completes without errors',
             'All customer records processed',
-            'Output data matches expected schema'
+            'Output data matches expected schema',
           ],
           troubleshootingTips: [
             'Check JSON format if execution fails immediately',
             'Verify workflow permissions if access denied',
-            'Monitor memory usage for large datasets'
-          ]
-        }
+            'Monitor memory usage for large datasets',
+          ],
+        },
       ],
 
       setupInstructions: [
@@ -570,22 +582,22 @@ async function executeWorkflow(workflowInput) {
           title: 'Install Dependencies',
           instruction: 'Ensure all required packages are installed',
           commands: ['npm install @/lib/copilot/tools/client/workflow/run-workflow'],
-          verification: 'Import statement resolves without errors'
+          verification: 'Import statement resolves without errors',
         },
         {
           step: 2,
           title: 'Configure Permissions',
           instruction: 'Set up proper workflow execution permissions',
           commands: ['Set environment variable WORKFLOW_PERMISSIONS=execute,read'],
-          verification: 'Can create RunWorkflowClientTool instance'
+          verification: 'Can create RunWorkflowClientTool instance',
         },
         {
           step: 3,
           title: 'Test Basic Execution',
           instruction: 'Run a simple workflow to verify setup',
           commands: ['Execute example with minimal input'],
-          verification: 'Workflow starts and completes successfully'
-        }
+          verification: 'Workflow starts and completes successfully',
+        },
       ],
 
       bestPractices: [
@@ -593,20 +605,20 @@ async function executeWorkflow(workflowInput) {
           category: 'Input Handling',
           practice: 'Always validate JSON input before execution',
           reason: 'Prevents runtime errors and improves user experience',
-          example: 'Use JSON.parse() with try-catch for validation'
+          example: 'Use JSON.parse() with try-catch for validation',
         },
         {
           category: 'Error Management',
           practice: 'Implement comprehensive error handling',
           reason: 'Provides better debugging and user feedback',
-          example: 'Handle different error types with specific messages'
+          example: 'Handle different error types with specific messages',
         },
         {
           category: 'Performance',
           practice: 'Use unique tool call IDs',
           reason: 'Enables proper tracking and prevents conflicts',
-          example: 'Include timestamp or UUID in tool call ID'
-        }
+          example: 'Include timestamp or UUID in tool call ID',
+        },
       ],
 
       commonPitfalls: [
@@ -614,14 +626,14 @@ async function executeWorkflow(workflowInput) {
           pitfall: 'Missing input validation',
           consequence: 'Runtime errors and poor user experience',
           prevention: 'Always validate input format before execution',
-          solution: 'Implement JSON validation with clear error messages'
+          solution: 'Implement JSON validation with clear error messages',
         },
         {
           pitfall: 'Concurrent execution conflicts',
           consequence: 'Execution denied or unexpected behavior',
           prevention: 'Check execution state before starting workflow',
-          solution: 'Use execution store to manage workflow state'
-        }
+          solution: 'Use execution store to manage workflow state',
+        },
       ],
 
       troubleshooting: {
@@ -633,22 +645,22 @@ async function executeWorkflow(workflowInput) {
             solutions: [
               'Wait for current workflow to complete',
               'Check workflow execution permissions',
-              'Verify active workflow exists'
-            ]
-          }
+              'Verify active workflow exists',
+            ],
+          },
         ],
         diagnosticSteps: [
           {
             step: 'Check execution state',
             command: 'console.log(useExecutionStore.getState())',
-            expectedResult: '{ isExecuting: false, ... }'
+            expectedResult: '{ isExecuting: false, ... }',
           },
           {
             step: 'Verify active workflow',
             command: 'console.log(useWorkflowRegistry.getState().activeWorkflowId)',
-            expectedResult: 'Valid workflow ID string'
-          }
-        ]
+            expectedResult: 'Valid workflow ID string',
+          },
+        ],
       },
 
       integrationPatterns: [
@@ -684,11 +696,15 @@ async function asyncWorkflowExecution(input: string): Promise<string> {
 `,
             explanation: 'Async pattern with Promise-based completion handling',
             annotations: [],
-            dependencies: []
+            dependencies: [],
           },
-          benefits: ['Non-blocking execution', 'Better user experience', 'Proper error propagation'],
-          tradeoffs: ['More complex state management', 'Requires proper cleanup']
-        }
+          benefits: [
+            'Non-blocking execution',
+            'Better user experience',
+            'Proper error propagation',
+          ],
+          tradeoffs: ['More complex state management', 'Requires proper cleanup'],
+        },
       ],
 
       performanceConsiderations: {
@@ -696,19 +712,14 @@ async function asyncWorkflowExecution(input: string): Promise<string> {
           'Use unique tool call IDs to prevent conflicts',
           'Validate input before execution to avoid wasted resources',
           'Monitor memory usage for large input datasets',
-          'Implement timeout handling for long-running workflows'
+          'Implement timeout handling for long-running workflows',
         ],
         optimizations: [
           'Cache validated input to avoid re-parsing',
           'Use streaming for large data processing',
-          'Implement progress tracking for user feedback'
+          'Implement progress tracking for user feedback',
         ],
-        metrics: [
-          'Execution time',
-          'Memory usage',
-          'Success rate',
-          'Error frequency'
-        ]
+        metrics: ['Execution time', 'Memory usage', 'Success rate', 'Error frequency'],
       },
 
       securityConsiderations: {
@@ -716,40 +727,40 @@ async function asyncWorkflowExecution(input: string): Promise<string> {
           'Validate all user input to prevent injection attacks',
           'Check permissions before workflow execution',
           'Sanitize input data before processing',
-          'Implement proper error message filtering'
+          'Implement proper error message filtering',
         ],
         bestPractices: [
           'Never log sensitive input data',
           'Use environment variables for configuration',
           'Implement rate limiting for API endpoints',
-          'Validate workflow existence before execution'
+          'Validate workflow existence before execution',
         ],
         risks: [
           'Code injection through malicious input',
           'Unauthorized workflow execution',
-          'Data exposure through error messages'
-        ]
+          'Data exposure through error messages',
+        ],
       },
 
       prerequisites: [
         'Basic TypeScript/JavaScript knowledge',
         'Understanding of async/await patterns',
         'Familiarity with JSON data structures',
-        'Knowledge of React hooks (for UI integration)'
+        'Knowledge of React hooks (for UI integration)',
       ],
 
       learningObjectives: [
         'Execute workflows programmatically',
         'Handle workflow errors gracefully',
         'Validate input data properly',
-        'Monitor workflow execution state'
+        'Monitor workflow execution state',
       ],
 
       nextSteps: [
         'Explore advanced workflow configuration options',
         'Learn about workflow building and editing',
         'Study workflow debugging techniques',
-        'Integrate with UI components for better UX'
+        'Integrate with UI components for better UX',
       ],
 
       exampleMetadata: {
@@ -759,8 +770,8 @@ async function asyncWorkflowExecution(input: string): Promise<string> {
         reviewStatus: 'approved',
         difficulty: 'beginner',
         estimatedTime: '30 minutes',
-        tags: ['workflow', 'execution', 'async', 'error-handling']
-      }
+        tags: ['workflow', 'execution', 'async', 'error-handling'],
+      },
     }
   }
 
@@ -770,7 +781,8 @@ async function asyncWorkflowExecution(input: string): Promise<string> {
       toolId: 'build_workflow',
       toolCategory: 'workflow_management',
       exampleTitle: 'Building Complex Workflows Programmatically',
-      exampleDescription: 'Advanced example showing how to construct workflows using natural language descriptions and structured inputs',
+      exampleDescription:
+        'Advanced example showing how to construct workflows using natural language descriptions and structured inputs',
       targetRole: ['developer', 'analyst'],
       skillLevel: 'intermediate',
       complexity: 'advanced',
@@ -850,16 +862,21 @@ buildComplexWorkflow(workflowRequest)
     console.error('Build failed:', error.message)
   })
 `,
-          explanation: 'This example demonstrates building complex workflows with detailed requirements and context',
+          explanation:
+            'This example demonstrates building complex workflows with detailed requirements and context',
           annotations: [
-            { line: 10, type: 'info', message: 'BuildWorkflowInput type ensures proper request structure' },
+            {
+              line: 10,
+              type: 'info',
+              message: 'BuildWorkflowInput type ensures proper request structure',
+            },
             { line: 20, type: 'important', message: 'Always validate input using Zod schemas' },
-            { line: 27, type: 'tip', message: 'Parse result to ensure type safety' }
+            { line: 27, type: 'tip', message: 'Parse result to ensure type safety' },
           ],
           dependencies: [
             '@/lib/copilot/tools/server/workflow/build-workflow',
-            '@/lib/copilot/tools/shared/schemas'
-          ]
+            '@/lib/copilot/tools/shared/schemas',
+          ],
         },
 
         supportingCode: [
@@ -929,8 +946,8 @@ function generateWorkflowFromTemplate(
 `,
             explanation: 'Template system for common workflow patterns',
             annotations: [],
-            dependencies: []
-          }
+            dependencies: [],
+          },
         ],
 
         errorHandlingExample: {
@@ -1032,13 +1049,26 @@ async function buildWorkflowWithRetry(
   throw new Error('Unexpected error in retry logic')
 }
 `,
-          explanation: 'Comprehensive error handling with retry mechanisms and user-friendly messages',
+          explanation:
+            'Comprehensive error handling with retry mechanisms and user-friendly messages',
           annotations: [
-            { line: 8, type: 'warning', message: 'Validate input early to prevent wasted processing' },
-            { line: 30, type: 'info', message: 'ZodError provides detailed validation information' },
-            { line: 75, type: 'tip', message: 'Implement exponential backoff for transient failures' }
+            {
+              line: 8,
+              type: 'warning',
+              message: 'Validate input early to prevent wasted processing',
+            },
+            {
+              line: 30,
+              type: 'info',
+              message: 'ZodError provides detailed validation information',
+            },
+            {
+              line: 75,
+              type: 'tip',
+              message: 'Implement exponential backoff for transient failures',
+            },
           ],
-          dependencies: ['zod']
+          dependencies: ['zod'],
         },
 
         validationExample: {
@@ -1141,11 +1171,19 @@ async function validateBusinessRules(request: z.infer<typeof EnhancedWorkflowBui
 `,
           explanation: 'Advanced validation with business rules and schema validation',
           annotations: [
-            { line: 5, type: 'info', message: 'Structured requirements enable better workflow generation' },
-            { line: 45, type: 'important', message: 'Validate business logic after schema validation' },
-            { line: 75, type: 'tip', message: 'Cross-validate related fields for consistency' }
+            {
+              line: 5,
+              type: 'info',
+              message: 'Structured requirements enable better workflow generation',
+            },
+            {
+              line: 45,
+              type: 'important',
+              message: 'Validate business logic after schema validation',
+            },
+            { line: 75, type: 'tip', message: 'Cross-validate related fields for consistency' },
           ],
-          dependencies: ['zod']
+          dependencies: ['zod'],
         },
 
         languageVariants: {
@@ -1241,9 +1279,9 @@ async def main():
 `,
             explanation: 'Python implementation using dataclasses and type hints',
             annotations: [],
-            dependencies: ['typing', 'dataclasses', 'json']
-          }
-        }
+            dependencies: ['typing', 'dataclasses', 'json'],
+          },
+        },
       },
 
       // Configuration, usage scenarios, setup instructions, etc. would continue here
@@ -1267,58 +1305,67 @@ async def main():
     "include_validation": true
   }
 }`,
-            description: 'Configuration for workflow building behavior'
-          }
+            description: 'Configuration for workflow building behavior',
+          },
         ],
         environmentVariables: [
           {
             name: 'WORKFLOW_BUILDER_API_KEY',
             description: 'API key for workflow generation service',
             defaultValue: '',
-            required: true
-          }
+            required: true,
+          },
         ],
         systemRequirements: [
           {
             component: 'Node.js',
             version: '>=16.0.0',
-            description: 'Required for workflow building runtime'
-          }
+            description: 'Required for workflow building runtime',
+          },
         ],
         toolConfiguration: {
           toolId: 'build_workflow',
           settings: {
             enableTemplates: true,
             maxComplexity: 'advanced',
-            defaultTargetUsers: ['business_user']
-          }
+            defaultTargetUsers: ['business_user'],
+          },
         },
         integrationConfiguration: {
           apiEndpoints: ['/api/workflows/build'],
           webhooks: [],
-          permissions: ['workflow:create', 'workflow:build']
-        }
+          permissions: ['workflow:create', 'workflow:build'],
+        },
       },
 
       usageScenarios: [
         {
           scenarioId: 'ecommerce_order_processing',
           scenarioName: 'E-commerce Order Processing Workflow',
-          scenarioDescription: 'Build a comprehensive workflow for processing e-commerce orders from receipt to fulfillment',
-          useCase: 'Automated order processing with inventory management and customer notifications',
+          scenarioDescription:
+            'Build a comprehensive workflow for processing e-commerce orders from receipt to fulfillment',
+          useCase:
+            'Automated order processing with inventory management and customer notifications',
           stepByStepGuide: [
             {
               stepNumber: 1,
               title: 'Define Workflow Requirements',
               instruction: 'Specify all business requirements for order processing',
               example: 'Order validation, inventory check, payment processing, fulfillment',
-              expectedOutcome: 'Complete list of workflow steps and dependencies'
-            }
+              expectedOutcome: 'Complete list of workflow steps and dependencies',
+            },
           ],
           expectedOutcome: 'Fully automated order processing workflow',
-          successCriteria: ['All order states handled', 'Error recovery implemented', 'Customer notifications sent'],
-          troubleshootingTips: ['Verify payment gateway configuration', 'Check inventory API connectivity']
-        }
+          successCriteria: [
+            'All order states handled',
+            'Error recovery implemented',
+            'Customer notifications sent',
+          ],
+          troubleshootingTips: [
+            'Verify payment gateway configuration',
+            'Check inventory API connectivity',
+          ],
+        },
       ],
 
       setupInstructions: [
@@ -1327,8 +1374,8 @@ async def main():
           title: 'Install Workflow Builder',
           instruction: 'Install the workflow building dependencies',
           commands: ['npm install @/lib/copilot/tools/server/workflow/build-workflow'],
-          verification: 'buildWorkflowServerTool can be imported'
-        }
+          verification: 'buildWorkflowServerTool can be imported',
+        },
       ],
 
       bestPractices: [
@@ -1336,8 +1383,8 @@ async def main():
           category: 'Requirement Specification',
           practice: 'Use structured requirement objects instead of plain strings',
           reason: 'Enables better workflow generation and validation',
-          example: 'Specify requirement type, priority, and dependencies'
-        }
+          example: 'Specify requirement type, priority, and dependencies',
+        },
       ],
 
       commonPitfalls: [
@@ -1345,8 +1392,8 @@ async def main():
           pitfall: 'Overly complex initial requirements',
           consequence: 'Workflow generation may fail or produce overly complex results',
           prevention: 'Start with core requirements and iterate',
-          solution: 'Break down complex requirements into smaller, manageable pieces'
-        }
+          solution: 'Break down complex requirements into smaller, manageable pieces',
+        },
       ],
 
       troubleshooting: {
@@ -1355,16 +1402,16 @@ async def main():
             issue: 'Workflow generation timeout',
             symptoms: ['Request times out', 'No response from build service'],
             possibleCauses: ['Too many complex requirements', 'Service overload'],
-            solutions: ['Reduce requirement complexity', 'Retry with simpler description']
-          }
+            solutions: ['Reduce requirement complexity', 'Retry with simpler description'],
+          },
         ],
         diagnosticSteps: [
           {
             step: 'Validate build input',
             command: 'BuildWorkflowInput.parse(buildInput)',
-            expectedResult: 'Validation passes without errors'
-          }
-        ]
+            expectedResult: 'Validation passes without errors',
+          },
+        ],
       },
 
       integrationPatterns: [
@@ -1378,42 +1425,42 @@ async def main():
             code: 'const template = workflowTemplates[templateName]',
             explanation: 'Select appropriate template based on use case',
             annotations: [],
-            dependencies: []
+            dependencies: [],
           },
           benefits: ['Faster development', 'Consistent patterns', 'Best practices built-in'],
-          tradeoffs: ['Less flexibility', 'May not fit all use cases']
-        }
+          tradeoffs: ['Less flexibility', 'May not fit all use cases'],
+        },
       ],
 
       performanceConsiderations: {
         guidelines: ['Limit requirements to essential items', 'Use templates for common patterns'],
         optimizations: ['Cache common workflow patterns', 'Batch multiple builds'],
-        metrics: ['Build time', 'Generated complexity', 'Success rate']
+        metrics: ['Build time', 'Generated complexity', 'Success rate'],
       },
 
       securityConsiderations: {
         requirements: ['Validate all input parameters', 'Sanitize workflow descriptions'],
         bestPractices: ['Use templates to prevent malicious code generation'],
-        risks: ['Code injection through descriptions', 'Resource exhaustion']
+        risks: ['Code injection through descriptions', 'Resource exhaustion'],
       },
 
       prerequisites: [
         'Understanding of workflow concepts',
         'Knowledge of business process modeling',
-        'Familiarity with JSON schema validation'
+        'Familiarity with JSON schema validation',
       ],
 
       learningObjectives: [
         'Build workflows from natural language descriptions',
         'Use templates for common patterns',
         'Validate workflow requirements',
-        'Handle build errors gracefully'
+        'Handle build errors gracefully',
       ],
 
       nextSteps: [
         'Learn workflow editing and modification',
         'Explore advanced workflow patterns',
-        'Study workflow optimization techniques'
+        'Study workflow optimization techniques',
       ],
 
       exampleMetadata: {
@@ -1423,8 +1470,8 @@ async def main():
         reviewStatus: 'approved',
         difficulty: 'intermediate',
         estimatedTime: '45 minutes',
-        tags: ['workflow', 'building', 'automation', 'templates']
-      }
+        tags: ['workflow', 'building', 'automation', 'templates'],
+      },
     }
   }
 
@@ -1480,7 +1527,8 @@ async def main():
       toolId: 'make_api_request',
       toolCategory: 'api_integration',
       exampleTitle: 'Advanced API Integration Patterns',
-      exampleDescription: 'Comprehensive guide to making API requests with authentication and error handling',
+      exampleDescription:
+        'Comprehensive guide to making API requests with authentication and error handling',
       targetRole: ['developer'],
       skillLevel: 'intermediate',
       complexity: 'advanced',

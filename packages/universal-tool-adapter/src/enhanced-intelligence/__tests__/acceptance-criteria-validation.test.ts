@@ -6,16 +6,9 @@
  * to provide a comprehensive validation report.
  */
 
-import { describe, expect, it, beforeAll, afterAll, jest } from '@jest/globals'
-import { spawn } from 'child_process'
 import { promises as fs } from 'fs'
 import path from 'path'
-
-// Import test frameworks for coordination
-import type { IntegrationValidationSuite } from './integration-validation.test'
-import type { PerformanceBenchmarkSuite } from './performance-benchmark.test'
-import type { UserExperienceMetricsCollector } from './user-experience-metrics.test'
-import type { ErrorIntelligenceIntegrationMetrics } from './error-intelligence-integration.test'
+import { afterAll, beforeAll, describe, expect, it } from '@jest/globals'
 
 /**
  * Acceptance Criteria Definition
@@ -111,13 +104,14 @@ const ACCEPTANCE_CRITERIA: AcceptanceCriteria[] = [
   {
     id: 'AC001',
     title: 'Context-Aware Tool Recommendations',
-    description: 'System provides intelligent tool recommendations based on user context and task requirements',
+    description:
+      'System provides intelligent tool recommendations based on user context and task requirements',
     priority: 'high',
     category: 'functionality',
     validationMethods: ['integration-test', 'user-simulation', 'accuracy-measurement'],
     successCriteria: {
-      minimumThreshold: 0.80,
-      targetThreshold: 0.90,
+      minimumThreshold: 0.8,
+      targetThreshold: 0.9,
       unit: 'ratio',
       measurement: 'recommendation_accuracy',
     },
@@ -146,8 +140,8 @@ const ACCEPTANCE_CRITERIA: AcceptanceCriteria[] = [
     category: 'functionality',
     validationMethods: ['skill-adaptation-test', 'content-analysis', 'user-experience-test'],
     successCriteria: {
-      minimumThreshold: 0.80,
-      targetThreshold: 0.90,
+      minimumThreshold: 0.8,
+      targetThreshold: 0.9,
       unit: 'ratio',
       measurement: 'adaptation_effectiveness',
     },
@@ -174,7 +168,11 @@ const ACCEPTANCE_CRITERIA: AcceptanceCriteria[] = [
     description: 'System supports multiple languages with accurate translations',
     priority: 'medium',
     category: 'accessibility',
-    validationMethods: ['translation-accuracy-test', 'cultural-adaptation-test', 'localization-test'],
+    validationMethods: [
+      'translation-accuracy-test',
+      'cultural-adaptation-test',
+      'localization-test',
+    ],
     successCriteria: {
       minimumThreshold: 0.85,
       targetThreshold: 0.95,
@@ -191,7 +189,7 @@ const ACCEPTANCE_CRITERIA: AcceptanceCriteria[] = [
     category: 'functionality',
     validationMethods: ['learning-algorithm-test', 'improvement-measurement', 'longitudinal-study'],
     successCriteria: {
-      minimumThreshold: 0.10,
+      minimumThreshold: 0.1,
       targetThreshold: 0.25,
       unit: 'ratio',
       measurement: 'improvement_rate_per_week',
@@ -221,7 +219,7 @@ const ACCEPTANCE_CRITERIA: AcceptanceCriteria[] = [
     category: 'accessibility',
     validationMethods: ['wcag-audit', 'screen-reader-test', 'keyboard-navigation-test'],
     successCriteria: {
-      minimumThreshold: 0.90,
+      minimumThreshold: 0.9,
       targetThreshold: 0.98,
       unit: 'ratio',
       measurement: 'wcag_compliance_score',
@@ -264,7 +262,7 @@ const ACCEPTANCE_CRITERIA: AcceptanceCriteria[] = [
  * Acceptance Criteria Validation Test Suite
  */
 describe('Comprehensive Acceptance Criteria Validation', () => {
-  let validationResults: ValidationResult[] = []
+  const validationResults: ValidationResult[] = []
   let testSuiteExecutor: TestSuiteExecutor
   let evidenceCollector: EvidenceCollector
 
@@ -281,10 +279,10 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
   })
 
   describe('High Priority Acceptance Criteria', () => {
-    const highPriorityCriteria = ACCEPTANCE_CRITERIA.filter(c => c.priority === 'high')
+    const highPriorityCriteria = ACCEPTANCE_CRITERIA.filter((c) => c.priority === 'high')
 
     it('should validate context-aware tool recommendations (AC001)', async () => {
-      const criteria = highPriorityCriteria.find(c => c.id === 'AC001')!
+      const criteria = highPriorityCriteria.find((c) => c.id === 'AC001')!
 
       const result = await validateCriteria(criteria, async () => {
         // Execute recommendation accuracy tests
@@ -310,7 +308,7 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
     })
 
     it('should validate natural language tool descriptions (AC002)', async () => {
-      const criteria = highPriorityCriteria.find(c => c.id === 'AC002')!
+      const criteria = highPriorityCriteria.find((c) => c.id === 'AC002')!
 
       const result = await validateCriteria(criteria, async () => {
         // Execute NLP and readability tests
@@ -336,7 +334,7 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
     })
 
     it('should validate user skill level adaptation (AC003)', async () => {
-      const criteria = highPriorityCriteria.find(c => c.id === 'AC003')!
+      const criteria = highPriorityCriteria.find((c) => c.id === 'AC003')!
 
       const result = await validateCriteria(criteria, async () => {
         // Execute skill adaptation tests
@@ -362,7 +360,7 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
     })
 
     it('should validate performance response times (AC004)', async () => {
-      const criteria = highPriorityCriteria.find(c => c.id === 'AC004')!
+      const criteria = highPriorityCriteria.find((c) => c.id === 'AC004')!
 
       const result = await validateCriteria(criteria, async () => {
         // Execute performance tests
@@ -388,7 +386,7 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
     })
 
     it('should validate error handling and intelligence (AC007)', async () => {
-      const criteria = highPriorityCriteria.find(c => c.id === 'AC007')!
+      const criteria = highPriorityCriteria.find((c) => c.id === 'AC007')!
 
       const result = await validateCriteria(criteria, async () => {
         // Execute error intelligence tests
@@ -414,7 +412,7 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
     })
 
     it('should validate accessibility compliance (AC008)', async () => {
-      const criteria = highPriorityCriteria.find(c => c.id === 'AC008')!
+      const criteria = highPriorityCriteria.find((c) => c.id === 'AC008')!
 
       const result = await validateCriteria(criteria, async () => {
         // Execute accessibility compliance tests
@@ -440,7 +438,7 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
     })
 
     it('should validate user experience quality (AC010)', async () => {
-      const criteria = highPriorityCriteria.find(c => c.id === 'AC010')!
+      const criteria = highPriorityCriteria.find((c) => c.id === 'AC010')!
 
       const result = await validateCriteria(criteria, async () => {
         // Execute UX quality tests
@@ -467,10 +465,10 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
   })
 
   describe('Medium Priority Acceptance Criteria', () => {
-    const mediumPriorityCriteria = ACCEPTANCE_CRITERIA.filter(c => c.priority === 'medium')
+    const mediumPriorityCriteria = ACCEPTANCE_CRITERIA.filter((c) => c.priority === 'medium')
 
     it('should validate multilingual support (AC005)', async () => {
-      const criteria = mediumPriorityCriteria.find(c => c.id === 'AC005')!
+      const criteria = mediumPriorityCriteria.find((c) => c.id === 'AC005')!
 
       const result = await validateCriteria(criteria, async () => {
         const translationResults = await testSuiteExecutor.runTranslationTests()
@@ -494,7 +492,7 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
     })
 
     it('should validate learning and improvement (AC006)', async () => {
-      const criteria = mediumPriorityCriteria.find(c => c.id === 'AC006')!
+      const criteria = mediumPriorityCriteria.find((c) => c.id === 'AC006')!
 
       const result = await validateCriteria(criteria, async () => {
         const learningResults = await testSuiteExecutor.runLearningTests()
@@ -518,7 +516,7 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
     })
 
     it('should validate scalability and load handling (AC009)', async () => {
-      const criteria = mediumPriorityCriteria.find(c => c.id === 'AC009')!
+      const criteria = mediumPriorityCriteria.find((c) => c.id === 'AC009')!
 
       const result = await validateCriteria(criteria, async () => {
         const loadResults = await testSuiteExecutor.runLoadTests()
@@ -559,7 +557,7 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
       expect(report.recommendations.length).toBeGreaterThan(0)
 
       // Log comprehensive report
-      console.log('\n' + '='.repeat(80))
+      console.log(`\n${'='.repeat(80)}`)
       console.log('🎯 COMPREHENSIVE ACCEPTANCE CRITERIA VALIDATION REPORT')
       console.log('='.repeat(80))
       console.log(`📊 Feature: ${report.feature}`)
@@ -571,38 +569,60 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
 
       console.log('📋 CRITERIA SUMMARY:')
       console.log(`   Total Criteria: ${report.totalCriteria}`)
-      console.log(`   Passed: ${report.passedCriteria} (${((report.passedCriteria/report.totalCriteria)*100).toFixed(1)}%)`)
-      console.log(`   Failed: ${report.failedCriteria} (${((report.failedCriteria/report.totalCriteria)*100).toFixed(1)}%)`)
-      console.log(`   Partial: ${report.partialCriteria} (${((report.partialCriteria/report.totalCriteria)*100).toFixed(1)}%)`)
+      console.log(
+        `   Passed: ${report.passedCriteria} (${((report.passedCriteria / report.totalCriteria) * 100).toFixed(1)}%)`
+      )
+      console.log(
+        `   Failed: ${report.failedCriteria} (${((report.failedCriteria / report.totalCriteria) * 100).toFixed(1)}%)`
+      )
+      console.log(
+        `   Partial: ${report.partialCriteria} (${((report.partialCriteria / report.totalCriteria) * 100).toFixed(1)}%)`
+      )
       console.log('')
 
       console.log('⚡ PERFORMANCE SUMMARY:')
       console.log(`   Response Time: ${report.performanceSummary.averageResponseTime.toFixed(0)}ms`)
       console.log(`   Throughput Score: ${report.performanceSummary.throughputScore.toFixed(1)}`)
-      console.log(`   Memory Efficiency: ${(report.performanceSummary.memoryEfficiency * 100).toFixed(1)}%`)
+      console.log(
+        `   Memory Efficiency: ${(report.performanceSummary.memoryEfficiency * 100).toFixed(1)}%`
+      )
       console.log(`   Performance Grade: ${report.performanceSummary.performanceGrade}`)
       console.log('')
 
       console.log('👤 USABILITY SUMMARY:')
-      console.log(`   Task Completion: ${(report.usabilitySummary.taskCompletionRate * 100).toFixed(1)}%`)
-      console.log(`   User Satisfaction: ${report.usabilitySummary.userSatisfactionScore.toFixed(1)}/5.0`)
-      console.log(`   Learnability: ${(report.usabilitySummary.learnabilityScore * 100).toFixed(1)}%`)
+      console.log(
+        `   Task Completion: ${(report.usabilitySummary.taskCompletionRate * 100).toFixed(1)}%`
+      )
+      console.log(
+        `   User Satisfaction: ${report.usabilitySummary.userSatisfactionScore.toFixed(1)}/5.0`
+      )
+      console.log(
+        `   Learnability: ${(report.usabilitySummary.learnabilityScore * 100).toFixed(1)}%`
+      )
       console.log(`   Usability Grade: ${report.usabilitySummary.usabilityGrade}`)
       console.log('')
 
       console.log('♿ COMPLIANCE SUMMARY:')
-      console.log(`   WCAG Compliance: ${(report.complianceSummary.wcagCompliance * 100).toFixed(1)}%`)
-      console.log(`   Accessibility Score: ${(report.complianceSummary.accessibilityScore * 100).toFixed(1)}%`)
+      console.log(
+        `   WCAG Compliance: ${(report.complianceSummary.wcagCompliance * 100).toFixed(1)}%`
+      )
+      console.log(
+        `   Accessibility Score: ${(report.complianceSummary.accessibilityScore * 100).toFixed(1)}%`
+      )
       console.log(`   Compliance Grade: ${report.complianceSummary.complianceGrade}`)
       console.log('')
 
       console.log('🔍 DETAILED RESULTS:')
-      report.results.forEach(result => {
+      report.results.forEach((result) => {
         const status = result.passed ? '✅ PASS' : '❌ FAIL'
-        const criteria = ACCEPTANCE_CRITERIA.find(c => c.id === result.criteriaId)!
+        const criteria = ACCEPTANCE_CRITERIA.find((c) => c.id === result.criteriaId)!
         console.log(`   ${result.criteriaId}: ${status} - ${criteria.title}`)
-        console.log(`      Expected: ${criteria.successCriteria.minimumThreshold} ${criteria.successCriteria.unit}`)
-        console.log(`      Actual: ${result.actualValue.toFixed(3)} ${criteria.successCriteria.unit}`)
+        console.log(
+          `      Expected: ${criteria.successCriteria.minimumThreshold} ${criteria.successCriteria.unit}`
+        )
+        console.log(
+          `      Actual: ${result.actualValue.toFixed(3)} ${criteria.successCriteria.unit}`
+        )
         console.log(`      Confidence: ${(result.confidence * 100).toFixed(1)}%`)
       })
       console.log('')
@@ -621,8 +641,8 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
       console.log('='.repeat(80))
 
       // Validate overall success
-      expect(report.confidenceScore).toBeGreaterThanOrEqual(0.80)
-      expect(report.passedCriteria).toBeGreaterThanOrEqual(Math.floor(report.totalCriteria * 0.80))
+      expect(report.confidenceScore).toBeGreaterThanOrEqual(0.8)
+      expect(report.passedCriteria).toBeGreaterThanOrEqual(Math.floor(report.totalCriteria * 0.8))
     })
   })
 
@@ -661,7 +681,9 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
       }
 
       const status = passed ? '✅ PASSED' : '❌ FAILED'
-      console.log(`   Result: ${status} (${testResult.actualValue.toFixed(3)} ${criteria.successCriteria.unit})`)
+      console.log(
+        `   Result: ${status} (${testResult.actualValue.toFixed(3)} ${criteria.successCriteria.unit})`
+      )
 
       return result
     } catch (error) {
@@ -684,16 +706,16 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
    * Generate comprehensive validation report
    */
   async function generateComprehensiveReport(): Promise<ComprehensiveValidationReport> {
-    const passedResults = validationResults.filter(r => r.passed)
-    const failedResults = validationResults.filter(r => !r.passed)
+    const passedResults = validationResults.filter((r) => r.passed)
+    const failedResults = validationResults.filter((r) => !r.passed)
     const partialResults: ValidationResult[] = [] // Could be implemented for partial passes
 
     const overallStatus: 'PASSED' | 'FAILED' | 'PARTIAL' =
-      failedResults.length === 0 ? 'PASSED' :
-      passedResults.length === 0 ? 'FAILED' : 'PARTIAL'
+      failedResults.length === 0 ? 'PASSED' : passedResults.length === 0 ? 'FAILED' : 'PARTIAL'
 
-    const confidenceScore = validationResults.reduce((sum, r) => sum + r.confidence, 0) /
-                           Math.max(validationResults.length, 1)
+    const confidenceScore =
+      validationResults.reduce((sum, r) => sum + r.confidence, 0) /
+      Math.max(validationResults.length, 1)
 
     // Generate summaries
     const performanceSummary = await generatePerformanceSummary()
@@ -726,8 +748,11 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
     const report = await generateComprehensiveReport()
 
     // Save report to file
-    const reportPath = path.join(__dirname, 'validation-reports',
-      `acceptance-criteria-validation-${Date.now()}.json`)
+    const reportPath = path.join(
+      __dirname,
+      'validation-reports',
+      `acceptance-criteria-validation-${Date.now()}.json`
+    )
 
     await fs.mkdir(path.dirname(reportPath), { recursive: true })
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2))
@@ -785,7 +810,7 @@ class TestSuiteExecutor {
   async runAccessibilityTests(): Promise<any> {
     return {
       wcagComplianceScore: 0.94,
-      screenReaderScore: 0.90,
+      screenReaderScore: 0.9,
       keyboardNavigationScore: 0.95,
     }
   }
@@ -850,17 +875,25 @@ function calculateConfidence(evidence: ValidationEvidence[]): number {
   return Math.min(0.95, weightedRelevance * evidenceCount + 0.1)
 }
 
-function generateRecommendations(criteria: AcceptanceCriteria, actualValue: number, passed: boolean): string[] {
+function generateRecommendations(
+  criteria: AcceptanceCriteria,
+  actualValue: number,
+  passed: boolean
+): string[] {
   const recommendations: string[] = []
 
   if (!passed) {
-    recommendations.push(`Improve ${criteria.title} to meet minimum threshold of ${criteria.successCriteria.minimumThreshold}`)
+    recommendations.push(
+      `Improve ${criteria.title} to meet minimum threshold of ${criteria.successCriteria.minimumThreshold}`
+    )
 
     if (actualValue < criteria.successCriteria.minimumThreshold * 0.8) {
       recommendations.push('Consider architectural changes for significant improvement')
     }
   } else if (actualValue < criteria.successCriteria.targetThreshold) {
-    recommendations.push(`Consider optimizations to reach target threshold of ${criteria.successCriteria.targetThreshold}`)
+    recommendations.push(
+      `Consider optimizations to reach target threshold of ${criteria.successCriteria.targetThreshold}`
+    )
   }
 
   return recommendations
@@ -890,7 +923,7 @@ async function generateComplianceSummary(): Promise<ComplianceSummary> {
   return {
     wcagCompliance: 0.94,
     accessibilityScore: 0.92,
-    securityCompliance: 0.90,
+    securityCompliance: 0.9,
     dataPrivacyCompliance: 0.95,
     complianceGrade: 'A',
   }
@@ -933,4 +966,4 @@ function generateNextSteps(status: string, failedResults: ValidationResult[]): s
   return steps
 }
 
-export { AcceptanceCriteria, ValidationResult, ComprehensiveValidationReport }
+export type { AcceptanceCriteria, ValidationResult, ComprehensiveValidationReport }

@@ -1,20 +1,17 @@
-import { and, asc, desc, eq, gte, ilike, inArray, isNull, lte, or, sql } from 'drizzle-orm'
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
+import { and, desc, eq, gte, ilike, inArray, isNull, lte, or, sql } from 'drizzle-orm'
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import {
-  chatMessage,
-  chatConversation,
-  chatBrowserSession,
-  chatSearchIndex,
-  chatExportRequest,
-  type ChatMessage,
-  type ChatConversation,
   type ChatBrowserSession,
+  type ChatConversation,
+  type ChatMessage,
+  chatBrowserSession,
+  chatConversation,
+  chatExportRequest,
+  chatMessage,
+  chatSearchIndex,
   type NewChatMessage,
-  type NewChatConversation,
-  type NewChatBrowserSession,
 } from './chat-persistence-schema'
-import { parlantSession, parlantAgent } from './parlant-schema'
-import { workspace, user } from './schema'
+import { parlantSession } from './parlant-schema'
 
 /**
  * Chat Persistence Query Layer
@@ -83,10 +80,7 @@ export class ChatMessageStorage {
       metadata: params.metadata || {},
     }
 
-    const [message] = await this.db
-      .insert(chatMessage)
-      .values(newMessage)
-      .returning()
+    const [message] = await this.db.insert(chatMessage).values(newMessage).returning()
 
     // Update search index asynchronously
     if (params.rawContent) {
@@ -103,13 +97,16 @@ export class ChatMessageStorage {
     messages: Array<Omit<NewChatMessage, 'sequenceNumber'>>
   ): Promise<ChatMessage[]> {
     // Group messages by session for sequence number assignment
-    const messagesBySession = messages.reduce((groups, msg) => {
-      if (!groups[msg.sessionId]) {
-        groups[msg.sessionId] = []
-      }
-      groups[msg.sessionId].push(msg)
-      return groups
-    }, {} as Record<string, typeof messages>)
+    const messagesBySession = messages.reduce(
+      (groups, msg) => {
+        if (!groups[msg.sessionId]) {
+          groups[msg.sessionId] = []
+        }
+        groups[msg.sessionId].push(msg)
+        return groups
+      },
+      {} as Record<string, typeof messages>
+    )
 
     const allMessages: NewChatMessage[] = []
 
@@ -131,10 +128,7 @@ export class ChatMessageStorage {
     }
 
     // Insert all messages in batch
-    const insertedMessages = await this.db
-      .insert(chatMessage)
-      .values(allMessages)
-      .returning()
+    const insertedMessages = await this.db.insert(chatMessage).values(allMessages).returning()
 
     return insertedMessages
   }
@@ -155,10 +149,7 @@ export class ChatMessageStorage {
       updates.readAt = timestamp || new Date()
     }
 
-    await this.db
-      .update(chatMessage)
-      .set(updates)
-      .where(eq(chatMessage.id, messageId))
+    await this.db.update(chatMessage).set(updates).where(eq(chatMessage.id, messageId))
   }
 
   /**
@@ -198,7 +189,7 @@ export class ChatMessageStorage {
     return content
       .toLowerCase()
       .split(/\W+/)
-      .filter(word => word.length > 3)
+      .filter((word) => word.length > 3)
       .slice(0, 20)
   }
 
@@ -209,13 +200,13 @@ export class ChatMessageStorage {
     // Extract email addresses
     const emails = content.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g)
     if (emails) {
-      entities.push(...emails.map(email => ({ type: 'email', value: email })))
+      entities.push(...emails.map((email) => ({ type: 'email', value: email })))
     }
 
     // Extract URLs
     const urls = content.match(/https?:\/\/[^\s]+/g)
     if (urls) {
-      entities.push(...urls.map(url => ({ type: 'url', value: url })))
+      entities.push(...urls.map((url) => ({ type: 'url', value: url })))
     }
 
     return entities.slice(0, 10)
@@ -352,12 +343,9 @@ export class ChatHistoryRetrieval {
       )
     }
 
-    const results = await query
-      .orderBy(desc(chatMessage.createdAt))
-      .limit(limit)
-      .offset(offset)
+    const results = await query.orderBy(desc(chatMessage.createdAt)).limit(limit).offset(offset)
 
-    const messages = results.map(result => ({
+    const messages = results.map((result) => ({
       ...result.message,
       sessionInfo: result.session,
     }))
@@ -406,7 +394,7 @@ export class ChatHistoryRetrieval {
     const searchTerms = params.query
       .toLowerCase()
       .split(' ')
-      .filter(term => term.length > 2)
+      .filter((term) => term.length > 2)
 
     let query = this.db
       .select({
@@ -424,7 +412,7 @@ export class ChatHistoryRetrieval {
           eq(chatMessage.workspaceId, params.workspaceId),
           or(
             ilike(chatMessage.rawContent, `%${params.query}%`),
-            ...searchTerms.map(term => ilike(chatMessage.rawContent, `%${term}%`))
+            ...searchTerms.map((term) => ilike(chatMessage.rawContent, `%${term}%`))
           ),
           isNull(chatMessage.deletedAt)
         )
@@ -453,7 +441,7 @@ export class ChatHistoryRetrieval {
       .limit(limit)
       .offset(offset)
 
-    const messages = results.map(result => ({
+    const messages = results.map((result) => ({
       ...result.message,
       relevanceScore: result.relevanceScore,
     }))
@@ -518,10 +506,7 @@ export class ConversationManager {
   /**
    * Link a session to a conversation
    */
-  async linkSessionToConversation(
-    conversationId: string,
-    sessionId: string
-  ): Promise<void> {
+  async linkSessionToConversation(conversationId: string, sessionId: string): Promise<void> {
     await this.db
       .update(chatConversation)
       .set({

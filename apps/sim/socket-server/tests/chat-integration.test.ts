@@ -1,12 +1,26 @@
-import { beforeAll, beforeEach, afterAll, afterEach, describe, expect, test, jest } from '@jest/globals'
 import { createServer } from 'http'
-import { Server } from 'socket.io'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  test,
+} from '@jest/globals'
+import type { Server } from 'socket.io'
 import { io as Client, type Socket as ClientSocket } from 'socket.io-client'
-import { createSocketIOServer } from '@/socket-server/config/socket'
-import { setupChatHandlers, type ChatMessage, type TypingIndicator, type ChatPresence } from '@/socket-server/handlers/chat'
-import { RoomManager } from '@/socket-server/rooms/manager'
-import { authenticateSocket, type AuthenticatedSocket } from '@/socket-server/middleware/auth'
 import { createLogger } from '@/lib/logs/console/logger'
+import { createSocketIOServer } from '@/socket-server/config/socket'
+import {
+  type ChatMessage,
+  type ChatPresence,
+  setupChatHandlers,
+  type TypingIndicator,
+} from '@/socket-server/handlers/chat'
+import { type AuthenticatedSocket, authenticateSocket } from '@/socket-server/middleware/auth'
+import { RoomManager } from '@/socket-server/rooms/manager'
 
 const logger = createLogger('ChatIntegrationTest')
 
@@ -298,11 +312,11 @@ describe('Socket.io Chat Integration', () => {
 
       // Start typing
       clientSocket1.emit('chat:typing', { sessionId, isTyping: true })
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       // Stop typing
       clientSocket1.emit('chat:typing', { sessionId, isTyping: false })
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       expect(typingEvents).toHaveLength(2)
       expect(typingEvents[0].isTyping).toBe(true)
@@ -396,11 +410,17 @@ describe('Socket.io Chat Integration', () => {
       await Promise.all([
         new Promise<void>((resolve) => {
           clientSocket1.on('chat:join-session-success', () => resolve())
-          clientSocket1.emit('chat:join-session', { sessionId: sessionId1, workspaceId: workspaceId1 })
+          clientSocket1.emit('chat:join-session', {
+            sessionId: sessionId1,
+            workspaceId: workspaceId1,
+          })
         }),
         new Promise<void>((resolve) => {
           clientSocket2.on('chat:join-session-success', () => resolve())
-          clientSocket2.emit('chat:join-session', { sessionId: sessionId2, workspaceId: workspaceId2 })
+          clientSocket2.emit('chat:join-session', {
+            sessionId: sessionId2,
+            workspaceId: workspaceId2,
+          })
         }),
       ])
 
@@ -423,7 +443,7 @@ describe('Socket.io Chat Integration', () => {
       clientSocket1.emit('chat:send-message', { message: testMessage })
 
       // Wait a bit to see if message arrives (it shouldn't)
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       expect(messageReceived).toBe(false)
     })

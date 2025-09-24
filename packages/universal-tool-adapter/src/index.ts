@@ -18,7 +18,19 @@ export {
 export { BaseAdapter } from './core/base-adapter'
 // Core framework components
 export { BlockConfigAdapter, EnhancedAdapterFramework } from './core/enhanced-adapter-framework'
+export {
+  type ContextualAdapter,
+  DomainAdapter,
+  RoleBasedAdapter,
+  SkillLevelAdapter,
+} from './enhanced-intelligence/contextual-adapters'
 export { ContextualRecommendationEngine } from './enhanced-intelligence/contextual-recommendation-engine'
+export {
+  createEnhancedRegistryWrapper,
+  DEFAULT_ENHANCED_WRAPPER_CONFIG,
+  EnhancedRegistryWrapper,
+  type EnhancedRegistryWrapperConfig,
+} from './enhanced-intelligence/enhanced-registry-wrapper'
 // Enhanced Intelligence Components
 export {
   checkIntelligenceCapabilities,
@@ -26,40 +38,28 @@ export {
   createIntelligenceEnhancedAdapter,
   IntelligenceIntegrationLayer,
 } from './enhanced-intelligence/intelligence-integration-layer'
+export { IntelligentTemplateEngine } from './enhanced-intelligence/intelligent-template-engine'
 export { NaturalLanguageDescriptionFramework } from './enhanced-intelligence/natural-language-description-framework'
-export { EnhancedToolIntelligenceEngine } from './enhanced-intelligence/tool-intelligence-engine'
+export { NLPProcessor } from './enhanced-intelligence/nlp-processor'
 // Natural Language Framework Integration
 export {
-  NaturalLanguageRegistryIntegration,
   DEFAULT_REGISTRY_INTEGRATION_CONFIG,
-  type RegistryIntegrationConfig,
   type EnhancedDiscoveredTool,
   type EnhancedToolDiscoveryQuery,
+  NaturalLanguageRegistryIntegration,
+  type RegistryIntegrationConfig,
   type SemanticSearchResult,
 } from './enhanced-intelligence/registry-integration'
 export {
-  EnhancedRegistryWrapper,
-  createEnhancedRegistryWrapper,
-  DEFAULT_ENHANCED_WRAPPER_CONFIG,
-  type EnhancedRegistryWrapperConfig,
-} from './enhanced-intelligence/enhanced-registry-wrapper'
-export { NLPProcessor } from './enhanced-intelligence/nlp-processor'
-export {
-  RoleBasedAdapter,
-  SkillLevelAdapter,
-  DomainAdapter,
-  type ContextualAdapter,
-} from './enhanced-intelligence/contextual-adapters'
-export { IntelligentTemplateEngine } from './enhanced-intelligence/intelligent-template-engine'
-export {
-  SemanticSearchEngine,
   createSemanticSearchEngine,
   DEFAULT_SEMANTIC_SEARCH_CONFIG,
-  type SemanticSearchConfig,
   type EnhancedSearchQuery,
   type EnhancedSemanticSearchResult,
   type SearchFeedback,
+  type SemanticSearchConfig,
+  SemanticSearchEngine,
 } from './enhanced-intelligence/semantic-search-engine'
+export { EnhancedToolIntelligenceEngine } from './enhanced-intelligence/tool-intelligence-engine'
 export { ComprehensiveToolErrorManager } from './error-handling/comprehensive-error-manager'
 // Error types
 export { AdapterError, ExecutionError, ValidationError } from './errors/adapter-errors'

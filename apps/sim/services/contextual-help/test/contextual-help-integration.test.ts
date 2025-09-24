@@ -12,18 +12,11 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { contextualHelpAPI } from '../api/help-api'
-import { nlFrameworkIntegration } from '../content/nl-framework-integration'
-import { contextualHelpSystem } from '../core/help-system'
-import type {
-  HelpContext,
-  HelpContent,
-  GuidanceTutorial,
-  HelpSearchQuery,
-  HelpDeliveryConfig
-} from '../types'
 import type { NLHelpContentConfig } from '../content/nl-framework-integration'
+import { nlFrameworkIntegration } from '../content/nl-framework-integration'
+import type { HelpContent, HelpContext, HelpDeliveryConfig, HelpSearchQuery } from '../types'
 
 // Mock data
 const mockUserContext: HelpContext = {
@@ -39,8 +32,8 @@ const mockUserContext: HelpContext = {
     currentStep: 'data_visualization',
     parameters: {
       dateRange: '30d',
-      metrics: ['impressions', 'clicks', 'conversions']
-    }
+      metrics: ['impressions', 'clicks', 'conversions'],
+    },
   },
   userState: {
     expertiseLevel: 'intermediate',
@@ -53,22 +46,22 @@ const mockUserContext: HelpContext = {
       highContrast: false,
       fontSize: 'normal',
       voiceGuidance: false,
-      keyboardNavigation: true
-    }
+      keyboardNavigation: true,
+    },
   },
   timestamp: new Date(),
   metadata: {
     sourceChannel: 'web_app',
     deviceType: 'desktop',
-    browserInfo: 'Chrome/91.0'
-  }
+    browserInfo: 'Chrome/91.0',
+  },
 }
 
 const mockRequestContext = {
   userId: 'test_user_1',
   sessionId: 'test_session_1',
   userAgent: 'Mozilla/5.0 Test Browser',
-  requestId: 'req_test_123'
+  requestId: 'req_test_123',
 }
 
 describe('Contextual Help System Integration Tests', () => {
@@ -90,7 +83,7 @@ describe('Contextual Help System Integration Tests', () => {
         currentContext: mockUserContext,
         contentType: 'tooltip',
         deliveryMode: 'tooltip',
-        adaptToAccessibility: false
+        adaptToAccessibility: false,
       }
 
       const result = await nlFrameworkIntegration.generateHelpContent(nlConfig)
@@ -142,11 +135,20 @@ describe('Contextual Help System Integration Tests', () => {
           lastViewed: new Date(),
           effectivenessScore: 0.8,
           userSegments: { beginner: 3, intermediate: 2, advanced: 0 },
-          deliveryModes: { tooltip: 2, panel: 3, modal: 0, inline: 0, overlay: 0, voice: 0, chat: 0, notification: 0 },
+          deliveryModes: {
+            tooltip: 2,
+            panel: 3,
+            modal: 0,
+            inline: 0,
+            overlay: 0,
+            voice: 0,
+            chat: 0,
+            notification: 0,
+          },
           completionRate: 0.6,
           averageDuration: 120,
-          dropOffPoints: []
-        }
+          dropOffPoints: [],
+        },
       }
 
       // Create new context for advanced user
@@ -154,8 +156,8 @@ describe('Contextual Help System Integration Tests', () => {
         ...mockUserContext,
         userState: {
           ...mockUserContext.userState,
-          expertiseLevel: 'advanced'
-        }
+          expertiseLevel: 'advanced',
+        },
       }
 
       const adaptedContent = await nlFrameworkIntegration.adaptContentForNewContext(
@@ -191,13 +193,10 @@ describe('Contextual Help System Integration Tests', () => {
         currentContext: mockUserContext,
         contentType: 'modal',
         deliveryMode: 'modal',
-        adaptToAccessibility: false
+        adaptToAccessibility: false,
       }
 
-      const response = await contextualHelpAPI.generateIntelligentHelp(
-        nlConfig,
-        mockRequestContext
-      )
+      const response = await contextualHelpAPI.generateIntelligentHelp(nlConfig, mockRequestContext)
 
       expect(response.success).toBe(true)
       expect(response.data).toBeDefined()
@@ -225,20 +224,17 @@ describe('Contextual Help System Integration Tests', () => {
         query: 'dashboard analytics metrics',
         filters: {
           type: ['tooltip', 'tutorial'],
-          difficulty: ['intermediate']
+          difficulty: ['intermediate'],
         },
         context: mockUserContext,
         options: {
           semantic: true,
           maxResults: 5,
-          includeAnalytics: true
-        }
+          includeAnalytics: true,
+        },
       }
 
-      const response = await contextualHelpAPI.searchHelpContent(
-        searchQuery,
-        mockRequestContext
-      )
+      const response = await contextualHelpAPI.searchHelpContent(searchQuery, mockRequestContext)
 
       expect(response.success).toBe(true)
       expect(response.data).toBeInstanceOf(Array)
@@ -258,14 +254,11 @@ describe('Contextual Help System Integration Tests', () => {
           context: mockUserContext,
           timestamp: new Date(),
           userAgent: mockRequestContext.userAgent,
-          helpDeliveryMode: 'modal' as const
-        }
+          helpDeliveryMode: 'modal' as const,
+        },
       }
 
-      const response = await contextualHelpAPI.submitFeedback(
-        feedbackData,
-        mockRequestContext
-      )
+      const response = await contextualHelpAPI.submitFeedback(feedbackData, mockRequestContext)
 
       expect(response.success).toBe(true)
       expect(response.data?.feedbackId).toBeDefined()
@@ -303,16 +296,16 @@ describe('Contextual Help System Integration Tests', () => {
         mode: 'tooltip',
         styling: {
           theme: 'auto',
-          animation: 'fade'
+          animation: 'fade',
         },
         behavior: {
           autoClose: 10000,
-          dismissible: true
+          dismissible: true,
         },
         accessibility: {
           announceToScreenReader: true,
-          trapFocus: true
-        }
+          trapFocus: true,
+        },
       }
 
       const response = await contextualHelpAPI.getContextualHelp(
@@ -336,9 +329,9 @@ describe('Contextual Help System Integration Tests', () => {
             highContrast: true,
             fontSize: 'large',
             voiceGuidance: true,
-            keyboardNavigation: true
-          }
-        }
+            keyboardNavigation: true,
+          },
+        },
       }
 
       const nlConfig: NLHelpContentConfig = {
@@ -348,7 +341,7 @@ describe('Contextual Help System Integration Tests', () => {
         currentContext: accessibilityContext,
         contentType: 'panel',
         deliveryMode: 'panel',
-        adaptToAccessibility: true
+        adaptToAccessibility: true,
       }
 
       const result = await nlFrameworkIntegration.generateHelpContent(nlConfig)
@@ -364,8 +357,8 @@ describe('Contextual Help System Integration Tests', () => {
         ...mockUserContext,
         userState: {
           ...mockUserContext.userState,
-          expertiseLevel: 'beginner'
-        }
+          expertiseLevel: 'beginner',
+        },
       }
 
       const beginnerConfig: NLHelpContentConfig = {
@@ -375,7 +368,7 @@ describe('Contextual Help System Integration Tests', () => {
         currentContext: beginnerContext,
         contentType: 'tutorial',
         deliveryMode: 'modal',
-        adaptToAccessibility: false
+        adaptToAccessibility: false,
       }
 
       const beginnerResult = await nlFrameworkIntegration.generateHelpContent(beginnerConfig)
@@ -385,8 +378,8 @@ describe('Contextual Help System Integration Tests', () => {
         ...mockUserContext,
         userState: {
           ...mockUserContext.userState,
-          expertiseLevel: 'advanced'
-        }
+          expertiseLevel: 'advanced',
+        },
       }
 
       const advancedConfig: NLHelpContentConfig = {
@@ -396,7 +389,7 @@ describe('Contextual Help System Integration Tests', () => {
         currentContext: advancedContext,
         contentType: 'tooltip',
         deliveryMode: 'tooltip',
-        adaptToAccessibility: false
+        adaptToAccessibility: false,
       }
 
       const advancedResult = await nlFrameworkIntegration.generateHelpContent(advancedConfig)
@@ -461,8 +454,8 @@ describe('Contextual Help System Integration Tests', () => {
           context: mockUserContext,
           timestamp: new Date(),
           userAgent: mockRequestContext.userAgent,
-          helpDeliveryMode: 'panel' as const
-        }
+          helpDeliveryMode: 'panel' as const,
+        },
       }
 
       const feedbackResponse = await contextualHelpAPI.submitFeedback(
@@ -486,10 +479,7 @@ describe('Contextual Help System Integration Tests', () => {
         mockRequestContext
       )
 
-      const metricsResponse = await contextualHelpAPI.getHelpMetrics(
-        undefined,
-        mockRequestContext
-      )
+      const metricsResponse = await contextualHelpAPI.getHelpMetrics(undefined, mockRequestContext)
 
       expect(metricsResponse.success).toBe(true)
       expect(metricsResponse.data).toBeDefined()
@@ -530,7 +520,7 @@ describe('Contextual Help System Integration Tests', () => {
     test('should handle malformed user context', async () => {
       const malformedContext = {
         ...mockUserContext,
-        userState: undefined
+        userState: undefined,
       } as any
 
       const response = await contextualHelpAPI.getContextualHelp(
@@ -555,13 +545,10 @@ describe('Contextual Help System Integration Tests', () => {
         currentContext: mockUserContext,
         contentType: 'tooltip',
         deliveryMode: 'tooltip',
-        adaptToAccessibility: false
+        adaptToAccessibility: false,
       }
 
-      const response = await contextualHelpAPI.generateIntelligentHelp(
-        nlConfig,
-        mockRequestContext
-      )
+      const response = await contextualHelpAPI.generateIntelligentHelp(nlConfig, mockRequestContext)
 
       expect(response.success).toBe(false)
       expect(response.error?.message).toContain('Failed to generate intelligent help')
@@ -575,7 +562,7 @@ describe('Contextual Help System Integration Tests', () => {
         currentContext: mockUserContext,
         contentType: 'tooltip',
         deliveryMode: 'tooltip',
-        adaptToAccessibility: false
+        adaptToAccessibility: false,
       }
 
       const result = await nlFrameworkIntegration.generateHelpContent(nlConfig)
@@ -592,24 +579,24 @@ describe('Contextual Help System Integration Tests', () => {
       const user1Context: HelpContext = {
         ...mockUserContext,
         userId: 'user_1',
-        userState: { ...mockUserContext.userState, expertiseLevel: 'beginner' }
+        userState: { ...mockUserContext.userState, expertiseLevel: 'beginner' },
       }
 
       const user2Context: HelpContext = {
         ...mockUserContext,
         userId: 'user_2',
-        userState: { ...mockUserContext.userState, expertiseLevel: 'advanced' }
+        userState: { ...mockUserContext.userState, expertiseLevel: 'advanced' },
       }
 
       const [response1, response2] = await Promise.all([
         contextualHelpAPI.getContextualHelp(user1Context, {
           ...mockRequestContext,
-          userId: 'user_1'
+          userId: 'user_1',
         }),
         contextualHelpAPI.getContextualHelp(user2Context, {
           ...mockRequestContext,
-          userId: 'user_2'
-        })
+          userId: 'user_2',
+        }),
       ])
 
       expect(response1.success).toBe(true)
@@ -657,7 +644,7 @@ describe('Performance Tests', () => {
     const duration = Date.now() - startTime
 
     expect(duration).toBeLessThan(10000) // Should complete within 10 seconds
-    expect(responses.every(r => r.success)).toBe(true)
+    expect(responses.every((r) => r.success)).toBe(true)
   })
 
   test('should maintain response times under load', async () => {

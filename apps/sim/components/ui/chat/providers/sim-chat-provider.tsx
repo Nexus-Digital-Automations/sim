@@ -11,19 +11,25 @@
 
 'use client'
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect, useMemo } from 'react'
-
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+} from 'react'
 import { createLogger } from '@/lib/logs/console/logger'
-import {
-  SimChatWidgetConfig,
-  SimChatWidgetState,
-  SimChatWidgetActions,
+import { getEnvironmentConfig, mergeWithDefaults } from '../config/widget-config'
+import type {
+  ChatAnalyticsEvent,
+  MessageInterface,
   SimChatContextValue,
   SimChatProviderProps,
-  MessageInterface,
-  ChatAnalyticsEvent,
+  SimChatWidgetActions,
+  SimChatWidgetConfig,
+  SimChatWidgetState,
 } from '../types/parlant-widget.types'
-import { mergeWithDefaults, getEnvironmentConfig } from '../config/widget-config'
 
 const logger = createLogger('SimChatProvider')
 
@@ -39,7 +45,10 @@ type ChatAction =
   | { type: 'CLEAR_MESSAGES' }
   | { type: 'SET_TYPING'; payload: boolean }
   | { type: 'MARK_AS_READ' }
-  | { type: 'SET_CONNECTION_STATUS'; payload: 'connected' | 'connecting' | 'disconnected' | 'error' }
+  | {
+      type: 'SET_CONNECTION_STATUS'
+      payload: 'connected' | 'connecting' | 'disconnected' | 'error'
+    }
   | { type: 'SET_SESSION'; payload: string | undefined }
 
 // Initial state
@@ -86,7 +95,7 @@ function chatReducer(state: SimChatWidgetState, action: ChatAction): SimChatWidg
         isMinimized: false,
       }
 
-    case 'ADD_MESSAGE':
+    case 'ADD_MESSAGE': {
       const isUserMessage = action.payload.source === 'user'
       return {
         ...state,
@@ -94,6 +103,7 @@ function chatReducer(state: SimChatWidgetState, action: ChatAction): SimChatWidg
         hasUnreadMessages: !state.isOpen && !isUserMessage,
         unreadCount: !state.isOpen && !isUserMessage ? state.unreadCount + 1 : state.unreadCount,
       }
+    }
 
     case 'CLEAR_MESSAGES':
       return {
@@ -164,111 +174,115 @@ export function SimChatProvider({ children, defaultConfig }: SimChatProviderProp
   }, [config.workspaceId, state])
 
   // Analytics tracking
-  const trackEvent = useCallback((event: Partial<ChatAnalyticsEvent>) => {
-    if (typeof window === 'undefined') return
+  const trackEvent = useCallback(
+    (event: Partial<ChatAnalyticsEvent>) => {
+      if (typeof window === 'undefined') return
 
-    const fullEvent: ChatAnalyticsEvent = {
-      timestamp: new Date(),
-      sessionId: state.currentSessionId || 'unknown',
-      workspaceId: config.workspaceId,
-      ...event,
-    } as ChatAnalyticsEvent
+      const fullEvent: ChatAnalyticsEvent = {
+        timestamp: new Date(),
+        sessionId: state.currentSessionId || 'unknown',
+        workspaceId: config.workspaceId,
+        ...event,
+      } as ChatAnalyticsEvent
 
-    logger.info('Chat analytics event', fullEvent)
+      logger.info('Chat analytics event', fullEvent)
 
-    // Send to analytics service if configured
-    if (config.analyticsEndpoint) {
-      fetch(config.analyticsEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(fullEvent),
-      }).catch(err => {
-        logger.warn('Failed to send analytics event', { error: err.message })
-      })
-    }
-  }, [state.currentSessionId, config.workspaceId, config.analyticsEndpoint])
-
-  // Action implementations
-  const actions: SimChatWidgetActions = useMemo(() => ({
-    openChat: () => {
-      dispatch({ type: 'OPEN_CHAT' })
-      trackEvent({ type: 'chat_opened' })
-      config.onChatOpen?.()
-    },
-
-    closeChat: () => {
-      dispatch({ type: 'CLOSE_CHAT' })
-      trackEvent({ type: 'chat_closed' })
-      config.onChatClose?.()
-    },
-
-    minimizeChat: () => {
-      dispatch({ type: 'MINIMIZE_CHAT' })
-    },
-
-    maximizeChat: () => {
-      dispatch({ type: 'MAXIMIZE_CHAT' })
-    },
-
-    sendMessage: async (content: string) => {
-      try {
-        dispatch({ type: 'SET_TYPING', payload: true })
-
-        const message: MessageInterface = {
-          id: generateMessageId(),
-          content,
-          source: 'user',
-          timestamp: new Date(),
-          status: 'sending',
-        }
-
-        dispatch({ type: 'ADD_MESSAGE', payload: message })
-        trackEvent({ type: 'message_sent', metadata: { messageLength: content.length } })
-        config.onMessageSent?.(message)
-
-        // Here you would typically send the message to the Parlant API
-        // This is handled by the ParlantChatbox component internally
-
-      } catch (error) {
-        logger.error('Failed to send message', { error, content })
-        throw error
-      } finally {
-        dispatch({ type: 'SET_TYPING', payload: false })
+      // Send to analytics service if configured
+      if (config.analyticsEndpoint) {
+        fetch(config.analyticsEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fullEvent),
+        }).catch((err) => {
+          logger.warn('Failed to send analytics event', { error: err.message })
+        })
       }
     },
+    [state.currentSessionId, config.workspaceId, config.analyticsEndpoint]
+  )
 
-    clearMessages: () => {
-      dispatch({ type: 'CLEAR_MESSAGES' })
-    },
+  // Action implementations
+  const actions: SimChatWidgetActions = useMemo(
+    () => ({
+      openChat: () => {
+        dispatch({ type: 'OPEN_CHAT' })
+        trackEvent({ type: 'chat_opened' })
+        config.onChatOpen?.()
+      },
 
-    markAsRead: () => {
-      dispatch({ type: 'MARK_AS_READ' })
-    },
+      closeChat: () => {
+        dispatch({ type: 'CLOSE_CHAT' })
+        trackEvent({ type: 'chat_closed' })
+        config.onChatClose?.()
+      },
 
-    reconnect: async () => {
-      dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' })
-      // Reconnection logic would be handled by the ParlantChatbox component
-    },
-  }), [trackEvent, config])
+      minimizeChat: () => {
+        dispatch({ type: 'MINIMIZE_CHAT' })
+      },
+
+      maximizeChat: () => {
+        dispatch({ type: 'MAXIMIZE_CHAT' })
+      },
+
+      sendMessage: async (content: string) => {
+        try {
+          dispatch({ type: 'SET_TYPING', payload: true })
+
+          const message: MessageInterface = {
+            id: generateMessageId(),
+            content,
+            source: 'user',
+            timestamp: new Date(),
+            status: 'sending',
+          }
+
+          dispatch({ type: 'ADD_MESSAGE', payload: message })
+          trackEvent({ type: 'message_sent', metadata: { messageLength: content.length } })
+          config.onMessageSent?.(message)
+
+          // Here you would typically send the message to the Parlant API
+          // This is handled by the ParlantChatbox component internally
+        } catch (error) {
+          logger.error('Failed to send message', { error, content })
+          throw error
+        } finally {
+          dispatch({ type: 'SET_TYPING', payload: false })
+        }
+      },
+
+      clearMessages: () => {
+        dispatch({ type: 'CLEAR_MESSAGES' })
+      },
+
+      markAsRead: () => {
+        dispatch({ type: 'MARK_AS_READ' })
+      },
+
+      reconnect: async () => {
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' })
+        // Reconnection logic would be handled by the ParlantChatbox component
+      },
+    }),
+    [trackEvent, config]
+  )
 
   // Update configuration
   const updateConfig = useCallback((updates: Partial<SimChatWidgetConfig>) => {
-    setConfig(prev => ({ ...prev, ...updates }))
+    setConfig((prev) => ({ ...prev, ...updates }))
   }, [])
 
   // Context value
-  const contextValue: SimChatContextValue = useMemo(() => ({
-    config,
-    state,
-    actions,
-    updateConfig,
-  }), [config, state, actions, updateConfig])
-
-  return (
-    <SimChatContext.Provider value={contextValue}>
-      {children}
-    </SimChatContext.Provider>
+  const contextValue: SimChatContextValue = useMemo(
+    () => ({
+      config,
+      state,
+      actions,
+      updateConfig,
+    }),
+    [config, state, actions, updateConfig]
   )
+
+  return <SimChatContext.Provider value={contextValue}>{children}</SimChatContext.Provider>
 }
 
 /**

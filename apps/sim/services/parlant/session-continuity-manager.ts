@@ -7,14 +7,7 @@
  */
 
 import { db } from '@sim/db'
-import {
-  parlantAgent,
-  parlantEvent,
-  parlantJourney,
-  parlantJourneyState,
-  parlantSession,
-  parlantVariable,
-} from '@sim/db/schema'
+import { parlantEvent, parlantSession, parlantVariable } from '@sim/db/schema'
 import { and, desc, eq, gte, isNull, lte, or } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 import type { IsolationContext } from './workspace-isolation-service'
@@ -57,10 +50,10 @@ export interface SessionStateSnapshot {
  * Session continuity strategy
  */
 export type ContinuityStrategy =
-  | 'resume_existing'    // Resume the same session
-  | 'create_linked'      // Create new session linked to previous
-  | 'start_fresh'        // Start completely new session
-  | 'restore_context'    // New session with restored context
+  | 'resume_existing' // Resume the same session
+  | 'create_linked' // Create new session linked to previous
+  | 'start_fresh' // Start completely new session
+  | 'restore_context' // New session with restored context
 
 /**
  * Session heartbeat configuration
@@ -289,12 +282,11 @@ export class SessionContinuityManager {
           and(
             eq(parlantSession.agentId, agentId),
             eq(parlantSession.workspaceId, context.workspaceId),
-            context.userId ? eq(parlantSession.userId, context.userId) : isNull(parlantSession.userId),
+            context.userId
+              ? eq(parlantSession.userId, context.userId)
+              : isNull(parlantSession.userId),
             gte(parlantSession.lastActivityAt, maxInactivityDate),
-            or(
-              eq(parlantSession.status, 'active'),
-              eq(parlantSession.status, 'abandoned')
-            )
+            or(eq(parlantSession.status, 'active'), eq(parlantSession.status, 'abandoned'))
           )
         )
         .orderBy(desc(parlantSession.lastActivityAt))
@@ -459,7 +451,7 @@ export class SessionContinuityManager {
 
       // Compile variables
       const variables: Record<string, any> = {}
-      sessionVariables.forEach(variable => {
+      sessionVariables.forEach((variable) => {
         variables[variable.key] = variable.value
       })
 
@@ -474,7 +466,7 @@ export class SessionContinuityManager {
         currentJourneyId: sessionDetails.currentJourneyId || undefined,
         currentStateId: sessionDetails.currentStateId || undefined,
         variables,
-        contextHistory: contextHistory.reverse().map(event => ({
+        contextHistory: contextHistory.reverse().map((event) => ({
           offset: event.offset,
           type: event.eventType,
           content: event.content,
@@ -588,27 +580,25 @@ export class SessionContinuityManager {
       }
 
       // Add context restoration event
-      await db
-        .insert(parlantEvent)
-        .values({
-          sessionId: newSessionId,
-          offset: 0, // First event in new session
-          eventType: 'status_update',
-          content: {
-            type: 'context_restored',
-            sourceSessionId,
-            messagesPreserved: snapshot.contextHistory.length,
-            variablesPreserved,
-            journeyStatePreserved,
-            restorationTimestamp: new Date().toISOString(),
-          },
-          metadata: {
-            continuity: true,
-            restoration: true,
-            sourceSession: sourceSessionId,
-          },
-          createdAt: new Date(),
-        })
+      await db.insert(parlantEvent).values({
+        sessionId: newSessionId,
+        offset: 0, // First event in new session
+        eventType: 'status_update',
+        content: {
+          type: 'context_restored',
+          sourceSessionId,
+          messagesPreserved: snapshot.contextHistory.length,
+          variablesPreserved,
+          journeyStatePreserved,
+          restorationTimestamp: new Date().toISOString(),
+        },
+        metadata: {
+          continuity: true,
+          restoration: true,
+          sourceSession: sourceSessionId,
+        },
+        createdAt: new Date(),
+      })
 
       const recoveryContext: SessionRecoveryContext = {
         originalSessionId: sourceSessionId,
@@ -773,9 +763,7 @@ export class SessionContinuityManager {
       const linkedSessions = await db
         .select({ id: parlantSession.id })
         .from(parlantSession)
-        .where(
-          eq(parlantSession.metadata, { linkedSessionId: sessionId } as any)
-        )
+        .where(eq(parlantSession.metadata, { linkedSessionId: sessionId } as any))
 
       const duration = performance.now() - startTime
 
@@ -785,7 +773,7 @@ export class SessionContinuityManager {
         lastHeartbeat: heartbeat?.lastHeartbeat,
         continuityEnabled: sessionMetadata.continuityEnabled || false,
         deviceInfo: sessionMetadata.deviceInfo,
-        linkedSessions: linkedSessions.map(s => s.id),
+        linkedSessions: linkedSessions.map((s) => s.id),
       }
     } catch (error) {
       logger.error('Failed to get session continuity status', {
@@ -815,10 +803,7 @@ export class SessionContinuityManager {
         .where(
           and(
             lte(parlantSession.lastActivityAt, cleanupDate),
-            or(
-              eq(parlantSession.status, 'abandoned'),
-              eq(parlantSession.status, 'completed')
-            )
+            or(eq(parlantSession.status, 'abandoned'), eq(parlantSession.status, 'completed'))
           )
         )
 
@@ -846,9 +831,12 @@ export class SessionContinuityManager {
     logger.info('Starting periodic session cleanup')
 
     // Run cleanup every 4 hours
-    setInterval(() => {
-      this.cleanupInactiveSessions()
-    }, 4 * 60 * 60 * 1000)
+    setInterval(
+      () => {
+        this.cleanupInactiveSessions()
+      },
+      4 * 60 * 60 * 1000
+    )
 
     // Run initial cleanup after 1 minute
     setTimeout(() => {

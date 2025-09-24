@@ -10,30 +10,24 @@
  */
 
 import type { ToolConfig } from '@/tools/types'
+import { createLogger } from '../utils/logger'
 import type {
   EnhancedDescriptionTemplate,
-  BriefDescriptionTemplate,
-  DetailedDescriptionTemplate,
-  ExpertDescriptionTemplate,
-  RoleSpecificTemplate,
-  SkillSpecificTemplate,
+  SkillLevel,
   ToolCategory,
   UserRole,
-  SkillLevel
+} from './description-templates'
+import {
+  createDescriptionTemplateRegistry,
+  type DescriptionTemplateRegistry,
 } from './description-templates'
 import type {
-  EnhancedDescriptionSchema,
-  DescriptionLevels,
   BriefDescription,
+  DescriptionLevels,
   DetailedDescription,
-  ExpertDescription
+  ExpertDescription,
 } from './natural-language-description-framework'
-import {
-  DescriptionTemplateRegistry,
-  createDescriptionTemplateRegistry
-} from './description-templates'
-import { NLPProcessor, createNLPProcessor } from './nlp-processor'
-import { createLogger } from '../utils/logger'
+import { createNLPProcessor, type NLPProcessor } from './nlp-processor'
 
 const logger = createLogger('IntelligentTemplateEngine')
 
@@ -165,9 +159,7 @@ export class IntelligentTemplateEngine {
   /**
    * Generate enhanced descriptions using intelligent templates
    */
-  async generateEnhancedDescriptions(
-    context: TemplateContext
-  ): Promise<DescriptionLevels> {
+  async generateEnhancedDescriptions(context: TemplateContext): Promise<DescriptionLevels> {
     logger.debug(`Generating enhanced descriptions for tool: ${context.tool.id}`)
 
     const startTime = performance.now()
@@ -189,18 +181,20 @@ export class IntelligentTemplateEngine {
       const contextual = await this.generateContextualVariations(template, variables, context)
 
       // Apply personalization if enabled
-      const personalizedDescriptions = await this.applyPersonalization({
-        brief,
-        detailed,
-        expert,
-        contextual
-      }, context)
+      const personalizedDescriptions = await this.applyPersonalization(
+        {
+          brief,
+          detailed,
+          expert,
+          contextual,
+        },
+        context
+      )
 
       const processingTime = performance.now() - startTime
       logger.info(`Descriptions generated in ${processingTime.toFixed(2)}ms`)
 
       return personalizedDescriptions
-
     } catch (error) {
       logger.error(`Failed to generate enhanced descriptions:`, error)
       throw error
@@ -219,10 +213,7 @@ export class IntelligentTemplateEngine {
 
     try {
       // Process variables
-      const processedVariables = await this.variableProcessor.processVariables(
-        variables,
-        context
-      )
+      const processedVariables = await this.variableProcessor.processVariables(variables, context)
 
       // Generate content
       let content = await this.processTemplate(template, processedVariables, context)
@@ -250,13 +241,12 @@ export class IntelligentTemplateEngine {
           personalizationLevel: context.processingOptions?.enablePersonalization ? 0.8 : 0,
           qualityScore,
           complexity: this.calculateComplexity(content),
-          estimatedReadingTime: this.estimateReadingTime(content)
+          estimatedReadingTime: this.estimateReadingTime(content),
         },
         variables: processedVariables,
         confidence: qualityScore,
-        processingTime
+        processingTime,
       }
-
     } catch (error) {
       logger.error('Failed to generate content from template:', error)
       throw error
@@ -312,7 +302,9 @@ export class IntelligentTemplateEngine {
   // Template Processing Methods
   // =============================================================================
 
-  private async selectOptimalTemplate(context: TemplateContext): Promise<EnhancedDescriptionTemplate> {
+  private async selectOptimalTemplate(
+    context: TemplateContext
+  ): Promise<EnhancedDescriptionTemplate> {
     // Get template by category
     let template = this.templateRegistry.getTemplate(context.toolCategory)
 
@@ -421,8 +413,16 @@ export class IntelligentTemplateEngine {
     const briefTemplate = template.briefTemplate
 
     const summary = await this.processTemplate(briefTemplate.summaryPattern, variables, context)
-    const primaryUseCase = await this.processTemplate(briefTemplate.useCasePattern, variables, context)
-    const keyCapability = await this.processTemplate(briefTemplate.capabilityPattern, variables, context)
+    const primaryUseCase = await this.processTemplate(
+      briefTemplate.useCasePattern,
+      variables,
+      context
+    )
+    const keyCapability = await this.processTemplate(
+      briefTemplate.capabilityPattern,
+      variables,
+      context
+    )
 
     // Generate complexity assessment
     const complexityLevel = this.assessComplexityLevel(
@@ -443,7 +443,7 @@ export class IntelligentTemplateEngine {
       primaryUseCase,
       keyCapability,
       complexityLevel,
-      quickTags
+      quickTags,
     }
   }
 
@@ -454,8 +454,16 @@ export class IntelligentTemplateEngine {
   ): Promise<DetailedDescription> {
     const detailedTemplate = template.detailedTemplate
 
-    const overview = await this.processTemplate(detailedTemplate.overviewPattern, variables, context)
-    const functionality = await this.processTemplate(detailedTemplate.functionalityPattern, variables, context)
+    const overview = await this.processTemplate(
+      detailedTemplate.overviewPattern,
+      variables,
+      context
+    )
+    const functionality = await this.processTemplate(
+      detailedTemplate.functionalityPattern,
+      variables,
+      context
+    )
 
     // Generate use cases from templates
     const useCases = await Promise.all(
@@ -465,30 +473,31 @@ export class IntelligentTemplateEngine {
         scenario: useCaseTemplate.scenario,
         expectedOutcome: `Successfully ${useCaseTemplate.scenario}`,
         difficulty: useCaseTemplate.difficulty,
-        estimatedTime: this.estimateUseCaseTime(useCaseTemplate.difficulty)
+        estimatedTime: this.estimateUseCaseTime(useCaseTemplate.difficulty),
       }))
     )
 
-    const workingPrinciple = variables.workingPrinciple ||
+    const workingPrinciple =
+      variables.workingPrinciple ||
       'Operates through standard interface patterns with reliable execution'
 
     // Process benefit patterns
     const benefits = await Promise.all(
-      detailedTemplate.benefitsPattern.map(pattern =>
+      detailedTemplate.benefitsPattern.map((pattern) =>
         this.processTemplate(pattern, variables, context)
       )
     )
 
     // Process limitation patterns
     const limitations = await Promise.all(
-      detailedTemplate.limitationsPattern.map(pattern =>
+      detailedTemplate.limitationsPattern.map((pattern) =>
         this.processTemplate(pattern, variables, context)
       )
     )
 
     const integrationInfo = {
       integratedWith: variables.integratedServices || [],
-      apiEndpoints: variables.apiEndpoints || []
+      apiEndpoints: variables.apiEndpoints || [],
     }
 
     return {
@@ -498,7 +507,7 @@ export class IntelligentTemplateEngine {
       workingPrinciple,
       benefits,
       limitations,
-      integrationInfo
+      integrationInfo,
     }
   }
 
@@ -510,11 +519,15 @@ export class IntelligentTemplateEngine {
     const expertTemplate = template.expertTemplate
 
     const technicalArchitecture = {
-      architecture: await this.processTemplate(expertTemplate.architecturePattern, variables, context),
+      architecture: await this.processTemplate(
+        expertTemplate.architecturePattern,
+        variables,
+        context
+      ),
       dependencies: variables.dependencies || [],
       integrationPoints: variables.integrationPoints || [],
       scalabilityFactors: variables.scalabilityFactors || [],
-      performanceConsiderations: variables.performanceConsiderations || []
+      performanceConsiderations: variables.performanceConsiderations || [],
     }
 
     // Generate configuration templates
@@ -525,7 +538,7 @@ export class IntelligentTemplateEngine {
         defaultValue: 'auto',
         description: await this.processTemplate(configTemplate.pattern, variables, context),
         validationRules: [],
-        examples: configTemplate.examples
+        examples: configTemplate.examples,
       }))
     )
 
@@ -533,7 +546,7 @@ export class IntelligentTemplateEngine {
       configurableParameters,
       advancedOptions: [],
       customizationPoints: [],
-      extensionMechanisms: []
+      extensionMechanisms: [],
     }
 
     // Generate performance templates
@@ -541,7 +554,7 @@ export class IntelligentTemplateEngine {
       expertTemplate.performanceTemplates.map(async (perfTemplate) => ({
         metric: perfTemplate.metric,
         description: await this.processTemplate(perfTemplate.pattern, variables, context),
-        benchmarks: perfTemplate.benchmarks
+        benchmarks: perfTemplate.benchmarks,
       }))
     )
 
@@ -549,7 +562,7 @@ export class IntelligentTemplateEngine {
       responseTime: { average: 0, p95: 0, p99: 0 },
       throughput: { average: 0, p95: 0, p99: 0 },
       resourceUsage: { cpu: 0, memory: 0, network: 0 },
-      scalabilityLimits: { maxConcurrentUsers: 0, maxDataSize: 0 }
+      scalabilityLimits: { maxConcurrentUsers: 0, maxDataSize: 0 },
     }
 
     const securityProfile = {
@@ -557,19 +570,19 @@ export class IntelligentTemplateEngine {
       authorizationModel: variables.authModel || 'role-based',
       dataProtection: variables.dataProtection || [],
       auditingCapabilities: variables.auditCapabilities || [],
-      complianceFrameworks: variables.complianceFrameworks || []
+      complianceFrameworks: variables.complianceFrameworks || [],
     }
 
     const troubleshooting = {
       commonIssues: [],
       diagnosticSteps: [],
       resolutionProcedures: [],
-      escalationPaths: []
+      escalationPaths: [],
     }
 
     const extensibilityInfo = {
       extensionPoints: variables.extensionPoints || [],
-      customization: variables.customizationOptions || []
+      customization: variables.customizationOptions || [],
     }
 
     return {
@@ -578,7 +591,7 @@ export class IntelligentTemplateEngine {
       performanceProfile,
       securityProfile,
       troubleshooting,
-      extensibilityInfo
+      extensibilityInfo,
     }
   }
 
@@ -601,7 +614,7 @@ export class IntelligentTemplateEngine {
           context
         ),
         specificGuidance: roleTemplate.benefitsEmphasis,
-        relevantExamples: await this.generateRoleSpecificExamples(context.userRole, variables)
+        relevantExamples: await this.generateRoleSpecificExamples(context.userRole, variables),
       }
     }
 
@@ -611,9 +624,13 @@ export class IntelligentTemplateEngine {
       variations[`skill-${context.skillLevel}`] = {
         contextType: 'learning',
         contextValue: context.skillLevel,
-        adaptedDescription: await this.generateSkillLevelDescription(skillTemplate, variables, context),
+        adaptedDescription: await this.generateSkillLevelDescription(
+          skillTemplate,
+          variables,
+          context
+        ),
         specificGuidance: skillTemplate.guidanceIntensity.patterns,
-        relevantExamples: await this.generateSkillLevelExamples(context.skillLevel, variables)
+        relevantExamples: await this.generateSkillLevelExamples(context.skillLevel, variables),
       }
     }
 
@@ -659,7 +676,7 @@ export class IntelligentTemplateEngine {
     const matches = Array.from(content.matchAll(dynamicRegex))
     for (const match of matches) {
       const functionName = match[1]
-      const args = match[2] ? match[2].split(',').map(s => s.trim()) : []
+      const args = match[2] ? match[2].split(',').map((s) => s.trim()) : []
 
       const replacement = await this.executeDynamicFunction(functionName, args, variables, context)
       result = result.replace(match[0], replacement)
@@ -679,12 +696,14 @@ export class IntelligentTemplateEngine {
         return new Date().toLocaleDateString()
       case 'toolCount':
         return String(variables.relatedTools?.length || 0)
-      case 'industryTerm':
+      case 'industryTerm': {
         const term = args[0]
         return context.domainContext?.specialTerminology[term] || term
-      case 'skillAdjust':
+      }
+      case 'skillAdjust': {
         const text = args[0]
         return this.adjustForSkillLevel(text, context.skillLevel)
+      }
       default:
         logger.warn(`Unknown dynamic function: ${functionName}`)
         return `{@${functionName}}`
@@ -740,7 +759,7 @@ export class IntelligentTemplateEngine {
       beginner: '10-15 minutes',
       intermediate: '5-10 minutes',
       advanced: '3-5 minutes',
-      expert: '1-3 minutes'
+      expert: '1-3 minutes',
     }
     return timeEstimates[difficulty] || '5-10 minutes'
   }
@@ -751,14 +770,14 @@ export class IntelligentTemplateEngine {
     const description = (tool.description || '').toLowerCase()
 
     const platformKeywords = {
-      'gmail': 'Gmail',
-      'slack': 'Slack',
-      'discord': 'Discord',
-      'notion': 'Notion',
-      'airtable': 'Airtable',
-      'github': 'GitHub',
-      'mongodb': 'MongoDB',
-      'openai': 'OpenAI'
+      gmail: 'Gmail',
+      slack: 'Slack',
+      discord: 'Discord',
+      notion: 'Notion',
+      airtable: 'Airtable',
+      github: 'GitHub',
+      mongodb: 'MongoDB',
+      openai: 'OpenAI',
     }
 
     for (const [keyword, platform] of Object.entries(platformKeywords)) {
@@ -770,13 +789,20 @@ export class IntelligentTemplateEngine {
     return tool.name || 'Platform'
   }
 
-  private getSkillAppropriateLanguage(skillLevel: SkillLevel): 'simple' | 'standard' | 'advanced' | 'expert' {
+  private getSkillAppropriateLanguage(
+    skillLevel: SkillLevel
+  ): 'simple' | 'standard' | 'advanced' | 'expert' {
     switch (skillLevel) {
-      case 'beginner': return 'simple'
-      case 'intermediate': return 'standard'
-      case 'advanced': return 'advanced'
-      case 'expert': return 'expert'
-      default: return 'standard'
+      case 'beginner':
+        return 'simple'
+      case 'intermediate':
+        return 'standard'
+      case 'advanced':
+        return 'advanced'
+      case 'expert':
+        return 'expert'
+      default:
+        return 'standard'
     }
   }
 
@@ -789,13 +815,16 @@ export class IntelligentTemplateEngine {
       manager: 'team coordination and project oversight',
       researcher: 'research methodology and collaboration',
       designer: 'design workflow and creative process enhancement',
-      qa_tester: 'quality assurance and testing automation'
+      qa_tester: 'quality assurance and testing automation',
     }
 
     return `Optimized for ${roleContexts[role] || 'general usage'} scenarios`
   }
 
-  private async generateRoleSpecificExamples(role: UserRole, variables: Record<string, any>): Promise<string[]> {
+  private async generateRoleSpecificExamples(
+    role: UserRole,
+    variables: Record<string, any>
+  ): Promise<string[]> {
     const examples = []
     const toolName = variables.toolName
 
@@ -804,7 +833,9 @@ export class IntelligentTemplateEngine {
         examples.push(`Use ${toolName} to improve business processes and increase productivity`)
         break
       case 'developer':
-        examples.push(`Integrate ${toolName} into your development workflow for enhanced automation`)
+        examples.push(
+          `Integrate ${toolName} into your development workflow for enhanced automation`
+        )
         break
       case 'admin':
         examples.push(`Configure ${toolName} with enterprise security policies and user management`)
@@ -838,7 +869,10 @@ export class IntelligentTemplateEngine {
     }
   }
 
-  private async generateSkillLevelExamples(skillLevel: SkillLevel, variables: Record<string, any>): Promise<string[]> {
+  private async generateSkillLevelExamples(
+    skillLevel: SkillLevel,
+    variables: Record<string, any>
+  ): Promise<string[]> {
     const toolName = variables.toolName
     const examples = []
 
@@ -880,9 +914,11 @@ export class IntelligentTemplateEngine {
   private calculateComplexity(content: string): number {
     // Simple complexity calculation based on content length and technical terms
     const wordCount = content.split(/\s+/).length
-    const technicalTerms = (content.match(/\b(API|SDK|integration|configuration|authentication|authorization)\b/gi) || []).length
+    const technicalTerms = (
+      content.match(/\b(API|SDK|integration|configuration|authentication|authorization)\b/gi) || []
+    ).length
 
-    return Math.min((wordCount / 100 + technicalTerms / 10), 1.0)
+    return Math.min(wordCount / 100 + technicalTerms / 10, 1.0)
   }
 
   private estimateReadingTime(content: string): number {
@@ -967,7 +1003,7 @@ class ContentOptimizer {
 
   private addMoreDetail(content: string): string {
     // Add more explanatory content
-    return content + ' This provides comprehensive functionality with detailed configuration options and extensive customization capabilities.'
+    return `${content} This provides comprehensive functionality with detailed configuration options and extensive customization capabilities.`
   }
 }
 
@@ -1047,9 +1083,9 @@ export async function generateIntelligentDescriptions(
       enablePersonalization: true,
       enableContextualAdaptation: true,
       contentOptimization: 'balanced',
-      outputFormat: 'text'
+      outputFormat: 'text',
     },
-    ...context
+    ...context,
   }
 
   return await engine.generateEnhancedDescriptions(fullContext)
@@ -1064,16 +1100,16 @@ function inferToolCategory(tool: ToolConfig): ToolCategory {
   const description = (tool.description || '').toLowerCase()
   const text = `${toolId} ${name} ${description}`
 
-  if (['email', 'slack', 'message', 'send', 'notify'].some(term => text.includes(term))) {
+  if (['email', 'slack', 'message', 'send', 'notify'].some((term) => text.includes(term))) {
     return 'communication'
   }
-  if (['database', 'store', 'save', 'mongo', 'sql'].some(term => text.includes(term))) {
+  if (['database', 'store', 'save', 'mongo', 'sql'].some((term) => text.includes(term))) {
     return 'data_storage'
   }
-  if (['search', 'find', 'google', 'query'].some(term => text.includes(term))) {
+  if (['search', 'find', 'google', 'query'].some((term) => text.includes(term))) {
     return 'search_research'
   }
-  if (['ai', 'openai', 'generate', 'ml', 'model'].some(term => text.includes(term))) {
+  if (['ai', 'openai', 'generate', 'ml', 'model'].some((term) => text.includes(term))) {
     return 'ai_ml'
   }
 

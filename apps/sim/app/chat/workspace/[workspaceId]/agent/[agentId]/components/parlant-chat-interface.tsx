@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Chatbox, { type ChatProps } from 'parlant-chat-react'
 import { useSession } from 'next-auth/react'
-import { createLogger } from '@/lib/logs/console/logger'
+import Chatbox, { type ChatProps } from 'parlant-chat-react'
 import { env } from '@/lib/env'
+import { createLogger } from '@/lib/logs/console/logger'
 import { createParlantSocketClient, type ParlantSocketClient } from './socket-client'
 
 const logger = createLogger('ParlantChatInterface')
@@ -56,7 +56,7 @@ export function ParlantChatInterface({
   agent,
   workspaceId,
   userId,
-  conversationId
+  conversationId,
 }: ParlantChatInterfaceProps) {
   const { data: session } = useSession()
   const socketClientRef = useRef<ParlantSocketClient | null>(null)
@@ -84,7 +84,7 @@ export function ParlantChatInterface({
           url: socketUrl,
           workspaceId,
           agentId: agent.id,
-          userId
+          userId,
         })
 
         // Create typed socket client
@@ -96,7 +96,7 @@ export function ParlantChatInterface({
           agentId: agent.id,
           timeout: 20000,
           reconnectionAttempts: 5,
-          reconnectionDelay: 2000
+          reconnectionDelay: 2000,
         })
 
         socketClientRef.current = socketClient
@@ -122,7 +122,6 @@ export function ParlantChatInterface({
         socketClient.requestAgentStatus(agent.id, workspaceId)
 
         logger.info('Successfully connected and joined rooms')
-
       } catch (error) {
         logger.error('Failed to initialize socket connection', error)
         setConnectionError(`Connection failed: ${error.message}`)
@@ -229,10 +228,12 @@ export function ParlantChatInterface({
         socketClientRef.current.notifySessionStarted(newSessionId, agent.id, workspaceId, userId, {
           agentName: agent.name,
           userAgent: navigator.userAgent,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
 
-        logger.info('Successfully joined session room and notified session start', { sessionId: newSessionId })
+        logger.info('Successfully joined session room and notified session start', {
+          sessionId: newSessionId,
+        })
       } catch (error) {
         logger.error('Failed to join session room or notify session start', error)
       }
@@ -240,41 +241,48 @@ export function ParlantChatInterface({
   }
 
   // Custom header component showing connection status and agent status
-  const renderHeader = ({ changeIsExpanded, agentName }: {
+  const renderHeader = ({
+    changeIsExpanded,
+    agentName,
+  }: {
     changeIsExpanded: () => void
     agentName: string | undefined
   }) => {
-    const statusColor = {
-      'ONLINE': 'bg-green-500',
-      'OFFLINE': 'bg-gray-500',
-      'BUSY': 'bg-yellow-500',
-      'PROCESSING': 'bg-blue-500'
-    }[agentStatus] || 'bg-gray-500'
+    const statusColor =
+      {
+        ONLINE: 'bg-green-500',
+        OFFLINE: 'bg-gray-500',
+        BUSY: 'bg-yellow-500',
+        PROCESSING: 'bg-blue-500',
+      }[agentStatus] || 'bg-gray-500'
 
-    const statusText = {
-      'ONLINE': 'Online',
-      'OFFLINE': 'Offline',
-      'BUSY': 'Busy',
-      'PROCESSING': 'Processing...'
-    }[agentStatus] || 'Unknown'
+    const statusText =
+      {
+        ONLINE: 'Online',
+        OFFLINE: 'Offline',
+        BUSY: 'Busy',
+        PROCESSING: 'Processing...',
+      }[agentStatus] || 'Unknown'
 
     return (
-      <div className="flex items-center justify-between p-3 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+      <div className='flex items-center justify-between border-gray-200 border-b p-3'>
+        <div className='flex items-center space-x-3'>
+          <div className='relative'>
+            <div className='flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 font-semibold text-white'>
               {(agentName || agent.name).charAt(0).toUpperCase()}
             </div>
-            <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${statusColor}`} />
+            <div
+              className={`-bottom-1 -right-1 absolute h-3 w-3 rounded-full border-2 border-white ${statusColor}`}
+            />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">{agentName || agent.name}</h3>
-            <div className="flex items-center space-x-2 text-xs text-gray-500">
+            <h3 className='font-semibold text-gray-900'>{agentName || agent.name}</h3>
+            <div className='flex items-center space-x-2 text-gray-500 text-xs'>
               <span>{statusText}</span>
               {isConnected && (
                 <>
                   <span>•</span>
-                  <span className="text-green-600">Real-time</span>
+                  <span className='text-green-600'>Real-time</span>
                 </>
               )}
               {agentPerformance && (
@@ -290,18 +298,15 @@ export function ParlantChatInterface({
               {connectionError && (
                 <>
                   <span>•</span>
-                  <span className="text-red-500">Connection Error</span>
+                  <span className='text-red-500'>Connection Error</span>
                 </>
               )}
             </div>
           </div>
         </div>
-        <button
-          onClick={changeIsExpanded}
-          className="p-1 hover:bg-gray-100 rounded"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        <button onClick={changeIsExpanded} className='rounded p-1 hover:bg-gray-100'>
+          <svg className='h-5 w-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
           </svg>
         </button>
       </div>
@@ -327,17 +332,17 @@ export function ParlantChatInterface({
       agentMessage: 'bg-gray-100 p-3 rounded-lg max-w-3xl',
       customerMessage: 'bg-blue-500 text-white p-3 rounded-lg max-w-3xl ml-auto',
       textarea: 'flex-1 resize-none border-0 outline-0 p-3',
-      bottomLine: 'text-xs text-gray-500 text-center p-2'
-    }
+      bottomLine: 'text-xs text-gray-500 text-center p-2',
+    },
   }
 
   // Show loading state while connecting
   if (!session) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2" />
-          <p className="text-gray-500">Authenticating...</p>
+      <div className='flex h-full items-center justify-center'>
+        <div className='text-center'>
+          <div className='mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-blue-500 border-b-2' />
+          <p className='text-gray-500'>Authenticating...</p>
         </div>
       </div>
     )
@@ -346,18 +351,28 @@ export function ParlantChatInterface({
   // Show connection error if Socket.io fails
   if (connectionError) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <div className='flex h-full items-center justify-center'>
+        <div className='mx-auto max-w-md p-6 text-center'>
+          <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100'>
+            <svg
+              className='h-6 w-6 text-red-500'
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+              />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Connection Error</h3>
-          <p className="text-gray-600 mb-4">{connectionError}</p>
+          <h3 className='mb-2 font-semibold text-gray-900 text-lg'>Connection Error</h3>
+          <p className='mb-4 text-gray-600'>{connectionError}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className='rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600'
           >
             Retry Connection
           </button>
@@ -367,9 +382,9 @@ export function ParlantChatInterface({
   }
 
   return (
-    <div className="h-full bg-white">
+    <div className='h-full bg-white'>
       {/* Import the CSS for parlant-chat-react */}
-      <link rel="stylesheet" href="/node_modules/parlant-chat-react/dist/parlant-chat-react.css" />
+      <link rel='stylesheet' href='/node_modules/parlant-chat-react/dist/parlant-chat-react.css' />
 
       {/* Render the Parlant chat interface */}
       <Chatbox {...chatProps} />

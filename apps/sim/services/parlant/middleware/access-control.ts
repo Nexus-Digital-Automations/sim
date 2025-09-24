@@ -11,12 +11,12 @@
  * - Resource quota enforcement
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
-import { getSession } from '@/lib/auth'
 import { db } from '@sim/db'
-import { eq, and } from 'drizzle-orm'
-import { member, organization } from '@sim/db/schema'
-import type { AuthContext, Agent } from '@/services/parlant/types'
+import { member } from '@sim/db/schema'
+import { and, eq } from 'drizzle-orm'
+import { getSession } from '@/lib/auth'
+import { createLogger } from '@/lib/logs/console/logger'
+import type { AuthContext } from '@/services/parlant/types'
 
 const logger = createLogger('AgentAccessControl')
 
@@ -54,7 +54,8 @@ export interface WorkspacePermissions {
  */
 export class AgentAccessControl {
   private static instance: AgentAccessControl
-  private permissionCache: Map<string, { permissions: WorkspacePermissions; expires: number }> = new Map()
+  private permissionCache: Map<string, { permissions: WorkspacePermissions; expires: number }> =
+    new Map()
   private rateLimitCache: Map<string, { count: number; reset: number }> = new Map()
 
   private constructor() {
@@ -86,7 +87,7 @@ export class AgentAccessControl {
         user_id: context.user_id,
         workspace_id: targetWorkspaceId || context.workspace_id,
         agent_id: targetAgentId,
-        request_id: context.request_id
+        request_id: context.request_id,
       })
 
       // Get workspace permissions
@@ -95,7 +96,7 @@ export class AgentAccessControl {
         return {
           allowed: false,
           reason: 'No workspace context provided',
-          permissions: []
+          permissions: [],
         }
       }
 
@@ -108,7 +109,7 @@ export class AgentAccessControl {
           allowed: false,
           reason: 'Rate limit exceeded',
           permissions: [],
-          rate_limit: rateLimit
+          rate_limit: rateLimit,
         }
       }
 
@@ -117,7 +118,7 @@ export class AgentAccessControl {
       if (!operationAllowed.allowed) {
         return {
           ...operationAllowed,
-          rate_limit: rateLimit
+          rate_limit: rateLimit,
         }
       }
 
@@ -133,7 +134,7 @@ export class AgentAccessControl {
         if (!agentAccessAllowed.allowed) {
           return {
             ...agentAccessAllowed,
-            rate_limit: rateLimit
+            rate_limit: rateLimit,
           }
         }
       }
@@ -145,16 +146,15 @@ export class AgentAccessControl {
         user_id: context.user_id,
         workspace_id: workspaceId,
         duration_ms: Math.round(duration),
-        request_id: context.request_id
+        request_id: context.request_id,
       })
 
       return {
         allowed: true,
         permissions: this.getPermissionStrings(permissions),
         workspace_role: await this.getUserRole(context.user_id, workspaceId),
-        rate_limit: rateLimit
+        rate_limit: rateLimit,
       }
-
     } catch (error) {
       const duration = performance.now() - startTime
       logger.error('Agent access validation failed', {
@@ -163,13 +163,13 @@ export class AgentAccessControl {
         workspace_id: targetWorkspaceId || context.workspace_id,
         error: (error as Error).message,
         duration_ms: Math.round(duration),
-        request_id: context.request_id
+        request_id: context.request_id,
       })
 
       return {
         allowed: false,
         reason: 'Access validation error',
-        permissions: []
+        permissions: [],
       }
     }
   }
@@ -177,7 +177,10 @@ export class AgentAccessControl {
   /**
    * Get workspace permissions for a user
    */
-  private async getWorkspacePermissions(userId: string, workspaceId: string): Promise<WorkspacePermissions> {
+  private async getWorkspacePermissions(
+    userId: string,
+    workspaceId: string
+  ): Promise<WorkspacePermissions> {
     const cacheKey = `${userId}:${workspaceId}`
     const cached = this.permissionCache.get(cacheKey)
 
@@ -191,15 +194,10 @@ export class AgentAccessControl {
         .select({
           role: member.role,
           permissions: member.permissions,
-          status: member.status
+          status: member.status,
         })
         .from(member)
-        .where(
-          and(
-            eq(member.userId, userId),
-            eq(member.organizationId, workspaceId)
-          )
-        )
+        .where(and(eq(member.userId, userId), eq(member.organizationId, workspaceId)))
         .limit(1)
 
       if (membership.length === 0) {
@@ -218,16 +216,15 @@ export class AgentAccessControl {
       // Cache for 5 minutes
       this.permissionCache.set(cacheKey, {
         permissions,
-        expires: Date.now() + 5 * 60 * 1000
+        expires: Date.now() + 5 * 60 * 1000,
       })
 
       return permissions
-
     } catch (error) {
       logger.error('Failed to get workspace permissions', {
         user_id: userId,
         workspace_id: workspaceId,
-        error: (error as Error).message
+        error: (error as Error).message,
       })
 
       // Return minimal permissions on error
@@ -238,7 +235,7 @@ export class AgentAccessControl {
         can_manage_all_agents: false,
         can_access_agent_analytics: false,
         max_agents: 0,
-        allowed_models: []
+        allowed_models: [],
       }
     }
   }
@@ -248,51 +245,61 @@ export class AgentAccessControl {
    */
   private getRolePermissions(role: string, customPermissions?: string[]): WorkspacePermissions {
     const basePermissions: Record<string, WorkspacePermissions> = {
-      'owner': {
+      owner: {
         can_create_agents: true,
         can_modify_agents: true,
         can_delete_agents: true,
         can_manage_all_agents: true,
         can_access_agent_analytics: true,
         max_agents: 100,
-        allowed_models: ['gpt-4o', 'gpt-4o-mini', 'claude-3-5-sonnet-20241022', 'claude-3-haiku-20240307']
+        allowed_models: [
+          'gpt-4o',
+          'gpt-4o-mini',
+          'claude-3-5-sonnet-20241022',
+          'claude-3-haiku-20240307',
+        ],
       },
-      'admin': {
+      admin: {
         can_create_agents: true,
         can_modify_agents: true,
         can_delete_agents: true,
         can_manage_all_agents: true,
         can_access_agent_analytics: true,
         max_agents: 50,
-        allowed_models: ['gpt-4o', 'gpt-4o-mini', 'claude-3-5-sonnet-20241022', 'claude-3-haiku-20240307']
+        allowed_models: [
+          'gpt-4o',
+          'gpt-4o-mini',
+          'claude-3-5-sonnet-20241022',
+          'claude-3-haiku-20240307',
+        ],
       },
-      'member': {
+      member: {
         can_create_agents: true,
         can_modify_agents: true,
         can_delete_agents: false,
         can_manage_all_agents: false,
         can_access_agent_analytics: false,
         max_agents: 10,
-        allowed_models: ['gpt-4o-mini', 'claude-3-haiku-20240307']
+        allowed_models: ['gpt-4o-mini', 'claude-3-haiku-20240307'],
       },
-      'viewer': {
+      viewer: {
         can_create_agents: false,
         can_modify_agents: false,
         can_delete_agents: false,
         can_manage_all_agents: false,
         can_access_agent_analytics: false,
         max_agents: 0,
-        allowed_models: []
-      }
+        allowed_models: [],
+      },
     }
 
-    let permissions = basePermissions[role] || basePermissions['viewer']
+    let permissions = basePermissions[role] || basePermissions.viewer
 
     // Apply custom permissions if provided
     if (customPermissions && customPermissions.length > 0) {
       permissions = { ...permissions }
 
-      customPermissions.forEach(permission => {
+      customPermissions.forEach((permission) => {
         switch (permission) {
           case 'agents:create':
             permissions.can_create_agents = true
@@ -310,7 +317,9 @@ export class AgentAccessControl {
             permissions.can_access_agent_analytics = true
             break
           case 'models:premium':
-            permissions.allowed_models = [...new Set([...permissions.allowed_models, 'gpt-4o', 'claude-3-5-sonnet-20241022'])]
+            permissions.allowed_models = [
+              ...new Set([...permissions.allowed_models, 'gpt-4o', 'claude-3-5-sonnet-20241022']),
+            ]
             break
         }
       })
@@ -330,17 +339,23 @@ export class AgentAccessControl {
       case 'create':
         return {
           allowed: permissions.can_create_agents,
-          reason: permissions.can_create_agents ? undefined : 'Insufficient permissions to create agents'
+          reason: permissions.can_create_agents
+            ? undefined
+            : 'Insufficient permissions to create agents',
         }
       case 'update':
         return {
           allowed: permissions.can_modify_agents,
-          reason: permissions.can_modify_agents ? undefined : 'Insufficient permissions to modify agents'
+          reason: permissions.can_modify_agents
+            ? undefined
+            : 'Insufficient permissions to modify agents',
         }
       case 'delete':
         return {
           allowed: permissions.can_delete_agents,
-          reason: permissions.can_delete_agents ? undefined : 'Insufficient permissions to delete agents'
+          reason: permissions.can_delete_agents
+            ? undefined
+            : 'Insufficient permissions to delete agents',
         }
       case 'read':
       case 'list':
@@ -382,20 +397,20 @@ export class AgentAccessControl {
     const rateLimits = {
       create: { limit: 10, window: 3600 }, // 10 creates per hour
       update: { limit: 50, window: 3600 }, // 50 updates per hour
-      delete: { limit: 5, window: 3600 },  // 5 deletes per hour
+      delete: { limit: 5, window: 3600 }, // 5 deletes per hour
       read: { limit: 1000, window: 3600 }, // 1000 reads per hour
-      list: { limit: 100, window: 3600 }   // 100 lists per hour
+      list: { limit: 100, window: 3600 }, // 100 lists per hour
     }
 
     const rateLimit = rateLimits[operation as keyof typeof rateLimits] || rateLimits.read
     const cacheKey = `${userId}:${operation}`
     const now = Date.now()
-    const windowStart = now - (rateLimit.window * 1000)
+    const windowStart = now - rateLimit.window * 1000
 
     let cached = this.rateLimitCache.get(cacheKey)
 
     if (!cached || cached.reset < now) {
-      cached = { count: 0, reset: now + (rateLimit.window * 1000) }
+      cached = { count: 0, reset: now + rateLimit.window * 1000 }
       this.rateLimitCache.set(cacheKey, cached)
     }
 
@@ -404,7 +419,7 @@ export class AgentAccessControl {
     return {
       limit: rateLimit.limit,
       remaining: Math.max(0, rateLimit.limit - cached.count),
-      reset_at: new Date(cached.reset)
+      reset_at: new Date(cached.reset),
     }
   }
 
@@ -416,21 +431,15 @@ export class AgentAccessControl {
       const membership = await db
         .select({ role: member.role })
         .from(member)
-        .where(
-          and(
-            eq(member.userId, userId),
-            eq(member.organizationId, workspaceId)
-          )
-        )
+        .where(and(eq(member.userId, userId), eq(member.organizationId, workspaceId)))
         .limit(1)
 
       return membership[0]?.role || 'viewer'
-
     } catch (error) {
       logger.error('Failed to get user role', {
         user_id: userId,
         workspace_id: workspaceId,
-        error: (error as Error).message
+        error: (error as Error).message,
       })
       return 'viewer'
     }
@@ -473,7 +482,7 @@ export class AgentAccessControl {
 
     logger.debug('Access control cache cleaned up', {
       permission_cache_size: this.permissionCache.size,
-      rate_limit_cache_size: this.rateLimitCache.size
+      rate_limit_cache_size: this.rateLimitCache.size,
     })
   }
 }
@@ -498,8 +507,8 @@ export async function withAgentAccessControl<T>(
         accessResult: {
           allowed: false,
           reason: 'Authentication required',
-          permissions: []
-        }
+          permissions: [],
+        },
       }
     }
 
@@ -509,7 +518,7 @@ export async function withAgentAccessControl<T>(
       key_type: 'workspace',
       permissions: [],
       session_id: session.session?.id,
-      request_id: Math.random().toString(36).substring(7)
+      request_id: Math.random().toString(36).substring(7),
     }
 
     const accessControl = AgentAccessControl.getInstance()
@@ -521,11 +530,10 @@ export async function withAgentAccessControl<T>(
     )
 
     return { context, accessResult }
-
   } catch (error) {
     logger.error('Access control middleware failed', {
       operation,
-      error: (error as Error).message
+      error: (error as Error).message,
     })
 
     return {
@@ -533,8 +541,8 @@ export async function withAgentAccessControl<T>(
       accessResult: {
         allowed: false,
         reason: 'Access control validation failed',
-        permissions: []
-      }
+        permissions: [],
+      },
     }
   }
 }

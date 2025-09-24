@@ -6,18 +6,11 @@
  * to ensure complete multi-tenant data isolation and security compliance.
  */
 
-import { db } from '@sim/db'
-import {
-  parlantAgent,
-  parlantEvent,
-  parlantSession,
-  permissions,
-  user,
-  workspace,
-} from '@sim/db/schema'
-import { and, eq, inArray, isNotNull, or } from 'drizzle-orm'
-import { createLogger } from '@/lib/logs/console/logger'
 import * as crypto from 'crypto'
+import { db } from '@sim/db'
+import { parlantAgent, parlantSession, permissions, workspace } from '@sim/db/schema'
+import { and, eq, or } from 'drizzle-orm'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('WorkspaceIsolationService')
 
@@ -255,12 +248,7 @@ export class WorkspaceIsolationService {
         const workspaceOwnership = await db
           .select({ id: workspace.id })
           .from(workspace)
-          .where(
-            and(
-              eq(workspace.id, workspaceId),
-              eq(workspace.ownerId, userId)
-            )
-          )
+          .where(and(eq(workspace.id, workspaceId), eq(workspace.ownerId, userId)))
           .limit(1)
 
         if (workspaceOwnership.length === 0) {
@@ -280,7 +268,7 @@ export class WorkspaceIsolationService {
       }
 
       // Determine access level from permissions
-      const permissionList = userPermissions.map(p => p.permission)
+      const permissionList = userPermissions.map((p) => p.permission)
       let accessLevel: WorkspaceAccessLevel = 'guest'
 
       if (permissionList.includes('admin')) {
@@ -319,10 +307,7 @@ export class WorkspaceIsolationService {
   /**
    * Enforce workspace isolation for session access
    */
-  async enforceSessionIsolation(
-    sessionId: string,
-    context: IsolationContext
-  ): Promise<boolean> {
+  async enforceSessionIsolation(sessionId: string, context: IsolationContext): Promise<boolean> {
     const startTime = performance.now()
     const requestId = `enforce-session-${Date.now()}`
 
@@ -464,10 +449,7 @@ export class WorkspaceIsolationService {
   /**
    * Enforce workspace isolation for agent access
    */
-  async enforceAgentIsolation(
-    agentId: string,
-    context: IsolationContext
-  ): Promise<boolean> {
+  async enforceAgentIsolation(agentId: string, context: IsolationContext): Promise<boolean> {
     const startTime = performance.now()
     const requestId = `enforce-agent-${Date.now()}`
 
@@ -591,13 +573,15 @@ export class WorkspaceIsolationService {
   /**
    * Get user's accessible workspaces with permissions
    */
-  async getUserAccessibleWorkspaces(userId: string): Promise<Array<{
-    workspaceId: string
-    workspaceName: string
-    accessLevel: WorkspaceAccessLevel
-    permissions: string[]
-    isOwner: boolean
-  }>> {
+  async getUserAccessibleWorkspaces(userId: string): Promise<
+    Array<{
+      workspaceId: string
+      workspaceName: string
+      accessLevel: WorkspaceAccessLevel
+      permissions: string[]
+      isOwner: boolean
+    }>
+  > {
     const startTime = performance.now()
     const requestId = `get-workspaces-${Date.now()}`
 
@@ -625,21 +609,19 @@ export class WorkspaceIsolationService {
         })
         .from(permissions)
         .innerJoin(workspace, eq(permissions.entityId, workspace.id))
-        .where(
-          and(
-            eq(permissions.userId, userId),
-            eq(permissions.entityType, 'workspace')
-          )
-        )
+        .where(and(eq(permissions.userId, userId), eq(permissions.entityType, 'workspace')))
 
       // Combine and organize results
-      const accessibleWorkspaces = new Map<string, {
-        workspaceId: string
-        workspaceName: string
-        accessLevel: WorkspaceAccessLevel
-        permissions: string[]
-        isOwner: boolean
-      }>()
+      const accessibleWorkspaces = new Map<
+        string,
+        {
+          workspaceId: string
+          workspaceName: string
+          accessLevel: WorkspaceAccessLevel
+          permissions: string[]
+          isOwner: boolean
+        }
+      >()
 
       // Add owned workspaces
       for (const ownedWorkspace of ownedWorkspaces) {
@@ -725,9 +707,8 @@ export class WorkspaceIsolationService {
       agentFilter: eq(parlantAgent.workspaceId, context.workspaceId),
 
       // For events (requires session join)
-      eventFilter: (sessionJoin: boolean = true) => sessionJoin
-        ? eq(parlantSession.workspaceId, context.workspaceId)
-        : undefined,
+      eventFilter: (sessionJoin = true) =>
+        sessionJoin ? eq(parlantSession.workspaceId, context.workspaceId) : undefined,
 
       // Generic workspace filter
       workspaceFilter: eq(workspace.id, context.workspaceId),
@@ -772,7 +753,6 @@ export class WorkspaceIsolationService {
         },
         timestamp: attempt.detectedAt,
       })
-
     } catch (error) {
       logger.error('Failed to log cross-workspace attempt', {
         requestId,
@@ -811,7 +791,6 @@ export class WorkspaceIsolationService {
       // 2. Secure audit log storage (append-only, tamper-evident)
       // 3. Integration with SIEM systems
       // 4. Compliance reporting capabilities
-
     } catch (error) {
       logger.error('Failed to log isolation audit', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -823,11 +802,7 @@ export class WorkspaceIsolationService {
   /**
    * Encrypt sensitive data for workspace
    */
-  async encryptWorkspaceData(
-    workspaceId: string,
-    data: any,
-    fieldName: string
-  ): Promise<string> {
+  async encryptWorkspaceData(workspaceId: string, data: any, fieldName: string): Promise<string> {
     // Simplified encryption - in production use proper key management
     const workspaceKey = await this.getWorkspaceEncryptionKey(workspaceId)
     const cipher = crypto.createCipher('aes-256-cbc', workspaceKey)
@@ -865,10 +840,7 @@ export class WorkspaceIsolationService {
     // 4. Audit key access
 
     // For now, return a workspace-specific derived key
-    return crypto
-      .createHash('sha256')
-      .update(`workspace-key-${workspaceId}`)
-      .digest('hex')
+    return crypto.createHash('sha256').update(`workspace-key-${workspaceId}`).digest('hex')
   }
 }
 

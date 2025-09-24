@@ -1,6 +1,6 @@
 import { db } from '@sim/db'
-import { eq, and } from 'drizzle-orm'
 import { member } from '@sim/db/schema'
+import { and, eq } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('ParlantAgents')
@@ -42,12 +42,11 @@ export async function getAgentById(agentId: string): Promise<Agent | null> {
       updated_at: new Date(),
       is_active: true,
       guidelines: {},
-      tools: []
+      tools: [],
     }
 
     logger.info('Fetched agent', { agentId, workspaceId: mockAgent.workspace_id })
     return mockAgent
-
   } catch (error) {
     logger.error('Failed to fetch agent', { error, agentId })
     return null
@@ -57,10 +56,7 @@ export async function getAgentById(agentId: string): Promise<Agent | null> {
 /**
  * Check if user can access a specific agent
  */
-export async function getUserCanAccessAgent(
-  userId: string,
-  agentId: string
-): Promise<boolean> {
+export async function getUserCanAccessAgent(userId: string, agentId: string): Promise<boolean> {
   try {
     // Get the agent first
     const agent = await getAgentById(agentId)
@@ -72,12 +68,7 @@ export async function getUserCanAccessAgent(
     const membership = await db
       .select()
       .from(member)
-      .where(
-        and(
-          eq(member.userId, userId),
-          eq(member.organizationId, agent.workspace_id)
-        )
-      )
+      .where(and(eq(member.userId, userId), eq(member.organizationId, agent.workspace_id)))
       .limit(1)
 
     const hasAccess = membership.length > 0
@@ -86,11 +77,10 @@ export async function getUserCanAccessAgent(
       userId,
       agentId,
       workspaceId: agent.workspace_id,
-      hasAccess
+      hasAccess,
     })
 
     return hasAccess
-
   } catch (error) {
     logger.error('Agent access check failed', { error, userId, agentId })
     return false
@@ -109,12 +99,7 @@ export async function getUserAccessibleAgents(
     const membership = await db
       .select()
       .from(member)
-      .where(
-        and(
-          eq(member.userId, userId),
-          eq(member.organizationId, workspaceId)
-        )
-      )
+      .where(and(eq(member.userId, userId), eq(member.organizationId, workspaceId)))
       .limit(1)
 
     if (membership.length === 0) {
@@ -129,11 +114,10 @@ export async function getUserAccessibleAgents(
     logger.info('Fetched accessible agents', {
       userId,
       workspaceId,
-      agentCount: agents.length
+      agentCount: agents.length,
     })
 
     return agents
-
   } catch (error) {
     logger.error('Failed to fetch accessible agents', { error, userId, workspaceId })
     return []
@@ -158,12 +142,7 @@ export async function createAgent(
     const membership = await db
       .select()
       .from(member)
-      .where(
-        and(
-          eq(member.userId, userId),
-          eq(member.organizationId, workspaceId)
-        )
-      )
+      .where(and(eq(member.userId, userId), eq(member.organizationId, workspaceId)))
       .limit(1)
 
     if (membership.length === 0) {
@@ -177,7 +156,7 @@ export async function createAgent(
       logger.warn('User cannot create agent - insufficient permissions', {
         userId,
         workspaceId,
-        userRole
+        userRole,
       })
       return null
     }
@@ -195,18 +174,17 @@ export async function createAgent(
       updated_at: new Date(),
       is_active: true,
       guidelines: agentData.guidelines,
-      tools: agentData.tools
+      tools: agentData.tools,
     }
 
     logger.info('Created new agent', {
       agentId: newAgent.id,
       agentName: newAgent.name,
       workspaceId,
-      createdBy: userId
+      createdBy: userId,
     })
 
     return newAgent
-
   } catch (error) {
     logger.error('Failed to create agent', { error, userId, workspaceId, agentData })
     return null
@@ -239,12 +217,7 @@ export async function updateAgent(
     const membership = await db
       .select()
       .from(member)
-      .where(
-        and(
-          eq(member.userId, userId),
-          eq(member.organizationId, agent.workspace_id)
-        )
-      )
+      .where(and(eq(member.userId, userId), eq(member.organizationId, agent.workspace_id)))
       .limit(1)
 
     const userRole = membership[0]?.role
@@ -253,7 +226,7 @@ export async function updateAgent(
         userId,
         agentId,
         userRole,
-        agentCreator: agent.created_by
+        agentCreator: agent.created_by,
       })
       return null
     }
@@ -262,17 +235,16 @@ export async function updateAgent(
     const updatedAgent: Agent = {
       ...agent,
       ...updates,
-      updated_at: new Date()
+      updated_at: new Date(),
     }
 
     logger.info('Updated agent', {
       agentId,
       updatedBy: userId,
-      updates: Object.keys(updates)
+      updates: Object.keys(updates),
     })
 
     return updatedAgent
-
   } catch (error) {
     logger.error('Failed to update agent', { error, userId, agentId, updates })
     return null
@@ -293,12 +265,7 @@ export async function deleteAgent(userId: string, agentId: string): Promise<bool
     const membership = await db
       .select()
       .from(member)
-      .where(
-        and(
-          eq(member.userId, userId),
-          eq(member.organizationId, agent.workspace_id)
-        )
-      )
+      .where(and(eq(member.userId, userId), eq(member.organizationId, agent.workspace_id)))
       .limit(1)
 
     const userRole = membership[0]?.role
@@ -307,7 +274,7 @@ export async function deleteAgent(userId: string, agentId: string): Promise<bool
         userId,
         agentId,
         userRole,
-        agentCreator: agent.created_by
+        agentCreator: agent.created_by,
       })
       return false
     }
@@ -318,11 +285,10 @@ export async function deleteAgent(userId: string, agentId: string): Promise<bool
     logger.info('Deleted agent', {
       agentId,
       deletedBy: userId,
-      workspaceId: agent.workspace_id
+      workspaceId: agent.workspace_id,
     })
 
     return true
-
   } catch (error) {
     logger.error('Failed to delete agent', { error, userId, agentId })
     return false

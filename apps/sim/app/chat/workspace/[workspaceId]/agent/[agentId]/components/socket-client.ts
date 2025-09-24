@@ -15,7 +15,7 @@
  * - Cross-tenant isolation enforcement
  */
 
-import { io, Socket } from 'socket.io-client'
+import { io, type Socket } from 'socket.io-client'
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('ParlantSocketClient')
@@ -180,14 +180,9 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   // Join/leave rooms
-  'parlant:join-agent-room': (data: {
-    agentId: string
-    workspaceId: string
-  }) => void
+  'parlant:join-agent-room': (data: { agentId: string; workspaceId: string }) => void
 
-  'parlant:leave-agent-room': (data: {
-    agentId: string
-  }) => void
+  'parlant:leave-agent-room': (data: { agentId: string }) => void
 
   'parlant:join-session-room': (data: {
     sessionId: string
@@ -195,25 +190,15 @@ export interface ClientToServerEvents {
     workspaceId: string
   }) => void
 
-  'parlant:leave-session-room': (data: {
-    sessionId: string
-  }) => void
+  'parlant:leave-session-room': (data: { sessionId: string }) => void
 
   // Status requests
-  'parlant:request-agent-status': (data: {
-    agentId: string
-    workspaceId: string
-  }) => void
+  'parlant:request-agent-status': (data: { agentId: string; workspaceId: string }) => void
 
   // Workspace messaging
-  'join-workspace-messaging': (data: {
-    workspaceId: string
-    channels?: string[]
-  }) => void
+  'join-workspace-messaging': (data: { workspaceId: string; channels?: string[] }) => void
 
-  'leave-workspace-messaging': (data: {
-    workspaceId: string
-  }) => void
+  'leave-workspace-messaging': (data: { workspaceId: string }) => void
 
   'send-workspace-message': (data: {
     workspaceId: string
@@ -286,7 +271,7 @@ export class ParlantSocketClient {
   private connectionState: ConnectionState = {
     isConnected: false,
     isConnecting: false,
-    reconnectAttempts: 0
+    reconnectAttempts: 0,
   }
   private eventHandlers: Map<string, Function[]> = new Map()
 
@@ -295,7 +280,7 @@ export class ParlantSocketClient {
       timeout: 20000,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      ...config
+      ...config,
     }
   }
 
@@ -315,7 +300,7 @@ export class ParlantSocketClient {
         serverUrl: this.config.serverUrl,
         workspaceId: this.config.workspaceId,
         agentId: this.config.agentId,
-        userId: this.config.userId
+        userId: this.config.userId,
       })
 
       this.socket = io(this.config.serverUrl, {
@@ -323,7 +308,7 @@ export class ParlantSocketClient {
           token: this.config.authToken,
           userId: this.config.userId,
           workspaceId: this.config.workspaceId,
-          agentId: this.config.agentId
+          agentId: this.config.agentId,
         },
         transports: ['websocket'],
         timeout: this.config.timeout,
@@ -332,7 +317,7 @@ export class ParlantSocketClient {
         reconnectionAttempts: this.config.reconnectionAttempts,
         reconnectionDelay: this.config.reconnectionDelay,
         reconnectionDelayMax: 10000,
-        maxReconnectionAttempts: this.config.reconnectionAttempts
+        maxReconnectionAttempts: this.config.reconnectionAttempts,
       })
 
       // Set up event handlers
@@ -357,7 +342,6 @@ export class ParlantSocketClient {
           reject(error)
         })
       })
-
     } catch (error) {
       this.connectionState.isConnecting = false
       this.connectionState.error = error.message
@@ -441,7 +425,10 @@ export class ParlantSocketClient {
   /**
    * Join workspace messaging for general workspace communication
    */
-  async joinWorkspaceMessaging(workspaceId: string, channels: string[] = ['general']): Promise<void> {
+  async joinWorkspaceMessaging(
+    workspaceId: string,
+    channels: string[] = ['general']
+  ): Promise<void> {
     if (!this.socket?.connected) {
       throw new Error('Socket not connected')
     }
@@ -452,7 +439,11 @@ export class ParlantSocketClient {
   /**
    * Send workspace presence update
    */
-  updatePresence(workspaceId: string, status: 'online' | 'away' | 'busy' | 'offline' | 'invisible', customStatus?: string): void {
+  updatePresence(
+    workspaceId: string,
+    status: 'online' | 'away' | 'busy' | 'offline' | 'invisible',
+    customStatus?: string
+  ): void {
     if (!this.socket?.connected) {
       logger.warn('Cannot update presence - socket not connected')
       return
@@ -464,7 +455,13 @@ export class ParlantSocketClient {
   /**
    * Notify about session start
    */
-  notifySessionStarted(sessionId: string, agentId: string, workspaceId: string, userId: string, metadata?: any): void {
+  notifySessionStarted(
+    sessionId: string,
+    agentId: string,
+    workspaceId: string,
+    userId: string,
+    metadata?: any
+  ): void {
     if (!this.socket?.connected) {
       logger.warn('Cannot notify session started - socket not connected')
       return
@@ -575,7 +572,7 @@ export class ParlantSocketClient {
 
     // Set up stored event handlers
     this.eventHandlers.forEach((handlers, event) => {
-      handlers.forEach(handler => {
+      handlers.forEach((handler) => {
         this.socket!.on(event as any, handler as any)
       })
     })

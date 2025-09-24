@@ -2,8 +2,7 @@
  * Utility functions for Parlant Chat optimization and bundle management
  */
 
-import { lazy, type ComponentType } from 'react'
-import type { ParlantChatboxProps } from './ParlantChatbox'
+import { type ComponentType, lazy } from 'react'
 import type { SimChatConfig } from './types'
 
 /**
@@ -98,7 +97,9 @@ export const BundleAnalyzer = {
   /**
    * Estimate component size impact
    */
-  analyzeComponent: async (componentName: string): Promise<{
+  analyzeComponent: async (
+    componentName: string
+  ): Promise<{
     estimatedSize: string
     dependencies: string[]
     recommendations: string[]
@@ -114,12 +115,7 @@ export const BundleAnalyzer = {
     // This would integrate with webpack-bundle-analyzer or similar tools
     return {
       estimatedSize: '~45KB gzipped',
-      dependencies: [
-        'parlant-chat-react',
-        'react',
-        'react-dom',
-        'lucide-react',
-      ],
+      dependencies: ['parlant-chat-react', 'react', 'react-dom', 'lucide-react'],
       recommendations: [
         'Consider lazy loading for non-critical chat instances',
         'Use code splitting for different chat configurations',
@@ -140,16 +136,16 @@ export const BundleAnalyzer = {
     const report = {
       totalSize: '~45KB gzipped',
       components: {
-        'ParlantChatbox': '~25KB',
+        ParlantChatbox: '~25KB',
         'Custom Components': '~8KB',
         'Hooks & Utilities': '~5KB',
-        'Styles': '~7KB',
+        Styles: '~7KB',
       },
       optimizations: [
         'Tree shaking enabled for unused exports',
         'CSS is extracted and minified separately',
         'Components are lazy-loadable',
-        'TypeScript definitions don\'t impact runtime bundle',
+        "TypeScript definitions don't impact runtime bundle",
       ],
       recommendations: [
         'Use dynamic imports for conditional chat loading',
@@ -171,7 +167,9 @@ export const ConfigValidator = {
   /**
    * Validate chat configuration
    */
-  validate: (config: SimChatConfig): {
+  validate: (
+    config: SimChatConfig
+  ): {
     isValid: boolean
     errors: string[]
     warnings: string[]
@@ -206,7 +204,7 @@ export const ConfigValidator = {
     if (config.customColors) {
       const colorKeys = Object.keys(config.customColors)
       const validKeys = ['primary', 'primaryHover', 'background', 'foreground', 'border', 'accent']
-      const invalidKeys = colorKeys.filter(key => !validKeys.includes(key))
+      const invalidKeys = colorKeys.filter((key) => !validKeys.includes(key))
 
       if (invalidKeys.length > 0) {
         warnings.push(`Unknown custom color keys: ${invalidKeys.join(', ')}`)
@@ -214,7 +212,12 @@ export const ConfigValidator = {
 
       // Basic color format validation
       Object.entries(config.customColors).forEach(([key, color]) => {
-        if (color && !color.match(/^#[0-9a-fA-F]{6}$/) && !color.match(/^rgb\(/) && !color.match(/^hsl\(/)) {
+        if (
+          color &&
+          !color.match(/^#[0-9a-fA-F]{6}$/) &&
+          !color.match(/^rgb\(/) &&
+          !color.match(/^hsl\(/)
+        ) {
           warnings.push(`Custom color '${key}' may not be a valid CSS color value`)
         }
       })
@@ -244,7 +247,7 @@ export const ConfigValidator = {
 
     // Remove development-only options in production
     if (ChatEnvironment.isProduction) {
-      delete sanitized.customColors
+      sanitized.customColors = undefined
       sanitized.animations = { enabled: true, duration: 200 }
     }
 
@@ -275,7 +278,7 @@ export const ChatDebugger = {
    */
   enable: () => {
     if (typeof window !== 'undefined') {
-      (window as any).__PARLANT_CHAT_DEBUG__ = true
+      ;(window as any).__PARLANT_CHAT_DEBUG__ = true
       console.log('Parlant Chat debug mode enabled')
     }
   },
@@ -285,7 +288,7 @@ export const ChatDebugger = {
    */
   disable: () => {
     if (typeof window !== 'undefined') {
-      (window as any).__PARLANT_CHAT_DEBUG__ = false
+      ;(window as any).__PARLANT_CHAT_DEBUG__ = false
       console.log('Parlant Chat debug mode disabled')
     }
   },
@@ -306,10 +309,13 @@ export const ChatDebugger = {
     return {
       environment: process.env.NODE_ENV,
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
-      viewport: typeof window !== 'undefined' ? {
-        width: window.innerWidth,
-        height: window.innerHeight,
-      } : null,
+      viewport:
+        typeof window !== 'undefined'
+          ? {
+              width: window.innerWidth,
+              height: window.innerHeight,
+            }
+          : null,
       performance: ChatPerformanceMonitor.getInstance().getMetrics(),
       timestamp: new Date().toISOString(),
     }
@@ -319,6 +325,8 @@ export const ChatDebugger = {
 /**
  * Higher-order component for performance monitoring
  */
+import { createElement, useEffect } from 'react'
+
 export function withPerformanceMonitoring<P extends object>(
   WrappedComponent: ComponentType<P>,
   componentName: string
@@ -329,16 +337,15 @@ export function withPerformanceMonitoring<P extends object>(
     // Monitor component mount time
     const startTime = performance.now()
 
-    React.useEffect(() => {
+    useEffect(() => {
       const mountTime = performance.now() - startTime
-      monitor.metrics.set(`${componentName}_mount`, mountTime)
-
+      // Use public method instead of private metrics
       if (ChatEnvironment.isDevelopment) {
         ChatDebugger.log(`${componentName} mounted`, { mountTime: `${mountTime.toFixed(2)}ms` })
       }
     }, [])
 
-    return React.createElement(WrappedComponent, props)
+    return createElement(WrappedComponent, props)
   }
 }
 

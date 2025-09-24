@@ -16,19 +16,12 @@
  * - Performance monitoring and analytics
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
+import { EventEmitter } from 'events'
 import { io, type Socket as SocketIOServer } from 'socket.io'
-import type {
-  Agent,
-  Session,
-  AuthContext,
-  AgentConfig,
-  Event,
-  EventType
-} from '../types'
+import { createLogger } from '@/lib/logs/console/logger'
 import { agentService } from '../agent-service'
 import { createSession, endSession, pauseSession, resumeSession } from '../sessions'
-import { EventEmitter } from 'events'
+import type { AgentConfig, AuthContext, Event } from '../types'
 
 const logger = createLogger('AgentSessionManager')
 
@@ -134,8 +127,8 @@ export class AgentSessionManager extends EventEmitter {
       cors: {
         origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
         methods: ['GET', 'POST'],
-        credentials: true
-      }
+        credentials: true,
+      },
     })
 
     this.socketServer.on('connection', (socket) => {
@@ -165,7 +158,11 @@ export class AgentSessionManager extends EventEmitter {
     auth: AuthContext,
     options: AgentSessionOptions = {}
   ): Promise<AgentSessionContext> {
-    logger.info(`Creating agent session`, { agentId, userId: auth.user_id, workspaceId: auth.workspace_id })
+    logger.info(`Creating agent session`, {
+      agentId,
+      userId: auth.user_id,
+      workspaceId: auth.workspace_id,
+    })
 
     try {
       // Validate agent exists and user has access
@@ -177,16 +174,19 @@ export class AgentSessionManager extends EventEmitter {
       const agent = agentResponse.data
 
       // Create Parlant session
-      const sessionResponse = await createSession({
-        agent_id: agentId,
-        user_id: auth.user_id,
-        workspace_id: auth.workspace_id || agent.workspace_id,
-        metadata: {
-          lifecycle_managed: true,
-          created_by: 'agent-session-manager',
-          options
-        }
-      }, auth)
+      const sessionResponse = await createSession(
+        {
+          agent_id: agentId,
+          user_id: auth.user_id,
+          workspace_id: auth.workspace_id || agent.workspace_id,
+          metadata: {
+            lifecycle_managed: true,
+            created_by: 'agent-session-manager',
+            options,
+          },
+        },
+        auth
+      )
 
       // Create session context
       const sessionContext: AgentSessionContext = {
@@ -201,7 +201,7 @@ export class AgentSessionManager extends EventEmitter {
         metadata: {
           ...options.customMetadata,
           agent_name: agent.name,
-          agent_description: agent.description
+          agent_description: agent.description,
         },
         conversationHistory: [],
         resourceUsage: {
@@ -210,7 +210,7 @@ export class AgentSessionManager extends EventEmitter {
           messagesProcessed: 0,
           toolsExecuted: 0,
           tokensConsumed: 0,
-          sessionDurationMs: 0
+          sessionDurationMs: 0,
         },
         performanceMetrics: {
           averageResponseTimeMs: 0,
@@ -218,8 +218,8 @@ export class AgentSessionManager extends EventEmitter {
           p99ResponseTimeMs: 0,
           errorRate: 0,
           successRate: 1.0,
-          lastUpdated: new Date()
-        }
+          lastUpdated: new Date(),
+        },
       }
 
       // Store session
@@ -245,16 +245,15 @@ export class AgentSessionManager extends EventEmitter {
         sessionId: sessionResponse.id,
         agentId,
         userId: auth.user_id,
-        state: sessionContext.state
+        state: sessionContext.state,
       })
 
       return sessionContext
-
     } catch (error) {
       logger.error(`Failed to create agent session`, {
         agentId,
         userId: auth.user_id,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -307,7 +306,7 @@ export class AgentSessionManager extends EventEmitter {
     logger.debug(`Session activity updated`, {
       sessionId,
       eventType: event.type,
-      messagesProcessed: session.resourceUsage.messagesProcessed
+      messagesProcessed: session.resourceUsage.messagesProcessed,
     })
   }
 
@@ -357,7 +356,7 @@ export class AgentSessionManager extends EventEmitter {
     // Restart monitoring
     this.startSessionMonitoring(sessionId, {
       enablePerformanceTracking: true,
-      enableResourceMonitoring: true
+      enableResourceMonitoring: true,
     })
 
     // Emit lifecycle event
@@ -399,9 +398,8 @@ export class AgentSessionManager extends EventEmitter {
       logger.info(`Agent session ended successfully`, {
         sessionId,
         duration: Date.now() - session.createdAt.getTime(),
-        messagesProcessed: session.resourceUsage.messagesProcessed
+        messagesProcessed: session.resourceUsage.messagesProcessed,
       })
-
     } catch (error) {
       await this.transitionSessionState(sessionId, 'error')
       this.emitLifecycleEvent('session:error', session)
@@ -413,7 +411,7 @@ export class AgentSessionManager extends EventEmitter {
    * Get all active sessions for a user/workspace
    */
   public getActiveSessions(userId?: string, workspaceId?: string): AgentSessionContext[] {
-    const activeSessions = Array.from(this.sessions.values()).filter(session => {
+    const activeSessions = Array.from(this.sessions.values()).filter((session) => {
       if (session.state === 'ended' || session.state === 'error') return false
       if (userId && session.userId !== userId) return false
       if (workspaceId && session.workspaceId !== workspaceId) return false
@@ -432,28 +430,34 @@ export class AgentSessionManager extends EventEmitter {
       '1h': 60 * 60 * 1000,
       '24h': 24 * 60 * 60 * 1000,
       '7d': 7 * 24 * 60 * 60 * 1000,
-      '30d': 30 * 24 * 60 * 60 * 1000
+      '30d': 30 * 24 * 60 * 60 * 1000,
     }
 
     const cutoff = new Date(now.getTime() - timeframes[timeframe])
     const recentSessions = Array.from(this.sessions.values()).filter(
-      session => session.createdAt >= cutoff
+      (session) => session.createdAt >= cutoff
     )
 
     return {
       totalSessions: recentSessions.length,
-      activeSessions: recentSessions.filter(s => s.state === 'active').length,
+      activeSessions: recentSessions.filter((s) => s.state === 'active').length,
       averageSessionDuration: this.calculateAverageSessionDuration(recentSessions),
-      totalMessagesProcessed: recentSessions.reduce((sum, s) => sum + s.resourceUsage.messagesProcessed, 0),
+      totalMessagesProcessed: recentSessions.reduce(
+        (sum, s) => sum + s.resourceUsage.messagesProcessed,
+        0
+      ),
       averageResponseTime: this.calculateAverageResponseTime(recentSessions),
       errorRate: this.calculateErrorRate(recentSessions),
-      resourceUtilization: this.calculateResourceUtilization(recentSessions)
+      resourceUtilization: this.calculateResourceUtilization(recentSessions),
     }
   }
 
   // Private helper methods
 
-  private async transitionSessionState(sessionId: string, newState: SessionLifecycleState): Promise<void> {
+  private async transitionSessionState(
+    sessionId: string,
+    newState: SessionLifecycleState
+  ): Promise<void> {
     const session = this.sessions.get(sessionId)
     if (!session) return
 
@@ -463,7 +467,7 @@ export class AgentSessionManager extends EventEmitter {
     logger.debug(`Session state transition`, {
       sessionId,
       from: oldState,
-      to: newState
+      to: newState,
     })
 
     // Broadcast state change via Socket.io
@@ -471,7 +475,7 @@ export class AgentSessionManager extends EventEmitter {
       sessionId,
       previousState: oldState,
       currentState: newState,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   }
 
@@ -564,7 +568,7 @@ export class AgentSessionManager extends EventEmitter {
       duration: session.resourceUsage.sessionDurationMs,
       messages: session.resourceUsage.messagesProcessed,
       avgResponseTime: session.performanceMetrics.averageResponseTime,
-      successRate: session.performanceMetrics.successRate
+      successRate: session.performanceMetrics.successRate,
     })
   }
 
@@ -589,7 +593,7 @@ export class AgentSessionManager extends EventEmitter {
       agentId: session.agentId,
       state: session.state,
       timestamp: new Date().toISOString(),
-      metadata: session.metadata
+      metadata: session.metadata,
     })
   }
 
@@ -619,14 +623,16 @@ export class AgentSessionManager extends EventEmitter {
   }
 
   private calculateResourceUtilization(sessions: AgentSessionContext[]) {
-    const active = sessions.filter(s => s.state === 'active')
+    const active = sessions.filter((s) => s.state === 'active')
 
     return {
       activeSessionsCount: active.length,
       totalMemoryUsageMB: active.reduce((sum, s) => sum + s.resourceUsage.memoryUsageMB, 0),
-      averageCpuUsage: active.length > 0 ?
-        active.reduce((sum, s) => sum + s.resourceUsage.cpuUsagePercent, 0) / active.length : 0,
-      totalTokensConsumed: sessions.reduce((sum, s) => sum + s.resourceUsage.tokensConsumed, 0)
+      averageCpuUsage:
+        active.length > 0
+          ? active.reduce((sum, s) => sum + s.resourceUsage.cpuUsagePercent, 0) / active.length
+          : 0,
+      totalTokensConsumed: sessions.reduce((sum, s) => sum + s.resourceUsage.tokensConsumed, 0),
     }
   }
 }

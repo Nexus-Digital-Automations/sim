@@ -6,17 +6,17 @@
  * accessibility validation, responsive design, and component behavior.
  */
 
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
-import { axe, toHaveNoViolations } from 'jest-axe'
+import { fireEvent, render, screen, waitFor, } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { axe, toHaveNoViolations } from 'jest-axe'
+import type { ChatInterface } from '../../../app/chat/[subdomain]/chat'
+import type { AgentSelector } from '../../../components/chat/agent-selector'
+import type { ChatInput } from '../../../components/chat/chat-input'
+import type { ConversationHistory } from '../../../components/chat/conversation-history'
+import type { MessageBubble } from '../../../components/chat/message-bubble'
+import type { ChatMessage, ChatSession, ParlantAgent } from '../../../types/parlant'
 import { ComprehensiveTestReporter } from '../../utils/test-reporter'
-import { MockParlantProvider } from '../__mocks__/parlant-provider'
-import { ChatInterface } from '../../../app/chat/[subdomain]/chat'
-import { AgentSelector } from '../../../components/chat/agent-selector'
-import { MessageBubble } from '../../../components/chat/message-bubble'
-import { ChatInput } from '../../../components/chat/chat-input'
-import { ConversationHistory } from '../../../components/chat/conversation-history'
-import type { ParlantAgent, ChatMessage, ChatSession } from '../../../types/parlant'
+import type { MockParlantProvider } from '../__mocks__/parlant-provider'
 
 // Extend Jest matchers
 expect.extend(toHaveNoViolations)

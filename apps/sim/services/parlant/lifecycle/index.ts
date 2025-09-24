@@ -16,22 +16,35 @@
  * - Error handling and fallback mechanisms
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import { EventEmitter } from 'events'
-import type {
-  Agent,
-  Session,
-  AuthContext,
-  Event,
-  EventType
-} from '../types'
-
+import { createLogger } from '@/lib/logs/console/logger'
+import type { AuthContext } from '../types'
+import {
+  type AgentConfigurationTemplate,
+  type AgentPersonality,
+  agentConfigurationFramework,
+} from './agent-configuration-framework'
+import {
+  type AgentPerformanceSummary,
+  agentPerformanceMonitor,
+  type ConversationQualityMetrics,
+} from './agent-performance-monitor'
+import {
+  agentResourceManager,
+  type OptimizationRecommendation,
+  type ResourceMetrics,
+} from './agent-resource-manager'
 // Import all lifecycle components
-import { agentSessionManager, type AgentSessionContext, type AgentSessionOptions } from './agent-session-manager'
-import { agentConfigurationFramework, type AgentPersonality, type AgentConfigurationTemplate } from './agent-configuration-framework'
-import { multiAgentCoordinator, type AgentTeam, type HandoffContext } from './multi-agent-coordinator'
-import { agentPerformanceMonitor, type AgentPerformanceSummary, type ConversationQualityMetrics } from './agent-performance-monitor'
-import { agentResourceManager, type ResourceMetrics, type OptimizationRecommendation } from './agent-resource-manager'
+import {
+  type AgentSessionContext,
+  type AgentSessionOptions,
+  agentSessionManager,
+} from './agent-session-manager'
+import {
+  type AgentTeam,
+  type HandoffContext,
+  multiAgentCoordinator,
+} from './multi-agent-coordinator'
 
 const logger = createLogger('AgentLifecycleOrchestrator')
 
@@ -136,12 +149,14 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
   /**
    * Initialize the lifecycle management system
    */
-  public async initialize(options: {
-    enableRealTimeMonitoring?: boolean
-    enableAutoScaling?: boolean
-    enablePerformanceOptimization?: boolean
-    socketServer?: any
-  } = {}): Promise<void> {
+  public async initialize(
+    options: {
+      enableRealTimeMonitoring?: boolean
+      enableAutoScaling?: boolean
+      enablePerformanceOptimization?: boolean
+      socketServer?: any
+    } = {}
+  ): Promise<void> {
     logger.info('Initializing Agent Lifecycle Management System')
 
     try {
@@ -166,10 +181,9 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
       this.updateSystemStatus()
 
       logger.info('Agent Lifecycle Management System initialized successfully')
-
     } catch (error) {
       logger.error('Failed to initialize lifecycle system', {
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -196,7 +210,7 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
       operationId,
       agentId,
       userId: auth.user_id,
-      options
+      options,
     })
 
     try {
@@ -214,7 +228,7 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
         {
           auth,
           userPreferences: options.userPreferences,
-          templateId: options.configurationTemplate
+          templateId: options.configurationTemplate,
         }
       )
 
@@ -227,7 +241,7 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
           {
             userMessage: 'Session initialization',
             urgency: options.priority || 'medium',
-            metadata: { initialization: true }
+            metadata: { initialization: true },
           },
           auth
         )
@@ -240,42 +254,40 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
         {
           priority: options.priority,
           memoryMB: 512, // Default allocation
-          cpuPercent: 30
+          cpuPercent: 30,
         }
       )
 
       // 5. Start performance monitoring
-      agentPerformanceMonitor.startSessionMonitoring(
-        session.sessionId,
-        agentId,
-        {
-          trackResponseTime: true,
-          trackQuality: true,
-          trackSatisfaction: true
-        }
-      )
+      agentPerformanceMonitor.startSessionMonitoring(session.sessionId, agentId, {
+        trackResponseTime: true,
+        trackQuality: true,
+        trackSatisfaction: true,
+      })
 
       // 6. Create comprehensive context
       const comprehensiveContext: ComprehensiveAgentContext = {
         session,
         configuration: {
           personality: configuration.personality,
-          capabilities: configuration.capabilities.map(c => c.id),
-          appliedRules: configuration.appliedRules
+          capabilities: configuration.capabilities.map((c) => c.id),
+          appliedRules: configuration.appliedRules,
         },
-        coordination: coordination ? {
-          teamId: options.teamId,
-          role: 'primary',
-          handoffHistory: []
-        } : undefined,
+        coordination: coordination
+          ? {
+              teamId: options.teamId,
+              role: 'primary',
+              handoffHistory: [],
+            }
+          : undefined,
         performance: {
-          summary: agentPerformanceMonitor.generatePerformanceSummary(agentId, '1h')
+          summary: agentPerformanceMonitor.generatePerformanceSummary(agentId, '1h'),
         },
         resources: {
           allocated: resources.allocated,
           limits: resources.sessionLimits,
-          usage: await agentResourceManager.monitorResourceUsage(agentId, session.sessionId)
-        }
+          usage: await agentResourceManager.monitorResourceUsage(agentId, session.sessionId),
+        },
       }
 
       const duration = Date.now() - operationStart
@@ -284,14 +296,14 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
       this.emit('session:created', {
         context: comprehensiveContext,
         operationId,
-        duration
+        duration,
       })
 
       logger.info('Comprehensive agent session created successfully', {
         operationId,
         sessionId: session.sessionId,
         agentId,
-        duration
+        duration,
       })
 
       return {
@@ -302,17 +314,16 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
           agentId,
           sessionId: session.sessionId,
           timestamp: new Date(),
-          duration
-        }
+          duration,
+        },
       }
-
     } catch (error) {
       const duration = Date.now() - operationStart
       logger.error('Failed to create comprehensive agent session', {
         operationId,
         agentId,
         error: error instanceof Error ? error.message : 'Unknown error',
-        duration
+        duration,
       })
 
       return {
@@ -322,8 +333,8 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
           operation: 'create_session',
           agentId,
           timestamp: new Date(),
-          duration
-        }
+          duration,
+        },
       }
     }
   }
@@ -349,7 +360,7 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
     logger.info('Handling agent handoff', {
       operationId,
       sessionId,
-      reason: handoffRequest.reason
+      reason: handoffRequest.reason,
     })
 
     try {
@@ -358,7 +369,7 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
         sessionId,
         {
           ...handoffRequest,
-          preserveContext: handoffRequest.preserveFullContext ?? true
+          preserveContext: handoffRequest.preserveFullContext ?? true,
         },
         auth
       )
@@ -372,7 +383,9 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
       )
 
       // Transfer performance monitoring
-      const qualityMetrics = await agentPerformanceMonitor.stopSessionMonitoring(handoffContext.fromSessionId)
+      const qualityMetrics = await agentPerformanceMonitor.stopSessionMonitoring(
+        handoffContext.fromSessionId
+      )
       agentPerformanceMonitor.startSessionMonitoring(
         handoffContext.toSessionId,
         handoffContext.toAgentId,
@@ -385,14 +398,14 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
       this.emit('handoff:completed', {
         handoffContext,
         operationId,
-        duration
+        duration,
       })
 
       logger.info('Agent handoff completed successfully', {
         operationId,
         fromAgent: handoffContext.fromAgentId,
         toAgent: handoffContext.toAgentId,
-        duration
+        duration,
       })
 
       return {
@@ -403,17 +416,16 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
           agentId: handoffContext.toAgentId,
           sessionId: handoffContext.toSessionId,
           timestamp: new Date(),
-          duration
-        }
+          duration,
+        },
       }
-
     } catch (error) {
       const duration = Date.now() - operationStart
       logger.error('Failed to handle agent handoff', {
         operationId,
         sessionId,
         error: error instanceof Error ? error.message : 'Unknown error',
-        duration
+        duration,
       })
 
       return {
@@ -424,8 +436,8 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
           agentId: 'unknown',
           sessionId,
           timestamp: new Date(),
-          duration
-        }
+          duration,
+        },
       }
     }
   }
@@ -446,14 +458,10 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
     const operationStart = Date.now()
 
     try {
-      const result = await agentConfigurationFramework.updateConfiguration(
-        sessionId,
-        updates,
-        {
-          auth,
-          reason: 'Real-time configuration update'
-        }
-      )
+      const result = await agentConfigurationFramework.updateConfiguration(sessionId, updates, {
+        auth,
+        reason: 'Real-time configuration update',
+      })
 
       const duration = Date.now() - operationStart
 
@@ -465,10 +473,9 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
           agentId: 'unknown', // Would be resolved from session
           sessionId,
           timestamp: new Date(),
-          duration
-        }
+          duration,
+        },
       }
-
     } catch (error) {
       const duration = Date.now() - operationStart
       return {
@@ -479,8 +486,8 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
           agentId: 'unknown',
           sessionId,
           timestamp: new Date(),
-          duration
-        }
+          duration,
+        },
       }
     }
   }
@@ -491,18 +498,20 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
   public async endAgentSession(
     sessionId: string,
     auth: AuthContext,
-    reason: string = 'User ended session'
-  ): Promise<LifecycleOperationResult<{
-    finalMetrics: ConversationQualityMetrics | null
-    resourceSummary: any
-  }>> {
+    reason = 'User ended session'
+  ): Promise<
+    LifecycleOperationResult<{
+      finalMetrics: ConversationQualityMetrics | null
+      resourceSummary: any
+    }>
+  > {
     const operationStart = Date.now()
     const operationId = `end_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
     logger.info('Ending agent session', {
       operationId,
       sessionId,
-      reason
+      reason,
     })
 
     try {
@@ -526,37 +535,36 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
         finalMetrics,
         resourceSummary,
         operationId,
-        duration
+        duration,
       })
 
       logger.info('Agent session ended successfully', {
         operationId,
         sessionId,
-        duration
+        duration,
       })
 
       return {
         success: true,
         data: {
           finalMetrics,
-          resourceSummary
+          resourceSummary,
         },
         metadata: {
           operation: 'end_session',
           agentId: 'unknown', // Would be resolved from session
           sessionId,
           timestamp: new Date(),
-          duration
-        }
+          duration,
+        },
       }
-
     } catch (error) {
       const duration = Date.now() - operationStart
       logger.error('Failed to end agent session', {
         operationId,
         sessionId,
         error: error instanceof Error ? error.message : 'Unknown error',
-        duration
+        duration,
       })
 
       return {
@@ -567,8 +575,8 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
           agentId: 'unknown',
           sessionId,
           timestamp: new Date(),
-          duration
-        }
+          duration,
+        },
       }
     }
   }
@@ -597,22 +605,21 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
         configuration: configuration || {
           personality: agentConfigurationFramework.getAvailablePersonalities()[0],
           capabilities: [],
-          appliedRules: []
+          appliedRules: [],
         },
         performance: {
-          summary: performance
+          summary: performance,
         },
         resources: {
           allocated: {},
           limits: {},
-          usage: resources
-        }
+          usage: resources,
+        },
       }
-
     } catch (error) {
       logger.error('Failed to get agent context', {
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       return null
     }
@@ -649,23 +656,23 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
       sessions: {
         total: 0, // Would calculate from actual data
         active: resourceSummary.totalActiveSessions,
-        averageDuration: 0
+        averageDuration: 0,
       },
       performance: {
         averageResponseTime: 0,
         averageSatisfactionScore: 0,
-        totalHandoffs: 0
+        totalHandoffs: 0,
       },
       resources: {
         utilizationPercent: resourceSummary.resourceUtilization.memoryPercent,
         optimizationOpportunities: 0,
-        costOptimization: 0
+        costOptimization: 0,
       },
       health: {
         systemStatus: this.systemStatus.status,
         uptime: Date.now() - this.systemStartTime,
-        lastIssues: []
-      }
+        lastIssues: [],
+      },
     }
   }
 
@@ -679,13 +686,13 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
         configurationFramework: 'healthy',
         multiAgentCoordinator: 'healthy',
         performanceMonitor: 'healthy',
-        resourceManager: 'healthy'
+        resourceManager: 'healthy',
       },
       activeSessions: 0,
       activeTeams: 0,
       totalAgents: 0,
       systemUptime: 0,
-      lastHealthCheck: new Date()
+      lastHealthCheck: new Date(),
     }
   }
 
@@ -740,7 +747,7 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
         configurationFramework: 'healthy' as const,
         multiAgentCoordinator: 'healthy' as const,
         performanceMonitor: 'healthy' as const,
-        resourceManager: 'healthy' as const
+        resourceManager: 'healthy' as const,
       }
 
       // Update system status
@@ -748,16 +755,15 @@ export class AgentLifecycleOrchestrator extends EventEmitter {
         ...this.systemStatus,
         components,
         systemUptime: Date.now() - this.systemStartTime,
-        lastHealthCheck: new Date()
+        lastHealthCheck: new Date(),
       }
 
       // Determine overall status
-      const hasErrors = Object.values(components).some(status => status === 'error')
+      const hasErrors = Object.values(components).some((status) => status === 'error')
       this.systemStatus.status = hasErrors ? 'degraded' : 'healthy'
-
     } catch (error) {
       logger.error('Health check failed', {
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       this.systemStatus.status = 'critical'
     }
@@ -801,7 +807,7 @@ export type {
   OptimizationRecommendation,
   ComprehensiveAgentContext,
   LifecycleOperationResult,
-  LifecycleSystemStatus
+  LifecycleSystemStatus,
 }
 
 // Export component instances for direct access if needed
@@ -810,5 +816,5 @@ export {
   agentConfigurationFramework,
   multiAgentCoordinator,
   agentPerformanceMonitor,
-  agentResourceManager
+  agentResourceManager,
 }

@@ -10,23 +10,22 @@
  * - Accessibility and responsive behavior
  */
 
-import React from 'react'
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { act } from 'react-dom/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ChatClient from '@/app/chat/[subdomain]/chat'
 import {
+  ChatErrorState,
   ChatHeader,
   ChatInput,
+  ChatLoadingState,
   ChatMessageContainer,
   EmailAuth,
   PasswordAuth,
   VoiceInterface,
-  ChatErrorState,
-  ChatLoadingState,
 } from '@/app/chat/components'
-import type { ChatMessage, ChatConfig } from '@/app/chat/types'
+import type { ChatConfig, ChatMessage } from '@/app/chat/types'
 
 // Mock dependencies
 vi.mock('@/lib/logs/console/logger', () => ({
@@ -119,13 +118,13 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
   describe('ChatClient Main Component', () => {
     it('should render loading state initially', () => {
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       expect(screen.getByTestId('chat-loading-state')).toBeInTheDocument()
     })
 
     it('should fetch chat configuration on mount', async () => {
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith('/api/chat/test-chat', expect.any(Object))
@@ -139,7 +138,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         json: () => Promise.resolve({ error: 'Chat not found' }),
       })
 
-      render(<ChatClient subdomain="nonexistent-chat" />)
+      render(<ChatClient subdomain='nonexistent-chat' />)
 
       await waitFor(() => {
         expect(screen.getByTestId('chat-error-state')).toBeInTheDocument()
@@ -147,7 +146,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
     })
 
     it('should render chat interface when config loads successfully', async () => {
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       await waitFor(() => {
         expect(screen.getByTestId('chat-header')).toBeInTheDocument()
@@ -157,7 +156,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
     })
 
     it('should display welcome message when configured', async () => {
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       await waitFor(() => {
         expect(screen.getByText('Welcome to our test chat!')).toBeInTheDocument()
@@ -171,7 +170,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         json: () => Promise.resolve({ error: 'auth_required_password' }),
       })
 
-      render(<ChatClient subdomain="protected-chat" />)
+      render(<ChatClient subdomain='protected-chat' />)
 
       await waitFor(() => {
         expect(screen.getByTestId('password-auth')).toBeInTheDocument()
@@ -185,7 +184,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         json: () => Promise.resolve({ error: 'auth_required_email' }),
       })
 
-      render(<ChatClient subdomain="email-protected-chat" />)
+      render(<ChatClient subdomain='email-protected-chat' />)
 
       await waitFor(() => {
         expect(screen.getByTestId('email-auth')).toBeInTheDocument()
@@ -195,26 +194,26 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
   describe('ChatHeader Component', () => {
     it('should display chat title and description', () => {
-      render(<ChatHeader chatConfig={mockChatConfig} starCount="3.4k" />)
+      render(<ChatHeader chatConfig={mockChatConfig} starCount='3.4k' />)
 
       expect(screen.getByText('Test Chat')).toBeInTheDocument()
       expect(screen.getByText('Test chat description')).toBeInTheDocument()
     })
 
     it('should display custom header text when configured', () => {
-      render(<ChatHeader chatConfig={mockChatConfig} starCount="3.4k" />)
+      render(<ChatHeader chatConfig={mockChatConfig} starCount='3.4k' />)
 
       expect(screen.getByText('Test Support')).toBeInTheDocument()
     })
 
     it('should display GitHub stars count', () => {
-      render(<ChatHeader chatConfig={mockChatConfig} starCount="5.2k" />)
+      render(<ChatHeader chatConfig={mockChatConfig} starCount='5.2k' />)
 
       expect(screen.getByText('5.2k')).toBeInTheDocument()
     })
 
     it('should display logo when configured', () => {
-      render(<ChatHeader chatConfig={mockChatConfig} starCount="3.4k" />)
+      render(<ChatHeader chatConfig={mockChatConfig} starCount='3.4k' />)
 
       const logo = screen.getByAltText('Chat Logo')
       expect(logo).toBeInTheDocument()
@@ -222,10 +221,12 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
     })
 
     it('should apply custom primary color styling', () => {
-      render(<ChatHeader chatConfig={mockChatConfig} starCount="3.4k" />)
+      render(<ChatHeader chatConfig={mockChatConfig} starCount='3.4k' />)
 
       const headerElement = screen.getByTestId('chat-header')
-      expect(headerElement).toHaveStyle(`--primary-color: ${mockChatConfig.customizations.primaryColor}`)
+      expect(headerElement).toHaveStyle(
+        `--primary-color: ${mockChatConfig.customizations.primaryColor}`
+      )
     })
 
     it('should handle missing customizations gracefully', () => {
@@ -234,7 +235,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         customizations: {},
       }
 
-      render(<ChatHeader chatConfig={minimalConfig} starCount="3.4k" />)
+      render(<ChatHeader chatConfig={minimalConfig} starCount='3.4k' />)
 
       expect(screen.getByTestId('chat-header')).toBeInTheDocument()
     })
@@ -589,10 +590,10 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
       it('should render password input form', () => {
         render(
           <PasswordAuth
-            subdomain="protected-chat"
+            subdomain='protected-chat'
             onAuthSuccess={mockOnAuthSuccess}
-            title="Protected Chat"
-            primaryColor="#007bff"
+            title='Protected Chat'
+            primaryColor='#007bff'
           />
         )
 
@@ -611,10 +612,10 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
         render(
           <PasswordAuth
-            subdomain="protected-chat"
+            subdomain='protected-chat'
             onAuthSuccess={mockOnAuthSuccess}
-            title="Protected Chat"
-            primaryColor="#007bff"
+            title='Protected Chat'
+            primaryColor='#007bff'
           />
         )
 
@@ -646,10 +647,10 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
         render(
           <PasswordAuth
-            subdomain="protected-chat"
+            subdomain='protected-chat'
             onAuthSuccess={mockOnAuthSuccess}
-            title="Protected Chat"
-            primaryColor="#007bff"
+            title='Protected Chat'
+            primaryColor='#007bff'
           />
         )
 
@@ -669,10 +670,10 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
         render(
           <PasswordAuth
-            subdomain="protected-chat"
+            subdomain='protected-chat'
             onAuthSuccess={mockOnAuthSuccess}
-            title="Protected Chat"
-            primaryColor="#007bff"
+            title='Protected Chat'
+            primaryColor='#007bff'
           />
         )
 
@@ -688,10 +689,10 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
       it('should render email input form', () => {
         render(
           <EmailAuth
-            subdomain="email-protected-chat"
+            subdomain='email-protected-chat'
             onAuthSuccess={mockOnAuthSuccess}
-            title="Email Protected Chat"
-            primaryColor="#007bff"
+            title='Email Protected Chat'
+            primaryColor='#007bff'
           />
         )
 
@@ -704,10 +705,10 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
         render(
           <EmailAuth
-            subdomain="email-protected-chat"
+            subdomain='email-protected-chat'
             onAuthSuccess={mockOnAuthSuccess}
-            title="Email Protected Chat"
-            primaryColor="#007bff"
+            title='Email Protected Chat'
+            primaryColor='#007bff'
           />
         )
 
@@ -732,10 +733,10 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
         render(
           <EmailAuth
-            subdomain="email-protected-chat"
+            subdomain='email-protected-chat'
             onAuthSuccess={mockOnAuthSuccess}
-            title="Email Protected Chat"
-            primaryColor="#007bff"
+            title='Email Protected Chat'
+            primaryColor='#007bff'
           />
         )
 
@@ -760,7 +761,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
   describe('Error and Loading States', () => {
     it('should render ChatErrorState with error message', () => {
-      render(<ChatErrorState error="Connection failed" starCount="3.4k" />)
+      render(<ChatErrorState error='Connection failed' starCount='3.4k' />)
 
       expect(screen.getByText(/connection failed/i)).toBeInTheDocument()
       expect(screen.getByText(/3.4k/i)).toBeInTheDocument()
@@ -777,7 +778,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
       const user = userEvent.setup()
       const mockOnRetry = vi.fn()
 
-      render(<ChatErrorState error="Connection failed" starCount="3.4k" onRetry={mockOnRetry} />)
+      render(<ChatErrorState error='Connection failed' starCount='3.4k' onRetry={mockOnRetry} />)
 
       const retryButton = screen.getByRole('button', { name: /retry/i })
       await user.click(retryButton)
@@ -874,7 +875,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       // Wait for component to load
       setTimeout(() => {
@@ -889,7 +890,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
     it('should support keyboard navigation', async () => {
       const user = userEvent.setup()
 
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       // Wait for component to load
       await waitFor(() => {
@@ -904,7 +905,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
     })
 
     it('should announce new messages to screen readers', async () => {
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       await waitFor(() => {
         const ariaLive = screen.getByRole('status')
@@ -913,7 +914,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
     })
 
     it('should have proper heading structure', async () => {
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       await waitFor(() => {
         const mainHeading = screen.getByRole('heading', { level: 1 })
@@ -931,7 +932,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         })),
       })
 
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       // Component should apply high contrast styles
       setTimeout(() => {
@@ -947,7 +948,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
       Object.defineProperty(window, 'innerWidth', { value: 375 })
       Object.defineProperty(window, 'innerHeight', { value: 667 })
 
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       setTimeout(() => {
         const chatContainer = screen.getByTestId('chat-container')
@@ -960,7 +961,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
       Object.defineProperty(window, 'innerWidth', { value: 768 })
       Object.defineProperty(window, 'innerHeight', { value: 1024 })
 
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       setTimeout(() => {
         const chatContainer = screen.getByTestId('chat-container')
@@ -971,7 +972,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
     it('should handle orientation changes', () => {
       const handleOrientationChange = vi.fn()
 
-      render(<ChatClient subdomain="test-chat" />)
+      render(<ChatClient subdomain='test-chat' />)
 
       // Simulate orientation change
       window.dispatchEvent(new Event('orientationchange'))
@@ -1119,8 +1120,8 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
       render(
         <ChatErrorState
-          error="Component crashed"
-          starCount="3.4k"
+          error='Component crashed'
+          starCount='3.4k'
           onRecover={mockOnRecover}
           showRecovery={true}
         />

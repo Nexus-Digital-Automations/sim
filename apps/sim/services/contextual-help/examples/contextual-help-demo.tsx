@@ -9,15 +9,14 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   ContextualHelpProvider,
-  useContextualHelp,
+  HelpSearchPanel,
   HelpTooltip,
   InteractiveGuidancePanel,
-  HelpSearchPanel
+  useContextualHelp,
 } from '../components'
-import type { HelpContext } from '../types'
 
 // Demo App Component
 function ContextualHelpDemo() {
@@ -29,23 +28,23 @@ function ContextualHelpDemo() {
         currentRoute: '/demo',
         toolContext: {
           toolId: 'demo_dashboard',
-          toolName: 'Demo Dashboard'
+          toolName: 'Demo Dashboard',
         },
         userState: {
           expertiseLevel: 'intermediate',
-          preferredHelpMode: 'tooltip'
-        }
+          preferredHelpMode: 'tooltip',
+        },
       }}
       enableAnalytics={true}
       debugMode={true}
     >
-      <div className="contextual-help-demo">
-        <header className="demo-header">
+      <div className='contextual-help-demo'>
+        <header className='demo-header'>
           <h1>Contextual Help System Demo</h1>
           <p>Experience intelligent, adaptive help that learns from your context</p>
         </header>
 
-        <main className="demo-content">
+        <main className='demo-content'>
           <ToolbarSection />
           <DashboardSection />
           <GuidanceSection />
@@ -62,50 +61,50 @@ function ContextualHelpDemo() {
 // Toolbar with contextual tooltips
 function ToolbarSection() {
   return (
-    <section className="demo-section">
+    <section className='demo-section'>
       <h2>Interactive Toolbar with Contextual Help</h2>
-      <div className="toolbar">
+      <div className='toolbar'>
         <HelpTooltip
-          toolId="create_report"
-          toolName="Report Creator"
-          content="Create comprehensive reports from your data with our intelligent report builder."
-          trigger="hover"
-          position="bottom"
-          theme="light"
+          toolId='create_report'
+          toolName='Report Creator'
+          content='Create comprehensive reports from your data with our intelligent report builder.'
+          trigger='hover'
+          position='bottom'
+          theme='light'
         >
-          <button className="toolbar-btn">Create Report</button>
+          <button className='toolbar-btn'>Create Report</button>
         </HelpTooltip>
 
         <HelpTooltip
-          toolId="data_export"
-          toolName="Data Exporter"
-          currentAction="export_selection"
-          trigger="hover"
-          position="bottom"
+          toolId='data_export'
+          toolName='Data Exporter'
+          currentAction='export_selection'
+          trigger='hover'
+          position='bottom'
           maxWidth={300}
         >
-          <button className="toolbar-btn">Export Data</button>
+          <button className='toolbar-btn'>Export Data</button>
         </HelpTooltip>
 
         <HelpTooltip
-          toolId="share_dashboard"
-          toolName="Dashboard Sharing"
-          trigger="click"
-          position="bottom"
+          toolId='share_dashboard'
+          toolName='Dashboard Sharing'
+          trigger='click'
+          position='bottom'
           persistent={true}
           autoClose={15000}
         >
-          <button className="toolbar-btn">Share Dashboard</button>
+          <button className='toolbar-btn'>Share Dashboard</button>
         </HelpTooltip>
 
         <HelpTooltip
-          toolId="settings"
-          toolName="Dashboard Settings"
-          trigger="focus"
-          position="left"
+          toolId='settings'
+          toolName='Dashboard Settings'
+          trigger='focus'
+          position='left'
           announceToScreenReader={true}
         >
-          <button className="toolbar-btn">Settings</button>
+          <button className='toolbar-btn'>Settings</button>
         </HelpTooltip>
       </div>
     </section>
@@ -137,7 +136,7 @@ function DashboardSection() {
           toolId: 'analytics_metrics',
           toolName: 'Analytics Metrics',
           currentStep: metric,
-          parameters: { metric, timeframe: '30d' }
+          parameters: { metric, timeframe: '30d' },
         },
         userState: {
           expertiseLevel: 'intermediate',
@@ -150,55 +149,55 @@ function DashboardSection() {
             highContrast: false,
             fontSize: 'normal',
             voiceGuidance: false,
-            keyboardNavigation: true
-          }
+            keyboardNavigation: true,
+          },
         },
         timestamp: new Date(),
-        metadata: {}
+        metadata: {},
       },
       contentType: 'panel',
       deliveryMode: 'sidebar',
-      adaptToAccessibility: false
+      adaptToAccessibility: false,
     })
   }
 
   return (
-    <section className="demo-section">
+    <section className='demo-section'>
       <h2>Smart Dashboard with Contextual Assistance</h2>
-      <div className="dashboard-grid">
-        <div className="metrics-panel">
+      <div className='dashboard-grid'>
+        <div className='metrics-panel'>
           <h3>Key Metrics</h3>
-          {['impressions', 'clicks', 'conversions', 'revenue'].map(metric => (
+          {['impressions', 'clicks', 'conversions', 'revenue'].map((metric) => (
             <div
               key={metric}
               className={`metric-card ${selectedMetric === metric ? 'selected' : ''}`}
               onClick={() => handleMetricSelect(metric)}
             >
               <h4>{metric.charAt(0).toUpperCase() + metric.slice(1)}</h4>
-              <div className="metric-value">{Math.floor(Math.random() * 10000)}</div>
-              <div className="metric-change">+{Math.floor(Math.random() * 20)}%</div>
+              <div className='metric-value'>{Math.floor(Math.random() * 10000)}</div>
+              <div className='metric-change'>+{Math.floor(Math.random() * 20)}%</div>
             </div>
           ))}
         </div>
 
-        <div className="chart-panel">
+        <div className='chart-panel'>
           <h3>Performance Chart</h3>
-          <div className="chart-placeholder">
+          <div className='chart-placeholder'>
             <p>Interactive chart would appear here</p>
             <p>Selected metric: {selectedMetric || 'None'}</p>
           </div>
         </div>
 
-        <div className="filters-panel">
+        <div className='filters-panel'>
           <h3>Filters</h3>
           <HelpTooltip
-            toolId="date_filter"
-            toolName="Date Range Filter"
-            content="Select the date range for your analytics. Use preset ranges or choose custom dates."
-            trigger="hover"
-            position="top"
+            toolId='date_filter'
+            toolName='Date Range Filter'
+            content='Select the date range for your analytics. Use preset ranges or choose custom dates.'
+            trigger='hover'
+            position='top'
           >
-            <select className="filter-select">
+            <select className='filter-select'>
               <option>Last 7 days</option>
               <option>Last 30 days</option>
               <option>Last 90 days</option>
@@ -207,13 +206,13 @@ function DashboardSection() {
           </HelpTooltip>
 
           <HelpTooltip
-            toolId="segment_filter"
-            toolName="Audience Segmentation"
-            trigger="click"
-            position="top"
+            toolId='segment_filter'
+            toolName='Audience Segmentation'
+            trigger='click'
+            position='top'
             maxWidth={400}
           >
-            <select className="filter-select">
+            <select className='filter-select'>
               <option>All Audiences</option>
               <option>New Visitors</option>
               <option>Returning Visitors</option>
@@ -237,23 +236,20 @@ function GuidanceSection() {
   }
 
   return (
-    <section className="demo-section">
+    <section className='demo-section'>
       <h2>Interactive Guidance & Tutorials</h2>
-      <div className="guidance-controls">
-        <button
-          className="guidance-btn primary"
-          onClick={() => handleStartGuidance('quick_start')}
-        >
+      <div className='guidance-controls'>
+        <button className='guidance-btn primary' onClick={() => handleStartGuidance('quick_start')}>
           Quick Start Tutorial
         </button>
         <button
-          className="guidance-btn secondary"
+          className='guidance-btn secondary'
           onClick={() => handleStartGuidance('comprehensive')}
         >
           Comprehensive Guide
         </button>
         <button
-          className="guidance-btn tertiary"
+          className='guidance-btn tertiary'
           onClick={() => handleStartGuidance('troubleshooting')}
         >
           Troubleshooting Help
@@ -263,13 +259,13 @@ function GuidanceSection() {
       <InteractiveGuidancePanel
         isVisible={showGuidance}
         onClose={() => setShowGuidance(false)}
-        position="right"
+        position='right'
         width={450}
         minimizable={true}
         draggable={true}
         allowSkip={true}
         showProgress={true}
-        theme="auto"
+        theme='auto'
         onTutorialComplete={(tutorial) => {
           console.log('Tutorial completed:', tutorial.id)
           setShowGuidance(false)
@@ -291,18 +287,15 @@ function SearchSection() {
   const handleSearch = async (query: string) => {
     await searchHelp(query, {
       type: ['tooltip', 'tutorial', 'panel'],
-      difficulty: ['beginner', 'intermediate']
+      difficulty: ['beginner', 'intermediate'],
     })
   }
 
   return (
-    <section className="demo-section">
+    <section className='demo-section'>
       <h2>Intelligent Help Search</h2>
-      <div className="search-controls">
-        <button
-          className="search-btn"
-          onClick={() => setShowSearch(!showSearch)}
-        >
+      <div className='search-controls'>
+        <button className='search-btn' onClick={() => setShowSearch(!showSearch)}>
           {showSearch ? 'Hide Search' : 'Search Help Topics'}
         </button>
       </div>
@@ -310,10 +303,10 @@ function SearchSection() {
       <HelpSearchPanel
         isVisible={showSearch}
         onClose={() => setShowSearch(false)}
-        position="overlay"
+        position='overlay'
         width={600}
         height={500}
-        placeholder="Search for help topics, tutorials, or guides..."
+        placeholder='Search for help topics, tutorials, or guides...'
         showRecentSearches={true}
         showSuggestions={true}
         enableSemanticSearch={true}
@@ -336,42 +329,39 @@ function AnalyticsSection() {
   const { state } = useContextualHelp()
 
   return (
-    <section className="demo-section">
+    <section className='demo-section'>
       <h2>Help System Analytics</h2>
-      <div className="analytics-grid">
-        <div className="stat-card">
+      <div className='analytics-grid'>
+        <div className='stat-card'>
           <h4>Help Views</h4>
-          <div className="stat-value">{state.helpMetrics.totalHelpViews}</div>
+          <div className='stat-value'>{state.helpMetrics.totalHelpViews}</div>
         </div>
-        <div className="stat-card">
+        <div className='stat-card'>
           <h4>Feedback Submitted</h4>
-          <div className="stat-value">{state.helpMetrics.feedbackSubmitted}</div>
+          <div className='stat-value'>{state.helpMetrics.feedbackSubmitted}</div>
         </div>
-        <div className="stat-card">
+        <div className='stat-card'>
           <h4>Session Duration</h4>
-          <div className="stat-value">
+          <div className='stat-value'>
             {state.helpMetrics.sessionStartTime
-              ? Math.floor((Date.now() - state.helpMetrics.sessionStartTime.getTime()) / 1000) + 's'
-              : '0s'
-            }
+              ? `${Math.floor((Date.now() - state.helpMetrics.sessionStartTime.getTime()) / 1000)}s`
+              : '0s'}
           </div>
         </div>
-        <div className="stat-card">
+        <div className='stat-card'>
           <h4>Active Guidance</h4>
-          <div className="stat-value">
-            {state.activeGuidance.tutorial ? 'Yes' : 'No'}
-          </div>
+          <div className='stat-value'>{state.activeGuidance.tutorial ? 'Yes' : 'No'}</div>
         </div>
       </div>
 
-      <div className="help-history">
+      <div className='help-history'>
         <h4>Recent Help Content</h4>
-        <div className="history-list">
+        <div className='history-list'>
           {state.helpHistory.slice(0, 5).map((content, index) => (
-            <div key={content.id} className="history-item">
-              <span className="content-title">{content.title}</span>
-              <span className="content-type">{content.type}</span>
-              <span className="content-rating">★ {content.analytics.averageRating.toFixed(1)}</span>
+            <div key={content.id} className='history-item'>
+              <span className='content-title'>{content.title}</span>
+              <span className='content-type'>{content.type}</span>
+              <span className='content-rating'>★ {content.analytics.averageRating.toFixed(1)}</span>
             </div>
           ))}
         </div>
@@ -385,25 +375,25 @@ function HelpSystemStatus() {
   const { state } = useContextualHelp()
 
   return (
-    <div className="help-system-status">
+    <div className='help-system-status'>
       <div className={`status-indicator ${state.isInitialized ? 'active' : 'inactive'}`}>
-        <span className="status-dot"></span>
-        <span className="status-text">
+        <span className='status-dot' />
+        <span className='status-text'>
           Help System: {state.isInitialized ? 'Active' : 'Initializing...'}
         </span>
       </div>
 
       {state.isLoading && (
-        <div className="loading-indicator">
-          <span className="spinner"></span>
+        <div className='loading-indicator'>
+          <span className='spinner' />
           <span>Loading help content...</span>
         </div>
       )}
 
       {state.error && (
-        <div className="error-indicator">
-          <span className="error-icon">⚠</span>
-          <span className="error-text">{state.error}</span>
+        <div className='error-indicator'>
+          <span className='error-icon'>⚠</span>
+          <span className='error-text'>{state.error}</span>
           <button onClick={() => window.location.reload()}>Retry</button>
         </div>
       )}

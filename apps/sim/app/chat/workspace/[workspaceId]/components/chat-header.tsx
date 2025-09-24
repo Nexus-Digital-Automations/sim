@@ -1,17 +1,19 @@
 'use client'
 
 import { useState } from 'react'
+import {
+  Archive,
+  ArrowLeft,
+  Bot,
+  ExternalLink,
+  MessageCircle,
+  MoreHorizontal,
+  Settings,
+  Trash2,
+} from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,16 +22,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { Button } from '@/components/ui/button'
 import {
-  ArrowLeft,
-  MoreHorizontal,
-  Settings,
-  Archive,
-  Trash2,
-  ExternalLink,
-  MessageCircle,
-  Bot
-} from 'lucide-react'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface ChatHeaderProps {
   workspaceId: string
@@ -55,23 +55,29 @@ export function ChatHeader({ workspaceId, workspace, userRole }: ChatHeaderProps
   const isHistory = routeSegments.includes('history')
 
   const agentId = isAgentChat ? routeSegments[routeSegments.indexOf('agent') + 1] : null
-  const conversationId = isConversation ? routeSegments[routeSegments.indexOf('conversation') + 1] : null
+  const conversationId = isConversation
+    ? routeSegments[routeSegments.indexOf('conversation') + 1]
+    : null
 
   // Mock data - in real implementation, these would come from props or API calls
-  const currentAgent = agentId ? {
-    id: agentId,
-    name: 'Sample Agent',
-    description: 'AI Assistant',
-    is_active: true
-  } : null
+  const currentAgent = agentId
+    ? {
+        id: agentId,
+        name: 'Sample Agent',
+        description: 'AI Assistant',
+        is_active: true,
+      }
+    : null
 
-  const currentConversation = conversationId ? {
-    id: conversationId,
-    title: 'Sample Conversation',
-    message_count: 15,
-    is_archived: false,
-    created_at: new Date()
-  } : null
+  const currentConversation = conversationId
+    ? {
+        id: conversationId,
+        title: 'Sample Conversation',
+        message_count: 15,
+        is_archived: false,
+        created_at: new Date(),
+      }
+    : null
 
   const handleArchiveConversation = async () => {
     if (!conversationId) return
@@ -80,7 +86,7 @@ export function ChatHeader({ workspaceId, workspace, userRole }: ChatHeaderProps
       const response = await fetch(`/api/chat/conversations/${conversationId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_archived: true })
+        body: JSON.stringify({ is_archived: true }),
       })
 
       if (response.ok) {
@@ -95,13 +101,15 @@ export function ChatHeader({ workspaceId, workspace, userRole }: ChatHeaderProps
   const handleDeleteConversation = async () => {
     if (!conversationId) return
 
-    if (!confirm('Are you sure you want to delete this conversation? This action cannot be undone.')) {
+    if (
+      !confirm('Are you sure you want to delete this conversation? This action cannot be undone.')
+    ) {
       return
     }
 
     try {
       const response = await fetch(`/api/chat/conversations/${conversationId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
       if (response.ok) {
@@ -114,7 +122,7 @@ export function ChatHeader({ workspaceId, workspace, userRole }: ChatHeaderProps
   }
 
   return (
-    <div className='flex items-center justify-between p-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+    <div className='flex items-center justify-between border-border border-b bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
       {/* Left side - Breadcrumb Navigation */}
       <div className='flex items-center space-x-4'>
         {/* Back button for mobile */}
@@ -142,9 +150,7 @@ export function ChatHeader({ workspaceId, workspace, userRole }: ChatHeaderProps
 
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href={`/chat/workspace/${workspaceId}`}>
-                  Chat
-                </Link>
+                <Link href={`/chat/workspace/${workspaceId}`}>Chat</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
 
@@ -192,7 +198,7 @@ export function ChatHeader({ workspaceId, workspace, userRole }: ChatHeaderProps
       <div className='flex items-center space-x-2'>
         {/* Current context info */}
         {currentAgent && (
-          <div className='hidden md:flex items-center space-x-2'>
+          <div className='hidden items-center space-x-2 md:flex'>
             {currentAgent.is_active && (
               <Badge variant='secondary' className='text-xs'>
                 Active

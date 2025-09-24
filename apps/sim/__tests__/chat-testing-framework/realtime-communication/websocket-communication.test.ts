@@ -6,11 +6,11 @@
  * message delivery guarantees, network failure scenarios, and performance.
  */
 
-import { Server } from 'socket.io'
 import { createServer } from 'http'
-import Client, { Socket as ClientSocket } from 'socket.io-client'
+import { Server } from 'socket.io'
+import Client, { type Socket as ClientSocket } from 'socket.io-client'
+import type { ChatMessage, MessageDeliveryReceipt, ParlantAgent } from '../../../types/parlant'
 import { ComprehensiveTestReporter } from '../../utils/test-reporter'
-import type { ChatMessage, ParlantAgent, MessageDeliveryReceipt } from '../../../types/parlant'
 
 interface TestEnvironment {
   server: Server
@@ -28,7 +28,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
     reporter = new ComprehensiveTestReporter({
       outputDir: './test-reports/realtime-communication',
       includePerformanceMetrics: true,
-      reportFormats: ['html', 'json', 'junit']
+      reportFormats: ['html', 'json', 'junit'],
     })
 
     await reporter.startTestSuite(
@@ -51,7 +51,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       name: 'Test Agent',
       description: 'Agent for testing',
       status: 'active',
-      capabilities: ['testing']
+      capabilities: ['testing'],
     }
   })
 
@@ -64,9 +64,9 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
     const httpServer = createServer()
     const server = new Server(httpServer, {
       cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-      }
+        origin: '*',
+        methods: ['GET', 'POST'],
+      },
     })
 
     const port = 3001 + Math.floor(Math.random() * 1000)
@@ -77,7 +77,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
           server,
           httpServer,
           port,
-          clients: []
+          clients: [],
         })
       })
     })
@@ -85,7 +85,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
   async function cleanupTestEnvironment(env: TestEnvironment): Promise<void> {
     // Disconnect all clients
-    env.clients.forEach(client => {
+    env.clients.forEach((client) => {
       if (client.connected) {
         client.disconnect()
       }
@@ -131,18 +131,20 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       expect(client.id).toBeDefined()
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'websocket-connection-establish',
-          name: 'WebSocket Connection Establishment',
-          complexity: 'simple',
-          metadata: { testType: 'connection', clientId: client.id }
-        } as any,
-        { success: true, connectionTime: endTime.getTime() - startTime.getTime() },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'websocket-connection-establish',
+            name: 'WebSocket Connection Establishment',
+            complexity: 'simple',
+            metadata: { testType: 'connection', clientId: client.id },
+          } as any,
+          { success: true, connectionTime: endTime.getTime() - startTime.getTime() },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle multiple concurrent connections', async () => {
@@ -158,30 +160,32 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       testEnv.clients.push(...clients)
 
       expect(clients.length).toBe(50)
-      clients.forEach(client => {
+      clients.forEach((client) => {
         expect(client.connected).toBe(true)
       })
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'websocket-concurrent-connections',
-          name: 'WebSocket Concurrent Connections',
-          complexity: 'complex',
-          metadata: {
-            testType: 'connection',
-            concurrentConnections: clients.length
-          }
-        } as any,
-        {
-          success: true,
-          connectionCount: clients.length,
-          connectionTime: endTime.getTime() - startTime.getTime()
-        },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'websocket-concurrent-connections',
+            name: 'WebSocket Concurrent Connections',
+            complexity: 'complex',
+            metadata: {
+              testType: 'connection',
+              concurrentConnections: clients.length,
+            },
+          } as any,
+          {
+            success: true,
+            connectionCount: clients.length,
+            connectionTime: endTime.getTime() - startTime.getTime(),
+          },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle connection authentication', async () => {
@@ -201,7 +205,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
       // Test valid authentication
       const validClient = Client(`http://localhost:${testEnv.port}`, {
-        auth: { token: 'valid-token' }
+        auth: { token: 'valid-token' },
       })
 
       await new Promise<void>((resolve, reject) => {
@@ -216,7 +220,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
       // Test invalid authentication
       const invalidClient = Client(`http://localhost:${testEnv.port}`, {
-        auth: { token: 'invalid-token' }
+        auth: { token: 'invalid-token' },
       })
 
       await new Promise<void>((resolve) => {
@@ -229,18 +233,20 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       expect(invalidClient.connected).toBe(false)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'websocket-authentication',
-          name: 'WebSocket Connection Authentication',
-          complexity: 'medium',
-          metadata: { testType: 'authentication' }
-        } as any,
-        { success: true, validAuth: true, invalidAuthBlocked: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'websocket-authentication',
+            name: 'WebSocket Connection Authentication',
+            complexity: 'medium',
+            metadata: { testType: 'authentication' },
+          } as any,
+          { success: true, validAuth: true, invalidAuthBlocked: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle connection disconnection gracefully', async () => {
@@ -259,24 +265,26 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       client.disconnect()
 
       // Wait for disconnect event
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       expect(client.connected).toBe(false)
       expect(disconnectEventReceived).toBe(true)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'websocket-disconnection',
-          name: 'WebSocket Connection Disconnection',
-          complexity: 'simple',
-          metadata: { testType: 'connection' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'websocket-disconnection',
+            name: 'WebSocket Connection Disconnection',
+            complexity: 'simple',
+            metadata: { testType: 'connection' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -286,7 +294,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
       const [sender, receiver] = await Promise.all([
         createTestClient(testEnv.port),
-        createTestClient(testEnv.port)
+        createTestClient(testEnv.port),
       ])
       testEnv.clients.push(sender, receiver)
 
@@ -296,7 +304,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         sender: { type: 'user', id: 'user-1', name: 'Test User' },
         timestamp: new Date(),
         type: 'text',
-        sessionId: 'session-1'
+        sessionId: 'session-1',
       }
 
       let messageReceived = false
@@ -310,32 +318,34 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       sender.emit('chat:send', testMessage)
 
       // Wait for message delivery
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       expect(messageReceived).toBe(true)
       expect(receivedMessage!.content).toBe(testMessage.content)
       expect(receivedMessage!.id).toBe(testMessage.id)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'message-delivery-basic',
-          name: 'Basic Message Delivery',
-          complexity: 'medium',
-          metadata: {
-            testType: 'messaging',
-            messageId: testMessage.id
-          }
-        } as any,
-        {
-          success: true,
-          messageDelivered: messageReceived,
-          deliveryTime: endTime.getTime() - startTime.getTime()
-        },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'message-delivery-basic',
+            name: 'Basic Message Delivery',
+            complexity: 'medium',
+            metadata: {
+              testType: 'messaging',
+              messageId: testMessage.id,
+            },
+          } as any,
+          {
+            success: true,
+            messageDelivered: messageReceived,
+            deliveryTime: endTime.getTime() - startTime.getTime(),
+          },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle high-frequency message bursts', async () => {
@@ -343,7 +353,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
       const [sender, receiver] = await Promise.all([
         createTestClient(testEnv.port),
-        createTestClient(testEnv.port)
+        createTestClient(testEnv.port),
       ])
       testEnv.clients.push(sender, receiver)
 
@@ -363,12 +373,12 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
           sender: { type: 'user', id: 'user-1', name: 'Test User' },
           timestamp: new Date(),
           type: 'text',
-          sessionId: 'session-1'
+          sessionId: 'session-1',
         })
       }
 
       // Wait for all messages to be received
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         const checkMessages = () => {
           if (messagesReceived.length >= messageCount) {
             resolve(undefined)
@@ -390,26 +400,28 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       }
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'message-delivery-burst',
-          name: 'High-Frequency Message Burst',
-          complexity: 'complex',
-          metadata: {
-            testType: 'messaging',
-            messageCount: messageCount,
-            burstDuration: burstDuration
-          }
-        } as any,
-        {
-          success: true,
-          messagesDelivered: messagesReceived.length,
-          deliveryRate: messageCount / (burstDuration / 1000)
-        },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'message-delivery-burst',
+            name: 'High-Frequency Message Burst',
+            complexity: 'complex',
+            metadata: {
+              testType: 'messaging',
+              messageCount: messageCount,
+              burstDuration: burstDuration,
+            },
+          } as any,
+          {
+            success: true,
+            messagesDelivered: messagesReceived.length,
+            deliveryRate: messageCount / (burstDuration / 1000),
+          },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should provide message delivery acknowledgments', async () => {
@@ -417,7 +429,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
       const [sender, receiver] = await Promise.all([
         createTestClient(testEnv.port),
-        createTestClient(testEnv.port)
+        createTestClient(testEnv.port),
       ])
       testEnv.clients.push(sender, receiver)
 
@@ -427,7 +439,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         sender: { type: 'user', id: 'user-1', name: 'Test User' },
         timestamp: new Date(),
         type: 'text',
-        sessionId: 'session-1'
+        sessionId: 'session-1',
       }
 
       let ackReceived = false
@@ -443,14 +455,14 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         receiver.emit('chat:ack', {
           messageId: message.id,
           timestamp: new Date(),
-          receiverId: 'user-2'
+          receiverId: 'user-2',
         })
       })
 
       sender.emit('chat:send', testMessage)
 
       // Wait for acknowledgment
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         const checkAck = () => {
           if (ackReceived) {
             resolve(undefined)
@@ -465,22 +477,24 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       expect(ackData!.messageId).toBe(testMessage.id)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'message-delivery-acknowledgment',
-          name: 'Message Delivery Acknowledgment',
-          complexity: 'complex',
-          metadata: { testType: 'messaging' }
-        } as any,
-        {
-          success: true,
-          acknowledgmentReceived: ackReceived,
-          ackTime: endTime.getTime() - startTime.getTime()
-        },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'message-delivery-acknowledgment',
+            name: 'Message Delivery Acknowledgment',
+            complexity: 'complex',
+            metadata: { testType: 'messaging' },
+          } as any,
+          {
+            success: true,
+            acknowledgmentReceived: ackReceived,
+            ackTime: endTime.getTime() - startTime.getTime(),
+          },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle message queuing during disconnection', async () => {
@@ -488,7 +502,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
       const [sender, receiver] = await Promise.all([
         createTestClient(testEnv.port),
-        createTestClient(testEnv.port)
+        createTestClient(testEnv.port),
       ])
       testEnv.clients.push(sender, receiver)
 
@@ -501,7 +515,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         sender: { type: 'user', id: 'user-1', name: 'Test User' },
         timestamp: new Date(),
         type: 'text',
-        sessionId: 'session-1'
+        sessionId: 'session-1',
       }
 
       // Send message while receiver is disconnected
@@ -525,25 +539,27 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       reconnectedReceiver.emit('chat:get-queued-messages', { sessionId: 'session-1' })
 
       // Wait for queued message delivery
-      await new Promise(resolve => setTimeout(resolve, 200))
+      await new Promise((resolve) => setTimeout(resolve, 200))
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'message-queuing',
-          name: 'Message Queuing During Disconnection',
-          complexity: 'complex',
-          metadata: { testType: 'messaging' }
-        } as any,
-        {
-          success: queuedMessageReceived,
-          messageQueued: true,
-          messageDeliveredOnReconnect: queuedMessageReceived
-        },
-        { isValid: queuedMessageReceived, score: queuedMessageReceived ? 100 : 0 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'message-queuing',
+            name: 'Message Queuing During Disconnection',
+            complexity: 'complex',
+            metadata: { testType: 'messaging' },
+          } as any,
+          {
+            success: queuedMessageReceived,
+            messageQueued: true,
+            messageDeliveredOnReconnect: queuedMessageReceived,
+          },
+          { isValid: queuedMessageReceived, score: queuedMessageReceived ? 100 : 0 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -571,7 +587,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       testEnv.server.close()
 
       // Wait for disconnect
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       expect(client.connected).toBe(false)
       expect(reconnectAttempted).toBe(true)
@@ -580,25 +596,27 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       testEnv = await createTestEnvironment()
 
       // Wait for potential reconnection
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000))
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'network-interruption-handling',
-          name: 'Network Interruption Handling',
-          complexity: 'complex',
-          metadata: { testType: 'resilience' }
-        } as any,
-        {
-          success: true,
-          disconnectDetected: reconnectAttempted,
-          reconnectionAttempted: true
-        },
-        { isValid: true, score: 90 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'network-interruption-handling',
+            name: 'Network Interruption Handling',
+            complexity: 'complex',
+            metadata: { testType: 'resilience' },
+          } as any,
+          {
+            success: true,
+            disconnectDetected: reconnectAttempted,
+            reconnectionAttempted: true,
+          },
+          { isValid: true, score: 90 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should implement exponential backoff for reconnection', async () => {
@@ -608,7 +626,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reconnection: true,
         reconnectionDelay: 100,
         reconnectionDelayMax: 1000,
-        maxReconnectionAttempts: 3
+        maxReconnectionAttempts: 3,
       })
 
       const reconnectionAttempts: number[] = []
@@ -618,7 +636,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       })
 
       // Force disconnect
-      await new Promise<void>(resolve => {
+      await new Promise<void>((resolve) => {
         client.on('connect', () => {
           client.disconnect()
           resolve()
@@ -626,7 +644,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       })
 
       // Wait for reconnection attempts
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      await new Promise((resolve) => setTimeout(resolve, 3000))
 
       // Verify exponential backoff
       if (reconnectionAttempts.length >= 2) {
@@ -636,25 +654,27 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       }
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'exponential-backoff-reconnection',
-          name: 'Exponential Backoff Reconnection',
-          complexity: 'complex',
-          metadata: {
-            testType: 'resilience',
-            reconnectionAttempts: reconnectionAttempts.length
-          }
-        } as any,
-        {
-          success: true,
-          reconnectionAttempts: reconnectionAttempts.length,
-          backoffImplemented: reconnectionAttempts.length > 0
-        },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'exponential-backoff-reconnection',
+            name: 'Exponential Backoff Reconnection',
+            complexity: 'complex',
+            metadata: {
+              testType: 'resilience',
+              reconnectionAttempts: reconnectionAttempts.length,
+            },
+          } as any,
+          {
+            success: true,
+            reconnectionAttempts: reconnectionAttempts.length,
+            backoffImplemented: reconnectionAttempts.length > 0,
+          },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
 
       client.disconnect()
     })
@@ -669,7 +689,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       for (let i = 0; i < 200; i++) {
         connectionPromises.push(
           createTestClient(testEnv.port)
-            .then(client => {
+            .then((client) => {
               clients.push(client)
             })
             .catch(() => {
@@ -681,33 +701,35 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       await Promise.all(connectionPromises)
 
       // Count successful connections
-      const successfulConnections = clients.filter(client => client.connected).length
+      const successfulConnections = clients.filter((client) => client.connected).length
       testEnv.clients.push(...clients)
 
       // Server should handle at least some connections
       expect(successfulConnections).toBeGreaterThan(50)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'server-overload-handling',
-          name: 'Server Overload Handling',
-          complexity: 'extreme',
-          metadata: {
-            testType: 'resilience',
-            attemptedConnections: 200,
-            successfulConnections: successfulConnections
-          }
-        } as any,
-        {
-          success: true,
-          connectionSuccessRate: successfulConnections / 200,
-          overloadHandled: successfulConnections > 50
-        },
-        { isValid: successfulConnections > 50, score: (successfulConnections / 200) * 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'server-overload-handling',
+            name: 'Server Overload Handling',
+            complexity: 'extreme',
+            metadata: {
+              testType: 'resilience',
+              attemptedConnections: 200,
+              successfulConnections: successfulConnections,
+            },
+          } as any,
+          {
+            success: true,
+            connectionSuccessRate: successfulConnections / 200,
+            overloadHandled: successfulConnections > 50,
+          },
+          { isValid: successfulConnections > 50, score: (successfulConnections / 200) * 100 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -717,7 +739,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
       const [sender, receiver] = await Promise.all([
         createTestClient(testEnv.port),
-        createTestClient(testEnv.port)
+        createTestClient(testEnv.port),
       ])
       testEnv.clients.push(sender, receiver)
 
@@ -726,7 +748,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
       receiver.on('chat:message', (message: ChatMessage) => {
         const receivedTime = Date.now()
-        const sentTime = parseInt(message.content.split('-')[1])
+        const sentTime = Number.parseInt(message.content.split('-')[1])
         const latency = receivedTime - sentTime
         latencies.push(latency)
       })
@@ -740,15 +762,15 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
           sender: { type: 'user', id: 'user-1', name: 'Test User' },
           timestamp: new Date(),
           type: 'text',
-          sessionId: 'session-1'
+          sessionId: 'session-1',
         })
 
         // Small delay between messages
-        await new Promise(resolve => setTimeout(resolve, 50))
+        await new Promise((resolve) => setTimeout(resolve, 50))
       }
 
       // Wait for all messages
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         const checkLatencies = () => {
           if (latencies.length >= messageCount) {
             resolve(undefined)
@@ -767,28 +789,30 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       expect(maxLatency).toBeLessThan(500)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'message-latency-performance',
-          name: 'Message Latency Performance',
-          complexity: 'complex',
-          metadata: {
-            testType: 'performance',
-            messageCount: messageCount,
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'message-latency-performance',
+            name: 'Message Latency Performance',
+            complexity: 'complex',
+            metadata: {
+              testType: 'performance',
+              messageCount: messageCount,
+              averageLatency: averageLatency,
+              maxLatency: maxLatency,
+            },
+          } as any,
+          {
+            success: true,
             averageLatency: averageLatency,
-            maxLatency: maxLatency
-          }
-        } as any,
-        {
-          success: true,
-          averageLatency: averageLatency,
-          maxLatency: maxLatency,
-          performanceScore: Math.max(0, 100 - averageLatency)
-        },
-        { isValid: averageLatency < 100, score: Math.max(0, 100 - averageLatency) },
-        startTime,
-        endTime
-      ))
+            maxLatency: maxLatency,
+            performanceScore: Math.max(0, 100 - averageLatency),
+          },
+          { isValid: averageLatency < 100, score: Math.max(0, 100 - averageLatency) },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle concurrent messaging efficiently', async () => {
@@ -798,11 +822,11 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       const clientPairs = await Promise.all(
         Array.from({ length: 10 }, async () => ({
           sender: await createTestClient(testEnv.port),
-          receiver: await createTestClient(testEnv.port)
+          receiver: await createTestClient(testEnv.port),
         }))
       )
 
-      clientPairs.forEach(pair => {
+      clientPairs.forEach((pair) => {
         testEnv.clients.push(pair.sender, pair.receiver)
       })
 
@@ -834,16 +858,19 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
               sender: { type: 'user', id: `user-${index}`, name: `User ${index}` },
               timestamp: new Date(),
               type: 'text',
-              sessionId: sessionId
+              sessionId: sessionId,
             })
           }
         })
       )
 
       // Wait for all messages to be received
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         const checkAllReceived = () => {
-          const totalReceived = Array.from(messagesReceived.values()).reduce((sum, count) => sum + count, 0)
+          const totalReceived = Array.from(messagesReceived.values()).reduce(
+            (sum, count) => sum + count,
+            0
+          )
           const expectedTotal = clientPairs.length * messagesPerSession
 
           if (totalReceived >= expectedTotal) {
@@ -861,32 +888,36 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       const totalMessages = clientPairs.length * messagesPerSession
       const throughput = totalMessages / (concurrentDuration / 1000)
 
-      expect(Array.from(messagesReceived.values()).every(count => count === messagesPerSession)).toBe(true)
+      expect(
+        Array.from(messagesReceived.values()).every((count) => count === messagesPerSession)
+      ).toBe(true)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'concurrent-messaging-performance',
-          name: 'Concurrent Messaging Performance',
-          complexity: 'extreme',
-          metadata: {
-            testType: 'performance',
-            concurrentSessions: clientPairs.length,
-            messagesPerSession: messagesPerSession,
-            totalMessages: totalMessages,
-            throughput: throughput
-          }
-        } as any,
-        {
-          success: true,
-          throughput: throughput,
-          duration: concurrentDuration,
-          performanceScore: Math.min(100, throughput * 2)
-        },
-        { isValid: true, score: Math.min(100, throughput * 2) },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'concurrent-messaging-performance',
+            name: 'Concurrent Messaging Performance',
+            complexity: 'extreme',
+            metadata: {
+              testType: 'performance',
+              concurrentSessions: clientPairs.length,
+              messagesPerSession: messagesPerSession,
+              totalMessages: totalMessages,
+              throughput: throughput,
+            },
+          } as any,
+          {
+            success: true,
+            throughput: throughput,
+            duration: concurrentDuration,
+            performanceScore: Math.min(100, throughput * 2),
+          },
+          { isValid: true, score: Math.min(100, throughput * 2) },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -896,19 +927,19 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
       // Setup clients in different workspaces
       const workspace1Client1 = Client(`http://localhost:${testEnv.port}`, {
-        auth: { token: 'valid-token', workspaceId: 'workspace-1' }
+        auth: { token: 'valid-token', workspaceId: 'workspace-1' },
       })
       const workspace1Client2 = Client(`http://localhost:${testEnv.port}`, {
-        auth: { token: 'valid-token', workspaceId: 'workspace-1' }
+        auth: { token: 'valid-token', workspaceId: 'workspace-1' },
       })
       const workspace2Client = Client(`http://localhost:${testEnv.port}`, {
-        auth: { token: 'valid-token', workspaceId: 'workspace-2' }
+        auth: { token: 'valid-token', workspaceId: 'workspace-2' },
       })
 
       await Promise.all([
-        new Promise<void>(resolve => workspace1Client1.on('connect', resolve)),
-        new Promise<void>(resolve => workspace1Client2.on('connect', resolve)),
-        new Promise<void>(resolve => workspace2Client.on('connect', resolve))
+        new Promise<void>((resolve) => workspace1Client1.on('connect', resolve)),
+        new Promise<void>((resolve) => workspace1Client2.on('connect', resolve)),
+        new Promise<void>((resolve) => workspace2Client.on('connect', resolve)),
       ])
 
       testEnv.clients.push(workspace1Client1, workspace1Client2, workspace2Client)
@@ -927,32 +958,34 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         timestamp: new Date(),
         type: 'text',
         sessionId: 'session-1',
-        workspaceId: 'workspace-1'
+        workspaceId: 'workspace-1',
       })
 
       // Wait for message delivery
-      await new Promise(resolve => setTimeout(resolve, 200))
+      await new Promise((resolve) => setTimeout(resolve, 200))
 
       expect(workspace1MessagesReceived).toBe(1)
       expect(workspace2MessagesReceived).toBe(0)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'workspace-message-isolation',
-          name: 'Workspace Message Isolation',
-          complexity: 'complex',
-          metadata: { testType: 'security' }
-        } as any,
-        {
-          success: true,
-          isolationMaintained: workspace2MessagesReceived === 0,
-          appropriateDelivery: workspace1MessagesReceived === 1
-        },
-        { isValid: workspace2MessagesReceived === 0, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'workspace-message-isolation',
+            name: 'Workspace Message Isolation',
+            complexity: 'complex',
+            metadata: { testType: 'security' },
+          } as any,
+          {
+            success: true,
+            isolationMaintained: workspace2MessagesReceived === 0,
+            appropriateDelivery: workspace1MessagesReceived === 1,
+          },
+          { isValid: workspace2MessagesReceived === 0, score: 100 },
+          startTime,
+          endTime
+        )
+      )
 
       workspace1Client1.disconnect()
       workspace1Client2.disconnect()

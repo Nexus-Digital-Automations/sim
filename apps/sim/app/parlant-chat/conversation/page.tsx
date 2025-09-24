@@ -1,29 +1,23 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Agent } from '@/apps/sim/services/parlant/types'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { useCallback, useEffect, useState } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
+  AlertCircle,
   ArrowLeft,
   Bot,
+  MessageCircle,
   RefreshCw,
   Settings,
-  MessageCircle,
-  User,
   Sparkles,
-  AlertCircle
 } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { createLogger } from '@/lib/logs/console/logger'
 import { AgentSelectionInterface } from '@/app/chat/components/agent-selection'
+import type { Agent } from '@/apps/sim/services/parlant/types'
 
 const logger = createLogger('ParlantConversationPage')
 
@@ -91,9 +85,8 @@ export default function ParlantConversationPage() {
 
       logger.info('Agent fetched successfully', {
         agentId: fetchedAgent.id,
-        agentName: fetchedAgent.name
+        agentName: fetchedAgent.name,
       })
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load agent'
       logger.error('Failed to fetch agent', { error: errorMessage, agentId })
@@ -110,7 +103,7 @@ export default function ParlantConversationPage() {
     try {
       logger.info('Initializing conversation session', {
         agentId: agent.id,
-        workspaceId
+        workspaceId,
       })
 
       const response = await fetch('/api/v1/sessions', {
@@ -123,9 +116,9 @@ export default function ParlantConversationPage() {
           workspace_id: workspaceId,
           metadata: {
             source: 'parlant-chat-interface',
-            user_agent: navigator.userAgent
-          }
-        })
+            user_agent: navigator.userAgent,
+          },
+        }),
       })
 
       if (!response.ok) {
@@ -137,9 +130,8 @@ export default function ParlantConversationPage() {
 
       logger.info('Session created successfully', {
         sessionId: newSession.id,
-        agentId: agent.id
+        agentId: agent.id,
       })
-
     } catch (error) {
       logger.error('Failed to initialize session', { error })
       // We can still proceed without a session for now
@@ -163,7 +155,7 @@ export default function ParlantConversationPage() {
   const handleAgentSwitch = (newAgent: Agent) => {
     logger.info('Switching agent', {
       fromAgent: agent?.id,
-      toAgent: newAgent.id
+      toAgent: newAgent.id,
     })
 
     // Update URL and state
@@ -185,8 +177,8 @@ export default function ParlantConversationPage() {
       fetch(`/api/v1/sessions/${session.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'ended' })
-      }).catch(error => logger.error('Failed to end session', { error }))
+        body: JSON.stringify({ status: 'ended' }),
+      }).catch((error) => logger.error('Failed to end session', { error }))
     }
 
     router.push(`/parlant-chat?workspace_id=${workspaceId}`)
@@ -194,11 +186,11 @@ export default function ParlantConversationPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <h2 className="text-lg font-semibold mb-2">Loading Agent...</h2>
-          <p className="text-muted-foreground">Setting up your conversation</p>
+      <div className='flex min-h-screen items-center justify-center bg-background'>
+        <div className='text-center'>
+          <RefreshCw className='mx-auto mb-4 h-8 w-8 animate-spin' />
+          <h2 className='mb-2 font-semibold text-lg'>Loading Agent...</h2>
+          <p className='text-muted-foreground'>Setting up your conversation</p>
         </div>
       </div>
     )
@@ -206,23 +198,23 @@ export default function ParlantConversationPage() {
 
   if (error || !agent) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-full max-w-md mx-4">
-          <CardHeader className="text-center">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-semibold">Agent Not Available</h2>
+      <div className='flex min-h-screen items-center justify-center bg-background'>
+        <Card className='mx-4 w-full max-w-md'>
+          <CardHeader className='text-center'>
+            <AlertCircle className='mx-auto mb-4 h-12 w-12 text-destructive' />
+            <h2 className='font-semibold text-xl'>Agent Not Available</h2>
           </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-muted-foreground">
+          <CardContent className='space-y-4 text-center'>
+            <p className='text-muted-foreground'>
               {error || 'The requested agent could not be loaded.'}
             </p>
-            <div className="flex space-x-2 justify-center">
-              <Button variant="outline" onClick={handleGoBack}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
+            <div className='flex justify-center space-x-2'>
+              <Button variant='outline' onClick={handleGoBack}>
+                <ArrowLeft className='mr-2 h-4 w-4' />
                 Back to Selection
               </Button>
               <Button onClick={() => window.location.reload()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className='mr-2 h-4 w-4' />
                 Try Again
               </Button>
             </div>
@@ -233,119 +225,115 @@ export default function ParlantConversationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className='flex min-h-screen flex-col bg-background'>
       {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+      <div className='border-b bg-card'>
+        <div className='container mx-auto px-4 py-3'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center space-x-4'>
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={handleGoBack}
-                className="flex items-center space-x-2"
+                className='flex items-center space-x-2'
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className='h-4 w-4' />
                 <span>Back</span>
               </Button>
 
-              <div className="h-6 w-px bg-border" />
+              <div className='h-6 w-px bg-border' />
 
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
-                  <Bot className="h-5 w-5 text-blue-500" />
-                  <span className="font-semibold">{agent.name}</span>
+              <div className='flex items-center space-x-3'>
+                <div className='flex items-center space-x-2'>
+                  <Bot className='h-5 w-5 text-blue-500' />
+                  <span className='font-semibold'>{agent.name}</span>
                 </div>
 
                 <Badge
-                  variant="outline"
+                  variant='outline'
                   className={
                     agent.status === 'active'
-                      ? 'text-green-600 border-green-200 bg-green-50'
+                      ? 'border-green-200 bg-green-50 text-green-600'
                       : agent.status === 'training'
-                      ? 'text-yellow-600 border-yellow-200 bg-yellow-50'
-                      : 'text-gray-600 border-gray-200 bg-gray-50'
+                        ? 'border-yellow-200 bg-yellow-50 text-yellow-600'
+                        : 'border-gray-200 bg-gray-50 text-gray-600'
                   }
                 >
-                  {agent.status === 'active' ? 'Ready' :
-                   agent.status === 'training' ? 'Learning' : 'Offline'}
+                  {agent.status === 'active'
+                    ? 'Ready'
+                    : agent.status === 'training'
+                      ? 'Learning'
+                      : 'Offline'}
                 </Badge>
 
-                <Badge variant="secondary" className="ml-2">
-                  <Sparkles className="h-3 w-3 mr-1" />
+                <Badge variant='secondary' className='ml-2'>
+                  <Sparkles className='mr-1 h-3 w-3' />
                   AI-Powered
                 </Badge>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className='flex items-center space-x-2'>
               {session && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant='outline' className='text-xs'>
                   Session: {session.id.slice(0, 8)}
                 </Badge>
               )}
 
               <Button
-                variant="outline"
-                size="sm"
+                variant='outline'
+                size='sm'
                 onClick={() => setShowAgentSelection(true)}
-                className="flex items-center space-x-2"
+                className='flex items-center space-x-2'
               >
-                <Settings className="h-4 w-4" />
+                <Settings className='h-4 w-4' />
                 <span>Switch Agent</span>
               </Button>
             </div>
           </div>
 
           {agent.description && (
-            <div className="mt-2 text-sm text-muted-foreground max-w-2xl">
-              {agent.description}
-            </div>
+            <div className='mt-2 max-w-2xl text-muted-foreground text-sm'>{agent.description}</div>
           )}
         </div>
       </div>
 
       {/* Main Chat Interface */}
-      <div className="flex-1 flex">
+      <div className='flex flex-1'>
         {/* Chat Area */}
-        <div className="flex-1">
+        <div className='flex-1'>
           {/* This is where the actual Parlant chat widget would be integrated */}
-          <div className="h-full flex items-center justify-center">
-            <Card className="w-full max-w-2xl mx-4">
-              <CardContent className="p-12 text-center">
-                <MessageCircle className="h-16 w-16 mx-auto mb-6 text-blue-500" />
-                <h3 className="text-xl font-semibold mb-4">
-                  Ready to Chat with {agent.name}
-                </h3>
-                <p className="text-muted-foreground mb-6">
-                  {agent.description || 'This agent is ready to help you with your questions and tasks.'}
+          <div className='flex h-full items-center justify-center'>
+            <Card className='mx-4 w-full max-w-2xl'>
+              <CardContent className='p-12 text-center'>
+                <MessageCircle className='mx-auto mb-6 h-16 w-16 text-blue-500' />
+                <h3 className='mb-4 font-semibold text-xl'>Ready to Chat with {agent.name}</h3>
+                <p className='mb-6 text-muted-foreground'>
+                  {agent.description ||
+                    'This agent is ready to help you with your questions and tasks.'}
                 </p>
 
                 {/* Agent Capabilities */}
                 {(agent.guidelines && agent.guidelines.length > 0) ||
-                 (agent.journeys && agent.journeys.length > 0) ? (
-                  <div className="space-y-3 mb-6">
-                    <h4 className="font-medium">Agent Capabilities:</h4>
-                    <div className="flex flex-wrap gap-2 justify-center">
+                (agent.journeys && agent.journeys.length > 0) ? (
+                  <div className='mb-6 space-y-3'>
+                    <h4 className='font-medium'>Agent Capabilities:</h4>
+                    <div className='flex flex-wrap justify-center gap-2'>
                       {agent.guidelines && agent.guidelines.length > 0 && (
-                        <Badge variant="secondary">
-                          {agent.guidelines.length} Guidelines
-                        </Badge>
+                        <Badge variant='secondary'>{agent.guidelines.length} Guidelines</Badge>
                       )}
                       {agent.journeys && agent.journeys.length > 0 && (
-                        <Badge variant="secondary">
-                          {agent.journeys.length} Journeys
-                        </Badge>
+                        <Badge variant='secondary'>{agent.journeys.length} Journeys</Badge>
                       )}
                     </div>
                   </div>
                 ) : null}
 
-                <div className="bg-muted/50 p-4 rounded-lg text-sm">
-                  <p className="mb-2 font-medium">🚧 Coming Soon</p>
-                  <p className="text-muted-foreground">
-                    The Parlant chat widget integration will be available here once the
-                    chat interface feature is fully implemented.
+                <div className='rounded-lg bg-muted/50 p-4 text-sm'>
+                  <p className='mb-2 font-medium'>🚧 Coming Soon</p>
+                  <p className='text-muted-foreground'>
+                    The Parlant chat widget integration will be available here once the chat
+                    interface feature is fully implemented.
                   </p>
                 </div>
               </CardContent>
@@ -356,15 +344,15 @@ export default function ParlantConversationPage() {
 
       {/* Agent Selection Modal */}
       <Dialog open={showAgentSelection} onOpenChange={setShowAgentSelection}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+        <DialogContent className='max-h-[90vh] max-w-6xl overflow-hidden'>
           <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <Bot className="h-5 w-5" />
+            <DialogTitle className='flex items-center space-x-2'>
+              <Bot className='h-5 w-5' />
               <span>Switch Agent</span>
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className='flex-1 overflow-y-auto'>
             <AgentSelectionInterface
               workspaceId={workspaceId}
               onAgentSelect={handleAgentSwitch}

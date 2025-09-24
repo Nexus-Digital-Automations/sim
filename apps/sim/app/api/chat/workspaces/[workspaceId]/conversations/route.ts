@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { validateWorkspaceAccess } from '@/lib/auth/chat-middleware'
-import { getUserConversations, createConversation } from '@/lib/parlant/conversations'
-import { getUserCanAccessAgent } from '@/lib/parlant/agents'
 import { createLogger } from '@/lib/logs/console/logger'
+import { getUserCanAccessAgent } from '@/lib/parlant/agents'
+import { createConversation, getUserConversations } from '@/lib/parlant/conversations'
 
 const logger = createLogger('ChatConversationsAPI')
 
@@ -37,8 +37,8 @@ export async function GET(
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
+    const page = Number.parseInt(searchParams.get('page') || '1')
+    const limit = Math.min(Number.parseInt(searchParams.get('limit') || '20'), 100)
     const agentId = searchParams.get('agent_id') || undefined
     const search = searchParams.get('search') || undefined
     const includeArchived = searchParams.get('include_archived') === 'true'
@@ -48,14 +48,14 @@ export async function GET(
       agentId,
       page,
       limit,
-      includeArchived
+      includeArchived,
     })
 
     // Apply search filter if provided (in production, this would be done in the service)
     let filteredConversations = result.conversations
     if (search) {
       const searchLower = search.toLowerCase()
-      filteredConversations = filteredConversations.filter(conv =>
+      filteredConversations = filteredConversations.filter((conv) =>
         conv.title?.toLowerCase().includes(searchLower)
       )
     }
@@ -67,7 +67,7 @@ export async function GET(
       page,
       limit,
       totalConversations: filteredConversations.length,
-      includeArchived
+      includeArchived,
     })
 
     return NextResponse.json({
@@ -76,10 +76,9 @@ export async function GET(
         page,
         limit,
         total: result.total,
-        totalPages: Math.ceil(result.total / limit)
-      }
+        totalPages: Math.ceil(result.total / limit),
+      },
     })
-
   } catch (error) {
     logger.error('Failed to fetch conversations', { error })
     return NextResponse.json(
@@ -176,11 +175,10 @@ export async function POST(
       conversationId: conversation.id,
       agentId,
       userId: session.user.id,
-      hasInitialMessage: !!initialMessage
+      hasInitialMessage: !!initialMessage,
     })
 
     return NextResponse.json({ conversation }, { status: 201 })
-
   } catch (error) {
     logger.error('Failed to create conversation', { error })
     return NextResponse.json(

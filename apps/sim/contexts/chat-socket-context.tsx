@@ -9,7 +9,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useParams } from 'next/navigation'
 import { io, type Socket } from 'socket.io-client'
 import { getEnv } from '@/lib/env'
 import { createLogger } from '@/lib/logs/console/logger'
@@ -104,10 +103,16 @@ interface ChatSocketContextType {
   onTypingIndicator: (handler: (indicator: TypingIndicator) => void) => void
   onPresenceUpdated: (handler: (presence: ChatPresence) => void) => void
   onUserJoined: (handler: (presence: ChatPresence) => void) => void
-  onUserLeft: (handler: (data: { userId: string; socketId: string; timestamp: number }) => void) => void
-  onAgentStreamChunk: (handler: (data: { messageId: string; chunk: string; isComplete: boolean }) => void) => void
+  onUserLeft: (
+    handler: (data: { userId: string; socketId: string; timestamp: number }) => void
+  ) => void
+  onAgentStreamChunk: (
+    handler: (data: { messageId: string; chunk: string; isComplete: boolean }) => void
+  ) => void
   onSessionStatusChanged: (handler: (data: { sessionId: string; status: string }) => void) => void
-  onHistoryResponse: (handler: (data: { messages: ChatMessage[]; hasMore: boolean }) => void) => void
+  onHistoryResponse: (
+    handler: (data: { messages: ChatMessage[]; hasMore: boolean }) => void
+  ) => void
 
   // Error handling
   onError: (handler: (error: { type: string; message: string; details?: any }) => void) => void
@@ -245,7 +250,7 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
           logger.info('Chat socket disconnected', { reason })
 
           // Reset current session on disconnect
-          setCurrentSession(prev =>
+          setCurrentSession((prev) =>
             prev ? { ...prev, status: 'disconnected', participants: [] } : null
           )
         })
@@ -270,26 +275,29 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
         // Chat-specific event handlers
 
         // Session management events
-        socketInstance.on('chat:join-session-success', (data: {
-          sessionId: string
-          agentId?: string
-          workspaceId: string
-          roomId: string
-          workspaceRoomId: string
-          timestamp: number
-          presence: ChatPresence
-        }) => {
-          logger.info(`Successfully joined chat session ${data.sessionId}`)
-          setCurrentSession({
-            sessionId: data.sessionId,
-            agentId: data.agentId,
-            workspaceId: data.workspaceId,
-            status: 'connected',
-            participants: [data.presence],
-            messageHistory: [],
-            isTyping: {},
-          })
-        })
+        socketInstance.on(
+          'chat:join-session-success',
+          (data: {
+            sessionId: string
+            agentId?: string
+            workspaceId: string
+            roomId: string
+            workspaceRoomId: string
+            timestamp: number
+            presence: ChatPresence
+          }) => {
+            logger.info(`Successfully joined chat session ${data.sessionId}`)
+            setCurrentSession({
+              sessionId: data.sessionId,
+              agentId: data.agentId,
+              workspaceId: data.workspaceId,
+              status: 'connected',
+              participants: [data.presence],
+              messageHistory: [],
+              isTyping: {},
+            })
+          }
+        )
 
         socketInstance.on('chat:join-session-error', (error) => {
           logger.error('Failed to join chat session:', error)
@@ -305,7 +313,7 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
           logger.debug('Chat message received:', message)
 
           // Add message to session history
-          setCurrentSession(prev => {
+          setCurrentSession((prev) => {
             if (!prev || prev.sessionId !== message.sessionId) return prev
             return {
               ...prev,
@@ -316,10 +324,13 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
           eventHandlers.current.messageReceived?.(message)
         })
 
-        socketInstance.on('chat:message-sent', (confirmation: { messageId: string; timestamp: number; sessionId: string }) => {
-          logger.debug('Chat message sent confirmation:', confirmation)
-          eventHandlers.current.messageSent?.(confirmation)
-        })
+        socketInstance.on(
+          'chat:message-sent',
+          (confirmation: { messageId: string; timestamp: number; sessionId: string }) => {
+            logger.debug('Chat message sent confirmation:', confirmation)
+            eventHandlers.current.messageSent?.(confirmation)
+          }
+        )
 
         // Typing and presence events
         socketInstance.on('chat:typing-indicator', (indicator: TypingIndicator) => {
@@ -327,7 +338,7 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
 
           // Update typing state in session
           if (indicator.userId) {
-            setCurrentSession(prev => {
+            setCurrentSession((prev) => {
               if (!prev || prev.sessionId !== indicator.sessionId) return prev
               return {
                 ...prev,
@@ -346,10 +357,10 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
           logger.debug('Presence updated:', presence)
 
           // Update participant presence in session
-          setCurrentSession(prev => {
+          setCurrentSession((prev) => {
             if (!prev || prev.sessionId !== presence.sessionId) return prev
 
-            const updatedParticipants = prev.participants.map(p =>
+            const updatedParticipants = prev.participants.map((p) =>
               p.userId === presence.userId ? presence : p
             )
 
@@ -366,11 +377,11 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
           logger.info('User joined chat session:', presence)
 
           // Add new participant to session
-          setCurrentSession(prev => {
+          setCurrentSession((prev) => {
             if (!prev || prev.sessionId !== presence.sessionId) return prev
 
             // Check if user already exists
-            const existingUser = prev.participants.find(p => p.userId === presence.userId)
+            const existingUser = prev.participants.find((p) => p.userId === presence.userId)
             if (existingUser) return prev
 
             return {
@@ -382,75 +393,91 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
           eventHandlers.current.userJoined?.(presence)
         })
 
-        socketInstance.on('chat:user-left', (data: { sessionId: string; userId: string; socketId: string; timestamp: number }) => {
-          logger.info('User left chat session:', data)
+        socketInstance.on(
+          'chat:user-left',
+          (data: { sessionId: string; userId: string; socketId: string; timestamp: number }) => {
+            logger.info('User left chat session:', data)
 
-          // Remove participant from session
-          setCurrentSession(prev => {
-            if (!prev || prev.sessionId !== data.sessionId) return prev
+            // Remove participant from session
+            setCurrentSession((prev) => {
+              if (!prev || prev.sessionId !== data.sessionId) return prev
 
-            return {
-              ...prev,
-              participants: prev.participants.filter(p => p.userId !== data.userId),
-              isTyping: {
-                ...prev.isTyping,
-                [data.userId]: false,
-              },
-            }
-          })
+              return {
+                ...prev,
+                participants: prev.participants.filter((p) => p.userId !== data.userId),
+                isTyping: {
+                  ...prev.isTyping,
+                  [data.userId]: false,
+                },
+              }
+            })
 
-          eventHandlers.current.userLeft?.(data)
-        })
+            eventHandlers.current.userLeft?.(data)
+          }
+        )
 
         // Agent streaming events
-        socketInstance.on('chat:agent-stream-chunk', (data: {
-          sessionId: string
-          messageId: string
-          chunk: string
-          isComplete: boolean
-          timestamp: number
-        }) => {
-          logger.debug('Agent stream chunk received:', data)
-          eventHandlers.current.agentStreamChunk?.(data)
-        })
+        socketInstance.on(
+          'chat:agent-stream-chunk',
+          (data: {
+            sessionId: string
+            messageId: string
+            chunk: string
+            isComplete: boolean
+            timestamp: number
+          }) => {
+            logger.debug('Agent stream chunk received:', data)
+            eventHandlers.current.agentStreamChunk?.(data)
+          }
+        )
 
         // Session status events
-        socketInstance.on('chat:session-status-changed', (data: { sessionId: string; status: string }) => {
-          logger.info('Chat session status changed:', data)
+        socketInstance.on(
+          'chat:session-status-changed',
+          (data: { sessionId: string; status: string }) => {
+            logger.info('Chat session status changed:', data)
 
-          setCurrentSession(prev => {
-            if (!prev || prev.sessionId !== data.sessionId) return prev
-            return {
-              ...prev,
-              status: data.status as any,
-            }
-          })
+            setCurrentSession((prev) => {
+              if (!prev || prev.sessionId !== data.sessionId) return prev
+              return {
+                ...prev,
+                status: data.status as any,
+              }
+            })
 
-          eventHandlers.current.sessionStatusChanged?.(data)
-        })
+            eventHandlers.current.sessionStatusChanged?.(data)
+          }
+        )
 
         // History response events
-        socketInstance.on('chat:history-response', (data: {
-          sessionId: string
-          messages: ChatMessage[]
-          limit: number
-          offset: number
-          hasMore: boolean
-          timestamp: number
-        }) => {
-          logger.info('Chat history received:', { messageCount: data.messages.length, hasMore: data.hasMore })
+        socketInstance.on(
+          'chat:history-response',
+          (data: {
+            sessionId: string
+            messages: ChatMessage[]
+            limit: number
+            offset: number
+            hasMore: boolean
+            timestamp: number
+          }) => {
+            logger.info('Chat history received:', {
+              messageCount: data.messages.length,
+              hasMore: data.hasMore,
+            })
 
-          // Update session with historical messages
-          setCurrentSession(prev => {
-            if (!prev || prev.sessionId !== data.sessionId) return prev
-            return {
-              ...prev,
-              messageHistory: data.offset === 0 ? data.messages : [...data.messages, ...prev.messageHistory],
-            }
-          })
+            // Update session with historical messages
+            setCurrentSession((prev) => {
+              if (!prev || prev.sessionId !== data.sessionId) return prev
+              return {
+                ...prev,
+                messageHistory:
+                  data.offset === 0 ? data.messages : [...data.messages, ...prev.messageHistory],
+              }
+            })
 
-          eventHandlers.current.historyResponse?.(data)
-        })
+            eventHandlers.current.historyResponse?.(data)
+          }
+        )
 
         // Error handling
         socketInstance.on('chat:send-message-error', (error) => {
@@ -584,7 +611,7 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
       }
 
       // Optimistically add message to local history
-      setCurrentSession(prev => {
+      setCurrentSession((prev) => {
         if (!prev) return prev
         return {
           ...prev,
@@ -627,7 +654,7 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
         socket.emit('chat:request-history', {
           sessionId: currentSession.sessionId,
           limit,
-          offset
+          offset,
         })
         logger.debug(`Requested chat history: limit=${limit}, offset=${offset}`)
       }
@@ -640,9 +667,12 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
     eventHandlers.current.messageReceived = handler
   }, [])
 
-  const onMessageSent = useCallback((handler: (confirmation: { messageId: string; timestamp: number }) => void) => {
-    eventHandlers.current.messageSent = handler
-  }, [])
+  const onMessageSent = useCallback(
+    (handler: (confirmation: { messageId: string; timestamp: number }) => void) => {
+      eventHandlers.current.messageSent = handler
+    },
+    []
+  )
 
   const onTypingIndicator = useCallback((handler: (indicator: TypingIndicator) => void) => {
     eventHandlers.current.typingIndicator = handler
@@ -656,25 +686,40 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
     eventHandlers.current.userJoined = handler
   }, [])
 
-  const onUserLeft = useCallback((handler: (data: { userId: string; socketId: string; timestamp: number }) => void) => {
-    eventHandlers.current.userLeft = handler
-  }, [])
+  const onUserLeft = useCallback(
+    (handler: (data: { userId: string; socketId: string; timestamp: number }) => void) => {
+      eventHandlers.current.userLeft = handler
+    },
+    []
+  )
 
-  const onAgentStreamChunk = useCallback((handler: (data: { messageId: string; chunk: string; isComplete: boolean }) => void) => {
-    eventHandlers.current.agentStreamChunk = handler
-  }, [])
+  const onAgentStreamChunk = useCallback(
+    (handler: (data: { messageId: string; chunk: string; isComplete: boolean }) => void) => {
+      eventHandlers.current.agentStreamChunk = handler
+    },
+    []
+  )
 
-  const onSessionStatusChanged = useCallback((handler: (data: { sessionId: string; status: string }) => void) => {
-    eventHandlers.current.sessionStatusChanged = handler
-  }, [])
+  const onSessionStatusChanged = useCallback(
+    (handler: (data: { sessionId: string; status: string }) => void) => {
+      eventHandlers.current.sessionStatusChanged = handler
+    },
+    []
+  )
 
-  const onHistoryResponse = useCallback((handler: (data: { messages: ChatMessage[]; hasMore: boolean }) => void) => {
-    eventHandlers.current.historyResponse = handler
-  }, [])
+  const onHistoryResponse = useCallback(
+    (handler: (data: { messages: ChatMessage[]; hasMore: boolean }) => void) => {
+      eventHandlers.current.historyResponse = handler
+    },
+    []
+  )
 
-  const onError = useCallback((handler: (error: { type: string; message: string; details?: any }) => void) => {
-    eventHandlers.current.error = handler
-  }, [])
+  const onError = useCallback(
+    (handler: (error: { type: string; message: string; details?: any }) => void) => {
+      eventHandlers.current.error = handler
+    },
+    []
+  )
 
   return (
     <ChatSocketContext.Provider

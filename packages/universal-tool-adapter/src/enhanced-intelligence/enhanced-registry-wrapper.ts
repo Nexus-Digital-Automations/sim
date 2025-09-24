@@ -8,31 +8,26 @@
  * @version 1.0.0
  */
 
-import type {
-  AdapterRegistryEntry,
-  ToolDiscoveryQuery,
-  DiscoveredTool,
-  AdapterConfiguration,
-  SimToolDefinition
-} from '../types/adapter-interfaces'
-import type { ParlantTool, ParlantExecutionContext } from '../types/parlant-interfaces'
-import type {
-  UsageContext,
-  UserProfile,
-  ConversationMessage
-} from '../natural-language/usage-guidelines'
+import { NaturalLanguageEngine } from '../natural-language'
+import type { ConversationMessage, UsageContext } from '../natural-language/usage-guidelines'
 import { AdapterRegistry, type RegistryConfig } from '../registry/adapter-registry'
 import { EnhancedAdapterRegistry } from '../registry/enhanced-adapter-registry'
-import { NaturalLanguageEngine } from '../natural-language'
+import type {
+  AdapterConfiguration,
+  AdapterRegistryEntry,
+  DiscoveredTool,
+  SimToolDefinition,
+  ToolDiscoveryQuery,
+} from '../types/adapter-interfaces'
+import { createLogger } from '../utils/logger'
 import {
-  NaturalLanguageRegistryIntegration,
   DEFAULT_REGISTRY_INTEGRATION_CONFIG,
-  type RegistryIntegrationConfig,
   type EnhancedDiscoveredTool,
   type EnhancedToolDiscoveryQuery,
-  type SemanticSearchResult
+  NaturalLanguageRegistryIntegration,
+  type RegistryIntegrationConfig,
+  type SemanticSearchResult,
 } from './registry-integration'
-import { createLogger } from '../utils/logger'
 
 const logger = createLogger('EnhancedRegistryWrapper')
 
@@ -93,7 +88,7 @@ export class EnhancedRegistryWrapper {
   constructor(private config: EnhancedRegistryWrapperConfig) {
     logger.info('Initializing Enhanced Registry Wrapper', {
       useEnhancedRegistry: config.useEnhancedRegistry,
-      naturalLanguageEnabled: config.naturalLanguage.enabled
+      naturalLanguageEnabled: config.naturalLanguage.enabled,
     })
 
     // Initialize registries based on configuration
@@ -113,7 +108,7 @@ export class EnhancedRegistryWrapper {
     this.naturalLanguageEngine = new NaturalLanguageEngine()
     this.registryIntegration = new NaturalLanguageRegistryIntegration({
       ...DEFAULT_REGISTRY_INTEGRATION_CONFIG,
-      ...config.integration
+      ...config.integration,
     })
 
     logger.debug('Natural language components initialized')
@@ -137,11 +132,10 @@ export class EnhancedRegistryWrapper {
 
       this.isInitialized = true
       logger.info('Enhanced registry wrapper initialized successfully')
-
     } catch (error) {
       logger.error('Failed to initialize enhanced registry wrapper', {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       })
       throw error
     }
@@ -176,11 +170,10 @@ export class EnhancedRegistryWrapper {
       }
 
       logger.info(`Tool registered successfully: ${simTool.name}`)
-
     } catch (error) {
       logger.error(`Failed to register tool: ${simTool.name}`, {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       })
       throw error
     }
@@ -192,7 +185,7 @@ export class EnhancedRegistryWrapper {
   async discoverTools(query: EnhancedToolDiscoveryQuery): Promise<EnhancedDiscoveredTool[]> {
     logger.debug('Performing enhanced tool discovery', {
       hasNaturalLanguageQuery: !!query.naturalLanguageQuery,
-      semanticSearch: query.semanticSearch
+      semanticSearch: query.semanticSearch,
     })
 
     try {
@@ -207,11 +200,10 @@ export class EnhancedRegistryWrapper {
 
       // Convert standard results to enhanced format for compatibility
       return this.convertToEnhancedResults(standardResults)
-
     } catch (error) {
       logger.error('Enhanced tool discovery failed', {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       })
 
       // Fallback to standard discovery
@@ -239,7 +231,7 @@ export class EnhancedRegistryWrapper {
 
     logger.debug('Performing semantic tool search', {
       query: searchQuery,
-      hasUserContext: !!userContext
+      hasUserContext: !!userContext,
     })
 
     try {
@@ -251,11 +243,10 @@ export class EnhancedRegistryWrapper {
         availableEntries,
         extendedContext
       )
-
     } catch (error) {
       logger.error('Semantic search failed', {
         query: searchQuery,
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -264,7 +255,10 @@ export class EnhancedRegistryWrapper {
   /**
    * Get enhanced tool information with natural language descriptions
    */
-  async getEnhancedTool(toolId: string, userContext?: UsageContext): Promise<EnhancedDiscoveredTool | null> {
+  async getEnhancedTool(
+    toolId: string,
+    userContext?: UsageContext
+  ): Promise<EnhancedDiscoveredTool | null> {
     logger.debug(`Getting enhanced tool information: ${toolId}`)
 
     try {
@@ -300,10 +294,9 @@ export class EnhancedRegistryWrapper {
       }
 
       return enhancedTool
-
     } catch (error) {
       logger.error(`Failed to get enhanced tool: ${toolId}`, {
-        error: error.message
+        error: error.message,
       })
       return null
     }
@@ -337,22 +330,21 @@ export class EnhancedRegistryWrapper {
             const enhancedTool = await this.getEnhancedTool(rec.toolId, context)
             return {
               ...rec,
-              enhancedTool
+              enhancedTool,
             }
           })
         )
 
         return {
           ...response,
-          recommendations: enhancedRecommendations
+          recommendations: enhancedRecommendations,
         }
       }
 
       return response
-
     } catch (error) {
       logger.error('Conversational assistance failed', {
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -378,7 +370,7 @@ export class EnhancedRegistryWrapper {
 
     logger.info(`Batch enhancing ${toolIds.length} tools`, {
       priority: options?.priority,
-      background: options?.background
+      background: options?.background,
     })
 
     const enhanced: EnhancedDiscoveredTool[] = []
@@ -403,12 +395,12 @@ export class EnhancedRegistryWrapper {
       })
 
       const batchResults = await Promise.all(batchPromises)
-      enhanced.push(...batchResults.filter(result => result !== null))
+      enhanced.push(...batchResults.filter((result) => result !== null))
     }
 
     logger.info('Batch enhancement completed', {
       enhanced: enhanced.length,
-      failed: failed.length
+      failed: failed.length,
     })
 
     return { enhanced, failed }
@@ -426,8 +418,8 @@ export class EnhancedRegistryWrapper {
       naturalLanguage: {
         enabled: this.config.naturalLanguage.enabled,
         enhancedTools: this.enhancedToolCache.size,
-        cacheStats: this.registryIntegration.getCacheStats()
-      }
+        cacheStats: this.registryIntegration.getCacheStats(),
+      },
     }
 
     return enhancedStats
@@ -444,7 +436,7 @@ export class EnhancedRegistryWrapper {
     const enhancedQuery: EnhancedToolDiscoveryQuery = {
       ...query,
       semanticSearch: false,
-      adaptToUser: false
+      adaptToUser: false,
     }
 
     const enhancedResults = await this.discoverTools(enhancedQuery)
@@ -472,10 +464,9 @@ export class EnhancedRegistryWrapper {
 
       this.isInitialized = false
       logger.info('Enhanced registry wrapper shut down successfully')
-
     } catch (error) {
       logger.error('Error during shutdown', {
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -499,10 +490,9 @@ export class EnhancedRegistryWrapper {
     if ('discover' in primaryRegistry) {
       // Enhanced registry
       return await (primaryRegistry as any).discover(query)
-    } else {
-      // Standard registry
-      return await (primaryRegistry as any).search(query)
     }
+    // Standard registry
+    return await (primaryRegistry as any).search(query)
   }
 
   private async getRegistryEntries(): Promise<AdapterRegistryEntry[]> {
@@ -510,10 +500,9 @@ export class EnhancedRegistryWrapper {
 
     if ('listAdapters' in primaryRegistry) {
       return (primaryRegistry as any).listAdapters()
-    } else {
-      // For enhanced registry, we'd need a different method
-      throw new Error('Unable to get registry entries from enhanced registry')
     }
+    // For enhanced registry, we'd need a different method
+    throw new Error('Unable to get registry entries from enhanced registry')
   }
 
   private async getRegistryEntry(toolId: string): Promise<AdapterRegistryEntry | null> {
@@ -521,7 +510,8 @@ export class EnhancedRegistryWrapper {
 
     if ('getAdapterEntry' in primaryRegistry) {
       return (primaryRegistry as any).getAdapterEntry(toolId) || null
-    } else if ('get' in primaryRegistry) {
+    }
+    if ('get' in primaryRegistry) {
       // For enhanced registry
       const adapter = await (primaryRegistry as any).get(toolId)
       if (adapter) {
@@ -544,11 +534,11 @@ export class EnhancedRegistryWrapper {
         role: context.userProfile?.role || 'user',
         skillLevel: context.userProfile?.skillLevel || 'beginner',
         domain: context.userProfile?.domain,
-        preferences: context.userProfile?.preferences || {}
+        preferences: context.userProfile?.preferences || {},
       },
       conversationHistory: [],
       sessionContext: context.sessionContext || {},
-      environment: 'production'
+      environment: 'production',
     }
   }
 
@@ -567,14 +557,14 @@ export class EnhancedRegistryWrapper {
       usageStats: {
         executionCount: entry.statistics?.executionCount || 0,
         successRate: entry.statistics?.successRate || 0,
-        averageRating: 0
+        averageRating: 0,
       },
       capabilities: this.extractCapabilities(entry),
       requirements: this.extractRequirements(entry),
       performance: {
         averageExecutionTimeMs: entry.statistics?.averageExecutionTimeMs || 0,
         healthStatus: entry.health?.status || 'unknown',
-        lastUsed: entry.statistics?.lastUsed
+        lastUsed: entry.statistics?.lastUsed,
       },
       naturalLanguage: {
         description: entry.config.description || '',
@@ -582,15 +572,15 @@ export class EnhancedRegistryWrapper {
         conversationalHints: [],
         exampleUsage: [],
         keywords: entry.metadata.tags,
-        contextualTips: []
+        contextualTips: [],
       },
       semanticMetadata: {
         concepts: entry.metadata.tags,
         relationships: [],
         similarity: 0,
-        relevanceScore: 1.0
+        relevanceScore: 1.0,
       },
-      adaptationData: {}
+      adaptationData: {},
     }
 
     return enhancedTool
@@ -598,7 +588,7 @@ export class EnhancedRegistryWrapper {
 
   private convertToEnhancedResults(standardResults: any[]): EnhancedDiscoveredTool[] {
     // Convert standard discovery results to enhanced format
-    return standardResults.map(result => ({
+    return standardResults.map((result) => ({
       ...result,
       naturalLanguage: {
         description: result.description || '',
@@ -606,21 +596,21 @@ export class EnhancedRegistryWrapper {
         conversationalHints: [],
         exampleUsage: [],
         keywords: result.tags || [],
-        contextualTips: []
+        contextualTips: [],
       },
       semanticMetadata: {
         concepts: result.tags || [],
         relationships: [],
         similarity: 0,
-        relevanceScore: result.relevanceScore || 1.0
+        relevanceScore: result.relevanceScore || 1.0,
       },
-      adaptationData: {}
+      adaptationData: {},
     }))
   }
 
   private convertToLegacyResults(enhancedResults: EnhancedDiscoveredTool[]): DiscoveredTool[] {
     // Convert enhanced results back to legacy format for backward compatibility
-    return enhancedResults.map(result => ({
+    return enhancedResults.map((result) => ({
       id: result.id,
       name: result.name,
       description: result.description,
@@ -629,7 +619,7 @@ export class EnhancedRegistryWrapper {
       relevanceScore: result.relevanceScore,
       usageStats: result.usageStats,
       capabilities: result.capabilities,
-      requirements: result.requirements
+      requirements: result.requirements,
     }))
   }
 
@@ -665,7 +655,7 @@ export class EnhancedRegistryWrapper {
         logger.debug(`Background enhancement completed for: ${toolId}`)
       } catch (error) {
         logger.warn(`Background enhancement failed for: ${toolId}`, {
-          error: error.message
+          error: error.message,
         })
       }
     })
@@ -679,19 +669,16 @@ export class EnhancedRegistryWrapper {
 
       // Sort by usage statistics to identify popular tools
       const popularTools = entries
-        .filter(entry => entry.statistics?.executionCount > 0)
+        .filter((entry) => entry.statistics?.executionCount > 0)
         .sort((a, b) => (b.statistics?.executionCount || 0) - (a.statistics?.executionCount || 0))
         .slice(0, 10) // Preload top 10 popular tools
 
-      await Promise.all(
-        popularTools.map(entry => this.getEnhancedTool(entry.id))
-      )
+      await Promise.all(popularTools.map((entry) => this.getEnhancedTool(entry.id)))
 
       logger.info(`Preloaded ${popularTools.length} popular tools`)
-
     } catch (error) {
       logger.warn('Failed to preload popular tools', {
-        error: error.message
+        error: error.message,
       })
     }
   }
@@ -728,7 +715,7 @@ export const DEFAULT_ENHANCED_WRAPPER_CONFIG: EnhancedRegistryWrapperConfig = {
     enabled: true,
     autoEnhanceNewTools: true,
     backgroundProcessing: true,
-    enhanceOnFirstAccess: true
+    enhanceOnFirstAccess: true,
   },
   integration: DEFAULT_REGISTRY_INTEGRATION_CONFIG,
   performance: {
@@ -736,13 +723,13 @@ export const DEFAULT_ENHANCED_WRAPPER_CONFIG: EnhancedRegistryWrapperConfig = {
     maxConcurrentEnhancements: 5,
     enhancementTimeout: 30000,
     cacheEnabled: true,
-    preloadPopularTools: true
+    preloadPopularTools: true,
   },
   compatibility: {
     maintainOriginalInterface: true,
     logDeprecationWarnings: true,
-    supportLegacyQueries: true
-  }
+    supportLegacyQueries: true,
+  },
 }
 
 /**

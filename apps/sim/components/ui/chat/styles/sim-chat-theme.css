@@ -359,7 +359,9 @@
 }
 
 @keyframes typingPulse {
-  0%, 60%, 100% {
+  0%,
+  60%,
+  100% {
     opacity: 0.4;
     transform: scale(1);
   }
@@ -370,7 +372,8 @@
 }
 
 @keyframes notificationPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }

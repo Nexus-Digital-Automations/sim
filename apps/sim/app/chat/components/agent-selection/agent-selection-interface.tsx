@@ -1,28 +1,28 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Agent } from '@/apps/sim/services/parlant/types'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
-import { TooltipProvider } from '@/components/ui/tooltip'
 import {
+  AlertCircle,
+  ArrowRight,
   Bot,
+  Lightbulb,
   RefreshCw,
   Sparkles,
+  TrendingUp,
   Users,
-  ArrowRight,
-  AlertCircle,
-  Lightbulb,
-  TrendingUp
 } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { createLogger } from '@/lib/logs/console/logger'
+import type { Agent } from '@/apps/sim/services/parlant/types'
 import { AgentCard } from './agent-card'
-import { AgentSearch } from './agent-search'
 import { AgentProfileModal } from './agent-profile-modal'
+import { AgentSearch } from './agent-search'
 
 const logger = createLogger('AgentSelectionInterface')
 
@@ -73,7 +73,7 @@ export function AgentSelectionInterface({
   onAgentSelect,
   selectedAgent = null,
   className = '',
-  showRecommendations = true
+  showRecommendations = true,
 }: AgentSelectionInterfaceProps) {
   const [agents, setAgents] = useState<Agent[]>([])
   const [filteredAgents, setFilteredAgents] = useState<Agent[]>([])
@@ -84,7 +84,7 @@ export function AgentSelectionInterface({
   const [loading, setLoading] = useState<LoadingState>({
     agents: true,
     metrics: false,
-    recommendations: false
+    recommendations: false,
   })
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -92,7 +92,7 @@ export function AgentSelectionInterface({
   // Fetch agents from API
   const fetchAgents = useCallback(async () => {
     try {
-      setLoading(prev => ({ ...prev, agents: true }))
+      setLoading((prev) => ({ ...prev, agents: true }))
       setError(null)
 
       logger.info('Fetching agents for workspace', { workspaceId })
@@ -112,7 +112,7 @@ export function AgentSelectionInterface({
 
       logger.info('Agents fetched successfully', {
         count: fetchedAgents.length,
-        workspaceId
+        workspaceId,
       })
 
       // Fetch metrics for each agent (in background)
@@ -124,20 +124,19 @@ export function AgentSelectionInterface({
       if (showRecommendations) {
         generateRecommendations(fetchedAgents)
       }
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load agents'
       logger.error('Failed to fetch agents', { error: errorMessage, workspaceId })
       setError(errorMessage)
     } finally {
-      setLoading(prev => ({ ...prev, agents: false }))
+      setLoading((prev) => ({ ...prev, agents: false }))
     }
   }, [workspaceId, showRecommendations])
 
   // Fetch metrics for agents
   const fetchAgentMetrics = useCallback(async (agentsList: Agent[]) => {
     try {
-      setLoading(prev => ({ ...prev, metrics: true }))
+      setLoading((prev) => ({ ...prev, metrics: true }))
 
       // In a real implementation, this would call a metrics API
       // For now, we'll generate mock metrics based on agent data
@@ -156,29 +155,31 @@ export function AgentSelectionInterface({
           lastUsed: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
           totalMessages: baseSessionCount * (Math.floor(Math.random() * 20) + 5),
           averageSessionLength: Math.floor(Math.random() * 30) + 5,
-          topTopics: ['Support', 'Sales', 'Technical', 'General'].slice(0, Math.floor(Math.random() * 3) + 1),
+          topTopics: ['Support', 'Sales', 'Technical', 'General'].slice(
+            0,
+            Math.floor(Math.random() * 3) + 1
+          ),
           userFeedback: {
             positive: Math.floor(Math.random() * 100) + 50,
             neutral: Math.floor(Math.random() * 30) + 10,
-            negative: Math.floor(Math.random() * 20) + 5
-          }
+            negative: Math.floor(Math.random() * 20) + 5,
+          },
         }
       })
 
       setAgentMetrics(mockMetrics)
       logger.info('Agent metrics fetched', { count: Object.keys(mockMetrics).length })
-
     } catch (error) {
       logger.error('Failed to fetch agent metrics', { error })
     } finally {
-      setLoading(prev => ({ ...prev, metrics: false }))
+      setLoading((prev) => ({ ...prev, metrics: false }))
     }
   }, [])
 
   // Generate recommendations based on agent data and usage patterns
   const generateRecommendations = useCallback(async (agentsList: Agent[]) => {
     try {
-      setLoading(prev => ({ ...prev, recommendations: true }))
+      setLoading((prev) => ({ ...prev, recommendations: true }))
 
       // Mock recommendation logic
       // In a real implementation, this would consider:
@@ -188,17 +189,16 @@ export function AgentSelectionInterface({
       // - Time of day, user context, etc.
 
       const recommendations = agentsList
-        .filter(agent => agent.status === 'active')
+        .filter((agent) => agent.status === 'active')
         .sort(() => Math.random() - 0.5) // Random for demo
         .slice(0, 3) // Top 3 recommendations
 
       setRecommendedAgents(recommendations)
       logger.info('Recommendations generated', { count: recommendations.length })
-
     } catch (error) {
       logger.error('Failed to generate recommendations', { error })
     } finally {
-      setLoading(prev => ({ ...prev, recommendations: false }))
+      setLoading((prev) => ({ ...prev, recommendations: false }))
     }
   }, [])
 
@@ -210,10 +210,13 @@ export function AgentSelectionInterface({
   }, [workspaceId, fetchAgents, refreshKey])
 
   // Handle agent selection
-  const handleAgentSelect = useCallback((agent: Agent) => {
-    logger.info('Agent selected', { agentId: agent.id, agentName: agent.name })
-    onAgentSelect(agent)
-  }, [onAgentSelect])
+  const handleAgentSelect = useCallback(
+    (agent: Agent) => {
+      logger.info('Agent selected', { agentId: agent.id, agentName: agent.name })
+      onAgentSelect(agent)
+    },
+    [onAgentSelect]
+  )
 
   // Handle viewing agent profile
   const handleViewProfile = useCallback((agent: Agent) => {
@@ -233,27 +236,25 @@ export function AgentSelectionInterface({
 
   // Refresh data
   const handleRefresh = useCallback(() => {
-    setRefreshKey(prev => prev + 1)
+    setRefreshKey((prev) => prev + 1)
   }, [])
 
-  const isRecommended = useCallback((agent: Agent) => {
-    return recommendedAgents.some(rec => rec.id === agent.id)
-  }, [recommendedAgents])
+  const isRecommended = useCallback(
+    (agent: Agent) => {
+      return recommendedAgents.some((rec) => rec.id === agent.id)
+    },
+    [recommendedAgents]
+  )
 
   if (error) {
     return (
       <div className={`p-6 ${className}`}>
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between">
+        <Alert variant='destructive'>
+          <AlertCircle className='h-4 w-4' />
+          <AlertDescription className='flex items-center justify-between'>
             <span>{error}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="ml-4"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
+            <Button variant='outline' size='sm' onClick={handleRefresh} className='ml-4'>
+              <RefreshCw className='mr-2 h-4 w-4' />
               Retry
             </Button>
           </AlertDescription>
@@ -266,22 +267,22 @@ export function AgentSelectionInterface({
     <TooltipProvider>
       <div className={`space-y-6 ${className}`}>
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className='flex items-center justify-between'>
           <div>
-            <h2 className="text-2xl font-bold flex items-center space-x-2">
-              <Bot className="h-6 w-6" />
+            <h2 className='flex items-center space-x-2 font-bold text-2xl'>
+              <Bot className='h-6 w-6' />
               <span>Select an Agent</span>
             </h2>
-            <p className="text-muted-foreground mt-1">
+            <p className='mt-1 text-muted-foreground'>
               Choose an AI agent to help with your conversation
             </p>
           </div>
 
           <Button
-            variant="outline"
+            variant='outline'
             onClick={handleRefresh}
             disabled={loading.agents}
-            className="flex items-center space-x-2"
+            className='flex items-center space-x-2'
           >
             <RefreshCw className={`h-4 w-4 ${loading.agents ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
@@ -289,26 +290,22 @@ export function AgentSelectionInterface({
         </div>
 
         {/* Search and Filter */}
-        <AgentSearch
-          agents={agents}
-          onFilter={handleFilter}
-          onSearch={handleSearch}
-        />
+        <AgentSearch agents={agents} onFilter={handleFilter} onSearch={handleSearch} />
 
         {/* Loading State */}
         {loading.agents && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="h-64">
+              <Card key={i} className='h-64'>
                 <CardHeader>
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
+                  <Skeleton className='h-4 w-3/4' />
+                  <Skeleton className='h-3 w-1/2' />
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <Skeleton className="h-3 w-full" />
-                    <Skeleton className="h-3 w-2/3" />
-                    <Skeleton className="h-8 w-20" />
+                  <div className='space-y-2'>
+                    <Skeleton className='h-3 w-full' />
+                    <Skeleton className='h-3 w-2/3' />
+                    <Skeleton className='h-8 w-20' />
                   </div>
                 </CardContent>
               </Card>
@@ -318,19 +315,19 @@ export function AgentSelectionInterface({
 
         {/* Recommendations Section */}
         {!loading.agents && showRecommendations && recommendedAgents.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Sparkles className="h-5 w-5 text-blue-500" />
-              <h3 className="text-lg font-semibold">Recommended for You</h3>
+          <div className='space-y-4'>
+            <div className='flex items-center space-x-2'>
+              <Sparkles className='h-5 w-5 text-blue-500' />
+              <h3 className='font-semibold text-lg'>Recommended for You</h3>
               {loading.recommendations && (
-                <Badge variant="secondary" className="animate-pulse">
-                  <Lightbulb className="h-3 w-3 mr-1" />
+                <Badge variant='secondary' className='animate-pulse'>
+                  <Lightbulb className='mr-1 h-3 w-3' />
                   Analyzing...
                 </Badge>
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
               {recommendedAgents.map((agent) => (
                 <AgentCard
                   key={agent.id}
@@ -344,48 +341,44 @@ export function AgentSelectionInterface({
               ))}
             </div>
 
-            <Separator className="my-6" />
+            <Separator className='my-6' />
           </div>
         )}
 
         {/* All Agents Section */}
         {!loading.agents && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Users className="h-5 w-5" />
-                <h3 className="text-lg font-semibold">
-                  All Agents ({filteredAgents.length})
-                </h3>
+          <div className='space-y-4'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center space-x-2'>
+                <Users className='h-5 w-5' />
+                <h3 className='font-semibold text-lg'>All Agents ({filteredAgents.length})</h3>
               </div>
 
               {agents.length !== filteredAgents.length && (
-                <Badge variant="secondary">
-                  Filtered from {agents.length}
-                </Badge>
+                <Badge variant='secondary'>Filtered from {agents.length}</Badge>
               )}
             </div>
 
             {filteredAgents.length === 0 ? (
-              <Card className="p-12">
-                <div className="text-center text-muted-foreground">
-                  <Bot className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <h4 className="text-lg font-medium mb-2">No Agents Found</h4>
-                  <p className="mb-4">
+              <Card className='p-12'>
+                <div className='text-center text-muted-foreground'>
+                  <Bot className='mx-auto mb-4 h-16 w-16 opacity-50' />
+                  <h4 className='mb-2 font-medium text-lg'>No Agents Found</h4>
+                  <p className='mb-4'>
                     {agents.length === 0
                       ? 'No agents have been created in this workspace yet.'
                       : 'No agents match your current filters.'}
                   </p>
                   {agents.length === 0 && (
-                    <Button variant="outline" className="mt-2">
-                      <ArrowRight className="h-4 w-4 mr-2" />
+                    <Button variant='outline' className='mt-2'>
+                      <ArrowRight className='mr-2 h-4 w-4' />
                       Create Your First Agent
                     </Button>
                   )}
                 </div>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
                 {filteredAgents.map((agent) => (
                   <AgentCard
                     key={agent.id}
@@ -416,52 +409,54 @@ export function AgentSelectionInterface({
 
         {/* Performance Metrics (if metrics are loaded) */}
         {!loading.metrics && Object.keys(agentMetrics).length > 0 && (
-          <Card className="mt-6">
+          <Card className='mt-6'>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5" />
+              <CardTitle className='flex items-center space-x-2'>
+                <TrendingUp className='h-5 w-5' />
                 <span>Workspace Performance</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">
-                    {agents.filter(a => a.status === 'active').length}
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-4'>
+                <div className='text-center'>
+                  <div className='font-bold text-2xl'>
+                    {agents.filter((a) => a.status === 'active').length}
                   </div>
-                  <div className="text-sm text-muted-foreground">Active Agents</div>
+                  <div className='text-muted-foreground text-sm'>Active Agents</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">
+                <div className='text-center'>
+                  <div className='font-bold text-2xl'>
                     {Object.values(agentMetrics)
                       .reduce((sum, m) => sum + m.totalSessions, 0)
                       .toLocaleString()}
                   </div>
-                  <div className="text-sm text-muted-foreground">Total Sessions</div>
+                  <div className='text-muted-foreground text-sm'>Total Sessions</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">
+                <div className='text-center'>
+                  <div className='font-bold text-2xl'>
                     {Math.round(
                       Object.values(agentMetrics).length > 0
-                        ? Object.values(agentMetrics)
-                            .reduce((sum, m) => sum + m.avgResponseTime, 0) /
-                          Object.values(agentMetrics).length
+                        ? Object.values(agentMetrics).reduce(
+                            (sum, m) => sum + m.avgResponseTime,
+                            0
+                          ) / Object.values(agentMetrics).length
                         : 0
-                    )}ms
+                    )}
+                    ms
                   </div>
-                  <div className="text-sm text-muted-foreground">Avg Response Time</div>
+                  <div className='text-muted-foreground text-sm'>Avg Response Time</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">
+                <div className='text-center'>
+                  <div className='font-bold text-2xl'>
                     {Math.round(
                       Object.values(agentMetrics).length > 0
-                        ? Object.values(agentMetrics)
-                            .reduce((sum, m) => sum + m.successRate, 0) /
-                          Object.values(agentMetrics).length
+                        ? Object.values(agentMetrics).reduce((sum, m) => sum + m.successRate, 0) /
+                            Object.values(agentMetrics).length
                         : 0
-                    )}%
+                    )}
+                    %
                   </div>
-                  <div className="text-sm text-muted-foreground">Success Rate</div>
+                  <div className='text-muted-foreground text-sm'>Success Rate</div>
                 </div>
               </div>
             </CardContent>

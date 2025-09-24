@@ -17,7 +17,12 @@ import type { Agent } from '@/services/parlant/types'
 const logger = createLogger('AgentStatusService')
 
 export interface AgentStatusEvent {
-  type: 'status_changed' | 'metrics_updated' | 'session_count_changed' | 'health_check' | 'lifecycle_event'
+  type:
+    | 'status_changed'
+    | 'metrics_updated'
+    | 'session_count_changed'
+    | 'health_check'
+    | 'lifecycle_event'
   agent_id: string
   workspace_id: string
   timestamp: string
@@ -107,20 +112,20 @@ export class AgentStatusService {
     // Update local cache
     this.agentStatuses.set(event.agent_id, {
       ...this.agentStatuses.get(event.agent_id),
-      ...event.data
+      ...event.data,
     })
 
     // Broadcast to workspace subscribers
     const handlers = this.eventHandlers.get(event.workspace_id)
     if (handlers) {
-      handlers.forEach(handler => {
+      handlers.forEach((handler) => {
         try {
           handler(event)
         } catch (error) {
           logger.error('Error handling agent status event', {
             workspace_id: event.workspace_id,
             agent_id: event.agent_id,
-            error: (error as Error).message
+            error: (error as Error).message,
           })
         }
       })
@@ -130,7 +135,7 @@ export class AgentStatusService {
       type: event.type,
       agent_id: event.agent_id,
       workspace_id: event.workspace_id,
-      subscriber_count: handlers?.size || 0
+      subscriber_count: handlers?.size || 0,
     })
   }
 
@@ -154,7 +159,7 @@ export class AgentStatusService {
       agent_id: agentId,
       workspace_id: workspaceId,
       timestamp: new Date().toISOString(),
-      data: update
+      data: update,
     }
 
     this.emitAgentStatusEvent(event)
@@ -175,7 +180,7 @@ export class AgentStatusService {
       stop: 'offline' as const,
       pause: 'paused' as const,
       resume: 'online' as const,
-      restart: 'online' as const
+      restart: 'online' as const,
     }
 
     const event: AgentStatusEvent = {
@@ -188,9 +193,9 @@ export class AgentStatusService {
         lifecycle_action: {
           action,
           success,
-          error
-        }
-      }
+          error,
+        },
+      },
     }
 
     this.emitAgentStatusEvent(event)
@@ -210,8 +215,8 @@ export class AgentStatusService {
       workspace_id: workspaceId,
       timestamp: new Date().toISOString(),
       data: {
-        performance_metrics: metrics
-      }
+        performance_metrics: metrics,
+      },
     }
 
     this.emitAgentStatusEvent(event)
@@ -220,19 +225,15 @@ export class AgentStatusService {
   /**
    * Update session count
    */
-  public updateSessionCount(
-    agentId: string,
-    workspaceId: string,
-    activeSessions: number
-  ): void {
+  public updateSessionCount(agentId: string, workspaceId: string, activeSessions: number): void {
     const event: AgentStatusEvent = {
       type: 'session_count_changed',
       agent_id: agentId,
       workspace_id: workspaceId,
       timestamp: new Date().toISOString(),
       data: {
-        active_sessions: activeSessions
-      }
+        active_sessions: activeSessions,
+      },
     }
 
     this.emitAgentStatusEvent(event)
@@ -252,8 +253,8 @@ export class AgentStatusService {
       workspace_id: workspaceId,
       timestamp: new Date().toISOString(),
       data: {
-        health_checks: healthChecks
-      }
+        health_checks: healthChecks,
+      },
     }
 
     this.emitAgentStatusEvent(event)
@@ -275,14 +276,14 @@ export class AgentStatusService {
           response_time_avg: 800,
           response_time_p95: 1500,
           total_requests: 0,
-          error_rate: 0
+          error_rate: 0,
         },
         health_checks: {
           connectivity: true,
           ai_provider: true,
           database: true,
-          last_health_check: new Date().toISOString()
-        }
+          last_health_check: new Date().toISOString(),
+        },
       }
 
       this.agentStatuses.set(agent.id, initialStatus)
@@ -313,7 +314,7 @@ export class AgentStatusService {
           connectivity: Math.random() > 0.05, // 95% uptime
           ai_provider: Math.random() > 0.02, // 98% uptime
           database: Math.random() > 0.01, // 99% uptime
-          last_health_check: new Date().toISOString()
+          last_health_check: new Date().toISOString(),
         }
 
         // Update performance metrics with random variations (mock data)
@@ -326,7 +327,7 @@ export class AgentStatusService {
             response_time_p95: baseResponseTime * 1.5 + (Math.random() - 0.5) * 300,
             cpu_usage: Math.floor(Math.random() * 100),
             memory_usage: Math.floor(Math.random() * 100),
-            error_rate: Math.random() * 5
+            error_rate: Math.random() * 5,
           }
 
           // Find workspace for this agent (simplified - in real implementation,
@@ -336,11 +337,10 @@ export class AgentStatusService {
           this.updatePerformanceMetrics(agentId, mockWorkspaceId, metrics)
           this.updateHealthCheck(agentId, mockWorkspaceId, healthChecks)
         }
-
       } catch (error) {
         logger.error('Health check failed for agent', {
           agent_id: agentId,
-          error: (error as Error).message
+          error: (error as Error).message,
         })
       }
     }

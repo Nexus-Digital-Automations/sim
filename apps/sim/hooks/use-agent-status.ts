@@ -10,9 +10,13 @@
  * - Optimistic UI updates
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { AgentStatusService, type AgentStatusEvent, type AgentStatusEventData } from '@/services/parlant/realtime/agent-status-service'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createLogger } from '@/lib/logs/console/logger'
+import {
+  type AgentStatusEvent,
+  type AgentStatusEventData,
+  AgentStatusService,
+} from '@/services/parlant/realtime/agent-status-service'
 
 const logger = createLogger('useAgentStatus')
 
@@ -38,12 +42,7 @@ interface AgentStatusHook {
  * Hook for real-time agent status updates
  */
 export function useAgentStatus(options: UseAgentStatusOptions): AgentStatusHook {
-  const {
-    workspaceId,
-    agentIds = [],
-    autoConnect = true,
-    reconnectInterval = 5000
-  } = options
+  const { workspaceId, agentIds = [], autoConnect = true, reconnectInterval = 5000 } = options
 
   // State
   const [agentStatuses, setAgentStatuses] = useState<Map<string, AgentStatusEventData>>(new Map())
@@ -60,39 +59,41 @@ export function useAgentStatus(options: UseAgentStatusOptions): AgentStatusHook 
   /**
    * Handle status events from the service
    */
-  const handleStatusEvent = useCallback((event: AgentStatusEvent) => {
-    logger.debug('Received agent status event', {
-      type: event.type,
-      agent_id: event.agent_id,
-      workspace_id: event.workspace_id
-    })
+  const handleStatusEvent = useCallback(
+    (event: AgentStatusEvent) => {
+      logger.debug('Received agent status event', {
+        type: event.type,
+        agent_id: event.agent_id,
+        workspace_id: event.workspace_id,
+      })
 
-    // Filter events if specific agent IDs are provided
-    if (agentIds.length > 0 && !agentIds.includes(event.agent_id)) {
-      return
-    }
-
-    setAgentStatuses(prev => {
-      const newStatuses = new Map(prev)
-      const currentStatus = newStatuses.get(event.agent_id) || {}
-
-      // Merge event data with existing status
-      const updatedStatus = {
-        ...currentStatus,
-        ...event.data
+      // Filter events if specific agent IDs are provided
+      if (agentIds.length > 0 && !agentIds.includes(event.agent_id)) {
+        return
       }
 
-      newStatuses.set(event.agent_id, updatedStatus)
-      return newStatuses
-    })
+      setAgentStatuses((prev) => {
+        const newStatuses = new Map(prev)
+        const currentStatus = newStatuses.get(event.agent_id) || {}
 
-    setLastUpdate(new Date())
-    setUpdateCount(prev => prev + 1)
+        // Merge event data with existing status
+        const updatedStatus = {
+          ...currentStatus,
+          ...event.data,
+        }
 
-    // Clear connection errors on successful update
-    setErrors(prev => prev.filter(error => !error.includes('connection')))
+        newStatuses.set(event.agent_id, updatedStatus)
+        return newStatuses
+      })
 
-  }, [agentIds])
+      setLastUpdate(new Date())
+      setUpdateCount((prev) => prev + 1)
+
+      // Clear connection errors on successful update
+      setErrors((prev) => prev.filter((error) => !error.includes('connection')))
+    },
+    [agentIds]
+  )
 
   /**
    * Connect to the agent status service
@@ -105,7 +106,7 @@ export function useAgentStatus(options: UseAgentStatusOptions): AgentStatusHook 
     try {
       logger.info('Connecting to agent status service', {
         workspace_id: workspaceId,
-        agent_ids: agentIds
+        agent_ids: agentIds,
       })
 
       // Get service instance
@@ -120,7 +121,7 @@ export function useAgentStatus(options: UseAgentStatusOptions): AgentStatusHook 
       // Initialize statuses for specified agents
       if (agentIds.length > 0) {
         const initialStatuses = new Map<string, AgentStatusEventData>()
-        agentIds.forEach(agentId => {
+        agentIds.forEach((agentId) => {
           const status = statusServiceRef.current!.getAgentStatus(agentId)
           if (status) {
             initialStatuses.set(agentId, status)
@@ -131,11 +132,10 @@ export function useAgentStatus(options: UseAgentStatusOptions): AgentStatusHook 
 
       setIsConnected(true)
       logger.info('Successfully connected to agent status service')
-
     } catch (error) {
       const errorMessage = `Failed to connect to agent status service: ${(error as Error).message}`
       logger.error(errorMessage, { workspace_id: workspaceId })
-      setErrors(prev => [...prev, errorMessage])
+      setErrors((prev) => [...prev, errorMessage])
       setIsConnected(false)
 
       // Schedule reconnection
@@ -153,7 +153,7 @@ export function useAgentStatus(options: UseAgentStatusOptions): AgentStatusHook 
    */
   const disconnect = useCallback(() => {
     logger.info('Disconnecting from agent status service', {
-      workspace_id: workspaceId
+      workspace_id: workspaceId,
     })
 
     if (unsubscribeRef.current) {
@@ -171,15 +171,17 @@ export function useAgentStatus(options: UseAgentStatusOptions): AgentStatusHook 
     setAgentStatuses(new Map())
     setLastUpdate(null)
     setUpdateCount(0)
-
   }, [workspaceId])
 
   /**
    * Get status for a specific agent
    */
-  const getAgentStatus = useCallback((agentId: string): AgentStatusEventData | null => {
-    return agentStatuses.get(agentId) || null
-  }, [agentStatuses])
+  const getAgentStatus = useCallback(
+    (agentId: string): AgentStatusEventData | null => {
+      return agentStatuses.get(agentId) || null
+    },
+    [agentStatuses]
+  )
 
   /**
    * Force refresh of agent statuses
@@ -191,14 +193,14 @@ export function useAgentStatus(options: UseAgentStatusOptions): AgentStatusHook 
 
     logger.info('Force refreshing agent statuses', {
       workspace_id: workspaceId,
-      agent_count: agentIds.length
+      agent_count: agentIds.length,
     })
 
     // Re-initialize statuses
     const refreshedStatuses = new Map<string, AgentStatusEventData>()
 
     if (agentIds.length > 0) {
-      agentIds.forEach(agentId => {
+      agentIds.forEach((agentId) => {
         const status = statusServiceRef.current!.getAgentStatus(agentId)
         if (status) {
           refreshedStatuses.set(agentId, status)
@@ -208,8 +210,7 @@ export function useAgentStatus(options: UseAgentStatusOptions): AgentStatusHook 
 
     setAgentStatuses(refreshedStatuses)
     setLastUpdate(new Date())
-    setUpdateCount(prev => prev + 1)
-
+    setUpdateCount((prev) => prev + 1)
   }, [workspaceId, agentIds])
 
   /**
@@ -244,7 +245,7 @@ export function useAgentStatus(options: UseAgentStatusOptions): AgentStatusHook 
     getAgentStatus,
     forceRefresh,
     errors,
-    clearErrors
+    clearErrors,
   }
 }
 
@@ -261,13 +262,13 @@ export function useSingleAgentStatus(
 } {
   const { agentStatuses, isConnected, lastUpdate } = useAgentStatus({
     workspaceId,
-    agentIds: [agentId]
+    agentIds: [agentId],
   })
 
   return {
     status: agentStatuses.get(agentId) || null,
     isConnected,
-    lastUpdate
+    lastUpdate,
   }
 }
 
@@ -291,14 +292,17 @@ export function useOptimisticAgentStatus(
     statusServiceRef.current = AgentStatusService.getInstance()
   }, [])
 
-  const updateStatus = useCallback((update: Partial<AgentStatusEventData>) => {
-    if (statusServiceRef.current) {
-      statusServiceRef.current.updateAgentStatus(agentId, workspaceId, update)
-    }
-  }, [agentId, workspaceId])
+  const updateStatus = useCallback(
+    (update: Partial<AgentStatusEventData>) => {
+      if (statusServiceRef.current) {
+        statusServiceRef.current.updateAgentStatus(agentId, workspaceId, update)
+      }
+    },
+    [agentId, workspaceId]
+  )
 
   return {
     ...hook,
-    updateStatus
+    updateStatus,
   }
 }

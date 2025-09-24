@@ -21,9 +21,7 @@ export default async function ChatLayout({ children }: { children: React.ReactNo
   return (
     <ConditionalThemeProvider>
       <SessionProvider>
-        <div className='min-h-screen bg-background'>
-          {children}
-        </div>
+        <div className='min-h-screen bg-background'>{children}</div>
       </SessionProvider>
     </ConditionalThemeProvider>
   )

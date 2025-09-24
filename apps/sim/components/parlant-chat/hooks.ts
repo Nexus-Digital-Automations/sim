@@ -4,8 +4,8 @@
 
 'use client'
 
-import { useState, useEffect, useCallback, useContext } from 'react'
-import type { SimChatConfig, SimChatMessage, SimChatContextType } from './types'
+import { useCallback, useEffect, useState } from 'react'
+import type { SimChatConfig, SimChatMessage } from './types'
 
 /**
  * Hook for managing chat theme based on Sim's theme system
@@ -25,7 +25,8 @@ export function useChatTheme(config: SimChatConfig) {
       mediaQuery.addEventListener('change', handleChange)
 
       return () => mediaQuery.removeEventListener('change', handleChange)
-    } else if (config.theme) {
+    }
+    if (config.theme) {
       setTheme(config.theme)
     }
   }, [config.theme])
@@ -63,44 +64,47 @@ export function useChatConnection(config: SimChatConfig) {
   const [error, setError] = useState<string | null>(null)
   const [messages, setMessages] = useState<SimChatMessage[]>([])
 
-  const sendMessage = useCallback(async (message: string) => {
-    if (!isConnected || isLoading) return
+  const sendMessage = useCallback(
+    async (message: string) => {
+      if (!isConnected || isLoading) return
 
-    setIsLoading(true)
-    setError(null)
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      // Add user message immediately
-      const userMessage: SimChatMessage = {
-        id: crypto.randomUUID(),
-        content: message,
-        type: 'user',
-        timestamp: new Date(),
+      try {
+        // Add user message immediately
+        const userMessage: SimChatMessage = {
+          id: crypto.randomUUID(),
+          content: message,
+          type: 'user',
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, userMessage])
+
+        // This is where you would integrate with the actual Parlant API
+        // For now, we'll simulate a response
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        // Add simulated agent response
+        const agentMessage: SimChatMessage = {
+          id: crypto.randomUUID(),
+          content: `This is a response to: "${message}"`,
+          type: 'agent',
+          timestamp: new Date(),
+          metadata: {
+            agentId: config.agentId,
+            confidence: 0.95,
+          },
+        }
+        setMessages((prev) => [...prev, agentMessage])
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to send message')
+      } finally {
+        setIsLoading(false)
       }
-      setMessages(prev => [...prev, userMessage])
-
-      // This is where you would integrate with the actual Parlant API
-      // For now, we'll simulate a response
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Add simulated agent response
-      const agentMessage: SimChatMessage = {
-        id: crypto.randomUUID(),
-        content: `This is a response to: "${message}"`,
-        type: 'agent',
-        timestamp: new Date(),
-        metadata: {
-          agentId: config.agentId,
-          confidence: 0.95,
-        },
-      }
-      setMessages(prev => [...prev, agentMessage])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [isConnected, isLoading, config.agentId])
+    },
+    [isConnected, isLoading, config.agentId]
+  )
 
   const clearChat = useCallback(() => {
     setMessages([])
@@ -113,7 +117,7 @@ export function useChatConnection(config: SimChatConfig) {
 
     try {
       // Simulate connection
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
       setIsConnected(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to reconnect')
@@ -150,7 +154,7 @@ export function useChatWidget(initialConfig: SimChatConfig) {
   const [config, setConfig] = useState(initialConfig)
 
   const toggleOpen = useCallback(() => {
-    setIsOpen(prev => !prev)
+    setIsOpen((prev) => !prev)
     setIsMinimized(false)
   }, [])
 
@@ -169,7 +173,7 @@ export function useChatWidget(initialConfig: SimChatConfig) {
   }, [])
 
   const updateConfig = useCallback((updates: Partial<SimChatConfig>) => {
-    setConfig(prev => ({ ...prev, ...updates }))
+    setConfig((prev) => ({ ...prev, ...updates }))
   }, [])
 
   return {
@@ -215,23 +219,23 @@ export function useChatAnalytics(sessionId?: string) {
   }, [sessionId, analytics])
 
   const incrementMessageCount = useCallback(() => {
-    setAnalytics(prev => ({
+    setAnalytics((prev) => ({
       ...prev,
       messageCount: prev.messageCount + 1,
     }))
   }, [])
 
   const setUserSatisfaction = useCallback((satisfaction: number) => {
-    setAnalytics(prev => ({
+    setAnalytics((prev) => ({
       ...prev,
       userSatisfaction: satisfaction,
     }))
   }, [])
 
   const addIntent = useCallback((intent: string) => {
-    setAnalytics(prev => ({
+    setAnalytics((prev) => ({
       ...prev,
-      commonIntents: [...new Set([...prev.commonIntents, intent])],
+      commonIntents: Array.from(new Set([...prev.commonIntents, intent])),
     }))
   }, [])
 

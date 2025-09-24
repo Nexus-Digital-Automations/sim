@@ -42,7 +42,7 @@ export function EmbeddedChat() {
   }
 
   return (
-    <div className="w-full h-96 border rounded-lg overflow-hidden">
+    <div className='h-96 w-full overflow-hidden rounded-lg border'>
       <ParlantChatProvider config={config}>
         <ParlantChatbox {...config} />
       </ParlantChatProvider>
@@ -118,7 +118,7 @@ export function LazyLoadedChat() {
       {!showChat ? (
         <button
           onClick={() => setShowChat(true)}
-          className="px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary-hover"
+          className='rounded-md bg-brand-primary px-4 py-2 text-white hover:bg-brand-primary-hover'
         >
           Load Chat
         </button>

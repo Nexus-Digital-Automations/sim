@@ -13,13 +13,13 @@
  * - Integration with existing Socket.io infrastructure
  */
 
-import { Server, Socket } from 'socket.io'
-import { createLogger } from '@/lib/logs/console/logger'
-import { SimSession, verifySocketSession } from '@/lib/auth/socket-auth'
-import { prisma } from '@/lib/database'
-import { redis } from '@/lib/redis'
-import { encrypt, decrypt } from '@/lib/crypto/encryption'
+import type { Server, Socket } from 'socket.io'
 import { auditLog } from '@/lib/audit/logger'
+import { type SimSession, verifySocketSession } from '@/lib/auth/socket-auth'
+import { encrypt } from '@/lib/crypto/encryption'
+import { prisma } from '@/lib/database'
+import { createLogger } from '@/lib/logs/console/logger'
+import { redis } from '@/lib/redis'
 
 const logger = createLogger('WorkspaceMessaging')
 
@@ -92,7 +92,7 @@ class WorkspaceMessagingHandler {
         logger.info('New workspace messaging connection', {
           socketId: socket.id,
           userId: session.user.id,
-          userEmail: session.user.email
+          userEmail: session.user.email,
         })
 
         // Set up workspace-specific handlers
@@ -102,7 +102,6 @@ class WorkspaceMessagingHandler {
         socket.on('disconnect', async (reason) => {
           await this.handleDisconnection(socket, session, reason)
         })
-
       } catch (error) {
         logger.error('Failed to handle new connection', error)
         socket.disconnect(true)
@@ -181,7 +180,7 @@ class WorkspaceMessagingHandler {
       if (!hasAccess) {
         socket.emit('workspace-messaging-error', {
           error: 'Access denied to workspace',
-          workspaceId
+          workspaceId,
         })
         return
       }
@@ -195,7 +194,7 @@ class WorkspaceMessagingHandler {
         connectedAt: new Date(),
         subscribedChannels: new Set(channels),
         messageFilters: {},
-        isActive: true
+        isActive: true,
       }
 
       // Add to workspace connections
@@ -220,7 +219,7 @@ class WorkspaceMessagingHandler {
       socket.to(`workspace:${workspaceId}`).emit('user-joined-messaging', {
         userId: session.user.id,
         userName: session.user.name || session.user.email,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       // Confirm successful join
@@ -228,7 +227,7 @@ class WorkspaceMessagingHandler {
         workspaceId,
         channels,
         connectionId: socket.id,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       // Log for audit
@@ -236,21 +235,20 @@ class WorkspaceMessagingHandler {
         action: 'workspace_messaging_joined',
         userId: session.user.id,
         workspaceId,
-        metadata: { channels, socketId: socket.id }
+        metadata: { channels, socketId: socket.id },
       })
 
       logger.info('User joined workspace messaging', {
         userId: session.user.id,
         workspaceId,
         socketId: socket.id,
-        channels
+        channels,
       })
-
     } catch (error) {
       logger.error('Failed to join workspace messaging', error)
       socket.emit('workspace-messaging-error', {
         error: 'Failed to join workspace messaging',
-        details: error.message
+        details: error.message,
       })
     }
   }
@@ -291,21 +289,20 @@ class WorkspaceMessagingHandler {
       socket.to(`workspace:${workspaceId}`).emit('user-left-messaging', {
         userId: session.user.id,
         userName: session.user.name || session.user.email,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       // Confirm successful leave
       socket.emit('workspace-messaging-left', {
         workspaceId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       logger.info('User left workspace messaging', {
         userId: session.user.id,
         workspaceId,
-        socketId: socket.id
+        socketId: socket.id,
       })
-
     } catch (error) {
       logger.error('Failed to leave workspace messaging', error)
     }
@@ -339,7 +336,7 @@ class WorkspaceMessagingHandler {
         channelId = 'general',
         threadId,
         replyToMessageId,
-        metadata = {}
+        metadata = {},
       } = data
 
       // Validate workspace access
@@ -347,15 +344,15 @@ class WorkspaceMessagingHandler {
       if (!hasAccess) {
         socket.emit('message-error', {
           error: 'Access denied to workspace',
-          workspaceId
+          workspaceId,
         })
         return
       }
 
       // Apply rate limiting
-      if (!await this.checkRateLimit(session.user.id)) {
+      if (!(await this.checkRateLimit(session.user.id))) {
         socket.emit('message-error', {
-          error: 'Message rate limit exceeded'
+          error: 'Message rate limit exceeded',
         })
         return
       }
@@ -373,13 +370,13 @@ class WorkspaceMessagingHandler {
         metadata: {
           ...metadata,
           senderName: session.user.name || session.user.email,
-          senderEmail: session.user.email
+          senderEmail: session.user.email,
         },
         createdAt: new Date(),
         threadId,
         replyToMessageId,
         securityLabels: [],
-        complianceFlags: []
+        complianceFlags: [],
       }
 
       // Apply security validation
@@ -400,7 +397,7 @@ class WorkspaceMessagingHandler {
       // Confirm message sent
       socket.emit('message-sent', {
         messageId: message.id,
-        timestamp: message.createdAt.toISOString()
+        timestamp: message.createdAt.toISOString(),
       })
 
       // Log for audit
@@ -413,8 +410,8 @@ class WorkspaceMessagingHandler {
           type,
           recipientId,
           channelId,
-          hasEncryption: !!message.encryptedContent
-        }
+          hasEncryption: !!message.encryptedContent,
+        },
       })
 
       logger.debug('Message sent successfully', {
@@ -422,14 +419,13 @@ class WorkspaceMessagingHandler {
         workspaceId,
         senderId: session.user.id,
         type,
-        channelId
+        channelId,
       })
-
     } catch (error) {
       logger.error('Failed to send message', error)
       socket.emit('message-error', {
         error: 'Failed to send message',
-        details: error.message
+        details: error.message,
       })
     }
   }
@@ -458,16 +454,15 @@ class WorkspaceMessagingHandler {
         userName: session.user.name || session.user.email,
         status,
         customStatus,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       logger.debug('Presence updated', {
         userId: session.user.id,
         workspaceId,
         status,
-        customStatus
+        customStatus,
       })
-
     } catch (error) {
       logger.error('Failed to update presence', error)
     }
@@ -493,13 +488,18 @@ class WorkspaceMessagingHandler {
       const hasAccess = await this.validateWorkspaceAccess(session, workspaceId)
       if (!hasAccess) {
         socket.emit('agent-chat-error', {
-          error: 'Access denied to workspace'
+          error: 'Access denied to workspace',
         })
         return
       }
 
       // Forward message to Parlant agent
-      const agentResponse = await this.forwardToAgent(workspaceId, agentId, message, session.user.id)
+      const agentResponse = await this.forwardToAgent(
+        workspaceId,
+        agentId,
+        message,
+        session.user.id
+      )
 
       // Create agent response message
       const responseMessage: WorkspaceMessage = {
@@ -514,11 +514,11 @@ class WorkspaceMessagingHandler {
           agentName: agentResponse.agentName,
           conversationId,
           tools: agentResponse.toolsUsed,
-          confidence: agentResponse.confidence
+          confidence: agentResponse.confidence,
         },
         createdAt: new Date(),
         securityLabels: ['agent_generated'],
-        complianceFlags: []
+        complianceFlags: [],
       }
 
       // Store and route agent response
@@ -529,14 +529,13 @@ class WorkspaceMessagingHandler {
         workspaceId,
         agentId,
         userId: session.user.id,
-        conversationId
+        conversationId,
       })
-
     } catch (error) {
       logger.error('Failed to process agent chat', error)
       socket.emit('agent-chat-error', {
         error: 'Failed to process agent message',
-        details: error.message
+        details: error.message,
       })
     }
   }
@@ -549,7 +548,7 @@ class WorkspaceMessagingHandler {
       logger.info('User disconnected from workspace messaging', {
         userId: session.user.id,
         socketId: socket.id,
-        reason
+        reason,
       })
 
       // Find workspaces this connection was part of
@@ -566,7 +565,7 @@ class WorkspaceMessagingHandler {
           socket.to(`workspace:${workspaceId}`).emit('user-left-messaging', {
             userId: session.user.id,
             userName: session.user.name || session.user.email,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           })
         }
       }
@@ -578,7 +577,6 @@ class WorkspaceMessagingHandler {
           this.workspaceConnections.delete(workspaceId)
         }
       }
-
     } catch (error) {
       logger.error('Error handling disconnection', error)
     }
@@ -587,10 +585,13 @@ class WorkspaceMessagingHandler {
   /**
    * Validate workspace access for user
    */
-  private async validateWorkspaceAccess(session: SimSession, workspaceId: string): Promise<boolean> {
+  private async validateWorkspaceAccess(
+    session: SimSession,
+    workspaceId: string
+  ): Promise<boolean> {
     try {
       // Check if user has access to the workspace
-      const workspace = session.user.workspaces?.find(w => w.id === workspaceId)
+      const workspace = session.user.workspaces?.find((w) => w.id === workspaceId)
       return !!workspace && workspace.permissions?.includes('messaging')
     } catch (error) {
       logger.error('Failed to validate workspace access', error)
@@ -641,7 +642,7 @@ class WorkspaceMessagingHandler {
       /<script.*?>.*?<\/script>/gi,
       /javascript:/gi,
       /vbscript:/gi,
-      /data:image\/svg\+xml/gi
+      /data:image\/svg\+xml/gi,
     ]
 
     for (const pattern of securityPatterns) {
@@ -649,14 +650,14 @@ class WorkspaceMessagingHandler {
         message.securityLabels.push('potential_xss')
         logger.warning('Potential XSS detected in message', {
           messageId: message.id,
-          senderId: message.senderId
+          senderId: message.senderId,
         })
       }
     }
 
     // Check for sensitive content
     const sensitiveWords = ['password', 'token', 'secret', 'key', 'confidential']
-    if (sensitiveWords.some(word => message.content.toLowerCase().includes(word))) {
+    if (sensitiveWords.some((word) => message.content.toLowerCase().includes(word))) {
       message.complianceFlags.push('sensitive_content')
     }
   }
@@ -681,7 +682,7 @@ class WorkspaceMessagingHandler {
       metadata: message.metadata,
       createdAt: message.createdAt.toISOString(),
       threadId: message.threadId,
-      replyToMessageId: message.replyToMessageId
+      replyToMessageId: message.replyToMessageId,
     }
 
     if (recipientId) {
@@ -692,7 +693,9 @@ class WorkspaceMessagingHandler {
       }
     } else {
       // Channel message - broadcast to channel subscribers
-      this.io.to(`workspace:${workspaceId}:channel:${channelId}`).emit('channel-message', messageData)
+      this.io
+        .to(`workspace:${workspaceId}:channel:${channelId}`)
+        .emit('channel-message', messageData)
     }
 
     // Also send to workspace general room for presence/system messages
@@ -709,7 +712,7 @@ class WorkspaceMessagingHandler {
     if (!workspaceConns) return []
 
     return Array.from(workspaceConns.values()).filter(
-      conn => conn.session.user.id === recipientId && conn.isActive
+      (conn) => conn.session.user.id === recipientId && conn.isActive
     )
   }
 
@@ -735,7 +738,7 @@ class WorkspaceMessagingHandler {
       lastSeen: new Date(),
       socketId,
       customStatus,
-      deviceInfo: { userAgent: 'browser', platform: 'web' }
+      deviceInfo: { userAgent: 'browser', platform: 'web' },
     })
 
     // Persist to Redis for cross-instance synchronization
@@ -768,8 +771,8 @@ class WorkspaceMessagingHandler {
           threadId: message.threadId,
           replyToMessageId: message.replyToMessageId,
           securityLabels: message.securityLabels,
-          complianceFlags: message.complianceFlags
-        }
+          complianceFlags: message.complianceFlags,
+        },
       })
     } catch (error) {
       logger.error('Failed to store message in database', error)
@@ -784,7 +787,7 @@ class WorkspaceMessagingHandler {
     // Check workspace encryption settings
     const workspace = await prisma.workspace.findUnique({
       where: { id: workspaceId },
-      select: { settings: true }
+      select: { settings: true },
     })
 
     return workspace?.settings?.encryption?.messages === true
@@ -832,7 +835,7 @@ class WorkspaceMessagingHandler {
       content: `Agent response to: ${message}`,
       agentName: `Agent-${agentId}`,
       toolsUsed: [],
-      confidence: 0.95
+      confidence: 0.95,
     }
   }
 
@@ -845,17 +848,17 @@ class WorkspaceMessagingHandler {
         where: {
           workspaceId,
           channelId: { in: channels },
-          createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
+          createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // Last 24 hours
         },
         orderBy: { createdAt: 'desc' },
-        take: 50
+        take: 50,
       })
 
       if (recentMessages.length > 0) {
         socket.emit('message-history', {
           workspaceId,
           messages: recentMessages.reverse(), // Send in chronological order
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
       }
     } catch (error) {
@@ -877,7 +880,7 @@ class WorkspaceMessagingHandler {
       messagesSentToday: await this.getMessageCount(workspaceId, new Date()),
       averageResponseTime: await this.getAverageResponseTime(workspaceId),
       topChannels: await this.getTopChannels(workspaceId),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
   }
 
@@ -890,9 +893,9 @@ class WorkspaceMessagingHandler {
         workspaceId,
         createdAt: {
           gte: startOfDay,
-          lt: endOfDay
-        }
-      }
+          lt: endOfDay,
+        },
+      },
     })
   }
 

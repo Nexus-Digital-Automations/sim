@@ -9,23 +9,17 @@
  */
 
 import {
-  ContextualRecommendationEngine,
-  createContextualRecommendationEngine,
-  createEnhancedRecommendationEngine,
-  type ContextualRecommendationRequest,
   type AdvancedUsageContext,
+  type ContextualRecommendationEngine,
+  type ContextualRecommendationRequest,
+  createContextualRecommendationEngine,
+  type TemporalContext,
   type WorkflowState,
-  type UserBehaviorHistory,
-  type SessionContext,
-  type TemporalContext
 } from '../contextual-recommendation-engine'
-
 import {
   createUsageAnalyticsFramework,
-  UsageAnalyticsFramework
+  type UsageAnalyticsFramework,
 } from '../usage-analytics-framework'
-
-import { createContextAnalysisEngine } from '../context-analysis-system'
 
 describe('Contextual Recommendation Engine Integration', () => {
   let recommendationEngine: ContextualRecommendationEngine
@@ -39,9 +33,9 @@ describe('Contextual Recommendation Engine Integration', () => {
         contextTTL: 1000 * 30, // 30 seconds
         behaviorTTL: 1000 * 60 * 5, // 5 minutes
         maxCacheSize: 100,
-        compressionEnabled: false
+        compressionEnabled: false,
       },
-      performanceTracking: true
+      performanceTracking: true,
     })
 
     analyticsFramework = createUsageAnalyticsFramework({
@@ -53,13 +47,13 @@ describe('Contextual Recommendation Engine Integration', () => {
         enableInteractionTracking: true,
         userEventSampling: 1.0, // 100% for testing
         realTimeCollection: true,
-        batchSize: 10
+        batchSize: 10,
       },
       processing: {
         realTimeProcessing: true,
         patternDetectionEnabled: true,
-        anomalyDetectionEnabled: false // Disable for testing
-      }
+        anomalyDetectionEnabled: false, // Disable for testing
+      },
     })
   })
 
@@ -68,7 +62,7 @@ describe('Contextual Recommendation Engine Integration', () => {
       const request = createMockRecommendationRequest({
         userMessage: 'I want to create a new workflow',
         intent: 'creation',
-        skillLevel: 'intermediate'
+        skillLevel: 'intermediate',
       })
 
       const recommendations = await recommendationEngine.getRecommendations(request)
@@ -84,12 +78,12 @@ describe('Contextual Recommendation Engine Integration', () => {
           contextual: expect.any(Number),
           temporal: expect.any(Number),
           behavioral: expect.any(Number),
-          combined: expect.any(Number)
-        })
+          combined: expect.any(Number),
+        }),
       })
 
       // Verify confidence scores are within valid range
-      recommendations.forEach(rec => {
+      recommendations.forEach((rec) => {
         expect(rec.confidence).toBeGreaterThanOrEqual(0)
         expect(rec.confidence).toBeLessThanOrEqual(1)
         expect(rec.algorithmScores.combined).toBeGreaterThanOrEqual(0)
@@ -102,7 +96,7 @@ describe('Contextual Recommendation Engine Integration', () => {
         userMessage: 'Help me analyze user workflow data',
         intent: 'analysis',
         skillLevel: 'advanced',
-        includeExplanations: true
+        includeExplanations: true,
       })
 
       const recommendations = await recommendationEngine.getRecommendations(request)
@@ -127,7 +121,7 @@ describe('Contextual Recommendation Engine Integration', () => {
         confidence: expect.any(Number),
         algorithmBreakdown: expect.any(Object),
         contextualFactors: expect.any(Array),
-        userSpecificFactors: expect.any(Array)
+        userSpecificFactors: expect.any(Array),
       })
     })
 
@@ -135,13 +129,13 @@ describe('Contextual Recommendation Engine Integration', () => {
       const beginnerRequest = createMockRecommendationRequest({
         userMessage: 'I need to deploy my application',
         intent: 'action',
-        skillLevel: 'beginner'
+        skillLevel: 'beginner',
       })
 
       const expertRequest = createMockRecommendationRequest({
         userMessage: 'I need to deploy my application',
         intent: 'action',
-        skillLevel: 'expert'
+        skillLevel: 'expert',
       })
 
       const beginnerRecs = await recommendationEngine.getRecommendations(beginnerRequest)
@@ -149,7 +143,9 @@ describe('Contextual Recommendation Engine Integration', () => {
 
       // Beginner recommendations should have more guidance
       expect(beginnerRecs[0].personalizedInstructions.length).toBeGreaterThanOrEqual(1)
-      expect(beginnerRecs[0].adaptiveComplexity.simplificationSuggestions.length).toBeGreaterThanOrEqual(0)
+      expect(
+        beginnerRecs[0].adaptiveComplexity.simplificationSuggestions.length
+      ).toBeGreaterThanOrEqual(0)
 
       // Expert recommendations should have growth opportunities
       expect(expertRecs[0].adaptiveComplexity.growthOpportunities.length).toBeGreaterThanOrEqual(0)
@@ -172,8 +168,8 @@ describe('Contextual Recommendation Engine Integration', () => {
           contentBased: 0.3,
           contextual: 0.2,
           temporal: 0.05,
-          behavioral: 0.05
-        }
+          behavioral: 0.05,
+        },
       })
 
       const recommendations = await recommendationEngine.getRecommendations(request)
@@ -186,7 +182,7 @@ describe('Contextual Recommendation Engine Integration', () => {
         contextual: expect.any(Number),
         temporal: expect.any(Number),
         behavioral: expect.any(Number),
-        combined: expect.any(Number)
+        combined: expect.any(Number),
       })
 
       // Verify combined score is reasonable weighted average
@@ -205,7 +201,7 @@ describe('Contextual Recommendation Engine Integration', () => {
         userMessage: 'Help me get started with workflows',
         intent: 'learning',
         skillLevel: 'beginner',
-        isNewUser: true
+        isNewUser: true,
       })
 
       const recommendations = await recommendationEngine.getRecommendations(newUserRequest)
@@ -227,7 +223,7 @@ describe('Contextual Recommendation Engine Integration', () => {
       const request = createMockRecommendationRequest({
         userMessage: 'Create a data processing workflow',
         intent: 'creation',
-        skillLevel: 'intermediate'
+        skillLevel: 'intermediate',
       })
       request.currentContext.userId = userId
 
@@ -242,14 +238,14 @@ describe('Contextual Recommendation Engine Integration', () => {
         used: true,
         helpful: true,
         rating: 0.9,
-        comment: 'Very helpful for my workflow needs'
+        comment: 'Very helpful for my workflow needs',
       })
 
       // Get recommendations again
       const improvedRecs = await recommendationEngine.getRecommendations(request)
 
       // The tool with positive feedback should have higher score or appear first
-      const improvedToolIndex = improvedRecs.findIndex(r => r.toolId === topToolId)
+      const improvedToolIndex = improvedRecs.findIndex((r) => r.toolId === topToolId)
       expect(improvedToolIndex).toBeLessThanOrEqual(1) // Should be in top 2
 
       if (improvedToolIndex >= 0) {
@@ -268,13 +264,13 @@ describe('Contextual Recommendation Engine Integration', () => {
         completedSteps: ['step_1', 'step_2'],
         pendingActions: ['deploy', 'test'],
         workflowVariables: { env: 'production' },
-        executionContext: { userId: 'user_123' }
+        executionContext: { userId: 'user_123' },
       }
 
       const request = createMockRecommendationRequest({
         userMessage: 'What should I do next?',
         intent: 'decision',
-        workflowState
+        workflowState,
       })
 
       const recommendations = await recommendationEngine.getRecommendations(request)
@@ -303,8 +299,8 @@ describe('Contextual Recommendation Engine Integration', () => {
           dayOfWeek: 'monday',
           timeZone: 'UTC',
           workingHours: true,
-          urgency: 'critical'
-        }
+          urgency: 'critical',
+        },
       })
 
       const casualContext = createMockRecommendationRequest({
@@ -316,8 +312,8 @@ describe('Contextual Recommendation Engine Integration', () => {
           dayOfWeek: 'friday',
           timeZone: 'UTC',
           workingHours: false,
-          urgency: 'low'
-        }
+          urgency: 'low',
+        },
       })
 
       const urgentRecs = await recommendationEngine.getRecommendations(urgentContext)
@@ -327,24 +323,37 @@ describe('Contextual Recommendation Engine Integration', () => {
       expect(urgentRecs[0].temporalRelevance).toBeGreaterThan(casualRecs[0].temporalRelevance)
 
       // Urgent recommendations should suggest quick-execution tools
-      const urgentTools = urgentRecs.map(r => r.toolId)
-      const hasQuickTools = urgentTools.some(toolId =>
-        toolId.includes('get') || toolId.includes('quick') || toolId.includes('show')
+      const urgentTools = urgentRecs.map((r) => r.toolId)
+      const hasQuickTools = urgentTools.some(
+        (toolId) => toolId.includes('get') || toolId.includes('quick') || toolId.includes('show')
       )
       expect(hasQuickTools).toBe(true)
     })
 
     it('should adapt to conversation context', async () => {
       const conversationHistory = [
-        { role: 'user', content: 'I want to analyze my workflow performance', timestamp: new Date(Date.now() - 60000) },
-        { role: 'assistant', content: 'I can help you analyze workflow performance. What specific metrics are you interested in?', timestamp: new Date(Date.now() - 50000) },
-        { role: 'user', content: 'Show me execution times and success rates', timestamp: new Date(Date.now() - 30000) }
+        {
+          role: 'user',
+          content: 'I want to analyze my workflow performance',
+          timestamp: new Date(Date.now() - 60000),
+        },
+        {
+          role: 'assistant',
+          content:
+            'I can help you analyze workflow performance. What specific metrics are you interested in?',
+          timestamp: new Date(Date.now() - 50000),
+        },
+        {
+          role: 'user',
+          content: 'Show me execution times and success rates',
+          timestamp: new Date(Date.now() - 30000),
+        },
       ]
 
       const request = createMockRecommendationRequest({
         userMessage: 'Generate a detailed report',
         intent: 'analysis',
-        conversationHistory
+        conversationHistory,
       })
 
       const recommendations = await recommendationEngine.getRecommendations(request)
@@ -355,8 +364,9 @@ describe('Contextual Recommendation Engine Integration', () => {
       expect(topRec.confidenceDetails.overallConfidence).toBeGreaterThan(0.6)
 
       // Should recommend analysis/reporting tools
-      const analysisTools = recommendations.filter(r =>
-        r.toolId.includes('analyze') || r.toolId.includes('report') || r.toolId.includes('metric')
+      const analysisTools = recommendations.filter(
+        (r) =>
+          r.toolId.includes('analyze') || r.toolId.includes('report') || r.toolId.includes('metric')
       )
       expect(analysisTools.length).toBeGreaterThan(0)
     })
@@ -367,7 +377,7 @@ describe('Contextual Recommendation Engine Integration', () => {
       const request = createMockRecommendationRequest({
         userMessage: 'Create a new workflow template',
         intent: 'creation',
-        skillLevel: 'intermediate'
+        skillLevel: 'intermediate',
       })
 
       // First request - should be computed
@@ -393,19 +403,19 @@ describe('Contextual Recommendation Engine Integration', () => {
         createMockRecommendationRequest({
           userMessage: `Request ${i}: Help me with workflow management`,
           intent: 'action',
-          skillLevel: i % 2 === 0 ? 'beginner' : 'advanced'
+          skillLevel: i % 2 === 0 ? 'beginner' : 'advanced',
         })
       )
 
       const start = Date.now()
       const results = await Promise.all(
-        requests.map(req => recommendationEngine.getRecommendations(req))
+        requests.map((req) => recommendationEngine.getRecommendations(req))
       )
       const totalTime = Date.now() - start
 
       // All requests should succeed
       expect(results.length).toBe(20)
-      results.forEach(recs => {
+      results.forEach((recs) => {
         expect(recs.length).toBeGreaterThan(0)
       })
 
@@ -420,13 +430,13 @@ describe('Contextual Recommendation Engine Integration', () => {
     it('should track performance metrics', async () => {
       const request = createMockRecommendationRequest({
         userMessage: 'Optimize my workflow performance',
-        intent: 'optimization'
+        intent: 'optimization',
       })
 
       const recommendations = await recommendationEngine.getRecommendations(request)
       const analytics = await recommendationEngine.getAnalytics({
         start: new Date(Date.now() - 3600000),
-        end: new Date()
+        end: new Date(),
       })
 
       expect(analytics).toBeDefined()
@@ -437,7 +447,7 @@ describe('Contextual Recommendation Engine Integration', () => {
 
       const insights = await analyticsFramework.generateUsageInsights({
         start: new Date(Date.now() - 3600000),
-        end: new Date()
+        end: new Date(),
       })
 
       expect(insights.overallMetrics).toBeDefined()
@@ -450,7 +460,7 @@ describe('Contextual Recommendation Engine Integration', () => {
       const invalidRequest = {
         userMessage: '',
         conversationHistory: [],
-        currentContext: {} as AdvancedUsageContext
+        currentContext: {} as AdvancedUsageContext,
       }
 
       const recommendations = await recommendationEngine.getRecommendations(invalidRequest as any)
@@ -463,16 +473,16 @@ describe('Contextual Recommendation Engine Integration', () => {
     it('should recover from algorithm failures', async () => {
       const request = createMockRecommendationRequest({
         userMessage: 'Help me with complex workflow automation',
-        intent: 'automation'
+        intent: 'automation',
       })
 
       // Mock algorithm failure by providing invalid weights
       request.algorithmWeights = {
         collaborative: -1, // Invalid
-        contentBased: 2,   // Invalid
+        contentBased: 2, // Invalid
         contextual: 0.5,
         temporal: 0.3,
-        behavioral: 0.2
+        behavioral: 0.2,
       }
 
       const recommendations = await recommendationEngine.getRecommendations(request)
@@ -482,8 +492,8 @@ describe('Contextual Recommendation Engine Integration', () => {
       expect(recommendations.length).toBeGreaterThan(0)
 
       // Scores should be normalized to valid range
-      recommendations.forEach(rec => {
-        Object.values(rec.algorithmScores).forEach(score => {
+      recommendations.forEach((rec) => {
+        Object.values(rec.algorithmScores).forEach((score) => {
           expect(score).toBeGreaterThanOrEqual(0)
           expect(score).toBeLessThanOrEqual(1)
         })
@@ -493,14 +503,14 @@ describe('Contextual Recommendation Engine Integration', () => {
     it('should handle partial data gracefully', async () => {
       const partialRequest = createMockRecommendationRequest({
         userMessage: 'Help me',
-        intent: 'action'
+        intent: 'action',
         // Missing many context fields
       })
 
       // Remove optional fields
-      delete partialRequest.workflowState
-      delete partialRequest.userBehaviorHistory
-      delete partialRequest.currentSession
+      partialRequest.workflowState = undefined
+      partialRequest.userBehaviorHistory = undefined
+      partialRequest.currentSession = undefined
 
       const recommendations = await recommendationEngine.getRecommendations(partialRequest)
 
@@ -519,7 +529,7 @@ describe('Contextual Recommendation Engine Integration', () => {
       const request = createMockRecommendationRequest({
         userMessage: 'Create automated testing workflow',
         intent: 'automation',
-        skillLevel: 'advanced'
+        skillLevel: 'advanced',
       })
 
       const recommendations = await recommendationEngine.getRecommendations(request)
@@ -535,7 +545,7 @@ describe('Contextual Recommendation Engine Integration', () => {
         {
           success: true,
           executionTime: 1500,
-          parameters: { type: 'automated_test' }
+          parameters: { type: 'automated_test' },
         }
       )
 
@@ -579,19 +589,21 @@ function createMockRecommendationRequest(options: {
   algorithmWeights?: any
   isNewUser?: boolean
 }): ContextualRecommendationRequest {
-  const userId = options.isNewUser ? `new_user_${Date.now()}` : `test_user_${Math.random().toString(36).substr(2, 9)}`
+  const userId = options.isNewUser
+    ? `new_user_${Date.now()}`
+    : `test_user_${Math.random().toString(36).substr(2, 9)}`
 
   const currentContext: AdvancedUsageContext = {
     userId,
     currentIntent: options.intent,
-    userSkillLevel: options.skillLevel as any || 'intermediate',
+    userSkillLevel: (options.skillLevel as any) || 'intermediate',
     userPreferences: {
       communicationStyle: 'conversational',
       complexityPreference: 'moderate',
       automationLevel: 'guided',
       feedbackLevel: 'standard',
       toolCategories: ['workflow', 'automation'],
-      preferredWorkflowPatterns: ['sequential', 'parallel']
+      preferredWorkflowPatterns: ['sequential', 'parallel'],
     },
     recentToolUsage: [],
     activeWorkflows: [],
@@ -601,27 +613,27 @@ function createMockRecommendationRequest(options: {
       timeZone: 'UTC',
       workingHours: true,
       urgency: 'medium',
-      ...options.timeContext
+      ...options.timeContext,
     },
     collaborationContext: {
       teamMembers: [],
       sharedWorkspaces: [],
       collaborativeTools: [],
-      communicationChannels: []
+      communicationChannels: [],
     },
     businessContext: {
       industry: 'technology',
       companySize: 'medium',
       businessFunction: 'engineering',
       complianceRequirements: [],
-      securityLevel: 'enhanced'
+      securityLevel: 'enhanced',
     },
     deviceContext: {
       deviceType: 'desktop',
       screenSize: 'large',
       inputMethod: 'keyboard',
-      connectionQuality: 'fast'
-    }
+      connectionQuality: 'fast',
+    },
   }
 
   return {
@@ -634,7 +646,7 @@ function createMockRecommendationRequest(options: {
       successfulSequences: [],
       commonMistakes: [],
       learningProgression: [],
-      sessionPatterns: []
+      sessionPatterns: [],
     },
     currentSession: {
       sessionId: `session_${Date.now()}`,
@@ -643,12 +655,12 @@ function createMockRecommendationRequest(options: {
       goalContext: 'workflow management',
       previousActions: [],
       currentFocus: options.intent,
-      interruptions: 0
+      interruptions: 0,
     },
     maxRecommendations: 5,
     algorithmWeights: options.algorithmWeights,
     includeExplanations: options.includeExplanations || true,
-    enableABTesting: false
+    enableABTesting: false,
   }
 }
 

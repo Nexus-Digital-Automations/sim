@@ -7,19 +7,15 @@
 
 'use client'
 
-import { useCallback, useEffect, useState, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createLogger } from '@/lib/logs/console/logger'
-
-import {
-  SimChatWidgetConfig,
-  SimChatTheme,
-} from '../types/parlant-widget.types'
 import {
   DEFAULT_WIDGET_CONFIG,
+  getEnvironmentConfig,
   mergeWithDefaults,
   validateWidgetConfig,
-  getEnvironmentConfig,
 } from '../config/widget-config'
+import type { SimChatTheme, SimChatWidgetConfig } from '../types/parlant-widget.types'
 
 const logger = createLogger('useChatConfig')
 
@@ -149,24 +145,27 @@ export function useChatConfig(
   }, [workspaceId, config, persist])
 
   // Update configuration
-  const updateConfig = useCallback((updates: Partial<SimChatWidgetConfig>) => {
-    setConfig(prev => {
-      const updated = { ...prev, ...updates }
+  const updateConfig = useCallback(
+    (updates: Partial<SimChatWidgetConfig>) => {
+      setConfig((prev) => {
+        const updated = { ...prev, ...updates }
 
-      // Deep merge theme if provided
-      if (updates.theme) {
-        updated.theme = { ...prev.theme, ...updates.theme }
-      }
+        // Deep merge theme if provided
+        if (updates.theme) {
+          updated.theme = { ...prev.theme, ...updates.theme }
+        }
 
-      // Deep merge branding if provided
-      if (updates.branding) {
-        updated.branding = { ...prev.branding, ...updates.branding }
-      }
+        // Deep merge branding if provided
+        if (updates.branding) {
+          updated.branding = { ...prev.branding, ...updates.branding }
+        }
 
-      logger.debug('Updated chat configuration', { updates, workspaceId })
-      return updated
-    })
-  }, [workspaceId])
+        logger.debug('Updated chat configuration', { updates, workspaceId })
+        return updated
+      })
+    },
+    [workspaceId]
+  )
 
   // Reset configuration
   const resetConfig = useCallback(() => {
@@ -183,25 +182,28 @@ export function useChatConfig(
   }, [config])
 
   // Import configuration
-  const importConfig = useCallback((configJson: string) => {
-    try {
-      const importedConfig = JSON.parse(configJson)
-      const merged = mergeWithDefaults(importedConfig)
-      const validation = validateWidgetConfig(merged)
+  const importConfig = useCallback(
+    (configJson: string) => {
+      try {
+        const importedConfig = JSON.parse(configJson)
+        const merged = mergeWithDefaults(importedConfig)
+        const validation = validateWidgetConfig(merged)
 
-      if (!validation.isValid) {
-        logger.warn('Invalid configuration import attempted', { errors: validation.errors })
+        if (!validation.isValid) {
+          logger.warn('Invalid configuration import attempted', { errors: validation.errors })
+          return false
+        }
+
+        setConfig(merged)
+        logger.info('Imported chat configuration', { workspaceId })
+        return true
+      } catch (error) {
+        logger.error('Failed to import configuration', { error, workspaceId })
         return false
       }
-
-      setConfig(merged)
-      logger.info('Imported chat configuration', { workspaceId })
-      return true
-    } catch (error) {
-      logger.error('Failed to import configuration', { error, workspaceId })
-      return false
-    }
-  }, [workspaceId])
+    },
+    [workspaceId]
+  )
 
   return {
     config,
@@ -220,10 +222,7 @@ export function useChatConfig(
 /**
  * Hook for managing theme configuration specifically
  */
-export function useChatTheme(
-  initialTheme: Partial<SimChatTheme> = {},
-  workspaceId: string
-) {
+export function useChatTheme(initialTheme: Partial<SimChatTheme>, workspaceId: string) {
   const [theme, setTheme] = useState<SimChatTheme>({
     ...DEFAULT_WIDGET_CONFIG.theme!,
     ...initialTheme,
@@ -231,7 +230,7 @@ export function useChatTheme(
 
   // Update theme
   const updateTheme = useCallback((updates: Partial<SimChatTheme>) => {
-    setTheme(prev => ({ ...prev, ...updates }))
+    setTheme((prev) => ({ ...prev, ...updates }))
   }, [])
 
   // Reset theme
@@ -240,25 +239,28 @@ export function useChatTheme(
   }, [])
 
   // Theme presets
-  const applyPreset = useCallback((preset: 'light' | 'dark' | 'system') => {
-    const presetThemes = {
-      light: {
-        primary: 'hsl(0 0% 11.2%)',
-        secondary: 'hsl(0 0% 96.1%)',
-        background: 'hsl(0 0% 100%)',
-        foreground: 'hsl(0 0% 3.9%)',
-      },
-      dark: {
-        primary: 'hsl(0 0% 98%)',
-        secondary: 'hsl(0 0% 12.0%)',
-        background: 'hsl(0 0% 3.9%)',
-        foreground: 'hsl(0 0% 98%)',
-      },
-      system: {}, // Use CSS variables for system theme
-    } as const
+  const applyPreset = useCallback(
+    (preset: 'light' | 'dark' | 'system') => {
+      const presetThemes = {
+        light: {
+          primary: 'hsl(0 0% 11.2%)',
+          secondary: 'hsl(0 0% 96.1%)',
+          background: 'hsl(0 0% 100%)',
+          foreground: 'hsl(0 0% 3.9%)',
+        },
+        dark: {
+          primary: 'hsl(0 0% 98%)',
+          secondary: 'hsl(0 0% 12.0%)',
+          background: 'hsl(0 0% 3.9%)',
+          foreground: 'hsl(0 0% 98%)',
+        },
+        system: {}, // Use CSS variables for system theme
+      } as const
 
-    updateTheme(presetThemes[preset])
-  }, [updateTheme])
+      updateTheme(presetThemes[preset])
+    },
+    [updateTheme]
+  )
 
   return {
     theme,
@@ -272,12 +274,14 @@ export function useChatTheme(
  * Hook for managing agent configuration
  */
 export function useAgentConfig(workspaceId: string) {
-  const [agents, setAgents] = useState<Array<{
-    id: string
-    name: string
-    description?: string
-    isActive: boolean
-  }>>([])
+  const [agents, setAgents] = useState<
+    Array<{
+      id: string
+      name: string
+      description?: string
+      isActive: boolean
+    }>
+  >([])
 
   const [isLoading, setIsLoading] = useState(false)
 

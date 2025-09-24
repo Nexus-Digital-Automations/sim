@@ -8,14 +8,8 @@
  * @version 1.0.0
  */
 
-import type {
-  AdapterRegistryEntry,
-  ToolDiscoveryQuery,
-} from '../types/adapter-interfaces'
-import type {
-  UsageContext,
-  UserProfile,
-} from '../natural-language/usage-guidelines'
+import type { UsageContext } from '../natural-language/usage-guidelines'
+import type { AdapterRegistryEntry } from '../types/adapter-interfaces'
 import { createLogger } from '../utils/logger'
 import { NLPProcessor } from './nlp-processor'
 import type { SemanticSearchResult } from './registry-integration'
@@ -174,29 +168,38 @@ export interface SearchFeedback {
  */
 interface SemanticIndex {
   // Tool metadata index
-  tools: Map<string, {
-    id: string
-    concepts: string[]
-    vectors: number[]
-    metadata: any
-    lastIndexed: Date
-  }>
+  tools: Map<
+    string,
+    {
+      id: string
+      concepts: string[]
+      vectors: number[]
+      metadata: any
+      lastIndexed: Date
+    }
+  >
 
   // Concept hierarchy
-  conceptHierarchy: Map<string, {
-    parent?: string
-    children: string[]
-    synonyms: string[]
-    weight: number
-  }>
+  conceptHierarchy: Map<
+    string,
+    {
+      parent?: string
+      children: string[]
+      synonyms: string[]
+      weight: number
+    }
+  >
 
   // User preference models
-  userModels: Map<string, {
-    preferredConcepts: Map<string, number>
-    searchHistory: string[]
-    clickedResults: Map<string, number>
-    lastUpdated: Date
-  }>
+  userModels: Map<
+    string,
+    {
+      preferredConcepts: Map<string, number>
+      searchHistory: string[]
+      clickedResults: Map<string, number>
+      lastUpdated: Date
+    }
+  >
 
   // Search analytics
   analytics: {
@@ -222,7 +225,7 @@ export class SemanticSearchEngine {
     logger.info('Initializing Semantic Search Engine', {
       vectorSimilarity: config.vectorSimilarity.enabled,
       conceptMatching: config.conceptMatching.enabled,
-      contextualSearch: config.contextualSearch.enabled
+      contextualSearch: config.contextualSearch.enabled,
     })
 
     // Initialize NLP processor with semantic search optimizations
@@ -230,7 +233,7 @@ export class SemanticSearchEngine {
       enableAdvancedAnalysis: true,
       enableSemanticAnalysis: true,
       vocabularyEnhancement: true,
-      qualityThreshold: 0.8
+      qualityThreshold: 0.8,
     })
 
     // Initialize semantic index
@@ -241,8 +244,8 @@ export class SemanticSearchEngine {
       analytics: {
         popularQueries: new Map(),
         successfulPatterns: new Map(),
-        failurePatterns: new Map()
-      }
+        failurePatterns: new Map(),
+      },
     }
 
     this.initializeConceptHierarchy()
@@ -261,14 +264,13 @@ export class SemanticSearchEngine {
     logger.debug('Starting semantic search', {
       queryType: typeof query === 'string' ? 'simple' : 'enhanced',
       toolsCount: availableTools.length,
-      hasUserContext: !!userContext
+      hasUserContext: !!userContext,
     })
 
     try {
       // Enhance query if it's a simple string
-      const enhancedQuery = typeof query === 'string'
-        ? await this.enhanceQuery(query, userContext)
-        : query
+      const enhancedQuery =
+        typeof query === 'string' ? await this.enhanceQuery(query, userContext) : query
 
       // Check cache
       const cacheKey = this.generateCacheKey(enhancedQuery)
@@ -307,15 +309,14 @@ export class SemanticSearchEngine {
       logger.info('Semantic search completed', {
         resultsCount: explainedResults.length,
         duration,
-        topScore: explainedResults[0]?.scoring.finalScore || 0
+        topScore: explainedResults[0]?.scoring.finalScore || 0,
       })
 
       return explainedResults
-
     } catch (error) {
       logger.error('Semantic search failed', {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       })
       throw error
     }
@@ -342,22 +343,22 @@ export class SemanticSearchEngine {
 
     logger.debug('Performing advanced search with filters', {
       filters: enhancedQuery.filters,
-      rankingPreferences: enhancedQuery.rankingPreferences
+      rankingPreferences: enhancedQuery.rankingPreferences,
     })
 
     // Apply filters
     let filteredTools = availableTools
 
     if (enhancedQuery.filters.categories?.length) {
-      filteredTools = filteredTools.filter(tool =>
+      filteredTools = filteredTools.filter((tool) =>
         enhancedQuery.filters.categories!.includes(tool.metadata.category)
       )
       appliedFilters.push('categories')
     }
 
     if (enhancedQuery.filters.tags?.length) {
-      filteredTools = filteredTools.filter(tool =>
-        enhancedQuery.filters.tags!.some(tag => tool.metadata.tags.includes(tag))
+      filteredTools = filteredTools.filter((tool) =>
+        enhancedQuery.filters.tags!.some((tag) => tool.metadata.tags.includes(tag))
       )
       appliedFilters.push('tags')
     }
@@ -366,7 +367,10 @@ export class SemanticSearchEngine {
     const results = await this.search(enhancedQuery, filteredTools, enhancedQuery.userContext)
 
     // Apply advanced ranking
-    const advancedRanking = await this.applyAdvancedRanking(results, enhancedQuery.rankingPreferences)
+    const advancedRanking = await this.applyAdvancedRanking(
+      results,
+      enhancedQuery.rankingPreferences
+    )
 
     const duration = Date.now() - startTime
     return {
@@ -375,8 +379,8 @@ export class SemanticSearchEngine {
         totalMatches: results.length,
         searchTime: duration,
         appliedFilters,
-        rankingFactors
-      }
+        rankingFactors,
+      },
     }
   }
 
@@ -386,7 +390,7 @@ export class SemanticSearchEngine {
   async getSearchSuggestions(
     partialQuery: string,
     userContext?: UsageContext,
-    maxSuggestions: number = 5
+    maxSuggestions = 5
   ): Promise<{
     suggestions: string[]
     popularQueries: string[]
@@ -394,14 +398,14 @@ export class SemanticSearchEngine {
   }> {
     logger.debug('Generating search suggestions', {
       partialQuery,
-      maxSuggestions
+      maxSuggestions,
     })
 
     // Extract concepts from partial query
     const queryAnalysis = await this.nlpProcessor.extractKeyInformation({
       name: 'partial_query',
       description: partialQuery,
-      parameters: {}
+      parameters: {},
     })
 
     const suggestions: string[] = []
@@ -416,7 +420,10 @@ export class SemanticSearchEngine {
 
     // Add popular queries that match the partial query
     for (const [query, count] of this.semanticIndex.analytics.popularQueries) {
-      if (query.toLowerCase().includes(partialQuery.toLowerCase()) && popularQueries.length < maxSuggestions) {
+      if (
+        query.toLowerCase().includes(partialQuery.toLowerCase()) &&
+        popularQueries.length < maxSuggestions
+      ) {
         popularQueries.push(query)
       }
     }
@@ -426,8 +433,10 @@ export class SemanticSearchEngine {
       const userModel = this.getUserModel(userContext.userProfile?.userId)
       if (userModel) {
         for (const [concept, weight] of userModel.preferredConcepts) {
-          if (concept.toLowerCase().includes(partialQuery.toLowerCase()) &&
-              contextualSuggestions.length < maxSuggestions) {
+          if (
+            concept.toLowerCase().includes(partialQuery.toLowerCase()) &&
+            contextualSuggestions.length < maxSuggestions
+          ) {
             contextualSuggestions.push(concept)
           }
         }
@@ -437,7 +446,7 @@ export class SemanticSearchEngine {
     return {
       suggestions: [...new Set(suggestions)].slice(0, maxSuggestions),
       popularQueries: popularQueries.slice(0, maxSuggestions),
-      contextualSuggestions: contextualSuggestions.slice(0, maxSuggestions)
+      contextualSuggestions: contextualSuggestions.slice(0, maxSuggestions),
     }
   }
 
@@ -448,7 +457,7 @@ export class SemanticSearchEngine {
     logger.debug('Recording search feedback', {
       queryId: feedback.queryId,
       relevanceRating: feedback.relevanceRating,
-      userAction: feedback.userAction
+      userAction: feedback.userAction,
     })
 
     // Store feedback
@@ -495,12 +504,14 @@ export class SemanticSearchEngine {
       .slice(0, 10)
 
     // Calculate engagement metrics
-    const totalSearches = Array.from(this.semanticIndex.analytics.popularQueries.values())
-      .reduce((sum, count) => sum + count, 0)
+    const totalSearches = Array.from(this.semanticIndex.analytics.popularQueries.values()).reduce(
+      (sum, count) => sum + count,
+      0
+    )
 
     const totalClicks = Array.from(this.feedbackHistory.values())
       .flat()
-      .filter(feedback => feedback.userAction === 'clicked').length
+      .filter((feedback) => feedback.userAction === 'clicked').length
 
     const clickThroughRate = totalSearches > 0 ? totalClicks / totalSearches : 0
 
@@ -523,20 +534,23 @@ export class SemanticSearchEngine {
       userEngagement: {
         totalSearches,
         clickThroughRate,
-        averageResultsPerQuery: 8.5 // Would be calculated from actual data
+        averageResultsPerQuery: 8.5, // Would be calculated from actual data
       },
-      conceptDistribution
+      conceptDistribution,
     }
   }
 
   // Private helper methods
 
-  private async enhanceQuery(query: string, userContext?: UsageContext): Promise<EnhancedSearchQuery> {
+  private async enhanceQuery(
+    query: string,
+    userContext?: UsageContext
+  ): Promise<EnhancedSearchQuery> {
     // Analyze the query using NLP
     const queryAnalysis = await this.nlpProcessor.extractKeyInformation({
       name: 'search_query',
       description: query,
-      parameters: {}
+      parameters: {},
     })
 
     // Extract entities and concepts
@@ -561,25 +575,25 @@ export class SemanticSearchEngine {
         timestamp: new Date(),
         sessionId: userContext?.sessionId,
         previousQueries: [],
-        userFeedback: []
+        userFeedback: [],
       },
       filters: {
         categories: [],
         tags: [],
         capabilities: [],
-        domains: []
+        domains: [],
       },
       rankingPreferences: {
         prioritizeRecentlyUsed: false,
         prioritizeHighRated: true,
         prioritizePopular: false,
-        personalizedRanking: !!userContext
-      }
+        personalizedRanking: !!userContext,
+      },
     }
   }
 
   private async updateSemanticIndex(tools: AdapterRegistryEntry[]): Promise<void> {
-    const newTools = tools.filter(tool => !this.semanticIndex.tools.has(tool.id))
+    const newTools = tools.filter((tool) => !this.semanticIndex.tools.has(tool.id))
 
     if (newTools.length === 0) {
       return
@@ -593,7 +607,7 @@ export class SemanticSearchEngine {
         const analysis = await this.nlpProcessor.analyzeToolComprehensively({
           name: tool.simTool.name,
           description: tool.config.description || '',
-          parameters: tool.simTool.parameters || {}
+          parameters: tool.simTool.parameters || {},
         })
 
         // Generate semantic vectors (simplified representation)
@@ -607,11 +621,10 @@ export class SemanticSearchEngine {
           metadata: {
             category: tool.metadata.category,
             tags: tool.metadata.tags,
-            description: tool.config.description
+            description: tool.config.description,
           },
-          lastIndexed: new Date()
+          lastIndexed: new Date(),
         })
-
       } catch (error) {
         logger.warn(`Failed to index tool: ${tool.id}`, { error: error.message })
       }
@@ -634,11 +647,14 @@ export class SemanticSearchEngine {
 
       // Calculate different types of similarity
       const textSimilarity = this.calculateTextSimilarity(query, tool)
-      const conceptMatch = this.calculateConceptMatch(query.identifiedConcepts, indexedTool.concepts)
+      const conceptMatch = this.calculateConceptMatch(
+        query.identifiedConcepts,
+        indexedTool.concepts
+      )
       const contextualRelevance = await this.calculateContextualRelevance(query, tool)
 
       // Calculate overall relevance score
-      const relevanceScore = (textSimilarity * 0.4) + (conceptMatch * 0.4) + (contextualRelevance * 0.2)
+      const relevanceScore = textSimilarity * 0.4 + conceptMatch * 0.4 + contextualRelevance * 0.2
 
       if (relevanceScore >= this.config.search.minRelevanceScore) {
         const result: EnhancedSemanticSearchResult = {
@@ -657,20 +673,20 @@ export class SemanticSearchEngine {
             userPreferenceBoost: 0,
             popularityBoost: 0,
             recencyBoost: 0,
-            finalScore: relevanceScore
+            finalScore: relevanceScore,
           },
           matchDetails: {
             exactMatches: this.findExactMatches(query.processedQuery, tool),
             conceptMatches: this.findConceptMatches(query.identifiedConcepts, indexedTool.concepts),
             synonymMatches: [],
             fuzzyMatches: [],
-            contextualMatches: []
+            contextualMatches: [],
           },
           explanation: {
             whyRelevant: [],
             strengthIndicators: [],
-            potentialLimitations: []
-          }
+            potentialLimitations: [],
+          },
         }
 
         results.push(result)
@@ -688,25 +704,36 @@ export class SemanticSearchEngine {
       return results
     }
 
-    return results.map(result => {
-      let contextualBoost = 0
+    return results
+      .map((result) => {
+        let contextualBoost = 0
 
-      // Role-based boosting
-      if (this.config.contextualSearch.roleBasedBoosting && query.userContext?.userProfile?.role) {
-        contextualBoost += this.calculateRoleBasedBoost(result, query.userContext.userProfile.role)
-      }
+        // Role-based boosting
+        if (
+          this.config.contextualSearch.roleBasedBoosting &&
+          query.userContext?.userProfile?.role
+        ) {
+          contextualBoost += this.calculateRoleBasedBoost(
+            result,
+            query.userContext.userProfile.role
+          )
+        }
 
-      // Domain-specific scoring
-      if (this.config.contextualSearch.domainSpecificScoring && query.userContext?.userProfile?.domain) {
-        contextualBoost += this.calculateDomainBoost(result, query.userContext.userProfile.domain)
-      }
+        // Domain-specific scoring
+        if (
+          this.config.contextualSearch.domainSpecificScoring &&
+          query.userContext?.userProfile?.domain
+        ) {
+          contextualBoost += this.calculateDomainBoost(result, query.userContext.userProfile.domain)
+        }
 
-      // Update scoring
-      result.scoring.contextualRelevance += contextualBoost
-      result.scoring.finalScore = this.calculateFinalScore(result.scoring)
+        // Update scoring
+        result.scoring.contextualRelevance += contextualBoost
+        result.scoring.finalScore = this.calculateFinalScore(result.scoring)
 
-      return result
-    }).sort((a, b) => b.scoring.finalScore - a.scoring.finalScore)
+        return result
+      })
+      .sort((a, b) => b.scoring.finalScore - a.scoring.finalScore)
   }
 
   private async applyPersonalization(
@@ -722,63 +749,69 @@ export class SemanticSearchEngine {
       return results
     }
 
-    return results.map(result => {
-      // Calculate personalization scores
-      const userSimilarityScore = this.calculateUserSimilarity(result, userModel)
-      const historicalUsageScore = this.calculateHistoricalUsage(result, userModel)
+    return results
+      .map((result) => {
+        // Calculate personalization scores
+        const userSimilarityScore = this.calculateUserSimilarity(result, userModel)
+        const historicalUsageScore = this.calculateHistoricalUsage(result, userModel)
 
-      result.personalization = {
-        userSimilarityScore,
-        roleRelevanceScore: result.scoring.contextualRelevance,
-        domainRelevanceScore: result.scoring.contextualRelevance,
-        historicalUsageScore
-      }
+        result.personalization = {
+          userSimilarityScore,
+          roleRelevanceScore: result.scoring.contextualRelevance,
+          domainRelevanceScore: result.scoring.contextualRelevance,
+          historicalUsageScore,
+        }
 
-      // Apply personalization boost
-      result.scoring.userPreferenceBoost = userSimilarityScore * 0.1
-      result.scoring.finalScore = this.calculateFinalScore(result.scoring)
+        // Apply personalization boost
+        result.scoring.userPreferenceBoost = userSimilarityScore * 0.1
+        result.scoring.finalScore = this.calculateFinalScore(result.scoring)
 
-      return result
-    }).sort((a, b) => b.scoring.finalScore - a.scoring.finalScore)
+        return result
+      })
+      .sort((a, b) => b.scoring.finalScore - a.scoring.finalScore)
   }
 
   private async applyAdvancedRanking(
     results: EnhancedSemanticSearchResult[],
     preferences: EnhancedSearchQuery['rankingPreferences']
   ): Promise<EnhancedSemanticSearchResult[]> {
-    return results.map(result => {
-      let boost = 0
+    return results
+      .map((result) => {
+        let boost = 0
 
-      // Apply different ranking boosts based on preferences
-      if (preferences.prioritizePopular) {
-        boost += 0.1 // Would calculate actual popularity
-      }
-      if (preferences.prioritizeHighRated) {
-        boost += 0.05 // Would use actual ratings
-      }
-      if (preferences.prioritizeRecentlyUsed) {
-        boost += 0.05 // Would use recency data
-      }
+        // Apply different ranking boosts based on preferences
+        if (preferences.prioritizePopular) {
+          boost += 0.1 // Would calculate actual popularity
+        }
+        if (preferences.prioritizeHighRated) {
+          boost += 0.05 // Would use actual ratings
+        }
+        if (preferences.prioritizeRecentlyUsed) {
+          boost += 0.05 // Would use recency data
+        }
 
-      result.scoring.popularityBoost = boost
-      result.scoring.finalScore = this.calculateFinalScore(result.scoring)
+        result.scoring.popularityBoost = boost
+        result.scoring.finalScore = this.calculateFinalScore(result.scoring)
 
-      return result
-    }).sort((a, b) => b.scoring.finalScore - a.scoring.finalScore)
+        return result
+      })
+      .sort((a, b) => b.scoring.finalScore - a.scoring.finalScore)
   }
 
   private async generateExplanations(
     results: EnhancedSemanticSearchResult[],
     query: EnhancedSearchQuery
   ): Promise<EnhancedSemanticSearchResult[]> {
-    return results.map(result => {
+    return results.map((result) => {
       // Generate explanations for why this result is relevant
       const whyRelevant: string[] = []
       const strengthIndicators: string[] = []
       const potentialLimitations: string[] = []
 
       if (result.matchDetails.exactMatches.length > 0) {
-        whyRelevant.push(`Contains exact matches for: ${result.matchDetails.exactMatches.join(', ')}`)
+        whyRelevant.push(
+          `Contains exact matches for: ${result.matchDetails.exactMatches.join(', ')}`
+        )
         strengthIndicators.push('High text similarity')
       }
 
@@ -800,7 +833,7 @@ export class SemanticSearchEngine {
         whyRelevant,
         strengthIndicators,
         potentialLimitations,
-        suggestedAlternatives: [] // Could suggest similar tools
+        suggestedAlternatives: [], // Could suggest similar tools
       }
 
       return result
@@ -811,25 +844,26 @@ export class SemanticSearchEngine {
 
   private calculateTextSimilarity(query: EnhancedSearchQuery, tool: AdapterRegistryEntry): number {
     const queryText = query.processedQuery
-    const toolText = [
-      tool.simTool.name,
-      tool.config.description || '',
-      ...tool.metadata.tags
-    ].join(' ').toLowerCase()
+    const toolText = [tool.simTool.name, tool.config.description || '', ...tool.metadata.tags]
+      .join(' ')
+      .toLowerCase()
 
     // Simple text similarity (could be enhanced with more sophisticated algorithms)
-    const commonWords = queryText.split(' ').filter(word => toolText.includes(word))
+    const commonWords = queryText.split(' ').filter((word) => toolText.includes(word))
     return commonWords.length / Math.max(queryText.split(' ').length, 1)
   }
 
   private calculateConceptMatch(queryConcepts: string[], toolConcepts: string[]): number {
     if (queryConcepts.length === 0 || toolConcepts.length === 0) return 0
 
-    const matches = queryConcepts.filter(concept => toolConcepts.includes(concept))
+    const matches = queryConcepts.filter((concept) => toolConcepts.includes(concept))
     return matches.length / Math.max(queryConcepts.length, toolConcepts.length)
   }
 
-  private async calculateContextualRelevance(query: EnhancedSearchQuery, tool: AdapterRegistryEntry): Promise<number> {
+  private async calculateContextualRelevance(
+    query: EnhancedSearchQuery,
+    tool: AdapterRegistryEntry
+  ): Promise<number> {
     let relevance = 0.5 // Base relevance
 
     // Role-based relevance
@@ -850,24 +884,22 @@ export class SemanticSearchEngine {
       developer: ['development', 'coding', 'technical', 'api'],
       business_user: ['business', 'workflow', 'process', 'management'],
       analyst: ['analysis', 'data', 'reporting', 'insights'],
-      admin: ['configuration', 'settings', 'management', 'system']
+      admin: ['configuration', 'settings', 'management', 'system'],
     }
 
     const relevantTags = roleMappings[role] || []
-    const matches = tool.metadata.tags.filter(tag => relevantTags.includes(tag.toLowerCase()))
+    const matches = tool.metadata.tags.filter((tag) => relevantTags.includes(tag.toLowerCase()))
 
     return matches.length / Math.max(relevantTags.length, 1)
   }
 
   private calculateDomainRelevance(tool: AdapterRegistryEntry, domain: string): number {
     const domainKeywords = domain.toLowerCase().split(/[^a-z]+/)
-    const toolText = [
-      tool.simTool.name,
-      tool.config.description || '',
-      ...tool.metadata.tags
-    ].join(' ').toLowerCase()
+    const toolText = [tool.simTool.name, tool.config.description || '', ...tool.metadata.tags]
+      .join(' ')
+      .toLowerCase()
 
-    const matches = domainKeywords.filter(keyword => toolText.includes(keyword))
+    const matches = domainKeywords.filter((keyword) => toolText.includes(keyword))
     return matches.length / Math.max(domainKeywords.length, 1)
   }
 
@@ -882,26 +914,25 @@ export class SemanticSearchEngine {
   }
 
   private calculateFinalScore(scoring: EnhancedSemanticSearchResult['scoring']): number {
-    return scoring.textSimilarity +
-           scoring.conceptMatch +
-           scoring.contextualRelevance +
-           scoring.userPreferenceBoost +
-           scoring.popularityBoost +
-           scoring.recencyBoost
+    return (
+      scoring.textSimilarity +
+      scoring.conceptMatch +
+      scoring.contextualRelevance +
+      scoring.userPreferenceBoost +
+      scoring.popularityBoost +
+      scoring.recencyBoost
+    )
   }
 
   private findConceptMatches(queryConcepts: string[], toolConcepts: string[]): string[] {
-    return queryConcepts.filter(concept => toolConcepts.includes(concept))
+    return queryConcepts.filter((concept) => toolConcepts.includes(concept))
   }
 
   private findExactMatches(query: string, tool: AdapterRegistryEntry): string[] {
-    const queryWords = query.split(' ').filter(word => word.length > 2)
-    const toolText = [
-      tool.simTool.name,
-      tool.config.description || ''
-    ].join(' ').toLowerCase()
+    const queryWords = query.split(' ').filter((word) => word.length > 2)
+    const toolText = [tool.simTool.name, tool.config.description || ''].join(' ').toLowerCase()
 
-    return queryWords.filter(word => toolText.includes(word))
+    return queryWords.filter((word) => toolText.includes(word))
   }
 
   private recognizeSearchIntent(query: string): string {
@@ -926,7 +957,9 @@ export class SemanticSearchEngine {
 
   private generateSemanticVectors(concepts: string[]): number[] {
     // Simplified vector generation (in production, would use proper word embeddings)
-    return concepts.map(concept => concept.length % 100).slice(0, this.config.vectorSimilarity.dimensions)
+    return concepts
+      .map((concept) => concept.length % 100)
+      .slice(0, this.config.vectorSimilarity.dimensions)
   }
 
   private initializeConceptHierarchy(): void {
@@ -942,7 +975,7 @@ export class SemanticSearchEngine {
       this.semanticIndex.conceptHierarchy.set(concept, {
         children: [],
         synonyms,
-        weight
+        weight,
       })
     })
   }
@@ -951,13 +984,12 @@ export class SemanticSearchEngine {
     const conceptData = this.semanticIndex.conceptHierarchy.get(concept)
     if (!conceptData) return []
 
-    return [
-      ...conceptData.synonyms,
-      ...conceptData.children
-    ]
+    return [...conceptData.synonyms, ...conceptData.children]
   }
 
-  private getUserModel(userId?: string): SemanticIndex['userModels'] extends Map<string, infer U> ? U : never | undefined {
+  private getUserModel(
+    userId?: string
+  ): SemanticIndex['userModels'] extends Map<string, infer U> ? U : never | undefined {
     return userId ? this.semanticIndex.userModels.get(userId) : undefined
   }
 
@@ -980,7 +1012,10 @@ export class SemanticSearchEngine {
     return `${feedback.userAction}_${feedback.relevanceRating}`
   }
 
-  private updateSearchAnalytics(query: EnhancedSearchQuery, results: EnhancedSemanticSearchResult[]): void {
+  private updateSearchAnalytics(
+    query: EnhancedSearchQuery,
+    results: EnhancedSemanticSearchResult[]
+  ): void {
     // Update popular queries
     const currentCount = this.semanticIndex.analytics.popularQueries.get(query.originalQuery) || 0
     this.semanticIndex.analytics.popularQueries.set(query.originalQuery, currentCount + 1)
@@ -997,38 +1032,38 @@ export const DEFAULT_SEMANTIC_SEARCH_CONFIG: SemanticSearchConfig = {
     minRelevanceScore: 0.3,
     maxResults: 20,
     enableFuzzyMatching: true,
-    enableConceptExpansion: true
+    enableConceptExpansion: true,
   },
   vectorSimilarity: {
     enabled: true,
     algorithm: 'cosine',
     threshold: 0.7,
-    dimensions: 100
+    dimensions: 100,
   },
   conceptMatching: {
     enabled: true,
     synonymExpansion: true,
     hierarchicalMatching: true,
-    weightedScoring: true
+    weightedScoring: true,
   },
   contextualSearch: {
     enabled: true,
     roleBasedBoosting: true,
     domainSpecificScoring: true,
-    personalizedResults: true
+    personalizedResults: true,
   },
   performance: {
     cacheResults: true,
     cacheTTL: 300000, // 5 minutes
     indexingEnabled: true,
-    batchProcessing: true
+    batchProcessing: true,
   },
   nlp: {
     enableEntityExtraction: true,
     enableSentimentAnalysis: false,
     enableIntentRecognition: true,
-    languageModel: 'advanced'
-  }
+    languageModel: 'advanced',
+  },
 }
 
 /**

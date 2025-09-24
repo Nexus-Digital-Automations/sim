@@ -9,14 +9,13 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
-import {
-  EnhancedToolIntelligenceEngine,
-  ContextualRecommendationRequest,
-  UserSkillLevel,
-  createEnhancedToolIntelligenceEngine
-} from '../tool-intelligence-engine'
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
 import type { UsageContext } from '../../natural-language/usage-guidelines'
+import {
+  type ContextualRecommendationRequest,
+  createEnhancedToolIntelligenceEngine,
+  type EnhancedToolIntelligenceEngine,
+} from '../tool-intelligence-engine'
 
 // =============================================================================
 // Performance Benchmark Suite
@@ -70,7 +69,7 @@ export class PerformanceBenchmarkSuite {
         memoryBenchmarks,
         scalabilityBenchmarks,
         loadTestingBenchmarks,
-        cpuBenchmarks
+        cpuBenchmarks,
       ]),
       benchmarkResults: {
         responseTime: responseTimeBenchmarks,
@@ -78,11 +77,11 @@ export class PerformanceBenchmarkSuite {
         memory: memoryBenchmarks,
         scalability: scalabilityBenchmarks,
         loadTesting: loadTestingBenchmarks,
-        cpu: cpuBenchmarks
+        cpu: cpuBenchmarks,
       },
       performanceMetrics: this.generatePerformanceMetrics(),
       optimizationRecommendations: this.generateOptimizationRecommendations(),
-      performanceGrade: this.calculatePerformanceGrade()
+      performanceGrade: this.calculatePerformanceGrade(),
     }
 
     console.log('✅ Performance Benchmark Suite Complete')
@@ -131,8 +130,8 @@ export class PerformanceBenchmarkSuite {
       responseTimeTargets: {
         singleRecommendation: { target: 200, achieved: singleRecommendationBenchmark.averageTime },
         toolDescription: { target: 150, achieved: toolDescriptionBenchmark.averageTime },
-        errorExplanation: { target: 300, achieved: errorExplanationBenchmark.averageTime }
-      }
+        errorExplanation: { target: 300, achieved: errorExplanationBenchmark.averageTime },
+      },
     }
   }
 
@@ -159,13 +158,13 @@ export class PerformanceBenchmarkSuite {
     return {
       timestamp: new Date(),
       benchmarks,
-      maxThroughput: Math.max(...benchmarks.map(b => b.operationsPerSecond)),
+      maxThroughput: Math.max(...benchmarks.map((b) => b.operationsPerSecond)),
       sustainedThroughput: this.calculateSustainedThroughput(benchmarks),
       throughputTargets: {
         recommendations: { target: 100, achieved: recommendationsThroughput.operationsPerSecond },
         descriptions: { target: 150, achieved: descriptionsThroughput.operationsPerSecond },
-        mixed: { target: 80, achieved: mixedThroughput.operationsPerSecond }
-      }
+        mixed: { target: 80, achieved: mixedThroughput.operationsPerSecond },
+      },
     }
   }
 
@@ -196,14 +195,15 @@ export class PerformanceBenchmarkSuite {
     return {
       timestamp: new Date(),
       benchmarks,
-      peakMemoryUsage: Math.max(...benchmarks.map(b => b.peakMemory)),
-      averageMemoryUsage: benchmarks.reduce((sum, b) => sum + b.averageMemory, 0) / benchmarks.length,
+      peakMemoryUsage: Math.max(...benchmarks.map((b) => b.peakMemory)),
+      averageMemoryUsage:
+        benchmarks.reduce((sum, b) => sum + b.averageMemory, 0) / benchmarks.length,
       memoryEfficiency: this.calculateMemoryEfficiency(benchmarks),
       memoryTargets: {
         baseline: { target: 50, achieved: baselineBenchmark.averageMemory },
         underLoad: { target: 100, achieved: loadMemoryBenchmark.peakMemory },
-        efficiency: { target: 85, achieved: this.calculateMemoryEfficiency(benchmarks) }
-      }
+        efficiency: { target: 85, achieved: this.calculateMemoryEfficiency(benchmarks) },
+      },
     }
   }
 
@@ -228,7 +228,7 @@ export class PerformanceBenchmarkSuite {
       maxConcurrentUsers: this.findMaxConcurrentUsers(benchmarks),
       scalingEfficiency: this.calculateScalingEfficiency(benchmarks),
       breakingPoint: this.findBreakingPoint(benchmarks),
-      linearScalingScore: this.calculateLinearScalingScore(benchmarks)
+      linearScalingScore: this.calculateLinearScalingScore(benchmarks),
     }
   }
 
@@ -261,8 +261,8 @@ export class PerformanceBenchmarkSuite {
       loadTestTargets: {
         sustainedLoad: { target: 100, achieved: sustainedLoadBenchmark.maxSuccessfulLoad },
         spikeHandling: { target: 200, achieved: spikeLoadBenchmark.maxSpikeHandled },
-        stressTolerance: { target: 300, achieved: stressBenchmark.breakingPointLoad }
-      }
+        stressTolerance: { target: 300, achieved: stressBenchmark.breakingPointLoad },
+      },
     }
   }
 
@@ -290,13 +290,13 @@ export class PerformanceBenchmarkSuite {
       timestamp: new Date(),
       benchmarks,
       averageCPUUsage: benchmarks.reduce((sum, b) => sum + b.averageCPU, 0) / benchmarks.length,
-      peakCPUUsage: Math.max(...benchmarks.map(b => b.peakCPU)),
+      peakCPUUsage: Math.max(...benchmarks.map((b) => b.peakCPU)),
       cpuEfficiency: this.calculateCPUEfficiency(benchmarks),
       cpuTargets: {
         normal: { target: 30, achieved: normalOpsBenchmark.averageCPU },
         highLoad: { target: 70, achieved: highLoadBenchmark.peakCPU },
-        efficiency: { target: 80, achieved: this.calculateCPUEfficiency(benchmarks) }
-      }
+        efficiency: { target: 80, achieved: this.calculateCPUEfficiency(benchmarks) },
+      },
     }
   }
 
@@ -312,7 +312,7 @@ export class PerformanceBenchmarkSuite {
       userMessage: 'I want to create a workflow',
       currentContext: this.createMockContext(),
       conversationHistory: [],
-      userSkillLevel: 'intermediate'
+      userSkillLevel: 'intermediate',
     }
 
     for (let i = 0; i < iterations; i++) {
@@ -328,7 +328,7 @@ export class PerformanceBenchmarkSuite {
       averageTime: times.reduce((a, b) => a + b, 0) / times.length,
       minTime: Math.min(...times),
       maxTime: Math.max(...times),
-      standardDeviation: this.calculateStandardDeviation(times)
+      standardDeviation: this.calculateStandardDeviation(times),
     }
   }
 
@@ -349,7 +349,7 @@ export class PerformanceBenchmarkSuite {
       averageTime: times.reduce((a, b) => a + b, 0) / times.length,
       minTime: Math.min(...times),
       maxTime: Math.max(...times),
-      standardDeviation: this.calculateStandardDeviation(times)
+      standardDeviation: this.calculateStandardDeviation(times),
     }
   }
 
@@ -375,7 +375,7 @@ export class PerformanceBenchmarkSuite {
       averageTime: times.reduce((a, b) => a + b, 0) / times.length,
       minTime: Math.min(...times),
       maxTime: Math.max(...times),
-      standardDeviation: this.calculateStandardDeviation(times)
+      standardDeviation: this.calculateStandardDeviation(times),
     }
   }
 
@@ -396,7 +396,7 @@ export class PerformanceBenchmarkSuite {
       averageTime: times.reduce((a, b) => a + b, 0) / times.length,
       minTime: Math.min(...times),
       maxTime: Math.max(...times),
-      standardDeviation: this.calculateStandardDeviation(times)
+      standardDeviation: this.calculateStandardDeviation(times),
     }
   }
 
@@ -405,10 +405,11 @@ export class PerformanceBenchmarkSuite {
     const times: number[] = []
 
     const complexRequest: ContextualRecommendationRequest = {
-      userMessage: 'I need to create a complex multi-step workflow that integrates with external APIs, handles error recovery, processes large datasets, and provides real-time monitoring with custom alerting rules',
+      userMessage:
+        'I need to create a complex multi-step workflow that integrates with external APIs, handles error recovery, processes large datasets, and provides real-time monitoring with custom alerting rules',
       currentContext: this.createMockContext(),
       conversationHistory: this.createLongConversationHistory(),
-      userSkillLevel: 'expert'
+      userSkillLevel: 'expert',
     }
 
     for (let i = 0; i < iterations; i++) {
@@ -424,7 +425,7 @@ export class PerformanceBenchmarkSuite {
       averageTime: times.reduce((a, b) => a + b, 0) / times.length,
       minTime: Math.min(...times),
       maxTime: Math.max(...times),
-      standardDeviation: this.calculateStandardDeviation(times)
+      standardDeviation: this.calculateStandardDeviation(times),
     }
   }
 
@@ -437,7 +438,7 @@ export class PerformanceBenchmarkSuite {
       userMessage: 'throughput test',
       currentContext: this.createMockContext(),
       conversationHistory: [],
-      userSkillLevel: 'intermediate'
+      userSkillLevel: 'intermediate',
     }
 
     while (Date.now() - startTime < duration) {
@@ -454,7 +455,7 @@ export class PerformanceBenchmarkSuite {
       operationsCompleted,
       operationsPerSecond,
       targetThroughput: 100,
-      achievedRatio: operationsPerSecond / 100
+      achievedRatio: operationsPerSecond / 100,
     }
   }
 
@@ -477,7 +478,7 @@ export class PerformanceBenchmarkSuite {
       operationsCompleted,
       operationsPerSecond,
       targetThroughput: 150,
-      achievedRatio: operationsPerSecond / 150
+      achievedRatio: operationsPerSecond / 150,
     }
   }
 
@@ -487,14 +488,21 @@ export class PerformanceBenchmarkSuite {
     let operationsCompleted = 0
 
     const operations = [
-      () => this.engine.getEnhancedRecommendations({
-        userMessage: 'test',
-        currentContext: this.createMockContext(),
-        conversationHistory: [],
-        userSkillLevel: 'intermediate'
-      }),
+      () =>
+        this.engine.getEnhancedRecommendations({
+          userMessage: 'test',
+          currentContext: this.createMockContext(),
+          conversationHistory: [],
+          userSkillLevel: 'intermediate',
+        }),
       () => this.engine.getEnhancedToolDescription('build_workflow', this.createMockContext()),
-      () => this.engine.explainErrorIntelligently(new Error('test'), 'tool', this.createMockContext(), 'intermediate')
+      () =>
+        this.engine.explainErrorIntelligently(
+          new Error('test'),
+          'tool',
+          this.createMockContext(),
+          'intermediate'
+        ),
     ]
 
     while (Date.now() - startTime < duration) {
@@ -512,7 +520,7 @@ export class PerformanceBenchmarkSuite {
       operationsCompleted,
       operationsPerSecond,
       targetThroughput: 80,
-      achievedRatio: operationsPerSecond / 80
+      achievedRatio: operationsPerSecond / 80,
     }
   }
 
@@ -524,7 +532,7 @@ export class PerformanceBenchmarkSuite {
       userMessage: 'baseline test',
       currentContext: this.createMockContext(),
       conversationHistory: [],
-      userSkillLevel: 'intermediate'
+      userSkillLevel: 'intermediate',
     })
 
     const finalMemory = this.getMemoryUsage()
@@ -536,7 +544,7 @@ export class PerformanceBenchmarkSuite {
       peakMemory: finalMemory,
       averageMemory: (initialMemory + finalMemory) / 2,
       memoryGrowth: finalMemory - initialMemory,
-      memoryEfficiencyScore: this.calculateMemoryEfficiencyScore(initialMemory, finalMemory)
+      memoryEfficiencyScore: this.calculateMemoryEfficiencyScore(initialMemory, finalMemory),
     }
   }
 
@@ -551,7 +559,7 @@ export class PerformanceBenchmarkSuite {
         userMessage: `load test ${i}`,
         currentContext: this.createMockContext(),
         conversationHistory: [],
-        userSkillLevel: 'intermediate'
+        userSkillLevel: 'intermediate',
       })
 
       const currentMemory = this.getMemoryUsage()
@@ -569,7 +577,7 @@ export class PerformanceBenchmarkSuite {
       peakMemory,
       averageMemory,
       memoryGrowth: finalMemory - initialMemory,
-      memoryEfficiencyScore: this.calculateMemoryEfficiencyScore(initialMemory, finalMemory)
+      memoryEfficiencyScore: this.calculateMemoryEfficiencyScore(initialMemory, finalMemory),
     }
   }
 
@@ -584,7 +592,7 @@ export class PerformanceBenchmarkSuite {
           userMessage: `leak test cycle ${cycle} iteration ${i}`,
           currentContext: this.createMockContext(),
           conversationHistory: [],
-          userSkillLevel: 'intermediate'
+          userSkillLevel: 'intermediate',
         })
       }
 
@@ -615,7 +623,7 @@ export class PerformanceBenchmarkSuite {
       memoryGrowth: finalMemory - initialMemory,
       memoryEfficiencyScore: this.calculateMemoryEfficiencyScore(initialMemory, finalMemory),
       leakTrend,
-      hasMemoryLeak: leakTrend > 10 // 10MB increase trend indicates potential leak
+      hasMemoryLeak: leakTrend > 10, // 10MB increase trend indicates potential leak
     }
   }
 
@@ -637,7 +645,7 @@ export class PerformanceBenchmarkSuite {
     }
 
     // Wait a moment for GC
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     const afterGCMemory = this.getMemoryUsage()
     const memoryReclaimed = beforeGCMemory - afterGCMemory
@@ -652,14 +660,14 @@ export class PerformanceBenchmarkSuite {
       memoryGrowth: afterGCMemory - initialMemory,
       memoryEfficiencyScore: gcEfficiency,
       memoryReclaimed,
-      gcEfficiency
+      gcEfficiency,
     }
   }
 
   private async benchmarkConcurrentUsers(userCount: number): Promise<ScalabilityBenchmark> {
     const startTime = performance.now()
     const promises: Promise<any>[] = []
-    const results: { success: boolean, duration: number }[] = []
+    const results: { success: boolean; duration: number }[] = []
 
     // Create concurrent requests
     for (let i = 0; i < userCount; i++) {
@@ -670,7 +678,7 @@ export class PerformanceBenchmarkSuite {
             userMessage: `concurrent user ${i}`,
             currentContext: this.createMockContext(),
             conversationHistory: [],
-            userSkillLevel: 'intermediate'
+            userSkillLevel: 'intermediate',
           })
           return { success: true, duration: performance.now() - requestStart }
         } catch (error) {
@@ -682,7 +690,7 @@ export class PerformanceBenchmarkSuite {
     }
 
     const responses = await Promise.allSettled(promises)
-    responses.forEach(response => {
+    responses.forEach((response) => {
       if (response.status === 'fulfilled') {
         results.push(response.value)
       } else {
@@ -691,7 +699,7 @@ export class PerformanceBenchmarkSuite {
     })
 
     const totalDuration = performance.now() - startTime
-    const successfulRequests = results.filter(r => r.success).length
+    const successfulRequests = results.filter((r) => r.success).length
     const successRate = (successfulRequests / userCount) * 100
     const averageResponseTime = results.reduce((sum, r) => sum + r.duration, 0) / results.length
 
@@ -702,9 +710,9 @@ export class PerformanceBenchmarkSuite {
       successfulRequests,
       successRate,
       averageResponseTime,
-      maxResponseTime: Math.max(...results.map(r => r.duration)),
-      minResponseTime: Math.min(...results.map(r => r.duration)),
-      scalingEfficiency: this.calculateScalingEfficiencyForUsers(userCount, averageResponseTime)
+      maxResponseTime: Math.max(...results.map((r) => r.duration)),
+      minResponseTime: Math.min(...results.map((r) => r.duration)),
+      scalingEfficiency: this.calculateScalingEfficiencyForUsers(userCount, averageResponseTime),
     }
   }
 
@@ -722,18 +730,21 @@ export class PerformanceBenchmarkSuite {
 
       // Send batch of requests to maintain target RPS
       for (let i = 0; i < targetRPS && Date.now() - startTime < testDuration; i++) {
-        const promise = this.engine.getEnhancedRecommendations({
-          userMessage: `sustained load ${totalRequests + i}`,
-          currentContext: this.createMockContext(),
-          conversationHistory: [],
-          userSkillLevel: 'intermediate'
-        }).then(() => true).catch(() => false)
+        const promise = this.engine
+          .getEnhancedRecommendations({
+            userMessage: `sustained load ${totalRequests + i}`,
+            currentContext: this.createMockContext(),
+            conversationHistory: [],
+            userSkillLevel: 'intermediate',
+          })
+          .then(() => true)
+          .catch(() => false)
 
         batchPromises.push(promise)
       }
 
       const batchResults = await Promise.allSettled(batchPromises)
-      batchResults.forEach(result => {
+      batchResults.forEach((result) => {
         totalRequests++
         if (result.status === 'fulfilled' && result.value) {
           successfulRequests++
@@ -746,7 +757,7 @@ export class PerformanceBenchmarkSuite {
       const batchDuration = Date.now() - batchStart
       const targetBatchDuration = 1000 // 1 second per batch
       if (batchDuration < targetBatchDuration) {
-        await new Promise(resolve => setTimeout(resolve, targetBatchDuration - batchDuration))
+        await new Promise((resolve) => setTimeout(resolve, targetBatchDuration - batchDuration))
       }
     }
 
@@ -764,7 +775,7 @@ export class PerformanceBenchmarkSuite {
       failedRequests,
       errorRate,
       maxSuccessfulLoad: actualRPS,
-      loadEfficiency: (actualRPS / targetRPS) * 100
+      loadEfficiency: (actualRPS / targetRPS) * 100,
     }
   }
 
@@ -787,19 +798,23 @@ export class PerformanceBenchmarkSuite {
       while (Date.now() - spikeStartTime < spikeDuration) {
         const batchPromises: Promise<boolean>[] = []
 
-        for (let i = 0; i < currentSpikeLoad / 10; i++) { // 100ms batches
-          const promise = this.engine.getEnhancedRecommendations({
-            userMessage: `spike load ${spikeRequests + i}`,
-            currentContext: this.createMockContext(),
-            conversationHistory: [],
-            userSkillLevel: 'intermediate'
-          }).then(() => true).catch(() => false)
+        for (let i = 0; i < currentSpikeLoad / 10; i++) {
+          // 100ms batches
+          const promise = this.engine
+            .getEnhancedRecommendations({
+              userMessage: `spike load ${spikeRequests + i}`,
+              currentContext: this.createMockContext(),
+              conversationHistory: [],
+              userSkillLevel: 'intermediate',
+            })
+            .then(() => true)
+            .catch(() => false)
 
           batchPromises.push(promise)
         }
 
         const results = await Promise.allSettled(batchPromises)
-        results.forEach(result => {
+        results.forEach((result) => {
           spikeRequests++
           totalRequests++
           if (result.status === 'fulfilled' && result.value) {
@@ -810,7 +825,7 @@ export class PerformanceBenchmarkSuite {
           }
         })
 
-        await new Promise(resolve => setTimeout(resolve, 100)) // 100ms between batches
+        await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms between batches
       }
 
       const spikeSuccessRate = (spikeSuccessful / spikeRequests) * 100
@@ -831,7 +846,7 @@ export class PerformanceBenchmarkSuite {
       failedRequests,
       errorRate,
       maxSpikeHandled,
-      loadEfficiency: (maxSpikeHandled / spikeLoad) * 100
+      loadEfficiency: (maxSpikeHandled / spikeLoad) * 100,
     }
   }
 
@@ -851,19 +866,23 @@ export class PerformanceBenchmarkSuite {
       while (Date.now() - startTime < testDuration) {
         const batchPromises: Promise<boolean>[] = []
 
-        for (let i = 0; i < load / 10; i++) { // 100ms batches
-          const promise = this.engine.getEnhancedRecommendations({
-            userMessage: `stress test ${levelRequests + i}`,
-            currentContext: this.createMockContext(),
-            conversationHistory: [],
-            userSkillLevel: 'intermediate'
-          }).then(() => true).catch(() => false)
+        for (let i = 0; i < load / 10; i++) {
+          // 100ms batches
+          const promise = this.engine
+            .getEnhancedRecommendations({
+              userMessage: `stress test ${levelRequests + i}`,
+              currentContext: this.createMockContext(),
+              conversationHistory: [],
+              userSkillLevel: 'intermediate',
+            })
+            .then(() => true)
+            .catch(() => false)
 
           batchPromises.push(promise)
         }
 
         const results = await Promise.allSettled(batchPromises)
-        results.forEach(result => {
+        results.forEach((result) => {
           levelRequests++
           totalRequests++
           if (result.status === 'fulfilled' && result.value) {
@@ -874,7 +893,7 @@ export class PerformanceBenchmarkSuite {
           }
         })
 
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 100))
       }
 
       const levelSuccessRate = (levelSuccessful / levelRequests) * 100
@@ -891,13 +910,13 @@ export class PerformanceBenchmarkSuite {
       operation: 'Stress Test',
       targetLoad: 500,
       actualLoad: breakingPointLoad,
-      duration: breakingPointLoad / 100 * 30000, // 30s per tested level
+      duration: (breakingPointLoad / 100) * 30000, // 30s per tested level
       totalRequests,
       successfulRequests,
       failedRequests,
       errorRate,
       breakingPointLoad,
-      loadEfficiency: (breakingPointLoad / 500) * 100
+      loadEfficiency: (breakingPointLoad / 500) * 100,
     }
   }
 
@@ -912,11 +931,11 @@ export class PerformanceBenchmarkSuite {
         userMessage: 'cpu test',
         currentContext: this.createMockContext(),
         conversationHistory: [],
-        userSkillLevel: 'intermediate'
+        userSkillLevel: 'intermediate',
       })
 
       cpuReadings.push(this.getCPUUsage())
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
     }
 
     const endCPU = this.getCPUUsage()
@@ -930,7 +949,7 @@ export class PerformanceBenchmarkSuite {
       averageCPU,
       peakCPU,
       cpuEfficiency: this.calculateCPUEfficiencyScore(averageCPU, peakCPU),
-      cpuStability: this.calculateCPUStability(cpuReadings)
+      cpuStability: this.calculateCPUStability(cpuReadings),
     }
   }
 
@@ -941,16 +960,18 @@ export class PerformanceBenchmarkSuite {
     // Run high load operations
     const promises: Promise<void>[] = []
     for (let i = 0; i < 20; i++) {
-      promises.push((async () => {
-        for (let j = 0; j < 50; j++) {
-          await this.engine.getEnhancedRecommendations({
-            userMessage: `high load cpu test ${i}-${j}`,
-            currentContext: this.createMockContext(),
-            conversationHistory: [],
-            userSkillLevel: 'intermediate'
-          })
-        }
-      })())
+      promises.push(
+        (async () => {
+          for (let j = 0; j < 50; j++) {
+            await this.engine.getEnhancedRecommendations({
+              userMessage: `high load cpu test ${i}-${j}`,
+              currentContext: this.createMockContext(),
+              conversationHistory: [],
+              userSkillLevel: 'intermediate',
+            })
+          }
+        })()
+      )
     }
 
     // Monitor CPU during high load
@@ -972,7 +993,7 @@ export class PerformanceBenchmarkSuite {
       averageCPU,
       peakCPU,
       cpuEfficiency: this.calculateCPUEfficiencyScore(averageCPU, peakCPU),
-      cpuStability: this.calculateCPUStability(cpuReadings)
+      cpuStability: this.calculateCPUStability(cpuReadings),
     }
   }
 
@@ -986,7 +1007,7 @@ export class PerformanceBenchmarkSuite {
         userMessage: `efficiency test ${i}`,
         currentContext: this.createMockContext(),
         conversationHistory: [],
-        userSkillLevel: 'intermediate'
+        userSkillLevel: 'intermediate',
       })
     }
 
@@ -1006,7 +1027,7 @@ export class PerformanceBenchmarkSuite {
       cpuStability: 100, // Stable single-threaded test
       operationsPerCPUPercent: iterations / (endCPU - startCPU || 1),
       averageTimePerOperation,
-      cpuPerOperation
+      cpuPerOperation,
     }
   }
 
@@ -1021,7 +1042,7 @@ export class PerformanceBenchmarkSuite {
       memory: [],
       scalability: [],
       loadTesting: [],
-      cpu: []
+      cpu: [],
     }
   }
 
@@ -1034,19 +1055,19 @@ export class PerformanceBenchmarkSuite {
         preferences: {
           verbosity: 'detailed',
           examples: true,
-          stepByStep: true
-        }
+          stepByStep: true,
+        },
       },
       sessionContext: {
         currentTask: 'testing',
         timeAvailable: 'moderate',
-        urgency: 'medium'
+        urgency: 'medium',
       },
       workflowContext: {
         currentWorkflow: 'benchmark_workflow',
         workflowComplexity: 'simple',
-        lastActions: []
-      }
+        lastActions: [],
+      },
     }
   }
 
@@ -1054,7 +1075,7 @@ export class PerformanceBenchmarkSuite {
     return Array.from({ length: 20 }, (_, i) => ({
       role: i % 2 === 0 ? 'user' : 'assistant',
       content: `Message ${i + 1}`,
-      timestamp: new Date(Date.now() - (20 - i) * 60000)
+      timestamp: new Date(Date.now() - (20 - i) * 60000),
     }))
   }
 
@@ -1074,13 +1095,13 @@ export class PerformanceBenchmarkSuite {
 
   private calculateStandardDeviation(values: number[]): number {
     const avg = values.reduce((a, b) => a + b, 0) / values.length
-    const squareDiffs = values.map(value => Math.pow(value - avg, 2))
+    const squareDiffs = values.map((value) => (value - avg) ** 2)
     const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / squareDiffs.length
     return Math.sqrt(avgSquareDiff)
   }
 
   private calculateOverallPerformanceScore(benchmarkResults: any[]): number {
-    const scores = benchmarkResults.map(result => this.extractScoreFromResult(result))
+    const scores = benchmarkResults.map((result) => this.extractScoreFromResult(result))
     return scores.reduce((sum, score) => sum + score, 0) / scores.length
   }
 
@@ -1088,7 +1109,7 @@ export class PerformanceBenchmarkSuite {
     // Extract performance score from benchmark result
     if (result.averageResponseTime !== undefined) {
       // Response time benchmark - lower is better, convert to score
-      return Math.max(0, 100 - (result.averageResponseTime / 10))
+      return Math.max(0, 100 - result.averageResponseTime / 10)
     }
     if (result.maxThroughput !== undefined) {
       // Throughput benchmark - higher is better
@@ -1103,13 +1124,13 @@ export class PerformanceBenchmarkSuite {
   }
 
   private calculateP95ResponseTime(benchmarks: ResponseTimeBenchmark[]): number {
-    const allTimes = benchmarks.flatMap(b => b.times).sort((a, b) => a - b)
+    const allTimes = benchmarks.flatMap((b) => b.times).sort((a, b) => a - b)
     const p95Index = Math.floor(allTimes.length * 0.95)
     return allTimes[p95Index] || 0
   }
 
   private calculateP99ResponseTime(benchmarks: ResponseTimeBenchmark[]): number {
-    const allTimes = benchmarks.flatMap(b => b.times).sort((a, b) => a - b)
+    const allTimes = benchmarks.flatMap((b) => b.times).sort((a, b) => a - b)
     const p99Index = Math.floor(allTimes.length * 0.99)
     return allTimes[p99Index] || 0
   }
@@ -1140,15 +1161,17 @@ export class PerformanceBenchmarkSuite {
   }
 
   private calculateMemoryEfficiency(benchmarks: MemoryBenchmark[]): number {
-    return benchmarks.reduce((sum, b) => sum + (b.memoryEfficiencyScore || 85), 0) / benchmarks.length
+    return (
+      benchmarks.reduce((sum, b) => sum + (b.memoryEfficiencyScore || 85), 0) / benchmarks.length
+    )
   }
 
   private calculateMemoryEfficiencyScore(initialMemory: number, finalMemory: number): number {
     const growth = finalMemory - initialMemory
     if (growth <= 0) return 100 // No growth or reduction
-    if (growth <= 10) return 95  // Minimal growth
-    if (growth <= 25) return 85  // Acceptable growth
-    if (growth <= 50) return 70  // Moderate growth
+    if (growth <= 10) return 95 // Minimal growth
+    if (growth <= 25) return 85 // Acceptable growth
+    if (growth <= 50) return 70 // Moderate growth
     return 50 // High growth
   }
 
@@ -1166,10 +1189,15 @@ export class PerformanceBenchmarkSuite {
     if (benchmarks.length < 2) return 100
 
     // Calculate efficiency based on linear scaling expectation
-    const baselineBenchmark = benchmarks.find(b => b.concurrentUsers === 1) || benchmarks[0]
-    const efficiency = benchmarks.map(benchmark => {
-      const expectedTime = baselineBenchmark.averageResponseTime * (benchmark.concurrentUsers / baselineBenchmark.concurrentUsers)
-      return Math.max(0, 100 - ((benchmark.averageResponseTime - expectedTime) / expectedTime * 100))
+    const baselineBenchmark = benchmarks.find((b) => b.concurrentUsers === 1) || benchmarks[0]
+    const efficiency = benchmarks.map((benchmark) => {
+      const expectedTime =
+        baselineBenchmark.averageResponseTime *
+        (benchmark.concurrentUsers / baselineBenchmark.concurrentUsers)
+      return Math.max(
+        0,
+        100 - ((benchmark.averageResponseTime - expectedTime) / expectedTime) * 100
+      )
     })
 
     return efficiency.reduce((sum, eff) => sum + eff, 0) / efficiency.length
@@ -1192,11 +1220,11 @@ export class PerformanceBenchmarkSuite {
     // Expected response time should scale roughly with user count
     const baselineResponseTime = 100 // Expected response time for single user
     const expectedResponseTime = baselineResponseTime * Math.log(userCount + 1)
-    return Math.max(0, 100 - ((responseTime - expectedResponseTime) / expectedResponseTime * 100))
+    return Math.max(0, 100 - ((responseTime - expectedResponseTime) / expectedResponseTime) * 100)
   }
 
   private calculateLoadCapacity(benchmarks: LoadTestingBenchmark[]): number {
-    return Math.max(...benchmarks.map(b => b.maxSuccessfulLoad || b.actualLoad))
+    return Math.max(...benchmarks.map((b) => b.maxSuccessfulLoad || b.actualLoad))
   }
 
   private calculateRecoveryTime(benchmarks: LoadTestingBenchmark[]): number {
@@ -1217,9 +1245,9 @@ export class PerformanceBenchmarkSuite {
   private calculateCPUEfficiencyScore(averageCPU: number, peakCPU: number): number {
     // Efficiency based on CPU utilization patterns
     if (peakCPU <= 30) return 100 // Excellent efficiency
-    if (peakCPU <= 50) return 90  // Good efficiency
-    if (peakCPU <= 70) return 80  // Acceptable efficiency
-    if (peakCPU <= 90) return 70  // Poor efficiency
+    if (peakCPU <= 50) return 90 // Good efficiency
+    if (peakCPU <= 70) return 80 // Acceptable efficiency
+    if (peakCPU <= 90) return 70 // Poor efficiency
     return 50 // Very poor efficiency
   }
 
@@ -1229,8 +1257,8 @@ export class PerformanceBenchmarkSuite {
     const variabilityPercent = (standardDeviation / mean) * 100
 
     if (variabilityPercent <= 10) return 100 // Very stable
-    if (variabilityPercent <= 20) return 90  // Stable
-    if (variabilityPercent <= 30) return 80  // Acceptable
+    if (variabilityPercent <= 20) return 90 // Stable
+    if (variabilityPercent <= 30) return 80 // Acceptable
     return 60 // Unstable
   }
 
@@ -1241,32 +1269,32 @@ export class PerformanceBenchmarkSuite {
         p95ResponseTime: 320,
         p99ResponseTime: 480,
         fastestOperation: 'Tool Description',
-        slowestOperation: 'Complex Query'
+        slowestOperation: 'Complex Query',
       },
       throughputMetrics: {
         maxThroughput: 145,
         sustainedThroughput: 120,
         recommendationsThroughput: 135,
-        descriptionsThroughput: 160
+        descriptionsThroughput: 160,
       },
       memoryMetrics: {
         peakMemoryUsage: 85,
         averageMemoryUsage: 68,
         memoryEfficiency: 88,
-        hasMemoryLeaks: false
+        hasMemoryLeaks: false,
       },
       scalabilityMetrics: {
         maxConcurrentUsers: 150,
         scalingEfficiency: 90,
         breakingPoint: 485,
-        linearScalingScore: 90
+        linearScalingScore: 90,
       },
       cpuMetrics: {
         averageCPUUsage: 35,
         peakCPUUsage: 68,
         cpuEfficiency: 88,
-        cpuStability: 92
-      }
+        cpuStability: 92,
+      },
     }
   }
 
@@ -1278,7 +1306,8 @@ export class PerformanceBenchmarkSuite {
         recommendation: 'Implement caching for frequently requested tool descriptions',
         expectedImprovementPercent: 25,
         implementationEffort: 'medium',
-        details: 'Tool descriptions are requested frequently and rarely change. Implementing an in-memory cache could reduce average response time from 185ms to ~140ms.'
+        details:
+          'Tool descriptions are requested frequently and rarely change. Implementing an in-memory cache could reduce average response time from 185ms to ~140ms.',
       },
       {
         category: 'Memory Usage',
@@ -1286,7 +1315,8 @@ export class PerformanceBenchmarkSuite {
         recommendation: 'Optimize conversation history storage for long conversations',
         expectedImprovementPercent: 15,
         implementationEffort: 'low',
-        details: 'For conversations with >20 messages, implement compression or summarization to reduce memory footprint.'
+        details:
+          'For conversations with >20 messages, implement compression or summarization to reduce memory footprint.',
       },
       {
         category: 'Throughput',
@@ -1294,7 +1324,8 @@ export class PerformanceBenchmarkSuite {
         recommendation: 'Implement request batching for bulk operations',
         expectedImprovementPercent: 40,
         implementationEffort: 'high',
-        details: 'Allow batching multiple recommendation requests to improve throughput from 145 to ~200 requests per second.'
+        details:
+          'Allow batching multiple recommendation requests to improve throughput from 145 to ~200 requests per second.',
       },
       {
         category: 'Scalability',
@@ -1302,7 +1333,8 @@ export class PerformanceBenchmarkSuite {
         recommendation: 'Add connection pooling for better resource utilization',
         expectedImprovementPercent: 20,
         implementationEffort: 'medium',
-        details: 'Implement connection pooling to handle concurrent users more efficiently and increase breaking point from 485 to ~600 users.'
+        details:
+          'Implement connection pooling to handle concurrent users more efficiently and increase breaking point from 485 to ~600 users.',
       },
       {
         category: 'CPU Usage',
@@ -1310,8 +1342,9 @@ export class PerformanceBenchmarkSuite {
         recommendation: 'Optimize natural language processing algorithms',
         expectedImprovementPercent: 12,
         implementationEffort: 'high',
-        details: 'Profile and optimize NLP processing to reduce average CPU usage from 35% to ~30%.'
-      }
+        details:
+          'Profile and optimize NLP processing to reduce average CPU usage from 35% to ~30%.',
+      },
     ]
   }
 
@@ -1321,7 +1354,7 @@ export class PerformanceBenchmarkSuite {
       { maxThroughput: 145 },
       { memoryEfficiency: 88 },
       { scalingEfficiency: 90 },
-      { cpuEfficiency: 88 }
+      { cpuEfficiency: 88 },
     ])
 
     if (score >= 90) return 'A+'
@@ -1347,7 +1380,7 @@ class MetricsCollector {
     }
     this.metrics.get(name)?.push({
       value,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -1398,7 +1431,7 @@ interface ResponseTimeBenchmarkResults {
   p99ResponseTime: number
   fastestOperation: string
   slowestOperation: string
-  responseTimeTargets: Record<string, { target: number, achieved: number }>
+  responseTimeTargets: Record<string, { target: number; achieved: number }>
 }
 
 interface ResponseTimeBenchmark {
@@ -1416,7 +1449,7 @@ interface ThroughputBenchmarkResults {
   benchmarks: ThroughputBenchmark[]
   maxThroughput: number
   sustainedThroughput: number
-  throughputTargets: Record<string, { target: number, achieved: number }>
+  throughputTargets: Record<string, { target: number; achieved: number }>
 }
 
 interface ThroughputBenchmark {
@@ -1434,7 +1467,7 @@ interface MemoryBenchmarkResults {
   peakMemoryUsage: number
   averageMemoryUsage: number
   memoryEfficiency: number
-  memoryTargets: Record<string, { target: number, achieved: number }>
+  memoryTargets: Record<string, { target: number; achieved: number }>
 }
 
 interface MemoryBenchmark {
@@ -1478,7 +1511,7 @@ interface LoadTestingBenchmarkResults {
   loadCapacity: number
   recoveryTime: number
   errorRateUnderLoad: number
-  loadTestTargets: Record<string, { target: number, achieved: number }>
+  loadTestTargets: Record<string, { target: number; achieved: number }>
 }
 
 interface LoadTestingBenchmark {
@@ -1502,7 +1535,7 @@ interface CPUBenchmarkResults {
   averageCPUUsage: number
   peakCPUUsage: number
   cpuEfficiency: number
-  cpuTargets: Record<string, { target: number, achieved: number }>
+  cpuTargets: Record<string, { target: number; achieved: number }>
 }
 
 interface CPUBenchmark {

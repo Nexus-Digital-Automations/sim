@@ -2,10 +2,9 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { AgentSelectionInterface } from '@/app/chat/components/agent-selection'
-import { Agent } from '@/apps/sim/services/parlant/types'
+import type { Agent } from '@/apps/sim/services/parlant/types'
 import '@testing-library/jest-dom'
 
 // Mock fetch globally
@@ -31,10 +30,10 @@ const mockAgents: Agent[] = [
         condition: 'When user asks about pricing',
         action: 'Direct them to pricing page',
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
-      }
+        updated_at: '2023-01-01T00:00:00Z',
+      },
     ],
-    journeys: []
+    journeys: [],
   },
   {
     id: 'agent-2',
@@ -53,9 +52,9 @@ const mockAgents: Agent[] = [
         title: 'Lead Qualification',
         conditions: ['user shows interest in product'],
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
-      }
-    ]
+        updated_at: '2023-01-01T00:00:00Z',
+      },
+    ],
   },
   {
     id: 'agent-3',
@@ -67,8 +66,8 @@ const mockAgents: Agent[] = [
     created_at: '2023-01-01T00:00:00Z',
     updated_at: '2023-01-01T00:00:00Z',
     guidelines: [],
-    journeys: []
-  }
+    journeys: [],
+  },
 ]
 
 // Mock successful API response
@@ -78,8 +77,8 @@ const mockSuccessResponse = {
     total: mockAgents.length,
     limit: 100,
     offset: 0,
-    has_more: false
-  }
+    has_more: false,
+  },
 }
 
 describe('AgentSelectionInterface', () => {
@@ -92,7 +91,7 @@ describe('AgentSelectionInterface', () => {
     // Setup default successful response
     mockFetch.mockResolvedValue({
       ok: true,
-      json: async () => mockSuccessResponse
+      json: async () => mockSuccessResponse,
     } as Response)
   })
 
@@ -101,24 +100,14 @@ describe('AgentSelectionInterface', () => {
   })
 
   it('renders loading state initially', () => {
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     // Should show loading skeletons
     expect(screen.getAllByRole('generic')).toHaveLength(6) // 6 skeleton cards
   })
 
   it('fetches and displays agents successfully', async () => {
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     // Wait for agents to load
     await waitFor(() => {
@@ -134,23 +123,22 @@ describe('AgentSelectionInterface', () => {
     expect(screen.getByText('Technical Support')).toBeInTheDocument()
 
     // Verify agent descriptions
-    expect(screen.getByText('Helps with customer inquiries and support tickets')).toBeInTheDocument()
-    expect(screen.getByText('Assists with sales inquiries and lead qualification')).toBeInTheDocument()
+    expect(
+      screen.getByText('Helps with customer inquiries and support tickets')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Assists with sales inquiries and lead qualification')
+    ).toBeInTheDocument()
   })
 
   it('displays error state when API fails', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,
-      json: async () => ({ message: 'Internal server error' })
+      json: async () => ({ message: 'Internal server error' }),
     } as Response)
 
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     await waitFor(() => {
       expect(screen.getByText('Internal server error')).toBeInTheDocument()
@@ -161,12 +149,7 @@ describe('AgentSelectionInterface', () => {
   })
 
   it('handles agent selection correctly', async () => {
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     // Wait for agents to load
     await waitFor(() => {
@@ -182,12 +165,7 @@ describe('AgentSelectionInterface', () => {
   })
 
   it('shows agent cards with correct information', async () => {
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     await waitFor(() => {
       expect(screen.getByText('Customer Support Agent')).toBeInTheDocument()
@@ -203,12 +181,7 @@ describe('AgentSelectionInterface', () => {
   })
 
   it('supports search functionality', async () => {
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     await waitFor(() => {
       expect(screen.getByText('Customer Support Agent')).toBeInTheDocument()
@@ -227,12 +200,7 @@ describe('AgentSelectionInterface', () => {
   })
 
   it('supports status filtering', async () => {
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     await waitFor(() => {
       expect(screen.getByText('Customer Support Agent')).toBeInTheDocument()
@@ -257,7 +225,7 @@ describe('AgentSelectionInterface', () => {
   it('shows recommendations when enabled', async () => {
     render(
       <AgentSelectionInterface
-        workspaceId="workspace-1"
+        workspaceId='workspace-1'
         onAgentSelect={onAgentSelectMock}
         showRecommendations={true}
       />
@@ -274,7 +242,7 @@ describe('AgentSelectionInterface', () => {
   it('hides recommendations when disabled', async () => {
     render(
       <AgentSelectionInterface
-        workspaceId="workspace-1"
+        workspaceId='workspace-1'
         onAgentSelect={onAgentSelectMock}
         showRecommendations={false}
       />
@@ -289,12 +257,7 @@ describe('AgentSelectionInterface', () => {
   })
 
   it('opens agent profile modal when View Profile is clicked', async () => {
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     await waitFor(() => {
       expect(screen.getByText('Customer Support Agent')).toBeInTheDocument()
@@ -311,12 +274,7 @@ describe('AgentSelectionInterface', () => {
   })
 
   it('displays workspace performance metrics', async () => {
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     await waitFor(() => {
       expect(screen.getByText('Customer Support Agent')).toBeInTheDocument()
@@ -335,12 +293,7 @@ describe('AgentSelectionInterface', () => {
   })
 
   it('handles refresh correctly', async () => {
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     await waitFor(() => {
       expect(screen.getByText('Customer Support Agent')).toBeInTheDocument()
@@ -362,7 +315,7 @@ describe('AgentSelectionInterface', () => {
 
     render(
       <AgentSelectionInterface
-        workspaceId="workspace-1"
+        workspaceId='workspace-1'
         onAgentSelect={onAgentSelectMock}
         selectedAgent={selectedAgent}
       />
@@ -385,22 +338,19 @@ describe('AgentSelectionInterface', () => {
       ok: true,
       json: async () => ({
         agents: [],
-        pagination: { total: 0, limit: 100, offset: 0, has_more: false }
-      })
+        pagination: { total: 0, limit: 100, offset: 0, has_more: false },
+      }),
     } as Response)
 
-    render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
-    )
+    render(<AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />)
 
     await waitFor(() => {
       expect(screen.getByText('No Agents Found')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('No agents have been created in this workspace yet.')).toBeInTheDocument()
+    expect(
+      screen.getByText('No agents have been created in this workspace yet.')
+    ).toBeInTheDocument()
     expect(screen.getByText('Create Your First Agent')).toBeInTheDocument()
   })
 })
@@ -423,10 +373,7 @@ describe('Integration with useAgentSelection', () => {
 
   it('persists agent selection across renders', async () => {
     const { rerender } = render(
-      <AgentSelectionInterface
-        workspaceId="workspace-1"
-        onAgentSelect={onAgentSelectMock}
-      />
+      <AgentSelectionInterface workspaceId='workspace-1' onAgentSelect={onAgentSelectMock} />
     )
 
     await waitFor(() => {
@@ -440,7 +387,7 @@ describe('Integration with useAgentSelection', () => {
     // Rerender the component
     rerender(
       <AgentSelectionInterface
-        workspaceId="workspace-1"
+        workspaceId='workspace-1'
         onAgentSelect={onAgentSelectMock}
         selectedAgent={mockAgents[0]}
       />

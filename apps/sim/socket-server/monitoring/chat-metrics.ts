@@ -197,9 +197,9 @@ class ChatMetricsCollector {
     return values.reduce((sum, val) => sum + val, 0) / values.length
   }
 
-  private getEventsPerSecond(buffer: Array<{ timestamp: number }>, windowMs: number = 60000): number {
+  private getEventsPerSecond(buffer: Array<{ timestamp: number }>, windowMs = 60000): number {
     const now = Date.now()
-    const recentEvents = buffer.filter(event => now - event.timestamp <= windowMs)
+    const recentEvents = buffer.filter((event) => now - event.timestamp <= windowMs)
     return (recentEvents.length / windowMs) * 1000
   }
 
@@ -232,21 +232,25 @@ class ChatMetricsCollector {
     this.metrics.totalMessages = this.counters.get('total_messages') || 0
     this.metrics.messagesPerSecond = this.getEventsPerSecond(this.messageBuffer)
 
-    const recentMessages = this.messageBuffer.filter(msg => now - msg.timestamp <= 60000)
+    const recentMessages = this.messageBuffer.filter((msg) => now - msg.timestamp <= 60000)
     if (recentMessages.length > 0) {
-      this.metrics.averageMessageSize = recentMessages.reduce((sum, msg) => sum + msg.size, 0) / recentMessages.length
+      this.metrics.averageMessageSize =
+        recentMessages.reduce((sum, msg) => sum + msg.size, 0) / recentMessages.length
 
-      const messagesWithLatency = recentMessages.filter(msg => msg.latency !== undefined)
+      const messagesWithLatency = recentMessages.filter((msg) => msg.latency !== undefined)
       if (messagesWithLatency.length > 0) {
-        this.metrics.messageLatency = messagesWithLatency.reduce((sum, msg) => sum + (msg.latency || 0), 0) / messagesWithLatency.length
+        this.metrics.messageLatency =
+          messagesWithLatency.reduce((sum, msg) => sum + (msg.latency || 0), 0) /
+          messagesWithLatency.length
       }
     }
 
     // Typing metrics
     this.metrics.typingEventsPerSecond = this.getEventsPerSecond(this.typingBuffer)
-    const recentTyping = this.typingBuffer.filter(event => now - event.timestamp <= 60000)
+    const recentTyping = this.typingBuffer.filter((event) => now - event.timestamp <= 60000)
     if (recentTyping.length > 0) {
-      this.metrics.averageTypingDuration = recentTyping.reduce((sum, event) => sum + event.duration, 0) / recentTyping.length
+      this.metrics.averageTypingDuration =
+        recentTyping.reduce((sum, event) => sum + event.duration, 0) / recentTyping.length
     }
 
     // Presence metrics
@@ -280,13 +284,13 @@ class ChatMetricsCollector {
     const maxAge = 5 * 60 * 1000 // 5 minutes
 
     // Clean up message buffer
-    this.messageBuffer = this.messageBuffer.filter(msg => now - msg.timestamp <= maxAge)
+    this.messageBuffer = this.messageBuffer.filter((msg) => now - msg.timestamp <= maxAge)
 
     // Clean up typing buffer
-    this.typingBuffer = this.typingBuffer.filter(event => now - event.timestamp <= maxAge)
+    this.typingBuffer = this.typingBuffer.filter((event) => now - event.timestamp <= maxAge)
 
     // Clean up presence buffer
-    this.presenceBuffer = this.presenceBuffer.filter(event => now - event.timestamp <= maxAge)
+    this.presenceBuffer = this.presenceBuffer.filter((event) => now - event.timestamp <= maxAge)
 
     // Clean up timer data older than 1 hour
     const timerMaxAge = 60 * 60 * 1000
@@ -335,7 +339,9 @@ class ChatMetricsCollector {
       },
       performance: {
         memory: Math.round((metrics.memoryUsage?.heapUsed || 0) / 1024 / 1024), // Convert to MB
-        cpu: metrics.cpuUsage ? Math.round((metrics.cpuUsage.user + metrics.cpuUsage.system) / 1000) : 0, // Convert to ms
+        cpu: metrics.cpuUsage
+          ? Math.round((metrics.cpuUsage.user + metrics.cpuUsage.system) / 1000)
+          : 0, // Convert to ms
         eventLoopDelay: Math.round(metrics.eventLoopDelay || 0),
       },
       errors: {

@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { ArrowLeft, Bot, MessageCircle, Sparkles } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Agent } from '@/apps/sim/services/parlant/types'
-import { AgentSelectionInterface } from '@/app/chat/components/agent-selection'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Bot, MessageCircle, Sparkles } from 'lucide-react'
 import { createLogger } from '@/lib/logs/console/logger'
+import { AgentSelectionInterface } from '@/app/chat/components/agent-selection'
+import type { Agent } from '@/apps/sim/services/parlant/types'
 
 const logger = createLogger('ParlantChatPage')
 
@@ -40,7 +40,7 @@ export default function ParlantChatPage() {
         // If not in URL, try to get from user session/context
         // In a real implementation, this would come from your auth system
         const response = await fetch('/api/user/workspace', {
-          credentials: 'include'
+          credentials: 'include',
         })
 
         if (response.ok) {
@@ -74,7 +74,7 @@ export default function ParlantChatPage() {
     logger.info('Agent selected for chat', {
       agentId: agent.id,
       agentName: agent.name,
-      workspaceId
+      workspaceId,
     })
 
     // Navigate to chat interface with selected agent
@@ -89,15 +89,15 @@ export default function ParlantChatPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="animate-pulse space-y-6">
-              <div className="h-8 bg-muted rounded w-1/3" />
-              <div className="h-4 bg-muted rounded w-1/2" />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className='min-h-screen bg-background'>
+        <div className='container mx-auto px-4 py-8'>
+          <div className='mx-auto max-w-6xl'>
+            <div className='animate-pulse space-y-6'>
+              <div className='h-8 w-1/3 rounded bg-muted' />
+              <div className='h-4 w-1/2 rounded bg-muted' />
+              <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-64 bg-muted rounded" />
+                  <div key={i} className='h-64 rounded bg-muted' />
                 ))}
               </div>
             </div>
@@ -108,39 +108,39 @@ export default function ParlantChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className='min-h-screen bg-background'>
       {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+      <div className='border-b bg-card'>
+        <div className='container mx-auto px-4 py-4'>
+          <div className='mx-auto max-w-6xl'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center space-x-4'>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant='ghost'
+                  size='sm'
                   onClick={handleGoBack}
-                  className="flex items-center space-x-2"
+                  className='flex items-center space-x-2'
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className='h-4 w-4' />
                   <span>Back to Workspace</span>
                 </Button>
 
-                <div className="h-6 w-px bg-border" />
+                <div className='h-6 w-px bg-border' />
 
-                <div className="flex items-center space-x-2">
-                  <Bot className="h-5 w-5 text-blue-500" />
-                  <h1 className="text-xl font-semibold">Parlant Chat</h1>
-                  <Badge variant="secondary" className="ml-2">
-                    <Sparkles className="h-3 w-3 mr-1" />
+                <div className='flex items-center space-x-2'>
+                  <Bot className='h-5 w-5 text-blue-500' />
+                  <h1 className='font-semibold text-xl'>Parlant Chat</h1>
+                  <Badge variant='secondary' className='ml-2'>
+                    <Sparkles className='mr-1 h-3 w-3' />
                     AI-Powered
                   </Badge>
                 </div>
               </div>
 
               {selectedAgent && (
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <div className='flex items-center space-x-2 text-muted-foreground text-sm'>
                   <span>Selected:</span>
-                  <Badge variant="outline">{selectedAgent.name}</Badge>
+                  <Badge variant='outline'>{selectedAgent.name}</Badge>
                 </div>
               )}
             </div>
@@ -149,27 +149,25 @@ export default function ParlantChatPage() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+      <div className='container mx-auto px-4 py-8'>
+        <div className='mx-auto max-w-6xl'>
           {workspaceId ? (
             <AgentSelectionInterface
               workspaceId={workspaceId}
               onAgentSelect={handleAgentSelect}
               selectedAgent={selectedAgent}
               showRecommendations={true}
-              className="space-y-8"
+              className='space-y-8'
             />
           ) : (
-            <Card className="p-12">
-              <CardContent className="text-center">
-                <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <h2 className="text-xl font-semibold mb-2">Workspace Required</h2>
-                <p className="text-muted-foreground mb-4">
+            <Card className='p-12'>
+              <CardContent className='text-center'>
+                <MessageCircle className='mx-auto mb-4 h-16 w-16 opacity-50' />
+                <h2 className='mb-2 font-semibold text-xl'>Workspace Required</h2>
+                <p className='mb-4 text-muted-foreground'>
                   You need to be in a workspace to access Parlant agents.
                 </p>
-                <Button onClick={handleGoBack}>
-                  Go to Workspace
-                </Button>
+                <Button onClick={handleGoBack}>Go to Workspace</Button>
               </CardContent>
             </Card>
           )}
@@ -177,13 +175,11 @@ export default function ParlantChatPage() {
       </div>
 
       {/* Footer */}
-      <div className="border-t bg-card/50 mt-16">
-        <div className="container mx-auto px-4 py-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center text-sm text-muted-foreground">
-              <p>
-                Powered by Parlant AI • Seamlessly integrated with Sim workflows
-              </p>
+      <div className='mt-16 border-t bg-card/50'>
+        <div className='container mx-auto px-4 py-6'>
+          <div className='mx-auto max-w-6xl'>
+            <div className='text-center text-muted-foreground text-sm'>
+              <p>Powered by Parlant AI • Seamlessly integrated with Sim workflows</p>
             </div>
           </div>
         </div>

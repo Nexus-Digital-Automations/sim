@@ -18,9 +18,8 @@
  * - Cost optimization and billing tracking
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import { EventEmitter } from 'events'
-import type { AgentSessionContext } from './agent-session-manager'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('AgentResourceManager')
 
@@ -205,13 +204,11 @@ export class AgentResourceManager extends EventEmitter {
   /**
    * Create a new resource pool
    */
-  public createResourcePool(
-    config: Omit<ResourcePool, 'id' | 'isActive'>
-  ): ResourcePool {
+  public createResourcePool(config: Omit<ResourcePool, 'id' | 'isActive'>): ResourcePool {
     const pool: ResourcePool = {
       id: `pool_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       isActive: true,
-      ...config
+      ...config,
     }
 
     this.resourcePools.set(pool.id, pool)
@@ -224,7 +221,7 @@ export class AgentResourceManager extends EventEmitter {
     logger.info(`Resource pool created`, {
       poolId: pool.id,
       name: pool.name,
-      agentCount: pool.agentIds.length
+      agentCount: pool.agentIds.length,
     })
 
     return pool
@@ -278,7 +275,7 @@ export class AgentResourceManager extends EventEmitter {
         maxConcurrentSessions: 1, // Per session limit
         maxTokensPerMinute: estimatedRequirements.tokensPerMinute || 1000,
         maxNetworkBytesPerSecond: 1024 * 1024, // 1MB/s default
-        maxStorageMB: 100 // 100MB default
+        maxStorageMB: 100, // 100MB default
       }
 
       // Store allocation
@@ -296,20 +293,19 @@ export class AgentResourceManager extends EventEmitter {
         sessionId,
         memoryMB: allocation.reservedMemoryMB,
         cpuPercent: allocation.reservedCpuPercent,
-        poolId: pool?.id
+        poolId: pool?.id,
       })
 
       return {
         allocated: allocation,
         sessionLimits,
-        poolId: pool?.id
+        poolId: pool?.id,
       }
-
     } catch (error) {
       logger.error(`Failed to allocate session resources`, {
         sessionId,
         agentId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -344,11 +340,10 @@ export class AgentResourceManager extends EventEmitter {
       this.checkOptimizationTriggers(allocation)
 
       logger.info(`Resources deallocated for session`, { sessionId })
-
     } catch (error) {
       logger.error(`Failed to deallocate session resources`, {
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
     }
   }
@@ -356,10 +351,7 @@ export class AgentResourceManager extends EventEmitter {
   /**
    * Monitor resource usage in real-time
    */
-  public async monitorResourceUsage(
-    agentId: string,
-    sessionId?: string
-  ): Promise<ResourceMetrics> {
+  public async monitorResourceUsage(agentId: string, sessionId?: string): Promise<ResourceMetrics> {
     const currentMetrics = await this.collectCurrentMetrics(agentId, sessionId)
 
     // Store metrics
@@ -408,11 +400,7 @@ export class AgentResourceManager extends EventEmitter {
       const usageAnalysis = await this.analyzeResourceUsage(agentId)
 
       // Generate optimization recommendations
-      const optimizations = await this.generateOptimizations(
-        agentId,
-        usageAnalysis,
-        options
-      )
+      const optimizations = await this.generateOptimizations(agentId, usageAnalysis, options)
 
       // Calculate projected savings
       const projectedSavings = this.calculateProjectedSavings(optimizations)
@@ -426,19 +414,18 @@ export class AgentResourceManager extends EventEmitter {
       logger.info(`Resource optimization completed`, {
         agentId,
         optimizationCount: optimizations.length,
-        projectedSavings
+        projectedSavings,
       })
 
       return {
         optimizations,
         projectedSavings,
-        implementationPlan
+        implementationPlan,
       }
-
     } catch (error) {
       logger.error(`Failed to optimize agent resources`, {
         agentId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -476,10 +463,7 @@ export class AgentResourceManager extends EventEmitter {
         if (trigger.action === 'scale_up') {
           const shouldScale = this.evaluateScalingTrigger(trigger, averageMetrics)
           if (shouldScale) {
-            const newCapacity = Math.min(
-              pool.agentIds.length + 1,
-              pool.scaling.maxInstances
-            )
+            const newCapacity = Math.min(pool.agentIds.length + 1, pool.scaling.maxInstances)
 
             // Record scaling operation
             this.scalingOperations.set(poolId, new Date())
@@ -488,13 +472,13 @@ export class AgentResourceManager extends EventEmitter {
               poolId,
               trigger: trigger.metric,
               currentCapacity: pool.agentIds.length,
-              newCapacity
+              newCapacity,
             })
 
             return {
               action: 'scale_up',
               reason: `${trigger.metric} ${trigger.condition} ${trigger.threshold}`,
-              newCapacity
+              newCapacity,
             }
           }
         }
@@ -505,10 +489,7 @@ export class AgentResourceManager extends EventEmitter {
         if (trigger.action === 'scale_down') {
           const shouldScale = this.evaluateScalingTrigger(trigger, averageMetrics)
           if (shouldScale) {
-            const newCapacity = Math.max(
-              pool.agentIds.length - 1,
-              pool.scaling.minInstances
-            )
+            const newCapacity = Math.max(pool.agentIds.length - 1, pool.scaling.minInstances)
 
             // Record scaling operation
             this.scalingOperations.set(poolId, new Date())
@@ -517,24 +498,23 @@ export class AgentResourceManager extends EventEmitter {
               poolId,
               trigger: trigger.metric,
               currentCapacity: pool.agentIds.length,
-              newCapacity
+              newCapacity,
             })
 
             return {
               action: 'scale_down',
               reason: `${trigger.metric} ${trigger.condition} ${trigger.threshold}`,
-              newCapacity
+              newCapacity,
             }
           }
         }
       }
 
       return { action: 'no_action', reason: 'No scaling triggers activated' }
-
     } catch (error) {
       logger.error(`Auto-scaling evaluation failed`, {
         poolId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       return { action: 'no_action', reason: 'Scaling evaluation failed' }
     }
@@ -571,7 +551,7 @@ export class AgentResourceManager extends EventEmitter {
     }
     healthStatus: 'healthy' | 'warning' | 'critical'
   } {
-    const pools = Array.from(this.resourcePools.values()).filter(p => p.isActive)
+    const pools = Array.from(this.resourcePools.values()).filter((p) => p.isActive)
     const totalAgents = pools.reduce((sum, p) => sum + p.agentIds.length, 0)
     const totalActiveSessions = this.activeAllocations.size
 
@@ -580,11 +560,12 @@ export class AgentResourceManager extends EventEmitter {
     const avgCpuUtilization = 45
     const avgSessionUtilization = (totalActiveSessions / Math.max(totalAgents * 10, 1)) * 100
 
-    const healthStatus = avgMemoryUtilization > 90 || avgCpuUtilization > 90
-      ? 'critical'
-      : avgMemoryUtilization > 75 || avgCpuUtilization > 75
-      ? 'warning'
-      : 'healthy'
+    const healthStatus =
+      avgMemoryUtilization > 90 || avgCpuUtilization > 90
+        ? 'critical'
+        : avgMemoryUtilization > 75 || avgCpuUtilization > 75
+          ? 'warning'
+          : 'healthy'
 
     return {
       totalPools: pools.length,
@@ -593,9 +574,9 @@ export class AgentResourceManager extends EventEmitter {
       resourceUtilization: {
         memoryPercent: avgMemoryUtilization,
         cpuPercent: avgCpuUtilization,
-        sessionCapacityPercent: avgSessionUtilization
+        sessionCapacityPercent: avgSessionUtilization,
       },
-      healthStatus
+      healthStatus,
     }
   }
 
@@ -645,8 +626,9 @@ export class AgentResourceManager extends EventEmitter {
   }
 
   private findPoolForAgent(agentId: string): ResourcePool | undefined {
-    return Array.from(this.resourcePools.values())
-      .find(pool => pool.isActive && pool.agentIds.includes(agentId))
+    return Array.from(this.resourcePools.values()).find(
+      (pool) => pool.isActive && pool.agentIds.includes(agentId)
+    )
   }
 
   private findPoolBySessionAllocation(allocation: ResourceAllocation): ResourcePool | undefined {
@@ -669,7 +651,7 @@ export class AgentResourceManager extends EventEmitter {
       tokenLimit: 10000,
       activeSessions: Math.floor(Math.random() * 5),
       sessionLimit: 10,
-      resourceHealth: 'healthy'
+      resourceHealth: 'healthy',
     }
   }
 
@@ -681,14 +663,14 @@ export class AgentResourceManager extends EventEmitter {
       return {
         ...currentUsage,
         memoryUsageMB: currentUsage.memoryLimitMB - currentUsage.memoryUsageMB,
-        cpuUsagePercent: 100 - currentUsage.cpuUsagePercent
+        cpuUsagePercent: 100 - currentUsage.cpuUsagePercent,
       }
     }
 
     return {
       ...currentUsage,
       memoryUsageMB: pool.limits.maxMemoryMB - currentUsage.memoryUsageMB,
-      cpuUsagePercent: pool.limits.maxCpuPercent - currentUsage.cpuUsagePercent
+      cpuUsagePercent: pool.limits.maxCpuPercent - currentUsage.cpuUsagePercent,
     }
   }
 
@@ -717,7 +699,7 @@ export class AgentResourceManager extends EventEmitter {
       conservative: { memory: 1.0, cpu: 1.0 },
       balanced: { memory: 1.2, cpu: 1.2 },
       aggressive: { memory: 1.5, cpu: 1.5 },
-      custom: { memory: 1.2, cpu: 1.2 }
+      custom: { memory: 1.2, cpu: 1.2 },
     }
 
     const multiplier = multipliers[strategy]
@@ -730,14 +712,14 @@ export class AgentResourceManager extends EventEmitter {
         responseTime: 0.3,
         throughput: 0.3,
         quality: 0.2,
-        cost: 0.2
+        cost: 0.2,
       },
       elasticLimits: {
         minMemoryMB: baseMemory * 0.5,
         maxMemoryMB: baseMemory * 2,
         minCpuPercent: baseCpu * 0.5,
-        maxCpuPercent: baseCpu * 2
-      }
+        maxCpuPercent: baseCpu * 2,
+      },
     }
   }
 
@@ -750,7 +732,10 @@ export class AgentResourceManager extends EventEmitter {
     logger.debug(`Pool usage updated`, { poolId, operation })
   }
 
-  private async collectCurrentMetrics(agentId: string, sessionId?: string): Promise<ResourceMetrics> {
+  private async collectCurrentMetrics(
+    agentId: string,
+    sessionId?: string
+  ): Promise<ResourceMetrics> {
     // This would collect real system metrics
     return this.getCurrentResourceUsage(agentId)
   }
@@ -762,7 +747,7 @@ export class AgentResourceManager extends EventEmitter {
         agentId: metrics.agentId,
         type: 'memory',
         usage: metrics.memoryUsageMB,
-        limit: metrics.memoryLimitMB
+        limit: metrics.memoryLimitMB,
       })
     }
 
@@ -771,7 +756,7 @@ export class AgentResourceManager extends EventEmitter {
         agentId: metrics.agentId,
         type: 'cpu',
         usage: metrics.cpuUsagePercent,
-        limit: 100
+        limit: 100,
       })
     }
   }
@@ -785,14 +770,14 @@ export class AgentResourceManager extends EventEmitter {
         agentId,
         timeframe: '24h',
         predictions: {
-          peakMemoryMB: Math.max(...metrics.slice(-24).map(m => m.memoryUsageMB)),
-          peakCpuPercent: Math.max(...metrics.slice(-24).map(m => m.cpuUsagePercent)),
-          peakConcurrentSessions: Math.max(...metrics.slice(-24).map(m => m.activeSessions)),
+          peakMemoryMB: Math.max(...metrics.slice(-24).map((m) => m.memoryUsageMB)),
+          peakCpuPercent: Math.max(...metrics.slice(-24).map((m) => m.cpuUsagePercent)),
+          peakConcurrentSessions: Math.max(...metrics.slice(-24).map((m) => m.activeSessions)),
           totalTokensConsumed: metrics.slice(-24).reduce((sum, m) => sum + m.tokensConsumed, 0),
-          estimatedCost: 10.50 // Simplified cost calculation
+          estimatedCost: 10.5, // Simplified cost calculation
         },
         confidence: 0.75,
-        basedOnDataPoints: metrics.length
+        basedOnDataPoints: metrics.length,
       }
 
       this.resourceForecasts.set(`${agentId}_24h`, forecast)
@@ -807,7 +792,7 @@ export class AgentResourceManager extends EventEmitter {
       averageCpuUsage: metrics.reduce((sum, m) => sum + m.cpuUsagePercent, 0) / metrics.length,
       peakUsageTimes: [], // Would analyze peak usage patterns
       underutilizedPeriods: [], // Would identify underutilized periods
-      resourceWaste: 0 // Would calculate resource waste
+      resourceWaste: 0, // Would calculate resource waste
     }
   }
 
@@ -829,15 +814,15 @@ export class AgentResourceManager extends EventEmitter {
         description: 'Agent is underutilizing allocated memory',
         expectedSavings: {
           memoryMB: analysis.averageMemoryUsage * 0.3,
-          costPerHour: 2.50
+          costPerHour: 2.5,
         },
         implementationSteps: [
           'Analyze memory usage patterns',
           'Reduce base memory allocation',
-          'Monitor performance impact'
+          'Monitor performance impact',
         ],
         automatable: true,
-        riskLevel: 'low'
+        riskLevel: 'low',
       })
     }
 
@@ -845,11 +830,14 @@ export class AgentResourceManager extends EventEmitter {
   }
 
   private calculateProjectedSavings(optimizations: OptimizationRecommendation[]): any {
-    return optimizations.reduce((totals, opt) => ({
-      memoryMB: totals.memoryMB + (opt.expectedSavings.memoryMB || 0),
-      cpuPercent: totals.cpuPercent + (opt.expectedSavings.cpuPercent || 0),
-      costPerHour: totals.costPerHour + (opt.expectedSavings.costPerHour || 0)
-    }), { memoryMB: 0, cpuPercent: 0, costPerHour: 0 })
+    return optimizations.reduce(
+      (totals, opt) => ({
+        memoryMB: totals.memoryMB + (opt.expectedSavings.memoryMB || 0),
+        cpuPercent: totals.cpuPercent + (opt.expectedSavings.cpuPercent || 0),
+        costPerHour: totals.costPerHour + (opt.expectedSavings.costPerHour || 0),
+      }),
+      { memoryMB: 0, cpuPercent: 0, costPerHour: 0 }
+    )
   }
 
   private createImplementationPlan(optimizations: OptimizationRecommendation[]): string[] {
@@ -860,9 +848,9 @@ export class AgentResourceManager extends EventEmitter {
         const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 }
         return priorityOrder[b.priority] - priorityOrder[a.priority]
       })
-      .forEach(opt => {
+      .forEach((opt) => {
         plan.push(`${opt.title}: ${opt.description}`)
-        plan.push(...opt.implementationSteps.map(step => `  - ${step}`))
+        plan.push(...opt.implementationSteps.map((step) => `  - ${step}`))
       })
 
     return plan
@@ -876,35 +864,38 @@ export class AgentResourceManager extends EventEmitter {
   private calculateAverageMetrics(metrics: ResourceMetrics[]): ResourceMetrics {
     if (metrics.length === 0) throw new Error('No metrics provided')
 
-    return metrics.reduce((avg, m, _, arr) => ({
-      timestamp: new Date(),
-      agentId: m.agentId,
-      memoryUsageMB: avg.memoryUsageMB + m.memoryUsageMB / arr.length,
-      memoryLimitMB: m.memoryLimitMB,
-      cpuUsagePercent: avg.cpuUsagePercent + m.cpuUsagePercent / arr.length,
-      cpuLimitPercent: m.cpuLimitPercent,
-      networkBytesPerSecond: avg.networkBytesPerSecond + m.networkBytesPerSecond / arr.length,
-      storageUsedMB: avg.storageUsedMB + m.storageUsedMB / arr.length,
-      tokensConsumed: avg.tokensConsumed + m.tokensConsumed / arr.length,
-      tokenLimit: m.tokenLimit,
-      activeSessions: avg.activeSessions + m.activeSessions / arr.length,
-      sessionLimit: m.sessionLimit,
-      resourceHealth: m.resourceHealth
-    }), {
-      timestamp: new Date(),
-      agentId: metrics[0].agentId,
-      memoryUsageMB: 0,
-      memoryLimitMB: metrics[0].memoryLimitMB,
-      cpuUsagePercent: 0,
-      cpuLimitPercent: metrics[0].cpuLimitPercent,
-      networkBytesPerSecond: 0,
-      storageUsedMB: 0,
-      tokensConsumed: 0,
-      tokenLimit: metrics[0].tokenLimit,
-      activeSessions: 0,
-      sessionLimit: metrics[0].sessionLimit,
-      resourceHealth: 'healthy'
-    })
+    return metrics.reduce(
+      (avg, m, _, arr) => ({
+        timestamp: new Date(),
+        agentId: m.agentId,
+        memoryUsageMB: avg.memoryUsageMB + m.memoryUsageMB / arr.length,
+        memoryLimitMB: m.memoryLimitMB,
+        cpuUsagePercent: avg.cpuUsagePercent + m.cpuUsagePercent / arr.length,
+        cpuLimitPercent: m.cpuLimitPercent,
+        networkBytesPerSecond: avg.networkBytesPerSecond + m.networkBytesPerSecond / arr.length,
+        storageUsedMB: avg.storageUsedMB + m.storageUsedMB / arr.length,
+        tokensConsumed: avg.tokensConsumed + m.tokensConsumed / arr.length,
+        tokenLimit: m.tokenLimit,
+        activeSessions: avg.activeSessions + m.activeSessions / arr.length,
+        sessionLimit: m.sessionLimit,
+        resourceHealth: m.resourceHealth,
+      }),
+      {
+        timestamp: new Date(),
+        agentId: metrics[0].agentId,
+        memoryUsageMB: 0,
+        memoryLimitMB: metrics[0].memoryLimitMB,
+        cpuUsagePercent: 0,
+        cpuLimitPercent: metrics[0].cpuLimitPercent,
+        networkBytesPerSecond: 0,
+        storageUsedMB: 0,
+        tokensConsumed: 0,
+        tokenLimit: metrics[0].tokenLimit,
+        activeSessions: 0,
+        sessionLimit: metrics[0].sessionLimit,
+        resourceHealth: 'healthy',
+      }
+    )
   }
 
   private evaluateScalingTrigger(trigger: ScalingTrigger, metrics: ResourceMetrics): boolean {
@@ -924,9 +915,7 @@ export class AgentResourceManager extends EventEmitter {
         return false
     }
 
-    return trigger.condition === 'above'
-      ? value > trigger.threshold
-      : value < trigger.threshold
+    return trigger.condition === 'above' ? value > trigger.threshold : value < trigger.threshold
   }
 
   private async performGlobalResourceCheck(): Promise<void> {
@@ -958,7 +947,7 @@ export class AgentResourceManager extends EventEmitter {
     const cutoffTime = Date.now() - 7 * 24 * 60 * 60 * 1000 // 7 days
 
     for (const [agentId, metrics] of this.resourceMetrics.entries()) {
-      const filteredMetrics = metrics.filter(m => m.timestamp.getTime() > cutoffTime)
+      const filteredMetrics = metrics.filter((m) => m.timestamp.getTime() > cutoffTime)
       this.resourceMetrics.set(agentId, filteredMetrics)
     }
   }

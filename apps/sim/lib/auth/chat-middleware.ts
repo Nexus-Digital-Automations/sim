@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/auth'
 import { db } from '@sim/db'
-import { and, eq } from 'drizzle-orm'
 import { member } from '@sim/db/schema'
+import { and, eq } from 'drizzle-orm'
+import { type NextRequest, NextResponse } from 'next/server'
+import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('ChatMiddleware')
@@ -22,7 +22,7 @@ export async function chatMiddleware(request: NextRequest): Promise<NextResponse
   logger.info('Processing chat middleware', { pathname })
 
   // Extract workspace ID from URL if present
-  const workspaceMatch = pathname.match(/^\/chat\/workspace\/([^\/]+)/)
+  const workspaceMatch = pathname.match(/^\/chat\/workspace\/([^/]+)/)
   const workspaceId = workspaceMatch?.[1]
 
   try {
@@ -41,19 +41,14 @@ export async function chatMiddleware(request: NextRequest): Promise<NextResponse
       const membership = await db
         .select()
         .from(member)
-        .where(
-          and(
-            eq(member.userId, session.user.id),
-            eq(member.organizationId, workspaceId)
-          )
-        )
+        .where(and(eq(member.userId, session.user.id), eq(member.organizationId, workspaceId)))
         .limit(1)
 
       if (membership.length === 0) {
         logger.warn('Unauthorized workspace access', {
           userId: session.user.id,
           workspaceId,
-          pathname
+          pathname,
         })
         return NextResponse.redirect(new URL('/workspace', request.url))
       }
@@ -68,7 +63,7 @@ export async function chatMiddleware(request: NextRequest): Promise<NextResponse
         userId: session.user.id,
         workspaceId,
         userRole: membership[0].role,
-        pathname
+        pathname,
       })
 
       return response
@@ -80,11 +75,10 @@ export async function chatMiddleware(request: NextRequest): Promise<NextResponse
 
     logger.info('Chat middleware authentication successful', {
       userId: session.user.id,
-      pathname
+      pathname,
     })
 
     return response
-
   } catch (error) {
     logger.error('Chat middleware error', { error, pathname })
 
@@ -108,12 +102,7 @@ export async function validateWorkspaceAccess(
     const membership = await db
       .select()
       .from(member)
-      .where(
-        and(
-          eq(member.userId, userId),
-          eq(member.organizationId, workspaceId)
-        )
-      )
+      .where(and(eq(member.userId, userId), eq(member.organizationId, workspaceId)))
       .limit(1)
 
     if (membership.length === 0) {
@@ -123,7 +112,7 @@ export async function validateWorkspaceAccess(
     return {
       hasAccess: true,
       role: membership[0].role,
-      membership: membership[0]
+      membership: membership[0],
     }
   } catch (error) {
     logger.error('Workspace access validation error', { error, userId, workspaceId })
@@ -138,13 +127,13 @@ export async function validateWorkspaceAccess(
 export class ChatRateLimiter {
   private static instances = new Map<string, { count: number; reset: number }>()
 
-  static canProceed(userId: string, limit: number = 50, windowMs: number = 60000): boolean {
+  static canProceed(userId: string, limit = 50, windowMs = 60000): boolean {
     const now = Date.now()
     const key = userId
-    const instance = this.instances.get(key)
+    const instance = ChatRateLimiter.instances.get(key)
 
     if (!instance || now > instance.reset) {
-      this.instances.set(key, { count: 1, reset: now + windowMs })
+      ChatRateLimiter.instances.set(key, { count: 1, reset: now + windowMs })
       return true
     }
 
@@ -156,8 +145,8 @@ export class ChatRateLimiter {
     return true
   }
 
-  static getRemainingRequests(userId: string, limit: number = 50): number {
-    const instance = this.instances.get(userId)
+  static getRemainingRequests(userId: string, limit = 50): number {
+    const instance = ChatRateLimiter.instances.get(userId)
     if (!instance || Date.now() > instance.reset) {
       return limit
     }

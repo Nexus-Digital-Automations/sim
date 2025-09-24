@@ -1,25 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Archive, Bot, History, MessageCircle, Plus, Search, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
-import {
-  MessageCircle,
-  Plus,
-  History,
-  Bot,
-  Settings,
-  Archive,
-  Search
-} from 'lucide-react'
-import { Agent } from '@/lib/parlant/agents'
-import { Conversation } from '@/lib/parlant/conversations'
-import { Input } from '@/components/ui/input'
+import type { Agent } from '@/lib/parlant/agents'
+import type { Conversation } from '@/lib/parlant/conversations'
 
 interface ChatSidebarProps {
   workspaceId: string
@@ -48,7 +39,7 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
         // Fetch agents and recent conversations
         const [agentsRes, conversationsRes] = await Promise.all([
           fetch(`/api/chat/workspaces/${workspaceId}/agents`),
-          fetch(`/api/chat/workspaces/${workspaceId}/conversations?limit=10`)
+          fetch(`/api/chat/workspaces/${workspaceId}/conversations?limit=10`),
         ])
 
         if (agentsRes.ok) {
@@ -70,28 +61,28 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
     loadData()
   }, [workspaceId])
 
-  const filteredAgents = agents.filter(agent =>
+  const filteredAgents = agents.filter((agent) =>
     agent.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const filteredConversations = recentConversations.filter(conv =>
+  const filteredConversations = recentConversations.filter((conv) =>
     conv.title?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
     <div className='flex h-full flex-col bg-muted/50'>
       {/* Header */}
-      <div className='p-4 border-b border-border'>
-        <h2 className='font-semibold text-lg truncate' title={workspace.name}>
+      <div className='border-border border-b p-4'>
+        <h2 className='truncate font-semibold text-lg' title={workspace.name}>
           {workspace.name}
         </h2>
-        <p className='text-sm text-muted-foreground'>Chat Interface</p>
+        <p className='text-muted-foreground text-sm'>Chat Interface</p>
       </div>
 
       {/* Search */}
       <div className='p-4 pb-2'>
         <div className='relative'>
-          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+          <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground' />
           <Input
             placeholder='Search agents & chats...'
             value={searchQuery}
@@ -102,7 +93,7 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
       </div>
 
       <ScrollArea className='flex-1'>
-        <div className='p-4 space-y-6'>
+        <div className='space-y-6 p-4'>
           {/* New Chat Button */}
           <Button asChild className='w-full justify-start' size='sm'>
             <Link href={`/chat/workspace/${workspaceId}`}>
@@ -113,8 +104,8 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
 
           {/* Available Agents */}
           <div>
-            <div className='flex items-center justify-between mb-3'>
-              <h3 className='text-sm font-medium text-muted-foreground uppercase tracking-wide'>
+            <div className='mb-3 flex items-center justify-between'>
+              <h3 className='font-medium text-muted-foreground text-sm uppercase tracking-wide'>
                 Agents
               </h3>
               {['admin', 'owner'].includes(userRole) && (
@@ -128,7 +119,7 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
               {loading ? (
                 <div className='space-y-2'>
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className='h-8 bg-muted rounded animate-pulse' />
+                    <div key={i} className='h-8 animate-pulse rounded bg-muted' />
                   ))}
                 </div>
               ) : filteredAgents.length > 0 ? (
@@ -137,15 +128,15 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
                     key={agent.id}
                     asChild
                     variant={pathname.includes(`/agent/${agent.id}`) ? 'secondary' : 'ghost'}
-                    className='w-full justify-start h-auto p-3'
+                    className='h-auto w-full justify-start p-3'
                   >
                     <Link href={`/chat/workspace/${workspaceId}/agent/${agent.id}`}>
-                      <div className='flex items-center space-x-3 w-full'>
+                      <div className='flex w-full items-center space-x-3'>
                         <Bot className='h-4 w-4 flex-shrink-0' />
-                        <div className='flex-1 min-w-0'>
-                          <p className='text-sm font-medium truncate'>{agent.name}</p>
+                        <div className='min-w-0 flex-1'>
+                          <p className='truncate font-medium text-sm'>{agent.name}</p>
                           {agent.description && (
-                            <p className='text-xs text-muted-foreground truncate'>
+                            <p className='truncate text-muted-foreground text-xs'>
                               {agent.description}
                             </p>
                           )}
@@ -160,7 +151,7 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
                   </Button>
                 ))
               ) : (
-                <p className='text-sm text-muted-foreground text-center py-4'>
+                <p className='py-4 text-center text-muted-foreground text-sm'>
                   {searchQuery ? 'No matching agents' : 'No agents available'}
                 </p>
               )}
@@ -171,8 +162,8 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
 
           {/* Recent Conversations */}
           <div>
-            <div className='flex items-center justify-between mb-3'>
-              <h3 className='text-sm font-medium text-muted-foreground uppercase tracking-wide'>
+            <div className='mb-3 flex items-center justify-between'>
+              <h3 className='font-medium text-muted-foreground text-sm uppercase tracking-wide'>
                 Recent Chats
               </h3>
               <Button asChild variant='ghost' size='sm' className='h-6 w-6 p-0'>
@@ -186,7 +177,7 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
               {loading ? (
                 <div className='space-y-2'>
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className='h-12 bg-muted rounded animate-pulse' />
+                    <div key={i} className='h-12 animate-pulse rounded bg-muted' />
                   ))}
                 </div>
               ) : filteredConversations.length > 0 ? (
@@ -194,22 +185,24 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
                   <Button
                     key={conversation.id}
                     asChild
-                    variant={pathname.includes(`/conversation/${conversation.id}`) ? 'secondary' : 'ghost'}
-                    className='w-full justify-start h-auto p-3'
+                    variant={
+                      pathname.includes(`/conversation/${conversation.id}`) ? 'secondary' : 'ghost'
+                    }
+                    className='h-auto w-full justify-start p-3'
                   >
                     <Link
                       href={`/chat/workspace/${workspaceId}/agent/${conversation.agent_id}/conversation/${conversation.id}`}
                     >
-                      <div className='flex items-start space-x-3 w-full'>
-                        <MessageCircle className='h-4 w-4 flex-shrink-0 mt-0.5' />
-                        <div className='flex-1 min-w-0'>
-                          <p className='text-sm font-medium truncate'>
+                      <div className='flex w-full items-start space-x-3'>
+                        <MessageCircle className='mt-0.5 h-4 w-4 flex-shrink-0' />
+                        <div className='min-w-0 flex-1'>
+                          <p className='truncate font-medium text-sm'>
                             {conversation.title || 'Untitled Chat'}
                           </p>
-                          <p className='text-xs text-muted-foreground'>
+                          <p className='text-muted-foreground text-xs'>
                             {new Date(conversation.updated_at).toLocaleDateString()}
                           </p>
-                          <div className='flex items-center space-x-2 mt-1'>
+                          <div className='mt-1 flex items-center space-x-2'>
                             <Badge variant='outline' className='text-xs'>
                               {conversation.message_count} messages
                             </Badge>
@@ -223,7 +216,7 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
                   </Button>
                 ))
               ) : (
-                <p className='text-sm text-muted-foreground text-center py-4'>
+                <p className='py-4 text-center text-muted-foreground text-sm'>
                   {searchQuery ? 'No matching conversations' : 'No recent conversations'}
                 </p>
               )}
@@ -233,7 +226,7 @@ export function ChatSidebar({ workspaceId, workspace, userRole }: ChatSidebarPro
       </ScrollArea>
 
       {/* Footer */}
-      <div className='p-4 border-t border-border'>
+      <div className='border-border border-t p-4'>
         <div className='flex items-center space-x-2'>
           <Button asChild variant='ghost' size='sm' className='flex-1'>
             <Link href={`/chat/workspace/${workspaceId}/history`}>

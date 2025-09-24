@@ -6,19 +6,12 @@
  * authentication validation, authorization controls, and penetration testing.
  */
 
-import { ComprehensiveTestReporter } from '../../utils/test-reporter'
-import { SecurityTestHarness } from '../__mocks__/security-test-harness'
-import { WorkspaceSecurityManager } from '../../../services/security/workspace-security'
 import { AuthenticationService } from '../../../services/auth/authentication'
 import { AuthorizationService } from '../../../services/auth/authorization'
-import type {
-  WorkspaceConfig,
-  UserPermissions,
-  SecurityPolicy,
-  AuditLog,
-  SecurityVulnerability,
-  PenetrationTestResult
-} from '../../../types/security'
+import { WorkspaceSecurityManager } from '../../../services/security/workspace-security'
+import type { AuditLog, WorkspaceConfig } from '../../../types/security'
+import { ComprehensiveTestReporter } from '../../utils/test-reporter'
+import { SecurityTestHarness } from '../__mocks__/security-test-harness'
 
 describe('Workspace Security and Isolation Testing Suite', () => {
   let reporter: ComprehensiveTestReporter
@@ -33,7 +26,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       outputDir: './test-reports/security-isolation',
       includePerformanceMetrics: true,
       generateVisualizations: true,
-      reportFormats: ['html', 'json', 'junit']
+      reportFormats: ['html', 'json', 'junit'],
     })
 
     await reporter.startTestSuite(
@@ -52,25 +45,25 @@ describe('Workspace Security and Isolation Testing Suite', () => {
     testHarness = new SecurityTestHarness({
       isolated: true,
       mockServices: true,
-      auditingEnabled: true
+      auditingEnabled: true,
     })
 
     securityManager = new WorkspaceSecurityManager({
       encryptionEnabled: true,
       auditingEnabled: true,
-      isolationLevel: 'strict'
+      isolationLevel: 'strict',
     })
 
     authService = new AuthenticationService({
       jwtSecret: 'test-secret-key',
       sessionTimeout: 3600,
-      multiFactorRequired: false // For testing
+      multiFactorRequired: false, // For testing
     })
 
     authzService = new AuthorizationService({
       roleBasedAccess: true,
       resourcePermissions: true,
-      inheritanceEnabled: true
+      inheritanceEnabled: true,
     })
 
     testWorkspaces = [
@@ -85,8 +78,8 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         users: [
           { id: 'user-alpha-1', role: 'admin', permissions: ['read', 'write', 'admin'] },
           { id: 'user-alpha-2', role: 'member', permissions: ['read', 'write'] },
-          { id: 'user-alpha-3', role: 'viewer', permissions: ['read'] }
-        ]
+          { id: 'user-alpha-3', role: 'viewer', permissions: ['read'] },
+        ],
       },
       {
         id: 'workspace-beta',
@@ -98,8 +91,8 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         auditLevel: 'standard',
         users: [
           { id: 'user-beta-1', role: 'admin', permissions: ['read', 'write', 'admin'] },
-          { id: 'user-beta-2', role: 'member', permissions: ['read', 'write'] }
-        ]
+          { id: 'user-beta-2', role: 'member', permissions: ['read', 'write'] },
+        ],
       },
       {
         id: 'workspace-gamma',
@@ -109,10 +102,8 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         isolationPolicy: 'basic',
         encryptionRequired: false,
         auditLevel: 'basic',
-        users: [
-          { id: 'user-gamma-1', role: 'admin', permissions: ['read', 'write', 'admin'] }
-        ]
-      }
+        users: [{ id: 'user-gamma-1', role: 'admin', permissions: ['read', 'write', 'admin'] }],
+      },
     ]
 
     // Initialize workspaces in test harness
@@ -132,13 +123,13 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       const alphaData = {
         sensitiveInfo: 'Alpha Corporation confidential data',
         financialData: { revenue: 1000000, expenses: 750000 },
-        userList: ['alpha-user-1', 'alpha-user-2', 'alpha-user-3']
+        userList: ['alpha-user-1', 'alpha-user-2', 'alpha-user-3'],
       }
 
       const betaData = {
         sensitiveInfo: 'Beta Industries proprietary information',
         financialData: { revenue: 500000, expenses: 400000 },
-        userList: ['beta-user-1', 'beta-user-2']
+        userList: ['beta-user-1', 'beta-user-2'],
       }
 
       // Store data in respective workspaces
@@ -151,20 +142,20 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           name: 'Beta user accessing Alpha data',
           userId: 'user-beta-1',
           targetWorkspace: 'workspace-alpha',
-          shouldFail: true
+          shouldFail: true,
         },
         {
           name: 'Alpha user accessing Beta data',
           userId: 'user-alpha-2',
           targetWorkspace: 'workspace-beta',
-          shouldFail: true
+          shouldFail: true,
         },
         {
           name: 'Gamma user accessing Alpha data',
           userId: 'user-gamma-1',
           targetWorkspace: 'workspace-alpha',
-          shouldFail: true
-        }
+          shouldFail: true,
+        },
       ]
 
       let isolationViolations = 0
@@ -200,27 +191,29 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       expect(legitimateAccess.success).toBe(true)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'workspace-isolation-cross-access',
-          name: 'Cross-Workspace Data Access Prevention',
-          complexity: 'complex',
-          metadata: {
-            testType: 'isolation',
-            attemptCount: crossAccessAttempts.length,
-            isolationViolations: isolationViolations
-          }
-        } as any,
-        {
-          success: isolationViolations === 0,
-          isolationMaintained: isolationViolations === 0,
-          properAccessDenials: properAccessDenials,
-          legitimateAccessWorks: legitimateAccess.success
-        },
-        { isValid: isolationViolations === 0, score: isolationViolations === 0 ? 100 : 0 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'workspace-isolation-cross-access',
+            name: 'Cross-Workspace Data Access Prevention',
+            complexity: 'complex',
+            metadata: {
+              testType: 'isolation',
+              attemptCount: crossAccessAttempts.length,
+              isolationViolations: isolationViolations,
+            },
+          } as any,
+          {
+            success: isolationViolations === 0,
+            isolationMaintained: isolationViolations === 0,
+            properAccessDenials: properAccessDenials,
+            legitimateAccessWorks: legitimateAccess.success,
+          },
+          { isValid: isolationViolations === 0, score: isolationViolations === 0 ? 100 : 0 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should enforce workspace-specific encryption', async () => {
@@ -229,7 +222,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       const sensitiveData = {
         customerData: 'Highly sensitive customer information',
         apiKeys: ['key-1', 'key-2', 'key-3'],
-        financialRecords: { accounts: ['acc-1', 'acc-2'], balances: [10000, 25000] }
+        financialRecords: { accounts: ['acc-1', 'acc-2'], balances: [10000, 25000] },
       }
 
       // Test encryption for different workspace tiers
@@ -239,7 +232,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           sensitiveData,
           {
             encryptionLevel: workspace.securityLevel,
-            keyRotation: workspace.tier === 'enterprise'
+            keyRotation: workspace.tier === 'enterprise',
           }
         )
 
@@ -256,20 +249,20 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           encryptionSuccess: encryptionResult.success,
           encryptionStrength: encryptionResult.encryptionStrength,
           decryptionSuccess: decryptionResult.success,
-          dataIntegrity: JSON.stringify(decryptionResult.data) === JSON.stringify(sensitiveData)
+          dataIntegrity: JSON.stringify(decryptionResult.data) === JSON.stringify(sensitiveData),
         }
       })
 
       const results = await Promise.all(encryptionTests)
 
       // Verify enterprise workspace has strongest encryption
-      const enterpriseResult = results.find(r => r.tier === 'enterprise')
+      const enterpriseResult = results.find((r) => r.tier === 'enterprise')
       expect(enterpriseResult?.encryptionStrength).toBe('AES-256-GCM')
       expect(enterpriseResult?.encryptionSuccess).toBe(true)
       expect(enterpriseResult?.dataIntegrity).toBe(true)
 
       // Verify all required encryption is in place
-      results.forEach(result => {
+      results.forEach((result) => {
         if (result.encryptionRequired) {
           expect(result.encryptionSuccess).toBe(true)
           expect(result.decryptionSuccess).toBe(true)
@@ -278,27 +271,31 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       })
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'workspace-encryption-enforcement',
-          name: 'Workspace-Specific Encryption Enforcement',
-          complexity: 'complex',
-          metadata: {
-            testType: 'encryption',
-            workspaceCount: testWorkspaces.length,
-            encryptionResults: results
-          }
-        } as any,
-        {
-          success: results.every(r => !r.encryptionRequired || r.encryptionSuccess),
-          allRequiredEncrypted: results.filter(r => r.encryptionRequired).every(r => r.encryptionSuccess),
-          dataIntegrityMaintained: results.every(r => r.dataIntegrity),
-          encryptionResults: results
-        },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'workspace-encryption-enforcement',
+            name: 'Workspace-Specific Encryption Enforcement',
+            complexity: 'complex',
+            metadata: {
+              testType: 'encryption',
+              workspaceCount: testWorkspaces.length,
+              encryptionResults: results,
+            },
+          } as any,
+          {
+            success: results.every((r) => !r.encryptionRequired || r.encryptionSuccess),
+            allRequiredEncrypted: results
+              .filter((r) => r.encryptionRequired)
+              .every((r) => r.encryptionSuccess),
+            dataIntegrityMaintained: results.every((r) => r.dataIntegrity),
+            encryptionResults: results,
+          },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should maintain session isolation between workspaces', async () => {
@@ -308,7 +305,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       const sessions = await Promise.all([
         authService.createSession('user-alpha-1', 'workspace-alpha'),
         authService.createSession('user-beta-1', 'workspace-beta'),
-        authService.createSession('user-gamma-1', 'workspace-gamma')
+        authService.createSession('user-gamma-1', 'workspace-gamma'),
       ])
 
       const sessionIsolationTests = [
@@ -316,20 +313,20 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           name: 'Alpha session accessing Beta workspace',
           sessionToken: sessions[0].token,
           targetWorkspace: 'workspace-beta',
-          expectedResult: 'denied'
+          expectedResult: 'denied',
         },
         {
           name: 'Beta session accessing Gamma workspace',
           sessionToken: sessions[1].token,
           targetWorkspace: 'workspace-gamma',
-          expectedResult: 'denied'
+          expectedResult: 'denied',
         },
         {
           name: 'Alpha session accessing Alpha workspace',
           sessionToken: sessions[0].token,
           targetWorkspace: 'workspace-alpha',
-          expectedResult: 'allowed'
-        }
+          expectedResult: 'allowed',
+        },
       ]
 
       let isolationFailures = 0
@@ -352,7 +349,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
 
       // Test session token isolation
       const tokenCrossContamination = await testHarness.checkTokenCrossContamination(
-        sessions.map(s => s.token)
+        sessions.map((s) => s.token)
       )
 
       expect(isolationFailures).toBe(0)
@@ -360,27 +357,29 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       expect(tokenCrossContamination.detected).toBe(false)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'session-isolation-testing',
-          name: 'Session Isolation Between Workspaces',
-          complexity: 'complex',
-          metadata: {
-            testType: 'session-isolation',
-            testCount: sessionIsolationTests.length,
-            isolationFailures: isolationFailures
-          }
-        } as any,
-        {
-          success: isolationFailures === 0,
-          properIsolation: properIsolation,
-          tokenIsolation: !tokenCrossContamination.detected,
-          sessionCount: sessions.length
-        },
-        { isValid: isolationFailures === 0, score: isolationFailures === 0 ? 100 : 0 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'session-isolation-testing',
+            name: 'Session Isolation Between Workspaces',
+            complexity: 'complex',
+            metadata: {
+              testType: 'session-isolation',
+              testCount: sessionIsolationTests.length,
+              isolationFailures: isolationFailures,
+            },
+          } as any,
+          {
+            success: isolationFailures === 0,
+            properIsolation: properIsolation,
+            tokenIsolation: !tokenCrossContamination.detected,
+            sessionCount: sessions.length,
+          },
+          { isValid: isolationFailures === 0, score: isolationFailures === 0 ? 100 : 0 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should prevent workspace configuration leakage', async () => {
@@ -390,7 +389,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       const configurationAccess = await Promise.all(
         testWorkspaces.map(async (workspace) => {
           const configAttempts = testWorkspaces
-            .filter(w => w.id !== workspace.id)
+            .filter((w) => w.id !== workspace.id)
             .map(async (otherWorkspace) => {
               try {
                 const configAccess = await testHarness.attemptConfigurationAccess(
@@ -401,14 +400,16 @@ describe('Workspace Security and Isolation Testing Suite', () => {
                   attempterId: workspace.users[0].id,
                   targetWorkspace: otherWorkspace.id,
                   accessGranted: configAccess.success,
-                  configurationRevealed: configAccess.data ? Object.keys(configAccess.data).length > 0 : false
+                  configurationRevealed: configAccess.data
+                    ? Object.keys(configAccess.data).length > 0
+                    : false,
                 }
               } catch (error) {
                 return {
                   attempterId: workspace.users[0].id,
                   targetWorkspace: otherWorkspace.id,
                   accessGranted: false,
-                  configurationRevealed: false
+                  configurationRevealed: false,
                 }
               }
             })
@@ -418,34 +419,41 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       )
 
       const flatResults = configurationAccess.flat()
-      const unauthorizedAccess = flatResults.filter(r => r.accessGranted || r.configurationRevealed)
-      const properDenials = flatResults.filter(r => !r.accessGranted && !r.configurationRevealed)
+      const unauthorizedAccess = flatResults.filter(
+        (r) => r.accessGranted || r.configurationRevealed
+      )
+      const properDenials = flatResults.filter((r) => !r.accessGranted && !r.configurationRevealed)
 
       expect(unauthorizedAccess.length).toBe(0)
       expect(properDenials.length).toBe(flatResults.length)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'configuration-leakage-prevention',
-          name: 'Workspace Configuration Leakage Prevention',
-          complexity: 'complex',
-          metadata: {
-            testType: 'configuration-isolation',
-            attemptCount: flatResults.length,
-            unauthorizedAccess: unauthorizedAccess.length
-          }
-        } as any,
-        {
-          success: unauthorizedAccess.length === 0,
-          configurationProtected: unauthorizedAccess.length === 0,
-          properDenials: properDenials.length,
-          totalAttempts: flatResults.length
-        },
-        { isValid: unauthorizedAccess.length === 0, score: unauthorizedAccess.length === 0 ? 100 : 0 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'configuration-leakage-prevention',
+            name: 'Workspace Configuration Leakage Prevention',
+            complexity: 'complex',
+            metadata: {
+              testType: 'configuration-isolation',
+              attemptCount: flatResults.length,
+              unauthorizedAccess: unauthorizedAccess.length,
+            },
+          } as any,
+          {
+            success: unauthorizedAccess.length === 0,
+            configurationProtected: unauthorizedAccess.length === 0,
+            properDenials: properDenials.length,
+            totalAttempts: flatResults.length,
+          },
+          {
+            isValid: unauthorizedAccess.length === 0,
+            score: unauthorizedAccess.length === 0 ? 100 : 0,
+          },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -457,33 +465,33 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         {
           name: 'Weak password rejection',
           credentials: { username: 'testuser', password: '123' },
-          expectedResult: 'rejected'
+          expectedResult: 'rejected',
         },
         {
           name: 'Strong password acceptance',
           credentials: { username: 'testuser', password: 'StrongP@ssw0rd123!' },
-          expectedResult: 'accepted'
+          expectedResult: 'accepted',
         },
         {
           name: 'SQL injection attempt',
           credentials: { username: "admin'; DROP TABLE users; --", password: 'password' },
-          expectedResult: 'rejected'
+          expectedResult: 'rejected',
         },
         {
           name: 'XSS attempt in username',
           credentials: { username: '<script>alert("xss")</script>', password: 'password' },
-          expectedResult: 'rejected'
+          expectedResult: 'rejected',
         },
         {
           name: 'Empty credentials',
           credentials: { username: '', password: '' },
-          expectedResult: 'rejected'
+          expectedResult: 'rejected',
         },
         {
           name: 'Null credentials',
           credentials: { username: null, password: null },
-          expectedResult: 'rejected'
-        }
+          expectedResult: 'rejected',
+        },
       ]
 
       let securityTestsPassed = 0
@@ -516,27 +524,29 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       expect(securityScore).toBe(100)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'authentication-security-enforcement',
-          name: 'Authentication Security Enforcement',
-          complexity: 'complex',
-          metadata: {
-            testType: 'authentication-security',
-            testCount: authenticationTests.length,
-            securityScore: securityScore
-          }
-        } as any,
-        {
-          success: securityTestsFailed === 0,
-          securityTestsPassed: securityTestsPassed,
-          securityTestsFailed: securityTestsFailed,
-          securityScore: securityScore
-        },
-        { isValid: securityTestsFailed === 0, score: securityScore },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'authentication-security-enforcement',
+            name: 'Authentication Security Enforcement',
+            complexity: 'complex',
+            metadata: {
+              testType: 'authentication-security',
+              testCount: authenticationTests.length,
+              securityScore: securityScore,
+            },
+          } as any,
+          {
+            success: securityTestsFailed === 0,
+            securityTestsPassed: securityTestsPassed,
+            securityTestsFailed: securityTestsFailed,
+            securityScore: securityScore,
+          },
+          { isValid: securityTestsFailed === 0, score: securityScore },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should prevent brute force attacks', async () => {
@@ -550,7 +560,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       await authService.register({
         username: testUser,
         password: correctPassword,
-        workspaceId: 'workspace-alpha'
+        workspaceId: 'workspace-alpha',
       })
 
       const maxAttempts = 5
@@ -560,7 +570,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       await authService.configureBruteForceProtection({
         maxAttempts: maxAttempts,
         lockoutDuration: lockoutDuration,
-        enabled: true
+        enabled: true,
       })
 
       let attemptCount = 0
@@ -574,7 +584,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         try {
           const authResult = await authService.authenticate({
             username: testUser,
-            password: wrongPassword
+            password: wrongPassword,
           })
 
           if (!authResult.success && authResult.reason === 'account-locked') {
@@ -596,7 +606,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       try {
         const lockedAuthResult = await authService.authenticate({
           username: testUser,
-          password: correctPassword // Even correct password should fail
+          password: correctPassword, // Even correct password should fail
         })
         accountStillLocked = !lockedAuthResult.success
       } catch (error) {
@@ -609,28 +619,30 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       expect(lockoutTime).not.toBeNull()
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'brute-force-protection',
-          name: 'Brute Force Attack Protection',
-          complexity: 'complex',
-          metadata: {
-            testType: 'brute-force-protection',
-            maxAttempts: maxAttempts,
-            actualAttempts: attemptCount
-          }
-        } as any,
-        {
-          success: lockoutTriggered && accountStillLocked,
-          lockoutTriggered: lockoutTriggered,
-          attemptsBeforeLockout: attemptCount,
-          accountLocked: accountStillLocked,
-          lockoutTime: lockoutTime?.toISOString()
-        },
-        { isValid: lockoutTriggered && accountStillLocked, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'brute-force-protection',
+            name: 'Brute Force Attack Protection',
+            complexity: 'complex',
+            metadata: {
+              testType: 'brute-force-protection',
+              maxAttempts: maxAttempts,
+              actualAttempts: attemptCount,
+            },
+          } as any,
+          {
+            success: lockoutTriggered && accountStillLocked,
+            lockoutTriggered: lockoutTriggered,
+            attemptsBeforeLockout: attemptCount,
+            accountLocked: accountStillLocked,
+            lockoutTime: lockoutTime?.toISOString(),
+          },
+          { isValid: lockoutTriggered && accountStillLocked, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should validate JWT token security', async () => {
@@ -643,33 +655,33 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         {
           name: 'Valid token acceptance',
           token: validSession.token,
-          expectedValid: true
+          expectedValid: true,
         },
         {
           name: 'Expired token rejection',
           token: await testHarness.createExpiredToken('user-alpha-1'),
-          expectedValid: false
+          expectedValid: false,
         },
         {
           name: 'Tampered token rejection',
-          token: validSession.token.slice(0, -5) + 'XXXXX',
-          expectedValid: false
+          token: `${validSession.token.slice(0, -5)}XXXXX`,
+          expectedValid: false,
         },
         {
           name: 'Invalid signature rejection',
           token: await testHarness.createInvalidSignatureToken('user-alpha-1'),
-          expectedValid: false
+          expectedValid: false,
         },
         {
           name: 'Malformed token rejection',
           token: 'this.is.not.a.valid.jwt.token',
-          expectedValid: false
+          expectedValid: false,
         },
         {
           name: 'Empty token rejection',
           token: '',
-          expectedValid: false
-        }
+          expectedValid: false,
+        },
       ]
 
       let tokenTestsPassed = 0
@@ -700,34 +712,36 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       const claimsValidation = await authService.validateTokenClaims(validSession.token, {
         expectedIssuer: 'sim-chat-system',
         expectedAudience: 'workspace-alpha',
-        requiredClaims: ['userId', 'workspaceId', 'permissions']
+        requiredClaims: ['userId', 'workspaceId', 'permissions'],
       })
 
       expect(tokenTestsFailed).toBe(0)
       expect(claimsValidation.valid).toBe(true)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'jwt-token-security',
-          name: 'JWT Token Security Validation',
-          complexity: 'complex',
-          metadata: {
-            testType: 'token-security',
-            testCount: tokenSecurityTests.length,
-            tokenTestsPassed: tokenTestsPassed
-          }
-        } as any,
-        {
-          success: tokenTestsFailed === 0 && claimsValidation.valid,
-          tokenTestsPassed: tokenTestsPassed,
-          tokenTestsFailed: tokenTestsFailed,
-          claimsValidation: claimsValidation.valid
-        },
-        { isValid: tokenTestsFailed === 0, score: tokenTestsFailed === 0 ? 100 : 0 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'jwt-token-security',
+            name: 'JWT Token Security Validation',
+            complexity: 'complex',
+            metadata: {
+              testType: 'token-security',
+              testCount: tokenSecurityTests.length,
+              tokenTestsPassed: tokenTestsPassed,
+            },
+          } as any,
+          {
+            success: tokenTestsFailed === 0 && claimsValidation.valid,
+            tokenTestsPassed: tokenTestsPassed,
+            tokenTestsFailed: tokenTestsFailed,
+            claimsValidation: claimsValidation.valid,
+          },
+          { isValid: tokenTestsFailed === 0, score: tokenTestsFailed === 0 ? 100 : 0 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -741,43 +755,43 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           userId: 'user-alpha-1',
           workspaceId: 'workspace-alpha',
           action: 'admin',
-          expectedResult: 'allowed'
+          expectedResult: 'allowed',
         },
         {
           name: 'Member write access',
           userId: 'user-alpha-2',
           workspaceId: 'workspace-alpha',
           action: 'write',
-          expectedResult: 'allowed'
+          expectedResult: 'allowed',
         },
         {
           name: 'Member admin access denied',
           userId: 'user-alpha-2',
           workspaceId: 'workspace-alpha',
           action: 'admin',
-          expectedResult: 'denied'
+          expectedResult: 'denied',
         },
         {
           name: 'Viewer read access',
           userId: 'user-alpha-3',
           workspaceId: 'workspace-alpha',
           action: 'read',
-          expectedResult: 'allowed'
+          expectedResult: 'allowed',
         },
         {
           name: 'Viewer write access denied',
           userId: 'user-alpha-3',
           workspaceId: 'workspace-alpha',
           action: 'write',
-          expectedResult: 'denied'
+          expectedResult: 'denied',
         },
         {
           name: 'Cross-workspace access denied',
           userId: 'user-alpha-1',
           workspaceId: 'workspace-beta',
           action: 'read',
-          expectedResult: 'denied'
-        }
+          expectedResult: 'denied',
+        },
       ]
 
       let authorizationTestsPassed = 0
@@ -811,26 +825,31 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       expect(authorizationTestsFailed).toBe(0)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'role-based-access-control',
-          name: 'Role-Based Access Control Enforcement',
-          complexity: 'complex',
-          metadata: {
-            testType: 'rbac',
-            testCount: rbacTests.length,
-            authorizationTestsPassed: authorizationTestsPassed
-          }
-        } as any,
-        {
-          success: authorizationTestsFailed === 0,
-          authorizationTestsPassed: authorizationTestsPassed,
-          authorizationTestsFailed: authorizationTestsFailed
-        },
-        { isValid: authorizationTestsFailed === 0, score: authorizationTestsFailed === 0 ? 100 : 0 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'role-based-access-control',
+            name: 'Role-Based Access Control Enforcement',
+            complexity: 'complex',
+            metadata: {
+              testType: 'rbac',
+              testCount: rbacTests.length,
+              authorizationTestsPassed: authorizationTestsPassed,
+            },
+          } as any,
+          {
+            success: authorizationTestsFailed === 0,
+            authorizationTestsPassed: authorizationTestsPassed,
+            authorizationTestsFailed: authorizationTestsFailed,
+          },
+          {
+            isValid: authorizationTestsFailed === 0,
+            score: authorizationTestsFailed === 0 ? 100 : 0,
+          },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should validate resource-level permissions', async () => {
@@ -845,8 +864,8 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           permissions: {
             'user-alpha-1': ['read', 'write', 'delete', 'share'],
             'user-alpha-2': ['read', 'write'],
-            'user-alpha-3': ['read']
-          }
+            'user-alpha-3': ['read'],
+          },
         },
         {
           id: 'agent-config-1',
@@ -855,9 +874,9 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           ownerId: 'user-alpha-1',
           permissions: {
             'user-alpha-1': ['read', 'write', 'delete', 'configure'],
-            'user-alpha-2': ['read']
-          }
-        }
+            'user-alpha-2': ['read'],
+          },
+        },
       ]
 
       const resourcePermissionTests = [
@@ -866,29 +885,29 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           userId: 'user-alpha-1',
           resourceId: 'chat-session-1',
           action: 'delete',
-          expectedResult: 'allowed'
+          expectedResult: 'allowed',
         },
         {
           name: 'Member write access to chat session',
           userId: 'user-alpha-2',
           resourceId: 'chat-session-1',
           action: 'write',
-          expectedResult: 'allowed'
+          expectedResult: 'allowed',
         },
         {
           name: 'Viewer delete access denied',
           userId: 'user-alpha-3',
           resourceId: 'chat-session-1',
           action: 'delete',
-          expectedResult: 'denied'
+          expectedResult: 'denied',
         },
         {
           name: 'Non-permitted user access denied',
           userId: 'user-alpha-3',
           resourceId: 'agent-config-1',
           action: 'read',
-          expectedResult: 'denied'
-        }
+          expectedResult: 'denied',
+        },
       ]
 
       // Setup resources in authorization service
@@ -927,26 +946,28 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       expect(resourceTestsFailed).toBe(0)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'resource-level-permissions',
-          name: 'Resource-Level Permission Validation',
-          complexity: 'complex',
-          metadata: {
-            testType: 'resource-permissions',
-            resourceCount: resources.length,
-            testCount: resourcePermissionTests.length
-          }
-        } as any,
-        {
-          success: resourceTestsFailed === 0,
-          resourceTestsPassed: resourceTestsPassed,
-          resourceTestsFailed: resourceTestsFailed
-        },
-        { isValid: resourceTestsFailed === 0, score: resourceTestsFailed === 0 ? 100 : 0 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'resource-level-permissions',
+            name: 'Resource-Level Permission Validation',
+            complexity: 'complex',
+            metadata: {
+              testType: 'resource-permissions',
+              resourceCount: resources.length,
+              testCount: resourcePermissionTests.length,
+            },
+          } as any,
+          {
+            success: resourceTestsFailed === 0,
+            resourceTestsPassed: resourceTestsPassed,
+            resourceTestsFailed: resourceTestsFailed,
+          },
+          { isValid: resourceTestsFailed === 0, score: resourceTestsFailed === 0 ? 100 : 0 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -959,32 +980,32 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           name: 'SQL Injection in message content',
           attack: "'; DROP TABLE messages; --",
           attackType: 'sql-injection',
-          targetEndpoint: '/api/chat/send'
+          targetEndpoint: '/api/chat/send',
         },
         {
           name: 'NoSQL Injection in user lookup',
           attack: { $ne: null },
           attackType: 'nosql-injection',
-          targetEndpoint: '/api/users/lookup'
+          targetEndpoint: '/api/users/lookup',
         },
         {
           name: 'XSS in chat message',
           attack: '<script>document.cookie="stolen=true"</script>',
           attackType: 'xss',
-          targetEndpoint: '/api/chat/send'
+          targetEndpoint: '/api/chat/send',
         },
         {
           name: 'Command injection in file upload',
           attack: 'test.txt; rm -rf /',
           attackType: 'command-injection',
-          targetEndpoint: '/api/files/upload'
+          targetEndpoint: '/api/files/upload',
         },
         {
           name: 'LDAP injection in user authentication',
           attack: '*)(uid=*))(|(uid=*',
           attackType: 'ldap-injection',
-          targetEndpoint: '/api/auth/login'
-        }
+          targetEndpoint: '/api/auth/login',
+        },
       ]
 
       let injectionBlockedCount = 0
@@ -1016,27 +1037,29 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       expect(injectionProtectionScore).toBe(100)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'injection-attack-resistance',
-          name: 'Injection Attack Resistance',
-          complexity: 'extreme',
-          metadata: {
-            testType: 'penetration-testing',
-            attackTypes: injectionTests.map(t => t.attackType),
-            protectionScore: injectionProtectionScore
-          }
-        } as any,
-        {
-          success: injectionSucceededCount === 0,
-          attacksBlocked: injectionBlockedCount,
-          attacksSucceeded: injectionSucceededCount,
-          protectionScore: injectionProtectionScore
-        },
-        { isValid: injectionSucceededCount === 0, score: injectionProtectionScore },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'injection-attack-resistance',
+            name: 'Injection Attack Resistance',
+            complexity: 'extreme',
+            metadata: {
+              testType: 'penetration-testing',
+              attackTypes: injectionTests.map((t) => t.attackType),
+              protectionScore: injectionProtectionScore,
+            },
+          } as any,
+          {
+            success: injectionSucceededCount === 0,
+            attacksBlocked: injectionBlockedCount,
+            attacksSucceeded: injectionSucceededCount,
+            protectionScore: injectionProtectionScore,
+          },
+          { isValid: injectionSucceededCount === 0, score: injectionProtectionScore },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should prevent unauthorized API access', async () => {
@@ -1048,28 +1071,28 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           endpoint: '/api/admin/workspaces',
           method: 'GET',
           auth: null,
-          expectedStatus: 401
+          expectedStatus: 401,
         },
         {
           name: 'Access user data with invalid token',
           endpoint: '/api/users/profile',
           method: 'GET',
           auth: { token: 'invalid-token' },
-          expectedStatus: 401
+          expectedStatus: 401,
         },
         {
           name: 'Modify workspace settings without permission',
           endpoint: '/api/workspaces/workspace-alpha/settings',
           method: 'PUT',
           auth: { token: await testHarness.createToken('user-alpha-3', 'viewer') },
-          expectedStatus: 403
+          expectedStatus: 403,
         },
         {
           name: 'Access cross-workspace data',
           endpoint: '/api/workspaces/workspace-beta/data',
           method: 'GET',
           auth: { token: await testHarness.createToken('user-alpha-1', 'admin') },
-          expectedStatus: 403
+          expectedStatus: 403,
         },
         {
           name: 'Bypass rate limiting',
@@ -1077,8 +1100,8 @@ describe('Workspace Security and Isolation Testing Suite', () => {
           method: 'POST',
           auth: { token: await testHarness.createToken('user-alpha-1', 'admin') },
           rateLimitTest: true,
-          expectedStatus: 429
-        }
+          expectedStatus: 429,
+        },
       ]
 
       let properDenials = 0
@@ -1094,7 +1117,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
               testHarness.makeRequest(test.endpoint, test.method, test.auth)
             )
             const responses = await Promise.all(requests)
-            const rateLimitedResponses = responses.filter(r => r.status === 429)
+            const rateLimitedResponses = responses.filter((r) => r.status === 429)
             response = rateLimitedResponses.length > 0 ? { status: 429 } : { status: 200 }
           } else {
             response = await testHarness.makeRequest(test.endpoint, test.method, test.auth)
@@ -1118,27 +1141,29 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       expect(accessControlScore).toBe(100)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'unauthorized-api-access-prevention',
-          name: 'Unauthorized API Access Prevention',
-          complexity: 'extreme',
-          metadata: {
-            testType: 'api-security',
-            testCount: unauthorizedAccessTests.length,
-            accessControlScore: accessControlScore
-          }
-        } as any,
-        {
-          success: unauthorizedSuccess === 0,
-          properDenials: properDenials,
-          unauthorizedSuccess: unauthorizedSuccess,
-          accessControlScore: accessControlScore
-        },
-        { isValid: unauthorizedSuccess === 0, score: accessControlScore },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'unauthorized-api-access-prevention',
+            name: 'Unauthorized API Access Prevention',
+            complexity: 'extreme',
+            metadata: {
+              testType: 'api-security',
+              testCount: unauthorizedAccessTests.length,
+              accessControlScore: accessControlScore,
+            },
+          } as any,
+          {
+            success: unauthorizedSuccess === 0,
+            properDenials: properDenials,
+            unauthorizedSuccess: unauthorizedSuccess,
+            accessControlScore: accessControlScore,
+          },
+          { isValid: unauthorizedSuccess === 0, score: accessControlScore },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should maintain data integrity under attack', async () => {
@@ -1149,7 +1174,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         workspaces: testWorkspaces.length,
         users: testWorkspaces.reduce((sum, w) => sum + w.users.length, 0),
         sessions: 0,
-        messages: 0
+        messages: 0,
       }
 
       // Record initial checksums
@@ -1159,24 +1184,24 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       const attackScenarios = [
         {
           name: 'Concurrent modification attacks',
-          attack: () => testHarness.simulateConcurrentModifications(50)
+          attack: () => testHarness.simulateConcurrentModifications(50),
         },
         {
           name: 'Database corruption attempts',
-          attack: () => testHarness.simulateDatabaseCorruption()
+          attack: () => testHarness.simulateDatabaseCorruption(),
         },
         {
           name: 'Memory exhaustion attack',
-          attack: () => testHarness.simulateMemoryExhaustion()
+          attack: () => testHarness.simulateMemoryExhaustion(),
         },
         {
           name: 'Race condition exploitation',
-          attack: () => testHarness.simulateRaceConditions()
+          attack: () => testHarness.simulateRaceConditions(),
         },
         {
           name: 'Transaction rollback attacks',
-          attack: () => testHarness.simulateTransactionAttacks()
-        }
+          attack: () => testHarness.simulateTransactionAttacks(),
+        },
       ]
 
       let dataIntegrityMaintained = 0
@@ -1211,27 +1236,29 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       expect(integrityScore).toBe(100)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'data-integrity-under-attack',
-          name: 'Data Integrity Under Attack',
-          complexity: 'extreme',
-          metadata: {
-            testType: 'data-integrity',
-            attackScenarios: attackScenarios.length,
-            integrityScore: integrityScore
-          }
-        } as any,
-        {
-          success: dataCorruptionDetected === 0,
-          dataIntegrityMaintained: dataIntegrityMaintained,
-          dataCorruptionDetected: dataCorruptionDetected,
-          integrityScore: integrityScore
-        },
-        { isValid: dataCorruptionDetected === 0, score: integrityScore },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'data-integrity-under-attack',
+            name: 'Data Integrity Under Attack',
+            complexity: 'extreme',
+            metadata: {
+              testType: 'data-integrity',
+              attackScenarios: attackScenarios.length,
+              integrityScore: integrityScore,
+            },
+          } as any,
+          {
+            success: dataCorruptionDetected === 0,
+            dataIntegrityMaintained: dataIntegrityMaintained,
+            dataCorruptionDetected: dataCorruptionDetected,
+            integrityScore: integrityScore,
+          },
+          { isValid: dataCorruptionDetected === 0, score: integrityScore },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -1246,7 +1273,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         { action: 'message-send', userId: 'user-alpha-1', workspaceId: 'workspace-alpha' },
         { action: 'agent-create', userId: 'user-alpha-1', workspaceId: 'workspace-alpha' },
         { action: 'permission-change', userId: 'user-alpha-1', workspaceId: 'workspace-alpha' },
-        { action: 'data-export', userId: 'user-alpha-1', workspaceId: 'workspace-alpha' }
+        { action: 'data-export', userId: 'user-alpha-1', workspaceId: 'workspace-alpha' },
       ]
 
       for (const action of auditableActions) {
@@ -1259,7 +1286,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       // Verify all actions were logged
       const loggedActions = auditLogs.map((log: AuditLog) => log.action)
       const missingActions = auditableActions.filter(
-        action => !loggedActions.includes(action.action)
+        (action) => !loggedActions.includes(action.action)
       )
 
       expect(missingActions.length).toBe(0)
@@ -1277,27 +1304,29 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       })
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'comprehensive-audit-trails',
-          name: 'Comprehensive Audit Trail Maintenance',
-          complexity: 'medium',
-          metadata: {
-            testType: 'audit-compliance',
-            auditableActions: auditableActions.length,
-            auditLogsFound: auditLogs.length
-          }
-        } as any,
-        {
-          success: missingActions.length === 0,
-          allActionsLogged: missingActions.length === 0,
-          auditLogsComplete: auditLogs.length >= auditableActions.length,
-          missingActions: missingActions.length
-        },
-        { isValid: missingActions.length === 0, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'comprehensive-audit-trails',
+            name: 'Comprehensive Audit Trail Maintenance',
+            complexity: 'medium',
+            metadata: {
+              testType: 'audit-compliance',
+              auditableActions: auditableActions.length,
+              auditLogsFound: auditLogs.length,
+            },
+          } as any,
+          {
+            success: missingActions.length === 0,
+            allActionsLogged: missingActions.length === 0,
+            auditLogsComplete: auditLogs.length >= auditableActions.length,
+            missingActions: missingActions.length,
+          },
+          { isValid: missingActions.length === 0, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should support data privacy compliance', async () => {
@@ -1307,28 +1336,28 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         {
           name: 'Data anonymization',
           action: () => testHarness.testDataAnonymization('user-alpha-1'),
-          requiredFeature: 'anonymization'
+          requiredFeature: 'anonymization',
         },
         {
           name: 'Right to be forgotten',
           action: () => testHarness.testDataDeletion('user-alpha-1'),
-          requiredFeature: 'data-deletion'
+          requiredFeature: 'data-deletion',
         },
         {
           name: 'Data portability',
           action: () => testHarness.testDataExport('user-alpha-1'),
-          requiredFeature: 'data-export'
+          requiredFeature: 'data-export',
         },
         {
           name: 'Consent management',
           action: () => testHarness.testConsentManagement('user-alpha-1'),
-          requiredFeature: 'consent-management'
+          requiredFeature: 'consent-management',
         },
         {
           name: 'Data minimization',
           action: () => testHarness.testDataMinimization('workspace-alpha'),
-          requiredFeature: 'data-minimization'
-        }
+          requiredFeature: 'data-minimization',
+        },
       ]
 
       let complianceTestsPassed = 0
@@ -1356,27 +1385,29 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       expect(complianceScore).toBe(100)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'data-privacy-compliance',
-          name: 'Data Privacy Compliance Testing',
-          complexity: 'complex',
-          metadata: {
-            testType: 'privacy-compliance',
-            testCount: privacyComplianceTests.length,
-            complianceScore: complianceScore
-          }
-        } as any,
-        {
-          success: complianceTestsFailed === 0,
-          complianceTestsPassed: complianceTestsPassed,
-          complianceTestsFailed: complianceTestsFailed,
-          complianceScore: complianceScore
-        },
-        { isValid: complianceTestsFailed === 0, score: complianceScore },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'data-privacy-compliance',
+            name: 'Data Privacy Compliance Testing',
+            complexity: 'complex',
+            metadata: {
+              testType: 'privacy-compliance',
+              testCount: privacyComplianceTests.length,
+              complianceScore: complianceScore,
+            },
+          } as any,
+          {
+            success: complianceTestsFailed === 0,
+            complianceTestsPassed: complianceTestsPassed,
+            complianceTestsFailed: complianceTestsFailed,
+            complianceScore: complianceScore,
+          },
+          { isValid: complianceTestsFailed === 0, score: complianceScore },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 })

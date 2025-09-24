@@ -1,14 +1,12 @@
-import { and, eq, isNull, lte, gte, sql, inArray, or } from 'drizzle-orm'
 import { db } from '@packages/db'
 import {
-  chatMessage,
-  chatConversation,
   chatBrowserSession,
-  chatSearchIndex,
+  chatConversation,
   chatExportRequest,
+  chatMessage,
+  chatSearchIndex,
 } from '@packages/db/chat-persistence-schema'
-import { parlantSession, parlantAgent } from '@packages/db/parlant-schema'
-import { workspace, user } from '@packages/db/schema'
+import { and, eq, inArray, isNull, lte, or, sql } from 'drizzle-orm'
 
 /**
  * Data Retention and Cleanup Service
@@ -129,7 +127,7 @@ export class DataRetentionService {
   /**
    * Execute retention cleanup for workspace
    */
-  async executeCleanup(workspaceId: string, dryRun: boolean = false): Promise<CleanupStats> {
+  async executeCleanup(workspaceId: string, dryRun = false): Promise<CleanupStats> {
     const startTime = Date.now()
     const stats: CleanupStats = {
       messagesProcessed: 0,
@@ -404,7 +402,7 @@ export class DataRetentionService {
 
     let deleted = 0
     if (expiredMessages.length > 0) {
-      const messageIds = expiredMessages.map(m => m.id)
+      const messageIds = expiredMessages.map((m) => m.id)
 
       if (policy.archiveBeforeDelete) {
         await this.archiveData(workspaceId, cutoffDate)
@@ -447,7 +445,7 @@ export class DataRetentionService {
 
     let deleted = 0
     if (expiredConversations.length > 0) {
-      const conversationIds = expiredConversations.map(c => c.id)
+      const conversationIds = expiredConversations.map((c) => c.id)
 
       // Soft delete conversations
       const result = await db
@@ -488,7 +486,7 @@ export class DataRetentionService {
 
     let cleaned = 0
     if (expiredSessions.length > 0) {
-      const sessionIds = expiredSessions.map(s => s.id)
+      const sessionIds = expiredSessions.map((s) => s.id)
 
       const result = await db
         .delete(chatBrowserSession)
@@ -524,7 +522,7 @@ export class DataRetentionService {
 
     let expired = 0
     if (expiredExports.length > 0) {
-      const exportIds = expiredExports.map(e => e.id)
+      const exportIds = expiredExports.map((e) => e.id)
 
       const result = await db
         .delete(chatExportRequest)
@@ -550,10 +548,7 @@ export class DataRetentionService {
         .select({ count: sql<number>`COUNT(*)` })
         .from(chatMessage)
         .where(
-          and(
-            eq(chatMessage.workspaceId, workspaceId),
-            lte(chatMessage.deletedAt, cutoffDate)
-          )
+          and(eq(chatMessage.workspaceId, workspaceId), lte(chatMessage.deletedAt, cutoffDate))
         )
 
       return { permanentlyDeleted: messageCount }
@@ -562,12 +557,7 @@ export class DataRetentionService {
     // Permanently delete soft-deleted items past recovery period
     const messageResult = await db
       .delete(chatMessage)
-      .where(
-        and(
-          eq(chatMessage.workspaceId, workspaceId),
-          lte(chatMessage.deletedAt, cutoffDate)
-        )
-      )
+      .where(and(eq(chatMessage.workspaceId, workspaceId), lte(chatMessage.deletedAt, cutoffDate)))
 
     const conversationResult = await db
       .delete(chatConversation)
@@ -591,22 +581,14 @@ export class DataRetentionService {
     // Permanently delete all user messages
     const messageResult = await db
       .delete(chatMessage)
-      .where(
-        and(
-          eq(chatMessage.workspaceId, workspaceId),
-          eq(chatMessage.senderId, userId)
-        )
-      )
+      .where(and(eq(chatMessage.workspaceId, workspaceId), eq(chatMessage.senderId, userId)))
     stats.messagesDeleted += messageResult.rowCount || 0
 
     // Delete user's conversations
     const conversationResult = await db
       .delete(chatConversation)
       .where(
-        and(
-          eq(chatConversation.workspaceId, workspaceId),
-          eq(chatConversation.createdBy, userId)
-        )
+        and(eq(chatConversation.workspaceId, workspaceId), eq(chatConversation.createdBy, userId))
       )
     stats.conversationsDeleted += conversationResult.rowCount || 0
 
@@ -614,27 +596,19 @@ export class DataRetentionService {
     const sessionResult = await db
       .delete(chatBrowserSession)
       .where(
-        and(
-          eq(chatBrowserSession.workspaceId, workspaceId),
-          eq(chatBrowserSession.userId, userId)
-        )
+        and(eq(chatBrowserSession.workspaceId, workspaceId), eq(chatBrowserSession.userId, userId))
       )
     stats.sessionsCleaned += sessionResult.rowCount || 0
   }
 
-  private async purgeConversations(
-    conversationIds: string[],
-    stats: CleanupStats
-  ): Promise<void> {
+  private async purgeConversations(conversationIds: string[], stats: CleanupStats): Promise<void> {
     // Delete messages in conversations
-    const messageResult = await db
-      .delete(chatMessage)
-      .where(
-        sql`${chatMessage.sessionId} IN (
+    const messageResult = await db.delete(chatMessage).where(
+      sql`${chatMessage.sessionId} IN (
           SELECT session_id FROM ${chatConversation}
           WHERE id = ANY(${conversationIds})
         )`
-      )
+    )
     stats.messagesDeleted += messageResult.rowCount || 0
 
     // Delete conversations
@@ -660,17 +634,15 @@ export class DataRetentionService {
 
   private async cleanupSearchIndexes(workspaceId: string): Promise<void> {
     // Clean up orphaned search indexes
-    await db
-      .delete(chatSearchIndex)
-      .where(
-        and(
-          eq(chatSearchIndex.workspaceId, workspaceId),
-          sql`NOT EXISTS (
+    await db.delete(chatSearchIndex).where(
+      and(
+        eq(chatSearchIndex.workspaceId, workspaceId),
+        sql`NOT EXISTS (
             SELECT 1 FROM ${chatMessage}
             WHERE ${chatMessage.id} = ${chatSearchIndex.messageId}
           )`
-        )
       )
+    )
   }
 
   private async gatherDataStatistics(
@@ -726,11 +698,11 @@ export class DataRetentionService {
 
     if (expiredRatio > 0.1) {
       return 'violation' // More than 10% of data is expired
-    } else if (expiredRatio > 0.05) {
-      return 'warning' // More than 5% of data is expired
-    } else {
-      return 'compliant'
     }
+    if (expiredRatio > 0.05) {
+      return 'warning' // More than 5% of data is expired
+    }
+    return 'compliant'
   }
 
   private generateRecommendations(
@@ -781,7 +753,9 @@ export class DataRetentionService {
     }
   }
 
-  private async getWorkspaceRetentionSettings(workspaceId: string): Promise<Partial<RetentionPolicy> | null> {
+  private async getWorkspaceRetentionSettings(
+    workspaceId: string
+  ): Promise<Partial<RetentionPolicy> | null> {
     // Placeholder - would query workspace-specific settings from database
     return null
   }

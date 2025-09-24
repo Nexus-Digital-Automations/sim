@@ -18,22 +18,19 @@
  * @version 1.0.0
  */
 
+import { createLogger } from '../utils/logger'
 import type {
   EnhancedDescriptionSchema,
+  SkillLevel,
   ToolCategory,
   UserRole,
-  SkillLevel,
-  DescriptionSearchResult,
-  SearchContext,
-  UsageContext
 } from './natural-language-description-framework'
 import {
-  SimToolMetadata,
-  SimToolCategory,
+  SimToolCatalog,
+  type SimToolCategory,
   SimToolClassifier,
-  SimToolCatalog
+  type SimToolMetadata,
 } from './sim-tool-catalog'
-import { createLogger } from '../utils/logger'
 
 const logger = createLogger('ToolSelectionIntelligence')
 
@@ -213,7 +210,7 @@ export class ToolSelectionIntelligenceEngine {
     logger.debug('Processing tool selection query', {
       userIntent: query.userIntent.substring(0, 100),
       userRole: query.userContext.role,
-      skillLevel: query.userContext.skillLevel
+      skillLevel: query.userContext.skillLevel,
     })
 
     try {
@@ -224,28 +221,47 @@ export class ToolSelectionIntelligenceEngine {
       const userProfile = await this.buildUserProfile(query.userContext)
 
       // Step 3: Generate initial tool candidates
-      const candidates = await this.generateToolCandidates(intentAnalysis, userProfile, query.constraints)
+      const candidates = await this.generateToolCandidates(
+        intentAnalysis,
+        userProfile,
+        query.constraints
+      )
 
       // Step 4: Score and rank tools using multiple criteria
-      const scoredTools = await this.scoreAndRankTools(candidates, intentAnalysis, userProfile, query.selectionPreferences)
+      const scoredTools = await this.scoreAndRankTools(
+        candidates,
+        intentAnalysis,
+        userProfile,
+        query.selectionPreferences
+      )
 
       // Step 5: Generate personalized descriptions and guidance
-      const enrichedRecommendations = await this.enrichRecommendations(scoredTools, userProfile, intentAnalysis)
+      const enrichedRecommendations = await this.enrichRecommendations(
+        scoredTools,
+        userProfile,
+        intentAnalysis
+      )
 
       // Step 6: Create comprehensive reasoning and guidance
-      const recommendation = await this.buildFinalRecommendation(enrichedRecommendations, query, intentAnalysis, userProfile)
+      const recommendation = await this.buildFinalRecommendation(
+        enrichedRecommendations,
+        query,
+        intentAnalysis,
+        userProfile
+      )
 
       logger.info('Tool selection completed', {
         primaryTool: recommendation.primaryRecommendation.toolId,
         alternativeCount: recommendation.alternativeRecommendations.length,
-        confidence: recommendation.confidenceMetrics.overallConfidence
+        confidence: recommendation.confidenceMetrics.overallConfidence,
       })
 
       return recommendation
-
     } catch (error) {
       logger.error('Tool selection failed:', error)
-      throw new Error(`Tool selection failed: ${error instanceof Error ? error.message : String(error)}`)
+      throw new Error(
+        `Tool selection failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -289,7 +305,7 @@ export class ToolSelectionIntelligenceEngine {
       alternativeTools: similarityAnalysis.alternativeTools,
       upgradePaths: similarityAnalysis.upgradePaths,
       complementaryTools: similarityAnalysis.complementaryTools,
-      reasoningForRecommendations: similarityAnalysis.reasoning
+      reasoningForRecommendations: similarityAnalysis.reasoning,
     }
   }
 
@@ -306,14 +322,17 @@ export class ToolSelectionIntelligenceEngine {
     const workflowAnalysis = await this.analyzeWorkflow(workflowDescription, workflowStage)
     const userProfile = await this.buildUserProfile(userContext)
 
-    const recommendations = await this.generateWorkflowRecommendations(workflowAnalysis, userProfile)
+    const recommendations = await this.generateWorkflowRecommendations(
+      workflowAnalysis,
+      userProfile
+    )
 
     return {
       workflowBreakdown: workflowAnalysis,
       stageRecommendations: recommendations.stageRecommendations,
       sequentialRecommendations: recommendations.sequentialFlow,
       parallelRecommendations: recommendations.parallelOptions,
-      integrationGuidance: recommendations.integrationGuidance
+      integrationGuidance: recommendations.integrationGuidance,
     }
   }
 
@@ -348,7 +367,7 @@ export class ToolSelectionIntelligenceEngine {
       scope: complexityAnalysis.scope,
       timeframe: constraintAnalysis.timeframe,
       qualityRequirements: constraintAnalysis.qualityRequirements,
-      implicitConstraints: constraintAnalysis.implicitConstraints
+      implicitConstraints: constraintAnalysis.implicitConstraints,
     }
   }
 
@@ -357,12 +376,12 @@ export class ToolSelectionIntelligenceEngine {
       basicProfile: {
         role: userContext.role,
         skillLevel: userContext.skillLevel,
-        experience: userContext.experience
+        experience: userContext.experience,
       },
       contextualProfile: await this.userProfiler.analyzeContext(userContext),
       behavioralProfile: await this.userProfiler.analyzeBehavior(userContext),
       preferencesProfile: await this.userProfiler.analyzePreferences(userContext),
-      capabilityProfile: await this.userProfiler.analyzeCapabilities(userContext)
+      capabilityProfile: await this.userProfiler.analyzeCapabilities(userContext),
     }
   }
 
@@ -391,7 +410,7 @@ export class ToolSelectionIntelligenceEngine {
           toolMetadata: tool,
           initialRelevanceScore: relevanceScore,
           constraintCompatibility: this.assessConstraintCompatibility(tool, constraints),
-          userCompatibility: await this.assessUserCompatibility(tool, userProfile)
+          userCompatibility: await this.assessUserCompatibility(tool, userProfile),
         })
       }
     }
@@ -422,7 +441,7 @@ export class ToolSelectionIntelligenceEngine {
         toolMetadata: candidate.toolMetadata,
         scores,
         finalScore,
-        reasoning: await this.generateScoringReasoning(candidate, scores, intentAnalysis)
+        reasoning: await this.generateScoringReasoning(candidate, scores, intentAnalysis),
       })
     }
 
@@ -436,7 +455,8 @@ export class ToolSelectionIntelligenceEngine {
   ): Promise<EnrichedToolRecommendation[]> {
     const enrichedRecommendations: EnrichedToolRecommendation[] = []
 
-    for (const scoredTool of scoredTools.slice(0, 10)) { // Top 10 candidates
+    for (const scoredTool of scoredTools.slice(0, 10)) {
+      // Top 10 candidates
       const enhancedDescription = await this.generateEnhancedDescription(scoredTool.toolMetadata)
       const personalizedDescription = await this.generatePersonalizedDescription(
         scoredTool.toolMetadata,
@@ -454,7 +474,7 @@ export class ToolSelectionIntelligenceEngine {
         ...scoredTool,
         enhancedDescription,
         personalizedDescription,
-        userSpecificGuidance: userGuidance
+        userSpecificGuidance: userGuidance,
       })
     }
 
@@ -468,7 +488,10 @@ export class ToolSelectionIntelligenceEngine {
     userProfile: ComprehensiveUserProfile
   ): Promise<ToolRecommendationResult> {
     const primary = enrichedRecommendations[0]
-    const alternatives = enrichedRecommendations.slice(1, originalQuery.selectionPreferences.maxRecommendations)
+    const alternatives = enrichedRecommendations.slice(
+      1,
+      originalQuery.selectionPreferences.maxRecommendations
+    )
 
     const selectionReasoning = await this.reasoningEngine.generateSelectionReasoning(
       primary,
@@ -493,10 +516,10 @@ export class ToolSelectionIntelligenceEngine {
 
     return {
       primaryRecommendation: this.buildToolRecommendation(primary),
-      alternativeRecommendations: alternatives.map(alt => this.buildToolRecommendation(alt)),
+      alternativeRecommendations: alternatives.map((alt) => this.buildToolRecommendation(alt)),
       selectionReasoning,
       confidenceMetrics,
-      nextStepsGuidance
+      nextStepsGuidance,
     }
   }
 
@@ -511,19 +534,28 @@ export class ToolSelectionIntelligenceEngine {
       return false
     }
 
-    if (constraints.excludedTools && constraints.excludedTools.includes(tool.toolId)) {
+    if (constraints.excludedTools?.includes(tool.toolId)) {
       return false
     }
 
-    if (constraints.maxComplexity && this.getComplexityLevel(tool.complexity) > this.getComplexityLevel(constraints.maxComplexity)) {
+    if (
+      constraints.maxComplexity &&
+      this.getComplexityLevel(tool.complexity) > this.getComplexityLevel(constraints.maxComplexity)
+    ) {
       return false
     }
 
-    if (constraints.requiresAuthentication !== undefined && tool.requiresAuthentication !== constraints.requiresAuthentication) {
+    if (
+      constraints.requiresAuthentication !== undefined &&
+      tool.requiresAuthentication !== constraints.requiresAuthentication
+    ) {
       return false
     }
 
-    if (constraints.requiresPermissions !== undefined && tool.requiresPermissions !== constraints.requiresPermissions) {
+    if (
+      constraints.requiresPermissions !== undefined &&
+      tool.requiresPermissions !== constraints.requiresPermissions
+    ) {
       return false
     }
 
@@ -548,7 +580,10 @@ export class ToolSelectionIntelligenceEngine {
     relevance += categoryRelevance * 0.3
 
     // Action matching
-    const actionRelevance = await this.calculateActionRelevance(tool, intentAnalysis.extractedActions)
+    const actionRelevance = await this.calculateActionRelevance(
+      tool,
+      intentAnalysis.extractedActions
+    )
     relevance += actionRelevance * 0.4
 
     // Use case matching
@@ -561,43 +596,43 @@ export class ToolSelectionIntelligenceEngine {
   private calculateCategoryRelevance(toolCategory: SimToolCategory, intentDomain: string): number {
     // Map domains to tool categories with relevance scores
     const domainCategoryMap: Record<string, Record<SimToolCategory, number>> = {
-      'workflow': {
-        'workflow_management': 0.9,
-        'task_management': 0.8,
-        'planning': 0.7,
-        'user_management': 0.5,
-        'data_storage': 0.4,
-        'api_integration': 0.3,
-        'search_research': 0.2,
-        'block_metadata': 0.1,
-        'debugging': 0.1
+      workflow: {
+        workflow_management: 0.9,
+        task_management: 0.8,
+        planning: 0.7,
+        user_management: 0.5,
+        data_storage: 0.4,
+        api_integration: 0.3,
+        search_research: 0.2,
+        block_metadata: 0.1,
+        debugging: 0.1,
       },
-      'data': {
-        'data_storage': 0.9,
-        'search_research': 0.8,
-        'api_integration': 0.7,
-        'block_metadata': 0.6,
-        'workflow_management': 0.4,
-        'task_management': 0.3,
-        'planning': 0.2,
-        'user_management': 0.2,
-        'debugging': 0.1
+      data: {
+        data_storage: 0.9,
+        search_research: 0.8,
+        api_integration: 0.7,
+        block_metadata: 0.6,
+        workflow_management: 0.4,
+        task_management: 0.3,
+        planning: 0.2,
+        user_management: 0.2,
+        debugging: 0.1,
       },
       // Add more domain mappings
-      'default': {
-        'workflow_management': 0.6,
-        'task_management': 0.6,
-        'planning': 0.6,
-        'data_storage': 0.5,
-        'api_integration': 0.5,
-        'search_research': 0.5,
-        'user_management': 0.4,
-        'block_metadata': 0.3,
-        'debugging': 0.2
-      }
+      default: {
+        workflow_management: 0.6,
+        task_management: 0.6,
+        planning: 0.6,
+        data_storage: 0.5,
+        api_integration: 0.5,
+        search_research: 0.5,
+        user_management: 0.4,
+        block_metadata: 0.3,
+        debugging: 0.2,
+      },
     }
 
-    const categoryMap = domainCategoryMap[intentDomain] || domainCategoryMap['default']
+    const categoryMap = domainCategoryMap[intentDomain] || domainCategoryMap.default
     return categoryMap[toolCategory] || 0.3
   }
 
@@ -627,41 +662,61 @@ export class ToolSelectionIntelligenceEngine {
 
     // From tool name
     const nameActions = this.extractActionsFromText(tool.toolName)
-    nameActions.forEach(action => actions.add(action))
+    nameActions.forEach((action) => actions.add(action))
 
     // From display name
     const displayActions = this.extractActionsFromText(tool.displayName)
-    displayActions.forEach(action => actions.add(action))
+    displayActions.forEach((action) => actions.add(action))
 
     // Add category-based actions
     const categoryActions = this.getCategoryActions(tool.category)
-    categoryActions.forEach(action => actions.add(action))
+    categoryActions.forEach((action) => actions.add(action))
 
     return Array.from(actions)
   }
 
   private extractActionsFromText(text: string): string[] {
     const commonActions = [
-      'run', 'execute', 'build', 'create', 'get', 'list', 'search', 'find',
-      'read', 'write', 'update', 'delete', 'manage', 'edit', 'set', 'make',
-      'generate', 'process', 'analyze', 'view', 'display', 'show', 'handle'
+      'run',
+      'execute',
+      'build',
+      'create',
+      'get',
+      'list',
+      'search',
+      'find',
+      'read',
+      'write',
+      'update',
+      'delete',
+      'manage',
+      'edit',
+      'set',
+      'make',
+      'generate',
+      'process',
+      'analyze',
+      'view',
+      'display',
+      'show',
+      'handle',
     ]
 
     const words = text.toLowerCase().split(/\W+/)
-    return words.filter(word => commonActions.includes(word))
+    return words.filter((word) => commonActions.includes(word))
   }
 
   private getCategoryActions(category: SimToolCategory): string[] {
     const categoryActionMap: Record<SimToolCategory, string[]> = {
-      'workflow_management': ['run', 'execute', 'build', 'create', 'manage'],
-      'task_management': ['manage', 'create', 'update', 'track'],
-      'planning': ['plan', 'create', 'generate', 'build'],
-      'data_storage': ['get', 'set', 'read', 'write', 'store', 'retrieve'],
-      'api_integration': ['make', 'request', 'call', 'integrate'],
-      'search_research': ['search', 'find', 'research', 'discover'],
-      'user_management': ['get', 'manage', 'authenticate', 'authorize'],
-      'block_metadata': ['get', 'analyze', 'extract', 'metadata'],
-      'debugging': ['debug', 'analyze', 'troubleshoot', 'diagnose']
+      workflow_management: ['run', 'execute', 'build', 'create', 'manage'],
+      task_management: ['manage', 'create', 'update', 'track'],
+      planning: ['plan', 'create', 'generate', 'build'],
+      data_storage: ['get', 'set', 'read', 'write', 'store', 'retrieve'],
+      api_integration: ['make', 'request', 'call', 'integrate'],
+      search_research: ['search', 'find', 'research', 'discover'],
+      user_management: ['get', 'manage', 'authenticate', 'authorize'],
+      block_metadata: ['get', 'analyze', 'extract', 'metadata'],
+      debugging: ['debug', 'analyze', 'troubleshoot', 'diagnose'],
     }
 
     return categoryActionMap[category] || []
@@ -669,9 +724,11 @@ export class ToolSelectionIntelligenceEngine {
 
   private actionsMatch(intentAction: string, toolAction: string): boolean {
     // Simple string matching - would use more sophisticated NLP in production
-    return intentAction.toLowerCase() === toolAction.toLowerCase() ||
-           intentAction.toLowerCase().includes(toolAction.toLowerCase()) ||
-           toolAction.toLowerCase().includes(intentAction.toLowerCase())
+    return (
+      intentAction.toLowerCase() === toolAction.toLowerCase() ||
+      intentAction.toLowerCase().includes(toolAction.toLowerCase()) ||
+      toolAction.toLowerCase().includes(intentAction.toLowerCase())
+    )
   }
 
   private async calculateUseCaseRelevance(
@@ -685,9 +742,10 @@ export class ToolSelectionIntelligenceEngine {
 
     let matches = 0
     for (const goalWord of goalWords) {
-      if (goalWord.length > 3 && toolWords.some(toolWord =>
-        toolWord.includes(goalWord) || goalWord.includes(toolWord)
-      )) {
+      if (
+        goalWord.length > 3 &&
+        toolWords.some((toolWord) => toolWord.includes(goalWord) || goalWord.includes(toolWord))
+      ) {
         matches++
       }
     }
@@ -721,7 +779,7 @@ export class ToolSelectionIntelligenceEngine {
       appropriatenessScore: 0.8,
       confidenceScore: 0.7,
       usabilityScore: 0.8,
-      complexityScore: 0.6
+      complexityScore: 0.6,
     }
   }
 
@@ -731,7 +789,7 @@ export class ToolSelectionIntelligenceEngine {
       appropriateness: 0.3,
       confidence: 0.15,
       usability: 0.1,
-      complexity: 0.05
+      complexity: 0.05,
     }
 
     const finalWeights = { ...defaultWeights, ...weights }
@@ -753,11 +811,13 @@ export class ToolSelectionIntelligenceEngine {
     return [
       `High relevance (${scores.relevanceScore.toFixed(2)}) for ${intentAnalysis.primaryGoal}`,
       `Appropriate complexity level for user requirements`,
-      `Strong match with extracted actions: ${intentAnalysis.extractedActions.join(', ')}`
+      `Strong match with extracted actions: ${intentAnalysis.extractedActions.join(', ')}`,
     ]
   }
 
-  private async generateEnhancedDescription(tool: SimToolMetadata): Promise<EnhancedDescriptionSchema> {
+  private async generateEnhancedDescription(
+    tool: SimToolMetadata
+  ): Promise<EnhancedDescriptionSchema> {
     // This would integrate with the Natural Language Description Framework
     return {
       toolId: tool.toolId,
@@ -771,26 +831,28 @@ export class ToolSelectionIntelligenceEngine {
           primaryUseCase: tool.primaryUseCases[0] || 'General purpose tool',
           keyCapability: tool.keyCapabilities[0] || 'Tool functionality',
           complexityLevel: tool.complexity,
-          quickTags: tool.tags || []
+          quickTags: tool.tags || [],
         },
         detailed: {
           overview: tool.description,
           functionality: 'Detailed functionality description',
-          useCases: [{
-            title: 'Primary Use Case',
-            description: tool.primaryUseCases[0] || '',
-            scenario: 'Usage scenario',
-            expectedOutcome: 'Expected results',
-            difficulty: tool.skillLevel,
-            estimatedTime: tool.estimatedExecutionTime
-          }],
+          useCases: [
+            {
+              title: 'Primary Use Case',
+              description: tool.primaryUseCases[0] || '',
+              scenario: 'Usage scenario',
+              expectedOutcome: 'Expected results',
+              difficulty: tool.skillLevel,
+              estimatedTime: tool.estimatedExecutionTime,
+            },
+          ],
           workingPrinciple: 'How the tool works',
           benefits: ['Efficiency improvement', 'Process automation'],
           limitations: ['Requires setup', 'Limited to specific contexts'],
           integrationInfo: {
             integratedWith: [],
-            apiEndpoints: []
-          }
+            apiEndpoints: [],
+          },
         },
         expert: {
           technicalArchitecture: {
@@ -798,46 +860,46 @@ export class ToolSelectionIntelligenceEngine {
             dependencies: [],
             integrationPoints: [],
             scalabilityFactors: [],
-            performanceConsiderations: []
+            performanceConsiderations: [],
           },
           advancedConfiguration: {
             configurableParameters: [],
             advancedOptions: [],
             customizationPoints: [],
-            extensionMechanisms: []
+            extensionMechanisms: [],
           },
           performanceProfile: {
             responseTime: { average: 0, p95: 0, p99: 0 },
             throughput: { average: 0, p95: 0, p99: 0 },
             resourceUsage: { cpu: 0, memory: 0, network: 0 },
-            scalabilityLimits: { maxConcurrentUsers: 0, maxDataSize: 0 }
+            scalabilityLimits: { maxConcurrentUsers: 0, maxDataSize: 0 },
           },
           securityProfile: {
             authenticationRequirements: [],
             authorizationModel: '',
             dataProtection: [],
             auditingCapabilities: [],
-            complianceFrameworks: []
+            complianceFrameworks: [],
           },
           troubleshooting: {
             commonIssues: [],
             diagnosticSteps: [],
             resolutionProcedures: [],
-            escalationPaths: []
+            escalationPaths: [],
           },
           extensibilityInfo: {
             extensionPoints: [],
-            customization: []
-          }
+            customization: [],
+          },
         },
-        contextual: {}
+        contextual: {},
       },
       contextualDescriptions: {
         roleAdaptations: {},
         skillAdaptations: {},
         domainAdaptations: {},
         workflowAdaptations: {},
-        situationalAdaptations: {}
+        situationalAdaptations: {},
       },
       usageGuidance: {
         stepByStepGuides: [],
@@ -845,39 +907,39 @@ export class ToolSelectionIntelligenceEngine {
         bestPractices: [],
         commonPitfalls: [],
         optimizationTips: [],
-        relatedWorkflows: []
+        relatedWorkflows: [],
       },
       interactiveElements: {
         conversationalPatterns: [],
         interactiveExamples: [],
         quickActions: [],
         dynamicHelp: [],
-        progressTracking: { milestones: [], currentProgress: 0 }
+        progressTracking: { milestones: [], currentProgress: 0 },
       },
       adaptiveFeatures: {
         personalizationSettings: {
           userPreferences: { preferredStyle: 'standard', verbosity: 'standard', examples: true },
           adaptationRules: [],
           contentFilters: [],
-          presentationSettings: { format: 'standard', layout: 'standard', interactivity: true }
+          presentationSettings: { format: 'standard', layout: 'standard', interactivity: true },
         },
         learningProgress: {
           completedTasks: [],
-          skillLevel: tool.skillLevel
+          skillLevel: tool.skillLevel,
         },
         usageAnalytics: {
           usageCount: 0,
           successRate: 0,
-          averageTime: 0
+          averageTime: 0,
         },
         recommendationEngine: {
           algorithm: 'collaborative',
-          weightings: {}
+          weightings: {},
         },
         dynamicContentGeneration: {
           enabled: true,
-          updateFrequency: 'weekly'
-        }
+          updateFrequency: 'weekly',
+        },
       },
       qualityMetadata: {
         accuracyMetrics: {
@@ -886,7 +948,7 @@ export class ToolSelectionIntelligenceEngine {
           contextualRelevance: 8,
           userComprehension: 8,
           lastValidated: new Date(),
-          validationMethod: ['automated']
+          validationMethod: ['automated'],
         },
         completenessScore: { overall: 85, sections: {} },
         userFeedback: { averageRating: 0, commonSuggestions: [] },
@@ -895,8 +957,8 @@ export class ToolSelectionIntelligenceEngine {
         freshnessIndicators: {
           lastUpdated: new Date(),
           contentAge: 0,
-          needsUpdate: false
-        }
+          needsUpdate: false,
+        },
       },
       versionInfo: {
         version: tool.version,
@@ -906,28 +968,28 @@ export class ToolSelectionIntelligenceEngine {
           status: 'approved',
           approver: 'system',
           date: new Date(),
-          comments: 'Auto-generated description'
+          comments: 'Auto-generated description',
         },
         publicationInfo: {
           publishedDate: new Date(),
           publisher: 'Tool Selection Intelligence',
-          audience: 'general'
-        }
-      }
+          audience: 'general',
+        },
+      },
     }
   }
 
   private mapToToolCategory(simCategory: SimToolCategory): ToolCategory {
     const categoryMap: Record<SimToolCategory, ToolCategory> = {
-      'workflow_management': 'workflow_management',
-      'task_management': 'productivity',
-      'planning': 'productivity',
-      'data_storage': 'data_storage',
-      'api_integration': 'integration',
-      'search_research': 'search_research',
-      'user_management': 'security',
-      'block_metadata': 'analytics',
-      'debugging': 'development'
+      workflow_management: 'workflow_management',
+      task_management: 'productivity',
+      planning: 'productivity',
+      data_storage: 'data_storage',
+      api_integration: 'integration',
+      search_research: 'search_research',
+      user_management: 'security',
+      block_metadata: 'analytics',
+      debugging: 'development',
     }
 
     return categoryMap[simCategory] || 'productivity'
@@ -942,21 +1004,25 @@ export class ToolSelectionIntelligenceEngine {
       adaptedDescription: `Personalized description for ${userProfile.basicProfile.role}`,
       keyBenefitsForUser: ['Relevant to your workflow', 'Matches your skill level'],
       personalizedUseCases: ['Use case specific to your role'],
-      learningRequirements: [{
-        skill: 'Basic tool usage',
-        currentLevel: userProfile.basicProfile.skillLevel,
-        targetLevel: 'intermediate',
-        estimatedTime: '30 minutes',
-        resources: []
-      }],
+      learningRequirements: [
+        {
+          skill: 'Basic tool usage',
+          currentLevel: userProfile.basicProfile.skillLevel,
+          targetLevel: 'intermediate',
+          estimatedTime: '30 minutes',
+          resources: [],
+        },
+      ],
       skillBuildingOpportunities: ['Learn advanced features', 'Integrate with other tools'],
-      potentialChallenges: [{
-        challenge: 'Initial setup complexity',
-        likelihood: 'medium',
-        impact: 'low',
-        mitigation: 'Follow step-by-step guide'
-      }],
-      mitigationStrategies: ['Start with basic features', 'Use guided tutorials']
+      potentialChallenges: [
+        {
+          challenge: 'Initial setup complexity',
+          likelihood: 'medium',
+          impact: 'low',
+          mitigation: 'Follow step-by-step guide',
+        },
+      ],
+      mitigationStrategies: ['Start with basic features', 'Use guided tutorials'],
     }
   }
 
@@ -969,26 +1035,26 @@ export class ToolSelectionIntelligenceEngine {
       gettingStarted: [
         'Review tool documentation',
         'Set up required permissions',
-        'Try basic example'
+        'Try basic example',
       ],
       bestPracticesForUser: [
         `As a ${userProfile.basicProfile.role}, focus on ${intentAnalysis.primaryGoal}`,
         'Start with simple use cases',
-        'Gradually explore advanced features'
+        'Gradually explore advanced features',
       ],
       commonPitfallsForUser: [
         'Avoid overcomplicating initial setup',
-        'Don\'t skip permission configuration'
+        "Don't skip permission configuration",
       ],
       skillDevelopmentPath: [
         'Master basic operations',
         'Learn integration patterns',
-        'Explore advanced configurations'
+        'Explore advanced configurations',
       ],
       contextualTips: [
         `For ${intentAnalysis.domain} domain: focus on ${intentAnalysis.extractedActions[0] || 'core functionality'}`,
-        'Consider time constraints when planning usage'
-      ]
+        'Consider time constraints when planning usage',
+      ],
     }
   }
 
@@ -1001,7 +1067,7 @@ export class ToolSelectionIntelligenceEngine {
       confidenceScore: enriched.scores.confidenceScore,
       appropriatenessScore: enriched.scores.appropriatenessScore,
       personalizedDescription: enriched.personalizedDescription,
-      userSpecificGuidance: enriched.userSpecificGuidance
+      userSpecificGuidance: enriched.userSpecificGuidance,
     }
   }
 
@@ -1010,21 +1076,27 @@ export class ToolSelectionIntelligenceEngine {
     return {
       actions: ['create', 'manage'],
       primaryGoal: 'accomplish task',
-      secondaryGoals: []
+      secondaryGoals: [],
     }
   }
 
-  private async identifyDomain(userIntent: string, userContext: UserContext): Promise<DomainAnalysisResult> {
+  private async identifyDomain(
+    userIntent: string,
+    userContext: UserContext
+  ): Promise<DomainAnalysisResult> {
     return {
       domain: 'workflow',
-      subDomains: []
+      subDomains: [],
     }
   }
 
-  private async analyzeComplexity(userIntent: string, actionAnalysis: ActionAnalysisResult): Promise<ComplexityAnalysisResult> {
+  private async analyzeComplexity(
+    userIntent: string,
+    actionAnalysis: ActionAnalysisResult
+  ): Promise<ComplexityAnalysisResult> {
     return {
       estimatedComplexity: 'moderate',
-      scope: 'medium'
+      scope: 'medium',
     }
   }
 
@@ -1032,7 +1104,7 @@ export class ToolSelectionIntelligenceEngine {
     return {
       timeframe: 'immediate',
       qualityRequirements: [],
-      implicitConstraints: []
+      implicitConstraints: [],
     }
   }
 
@@ -1046,7 +1118,7 @@ export class ToolSelectionIntelligenceEngine {
       overallConfidence: 0.85,
       selectionConfidence: 0.9,
       userFitConfidence: 0.8,
-      outcomeConfidence: 0.85
+      outcomeConfidence: 0.85,
     }
   }
 
@@ -1059,7 +1131,7 @@ export class ToolSelectionIntelligenceEngine {
       immediateSteps: ['Review tool documentation', 'Set up permissions'],
       preparationSteps: ['Gather required data', 'Plan workflow'],
       executionSteps: ['Execute tool with sample data', 'Verify results'],
-      followUpSteps: ['Document results', 'Plan next iteration']
+      followUpSteps: ['Document results', 'Plan next iteration'],
     }
   }
 }
@@ -1076,7 +1148,7 @@ class ContextAnalyzer {
       workflowStage: userContext.workflowStage || 'planning',
       urgencyLevel: 'medium',
       collaborationNeeds: 'individual',
-      technicalConstraints: []
+      technicalConstraints: [],
     }
   }
 }
@@ -1089,7 +1161,7 @@ class UserProfiler {
       workEnvironment: 'office',
       teamSize: 'small',
       organizationSize: 'medium',
-      industryContext: 'technology'
+      industryContext: 'technology',
     }
   }
 
@@ -1098,7 +1170,7 @@ class UserProfiler {
       workingStyle: 'methodical',
       riskTolerance: 'moderate',
       learningPreference: 'hands-on',
-      collaborationStyle: 'independent'
+      collaborationStyle: 'independent',
     }
   }
 
@@ -1107,7 +1179,7 @@ class UserProfiler {
       interfacePreference: 'visual',
       documentationStyle: 'concise',
       supportLevel: 'moderate',
-      automationPreference: 'high'
+      automationPreference: 'high',
     }
   }
 
@@ -1116,14 +1188,12 @@ class UserProfiler {
       technicalCapabilities: ['basic scripting', 'API usage'],
       domainExpertise: ['workflow management'],
       toolExpertise: userContext.experience?.usedTools || [],
-      learningCapacity: 'high'
+      learningCapacity: 'high',
     }
   }
 }
 
-class RecommendationEngine {
-  constructor(private settings?: RecommendationSettings) {}
-}
+class RecommendationEngine {}
 
 class ReasoningEngine {
   constructor(private settings?: ReasoningSettings) {}
@@ -1141,27 +1211,27 @@ class ReasoningEngine {
           reason: 'Best match for user intent',
           weight: 0.4,
           evidence: [`Matches ${intentAnalysis.primaryGoal}`],
-          confidence: 0.9
-        }
+          confidence: 0.9,
+        },
       ],
       intentMatching: {
         matchScore: 0.9,
         matchedElements: ['primary goal', 'key actions'],
         unmatchedElements: [],
-        reasoning: 'Strong alignment with user objectives'
+        reasoning: 'Strong alignment with user objectives',
       },
       contextualFactors: [
         {
           factor: 'User skill level',
           impact: 0.3,
-          reasoning: 'Tool complexity matches user capabilities'
-        }
+          reasoning: 'Tool complexity matches user capabilities',
+        },
       ],
       tradeoffAnalysis: {
         consideredTradeoffs: [],
         selectedTradeoffs: [],
-        reasoning: 'Balanced approach to functionality vs complexity'
-      }
+        reasoning: 'Balanced approach to functionality vs complexity',
+      },
     }
   }
 }
@@ -1400,22 +1470,87 @@ export interface ReasoningSettings {
 }
 
 // Stub interfaces for supporting types
-export interface ContextualProfile { workEnvironment: string; teamSize: string; organizationSize: string; industryContext: string }
-export interface BehavioralProfile { workingStyle: string; riskTolerance: string; learningPreference: string; collaborationStyle: string }
-export interface PreferencesProfile { interfacePreference: string; documentationStyle: string; supportLevel: string; automationPreference: string }
-export interface CapabilityProfile { technicalCapabilities: string[]; domainExpertise: string[]; toolExpertise: string[]; learningCapacity: string }
-export interface ContextualAnalysisResult { workflowStage: string; urgencyLevel: string; collaborationNeeds: string; technicalConstraints: string[] }
-export interface ActionAnalysisResult { actions: string[]; primaryGoal: string; secondaryGoals: string[] }
-export interface DomainAnalysisResult { domain: string; subDomains: string[] }
-export interface ComplexityAnalysisResult { estimatedComplexity: string; scope: string }
-export interface ConstraintAnalysisResult { timeframe: string; qualityRequirements: string[]; implicitConstraints: string[] }
-export interface UserFitAnalysis { fitScore: number; strengths: string[]; concerns: string[] }
-export interface ToolSimilarityMatch { toolId: string; similarityScore: number; reason: string }
-export interface ToolUpgradePath { fromTool: string; toTool: string; upgradeReason: string }
-export interface WorkflowAnalysisResult { stages: string[]; requirements: string[]; constraints: string[] }
-export interface ToolSequence { sequence: string[]; reasoning: string }
-export interface ToolParallelGroup { tools: string[]; reasoning: string }
-export interface IntegrationGuidance { tools: string[]; approach: string; considerations: string[] }
+export interface ContextualProfile {
+  workEnvironment: string
+  teamSize: string
+  organizationSize: string
+  industryContext: string
+}
+export interface BehavioralProfile {
+  workingStyle: string
+  riskTolerance: string
+  learningPreference: string
+  collaborationStyle: string
+}
+export interface PreferencesProfile {
+  interfacePreference: string
+  documentationStyle: string
+  supportLevel: string
+  automationPreference: string
+}
+export interface CapabilityProfile {
+  technicalCapabilities: string[]
+  domainExpertise: string[]
+  toolExpertise: string[]
+  learningCapacity: string
+}
+export interface ContextualAnalysisResult {
+  workflowStage: string
+  urgencyLevel: string
+  collaborationNeeds: string
+  technicalConstraints: string[]
+}
+export interface ActionAnalysisResult {
+  actions: string[]
+  primaryGoal: string
+  secondaryGoals: string[]
+}
+export interface DomainAnalysisResult {
+  domain: string
+  subDomains: string[]
+}
+export interface ComplexityAnalysisResult {
+  estimatedComplexity: string
+  scope: string
+}
+export interface ConstraintAnalysisResult {
+  timeframe: string
+  qualityRequirements: string[]
+  implicitConstraints: string[]
+}
+export interface UserFitAnalysis {
+  fitScore: number
+  strengths: string[]
+  concerns: string[]
+}
+export interface ToolSimilarityMatch {
+  toolId: string
+  similarityScore: number
+  reason: string
+}
+export interface ToolUpgradePath {
+  fromTool: string
+  toTool: string
+  upgradeReason: string
+}
+export interface WorkflowAnalysisResult {
+  stages: string[]
+  requirements: string[]
+  constraints: string[]
+}
+export interface ToolSequence {
+  sequence: string[]
+  reasoning: string
+}
+export interface ToolParallelGroup {
+  tools: string[]
+  reasoning: string
+}
+export interface IntegrationGuidance {
+  tools: string[]
+  approach: string
+  considerations: string[]
+}
 
 // =============================================================================
 // Factory Functions
@@ -1443,7 +1578,7 @@ export async function selectBestTool(
     includeAlternatives: true,
     includeReasons: true,
     includeStepByStep: false,
-    riskTolerance: 'moderate'
+    riskTolerance: 'moderate',
   }
 ): Promise<ToolRecommendationResult> {
   const engine = createToolSelectionIntelligence()
@@ -1451,7 +1586,7 @@ export async function selectBestTool(
   const query: ToolSelectionQuery = {
     userIntent,
     userContext,
-    selectionPreferences: options
+    selectionPreferences: options,
   }
 
   return engine.selectToolsForUser(query)

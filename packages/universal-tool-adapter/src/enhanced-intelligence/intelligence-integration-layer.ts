@@ -43,9 +43,9 @@ import {
   type EnhancedDescriptionSchema,
   NaturalLanguageDescriptionFramework,
 } from './natural-language-description-framework'
+import IntelligencePerformanceMonitor from './performance-monitoring'
 // Intelligence Components
 import { EnhancedToolIntelligenceEngine } from './tool-intelligence-engine'
-import IntelligencePerformanceMonitor from './performance-monitoring'
 
 const logger = createLogger('IntelligenceIntegrationLayer')
 
@@ -945,7 +945,7 @@ export class IntelligenceIntegrationLayer {
   private updateResourceUsageMetrics(): void {
     // Update resource usage metrics for the performance monitor
     let memoryMB = 0
-    let cpuPercent = 0
+    const cpuPercent = 0
 
     if (typeof process !== 'undefined' && process.memoryUsage) {
       const memUsage = process.memoryUsage()

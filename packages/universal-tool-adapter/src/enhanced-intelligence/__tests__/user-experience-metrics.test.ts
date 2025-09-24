@@ -7,8 +7,7 @@
  * and accessibility compliance.
  */
 
-import { describe, expect, it, beforeEach, afterEach, jest } from '@jest/globals'
-import type { UserExperienceTestingFramework } from './user-experience-testing.test'
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
 
 // Mock performance measurement APIs
 const mockPerformance = {
@@ -162,22 +161,22 @@ describe('User Experience Metrics Validation', () => {
     // Initialize baseline metrics
     baselineMetrics = {
       taskCompletionRate: 0.85,
-      taskEfficiency: 0.80,
+      taskEfficiency: 0.8,
       userSatisfaction: 4.0,
       learnability: 0.75,
-      errorRecovery: 0.90,
+      errorRecovery: 0.9,
       responseTime: 200,
       throughput: 100,
-      systemUtilization: 0.60,
+      systemUtilization: 0.6,
       loadingTime: 1500,
       renderingTime: 100,
       wcagCompliance: 0.95,
-      screenReaderCompatibility: 0.90,
+      screenReaderCompatibility: 0.9,
       keyboardNavigation: 0.95,
       colorContrastRatio: 4.5,
       alternativeTextCoverage: 0.98,
-      userRetention: 0.80,
-      featureAdoption: 0.70,
+      userRetention: 0.8,
+      featureAdoption: 0.7,
       sessionDuration: 1200,
       interactionDepth: 15,
       helpSeekingBehavior: 0.15,
@@ -232,24 +231,21 @@ describe('User Experience Metrics Validation', () => {
       ]
 
       // Simulate task execution
-      const completionResults = await Promise.all(
-        tasks.map(task => simulateTaskExecution(task))
-      )
+      const completionResults = await Promise.all(tasks.map((task) => simulateTaskExecution(task)))
 
-      const completedTasks = completionResults.filter(result => result.completed).length
+      const completedTasks = completionResults.filter((result) => result.completed).length
       const taskCompletionRate = completedTasks / tasks.length
 
       // Validate completion rate
-      expect(taskCompletionRate).toBeGreaterThanOrEqual(0.80)
+      expect(taskCompletionRate).toBeGreaterThanOrEqual(0.8)
       expect(taskCompletionRate).toBeLessThanOrEqual(1.0)
 
       // Calculate efficiency metrics
-      const averageEfficiency = completionResults.reduce(
-        (sum, result) => sum + calculateTaskEfficiency(result),
-        0
-      ) / completionResults.length
+      const averageEfficiency =
+        completionResults.reduce((sum, result) => sum + calculateTaskEfficiency(result), 0) /
+        completionResults.length
 
-      expect(averageEfficiency).toBeGreaterThanOrEqual(0.70)
+      expect(averageEfficiency).toBeGreaterThanOrEqual(0.7)
 
       testSession.metrics.taskCompletionRate = taskCompletionRate
       testSession.metrics.taskEfficiency = averageEfficiency
@@ -264,12 +260,11 @@ describe('User Experience Metrics Validation', () => {
         { type: 'focus', element: 'parameter-input', expectedResponseTime: 20 },
       ])
 
-      const averageResponseTime = interactions.reduce(
-        (sum, interaction) => sum + interaction.responseTime,
-        0
-      ) / interactions.length
+      const averageResponseTime =
+        interactions.reduce((sum, interaction) => sum + interaction.responseTime, 0) /
+        interactions.length
 
-      const successRate = interactions.filter(i => i.success).length / interactions.length
+      const successRate = interactions.filter((i) => i.success).length / interactions.length
 
       // Validate interaction efficiency
       expect(averageResponseTime).toBeLessThanOrEqual(200)
@@ -284,7 +279,7 @@ describe('User Experience Metrics Validation', () => {
 
       const learnabilityScore = calculateLearnabilityScore(sessionsData)
 
-      expect(learnabilityScore).toBeGreaterThanOrEqual(0.70)
+      expect(learnabilityScore).toBeGreaterThanOrEqual(0.7)
       expect(learnabilityScore).toBeLessThanOrEqual(1.0)
 
       testSession.metrics.learnability = learnabilityScore
@@ -300,15 +295,14 @@ describe('User Experience Metrics Validation', () => {
         { category: 'satisfaction', rating: 4.1, comment: 'Overall very satisfied' },
       ]
 
-      const averageSatisfaction = satisfactionFeedback.reduce(
-        (sum, feedback) => sum + feedback.rating,
-        0
-      ) / satisfactionFeedback.length
+      const averageSatisfaction =
+        satisfactionFeedback.reduce((sum, feedback) => sum + feedback.rating, 0) /
+        satisfactionFeedback.length
 
       expect(averageSatisfaction).toBeGreaterThanOrEqual(3.5)
       expect(averageSatisfaction).toBeLessThanOrEqual(5.0)
 
-      testSession.feedback = satisfactionFeedback.map(f => ({
+      testSession.feedback = satisfactionFeedback.map((f) => ({
         ...f,
         timestamp: Date.now(),
       }))
@@ -319,8 +313,8 @@ describe('User Experience Metrics Validation', () => {
     it('should validate tool intelligence effectiveness', async () => {
       const intelligenceMetrics = await evaluateToolIntelligence()
 
-      expect(intelligenceMetrics.recommendationAccuracy).toBeGreaterThanOrEqual(0.80)
-      expect(intelligenceMetrics.contextualRelevance).toBeGreaterThanOrEqual(0.80)
+      expect(intelligenceMetrics.recommendationAccuracy).toBeGreaterThanOrEqual(0.8)
+      expect(intelligenceMetrics.contextualRelevance).toBeGreaterThanOrEqual(0.8)
       expect(intelligenceMetrics.adaptationEffectiveness).toBeGreaterThanOrEqual(0.75)
 
       Object.assign(testSession.metrics, intelligenceMetrics)
@@ -334,16 +328,15 @@ describe('User Experience Metrics Validation', () => {
       ]
 
       const recoveryResults = await Promise.all(
-        errorScenarios.map(scenario => simulateErrorRecovery(scenario))
+        errorScenarios.map((scenario) => simulateErrorRecovery(scenario))
       )
 
-      const averageRecoveryTime = recoveryResults.reduce(
-        (sum, result) => sum + result.recoveryTime,
-        0
-      ) / recoveryResults.length
+      const averageRecoveryTime =
+        recoveryResults.reduce((sum, result) => sum + result.recoveryTime, 0) /
+        recoveryResults.length
 
-      const recoverySuccessRate = recoveryResults.filter(r => r.successful).length /
-                                  recoveryResults.length
+      const recoverySuccessRate =
+        recoveryResults.filter((r) => r.successful).length / recoveryResults.length
 
       expect(recoverySuccessRate).toBeGreaterThanOrEqual(0.85)
       expect(averageRecoveryTime).toBeLessThanOrEqual(30000) // 30 seconds
@@ -366,13 +359,13 @@ describe('User Experience Metrics Validation', () => {
       ]
 
       const complianceResults = await Promise.all(
-        wcagTests.map(test => validateWCAGGuideline(test))
+        wcagTests.map((test) => validateWCAGGuideline(test))
       )
 
-      const complianceScore = complianceResults.filter(r => r.passed).length /
-                              complianceResults.length
+      const complianceScore =
+        complianceResults.filter((r) => r.passed).length / complianceResults.length
 
-      expect(complianceScore).toBeGreaterThanOrEqual(0.90)
+      expect(complianceScore).toBeGreaterThanOrEqual(0.9)
 
       testSession.metrics.wcagCompliance = complianceScore
     })
@@ -388,11 +381,11 @@ describe('User Experience Metrics Validation', () => {
       ]
 
       const screenReaderResults = await Promise.all(
-        screenReaderTests.map(test => validateScreenReaderFeature(test))
+        screenReaderTests.map((test) => validateScreenReaderFeature(test))
       )
 
-      const compatibility = screenReaderResults.filter(r => r.compatible).length /
-                           screenReaderResults.length
+      const compatibility =
+        screenReaderResults.filter((r) => r.compatible).length / screenReaderResults.length
 
       expect(compatibility).toBeGreaterThanOrEqual(0.85)
 
@@ -408,10 +401,10 @@ describe('User Experience Metrics Validation', () => {
         { key: 'Arrow', expectedAction: 'navigate-menu' },
       ])
 
-      const keyboardSuccess = keyboardTests.filter(t => t.successful).length /
-                             keyboardTests.length
+      const keyboardSuccess =
+        keyboardTests.filter((t) => t.successful).length / keyboardTests.length
 
-      expect(keyboardSuccess).toBeGreaterThanOrEqual(0.90)
+      expect(keyboardSuccess).toBeGreaterThanOrEqual(0.9)
 
       testSession.metrics.keyboardNavigation = keyboardSuccess
     })
@@ -426,10 +419,8 @@ describe('User Experience Metrics Validation', () => {
         { operation: 'result-rendering', expectedTime: 150 },
       ])
 
-      const averageResponseTime = performanceTests.reduce(
-        (sum, test) => sum + test.actualTime,
-        0
-      ) / performanceTests.length
+      const averageResponseTime =
+        performanceTests.reduce((sum, test) => sum + test.actualTime, 0) / performanceTests.length
 
       expect(averageResponseTime).toBeLessThanOrEqual(200)
 
@@ -465,7 +456,7 @@ describe('User Experience Metrics Validation', () => {
     it('should measure learning curve improvement over time', async () => {
       const learningCurveData = await analyzeLearningCurveProgression()
 
-      expect(learningCurveData.improvementRate).toBeGreaterThanOrEqual(0.70)
+      expect(learningCurveData.improvementRate).toBeGreaterThanOrEqual(0.7)
       expect(learningCurveData.plateauTime).toBeLessThanOrEqual(7) // days
 
       testSession.metrics.learningCurveImprovement = learningCurveData.improvementRate
@@ -495,11 +486,12 @@ describe('User Experience Metrics Validation', () => {
         benchmarkComparison: compareToBenchmark(testSession.metrics, baselineMetrics),
         recommendations: generateUXRecommendations(testSession.metrics),
         complianceStatus: {
-          wcag: testSession.metrics.wcagCompliance! >= 0.90 ? 'COMPLIANT' : 'NEEDS_IMPROVEMENT',
-          accessibility: (
+          wcag: testSession.metrics.wcagCompliance! >= 0.9 ? 'COMPLIANT' : 'NEEDS_IMPROVEMENT',
+          accessibility:
             testSession.metrics.screenReaderCompatibility! >= 0.85 &&
-            testSession.metrics.keyboardNavigation! >= 0.90
-          ) ? 'COMPLIANT' : 'NEEDS_IMPROVEMENT',
+            testSession.metrics.keyboardNavigation! >= 0.9
+              ? 'COMPLIANT'
+              : 'NEEDS_IMPROVEMENT',
           performance: testSession.metrics.responseTime! <= 200 ? 'EXCELLENT' : 'GOOD',
         },
       }
@@ -517,7 +509,9 @@ describe('User Experience Metrics Validation', () => {
       console.log(`Duration: ${(report.duration / 1000).toFixed(1)} seconds`)
       console.log(`Overall UX Score: ${report.overallUXScore.toFixed(1)}/100`)
       console.log('\nCore Metrics:')
-      console.log(`  Task Completion Rate: ${((report.metrics.taskCompletionRate || 0) * 100).toFixed(1)}%`)
+      console.log(
+        `  Task Completion Rate: ${((report.metrics.taskCompletionRate || 0) * 100).toFixed(1)}%`
+      )
       console.log(`  Task Efficiency: ${((report.metrics.taskEfficiency || 0) * 100).toFixed(1)}%`)
       console.log(`  User Satisfaction: ${(report.metrics.userSatisfaction || 0).toFixed(1)}/5.0`)
       console.log(`  Learnability: ${((report.metrics.learnability || 0) * 100).toFixed(1)}%`)
@@ -528,8 +522,12 @@ describe('User Experience Metrics Validation', () => {
       console.log(`  Rendering Time: ${(report.metrics.renderingTime || 0).toFixed(0)}ms`)
       console.log('\nAccessibility Compliance:')
       console.log(`  WCAG Compliance: ${((report.metrics.wcagCompliance || 0) * 100).toFixed(1)}%`)
-      console.log(`  Screen Reader: ${((report.metrics.screenReaderCompatibility || 0) * 100).toFixed(1)}%`)
-      console.log(`  Keyboard Navigation: ${((report.metrics.keyboardNavigation || 0) * 100).toFixed(1)}%`)
+      console.log(
+        `  Screen Reader: ${((report.metrics.screenReaderCompatibility || 0) * 100).toFixed(1)}%`
+      )
+      console.log(
+        `  Keyboard Navigation: ${((report.metrics.keyboardNavigation || 0) * 100).toFixed(1)}%`
+      )
       console.log('\nCompliance Status:')
       Object.entries(report.complianceStatus).forEach(([key, status]) => {
         console.log(`  ${key}: ${status}`)
@@ -553,7 +551,10 @@ class UserExperienceMetricsCollector {
     return session.metrics as UserExperienceMetrics
   }
 
-  compareToBaseline(metrics: Partial<UserExperienceMetrics>, baseline: UserExperienceMetrics): Record<string, number> {
+  compareToBaseline(
+    metrics: Partial<UserExperienceMetrics>,
+    baseline: UserExperienceMetrics
+  ): Record<string, number> {
     const comparison: Record<string, number> = {}
 
     Object.entries(metrics).forEach(([key, value]) => {
@@ -590,7 +591,7 @@ async function simulateTaskExecution(task: UserTask): Promise<UserTask> {
   const success = Math.random() > 0.15 // 85% success rate
   const actualDuration = task.expectedDuration * (0.8 + Math.random() * 0.4)
 
-  await new Promise(resolve => setTimeout(resolve, Math.min(actualDuration, 100)))
+  await new Promise((resolve) => setTimeout(resolve, Math.min(actualDuration, 100)))
 
   return {
     ...task,
@@ -607,7 +608,7 @@ function calculateTaskEfficiency(task: UserTask): number {
 }
 
 async function simulateUserInteractions(interactionSpecs: any[]): Promise<UserInteraction[]> {
-  return interactionSpecs.map(spec => ({
+  return interactionSpecs.map((spec) => ({
     timestamp: Date.now(),
     type: spec.type,
     element: spec.element,
@@ -621,8 +622,8 @@ async function simulateMultipleUserSessions(sessionCount: number): Promise<any[]
   // Simulate improvement over multiple sessions
   return Array.from({ length: sessionCount }, (_, i) => ({
     sessionNumber: i + 1,
-    efficiency: 0.5 + (i * 0.1) + Math.random() * 0.1,
-    satisfaction: 3.0 + (i * 0.2) + Math.random() * 0.3,
+    efficiency: 0.5 + i * 0.1 + Math.random() * 0.1,
+    satisfaction: 3.0 + i * 0.2 + Math.random() * 0.3,
   }))
 }
 
@@ -669,14 +670,14 @@ async function validateScreenReaderFeature(feature: string): Promise<any> {
 }
 
 async function simulateKeyboardNavigation(tests: any[]): Promise<any[]> {
-  return tests.map(test => ({
+  return tests.map((test) => ({
     ...test,
     successful: Math.random() > 0.05, // 95% success rate
   }))
 }
 
 async function runPerformanceTests(tests: any[]): Promise<any[]> {
-  return tests.map(test => ({
+  return tests.map((test) => ({
     ...test,
     actualTime: test.expectedTime * (0.7 + Math.random() * 0.6),
   }))
@@ -710,7 +711,7 @@ async function analyzeFeatureAdoptionRates(): Promise<any> {
 
 async function analyzeLearningCurveProgression(): Promise<any> {
   return {
-    improvementRate: 0.70 + Math.random() * 0.25,
+    improvementRate: 0.7 + Math.random() * 0.25,
     plateauTime: 3 + Math.random() * 7,
   }
 }
@@ -719,11 +720,11 @@ function calculateOverallUXScore(metrics: Partial<UserExperienceMetrics>): numbe
   const weights = {
     taskCompletionRate: 0.15,
     taskEfficiency: 0.15,
-    userSatisfaction: 0.20,
-    learnability: 0.10,
-    errorRecovery: 0.10,
-    responseTime: 0.10,
-    wcagCompliance: 0.10,
+    userSatisfaction: 0.2,
+    learnability: 0.1,
+    errorRecovery: 0.1,
+    responseTime: 0.1,
+    wcagCompliance: 0.1,
     screenReaderCompatibility: 0.05,
     keyboardNavigation: 0.05,
   }
@@ -751,7 +752,10 @@ function calculateOverallUXScore(metrics: Partial<UserExperienceMetrics>): numbe
   return totalWeight > 0 ? score / totalWeight : 0
 }
 
-function compareToBenchmark(metrics: Partial<UserExperienceMetrics>, baseline: UserExperienceMetrics): Record<string, string> {
+function compareToBenchmark(
+  metrics: Partial<UserExperienceMetrics>,
+  baseline: UserExperienceMetrics
+): Record<string, string> {
   const comparison: Record<string, string> = {}
 
   Object.entries(metrics).forEach(([key, value]) => {
@@ -776,7 +780,9 @@ function generateUXRecommendations(metrics: Partial<UserExperienceMetrics>): str
   const recommendations: string[] = []
 
   if ((metrics.taskCompletionRate || 0) < 0.85) {
-    recommendations.push('Improve task completion rates through better user guidance and clearer interfaces')
+    recommendations.push(
+      'Improve task completion rates through better user guidance and clearer interfaces'
+    )
   }
 
   if ((metrics.responseTime || 0) > 200) {
@@ -787,7 +793,7 @@ function generateUXRecommendations(metrics: Partial<UserExperienceMetrics>): str
     recommendations.push('Focus on improving overall user satisfaction through UX enhancements')
   }
 
-  if ((metrics.wcagCompliance || 0) < 0.90) {
+  if ((metrics.wcagCompliance || 0) < 0.9) {
     recommendations.push('Address accessibility issues to meet WCAG 2.1 compliance standards')
   }
 
@@ -796,10 +802,16 @@ function generateUXRecommendations(metrics: Partial<UserExperienceMetrics>): str
   }
 
   if (recommendations.length === 0) {
-    recommendations.push('All metrics meet or exceed target thresholds - maintain current quality standards')
+    recommendations.push(
+      'All metrics meet or exceed target thresholds - maintain current quality standards'
+    )
   }
 
   return recommendations
 }
 
-export { UserExperienceMetrics, UserExperienceTestSession, UserExperienceMetricsCollector }
+export {
+  type UserExperienceMetrics,
+  type UserExperienceTestSession,
+  UserExperienceMetricsCollector,
+}

@@ -17,29 +17,26 @@
  * @version 1.0.0
  */
 
-import { createLogger } from '../utils/logger'
-import { createContextualRecommendationEngine } from './contextual-recommendation-engine'
-import { createNaturalLanguageDescriptionFramework } from './natural-language-description-framework'
-import { comprehensiveToolErrorManager } from '../error-handling/comprehensive-error-manager'
 import {
+  CommunicationStyle,
+  type ExplanationContext,
   errorIntelligenceService,
   type IntelligentErrorExplanation,
-  type ExplanationContext,
-  type UserInteraction,
   type LearningFeedback,
   SupportedLanguage,
-  CommunicationStyle
+  type UserInteraction,
 } from '../../../parlant-server/error-intelligence'
+import { comprehensiveToolErrorManager } from '../error-handling/comprehensive-error-manager'
+import type { AdapterExecutionContext, ErrorHandlingConfig } from '../types/adapter-interfaces'
+import { createLogger } from '../utils/logger'
 import type {
+  AdvancedUsageContext,
   ContextualRecommendation,
   ContextualRecommendationRequest,
-  AdvancedUsageContext,
-  UserBehaviorHistory
+  UserBehaviorHistory,
 } from './contextual-recommendation-engine'
-import type {
-  AdapterExecutionContext,
-  ErrorHandlingConfig
-} from '../types/adapter-interfaces'
+import { createContextualRecommendationEngine } from './contextual-recommendation-engine'
+import { createNaturalLanguageDescriptionFramework } from './natural-language-description-framework'
 
 const logger = createLogger('IntelligentErrorRecoveryEngine')
 
@@ -445,15 +442,15 @@ export class IntelligentErrorRecoveryEngine {
         contextTTL: 1000 * 60 * 5,
         behaviorTTL: 1000 * 60 * 30,
         maxCacheSize: config?.cacheSize || 1000,
-        compressionEnabled: true
-      }
+        compressionEnabled: true,
+      },
     })
 
     this.nlpFramework = createNaturalLanguageDescriptionFramework()
 
     logger.info('Intelligent Error Recovery Engine initialized', {
       learningEnabled: config?.enableLearning ?? true,
-      cacheSize: config?.cacheSize || 1000
+      cacheSize: config?.cacheSize || 1000,
     })
   }
 
@@ -477,7 +474,7 @@ export class IntelligentErrorRecoveryEngine {
       errorType: error.constructor.name,
       toolId: context.toolId,
       userId: context.userId,
-      attemptNumber: context.errorAttemptNumber || 1
+      attemptNumber: context.errorAttemptNumber || 1,
     })
 
     try {
@@ -510,10 +507,7 @@ export class IntelligentErrorRecoveryEngine {
       const troubleshootingTree = await this.generateTroubleshootingTree(errorAnalysis, context)
 
       // Step 9: Identify learning opportunities
-      const learningOpportunities = await this.identifyLearningOpportunities(
-        errorAnalysis,
-        context
-      )
+      const learningOpportunities = await this.identifyLearningOpportunities(errorAnalysis, context)
 
       // Step 10: Plan follow-up actions
       const followUpActions = await this.generateFollowUpActions(errorAnalysis, context)
@@ -546,7 +540,7 @@ export class IntelligentErrorRecoveryEngine {
         confidence,
         estimatedResolutionTime,
         successProbability,
-        generatedAt: new Date()
+        generatedAt: new Date(),
       }
 
       // Cache the plan
@@ -563,15 +557,15 @@ export class IntelligentErrorRecoveryEngine {
         confidence,
         successProbability,
         alternativeToolsCount: alternativeTools.length,
-        generationTime: Date.now() - startTime
+        generationTime: Date.now() - startTime,
       })
 
       return recoveryPlan
-
     } catch (planGenerationError) {
       logger.error('Failed to generate recovery plan', {
         planId,
-        error: planGenerationError instanceof Error ? planGenerationError.message : planGenerationError
+        error:
+          planGenerationError instanceof Error ? planGenerationError.message : planGenerationError,
       })
 
       // Return fallback plan
@@ -593,7 +587,7 @@ export class IntelligentErrorRecoveryEngine {
       throw new Error(`Recovery plan not found: ${planId}`)
     }
 
-    const action = plan.immediateActions.find(a => a.id === actionId)
+    const action = plan.immediateActions.find((a) => a.id === actionId)
     if (!action) {
       throw new Error(`Recovery action not found: ${actionId}`)
     }
@@ -602,7 +596,7 @@ export class IntelligentErrorRecoveryEngine {
       planId,
       actionId,
       actionTitle: action.title,
-      userId
+      userId,
     })
 
     const startTime = Date.now()
@@ -625,10 +619,10 @@ export class IntelligentErrorRecoveryEngine {
           result,
           validationResult,
           parameters,
-          executionTime: Date.now() - startTime
+          executionTime: Date.now() - startTime,
         },
         outcome: validationResult.success ? 'success' : 'failure',
-        timeToResolution: Date.now() - startTime
+        timeToResolution: Date.now() - startTime,
       }
 
       await errorIntelligenceService.recordUserInteraction(interaction)
@@ -644,23 +638,22 @@ export class IntelligentErrorRecoveryEngine {
         nextRecommendedActions: validationResult.success
           ? plan.followUpActions.slice(0, 3)
           : this.getFailureFollowUpActions(action, result),
-        learningInsights: await this.generateLearningInsights(action, result, validationResult)
+        learningInsights: await this.generateLearningInsights(action, result, validationResult),
       }
 
       logger.info('Recovery action executed', {
         planId,
         actionId,
         success: executionResult.success,
-        executionTime: executionResult.executionTime
+        executionTime: executionResult.executionTime,
       })
 
       return executionResult
-
     } catch (executionError) {
       logger.error('Recovery action execution failed', {
         planId,
         actionId,
-        error: executionError instanceof Error ? executionError.message : executionError
+        error: executionError instanceof Error ? executionError.message : executionError,
       })
 
       // Record failure
@@ -671,10 +664,10 @@ export class IntelligentErrorRecoveryEngine {
         details: {
           actionId,
           error: executionError instanceof Error ? executionError.message : String(executionError),
-          parameters
+          parameters,
         },
         outcome: 'failure',
-        timeToResolution: Date.now() - startTime
+        timeToResolution: Date.now() - startTime,
       }
 
       await errorIntelligenceService.recordUserInteraction(failureInteraction)
@@ -684,9 +677,11 @@ export class IntelligentErrorRecoveryEngine {
         result: null,
         validationResult: {
           success: false,
-          errors: [executionError instanceof Error ? executionError.message : String(executionError)],
+          errors: [
+            executionError instanceof Error ? executionError.message : String(executionError),
+          ],
           warnings: [],
-          recommendations: ['Contact support for assistance']
+          recommendations: ['Contact support for assistance'],
         },
         executionTime: Date.now() - startTime,
         nextRecommendedActions: [
@@ -695,10 +690,10 @@ export class IntelligentErrorRecoveryEngine {
             description: 'Get expert help for this complex issue',
             timing: 'immediate',
             priority: 'high',
-            responsible: 'support'
-          }
+            responsible: 'support',
+          },
         ],
-        learningInsights: []
+        learningInsights: [],
       }
     }
   }
@@ -715,7 +710,7 @@ export class IntelligentErrorRecoveryEngine {
       planId,
       userId,
       overallSatisfaction: feedback.overallSatisfaction,
-      resolved: feedback.problemResolved
+      resolved: feedback.problemResolved,
     })
 
     // Convert to learning feedback format
@@ -726,11 +721,11 @@ export class IntelligentErrorRecoveryEngine {
         clarity: feedback.explanationClarity,
         helpfulness: feedback.actionHelpfulness,
         accuracy: feedback.recommendationAccuracy,
-        completeness: feedback.completeness
+        completeness: feedback.completeness,
       },
       textFeedback: feedback.comments,
       suggestedImprovements: feedback.improvements,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
     // Process through error intelligence service
@@ -761,8 +756,8 @@ export class IntelligentErrorRecoveryEngine {
       trendAnalysis: {
         successRatetrend: 'stable',
         resolutionTimeTrend: 'improving',
-        satisfactionTrend: 'improving'
-      }
+        satisfactionTrend: 'improving',
+      },
     }
 
     // Calculate analytics from stored data
@@ -777,8 +772,10 @@ export class IntelligentErrorRecoveryEngine {
 
         // Aggregate metrics
         const metrics = this.recoveryMetrics.get(planId) || []
-        analytics.successRate += metrics.length > 0 ?
-          metrics.reduce((sum, m) => sum + (m.successful ? 1 : 0), 0) / metrics.length : 0
+        analytics.successRate +=
+          metrics.length > 0
+            ? metrics.reduce((sum, m) => sum + (m.successful ? 1 : 0), 0) / metrics.length
+            : 0
 
         analytics.averageResolutionTime += plan.estimatedResolutionTime
 
@@ -798,7 +795,7 @@ export class IntelligentErrorRecoveryEngine {
     logger.info('Generated recovery analytics', {
       totalPlans: analytics.totalRecoveryPlans,
       successRate: analytics.successRate.toFixed(2),
-      timeRange: `${timeRange.start.toISOString()} to ${timeRange.end.toISOString()}`
+      timeRange: `${timeRange.start.toISOString()} to ${timeRange.end.toISOString()}`,
     })
 
     return analytics
@@ -819,7 +816,7 @@ export class IntelligentErrorRecoveryEngine {
         toolId: context.toolId,
         executionId: context.executionId,
         userId: context.userId,
-        workspaceId: context.workspaceId
+        workspaceId: context.workspaceId,
       }
     )
 
@@ -829,7 +826,7 @@ export class IntelligentErrorRecoveryEngine {
       subcategory: this.classifyErrorSubcategory(error),
       type: error.constructor.name,
       domain: this.identifyErrorDomain(error, context),
-      confidence: 0.85
+      confidence: 0.85,
     }
 
     const rootCause: RootCause = {
@@ -837,7 +834,7 @@ export class IntelligentErrorRecoveryEngine {
       secondary: this.identifySecondaryRootCauses(error, context),
       confidence: 0.8,
       technicalDetails: error.message,
-      userFriendlyExplanation: this.generateUserFriendlyRootCauseExplanation(error, context)
+      userFriendlyExplanation: this.generateUserFriendlyRootCauseExplanation(error, context),
     }
 
     return {
@@ -846,7 +843,7 @@ export class IntelligentErrorRecoveryEngine {
       impact: this.assessImpact(error, context),
       rootCause,
       contributingFactors: this.identifyContributingFactors(error, context),
-      recoverability: this.assessRecoverability(error, context)
+      recoverability: this.assessRecoverability(error, context),
     }
   }
 
@@ -862,7 +859,7 @@ export class IntelligentErrorRecoveryEngine {
       reasoning: this.generateRecoveryReasoning(approach, analysis, context),
       steps: await this.generateRecoverySteps(approach, analysis, context),
       fallbacks: this.generateFallbackOptions(analysis, context),
-      estimatedSuccess: this.estimateStrategySuccess(approach, analysis, context)
+      estimatedSuccess: this.estimateStrategySuccess(approach, analysis, context),
     }
 
     return strategy
@@ -892,39 +889,39 @@ export class IntelligentErrorRecoveryEngine {
               description: 'Same error may occur again',
               probability: 0.4,
               impact: 2,
-              category: 'operational'
-            }
+              category: 'operational',
+            },
           ],
           mitigations: [
             {
               risk: 'Same error may occur again',
               strategy: 'Wait briefly before retry to allow transient issues to resolve',
-              effectiveness: 0.7
-            }
+              effectiveness: 0.7,
+            },
           ],
-          overallRiskLevel: 'low'
+          overallRiskLevel: 'low',
         },
         instructions: [
           {
             step: 'Wait 10-30 seconds for any temporary issues to clear',
             details: 'This allows transient network or system issues to resolve naturally',
             tips: ['Check system status indicators if available'],
-            commonMistakes: ['Retrying immediately without waiting']
+            commonMistakes: ['Retrying immediately without waiting'],
           },
           {
             step: 'Click the retry button or repeat your last action',
             details: 'Use the same parameters and settings as before',
             tips: ['Make note of any changes in behavior'],
-            commonMistakes: ['Changing parameters during retry']
-          }
+            commonMistakes: ['Changing parameters during retry'],
+          },
         ],
         automation: {
           available: true,
           confidence: 0.9,
           requirements: ['System retry capability'],
           limitations: ['Limited retry attempts'],
-          fallbackToManual: true
-        }
+          fallbackToManual: true,
+        },
       })
     }
 
@@ -945,45 +942,45 @@ export class IntelligentErrorRecoveryEngine {
               description: 'Incorrect configuration changes could cause new issues',
               probability: 0.2,
               impact: 3,
-              category: 'configuration'
-            }
+              category: 'configuration',
+            },
           ],
           mitigations: [
             {
               risk: 'Incorrect configuration changes',
               strategy: 'Backup current configuration before making changes',
-              effectiveness: 0.9
-            }
+              effectiveness: 0.9,
+            },
           ],
-          overallRiskLevel: 'low'
+          overallRiskLevel: 'low',
         },
         instructions: [
           {
             step: 'Access the tool configuration panel',
             details: 'Navigate to settings or configuration section',
             tips: ['Look for gear icon or settings menu'],
-            commonMistakes: ['Accessing wrong configuration section']
+            commonMistakes: ['Accessing wrong configuration section'],
           },
           {
             step: 'Review connection settings and credentials',
             details: 'Verify URLs, API keys, tokens, and authentication details',
             tips: ['Check for expired credentials'],
-            commonMistakes: ['Overlooking credential expiration']
+            commonMistakes: ['Overlooking credential expiration'],
           },
           {
             step: 'Test configuration after changes',
             details: 'Use built-in test function or simple operation to validate',
             tips: ['Start with a simple test operation'],
-            commonMistakes: ['Not testing after configuration changes']
-          }
+            commonMistakes: ['Not testing after configuration changes'],
+          },
         ],
         automation: {
           available: false,
           confidence: 0.3,
           requirements: ['Configuration API access'],
           limitations: ['Requires user credentials'],
-          fallbackToManual: true
-        }
+          fallbackToManual: true,
+        },
       })
     }
 
@@ -1006,28 +1003,30 @@ export class IntelligentErrorRecoveryEngine {
         conversationHistory: [],
         currentContext: this.buildAdvancedUsageContext(context),
         maxRecommendations: 5,
-        includeExplanations: true
+        includeExplanations: true,
       }
 
-      const recommendations = await this.recommendationEngine.getRecommendations(recommendationRequest)
+      const recommendations =
+        await this.recommendationEngine.getRecommendations(recommendationRequest)
 
       // Filter out the failed tool and convert to our format
       const alternatives = recommendations
-        .filter(rec => rec.toolId !== context.toolId)
-        .map(rec => this.convertToAlternativeRecommendation(rec, error, context))
+        .filter((rec) => rec.toolId !== context.toolId)
+        .map((rec) => this.convertToAlternativeRecommendation(rec, error, context))
 
       logger.info('Generated alternative tool recommendations', {
         originalTool: context.toolId,
         alternativesCount: alternatives.length,
-        averageConfidence: alternatives.reduce((sum, alt) => sum + alt.confidence, 0) / alternatives.length
+        averageConfidence:
+          alternatives.reduce((sum, alt) => sum + alt.confidence, 0) / alternatives.length,
       })
 
       return alternatives
-
     } catch (recommendationError) {
       logger.error('Failed to get alternative tool recommendations', {
         toolId: context.toolId,
-        error: recommendationError instanceof Error ? recommendationError.message : recommendationError
+        error:
+          recommendationError instanceof Error ? recommendationError.message : recommendationError,
       })
       return []
     }
@@ -1051,22 +1050,22 @@ export class IntelligentErrorRecoveryEngine {
               order: 1,
               title: 'Set up configuration monitoring',
               description: 'Create automated checks for key configuration parameters',
-              validation: 'Monitoring system reports configuration status'
+              validation: 'Monitoring system reports configuration status',
             },
             {
               order: 2,
               title: 'Implement alerting',
               description: 'Set up alerts for configuration drift or expiration',
-              validation: 'Alerts are received for configuration issues'
-            }
+              validation: 'Alerts are received for configuration issues',
+            },
           ],
           resources: ['Configuration management tools', 'Monitoring system'],
           dependencies: ['Access to configuration system'],
-          validation: ['Regular validation reports', 'Zero configuration-related failures']
+          validation: ['Regular validation reports', 'Zero configuration-related failures'],
         },
         impact: 'high',
         effort: 'moderate',
-        timeline: '1-2 weeks'
+        timeline: '1-2 weeks',
       })
     }
 
@@ -1081,22 +1080,22 @@ export class IntelligentErrorRecoveryEngine {
             order: 1,
             title: 'Identify validation requirements',
             description: 'Catalog all input parameters and their validation rules',
-            validation: 'Complete validation specification document'
+            validation: 'Complete validation specification document',
           },
           {
             order: 2,
             title: 'Implement client-side validation',
             description: 'Add validation checks before tool execution',
-            validation: 'Validation prevents invalid inputs from being submitted'
-          }
+            validation: 'Validation prevents invalid inputs from being submitted',
+          },
         ],
         resources: ['Validation libraries', 'Documentation'],
         dependencies: ['Access to tool interface'],
-        validation: ['Reduced parameter-related errors', 'User feedback on validation helpfulness']
+        validation: ['Reduced parameter-related errors', 'User feedback on validation helpfulness'],
       },
       impact: 'medium',
       effort: 'minimal',
-      timeline: '3-5 days'
+      timeline: '3-5 days',
     })
 
     return strategies.slice(0, 3)
@@ -1121,7 +1120,7 @@ export class IntelligentErrorRecoveryEngine {
         largeText: false,
         reducedMotion: context.userPreferences?.accessibility?.reducedMotion || false,
         audioDescriptions: false,
-        keyboardNavigation: context.userPreferences?.accessibility?.keyboardOnly || false
+        keyboardNavigation: context.userPreferences?.accessibility?.keyboardOnly || false,
       },
       timezone: 'UTC', // Could be from user preferences
       culturalContext: {
@@ -1129,8 +1128,8 @@ export class IntelligentErrorRecoveryEngine {
         businessHours: { start: '09:00', end: '17:00', timezone: 'UTC' },
         workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
         culturalNorms: [],
-        communicationPreferences: []
-      }
+        communicationPreferences: [],
+      },
     }
 
     // Use the error intelligence service to generate explanation
@@ -1154,11 +1153,11 @@ export class IntelligentErrorRecoveryEngine {
         {
           situation: 'Step fails to complete',
           solution: step.validation.failureHandling,
-          reasoning: 'Provides fallback when primary approach fails'
-        }
+          reasoning: 'Provides fallback when primary approach fails',
+        },
       ],
       timeEstimate: this.estimateStepTime(step, context),
-      difficultyLevel: this.assessStepDifficulty(step, context)
+      difficultyLevel: this.assessStepDifficulty(step, context),
     }))
   }
 
@@ -1176,21 +1175,21 @@ export class IntelligentErrorRecoveryEngine {
         {
           answer: 'The operation timed out',
           nextNodeId: 'timeout_branch',
-          confidence: 0.8
+          confidence: 0.8,
         },
         {
           answer: 'I got an authentication error',
           nextNodeId: 'auth_branch',
-          confidence: 0.9
+          confidence: 0.9,
         },
         {
           answer: 'The tool returned unexpected results',
           nextNodeId: 'results_branch',
-          confidence: 0.7
-        }
+          confidence: 0.7,
+        },
       ],
       actions: [],
-      isLeaf: false
+      isLeaf: false,
     })
 
     // Timeout branch
@@ -1204,19 +1203,19 @@ export class IntelligentErrorRecoveryEngine {
             type: 'check',
             description: 'Check network connectivity and try again',
             parameters: { timeout: '30s' },
-            expectedResult: 'Operation completes within normal timeframe'
+            expectedResult: 'Operation completes within normal timeframe',
           },
-          confidence: 0.8
+          confidence: 0.8,
         },
         {
           answer: 'More than 2 minutes',
           nextNodeId: 'slow_operation',
-          confidence: 0.9
-        }
+          confidence: 0.9,
+        },
       ],
       actions: [],
       parentId: 'root',
-      isLeaf: false
+      isLeaf: false,
     })
 
     return tree
@@ -1237,21 +1236,21 @@ export class IntelligentErrorRecoveryEngine {
         resources: [
           {
             type: 'guide',
-            title: 'Beginner\'s Guide to Error Messages',
+            title: "Beginner's Guide to Error Messages",
             url: '/guides/error-messages-beginner',
             difficulty: 'beginner',
             duration: '20 minutes',
-            quality: 0.9
-          }
+            quality: 0.9,
+          },
         ],
         prerequisites: [],
         estimatedTime: '30 minutes',
         benefits: [
           'Faster error resolution',
           'Increased confidence',
-          'Better troubleshooting skills'
+          'Better troubleshooting skills',
         ],
-        relevanceScore: 0.9
+        relevanceScore: 0.9,
       })
     }
 
@@ -1268,17 +1267,17 @@ export class IntelligentErrorRecoveryEngine {
             url: `/docs/tools/${context.toolId}/advanced-config`,
             difficulty: 'intermediate',
             duration: '45 minutes',
-            quality: 0.8
-          }
+            quality: 0.8,
+          },
         ],
         prerequisites: [`Basic ${context.toolId} knowledge`],
         estimatedTime: '1 hour',
         benefits: [
           'Better tool performance',
           'Fewer configuration errors',
-          'Advanced feature usage'
+          'Advanced feature usage',
         ],
-        relevanceScore: 0.8
+        relevanceScore: 0.8,
       })
     }
 
@@ -1297,7 +1296,7 @@ export class IntelligentErrorRecoveryEngine {
       description: 'Keep track of whether this error happens again',
       timing: 'immediate',
       priority: 'medium',
-      responsible: 'user'
+      responsible: 'user',
     })
 
     // System actions
@@ -1313,8 +1312,8 @@ export class IntelligentErrorRecoveryEngine {
           confidence: 0.9,
           requirements: ['System monitoring capability'],
           limitations: [],
-          fallbackToManual: false
-        }
+          fallbackToManual: false,
+        },
       })
     }
 
@@ -1336,7 +1335,7 @@ export class IntelligentErrorRecoveryEngine {
     let hash = 0
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     return Math.abs(hash)
@@ -1349,7 +1348,7 @@ export class IntelligentErrorRecoveryEngine {
       userProfile: {
         skillLevel: context.userSkillLevel || 'intermediate',
         role: 'user',
-        preferences: context.userPreferences || {}
+        preferences: context.userPreferences || {},
       },
       currentIntent: 'error_recovery',
       userSkillLevel: context.userSkillLevel || 'intermediate',
@@ -1359,7 +1358,7 @@ export class IntelligentErrorRecoveryEngine {
         communicationStyle: CommunicationStyle.CASUAL,
         assistanceLevel: 'guided',
         learningMode: false,
-        accessibility: {}
+        accessibility: {},
       },
       recentToolUsage: [],
       activeWorkflows: [],
@@ -1368,21 +1367,21 @@ export class IntelligentErrorRecoveryEngine {
         dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase(),
         timeZone: 'UTC',
         workingHours: true,
-        urgency: context.timeConstraints?.urgency || 'medium'
+        urgency: context.timeConstraints?.urgency || 'medium',
       },
       businessContext: {
         industry: 'technology',
         companySize: 'medium',
         businessFunction: 'operations',
         complianceRequirements: [],
-        securityLevel: 'basic'
+        securityLevel: 'basic',
       },
       deviceContext: {
         deviceType: 'desktop',
         screenSize: 'large',
         inputMethod: 'keyboard',
-        connectionQuality: 'fast'
-      }
+        connectionQuality: 'fast',
+      },
     }
   }
 
@@ -1399,12 +1398,9 @@ export class IntelligentErrorRecoveryEngine {
       advantages: [
         'Different implementation approach',
         'Potentially more reliable for your use case',
-        'Alternative error handling'
+        'Alternative error handling',
       ],
-      disadvantages: [
-        'Requires learning new interface',
-        'May have different feature set'
-      ],
+      disadvantages: ['Requires learning new interface', 'May have different feature set'],
       migrationSteps: [
         {
           order: 1,
@@ -1416,15 +1412,15 @@ export class IntelligentErrorRecoveryEngine {
             required: false,
             complexity: 'none',
             backupNeeded: false,
-            tools: []
+            tools: [],
           },
           testing: {
             types: ['functionality'],
             coverage: 'basic',
             automation: false,
-            timeEstimate: '10 minutes'
-          }
-        }
+            timeEstimate: '10 minutes',
+          },
+        },
       ],
       learningCurve: {
         timeToBasicProficiency: '15-30 minutes',
@@ -1436,11 +1432,11 @@ export class IntelligentErrorRecoveryEngine {
             url: `/docs/${rec.toolId}/quickstart`,
             difficulty: 'beginner',
             duration: '15 minutes',
-            quality: 0.8
-          }
+            quality: 0.8,
+          },
         ],
         supportAvailable: true,
-        communitySize: 'medium'
+        communitySize: 'medium',
       },
       compatibilityScore: 0.85,
       quickStartGuide: {
@@ -1449,16 +1445,16 @@ export class IntelligentErrorRecoveryEngine {
           title: `Getting Started with ${rec.toolId}`,
           url: `/tutorials/${rec.toolId}/getting-started`,
           duration: '10 minutes',
-          interactive: true
+          interactive: true,
         },
         firstSteps: [
           'Configure basic settings',
           'Test with simple operation',
-          'Review available features'
+          'Review available features',
         ],
         commonUseCase: 'Replace failed operation with equivalent functionality',
-        migrationAssistance: true
-      }
+        migrationAssistance: true,
+      },
     }
   }
 
@@ -1490,7 +1486,10 @@ export class IntelligentErrorRecoveryEngine {
     return ['Configuration mismatch', 'Resource unavailability']
   }
 
-  private generateUserFriendlyRootCauseExplanation(error: Error, context: ErrorRecoveryContext): string {
+  private generateUserFriendlyRootCauseExplanation(
+    error: Error,
+    context: ErrorRecoveryContext
+  ): string {
     return `The ${context.toolId} tool couldn't complete your request because ${error.message.toLowerCase()}`
   }
 
@@ -1498,7 +1497,10 @@ export class IntelligentErrorRecoveryEngine {
     return 'medium' // Simplified mapping
   }
 
-  private assessImpact(error: Error, context: ErrorRecoveryContext): 'minor' | 'moderate' | 'significant' | 'major' {
+  private assessImpact(
+    error: Error,
+    context: ErrorRecoveryContext
+  ): 'minor' | 'moderate' | 'significant' | 'major' {
     return 'moderate' // Simplified assessment
   }
 
@@ -1506,21 +1508,35 @@ export class IntelligentErrorRecoveryEngine {
     return ['System load', 'Network conditions']
   }
 
-  private assessRecoverability(error: Error, context: ErrorRecoveryContext): 'automatic' | 'guided' | 'manual' | 'impossible' {
+  private assessRecoverability(
+    error: Error,
+    context: ErrorRecoveryContext
+  ): 'automatic' | 'guided' | 'manual' | 'impossible' {
     return 'guided'
   }
 
-  private determineRecoveryApproach(analysis: ErrorAnalysisResult, context: ErrorRecoveryContext): RecoveryStrategy['approach'] {
+  private determineRecoveryApproach(
+    analysis: ErrorAnalysisResult,
+    context: ErrorRecoveryContext
+  ): RecoveryStrategy['approach'] {
     if (analysis.recoverability === 'automatic') return 'retry'
     if (analysis.severity === 'low') return 'alternative'
     return 'hybrid'
   }
 
-  private generateRecoveryReasoning(approach: string, analysis: ErrorAnalysisResult, context: ErrorRecoveryContext): string {
+  private generateRecoveryReasoning(
+    approach: string,
+    analysis: ErrorAnalysisResult,
+    context: ErrorRecoveryContext
+  ): string {
     return `Selected ${approach} approach based on error severity and recoverability assessment`
   }
 
-  private async generateRecoverySteps(approach: string, analysis: ErrorAnalysisResult, context: ErrorRecoveryContext): Promise<RecoveryStep[]> {
+  private async generateRecoverySteps(
+    approach: string,
+    analysis: ErrorAnalysisResult,
+    context: ErrorRecoveryContext
+  ): Promise<RecoveryStep[]> {
     return [
       {
         id: 'step1',
@@ -1535,40 +1551,58 @@ export class IntelligentErrorRecoveryEngine {
               name: 'Operation Success',
               description: 'Verify operation completed successfully',
               method: 'automated',
-              expectedResult: 'Success status returned'
-            }
+              expectedResult: 'Success status returned',
+            },
           ],
           successCondition: 'No errors reported',
-          failureHandling: 'Proceed to alternative approach'
-        }
-      }
+          failureHandling: 'Proceed to alternative approach',
+        },
+      },
     ]
   }
 
-  private generateFallbackOptions(analysis: ErrorAnalysisResult, context: ErrorRecoveryContext): FallbackOption[] {
+  private generateFallbackOptions(
+    analysis: ErrorAnalysisResult,
+    context: ErrorRecoveryContext
+  ): FallbackOption[] {
     return [
       {
         name: 'Manual Override',
         description: 'Manually complete the operation',
         triggers: ['Automated recovery fails'],
-        implementation: ['Contact support', 'Use alternative tool']
-      }
+        implementation: ['Contact support', 'Use alternative tool'],
+      },
     ]
   }
 
-  private estimateStrategySuccess(approach: string, analysis: ErrorAnalysisResult, context: ErrorRecoveryContext): number {
+  private estimateStrategySuccess(
+    approach: string,
+    analysis: ErrorAnalysisResult,
+    context: ErrorRecoveryContext
+  ): number {
     return 0.75 // Simplified estimation
   }
 
-  private calculatePlanConfidence(analysis: ErrorAnalysisResult, strategy: RecoveryStrategy, alternatives: AlternativeToolRecommendation[]): number {
+  private calculatePlanConfidence(
+    analysis: ErrorAnalysisResult,
+    strategy: RecoveryStrategy,
+    alternatives: AlternativeToolRecommendation[]
+  ): number {
     return 0.8 // Simplified calculation
   }
 
-  private estimateResolutionTime(strategy: RecoveryStrategy, context: ErrorRecoveryContext): number {
+  private estimateResolutionTime(
+    strategy: RecoveryStrategy,
+    context: ErrorRecoveryContext
+  ): number {
     return 300000 // 5 minutes in milliseconds
   }
 
-  private calculateSuccessProbability(strategy: RecoveryStrategy, context: ErrorRecoveryContext, analysis: ErrorAnalysisResult): number {
+  private calculateSuccessProbability(
+    strategy: RecoveryStrategy,
+    context: ErrorRecoveryContext,
+    analysis: ErrorAnalysisResult
+  ): number {
     return strategy.estimatedSuccess
   }
 
@@ -1576,11 +1610,18 @@ export class IntelligentErrorRecoveryEngine {
     // Update user session data
   }
 
-  private recordRecoveryPlanGeneration(plan: IntelligentRecoveryPlan, generationTime: number): void {
+  private recordRecoveryPlanGeneration(
+    plan: IntelligentRecoveryPlan,
+    generationTime: number
+  ): void {
     // Record metrics
   }
 
-  private generateFallbackRecoveryPlan(error: Error, context: ErrorRecoveryContext, planId: string): IntelligentRecoveryPlan {
+  private generateFallbackRecoveryPlan(
+    error: Error,
+    context: ErrorRecoveryContext,
+    planId: string
+  ): IntelligentRecoveryPlan {
     // Return minimal fallback plan
     return {
       errorAnalysis: {
@@ -1589,7 +1630,7 @@ export class IntelligentErrorRecoveryEngine {
           subcategory: 'general',
           type: error.constructor.name,
           domain: 'system',
-          confidence: 0.3
+          confidence: 0.3,
         },
         severity: 'medium',
         impact: 'moderate',
@@ -1597,17 +1638,17 @@ export class IntelligentErrorRecoveryEngine {
           primary: error.message,
           confidence: 0.5,
           technicalDetails: error.message,
-          userFriendlyExplanation: 'An unexpected error occurred'
+          userFriendlyExplanation: 'An unexpected error occurred',
         },
         contributingFactors: [],
-        recoverability: 'manual'
+        recoverability: 'manual',
       },
       recoveryStrategy: {
         approach: 'manual',
         reasoning: 'Fallback to manual recovery due to analysis failure',
         steps: [],
         fallbacks: [],
-        estimatedSuccess: 0.5
+        estimatedSuccess: 0.5,
       },
       immediateActions: [],
       alternativeTools: [],
@@ -1621,7 +1662,7 @@ export class IntelligentErrorRecoveryEngine {
       confidence: 0.3,
       estimatedResolutionTime: 600000, // 10 minutes
       successProbability: 0.5,
-      generatedAt: new Date()
+      generatedAt: new Date(),
     }
   }
 
@@ -1629,11 +1670,16 @@ export class IntelligentErrorRecoveryEngine {
   // (Abbreviated for brevity)
 
   private isConfigurationError(analysis: ErrorAnalysisResult): boolean {
-    return analysis.classification.category === 'authentication' ||
-           analysis.rootCause.primary.includes('config')
+    return (
+      analysis.classification.category === 'authentication' ||
+      analysis.rootCause.primary.includes('config')
+    )
   }
 
-  private calculateRetrySuccessProbability(analysis: ErrorAnalysisResult, context: ErrorRecoveryContext): number {
+  private calculateRetrySuccessProbability(
+    analysis: ErrorAnalysisResult,
+    context: ErrorRecoveryContext
+  ): number {
     if (analysis.classification.category === 'timeout') return 0.7
     if (analysis.classification.category === 'network') return 0.6
     return 0.5
@@ -1651,25 +1697,38 @@ export class IntelligentErrorRecoveryEngine {
     return '2-3 minutes'
   }
 
-  private assessStepDifficulty(step: RecoveryStep, context: ErrorRecoveryContext): 'easy' | 'moderate' | 'challenging' {
+  private assessStepDifficulty(
+    step: RecoveryStep,
+    context: ErrorRecoveryContext
+  ): 'easy' | 'moderate' | 'challenging' {
     return 'moderate'
   }
 
-  private async performRecoveryAction(action: RecoveryAction, parameters?: Record<string, any>): Promise<any> {
+  private async performRecoveryAction(
+    action: RecoveryAction,
+    parameters?: Record<string, any>
+  ): Promise<any> {
     // Implementation would depend on action type
     return { success: true }
   }
 
-  private async validateRecoveryResult(action: RecoveryAction, result: any): Promise<ValidationResult> {
+  private async validateRecoveryResult(
+    action: RecoveryAction,
+    result: any
+  ): Promise<ValidationResult> {
     return {
       success: true,
       errors: [],
       warnings: [],
-      recommendations: []
+      recommendations: [],
     }
   }
 
-  private recordRecoveryActionExecution(planId: string, actionId: string, interaction: UserInteraction): void {
+  private recordRecoveryActionExecution(
+    planId: string,
+    actionId: string,
+    interaction: UserInteraction
+  ): void {
     // Record metrics
   }
 
@@ -1680,12 +1739,16 @@ export class IntelligentErrorRecoveryEngine {
         description: 'Consider using a different recovery method',
         timing: 'immediate',
         priority: 'high',
-        responsible: 'user'
-      }
+        responsible: 'user',
+      },
     ]
   }
 
-  private async generateLearningInsights(action: RecoveryAction, result: any, validation: ValidationResult): Promise<LearningInsight[]> {
+  private async generateLearningInsights(
+    action: RecoveryAction,
+    result: any,
+    validation: ValidationResult
+  ): Promise<LearningInsight[]> {
     return []
   }
 
@@ -1693,7 +1756,10 @@ export class IntelligentErrorRecoveryEngine {
     // Update metrics
   }
 
-  private async learnFromRecoveryFeedback(planId: string, feedback: RecoveryFeedback): Promise<void> {
+  private async learnFromRecoveryFeedback(
+    planId: string,
+    feedback: RecoveryFeedback
+  ): Promise<void> {
     // Learning implementation
   }
 
@@ -1704,7 +1770,7 @@ export class IntelligentErrorRecoveryEngine {
   private async generateImprovementOpportunities(analytics: RecoveryAnalytics): Promise<string[]> {
     return [
       'Improve success rate for network-related errors',
-      'Reduce average resolution time through better guidance'
+      'Reduce average resolution time through better guidance',
     ]
   }
 }
@@ -1836,7 +1902,7 @@ export function createIntelligentErrorRecoveryEngine(config?: {
 export const intelligentErrorRecoveryEngine = createIntelligentErrorRecoveryEngine({
   enableLearning: true,
   cacheSize: 1000,
-  metricsRetention: 30 * 24 * 60 * 60 * 1000 // 30 days
+  metricsRetention: 30 * 24 * 60 * 60 * 1000, // 30 days
 })
 
 /**

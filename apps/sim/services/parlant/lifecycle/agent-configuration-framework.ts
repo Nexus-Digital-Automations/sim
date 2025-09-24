@@ -17,14 +17,9 @@
  * - Performance impact assessment for configurations
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
-import type {
-  Agent,
-  AgentConfig,
-  AuthContext,
-  Guideline
-} from '../types'
 import { EventEmitter } from 'events'
+import { createLogger } from '@/lib/logs/console/logger'
+import type { AgentConfig, AuthContext, Guideline } from '../types'
 
 const logger = createLogger('AgentConfigurationFramework')
 
@@ -113,14 +108,17 @@ export interface ConfigurationRule {
 export interface ConfigurationSchema {
   version: string
   requiredFields: string[]
-  fieldValidators: Record<string, {
-    type: 'string' | 'number' | 'boolean' | 'array' | 'object'
-    required: boolean
-    min?: number
-    max?: number
-    pattern?: string
-    enum?: any[]
-  }>
+  fieldValidators: Record<
+    string,
+    {
+      type: 'string' | 'number' | 'boolean' | 'array' | 'object'
+      required: boolean
+      min?: number
+      max?: number
+      pattern?: string
+      enum?: any[]
+    }
+  >
   capabilities: {
     allowed: string[]
     mutuallyExclusive: string[][]
@@ -168,7 +166,10 @@ export class AgentConfigurationFramework extends EventEmitter {
    */
   public registerPersonality(personality: AgentPersonality): void {
     this.personalities.set(personality.id, personality)
-    logger.info(`Registered personality profile`, { personalityId: personality.id, name: personality.name })
+    logger.info(`Registered personality profile`, {
+      personalityId: personality.id,
+      name: personality.name,
+    })
   }
 
   /**
@@ -184,7 +185,10 @@ export class AgentConfigurationFramework extends EventEmitter {
    */
   public registerTemplate(template: AgentConfigurationTemplate): void {
     this.templates.set(template.id, template)
-    logger.info(`Registered configuration template`, { templateId: template.id, name: template.name })
+    logger.info(`Registered configuration template`, {
+      templateId: template.id,
+      name: template.name,
+    })
   }
 
   /**
@@ -229,7 +233,7 @@ export class AgentConfigurationFramework extends EventEmitter {
           baseConfig = { ...template.baseConfig }
           selectedPersonality = this.personalities.get(template.personality)
           selectedCapabilities = template.enabledCapabilities
-            .map(id => this.capabilities.get(id))
+            .map((id) => this.capabilities.get(id))
             .filter(Boolean) as AgentCapability[]
         }
       }
@@ -270,7 +274,7 @@ export class AgentConfigurationFramework extends EventEmitter {
         appliedRules: applicableRules,
         generatedAt: new Date(),
         agentId,
-        sessionId
+        sessionId,
       })
 
       // Record configuration change
@@ -281,7 +285,7 @@ export class AgentConfigurationFramework extends EventEmitter {
         previousValue: null,
         newValue: baseConfig,
         reason: 'Dynamic configuration generation',
-        userId: context.auth.user_id
+        userId: context.auth.user_id,
       })
 
       logger.info(`Configuration generated successfully`, {
@@ -289,21 +293,20 @@ export class AgentConfigurationFramework extends EventEmitter {
         sessionId,
         personalityId: selectedPersonality.id,
         capabilitiesCount: selectedCapabilities.length,
-        rulesApplied: applicableRules.length
+        rulesApplied: applicableRules.length,
       })
 
       return {
         config: baseConfig,
         personality: selectedPersonality,
         capabilities: selectedCapabilities,
-        appliedRules: applicableRules
+        appliedRules: applicableRules,
       }
-
     } catch (error) {
       logger.error(`Failed to generate configuration`, {
         agentId,
         sessionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -350,7 +353,10 @@ export class AgentConfigurationFramework extends EventEmitter {
       if (updates.enableCapabilities) {
         for (const capabilityId of updates.enableCapabilities) {
           const capability = this.capabilities.get(capabilityId)
-          if (capability && !activeConfig.capabilities.find((c: AgentCapability) => c.id === capabilityId)) {
+          if (
+            capability &&
+            !activeConfig.capabilities.find((c: AgentCapability) => c.id === capabilityId)
+          ) {
             activeConfig.capabilities.push(capability)
             needsUpdate = true
           }
@@ -383,7 +389,7 @@ export class AgentConfigurationFramework extends EventEmitter {
           previousValue: previousConfig,
           newValue: activeConfig,
           reason: context.reason,
-          userId: context.auth.user_id
+          userId: context.auth.user_id,
         })
 
         // Emit update event
@@ -392,7 +398,7 @@ export class AgentConfigurationFramework extends EventEmitter {
           agentId: activeConfig.agentId,
           previousConfig,
           newConfig: activeConfig,
-          updates
+          updates,
         })
 
         logger.info(`Configuration updated successfully`, { sessionId, updates })
@@ -400,12 +406,11 @@ export class AgentConfigurationFramework extends EventEmitter {
       }
 
       return false
-
     } catch (error) {
       logger.error(`Failed to update configuration`, {
         sessionId,
         updates,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -423,7 +428,7 @@ export class AgentConfigurationFramework extends EventEmitter {
    */
   public getAvailableCapabilities(category?: string): AgentCapability[] {
     const capabilities = Array.from(this.capabilities.values())
-    return category ? capabilities.filter(c => c.category === category) : capabilities
+    return category ? capabilities.filter((c) => c.category === category) : capabilities
   }
 
   /**
@@ -432,8 +437,8 @@ export class AgentConfigurationFramework extends EventEmitter {
   public getAvailableTemplates(workspaceId?: string): AgentConfigurationTemplate[] {
     const templates = Array.from(this.templates.values())
     return workspaceId
-      ? templates.filter(t => !t.workspaceSpecific || t.metadata.workspaceId === workspaceId)
-      : templates.filter(t => !t.workspaceSpecific)
+      ? templates.filter((t) => !t.workspaceSpecific || t.metadata.workspaceId === workspaceId)
+      : templates.filter((t) => !t.workspaceSpecific)
   }
 
   /**
@@ -459,7 +464,7 @@ export class AgentConfigurationFramework extends EventEmitter {
     }
 
     const history = this.configurationHistory.get(activeConfig.agentId) || []
-    const change = history.find(c => c.id === changeId)
+    const change = history.find((c) => c.id === changeId)
 
     if (!change || !change.rollbackAvailable) {
       throw new Error(`Configuration change not found or not rollback-able`)
@@ -479,17 +484,16 @@ export class AgentConfigurationFramework extends EventEmitter {
         previousValue: activeConfig,
         newValue: restoredConfig,
         reason: `Rollback to change ${changeId}`,
-        userId: auth.user_id
+        userId: auth.user_id,
       })
 
       logger.info(`Configuration rolled back successfully`, { sessionId, changeId })
       return true
-
     } catch (error) {
       logger.error(`Failed to rollback configuration`, {
         sessionId,
         changeId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -506,13 +510,13 @@ export class AgentConfigurationFramework extends EventEmitter {
         temperature: { type: 'number', required: true, min: 0, max: 2 },
         model: { type: 'string', required: true, enum: ['gpt-4', 'gpt-3.5-turbo', 'claude-3'] },
         system_prompt: { type: 'string', required: false },
-        tool_choice: { type: 'string', required: false, enum: ['auto', 'none'] }
+        tool_choice: { type: 'string', required: false, enum: ['auto', 'none'] },
       },
       capabilities: {
         allowed: ['web_search', 'file_processing', 'code_execution', 'image_analysis'],
         mutuallyExclusive: [['web_search', 'offline_mode']],
-        requiredCombinations: [['code_execution', 'file_processing']]
-      }
+        requiredCombinations: [['code_execution', 'file_processing']],
+      },
     }
   }
 
@@ -527,23 +531,23 @@ export class AgentConfigurationFramework extends EventEmitter {
         verbosity: 'balanced',
         helpfulness: 'supportive',
         creativity: 'balanced',
-        empathy: 'medium'
+        empathy: 'medium',
       },
       systemPromptModifiers: [
         'Be helpful and informative',
         'Maintain a professional but friendly tone',
-        'Provide clear and concise responses'
+        'Provide clear and concise responses',
       ],
       responseTemplates: {
         greeting: 'Hello! How can I help you today?',
         error: 'I apologize, but I encountered an issue. Let me try to help you in another way.',
-        clarification: 'Could you please provide more details so I can better assist you?'
+        clarification: 'Could you please provide more details so I can better assist you?',
       },
       prohibitedBehaviors: [
         'Providing medical advice',
         'Generating harmful content',
-        'Impersonating individuals'
-      ]
+        'Impersonating individuals',
+      ],
     })
 
     // Register core capabilities
@@ -559,8 +563,8 @@ export class AgentConfigurationFramework extends EventEmitter {
       resourceRequirements: {
         memoryMB: 50,
         cpuIntensive: false,
-        networkAccess: false
-      }
+        networkAccess: false,
+      },
     })
 
     // Register default template
@@ -574,7 +578,7 @@ export class AgentConfigurationFramework extends EventEmitter {
         temperature: 0.7,
         model: 'gpt-4',
         system_prompt: 'You are a helpful workplace assistant.',
-        tool_choice: 'auto'
+        tool_choice: 'auto',
       },
       personality: 'default',
       enabledCapabilities: ['conversational_ai'],
@@ -582,11 +586,11 @@ export class AgentConfigurationFramework extends EventEmitter {
         {
           condition: 'user asks for help',
           action: 'provide helpful and accurate information',
-          priority: 1
-        }
+          priority: 1,
+        },
       ],
       workspaceSpecific: false,
-      metadata: {}
+      metadata: {},
     })
   }
 
@@ -601,22 +605,22 @@ export class AgentConfigurationFramework extends EventEmitter {
         max_turns: 50,
         temperature: 0.7,
         model: 'gpt-4',
-        tool_choice: 'auto'
+        tool_choice: 'auto',
       },
       personality: this.personalities.get('default')!,
-      capabilities: [this.capabilities.get('conversational_ai')!]
+      capabilities: [this.capabilities.get('conversational_ai')!],
     }
   }
 
   private async evaluateRules(agentId: string, context: any): Promise<ConfigurationRule[]> {
     const activeRules = Array.from(this.rules.values())
-      .filter(rule => rule.active)
+      .filter((rule) => rule.active)
       .sort((a, b) => b.priority - a.priority)
 
     const applicableRules: ConfigurationRule[] = []
 
     for (const rule of activeRules) {
-      let matches = true
+      const matches = true
 
       // Evaluate conditions
       if (rule.conditions.workspaceType && context.auth.workspace_id) {
@@ -646,7 +650,7 @@ export class AgentConfigurationFramework extends EventEmitter {
     rules: ConfigurationRule[],
     capabilities: AgentCapability[]
   ): Promise<AgentConfig> {
-    let modifiedConfig = { ...config }
+    const modifiedConfig = { ...config }
 
     for (const rule of rules) {
       if (rule.actions.updateConfig) {
@@ -672,7 +676,10 @@ export class AgentConfigurationFramework extends EventEmitter {
     return modifiedConfig
   }
 
-  private applyPersonalityToConfig(config: AgentConfig, personality: AgentPersonality): AgentConfig {
+  private applyPersonalityToConfig(
+    config: AgentConfig,
+    personality: AgentPersonality
+  ): AgentConfig {
     const modifiedConfig = { ...config }
 
     // Apply personality traits to configuration
@@ -732,7 +739,7 @@ export class AgentConfigurationFramework extends EventEmitter {
       id: `change_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date(),
       rollbackAvailable: true,
-      ...changeData
+      ...changeData,
     }
 
     const history = this.configurationHistory.get(changeData.agentId) || []
@@ -744,7 +751,10 @@ export class AgentConfigurationFramework extends EventEmitter {
       history.splice(0, history.length - 100)
     }
 
-    logger.debug('Configuration change recorded', { changeId: change.id, agentId: changeData.agentId })
+    logger.debug('Configuration change recorded', {
+      changeId: change.id,
+      agentId: changeData.agentId,
+    })
   }
 }
 
