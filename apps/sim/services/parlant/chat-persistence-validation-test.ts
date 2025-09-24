@@ -5,20 +5,20 @@
  * Tests all components including storage, retrieval, search, export, archival, and security.
  */
 
-import { comprehensiveChatPersistenceAPI } from './comprehensive-chat-persistence-api'
-import { chatPersistenceService } from './chat-persistence-service'
-import { sessionContinuityManager } from './session-continuity-manager'
-import { workspaceIsolationService } from './workspace-isolation-service'
-import { chatExportArchivalService } from './chat-export-archival-service'
 import { createLogger } from '@/lib/logs/console/logger'
+import { chatExportArchivalService } from './chat-export-archival-service'
+import { chatPersistenceService } from './chat-persistence-service'
 import type {
+  AdvancedExportConfig,
+  ApiRequestContext,
+  ArchivalPolicy,
   ChatMessageType,
   ChatSearchParams,
-  AdvancedExportConfig,
-  ArchivalPolicy,
-  ApiRequestContext,
   SessionCreationConfig,
 } from './comprehensive-chat-persistence-api'
+import { comprehensiveChatPersistenceAPI } from './comprehensive-chat-persistence-api'
+import { sessionContinuityManager } from './session-continuity-manager'
+import { workspaceIsolationService } from './workspace-isolation-service'
 
 const logger = createLogger('ChatPersistenceValidationTest')
 
@@ -57,15 +57,17 @@ class MockDataGenerator {
       sessionId: `test-session-${Date.now()}`,
       ipAddress: '127.0.0.1',
       userAgent: 'ChatPersistenceTest/1.0.0',
-      requestId: `test-request-${Date.now()}-${++this.testCounter}`,
+      requestId: `test-request-${Date.now()}-${++MockDataGenerator.testCounter}`,
       ...overrides,
     }
   }
 
-  static generateSessionConfig(overrides: Partial<SessionCreationConfig> = {}): SessionCreationConfig {
+  static generateSessionConfig(
+    overrides: Partial<SessionCreationConfig> = {}
+  ): SessionCreationConfig {
     return {
       agentId: `test-agent-${Date.now()}`,
-      title: `Test Chat Session ${++this.testCounter}`,
+      title: `Test Chat Session ${++MockDataGenerator.testCounter}`,
       enableContinuity: true,
       customMetadata: {
         testMode: true,
@@ -88,12 +90,13 @@ class MockDataGenerator {
       },
       {
         type: 'agent_message',
-        content: 'Hello! I\'d be happy to help you with your account. What specific issue are you experiencing?',
+        content:
+          "Hello! I'd be happy to help you with your account. What specific issue are you experiencing?",
         metadata: { confidence: 0.95, responseTime: 1200 },
       },
       {
         type: 'customer_message',
-        content: 'I can\'t access my dashboard and getting error 403.',
+        content: "I can't access my dashboard and getting error 403.",
         metadata: { source: 'web', errorCode: '403' },
       },
       {
@@ -114,7 +117,8 @@ class MockDataGenerator {
       },
       {
         type: 'agent_message',
-        content: 'I\'ve checked your permissions and they look correct. Let me help you troubleshoot the 403 error.',
+        content:
+          "I've checked your permissions and they look correct. Let me help you troubleshoot the 403 error.",
         metadata: { confidence: 0.88, responseTime: 800 },
       },
     ]
@@ -152,7 +156,7 @@ class MockDataGenerator {
   static generateArchivalPolicy(overrides: Partial<ArchivalPolicy> = {}): ArchivalPolicy {
     return {
       workspaceId: `test-workspace-${Date.now()}`,
-      policyName: `Test Policy ${++this.testCounter}`,
+      policyName: `Test Policy ${++MockDataGenerator.testCounter}`,
       enabled: true,
       retentionDays: 30,
       applyToCompleted: true,
@@ -299,11 +303,10 @@ export class ChatPersistenceValidationTest {
       const context = MockDataGenerator.generateApiContext()
       const sessionId = `test-session-${Date.now()}`
 
-      const response = await comprehensiveChatPersistenceAPI.getChatHistory(
-        sessionId,
-        context,
-        { limit: 50, includeMetadata: true }
-      )
+      const response = await comprehensiveChatPersistenceAPI.getChatHistory(sessionId, context, {
+        limit: 50,
+        includeMetadata: true,
+      })
 
       if (!response.success) {
         throw new Error(`Message retrieval failed: ${response.error?.message}`)
@@ -344,10 +347,7 @@ export class ChatPersistenceValidationTest {
         workspaceId: context.workspaceId,
       })
 
-      const response = await comprehensiveChatPersistenceAPI.createChatExport(
-        exportConfig,
-        context
-      )
+      const response = await comprehensiveChatPersistenceAPI.createChatExport(exportConfig, context)
 
       if (!response.success) {
         throw new Error(`Export failed: ${response.error?.message}`)
@@ -414,7 +414,7 @@ export class ChatPersistenceValidationTest {
       }
 
       // Verify all messages have sequential offsets
-      const offsets = storedMessages.map(m => m.offset).sort((a, b) => a - b)
+      const offsets = storedMessages.map((m) => m.offset).sort((a, b) => a - b)
       const expectedOffsets = messages.map((_, i) => i)
 
       if (JSON.stringify(offsets) !== JSON.stringify(expectedOffsets)) {
@@ -443,7 +443,12 @@ export class ChatPersistenceValidationTest {
     // Test export functionality
     await this.runTest(suite, 'Data Export - Multiple Formats', async () => {
       const workspaceId = `test-workspace-${Date.now()}`
-      const formats: Array<'json' | 'csv' | 'markdown' | 'html'> = ['json', 'csv', 'markdown', 'html']
+      const formats: Array<'json' | 'csv' | 'markdown' | 'html'> = [
+        'json',
+        'csv',
+        'markdown',
+        'html',
+      ]
       const exportResults = []
 
       for (const format of formats) {
@@ -456,9 +461,10 @@ export class ChatPersistenceValidationTest {
 
         exportResults.push({
           format,
-          size: typeof exportResult.data === 'string'
-            ? exportResult.data.length
-            : exportResult.data.length,
+          size:
+            typeof exportResult.data === 'string'
+              ? exportResult.data.length
+              : exportResult.data.length,
           sessionCount: exportResult.metadata.sessionCount,
         })
       }
@@ -511,14 +517,10 @@ export class ChatPersistenceValidationTest {
         permissions: ['read', 'write'],
       }
 
-      const session = await sessionContinuityManager.createSessionWithContinuity(
-        agentId,
-        context,
-        {
-          title: 'Test Continuity Session',
-          deviceInfo: { browser: 'Chrome', device: 'Desktop' },
-        }
-      )
+      const session = await sessionContinuityManager.createSessionWithContinuity(agentId, context, {
+        title: 'Test Continuity Session',
+        deviceInfo: { browser: 'Chrome', device: 'Desktop' },
+      })
 
       if (!session.sessionId) {
         throw new Error('Session ID not created')
@@ -541,16 +543,12 @@ export class ChatPersistenceValidationTest {
         permissions: ['read', 'write'],
       }
 
-      const restoration = await sessionContinuityManager.findAndRestoreSession(
-        agentId,
-        context,
-        {
-          preserveContext: true,
-          restoreVariables: true,
-          resumeJourney: true,
-          maxInactivityHours: 24,
-        }
-      )
+      const restoration = await sessionContinuityManager.findAndRestoreSession(agentId, context, {
+        preserveContext: true,
+        restoreVariables: true,
+        resumeJourney: true,
+        maxInactivityHours: 24,
+      })
 
       if (!restoration.sessionId) {
         throw new Error('Session restoration failed')
@@ -573,7 +571,7 @@ export class ChatPersistenceValidationTest {
       })
 
       // Wait a moment to ensure tracking is active
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       const status = await sessionContinuityManager.getSessionContinuityStatus(sessionId)
 
@@ -608,15 +606,11 @@ export class ChatPersistenceValidationTest {
       const userId = `test-user-${Date.now()}`
       const workspaceId = `test-workspace-${Date.now()}`
 
-      const context = await workspaceIsolationService.createIsolationContext(
-        userId,
-        workspaceId,
-        {
-          sessionId: 'test-session-123',
-          ipAddress: '192.168.1.100',
-          userAgent: 'TestAgent/1.0',
-        }
-      )
+      const context = await workspaceIsolationService.createIsolationContext(userId, workspaceId, {
+        sessionId: 'test-session-123',
+        ipAddress: '192.168.1.100',
+        userAgent: 'TestAgent/1.0',
+      })
 
       if (context.userId !== userId || context.workspaceId !== workspaceId) {
         throw new Error('Context creation failed')
@@ -659,10 +653,7 @@ export class ChatPersistenceValidationTest {
 
       const sessionId = `test-session-${Date.now()}`
 
-      const isAllowed = await workspaceIsolationService.enforceSessionIsolation(
-        sessionId,
-        context
-      )
+      const isAllowed = await workspaceIsolationService.enforceSessionIsolation(sessionId, context)
 
       return { isolationEnforced: !isAllowed } // Should be false for non-existent session
     })
@@ -675,7 +666,7 @@ export class ChatPersistenceValidationTest {
 
       return {
         workspaceCount: workspaces.length,
-        hasOwnedWorkspaces: workspaces.some(w => w.isOwner),
+        hasOwnedWorkspaces: workspaces.some((w) => w.isOwner),
       }
     })
 
@@ -732,10 +723,7 @@ export class ChatPersistenceValidationTest {
         timestamp: new Date().toISOString(),
       }
 
-      const policyResult = await chatExportArchivalService.createArchivalPolicy(
-        policy,
-        context
-      )
+      const policyResult = await chatExportArchivalService.createArchivalPolicy(policy, context)
 
       if (!policyResult.policyId) {
         throw new Error('Policy creation failed')
@@ -749,8 +737,13 @@ export class ChatPersistenceValidationTest {
 
     // Test different export formats
     await this.runTest(suite, 'Multiple Export Formats', async () => {
-      const formats: Array<'json' | 'csv' | 'markdown' | 'html' | 'xml'> =
-        ['json', 'csv', 'markdown', 'html', 'xml']
+      const formats: Array<'json' | 'csv' | 'markdown' | 'html' | 'xml'> = [
+        'json',
+        'csv',
+        'markdown',
+        'html',
+        'xml',
+      ]
 
       const exportResults = []
 
@@ -1110,11 +1103,10 @@ export class ChatPersistenceValidationTest {
       const snapshot = await sessionContinuityManager.createStateSnapshot(session1.sessionId)
 
       // 3. Simulate session interruption and restoration
-      const restoration = await sessionContinuityManager.findAndRestoreSession(
-        agentId,
-        context,
-        { preserveContext: true, restoreVariables: true }
-      )
+      const restoration = await sessionContinuityManager.findAndRestoreSession(agentId, context, {
+        preserveContext: true,
+        restoreVariables: true,
+      })
 
       return {
         originalSessionId: session1.sessionId,
@@ -1143,10 +1135,7 @@ export class ChatPersistenceValidationTest {
       }
 
       // Export data
-      const exportResult = await chatExportArchivalService.createChatExport(
-        exportConfig,
-        context
-      )
+      const exportResult = await chatExportArchivalService.createChatExport(exportConfig, context)
 
       if (exportResult.status === 'failed') {
         throw new Error(`Export failed: ${exportResult.errors?.join(', ')}`)
@@ -1230,7 +1219,7 @@ export class ChatPersistenceValidationTest {
     )
 
     return {
-      overallStatus: totals.failedTests === 0 ? 'passed' : 'failed' as const,
+      overallStatus: totals.failedTests === 0 ? 'passed' : ('failed' as const),
       totalSuites: this.results.length,
       ...totals,
     }
@@ -1257,7 +1246,7 @@ export class ChatPersistenceValidationTest {
 
 `
 
-    this.results.forEach(suite => {
+    this.results.forEach((suite) => {
       report += `
 ### ${suite.suiteName}
 - **Tests**: ${suite.totalTests}
@@ -1270,8 +1259,8 @@ export class ChatPersistenceValidationTest {
       if (suite.failedTests > 0) {
         report += `**Failed Tests:**\n`
         suite.results
-          .filter(r => r.status === 'failed')
-          .forEach(result => {
+          .filter((r) => r.status === 'failed')
+          .forEach((result) => {
             report += `- ${result.testName}: ${result.error}\n`
           })
         report += `\n`
@@ -1280,8 +1269,8 @@ export class ChatPersistenceValidationTest {
       if (suite.passedTests > 0) {
         report += `**Performance Metrics:**\n`
         suite.results
-          .filter(r => r.status === 'passed' && r.metrics)
-          .forEach(result => {
+          .filter((r) => r.status === 'passed' && r.metrics)
+          .forEach((result) => {
             report += `- ${result.testName}: ${result.duration.toFixed(2)}ms\n`
           })
         report += `\n`

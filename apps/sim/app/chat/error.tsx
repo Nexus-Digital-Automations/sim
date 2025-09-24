@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect } from 'react'
-import { ChatErrorState } from './components/error-state/error-state'
 import { createLogger } from '@/lib/logs/console/logger'
+import { ChatErrorState } from './components/error-state/error-state'
 
 const logger = createLogger('ChatError')
 
@@ -36,5 +36,5 @@ export default function ChatError({ error, reset }: ChatErrorProps) {
     return 'An unexpected error occurred while loading the chat. Please try again or contact support if the issue persists.'
   }
 
-  return <ChatErrorState error={getErrorMessage()} starCount="3.2k" />
+  return <ChatErrorState error={getErrorMessage()} starCount='3.2k' />
 }
