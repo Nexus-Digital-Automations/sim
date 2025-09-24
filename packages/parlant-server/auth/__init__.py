@@ -1,11 +1,21 @@
 """
-Sim-Parlant Authentication Integration
-=====================================
+Workspace Isolation Authentication System for Parlant
+=====================================================
 
-This package provides a comprehensive authentication and authorization system
-that bridges Sim's Better Auth with Parlant's agent framework.
+This package provides comprehensive workspace-scoped isolation for Parlant agents,
+ensuring that all operations respect workspace boundaries and prevent unauthorized
+cross-workspace access.
 
 Key Components:
+- WorkspaceIsolationManager: Core isolation management
+- AgentAccessController: Agent-specific access controls
+- PermissionValidator: Permission validation system
+- WorkspaceContextManager: Operation context management
+- SessionIsolationManager: Session and conversation isolation
+- SecurityMonitor: Security measures and threat detection
+- IntegrationValidator: End-to-end validation system
+
+Legacy Components (Maintained for Compatibility):
 - SimAuthBridge: Validates Sim sessions and extracts user context
 - AuthenticationMiddleware: FastAPI middleware for request authentication
 - SimParlantAuthorizationPolicy: Parlant-compatible authorization policy
@@ -14,7 +24,18 @@ Key Components:
 Usage:
 ------
 
-Basic Setup:
+New Workspace Isolation System:
+```python
+from auth import WorkspaceIsolationSystem, setup_workspace_isolation
+
+app = FastAPI()
+
+@app.on_event("startup")
+async def startup():
+    isolation_system = setup_workspace_isolation(app, db_session, settings)
+```
+
+Legacy System (Deprecated but Supported):
 ```python
 from fastapi import FastAPI
 from auth.config import initialize_auth_system, configure_fastapi_auth
@@ -27,37 +48,17 @@ async def startup():
     configure_fastapi_auth(app)
 ```
 
-With Custom Configuration:
-```python
-from auth.config import AuthConfig, initialize_auth_system, configure_fastapi_auth
-
-config = AuthConfig()
-config.sim_base_url = "https://your-sim-instance.com"
-config.development_mode = False
-
-app = FastAPI()
-
-@app.on_event("startup")
-async def startup():
-    await initialize_auth_system(config)
-    configure_fastapi_auth(app)
-```
-
-Route Dependencies:
+Workspace Context Usage:
 ```python
 from fastapi import Depends
-from auth.middleware import get_current_session, require_workspace_access
-
-@app.get("/api/v1/agents")
-async def list_agents(session = Depends(get_current_session)):
-    return {"user": session.user.email, "agents": [...]}
+from auth import get_workspace_context, require_workspace_permission
 
 @app.get("/api/v1/workspaces/{workspace_id}/agents")
-async def workspace_agents(
+async def list_agents(
     workspace_id: str,
-    session = Depends(lambda req: require_workspace_access(workspace_id, req))
+    context = Depends(require_workspace_permission('read'))
 ):
-    return {"workspace_agents": [...]}
+    return {"agents": [...]}
 ```
 """
 
