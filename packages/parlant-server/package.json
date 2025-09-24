@@ -1,0 +1,34 @@
+{
+  "name": "parlant-server",
+  "version": "1.0.0",
+  "description": "Parlant Python server for Sim integration",
+  "main": "server.py",
+  "scripts": {
+    "start": "python server.py",
+    "dev": "python server.py --reload",
+    "install": "./install.sh",
+    "activate": "source venv/bin/activate",
+    "test": "python -m pytest tests/",
+    "lint": "python -m pylint server.py",
+    "format": "python -m black .",
+    "type-check": "python -m mypy server.py"
+  },
+  "keywords": [
+    "parlant",
+    "ai",
+    "agents",
+    "sim",
+    "python",
+    "fastapi"
+  ],
+  "author": "Sim Team",
+  "license": "MIT",
+  "engines": {
+    "python": ">=3.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sim/sim.git",
+    "directory": "packages/parlant-server"
+  }
+}
