@@ -1,16 +1,25 @@
-# Parlant Database Schema Documentation
+# Parlant Database Documentation Package
 
-This directory contains comprehensive documentation for the Parlant database schema extension integrated with Sim's PostgreSQL database.
+## Overview
+
+This package provides comprehensive documentation for the Parlant database schema extension, including all tables, relationships, migration procedures, and operational guidelines. The documentation is designed to support database administrators, developers, and operations teams in understanding, maintaining, and extending the Parlant AI agent functionality within the Sim platform.
 
 ## Documentation Structure
 
-- [**schema-overview.md**](./schema-overview.md) - Complete database schema overview with Entity Relationship Diagrams
-- [**table-relationships.md**](./table-relationships.md) - Detailed foreign key relationships and business rules
-- [**migration-guide.md**](./migration-guide.md) - Migration procedures, rollback documentation, and troubleshooting
-- [**integration-guide.md**](./integration-guide.md) - Developer integration guide for Parlant database operations
-- [**performance-guide.md**](./performance-guide.md) - Performance optimization strategies and best practices
-- [**api-reference.md**](./api-reference.md) - API documentation for database query helpers and services
-- [**troubleshooting.md**](./troubleshooting.md) - Common issues, debugging procedures, and solutions
+### Core Schema Documentation
+- **[Database Schema Documentation](./PARLANT_DATABASE_SCHEMA_DOCUMENTATION.md)** - Complete table schemas with field descriptions and business rules
+- **[Entity-Relationship Diagram](./PARLANT_ER_DIAGRAM.md)** - Visual representation of all table relationships and data flow patterns
+- **[Foreign Key Relationships](./FOREIGN_KEY_RELATIONSHIPS.md)** - Comprehensive foreign key constraints and cascading rules
+- **[Data Dictionary](./PARLANT_DATA_DICTIONARY.md)** - Detailed field definitions, data types, and validation rules
+
+### Operational Documentation
+- **[Migration Procedures](./MIGRATION_PROCEDURES.md)** - Complete migration and rollback procedures with safety protocols
+- **[Performance Optimization Guide](./performance-guide.md)** - Indexing strategies and query optimization techniques
+- **[Integration Guide](./integration-guide.md)** - Guidelines for integrating with existing Sim infrastructure
+- **[Migration Guide](./migration-guide.md)** - Step-by-step migration procedures and validation
+- **[Table Relationships Overview](./table-relationships.md)** - Simplified relationship documentation
+- **[Schema Overview](./schema-overview.md)** - High-level schema architecture and design principles
+- **[API Reference](./api-reference.md)** - API documentation for database query helpers and services
 
 ## Quick Reference
 
