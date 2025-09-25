@@ -45,7 +45,7 @@ class ChatPersistenceValidator {
       'session-continuity-manager',
       'workspace-isolation-service',
       'chat-export-archival-service',
-      'comprehensive-chat-persistence-api'
+      'comprehensive-chat-persistence-api',
     ]
 
     for (const service of services) {
@@ -77,19 +77,10 @@ class ChatPersistenceValidator {
             )
           }
         } else {
-          this.addResult(
-            `Service Structure - ${service}`,
-            false,
-            'Service file does not exist'
-          )
+          this.addResult(`Service Structure - ${service}`, false, 'Service file does not exist')
         }
       } catch (error) {
-        this.addResult(
-          `Service Structure - ${service}`,
-          false,
-          'Error reading service file',
-          error
-        )
+        this.addResult(`Service Structure - ${service}`, false, 'Error reading service file', error)
       }
     }
   }
@@ -103,7 +94,7 @@ class ChatPersistenceValidator {
       'SessionStateSnapshot',
       'IsolationContext',
       'ExportResult',
-      'ArchivalPolicy'
+      'ArchivalPolicy',
     ]
 
     try {
@@ -122,7 +113,8 @@ class ChatPersistenceValidator {
           }
         }
 
-        if (foundTypes >= expectedTypes.length * 0.8) { // Allow for 80% coverage
+        if (foundTypes >= expectedTypes.length * 0.8) {
+          // Allow for 80% coverage
           this.addResult(
             'Type Definitions',
             true,
@@ -136,19 +128,10 @@ class ChatPersistenceValidator {
           )
         }
       } else {
-        this.addResult(
-          'Type Definitions',
-          false,
-          'API file not found for type checking'
-        )
+        this.addResult('Type Definitions', false, 'API file not found for type checking')
       }
     } catch (error) {
-      this.addResult(
-        'Type Definitions',
-        false,
-        'Error checking type definitions',
-        error
-      )
+      this.addResult('Type Definitions', false, 'Error checking type definitions', error)
     }
   }
 
@@ -165,7 +148,7 @@ class ChatPersistenceValidator {
         'session-continuity-manager.ts',
         'workspace-isolation-service.ts',
         'chat-export-archival-service.ts',
-        'comprehensive-chat-persistence-api.ts'
+        'comprehensive-chat-persistence-api.ts',
       ]
 
       let filesWithErrorHandling = 0
@@ -177,7 +160,8 @@ class ChatPersistenceValidator {
 
           // Check for error handling patterns
           const hasTryCatch = content.includes('try') && content.includes('catch')
-          const hasErrorLogging = content.includes('logger.error') || content.includes('console.error')
+          const hasErrorLogging =
+            content.includes('logger.error') || content.includes('console.error')
           const hasErrorTypes = content.includes('Error') || content.includes('throw')
 
           if (hasTryCatch && hasErrorLogging && hasErrorTypes) {
@@ -200,12 +184,7 @@ class ChatPersistenceValidator {
         )
       }
     } catch (error) {
-      this.addResult(
-        'Error Handling',
-        false,
-        'Error checking error handling patterns',
-        error
-      )
+      this.addResult('Error Handling', false, 'Error checking error handling patterns', error)
     }
   }
 
@@ -222,7 +201,7 @@ class ChatPersistenceValidator {
         'session-continuity-manager.ts',
         'workspace-isolation-service.ts',
         'chat-export-archival-service.ts',
-        'comprehensive-chat-persistence-api.ts'
+        'comprehensive-chat-persistence-api.ts',
       ]
 
       let documentsFiles = 0
@@ -257,12 +236,7 @@ class ChatPersistenceValidator {
         )
       }
     } catch (error) {
-      this.addResult(
-        'Documentation',
-        false,
-        'Error checking documentation coverage',
-        error
-      )
+      this.addResult('Documentation', false, 'Error checking documentation coverage', error)
     }
   }
 
@@ -271,7 +245,7 @@ class ChatPersistenceValidator {
    */
   generateReport(): void {
     const totalTests = this.results.length
-    const passedTests = this.results.filter(r => r.passed).length
+    const passedTests = this.results.filter((r) => r.passed).length
     const failedTests = totalTests - passedTests
     const successRate = Math.round((passedTests / totalTests) * 100)
 
@@ -286,9 +260,11 @@ class ChatPersistenceValidator {
 
     if (failedTests > 0) {
       logger.info('FAILED TESTS:')
-      this.results.filter(r => !r.passed).forEach(result => {
-        logger.error(`- ${result.testName}: ${result.message}`)
-      })
+      this.results
+        .filter((r) => !r.passed)
+        .forEach((result) => {
+          logger.error(`- ${result.testName}: ${result.message}`)
+        })
       logger.info('='.repeat(60))
     }
 
@@ -324,7 +300,7 @@ async function validateChatPersistenceSystem() {
 
 // Run validation if this file is executed directly
 if (require.main === module) {
-  validateChatPersistenceSystem().catch(error => {
+  validateChatPersistenceSystem().catch((error) => {
     logger.error('Validation failed with error:', error)
     process.exit(1)
   })

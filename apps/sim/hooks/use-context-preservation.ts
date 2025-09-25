@@ -2,10 +2,9 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import { useReactFlow } from 'reactflow'
-import { useModeContext } from '@/contexts/mode-context'
-import { useWorkflowStore } from '@/stores/workflows/workflow/store'
-import { useExecutionStore } from '@/stores/execution/store'
 import { createLogger } from '@/lib/logs/console/logger'
+import { useModeContext } from '@/contexts/mode-context'
+import { useExecutionStore } from '@/stores/execution/store'
 import type { ModeContext, ViewMode } from '@/types/mode-switching'
 
 const logger = createLogger('ContextPreservation')
@@ -37,27 +36,32 @@ export function useContextPreservation() {
       const edges = reactFlowInstance.getEdges()
 
       // Get selected elements
-      const selectedNodes = nodes.filter(node => node.selected).map(node => node.id)
-      const selectedEdges = edges.filter(edge => edge.selected).map(edge => edge.id)
+      const selectedNodes = nodes.filter((node) => node.selected).map((node) => node.id)
+      const selectedEdges = edges.filter((edge) => edge.selected).map((edge) => edge.id)
 
       // Capture sidebar and panel states
-      const sidebarState = document.querySelector('[data-sidebar]')?.getAttribute('data-state') as 'open' | 'closed' || 'open'
-      const activePanel = document.querySelector('[data-panel-active]')?.getAttribute('data-panel-active') || undefined
+      const sidebarState =
+        (document.querySelector('[data-sidebar]')?.getAttribute('data-state') as
+          | 'open'
+          | 'closed') || 'open'
+      const activePanel =
+        document.querySelector('[data-panel-active]')?.getAttribute('data-panel-active') ||
+        undefined
 
       const context = {
         viewport: {
           x: viewport.x,
           y: viewport.y,
-          zoom: viewport.zoom
+          zoom: viewport.zoom,
         },
         selectedNodes,
         selectedEdges,
         cameraPosition: {
           x: viewport.x,
-          y: viewport.y
+          y: viewport.y,
         },
         sidebarState,
-        activePanel
+        activePanel,
       }
 
       logger.debug('Visual context captured', context)
@@ -105,7 +109,7 @@ export function useContextPreservation() {
         id: el.getAttribute('data-message-id') || `msg-${index}`,
         content: el.textContent || '',
         role: el.getAttribute('data-message-role') || 'user',
-        timestamp: el.getAttribute('data-message-timestamp') || new Date().toISOString()
+        timestamp: el.getAttribute('data-message-timestamp') || new Date().toISOString(),
       }))
 
       const context = {
@@ -114,7 +118,7 @@ export function useContextPreservation() {
         scrollPosition,
         messageHistory,
         inputValue,
-        isTyping
+        isTyping,
       }
 
       logger.debug('Chat context captured', context)
@@ -137,7 +141,7 @@ export function useContextPreservation() {
         activeBlocks: Array.from(executionState.activeBlockIds || []),
         pendingBlocks: executionState.pendingBlocks || [],
         debugMode: executionState.debugMode || false,
-        breakpoints: executionState.breakpoints || []
+        breakpoints: executionState.breakpoints || [],
       }
 
       logger.debug('Execution context captured', context)
@@ -162,7 +166,9 @@ export function useContextPreservation() {
 
       // Get open modals
       const modalElements = Array.from(document.querySelectorAll('[data-modal-open]'))
-      const modalsOpen = modalElements.map(el => el.getAttribute('data-modal-id')).filter(Boolean) as string[]
+      const modalsOpen = modalElements
+        .map((el) => el.getAttribute('data-modal-id'))
+        .filter(Boolean) as string[]
 
       // Get notifications (from notification system if implemented)
       const notificationElements = Array.from(document.querySelectorAll('[data-notification]'))
@@ -170,14 +176,14 @@ export function useContextPreservation() {
         id: el.getAttribute('data-notification-id') || `notif-${index}`,
         type: el.getAttribute('data-notification-type') || 'info',
         message: el.textContent || '',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }))
 
       const context = {
         theme,
         sidebarExpanded,
         notifications,
-        modalsOpen
+        modalsOpen,
       }
 
       logger.debug('UI context captured', context)
@@ -194,7 +200,7 @@ export function useContextPreservation() {
   const captureCurrentContext = useCallback(() => {
     const currentMode = state.currentMode
 
-    let context: Partial<ModeContext> = {}
+    const context: Partial<ModeContext> = {}
 
     // Always capture UI context
     context.uiContext = captureUIContext()
@@ -228,7 +234,10 @@ export function useContextPreservation() {
     }
 
     preserveContext(context)
-    logger.info('Context captured for mode', { mode: currentMode, contextKeys: Object.keys(context) })
+    logger.info('Context captured for mode', {
+      mode: currentMode,
+      contextKeys: Object.keys(context),
+    })
   }, [
     state.currentMode,
     state.preferences.contextPreservation,
@@ -236,68 +245,75 @@ export function useContextPreservation() {
     captureChatContext,
     captureExecutionContext,
     captureUIContext,
-    preserveContext
+    preserveContext,
   ])
 
   /**
    * Restore visual context
    */
-  const restoreVisualContext = useCallback((context: ModeContext['visualContext']) => {
-    if (!context || !reactFlowInstance) return
+  const restoreVisualContext = useCallback(
+    (context: ModeContext['visualContext']) => {
+      if (!context || !reactFlowInstance) return
 
-    try {
-      // Restore viewport
-      if (context.viewport) {
-        reactFlowInstance.setViewport(context.viewport, { duration: 300 })
+      try {
+        // Restore viewport
+        if (context.viewport) {
+          reactFlowInstance.setViewport(context.viewport, { duration: 300 })
+        }
+
+        // Restore selections (with delay to ensure nodes are rendered)
+        setTimeout(() => {
+          const nodes = reactFlowInstance.getNodes()
+          const edges = reactFlowInstance.getEdges()
+
+          // Clear current selections
+          reactFlowInstance.setNodes(nodes.map((node) => ({ ...node, selected: false })))
+          reactFlowInstance.setEdges(edges.map((edge) => ({ ...edge, selected: false })))
+
+          // Restore selected nodes
+          if (context.selectedNodes?.length) {
+            reactFlowInstance.setNodes(
+              nodes.map((node) => ({
+                ...node,
+                selected: context.selectedNodes!.includes(node.id),
+              }))
+            )
+          }
+
+          // Restore selected edges
+          if (context.selectedEdges?.length) {
+            reactFlowInstance.setEdges(
+              edges.map((edge) => ({
+                ...edge,
+                selected: context.selectedEdges!.includes(edge.id),
+              }))
+            )
+          }
+        }, 100)
+
+        // Restore sidebar state
+        if (context.sidebarState) {
+          const sidebarElement = document.querySelector('[data-sidebar]')
+          if (sidebarElement) {
+            sidebarElement.setAttribute('data-state', context.sidebarState)
+          }
+        }
+
+        // Restore active panel
+        if (context.activePanel) {
+          const panelElement = document.querySelector(`[data-panel="${context.activePanel}"]`)
+          if (panelElement) {
+            panelElement.setAttribute('data-panel-active', context.activePanel)
+          }
+        }
+
+        logger.debug('Visual context restored', context)
+      } catch (error) {
+        logger.error('Failed to restore visual context', { error })
       }
-
-      // Restore selections (with delay to ensure nodes are rendered)
-      setTimeout(() => {
-        const nodes = reactFlowInstance.getNodes()
-        const edges = reactFlowInstance.getEdges()
-
-        // Clear current selections
-        reactFlowInstance.setNodes(nodes.map(node => ({ ...node, selected: false })))
-        reactFlowInstance.setEdges(edges.map(edge => ({ ...edge, selected: false })))
-
-        // Restore selected nodes
-        if (context.selectedNodes?.length) {
-          reactFlowInstance.setNodes(nodes.map(node => ({
-            ...node,
-            selected: context.selectedNodes!.includes(node.id)
-          })))
-        }
-
-        // Restore selected edges
-        if (context.selectedEdges?.length) {
-          reactFlowInstance.setEdges(edges.map(edge => ({
-            ...edge,
-            selected: context.selectedEdges!.includes(edge.id)
-          })))
-        }
-      }, 100)
-
-      // Restore sidebar state
-      if (context.sidebarState) {
-        const sidebarElement = document.querySelector('[data-sidebar]')
-        if (sidebarElement) {
-          sidebarElement.setAttribute('data-state', context.sidebarState)
-        }
-      }
-
-      // Restore active panel
-      if (context.activePanel) {
-        const panelElement = document.querySelector(`[data-panel="${context.activePanel}"]`)
-        if (panelElement) {
-          panelElement.setAttribute('data-panel-active', context.activePanel)
-        }
-      }
-
-      logger.debug('Visual context restored', context)
-    } catch (error) {
-      logger.error('Failed to restore visual context', { error })
-    }
-  }, [reactFlowInstance])
+    },
+    [reactFlowInstance]
+  )
 
   /**
    * Restore chat context
@@ -401,56 +417,65 @@ export function useContextPreservation() {
   /**
    * Restore context for target mode
    */
-  const restoreContextForMode = useCallback((mode: ViewMode) => {
-    const savedContext = restoreContext(mode)
-    if (!savedContext) {
-      logger.debug('No saved context found for mode', { mode })
-      return
-    }
+  const restoreContextForMode = useCallback(
+    (mode: ViewMode) => {
+      const savedContext = restoreContext(mode)
+      if (!savedContext) {
+        logger.debug('No saved context found for mode', { mode })
+        return
+      }
 
-    // Always restore UI and execution context
-    if (savedContext.uiContext) {
-      restoreUIContext(savedContext.uiContext)
-    }
+      // Always restore UI and execution context
+      if (savedContext.uiContext) {
+        restoreUIContext(savedContext.uiContext)
+      }
 
-    if (savedContext.executionContext) {
-      restoreExecutionContext(savedContext.executionContext)
-    }
+      if (savedContext.executionContext) {
+        restoreExecutionContext(savedContext.executionContext)
+      }
 
-    // Mode-specific context restoration
-    switch (mode) {
-      case 'visual':
-        if (savedContext.visualContext) {
-          restoreVisualContext(savedContext.visualContext)
-        }
-        break
+      // Mode-specific context restoration
+      switch (mode) {
+        case 'visual':
+          if (savedContext.visualContext) {
+            restoreVisualContext(savedContext.visualContext)
+          }
+          break
 
-      case 'chat':
-        if (savedContext.chatContext) {
-          restoreChatContext(savedContext.chatContext)
-        }
-        break
+        case 'chat':
+          if (savedContext.chatContext) {
+            restoreChatContext(savedContext.chatContext)
+          }
+          break
 
-      case 'hybrid':
-        // Restore both contexts in hybrid mode
-        if (savedContext.visualContext) {
-          restoreVisualContext(savedContext.visualContext)
-        }
-        if (savedContext.chatContext) {
-          restoreChatContext(savedContext.chatContext)
-        }
-        break
-    }
+        case 'hybrid':
+          // Restore both contexts in hybrid mode
+          if (savedContext.visualContext) {
+            restoreVisualContext(savedContext.visualContext)
+          }
+          if (savedContext.chatContext) {
+            restoreChatContext(savedContext.chatContext)
+          }
+          break
+      }
 
-    logger.info('Context restored for mode', { mode, contextKeys: Object.keys(savedContext) })
-  }, [restoreContext, restoreVisualContext, restoreChatContext, restoreExecutionContext, restoreUIContext])
+      logger.info('Context restored for mode', { mode, contextKeys: Object.keys(savedContext) })
+    },
+    [
+      restoreContext,
+      restoreVisualContext,
+      restoreChatContext,
+      restoreExecutionContext,
+      restoreUIContext,
+    ]
+  )
 
   // Set up context capture functions
   useEffect(() => {
     contextCaptureRef.current = {
       visual: captureVisualContext,
       chat: captureChatContext,
-      execution: captureExecutionContext
+      execution: captureExecutionContext,
     }
   }, [captureVisualContext, captureChatContext, captureExecutionContext])
 
@@ -461,7 +486,10 @@ export function useContextPreservation() {
 
     if (previousMode !== currentMode) {
       // Capture context for the mode we're leaving
-      if (previousMode && state.preferences.contextPreservation.visual || state.preferences.contextPreservation.chat) {
+      if (
+        (previousMode && state.preferences.contextPreservation.visual) ||
+        state.preferences.contextPreservation.chat
+      ) {
         captureCurrentContext()
       }
 
@@ -472,7 +500,12 @@ export function useContextPreservation() {
 
       previousModeRef.current = currentMode
     }
-  }, [state.currentMode, state.preferences.contextPreservation, captureCurrentContext, restoreContextForMode])
+  }, [
+    state.currentMode,
+    state.preferences.contextPreservation,
+    captureCurrentContext,
+    restoreContextForMode,
+  ])
 
   // Periodic context capture (every 30 seconds when active)
   useEffect(() => {
@@ -501,6 +534,6 @@ export function useContextPreservation() {
     captureVisualContext,
     captureChatContext,
     captureExecutionContext,
-    captureUIContext
+    captureUIContext,
   }
 }

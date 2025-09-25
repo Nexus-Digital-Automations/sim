@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { ParlantJourney, JourneyState } from '../workflow-converter/types'
+import type { ParlantJourney } from '../workflow-converter/types'
 
 const logger = createLogger('InteractiveWorkflowCommands')
 
@@ -43,7 +43,10 @@ export interface CommandResult {
  */
 export class InteractiveWorkflowCommands {
   private commands: Map<string, WorkflowCommand> = new Map()
-  private commandHandlers: Map<string, (context: CommandContext, params: string[]) => Promise<CommandResult>> = new Map()
+  private commandHandlers: Map<
+    string,
+    (context: CommandContext, params: string[]) => Promise<CommandResult>
+  > = new Map()
 
   constructor() {
     this.initializeCommands()
@@ -53,10 +56,7 @@ export class InteractiveWorkflowCommands {
   /**
    * Process a command from user input
    */
-  async processCommand(
-    input: string,
-    context: CommandContext
-  ): Promise<CommandResult> {
+  async processCommand(input: string, context: CommandContext): Promise<CommandResult> {
     // Parse command input
     const { command, params } = this.parseInput(input)
 
@@ -83,7 +83,7 @@ export class InteractiveWorkflowCommands {
     if (commandDef.requiresParams && params.length === 0) {
       return {
         success: false,
-        message: `❌ Command "${command}" requires parameters.\n\n**Usage**: ${commandDef.usage}\n\n**Examples**:\n${commandDef.examples.map(e => `• ${e}`).join('\n')}`,
+        message: `❌ Command "${command}" requires parameters.\n\n**Usage**: ${commandDef.usage}\n\n**Examples**:\n${commandDef.examples.map((e) => `• ${e}`).join('\n')}`,
       }
     }
 
@@ -125,12 +125,13 @@ export class InteractiveWorkflowCommands {
     let helpMessage = '📋 **Available Workflow Commands**\n\n'
 
     for (const [categoryKey, categoryName] of Object.entries(categories)) {
-      const categoryCommands = Array.from(this.commands.values())
-        .filter(cmd => cmd.category === categoryKey)
+      const categoryCommands = Array.from(this.commands.values()).filter(
+        (cmd) => cmd.category === categoryKey
+      )
 
       if (categoryCommands.length > 0) {
         helpMessage += `**${categoryName}**\n`
-        categoryCommands.forEach(cmd => {
+        categoryCommands.forEach((cmd) => {
           helpMessage += `• \`/${cmd.name}\` - ${cmd.description}\n`
         })
         helpMessage += '\n'
@@ -138,7 +139,8 @@ export class InteractiveWorkflowCommands {
     }
 
     helpMessage += '💡 **Pro Tips**:\n'
-    helpMessage += '• You can also ask in natural language: "What\'s the status?", "Pause the workflow"\n'
+    helpMessage +=
+      '• You can also ask in natural language: "What\'s the status?", "Pause the workflow"\n'
     helpMessage += '• Use tab completion for command suggestions\n'
     helpMessage += '• Commands are case-insensitive\n\n'
 
@@ -150,10 +152,7 @@ export class InteractiveWorkflowCommands {
   /**
    * Process natural language input for workflow control
    */
-  async processNaturalLanguage(
-    input: string,
-    context: CommandContext
-  ): Promise<CommandResult> {
+  async processNaturalLanguage(input: string, context: CommandContext): Promise<CommandResult> {
     const inputLower = input.toLowerCase()
 
     // Status queries
@@ -178,7 +177,7 @@ export class InteractiveWorkflowCommands {
       return this.handleRetryCommand(context, [])
     }
 
-    if (this.matchesPattern(inputLower, ['debug', 'info', 'details', 'what\'s happening'])) {
+    if (this.matchesPattern(inputLower, ['debug', 'info', 'details', "what's happening"])) {
       return this.handleDebugCommand(context, [])
     }
 
@@ -204,109 +203,142 @@ export class InteractiveWorkflowCommands {
 
   private initializeCommands(): void {
     // Control commands
-    this.addCommand({
-      name: 'pause',
-      aliases: ['stop', 'halt'],
-      description: 'Pause workflow execution',
-      usage: '/pause',
-      examples: ['/pause', '/stop'],
-      category: 'control',
-    }, this.handlePauseCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'pause',
+        aliases: ['stop', 'halt'],
+        description: 'Pause workflow execution',
+        usage: '/pause',
+        examples: ['/pause', '/stop'],
+        category: 'control',
+      },
+      this.handlePauseCommand.bind(this)
+    )
 
-    this.addCommand({
-      name: 'resume',
-      aliases: ['continue', 'start'],
-      description: 'Resume paused workflow execution',
-      usage: '/resume',
-      examples: ['/resume', '/continue'],
-      category: 'control',
-    }, this.handleResumeCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'resume',
+        aliases: ['continue', 'start'],
+        description: 'Resume paused workflow execution',
+        usage: '/resume',
+        examples: ['/resume', '/continue'],
+        category: 'control',
+      },
+      this.handleResumeCommand.bind(this)
+    )
 
-    this.addCommand({
-      name: 'skip',
-      aliases: ['next'],
-      description: 'Skip current step and move to next',
-      usage: '/skip [reason]',
-      examples: ['/skip', '/skip "Not needed for this run"'],
-      category: 'control',
-    }, this.handleSkipCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'skip',
+        aliases: ['next'],
+        description: 'Skip current step and move to next',
+        usage: '/skip [reason]',
+        examples: ['/skip', '/skip "Not needed for this run"'],
+        category: 'control',
+      },
+      this.handleSkipCommand.bind(this)
+    )
 
-    this.addCommand({
-      name: 'retry',
-      aliases: ['redo', 'repeat'],
-      description: 'Retry the current step',
-      usage: '/retry',
-      examples: ['/retry'],
-      category: 'control',
-    }, this.handleRetryCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'retry',
+        aliases: ['redo', 'repeat'],
+        description: 'Retry the current step',
+        usage: '/retry',
+        examples: ['/retry'],
+        category: 'control',
+      },
+      this.handleRetryCommand.bind(this)
+    )
 
     // Information commands
-    this.addCommand({
-      name: 'status',
-      aliases: ['progress', 'info'],
-      description: 'Show current workflow status and progress',
-      usage: '/status',
-      examples: ['/status'],
-      category: 'info',
-    }, this.handleStatusCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'status',
+        aliases: ['progress', 'info'],
+        description: 'Show current workflow status and progress',
+        usage: '/status',
+        examples: ['/status'],
+        category: 'info',
+      },
+      this.handleStatusCommand.bind(this)
+    )
 
-    this.addCommand({
-      name: 'history',
-      aliases: ['log'],
-      description: 'Show execution history',
-      usage: '/history [count]',
-      examples: ['/history', '/history 10'],
-      category: 'info',
-    }, this.handleHistoryCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'history',
+        aliases: ['log'],
+        description: 'Show execution history',
+        usage: '/history [count]',
+        examples: ['/history', '/history 10'],
+        category: 'info',
+      },
+      this.handleHistoryCommand.bind(this)
+    )
 
-    this.addCommand({
-      name: 'steps',
-      aliases: ['workflow', 'journey'],
-      description: 'List all workflow steps',
-      usage: '/steps',
-      examples: ['/steps'],
-      category: 'info',
-    }, this.handleStepsCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'steps',
+        aliases: ['workflow', 'journey'],
+        description: 'List all workflow steps',
+        usage: '/steps',
+        examples: ['/steps'],
+        category: 'info',
+      },
+      this.handleStepsCommand.bind(this)
+    )
 
     // Debug commands
-    this.addCommand({
-      name: 'debug',
-      aliases: ['inspect', 'details'],
-      description: 'Show debug information for current step',
-      usage: '/debug [step_id]',
-      examples: ['/debug', '/debug step_5'],
-      category: 'debug',
-    }, this.handleDebugCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'debug',
+        aliases: ['inspect', 'details'],
+        description: 'Show debug information for current step',
+        usage: '/debug [step_id]',
+        examples: ['/debug', '/debug step_5'],
+        category: 'debug',
+      },
+      this.handleDebugCommand.bind(this)
+    )
 
-    this.addCommand({
-      name: 'context',
-      aliases: ['variables', 'data'],
-      description: 'Show current workflow context and variables',
-      usage: '/context',
-      examples: ['/context'],
-      category: 'debug',
-    }, this.handleContextCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'context',
+        aliases: ['variables', 'data'],
+        description: 'Show current workflow context and variables',
+        usage: '/context',
+        examples: ['/context'],
+        category: 'debug',
+      },
+      this.handleContextCommand.bind(this)
+    )
 
     // Navigation commands
-    this.addCommand({
-      name: 'goto',
-      aliases: ['jump'],
-      description: 'Jump to a specific step (advanced)',
-      usage: '/goto <step_number>',
-      examples: ['/goto 3', '/goto step_validation'],
-      requiresParams: true,
-      category: 'navigation',
-    }, this.handleGotoCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'goto',
+        aliases: ['jump'],
+        description: 'Jump to a specific step (advanced)',
+        usage: '/goto <step_number>',
+        examples: ['/goto 3', '/goto step_validation'],
+        requiresParams: true,
+        category: 'navigation',
+      },
+      this.handleGotoCommand.bind(this)
+    )
 
     // Help command
-    this.addCommand({
-      name: 'help',
-      aliases: ['commands', '?'],
-      description: 'Show available commands',
-      usage: '/help [command]',
-      examples: ['/help', '/help status'],
-      category: 'info',
-    }, this.handleHelpCommand.bind(this))
+    this.addCommand(
+      {
+        name: 'help',
+        aliases: ['commands', '?'],
+        description: 'Show available commands',
+        usage: '/help [command]',
+        examples: ['/help', '/help status'],
+        category: 'info',
+      },
+      this.handleHelpCommand.bind(this)
+    )
   }
 
   private addCommand(
@@ -317,13 +349,13 @@ export class InteractiveWorkflowCommands {
     this.commandHandlers.set(command.name, handler)
 
     // Add aliases
-    command.aliases.forEach(alias => {
+    command.aliases.forEach((alias) => {
       this.commands.set(alias, command)
       this.commandHandlers.set(alias, handler)
     })
   }
 
-  private parseInput(input: string): { command: string | null, params: string[] } {
+  private parseInput(input: string): { command: string | null; params: string[] } {
     const trimmed = input.trim()
 
     // Handle slash commands
@@ -344,20 +376,20 @@ export class InteractiveWorkflowCommands {
   }
 
   private matchesPattern(input: string, patterns: string[]): boolean {
-    return patterns.some(pattern => input.includes(pattern))
+    return patterns.some((pattern) => input.includes(pattern))
   }
 
   private handleUnknownCommand(command: string, context: CommandContext): CommandResult {
     // Try to suggest similar commands
     const allCommands = Array.from(new Set(Array.from(this.commands.keys())))
     const suggestions = allCommands
-      .filter(cmd => this.levenshteinDistance(command, cmd) <= 2)
+      .filter((cmd) => this.levenshteinDistance(command, cmd) <= 2)
       .slice(0, 3)
 
     let message = `❓ Unknown command: "${command}"`
 
     if (suggestions.length > 0) {
-      message += `\n\n💡 Did you mean:\n${suggestions.map(s => `• /${s}`).join('\n')}`
+      message += `\n\n💡 Did you mean:\n${suggestions.map((s) => `• /${s}`).join('\n')}`
     }
 
     message += '\n\nUse `/help` to see all available commands.'
@@ -400,7 +432,10 @@ export class InteractiveWorkflowCommands {
   // COMMAND HANDLERS
   // ========================================
 
-  private async handlePauseCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
+  private async handlePauseCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
     if (context.executionStatus !== 'running') {
       return {
         success: false,
@@ -410,12 +445,16 @@ export class InteractiveWorkflowCommands {
 
     return {
       success: true,
-      message: '⏸️ **Workflow Paused**\n\nExecution has been paused. Use `/resume` to continue or `/stop` to end the workflow.',
+      message:
+        '⏸️ **Workflow Paused**\n\nExecution has been paused. Use `/resume` to continue or `/stop` to end the workflow.',
       action: 'pause',
     }
   }
 
-  private async handleResumeCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
+  private async handleResumeCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
     if (context.executionStatus !== 'paused') {
       return {
         success: false,
@@ -430,7 +469,10 @@ export class InteractiveWorkflowCommands {
     }
   }
 
-  private async handleSkipCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
+  private async handleSkipCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
     if (context.executionStatus !== 'running' && context.executionStatus !== 'paused') {
       return {
         success: false,
@@ -449,7 +491,10 @@ export class InteractiveWorkflowCommands {
     }
   }
 
-  private async handleRetryCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
+  private async handleRetryCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
     if (context.executionStatus === 'completed') {
       return {
         success: false,
@@ -466,7 +511,10 @@ export class InteractiveWorkflowCommands {
     }
   }
 
-  private async handleStatusCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
+  private async handleStatusCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
     const progress = ((context.currentStep + 1) / context.journey.states.length) * 100
     const currentStepName = context.journey.states[context.currentStep]?.name || 'Unknown Step'
 
@@ -500,8 +548,11 @@ export class InteractiveWorkflowCommands {
     }
   }
 
-  private async handleHistoryCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
-    const count = params[0] ? parseInt(params[0], 10) : 10
+  private async handleHistoryCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
+    const count = params[0] ? Number.parseInt(params[0], 10) : 10
     const recentHistory = context.executionHistory.slice(-count)
 
     if (recentHistory.length === 0) {
@@ -526,7 +577,10 @@ export class InteractiveWorkflowCommands {
     }
   }
 
-  private async handleStepsCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
+  private async handleStepsCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
     let message = `📋 **Workflow Steps**\n\n**${context.journey.title}**\n\n`
 
     context.journey.states.forEach((step, index) => {
@@ -551,9 +605,14 @@ export class InteractiveWorkflowCommands {
     }
   }
 
-  private async handleDebugCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
+  private async handleDebugCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
     const stepId = params[0] || context.journey.states[context.currentStep]?.id
-    const step = context.journey.states.find(s => s.id === stepId) || context.journey.states[context.currentStep]
+    const step =
+      context.journey.states.find((s) => s.id === stepId) ||
+      context.journey.states[context.currentStep]
 
     if (!step) {
       return {
@@ -581,7 +640,10 @@ export class InteractiveWorkflowCommands {
     }
   }
 
-  private async handleContextCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
+  private async handleContextCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
     // This would show workflow variables and context data
     const contextData = {
       journeyId: context.journeyId,
@@ -602,7 +664,10 @@ export class InteractiveWorkflowCommands {
     }
   }
 
-  private async handleGotoCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
+  private async handleGotoCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
     if (context.executionStatus === 'running') {
       return {
         success: false,
@@ -614,10 +679,10 @@ export class InteractiveWorkflowCommands {
     let targetStep: number
 
     if (/^\d+$/.test(target)) {
-      targetStep = parseInt(target, 10) - 1 // Convert to 0-based index
+      targetStep = Number.parseInt(target, 10) - 1 // Convert to 0-based index
     } else {
       // Try to find step by ID
-      const stepIndex = context.journey.states.findIndex(s => s.id === target)
+      const stepIndex = context.journey.states.findIndex((s) => s.id === target)
       if (stepIndex === -1) {
         return {
           success: false,
@@ -645,7 +710,10 @@ export class InteractiveWorkflowCommands {
     }
   }
 
-  private async handleHelpCommand(context: CommandContext, params: string[]): Promise<CommandResult> {
+  private async handleHelpCommand(
+    context: CommandContext,
+    params: string[]
+  ): Promise<CommandResult> {
     if (params[0]) {
       // Help for specific command
       const command = this.findCommand(params[0])
@@ -659,10 +727,10 @@ export class InteractiveWorkflowCommands {
       let message = `📖 **Help: /${command.name}**\n\n`
       message += `**Description**: ${command.description}\n`
       message += `**Usage**: ${command.usage}\n\n`
-      message += `**Examples**:\n${command.examples.map(e => `• ${e}`).join('\n')}\n\n`
+      message += `**Examples**:\n${command.examples.map((e) => `• ${e}`).join('\n')}\n\n`
 
       if (command.aliases.length > 0) {
-        message += `**Aliases**: ${command.aliases.map(a => `/${a}`).join(', ')}\n`
+        message += `**Aliases**: ${command.aliases.map((a) => `/${a}`).join(', ')}\n`
       }
 
       return {
@@ -705,10 +773,10 @@ export class InteractiveWorkflowCommands {
 
     if (hours > 0) {
       return `${hours}h ${minutes % 60}m`
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`
-    } else {
-      return `${seconds}s`
     }
+    if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`
+    }
+    return `${seconds}s`
   }
 }

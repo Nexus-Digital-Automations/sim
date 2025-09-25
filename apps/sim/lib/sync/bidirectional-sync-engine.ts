@@ -6,8 +6,6 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { Edge } from 'reactflow'
-import type { WorkflowState, Position, SubBlockState } from '@/stores/workflows/workflow/types'
 
 const logger = createLogger('BidirectionalSyncEngine')
 
@@ -173,12 +171,11 @@ export class BidirectionalSyncEngine {
       this.syncState.version = Math.max(this.syncState.version, event.version)
 
       logger.debug('Event processed successfully', { eventId: event.id, type: event.type })
-
     } catch (error) {
       logger.error('Error processing sync event', {
         eventId: event.id,
         type: event.type,
-        error
+        error,
       })
 
       // Add to retry queue
@@ -191,22 +188,23 @@ export class BidirectionalSyncEngine {
    */
   private async detectConflict(event: SyncEvent): Promise<boolean> {
     // Check for overlapping operations on same workflow elements
-    const conflictingEvents = this.eventQueue.filter(queuedEvent =>
+    const conflictingEvents = this.eventQueue.filter((queuedEvent) =>
       this.isConflicting(event, queuedEvent)
     )
 
     if (conflictingEvents.length > 0) {
       logger.warn('Conflict detected', {
         eventId: event.id,
-        conflictingEvents: conflictingEvents.map(e => e.id)
+        conflictingEvents: conflictingEvents.map((e) => e.id),
       })
       return true
     }
 
     // Check for timing-based conflicts (events too close in time)
-    const recentEvents = this.eventQueue.filter(queuedEvent =>
-      event.timestamp - queuedEvent.timestamp < 100 && // 100ms window
-      this.targetsOverlap(event, queuedEvent)
+    const recentEvents = this.eventQueue.filter(
+      (queuedEvent) =>
+        event.timestamp - queuedEvent.timestamp < 100 && // 100ms window
+        this.targetsOverlap(event, queuedEvent)
     )
 
     return recentEvents.length > 0
@@ -225,8 +223,10 @@ export class BidirectionalSyncEngine {
 
     if (target1 && target2 && target1 === target2) {
       // Same target with different operations
-      return event1.type !== event2.type ||
-             JSON.stringify(event1.payload) !== JSON.stringify(event2.payload)
+      return (
+        event1.type !== event2.type ||
+        JSON.stringify(event1.payload) !== JSON.stringify(event2.payload)
+      )
     }
 
     return false
@@ -276,8 +276,8 @@ export class BidirectionalSyncEngine {
   private async resolveConflict(event: SyncEvent): Promise<ConflictResolution> {
     logger.info('Resolving conflict', { eventId: event.id })
 
-    const conflictingEvents = this.conflictQueue.filter(queuedEvent =>
-      queuedEvent.id !== event.id && this.isConflicting(event, queuedEvent)
+    const conflictingEvents = this.conflictQueue.filter(
+      (queuedEvent) => queuedEvent.id !== event.id && this.isConflicting(event, queuedEvent)
     )
 
     try {
@@ -288,18 +288,17 @@ export class BidirectionalSyncEngine {
         // Use conflict resolution strategy
         const strategy = this.determineConflictStrategy(event, conflictingEvents)
         return await this.applyConflictStrategy(event, conflictingEvents, strategy)
-      } else {
-        // No conflict after transformation, process normally
-        await this.processEvent({
-          ...event,
-          payload: transformResult.transformed,
-        })
+      }
+      // No conflict after transformation, process normally
+      await this.processEvent({
+        ...event,
+        payload: transformResult.transformed,
+      })
 
-        return {
-          eventId: event.id,
-          strategy: 'merge',
-          resolution: 'resolved',
-        }
+      return {
+        eventId: event.id,
+        strategy: 'merge',
+        resolution: 'resolved',
       }
     } catch (error) {
       logger.error('Conflict resolution failed', { eventId: event.id, error })
@@ -352,50 +351,62 @@ export class BidirectionalSyncEngine {
   private eventToOperations(event: SyncEvent): Operation[] {
     switch (event.type) {
       case 'BLOCK_ADD':
-        return [{
-          type: 'insert',
-          data: event.payload,
-          attributes: { blockType: event.payload.type }
-        }]
+        return [
+          {
+            type: 'insert',
+            data: event.payload,
+            attributes: { blockType: event.payload.type },
+          },
+        ]
 
       case 'BLOCK_UPDATE':
-        return [{
-          type: 'replace',
-          data: event.payload,
-          attributes: { target: 'block', id: event.payload.id }
-        }]
+        return [
+          {
+            type: 'replace',
+            data: event.payload,
+            attributes: { target: 'block', id: event.payload.id },
+          },
+        ]
 
       case 'BLOCK_REMOVE':
-        return [{
-          type: 'delete',
-          length: 1,
-          attributes: { target: 'block', id: event.payload.id }
-        }]
+        return [
+          {
+            type: 'delete',
+            length: 1,
+            attributes: { target: 'block', id: event.payload.id },
+          },
+        ]
 
       case 'BLOCK_POSITION_UPDATE':
-        return [{
-          type: 'replace',
-          data: { position: event.payload.position },
-          attributes: { target: 'position', id: event.payload.id }
-        }]
+        return [
+          {
+            type: 'replace',
+            data: { position: event.payload.position },
+            attributes: { target: 'position', id: event.payload.id },
+          },
+        ]
 
       case 'SUBBLOCK_UPDATE':
-        return [{
-          type: 'replace',
-          data: { value: event.payload.value },
-          attributes: {
-            target: 'subblock',
-            blockId: event.payload.blockId,
-            subblockId: event.payload.subblockId
-          }
-        }]
+        return [
+          {
+            type: 'replace',
+            data: { value: event.payload.value },
+            attributes: {
+              target: 'subblock',
+              blockId: event.payload.blockId,
+              subblockId: event.payload.subblockId,
+            },
+          },
+        ]
 
       default:
-        return [{
-          type: 'retain',
-          length: 1,
-          data: event.payload
-        }]
+        return [
+          {
+            type: 'retain',
+            length: 1,
+            data: event.payload,
+          },
+        ]
     }
   }
 
@@ -436,9 +447,10 @@ export class BidirectionalSyncEngine {
     op2: Operation
   ): { operation: Operation; conflict: boolean } {
     // Handle same target conflicts
-    if (op1.attributes?.target === op2.attributes?.target &&
-        op1.attributes?.id === op2.attributes?.id) {
-
+    if (
+      op1.attributes?.target === op2.attributes?.target &&
+      op1.attributes?.id === op2.attributes?.id
+    ) {
       // Both trying to modify the same element
       if (op1.type === 'replace' && op2.type === 'replace') {
         // Merge the data if possible
@@ -446,16 +458,17 @@ export class BidirectionalSyncEngine {
         if (merged.success) {
           return {
             operation: { ...op1, data: merged.data },
-            conflict: false
+            conflict: false,
           }
-        } else {
-          return { operation: op1, conflict: true }
         }
+        return { operation: op1, conflict: true }
       }
 
       // Delete vs Update conflict
-      if ((op1.type === 'delete' && op2.type === 'replace') ||
-          (op1.type === 'replace' && op2.type === 'delete')) {
+      if (
+        (op1.type === 'delete' && op2.type === 'replace') ||
+        (op1.type === 'replace' && op2.type === 'delete')
+      ) {
         return { operation: op1, conflict: true }
       }
     }
@@ -515,10 +528,11 @@ export class BidirectionalSyncEngine {
     strategy: ConflictStrategy
   ): Promise<ConflictResolution> {
     switch (strategy) {
-      case 'latest-wins':
+      case 'latest-wins': {
         // Process the most recent event
-        const latestEvent = [event, ...conflictingEvents]
-          .sort((a, b) => b.timestamp - a.timestamp)[0]
+        const latestEvent = [event, ...conflictingEvents].sort(
+          (a, b) => b.timestamp - a.timestamp
+        )[0]
 
         await this.processEvent(latestEvent)
 
@@ -527,8 +541,9 @@ export class BidirectionalSyncEngine {
           strategy: 'latest-wins',
           resolution: 'resolved',
         }
+      }
 
-      case 'merge':
+      case 'merge': {
         // Attempt to merge all events
         const mergedPayload = conflictingEvents.reduce(
           (acc, e) => ({ ...acc, ...e.payload }),
@@ -543,6 +558,7 @@ export class BidirectionalSyncEngine {
           resolution: 'resolved',
           mergedData: mergedPayload,
         }
+      }
 
       case 'user-prompt':
         // Defer to user for resolution
@@ -671,7 +687,7 @@ export class BidirectionalSyncEngine {
     this.operationBuffer.clear()
 
     // Clear debounce timers
-    this.debounceTimers.forEach(timer => clearTimeout(timer))
+    this.debounceTimers.forEach((timer) => clearTimeout(timer))
     this.debounceTimers.clear()
 
     this.syncState = {

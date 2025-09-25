@@ -5,9 +5,9 @@
  * including database connectivity, service status, and system metrics.
  */
 
+import { healthChecks, parlantHealthChecker } from '@sim/parlant-server/health'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { healthChecks, parlantHealthChecker } from '@sim/parlant-server/health'
 import { checkRateLimit, createRateLimitResponse } from '../middleware'
 
 const logger = createLogger('HealthAPI')

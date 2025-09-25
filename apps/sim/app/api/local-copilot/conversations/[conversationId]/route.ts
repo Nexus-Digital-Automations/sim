@@ -11,10 +11,10 @@ import { getSession } from '@/lib/auth'
 import { validateWorkspaceAccess } from '@/lib/auth/chat-middleware'
 import { createLogger } from '@/lib/logs/console/logger'
 import {
+  archiveConversation,
+  deleteConversation,
   getUserConversation,
   updateConversation,
-  deleteConversation,
-  archiveConversation
 } from '@/lib/parlant/conversations'
 import { agentService } from '@/services/parlant/agent-service'
 
@@ -53,20 +53,16 @@ export async function GET(
     // Parse query parameters
     const searchParams = req.nextUrl.searchParams
     const includeMessages = searchParams.get('includeMessages') !== 'false'
-    const messageLimit = parseInt(searchParams.get('messageLimit') || '50')
-    const messageOffset = parseInt(searchParams.get('messageOffset') || '0')
+    const messageLimit = Number.parseInt(searchParams.get('messageLimit') || '50')
+    const messageOffset = Number.parseInt(searchParams.get('messageOffset') || '0')
 
     try {
       // Get conversation from Parlant service
-      const conversation = await getUserConversation(
-        session.user.id,
-        conversationId,
-        {
-          includeMessages,
-          messageLimit,
-          messageOffset,
-        }
-      )
+      const conversation = await getUserConversation(session.user.id, conversationId, {
+        includeMessages,
+        messageLimit,
+        messageOffset,
+      })
 
       if (!conversation) {
         return NextResponse.json(
@@ -108,16 +104,19 @@ export async function GET(
         agentCapabilities: agentInfo?.tools || [],
         messageCount: conversation.messages?.length || conversation.messageCount || 0,
         isLocalCopilot: true,
-        agent: agentInfo ? {
-          id: agentInfo.id,
-          name: agentInfo.name,
-          description: agentInfo.description,
-          status: agentInfo.status,
-          tools: agentInfo.tools || [],
-          capabilities: agentInfo.tools?.map((tool: string) =>
-            tool.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-          ) || [],
-        } : null,
+        agent: agentInfo
+          ? {
+              id: agentInfo.id,
+              name: agentInfo.name,
+              description: agentInfo.description,
+              status: agentInfo.status,
+              tools: agentInfo.tools || [],
+              capabilities:
+                agentInfo.tools?.map((tool: string) =>
+                  tool.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+                ) || [],
+            }
+          : null,
       }
 
       logger.info(`[${requestId}] Successfully retrieved conversation`, {
@@ -135,7 +134,6 @@ export async function GET(
           source: 'local-copilot',
         },
       })
-
     } catch (error) {
       logger.error(`[${requestId}] Failed to retrieve conversation:`, error)
 
@@ -155,7 +153,6 @@ export async function GET(
         { status: 500 }
       )
     }
-
   } catch (error) {
     logger.error(`[${requestId}] Get conversation error:`, {
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -237,7 +234,7 @@ export async function PATCH(
 
       // Update other fields
       const otherUpdates = { ...updates }
-      delete otherUpdates.isArchived
+      otherUpdates.isArchived = undefined
 
       if (Object.keys(otherUpdates).length > 0) {
         await updateConversation(conversationId, otherUpdates, session.user.id)
@@ -292,7 +289,6 @@ export async function PATCH(
           updatedFields: Object.keys(updates),
         },
       })
-
     } catch (error) {
       logger.error(`[${requestId}] Failed to update conversation:`, error)
       return NextResponse.json(
@@ -304,7 +300,6 @@ export async function PATCH(
         { status: 500 }
       )
     }
-
   } catch (error) {
     logger.error(`[${requestId}] Update conversation error:`, {
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -397,7 +392,6 @@ export async function DELETE(
           deletedConversationId: conversationId,
         },
       })
-
     } catch (error) {
       logger.error(`[${requestId}] Failed to delete conversation:`, error)
       return NextResponse.json(
@@ -409,7 +403,6 @@ export async function DELETE(
         { status: 500 }
       )
     }
-
   } catch (error) {
     logger.error(`[${requestId}] Delete conversation error:`, {
       error: error instanceof Error ? error.message : 'Unknown error',

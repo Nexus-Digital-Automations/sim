@@ -9,15 +9,14 @@
 'use client'
 
 import React, { useState } from 'react'
+import { CopilotWrapper, EnhancedCopilotWrapper } from '@/components/copilot-wrapper'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-
 // Import the unified copilot components
-import { UnifiedCopilot, type UnifiedCopilotRef } from '@/components/unified-copilot'
-import { CopilotWrapper, EnhancedCopilotWrapper } from '@/components/copilot-wrapper'
+import { UnifiedCopilot } from '@/components/unified-copilot'
 import { useUnifiedCopilot } from '@/hooks/use-unified-copilot'
 
 // Example 1: Simple Drop-in Replacement
@@ -26,12 +25,12 @@ export function SimpleReplacementExample() {
   const copilotRef = React.useRef<any>(null)
 
   return (
-    <div className="h-96 border rounded-lg">
+    <div className='h-96 rounded-lg border'>
       <CopilotWrapper
         ref={copilotRef}
         panelWidth={400}
-        workspaceId="example-workspace"
-        userId="example-user"
+        workspaceId='example-workspace'
+        userId='example-user'
       />
     </div>
   )
@@ -42,19 +41,17 @@ export function EnhancedIntegrationExample() {
   const [currentMode, setCurrentMode] = useState<'local' | 'external'>('external')
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Enhanced Copilot</h3>
-        <Badge variant="outline">
-          Current Mode: {currentMode}
-        </Badge>
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between'>
+        <h3 className='font-semibold text-lg'>Enhanced Copilot</h3>
+        <Badge variant='outline'>Current Mode: {currentMode}</Badge>
       </div>
 
-      <div className="h-96 border rounded-lg">
+      <div className='h-96 rounded-lg border'>
         <EnhancedCopilotWrapper
           panelWidth={400}
-          workspaceId="example-workspace"
-          userId="example-user"
+          workspaceId='example-workspace'
+          userId='example-user'
           onModeChange={setCurrentMode}
           enableAnalytics={true}
           enableKeyboardShortcuts={true}
@@ -88,26 +85,26 @@ export function CustomIntegrationExample() {
   const stats = getStats()
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+    <div className='space-y-4'>
+      <div className='grid grid-cols-2 gap-4'>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">System Status</CardTitle>
+            <CardTitle className='text-sm'>System Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Current Mode</span>
+            <div className='space-y-2'>
+              <div className='flex items-center justify-between'>
+                <span className='text-sm'>Current Mode</span>
                 <Badge>{currentMode}</Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Local Available</span>
+              <div className='flex items-center justify-between'>
+                <span className='text-sm'>Local Available</span>
                 <Badge variant={isLocalAvailable ? 'default' : 'secondary'}>
                   {isLocalAvailable ? 'Yes' : 'No'}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">External Available</span>
+              <div className='flex items-center justify-between'>
+                <span className='text-sm'>External Available</span>
                 <Badge variant={isExternalAvailable ? 'default' : 'secondary'}>
                   {isExternalAvailable ? 'Yes' : 'No'}
                 </Badge>
@@ -118,17 +115,17 @@ export function CustomIntegrationExample() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Agent Info</CardTitle>
+            <CardTitle className='text-sm'>Agent Info</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Available Agents</span>
+            <div className='space-y-2'>
+              <div className='flex items-center justify-between'>
+                <span className='text-sm'>Available Agents</span>
                 <Badge>{stats.availableLocalAgents}</Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Selected Agent</span>
-                <Badge variant="outline" className="text-xs max-w-20 truncate">
+              <div className='flex items-center justify-between'>
+                <span className='text-sm'>Selected Agent</span>
+                <Badge variant='outline' className='max-w-20 truncate text-xs'>
                   {stats.selectedLocalAgent || 'None'}
                 </Badge>
               </div>
@@ -137,7 +134,7 @@ export function CustomIntegrationExample() {
         </Card>
       </div>
 
-      <div className="flex gap-2">
+      <div className='flex gap-2'>
         <Button
           variant={currentMode === 'local' ? 'default' : 'outline'}
           onClick={switchToLocal}
@@ -157,24 +154,22 @@ export function CustomIntegrationExample() {
       {currentMode === 'local' && availableAgents.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Available Agents</CardTitle>
+            <CardTitle className='text-sm'>Available Agents</CardTitle>
             <CardDescription>Select an agent for local copilot</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-2">
+            <div className='grid grid-cols-2 gap-2'>
               {availableAgents.map((agent) => (
                 <Button
                   key={agent.id}
                   variant={selectedAgent?.id === agent.id ? 'default' : 'outline'}
                   onClick={() => selectAgent(agent)}
-                  className="justify-start text-left h-auto p-2"
+                  className='h-auto justify-start p-2 text-left'
                 >
                   <div>
-                    <div className="font-medium text-sm">{agent.name}</div>
+                    <div className='font-medium text-sm'>{agent.name}</div>
                     {agent.description && (
-                      <div className="text-xs opacity-70 truncate">
-                        {agent.description}
-                      </div>
+                      <div className='truncate text-xs opacity-70'>{agent.description}</div>
                     )}
                   </div>
                 </Button>
@@ -184,11 +179,11 @@ export function CustomIntegrationExample() {
         </Card>
       )}
 
-      <div className="h-96 border rounded-lg">
+      <div className='h-96 rounded-lg border'>
         <UnifiedCopilot
           panelWidth={400}
           workspaceId={workspaceId}
-          userId="example-user"
+          userId='example-user'
           defaultMode={currentMode}
           allowModeSwitch={false} // We handle it externally
         />
@@ -200,33 +195,31 @@ export function CustomIntegrationExample() {
 // Example 4: Migration Guide Component
 export function MigrationGuideExample() {
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <h2 className="text-xl font-semibold mb-4">Migration Guide</h2>
-        <p className="text-muted-foreground">
-          Examples showing how to migrate from existing copilot implementations
-          to the unified system.
+        <h2 className='mb-4 font-semibold text-xl'>Migration Guide</h2>
+        <p className='text-muted-foreground'>
+          Examples showing how to migrate from existing copilot implementations to the unified
+          system.
         </p>
       </div>
 
-      <Tabs defaultValue="before" className="w-full">
+      <Tabs defaultValue='before' className='w-full'>
         <TabsList>
-          <TabsTrigger value="before">Before (External Only)</TabsTrigger>
-          <TabsTrigger value="after">After (Unified)</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced Usage</TabsTrigger>
+          <TabsTrigger value='before'>Before (External Only)</TabsTrigger>
+          <TabsTrigger value='after'>After (Unified)</TabsTrigger>
+          <TabsTrigger value='advanced'>Advanced Usage</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="before" className="space-y-4">
+        <TabsContent value='before' className='space-y-4'>
           <Card>
             <CardHeader>
               <CardTitle>Old Implementation</CardTitle>
-              <CardDescription>
-                Previous external copilot usage
-              </CardDescription>
+              <CardDescription>Previous external copilot usage</CardDescription>
             </CardHeader>
             <CardContent>
-              <pre className="bg-muted p-4 rounded text-sm overflow-x-auto">
-{`// Old way - external copilot only
+              <pre className='overflow-x-auto rounded bg-muted p-4 text-sm'>
+                {`// Old way - external copilot only
 import { Copilot } from './copilot'
 
 function MyComponent() {
@@ -244,17 +237,15 @@ function MyComponent() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="after" className="space-y-4">
+        <TabsContent value='after' className='space-y-4'>
           <Card>
             <CardHeader>
               <CardTitle>New Implementation</CardTitle>
-              <CardDescription>
-                Drop-in replacement with unified system
-              </CardDescription>
+              <CardDescription>Drop-in replacement with unified system</CardDescription>
             </CardHeader>
             <CardContent>
-              <pre className="bg-muted p-4 rounded text-sm overflow-x-auto">
-{`// New way - unified copilot
+              <pre className='overflow-x-auto rounded bg-muted p-4 text-sm'>
+                {`// New way - unified copilot
 import { CopilotWrapper } from '@/components/copilot-wrapper'
 
 function MyComponent() {
@@ -274,17 +265,15 @@ function MyComponent() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="advanced" className="space-y-4">
+        <TabsContent value='advanced' className='space-y-4'>
           <Card>
             <CardHeader>
               <CardTitle>Advanced Usage</CardTitle>
-              <CardDescription>
-                Full control with hooks and custom logic
-              </CardDescription>
+              <CardDescription>Full control with hooks and custom logic</CardDescription>
             </CardHeader>
             <CardContent>
-              <pre className="bg-muted p-4 rounded text-sm overflow-x-auto">
-{`// Advanced usage with hooks
+              <pre className='overflow-x-auto rounded bg-muted p-4 text-sm'>
+                {`// Advanced usage with hooks
 import { useUnifiedCopilot } from '@/hooks/use-unified-copilot'
 import { UnifiedCopilot } from '@/components/unified-copilot'
 
@@ -333,35 +322,35 @@ function MyAdvancedComponent() {
 // Complete example page
 export default function UnifiedCopilotExamplesPage() {
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className='container mx-auto space-y-8 py-8'>
       <div>
-        <h1 className="text-3xl font-bold mb-4">Unified Copilot Integration Examples</h1>
-        <p className="text-muted-foreground">
+        <h1 className='mb-4 font-bold text-3xl'>Unified Copilot Integration Examples</h1>
+        <p className='text-muted-foreground'>
           Examples and migration guides for integrating the unified copilot system.
         </p>
       </div>
 
-      <Tabs defaultValue="simple" className="w-full">
+      <Tabs defaultValue='simple' className='w-full'>
         <TabsList>
-          <TabsTrigger value="simple">Simple</TabsTrigger>
-          <TabsTrigger value="enhanced">Enhanced</TabsTrigger>
-          <TabsTrigger value="custom">Custom</TabsTrigger>
-          <TabsTrigger value="migration">Migration</TabsTrigger>
+          <TabsTrigger value='simple'>Simple</TabsTrigger>
+          <TabsTrigger value='enhanced'>Enhanced</TabsTrigger>
+          <TabsTrigger value='custom'>Custom</TabsTrigger>
+          <TabsTrigger value='migration'>Migration</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="simple">
+        <TabsContent value='simple'>
           <SimpleReplacementExample />
         </TabsContent>
 
-        <TabsContent value="enhanced">
+        <TabsContent value='enhanced'>
           <EnhancedIntegrationExample />
         </TabsContent>
 
-        <TabsContent value="custom">
+        <TabsContent value='custom'>
           <CustomIntegrationExample />
         </TabsContent>
 
-        <TabsContent value="migration">
+        <TabsContent value='migration'>
           <MigrationGuideExample />
         </TabsContent>
       </Tabs>

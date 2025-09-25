@@ -93,31 +93,26 @@ export interface RollbackStrategy {
 export const DEFAULT_ROLLBACK_STRATEGY: RollbackStrategy = {
   automaticCheckpoints: {
     enabled: true,
-    beforeOperations: [
-      'mode_switch',
-      'bulk_operation',
-      'schema_migration',
-      'feature_integration'
-    ],
+    beforeOperations: ['mode_switch', 'bulk_operation', 'schema_migration', 'feature_integration'],
     interval: 15, // Every 15 minutes
-    maxCheckpoints: 50
+    maxCheckpoints: 50,
   },
   validation: {
     enabled: true,
     strictMode: true,
     checksumValidation: true,
-    integrityChecks: true
+    integrityChecks: true,
   },
   recovery: {
     emergencyMode: true,
     fallbackToLastKnown: true,
-    preserveUserChanges: true
+    preserveUserChanges: true,
   },
   retention: {
     maxAge: 7, // 7 days
     maxSize: 100 * 1024 * 1024, // 100MB total
-    compressionEnabled: true
-  }
+    compressionEnabled: true,
+  },
 }
 
 /**
@@ -153,12 +148,7 @@ export class ReactFlowRollbackSystem {
       throw new Error('Rollback system is disabled')
     }
 
-    const {
-      type = 'full',
-      triggeredBy = 'manual',
-      operation,
-      userId
-    } = options
+    const { type = 'full', triggeredBy = 'manual', operation, userId } = options
 
     const checkpointId = `checkpoint_${workflowId}_${Date.now()}`
 
@@ -168,7 +158,7 @@ export class ReactFlowRollbackSystem {
         workflowId,
         description,
         type,
-        triggeredBy
+        triggeredBy,
       })
 
       const startTime = performance.now()
@@ -199,13 +189,13 @@ export class ReactFlowRollbackSystem {
           operation,
           userId,
           sessionId: this.getCurrentSessionId(),
-          version: this.getSystemVersion()
+          version: this.getSystemVersion(),
         },
         validation: {
           checksum,
           size: this.calculateDataSize(compressedData),
-          compressed: this.strategy.retention.compressionEnabled
-        }
+          compressed: this.strategy.retention.compressionEnabled,
+        },
       }
 
       // Store checkpoint
@@ -222,7 +212,7 @@ export class ReactFlowRollbackSystem {
         checkpointId,
         creationTime,
         size: checkpoint.validation.size,
-        compressed: checkpoint.validation.compressed
+        compressed: checkpoint.validation.compressed,
       })
 
       return checkpointId
@@ -230,7 +220,7 @@ export class ReactFlowRollbackSystem {
       logger.error('Failed to create checkpoint', {
         checkpointId,
         workflowId,
-        error
+        error,
       })
       throw new Error(`Checkpoint creation failed: ${error}`)
     }
@@ -251,7 +241,7 @@ export class ReactFlowRollbackSystem {
     const {
       rollbackType = 'full',
       preserveUserChanges = this.strategy.recovery.preserveUserChanges,
-      validateBefore = this.strategy.validation.enabled
+      validateBefore = this.strategy.validation.enabled,
     } = options
 
     logger.info('Starting rollback operation', {
@@ -259,7 +249,7 @@ export class ReactFlowRollbackSystem {
       checkpointId,
       rollbackType,
       preserveUserChanges,
-      validateBefore
+      validateBefore,
     })
 
     const startTime = performance.now()
@@ -357,14 +347,14 @@ export class ReactFlowRollbackSystem {
         performanceMetrics: {
           rollbackTime,
           dataRestored: checkpoint.validation.size,
-          validationTime
-        }
+          validationTime,
+        },
       }
 
       logger.info('Rollback completed successfully', {
         ...result,
         totalTime,
-        warningsCount: warnings.length
+        warningsCount: warnings.length,
       })
 
       return result
@@ -376,7 +366,7 @@ export class ReactFlowRollbackSystem {
         checkpointId,
         rollbackType,
         error,
-        totalTime
+        totalTime,
       })
 
       return {
@@ -390,8 +380,8 @@ export class ReactFlowRollbackSystem {
         performanceMetrics: {
           rollbackTime: totalTime,
           dataRestored: 0,
-          validationTime: 0
-        }
+          validationTime: 0,
+        },
       }
     }
   }
@@ -413,7 +403,7 @@ export class ReactFlowRollbackSystem {
       return await this.rollback(workflowId, lastCheckpoint.id, {
         rollbackType: 'emergency',
         preserveUserChanges: false, // Emergency recovery doesn't preserve changes
-        validateBefore: false // Skip validation for speed
+        validateBefore: false, // Skip validation for speed
       })
     } catch (error) {
       logger.error('Emergency recovery failed', { workflowId, error })
@@ -428,17 +418,25 @@ export class ReactFlowRollbackSystem {
     const checkpoints = this.checkpoints.get(workflowId) || []
     return checkpoints
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .map(cp => ({
+      .map((cp) => ({
         ...cp,
         // Don't include full data in listing
-        dataSnapshot: { workflow: null, reactFlowState: null, preservationState: null, uiState: null }
+        dataSnapshot: {
+          workflow: null,
+          reactFlowState: null,
+          preservationState: null,
+          uiState: null,
+        },
       })) as RollbackCheckpoint[]
   }
 
   /**
    * Get checkpoint details
    */
-  async getCheckpointDetails(workflowId: string, checkpointId: string): Promise<{
+  async getCheckpointDetails(
+    workflowId: string,
+    checkpointId: string
+  ): Promise<{
     checkpoint: RollbackCheckpoint | null
     validation: { valid: boolean; errors: string[]; warnings: string[] }
     preview: {
@@ -453,7 +451,7 @@ export class ReactFlowRollbackSystem {
       return {
         checkpoint: null,
         validation: { valid: false, errors: ['Checkpoint not found'], warnings: [] },
-        preview: { nodeCount: 0, edgeCount: 0, containerCount: 0, lastModified: new Date() }
+        preview: { nodeCount: 0, edgeCount: 0, containerCount: 0, lastModified: new Date() },
       }
     }
 
@@ -463,7 +461,7 @@ export class ReactFlowRollbackSystem {
       nodeCount: checkpoint.metadata.nodeCount,
       edgeCount: checkpoint.metadata.edgeCount,
       containerCount: checkpoint.metadata.containerCount,
-      lastModified: checkpoint.timestamp
+      lastModified: checkpoint.timestamp,
     }
 
     return { checkpoint, validation, preview }
@@ -475,7 +473,7 @@ export class ReactFlowRollbackSystem {
   async deleteCheckpoint(workflowId: string, checkpointId: string): Promise<boolean> {
     try {
       const workflowCheckpoints = this.checkpoints.get(workflowId) || []
-      const filteredCheckpoints = workflowCheckpoints.filter(cp => cp.id !== checkpointId)
+      const filteredCheckpoints = workflowCheckpoints.filter((cp) => cp.id !== checkpointId)
 
       if (filteredCheckpoints.length === workflowCheckpoints.length) {
         return false // Checkpoint not found
@@ -538,7 +536,7 @@ export class ReactFlowRollbackSystem {
     for (const checkpoints of this.checkpoints.values()) {
       totalCheckpoints += checkpoints.length
 
-      checkpoints.forEach(cp => {
+      checkpoints.forEach((cp) => {
         totalSize += cp.validation.size
 
         if (!oldestDate || cp.timestamp < oldestDate) {
@@ -556,7 +554,7 @@ export class ReactFlowRollbackSystem {
       oldestCheckpoint: oldestDate,
       newestCheckpoint: newestDate,
       workflowCount: this.checkpoints.size,
-      averageCheckpointSize: totalCheckpoints > 0 ? totalSize / totalCheckpoints : 0
+      averageCheckpointSize: totalCheckpoints > 0 ? totalSize / totalCheckpoints : 0,
     }
   }
 
@@ -573,10 +571,14 @@ export class ReactFlowRollbackSystem {
       workflow: { blocks: {}, edges: [], loops: {}, parallels: {} },
       reactFlowState: { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } },
       preservationState: { initialized: true, mode: 'visual' },
-      uiState: { selectedNodes: [], zoom: 1, panPosition: { x: 0, y: 0 } }
+      uiState: { selectedNodes: [], zoom: 1, panPosition: { x: 0, y: 0 } },
     }
 
-    logger.debug('Current state captured', { workflowId, type, stateSize: JSON.stringify(mockState).length })
+    logger.debug('Current state captured', {
+      workflowId,
+      type,
+      stateSize: JSON.stringify(mockState).length,
+    })
     return mockState
   }
 
@@ -587,7 +589,7 @@ export class ReactFlowRollbackSystem {
     const data_buffer = encoder.encode(jsonString)
     const hashBuffer = await crypto.subtle.digest('SHA-256', data_buffer)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
   }
 
   private async compressData(data: any): Promise<any> {
@@ -620,19 +622,24 @@ export class ReactFlowRollbackSystem {
   }
 
   private getCurrentSessionId(): string {
-    return 'session_' + Date.now()
+    return `session_${Date.now()}`
   }
 
   private getSystemVersion(): string {
     return '1.0.0'
   }
 
-  private async findCheckpoint(workflowId: string, checkpointId: string): Promise<RollbackCheckpoint | null> {
+  private async findCheckpoint(
+    workflowId: string,
+    checkpointId: string
+  ): Promise<RollbackCheckpoint | null> {
     const checkpoints = this.checkpoints.get(workflowId) || []
-    return checkpoints.find(cp => cp.id === checkpointId) || null
+    return checkpoints.find((cp) => cp.id === checkpointId) || null
   }
 
-  private async validateCheckpoint(checkpoint: RollbackCheckpoint): Promise<{ valid: boolean; errors: string[]; warnings: string[] }> {
+  private async validateCheckpoint(
+    checkpoint: RollbackCheckpoint
+  ): Promise<{ valid: boolean; errors: string[]; warnings: string[] }> {
     const errors: string[] = []
     const warnings: string[] = []
 
@@ -668,7 +675,7 @@ export class ReactFlowRollbackSystem {
     return {
       valid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     }
   }
 
@@ -676,7 +683,9 @@ export class ReactFlowRollbackSystem {
     const checkpoints = this.checkpoints.get(workflowId) || []
 
     // Sort by timestamp descending and find first valid checkpoint
-    const sortedCheckpoints = checkpoints.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    const sortedCheckpoints = checkpoints.sort(
+      (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+    )
 
     for (const checkpoint of sortedCheckpoints) {
       const validation = await this.validateCheckpoint(checkpoint)
@@ -716,7 +725,9 @@ export class ReactFlowRollbackSystem {
     // Reapply preserved user changes
   }
 
-  private async validateCurrentState(workflowId: string): Promise<{ valid: boolean; errors: string[] }> {
+  private async validateCurrentState(
+    workflowId: string
+  ): Promise<{ valid: boolean; errors: string[] }> {
     // Validate current state after rollback
     return { valid: true, errors: [] }
   }
@@ -735,13 +746,13 @@ export class ReactFlowRollbackSystem {
     const maxAge = this.strategy.retention.maxAge * 24 * 60 * 60 * 1000
     const cutoffDate = new Date(Date.now() - maxAge)
     const beforeCount = checkpoints.length
-    const recentCheckpoints = checkpoints.filter(cp => cp.timestamp > cutoffDate)
+    const recentCheckpoints = checkpoints.filter((cp) => cp.timestamp > cutoffDate)
 
     if (recentCheckpoints.length !== beforeCount) {
       this.checkpoints.set(workflowId, recentCheckpoints)
       logger.info('Removed old checkpoints due to age limit', {
         workflowId,
-        removed: beforeCount - recentCheckpoints.length
+        removed: beforeCount - recentCheckpoints.length,
       })
     }
   }

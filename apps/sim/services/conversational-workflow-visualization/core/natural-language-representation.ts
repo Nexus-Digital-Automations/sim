@@ -16,20 +16,20 @@ const logger = createLogger('NaturalLanguageWorkflowRepresentation')
  * User expertise levels for adaptive explanations
  */
 export enum UserExpertiseLevel {
-  NOVICE = 'novice',           // New to workflows and automation
-  BEGINNER = 'beginner',       // Basic understanding of workflows
+  NOVICE = 'novice', // New to workflows and automation
+  BEGINNER = 'beginner', // Basic understanding of workflows
   INTERMEDIATE = 'intermediate', // Comfortable with workflow concepts
-  ADVANCED = 'advanced',       // Expert user with deep knowledge
-  TECHNICAL = 'technical',     // Developers and system architects
+  ADVANCED = 'advanced', // Expert user with deep knowledge
+  TECHNICAL = 'technical', // Developers and system architects
 }
 
 /**
  * Narrative styles for different presentation contexts
  */
 export enum NarrativeStyle {
-  CASUAL = 'casual',           // Friendly, conversational tone
+  CASUAL = 'casual', // Friendly, conversational tone
   PROFESSIONAL = 'professional', // Business-appropriate language
-  TECHNICAL = 'technical',     // Precise, technical terminology
+  TECHNICAL = 'technical', // Precise, technical terminology
   STORYTELLING = 'storytelling', // Engaging narrative flow
   EDUCATIONAL = 'educational', // Teaching-focused explanations
 }
@@ -166,118 +166,174 @@ export interface WorkflowNarrative {
  * Natural language workflow representation generator
  */
 export class NaturalLanguageWorkflowRepresentationSystem {
-
   // Terminology mappings for different expertise levels
   private readonly terminologyMappings = new Map<UserExpertiseLevel, Map<string, string>>([
-    [UserExpertiseLevel.NOVICE, new Map([
-      ['node', 'step'],
-      ['edge', 'connection'],
-      ['execution', 'running'],
-      ['parameter', 'setting'],
-      ['condition', 'rule'],
-      ['iteration', 'repeat'],
-      ['validation', 'checking'],
-      ['transformation', 'changing'],
-      ['aggregation', 'combining'],
-      ['orchestration', 'coordination'],
-    ])],
-    [UserExpertiseLevel.BEGINNER, new Map([
-      ['node', 'action'],
-      ['edge', 'flow'],
-      ['execution', 'process'],
-      ['parameter', 'option'],
-      ['condition', 'requirement'],
-      ['iteration', 'loop'],
-      ['validation', 'verification'],
-      ['transformation', 'modification'],
-      ['aggregation', 'collection'],
-      ['orchestration', 'management'],
-    ])],
-    [UserExpertiseLevel.INTERMEDIATE, new Map([
-      ['orchestration', 'workflow coordination'],
-      ['aggregation', 'data aggregation'],
-      ['transformation', 'data transformation'],
-    ])],
+    [
+      UserExpertiseLevel.NOVICE,
+      new Map([
+        ['node', 'step'],
+        ['edge', 'connection'],
+        ['execution', 'running'],
+        ['parameter', 'setting'],
+        ['condition', 'rule'],
+        ['iteration', 'repeat'],
+        ['validation', 'checking'],
+        ['transformation', 'changing'],
+        ['aggregation', 'combining'],
+        ['orchestration', 'coordination'],
+      ]),
+    ],
+    [
+      UserExpertiseLevel.BEGINNER,
+      new Map([
+        ['node', 'action'],
+        ['edge', 'flow'],
+        ['execution', 'process'],
+        ['parameter', 'option'],
+        ['condition', 'requirement'],
+        ['iteration', 'loop'],
+        ['validation', 'verification'],
+        ['transformation', 'modification'],
+        ['aggregation', 'collection'],
+        ['orchestration', 'management'],
+      ]),
+    ],
+    [
+      UserExpertiseLevel.INTERMEDIATE,
+      new Map([
+        ['orchestration', 'workflow coordination'],
+        ['aggregation', 'data aggregation'],
+        ['transformation', 'data transformation'],
+      ]),
+    ],
     // Advanced and Technical levels use standard terminology
   ])
 
   // Analogy generators for different node types
-  private readonly analogyGenerators = new Map<string, (nodeData: any) => Record<UserExpertiseLevel, string>>([
-    ['data-source', (nodeData) => ({
-      [UserExpertiseLevel.NOVICE]: "Like a water faucet that provides the information your workflow needs to get started",
-      [UserExpertiseLevel.BEGINNER]: "Acts as the starting point where your workflow gathers the information it needs to work with",
-      [UserExpertiseLevel.INTERMEDIATE]: "Serves as the data input mechanism that feeds information into your workflow processing pipeline",
-      [UserExpertiseLevel.ADVANCED]: "",
-      [UserExpertiseLevel.TECHNICAL]: "",
-    })],
-    ['filter', (nodeData) => ({
-      [UserExpertiseLevel.NOVICE]: "Works like a coffee filter - it lets the good stuff through and keeps out what you don't want",
-      [UserExpertiseLevel.BEGINNER]: "Acts as a quality control checkpoint that only allows data meeting your criteria to continue",
-      [UserExpertiseLevel.INTERMEDIATE]: "Implements conditional logic to selectively pass data based on specified criteria",
-      [UserExpertiseLevel.ADVANCED]: "",
-      [UserExpertiseLevel.TECHNICAL]: "",
-    })],
-    ['transform', (nodeData) => ({
-      [UserExpertiseLevel.NOVICE]: "Like a translator that changes information from one format to another so the next step can understand it",
-      [UserExpertiseLevel.BEGINNER]: "Converts or modifies data to match the format needed by subsequent workflow steps",
-      [UserExpertiseLevel.INTERMEDIATE]: "Performs data transformation operations to restructure information for downstream processing",
-      [UserExpertiseLevel.ADVANCED]: "",
-      [UserExpertiseLevel.TECHNICAL]: "",
-    })],
-    ['aggregator', (nodeData) => ({
-      [UserExpertiseLevel.NOVICE]: "Like collecting puzzle pieces and putting them together to see the complete picture",
-      [UserExpertiseLevel.BEGINNER]: "Combines multiple pieces of information into a single, comprehensive result",
-      [UserExpertiseLevel.INTERMEDIATE]: "Performs aggregation operations to consolidate data from multiple sources or iterations",
-      [UserExpertiseLevel.ADVANCED]: "",
-      [UserExpertiseLevel.TECHNICAL]: "",
-    })],
-    ['decision', (nodeData) => ({
-      [UserExpertiseLevel.NOVICE]: "Acts like a traffic light that decides which direction your workflow should go next",
-      [UserExpertiseLevel.BEGINNER]: "Makes decisions about what path the workflow should take based on the current information",
-      [UserExpertiseLevel.INTERMEDIATE]: "Evaluates conditions and routes execution flow to appropriate branches",
-      [UserExpertiseLevel.ADVANCED]: "",
-      [UserExpertiseLevel.TECHNICAL]: "",
-    })],
+  private readonly analogyGenerators = new Map<
+    string,
+    (nodeData: any) => Record<UserExpertiseLevel, string>
+  >([
+    [
+      'data-source',
+      (nodeData) => ({
+        [UserExpertiseLevel.NOVICE]:
+          'Like a water faucet that provides the information your workflow needs to get started',
+        [UserExpertiseLevel.BEGINNER]:
+          'Acts as the starting point where your workflow gathers the information it needs to work with',
+        [UserExpertiseLevel.INTERMEDIATE]:
+          'Serves as the data input mechanism that feeds information into your workflow processing pipeline',
+        [UserExpertiseLevel.ADVANCED]: '',
+        [UserExpertiseLevel.TECHNICAL]: '',
+      }),
+    ],
+    [
+      'filter',
+      (nodeData) => ({
+        [UserExpertiseLevel.NOVICE]:
+          "Works like a coffee filter - it lets the good stuff through and keeps out what you don't want",
+        [UserExpertiseLevel.BEGINNER]:
+          'Acts as a quality control checkpoint that only allows data meeting your criteria to continue',
+        [UserExpertiseLevel.INTERMEDIATE]:
+          'Implements conditional logic to selectively pass data based on specified criteria',
+        [UserExpertiseLevel.ADVANCED]: '',
+        [UserExpertiseLevel.TECHNICAL]: '',
+      }),
+    ],
+    [
+      'transform',
+      (nodeData) => ({
+        [UserExpertiseLevel.NOVICE]:
+          'Like a translator that changes information from one format to another so the next step can understand it',
+        [UserExpertiseLevel.BEGINNER]:
+          'Converts or modifies data to match the format needed by subsequent workflow steps',
+        [UserExpertiseLevel.INTERMEDIATE]:
+          'Performs data transformation operations to restructure information for downstream processing',
+        [UserExpertiseLevel.ADVANCED]: '',
+        [UserExpertiseLevel.TECHNICAL]: '',
+      }),
+    ],
+    [
+      'aggregator',
+      (nodeData) => ({
+        [UserExpertiseLevel.NOVICE]:
+          'Like collecting puzzle pieces and putting them together to see the complete picture',
+        [UserExpertiseLevel.BEGINNER]:
+          'Combines multiple pieces of information into a single, comprehensive result',
+        [UserExpertiseLevel.INTERMEDIATE]:
+          'Performs aggregation operations to consolidate data from multiple sources or iterations',
+        [UserExpertiseLevel.ADVANCED]: '',
+        [UserExpertiseLevel.TECHNICAL]: '',
+      }),
+    ],
+    [
+      'decision',
+      (nodeData) => ({
+        [UserExpertiseLevel.NOVICE]:
+          'Acts like a traffic light that decides which direction your workflow should go next',
+        [UserExpertiseLevel.BEGINNER]:
+          'Makes decisions about what path the workflow should take based on the current information',
+        [UserExpertiseLevel.INTERMEDIATE]:
+          'Evaluates conditions and routes execution flow to appropriate branches',
+        [UserExpertiseLevel.ADVANCED]: '',
+        [UserExpertiseLevel.TECHNICAL]: '',
+      }),
+    ],
   ])
 
   // Template generators for different narrative styles
-  private readonly narrativeTemplates = new Map<NarrativeStyle, {
-    introduction: (workflowName: string, purpose: string) => string
-    nodeDescription: (nodeName: string, purpose: string, context: string) => string
-    conclusion: (outcome: string, benefits: string[]) => string
-  }>([
-    [NarrativeStyle.CASUAL, {
-      introduction: (name, purpose) =>
-        `Hey! Let me walk you through the "${name}" workflow. Basically, this is designed to ${purpose.toLowerCase()}. Pretty cool, right?`,
-      nodeDescription: (name, purpose, context) =>
-        `Next up, we have "${name}" - this little guy ${purpose.toLowerCase()}. ${context}`,
-      conclusion: (outcome, benefits) =>
-        `And that's it! When this workflow finishes, you'll have ${outcome}. The cool thing is ${benefits.join(', ')}.`
-    }],
-    [NarrativeStyle.PROFESSIONAL, {
-      introduction: (name, purpose) =>
-        `The "${name}" workflow is designed to ${purpose}. This automated process ensures consistent and efficient execution.`,
-      nodeDescription: (name, purpose, context) =>
-        `The "${name}" component ${purpose}. ${context}`,
-      conclusion: (outcome, benefits) =>
-        `Upon completion, this workflow delivers ${outcome}. Key benefits include ${benefits.join(', ')}.`
-    }],
-    [NarrativeStyle.STORYTELLING, {
-      introduction: (name, purpose) =>
-        `Imagine you need to ${purpose}. That's exactly what our "${name}" workflow does - but like having a super-efficient assistant who never makes mistakes.`,
-      nodeDescription: (name, purpose, context) =>
-        `At this point in our story, "${name}" steps in to ${purpose}. Think of it as ${context}`,
-      conclusion: (outcome, benefits) =>
-        `And so our workflow story concludes with ${outcome}. The happy ending includes ${benefits.join(', ')}.`
-    }],
-    [NarrativeStyle.EDUCATIONAL, {
-      introduction: (name, purpose) =>
-        `Let's learn about the "${name}" workflow. This is an excellent example of how automation can ${purpose}. We'll examine each component to understand the complete process.`,
-      nodeDescription: (name, purpose, context) =>
-        `Now we encounter "${name}". This component demonstrates how to ${purpose}. Notice how ${context}`,
-      conclusion: (outcome, benefits) =>
-        `To summarize, this workflow achieves ${outcome}. The educational value includes understanding ${benefits.join(', ')}.`
-    }]
+  private readonly narrativeTemplates = new Map<
+    NarrativeStyle,
+    {
+      introduction: (workflowName: string, purpose: string) => string
+      nodeDescription: (nodeName: string, purpose: string, context: string) => string
+      conclusion: (outcome: string, benefits: string[]) => string
+    }
+  >([
+    [
+      NarrativeStyle.CASUAL,
+      {
+        introduction: (name, purpose) =>
+          `Hey! Let me walk you through the "${name}" workflow. Basically, this is designed to ${purpose.toLowerCase()}. Pretty cool, right?`,
+        nodeDescription: (name, purpose, context) =>
+          `Next up, we have "${name}" - this little guy ${purpose.toLowerCase()}. ${context}`,
+        conclusion: (outcome, benefits) =>
+          `And that's it! When this workflow finishes, you'll have ${outcome}. The cool thing is ${benefits.join(', ')}.`,
+      },
+    ],
+    [
+      NarrativeStyle.PROFESSIONAL,
+      {
+        introduction: (name, purpose) =>
+          `The "${name}" workflow is designed to ${purpose}. This automated process ensures consistent and efficient execution.`,
+        nodeDescription: (name, purpose, context) =>
+          `The "${name}" component ${purpose}. ${context}`,
+        conclusion: (outcome, benefits) =>
+          `Upon completion, this workflow delivers ${outcome}. Key benefits include ${benefits.join(', ')}.`,
+      },
+    ],
+    [
+      NarrativeStyle.STORYTELLING,
+      {
+        introduction: (name, purpose) =>
+          `Imagine you need to ${purpose}. That's exactly what our "${name}" workflow does - but like having a super-efficient assistant who never makes mistakes.`,
+        nodeDescription: (name, purpose, context) =>
+          `At this point in our story, "${name}" steps in to ${purpose}. Think of it as ${context}`,
+        conclusion: (outcome, benefits) =>
+          `And so our workflow story concludes with ${outcome}. The happy ending includes ${benefits.join(', ')}.`,
+      },
+    ],
+    [
+      NarrativeStyle.EDUCATIONAL,
+      {
+        introduction: (name, purpose) =>
+          `Let's learn about the "${name}" workflow. This is an excellent example of how automation can ${purpose}. We'll examine each component to understand the complete process.`,
+        nodeDescription: (name, purpose, context) =>
+          `Now we encounter "${name}". This component demonstrates how to ${purpose}. Notice how ${context}`,
+        conclusion: (outcome, benefits) =>
+          `To summarize, this workflow achieves ${outcome}. The educational value includes understanding ${benefits.join(', ')}.`,
+      },
+    ],
   ])
 
   constructor() {
@@ -293,12 +349,11 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     narrativeStyle: NarrativeStyle = NarrativeStyle.PROFESSIONAL,
     customizations: Record<string, any> = {}
   ): Promise<WorkflowNarrative> {
-
     logger.info('Generating workflow narrative', {
       workflowId: workflowData.id,
       userExpertiseLevel,
       narrativeStyle,
-      nodeCount: workflowData.nodes?.length || 0
+      nodeCount: workflowData.nodes?.length || 0,
     })
 
     try {
@@ -306,7 +361,11 @@ export class NaturalLanguageWorkflowRepresentationSystem {
       const overview = await this.generateOverviewNarratives(workflowData, narrativeStyle)
 
       // Create story structure
-      const story = await this.generateStoryStructure(workflowData, userExpertiseLevel, narrativeStyle)
+      const story = await this.generateStoryStructure(
+        workflowData,
+        userExpertiseLevel,
+        narrativeStyle
+      )
 
       // Generate node narratives
       const nodeNarratives = await this.generateNodeNarratives(
@@ -342,25 +401,24 @@ export class NaturalLanguageWorkflowRepresentationSystem {
           generationContext: {
             userExpertiseLevel,
             narrativeStyle,
-            customizations
-          }
-        }
+            customizations,
+          },
+        },
       }
 
       logger.info('Workflow narrative generated successfully', {
         workflowId: workflowData.id,
         nodeNarratives: nodeNarratives.length,
-        overviewLength: overview[userExpertiseLevel].length
+        overviewLength: overview[userExpertiseLevel].length,
       })
 
       return narrative
-
     } catch (error: any) {
       logger.error('Failed to generate workflow narrative', {
         workflowId: workflowData.id,
         error: error.message,
         userExpertiseLevel,
-        narrativeStyle
+        narrativeStyle,
       })
 
       // Return fallback narrative
@@ -375,7 +433,6 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     workflowData: any,
     narrativeStyle: NarrativeStyle
   ): Promise<WorkflowNarrative['overview']> {
-
     const baseDescription = workflowData.description || 'A custom workflow process'
     const nodeCount = workflowData.nodes?.length || 0
 
@@ -404,7 +461,7 @@ export class NaturalLanguageWorkflowRepresentationSystem {
         `Workflow architecture: ${nodeCount} nodes implementing ${baseDescription.toLowerCase()}. ` +
         `Uses directed acyclic graph (DAG) execution model with support for parallel processing, ` +
         `conditional logic, error recovery, and state persistence. Configurable for different ` +
-        `execution environments and resource constraints.`
+        `execution environments and resource constraints.`,
     }
   }
 
@@ -416,7 +473,6 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     userExpertiseLevel: UserExpertiseLevel,
     narrativeStyle: NarrativeStyle
   ): Promise<WorkflowNarrative['story']> {
-
     const template = this.narrativeTemplates.get(narrativeStyle)!
 
     return {
@@ -431,7 +487,7 @@ export class NaturalLanguageWorkflowRepresentationSystem {
 
       expectedOutcome: this.generateExpectedOutcome(workflowData, userExpertiseLevel),
 
-      successCriteria: this.generateSuccessCriteria(workflowData, userExpertiseLevel)
+      successCriteria: this.generateSuccessCriteria(workflowData, userExpertiseLevel),
     }
   }
 
@@ -443,7 +499,6 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     userExpertiseLevel: UserExpertiseLevel,
     narrativeStyle: NarrativeStyle
   ): Promise<WorkflowNodeNarrative[]> {
-
     const narratives: WorkflowNodeNarrative[] = []
 
     for (const node of nodes) {
@@ -466,26 +521,42 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     userExpertiseLevel: UserExpertiseLevel,
     narrativeStyle: NarrativeStyle
   ): Promise<WorkflowNodeNarrative> {
-
     const nodeType = nodeData.type || 'generic'
     const nodeName = nodeData.data?.name || nodeData.data?.title || `${nodeType} node`
 
     // Generate descriptions for all expertise levels
     const descriptions = {
-      [UserExpertiseLevel.NOVICE]: this.generateNodeDescription(nodeData, UserExpertiseLevel.NOVICE),
-      [UserExpertiseLevel.BEGINNER]: this.generateNodeDescription(nodeData, UserExpertiseLevel.BEGINNER),
-      [UserExpertiseLevel.INTERMEDIATE]: this.generateNodeDescription(nodeData, UserExpertiseLevel.INTERMEDIATE),
-      [UserExpertiseLevel.ADVANCED]: this.generateNodeDescription(nodeData, UserExpertiseLevel.ADVANCED),
-      [UserExpertiseLevel.TECHNICAL]: this.generateNodeDescription(nodeData, UserExpertiseLevel.TECHNICAL),
+      [UserExpertiseLevel.NOVICE]: this.generateNodeDescription(
+        nodeData,
+        UserExpertiseLevel.NOVICE
+      ),
+      [UserExpertiseLevel.BEGINNER]: this.generateNodeDescription(
+        nodeData,
+        UserExpertiseLevel.BEGINNER
+      ),
+      [UserExpertiseLevel.INTERMEDIATE]: this.generateNodeDescription(
+        nodeData,
+        UserExpertiseLevel.INTERMEDIATE
+      ),
+      [UserExpertiseLevel.ADVANCED]: this.generateNodeDescription(
+        nodeData,
+        UserExpertiseLevel.ADVANCED
+      ),
+      [UserExpertiseLevel.TECHNICAL]: this.generateNodeDescription(
+        nodeData,
+        UserExpertiseLevel.TECHNICAL
+      ),
     }
 
     // Generate analogies
     const analogyGenerator = this.analogyGenerators.get(nodeType)
-    const analogies = analogyGenerator ? analogyGenerator(nodeData) : {
-      [UserExpertiseLevel.NOVICE]: '',
-      [UserExpertiseLevel.BEGINNER]: '',
-      [UserExpertiseLevel.INTERMEDIATE]: '',
-    }
+    const analogies = analogyGenerator
+      ? analogyGenerator(nodeData)
+      : {
+          [UserExpertiseLevel.NOVICE]: '',
+          [UserExpertiseLevel.BEGINNER]: '',
+          [UserExpertiseLevel.INTERMEDIATE]: '',
+        }
 
     return {
       nodeId: nodeData.id,
@@ -500,7 +571,10 @@ export class NaturalLanguageWorkflowRepresentationSystem {
       dataFlow: {
         inputDescription: this.generateInputDescription(nodeData, userExpertiseLevel),
         outputDescription: this.generateOutputDescription(nodeData, userExpertiseLevel),
-        transformationExplanation: this.generateTransformationExplanation(nodeData, userExpertiseLevel),
+        transformationExplanation: this.generateTransformationExplanation(
+          nodeData,
+          userExpertiseLevel
+        ),
       },
       configuration: {
         keySettings: this.generateKeySettingsExplanations(nodeData, userExpertiseLevel),
@@ -525,11 +599,13 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     userExpertiseLevel: UserExpertiseLevel,
     narrativeStyle: NarrativeStyle
   ): Promise<WorkflowNarrative['flowNarrative']> {
-
     return {
       executionOrder: this.generateExecutionOrderExplanation(workflowData, userExpertiseLevel),
       decisionPoints: this.generateDecisionPointsExplanation(workflowData, userExpertiseLevel),
-      parallelProcessing: this.generateParallelProcessingExplanation(workflowData, userExpertiseLevel),
+      parallelProcessing: this.generateParallelProcessingExplanation(
+        workflowData,
+        userExpertiseLevel
+      ),
       criticalPath: this.generateCriticalPathExplanation(workflowData, userExpertiseLevel),
     }
   }
@@ -591,11 +667,11 @@ export class NaturalLanguageWorkflowRepresentationSystem {
   private generateHowItWorks(nodeData: any, level: UserExpertiseLevel): string {
     switch (level) {
       case UserExpertiseLevel.NOVICE:
-        return "It takes information, does something useful with it, and passes the result to the next step."
+        return 'It takes information, does something useful with it, and passes the result to the next step.'
       case UserExpertiseLevel.TECHNICAL:
         return `Implements ${nodeData.type || 'generic'} logic with configuration: ${JSON.stringify(nodeData.data || {})}`
       default:
-        return "It receives input data, processes it according to its configuration, and outputs the results."
+        return 'It receives input data, processes it according to its configuration, and outputs the results.'
     }
   }
 
@@ -614,14 +690,18 @@ export class NaturalLanguageWorkflowRepresentationSystem {
   // - generateCriticalPathExplanation
   // And many more...
 
-  private generateFallbackNarrative(workflowData: any, userExpertiseLevel: UserExpertiseLevel): WorkflowNarrative {
+  private generateFallbackNarrative(
+    workflowData: any,
+    userExpertiseLevel: UserExpertiseLevel
+  ): WorkflowNarrative {
     return {
       workflowId: workflowData.id,
       title: workflowData.name || 'Workflow',
       overview: {
         [UserExpertiseLevel.NOVICE]: 'This workflow helps you accomplish a task automatically.',
         [UserExpertiseLevel.BEGINNER]: 'This workflow automates a process for you.',
-        [UserExpertiseLevel.INTERMEDIATE]: 'This workflow provides automated processing capabilities.',
+        [UserExpertiseLevel.INTERMEDIATE]:
+          'This workflow provides automated processing capabilities.',
         [UserExpertiseLevel.ADVANCED]: 'This workflow implements automated business logic.',
         [UserExpertiseLevel.TECHNICAL]: 'This workflow provides programmable automation.',
       },
@@ -685,106 +765,126 @@ export class NaturalLanguageWorkflowRepresentationSystem {
   private generateExpectedOutcome(workflowData: any, level: UserExpertiseLevel): string {
     switch (level) {
       case UserExpertiseLevel.NOVICE:
-        return "your task completed successfully without you having to do all the work manually"
+        return 'your task completed successfully without you having to do all the work manually'
       default:
-        return "processed data and completed tasks according to specified requirements"
+        return 'processed data and completed tasks according to specified requirements'
     }
   }
 
   private generateSuccessCriteria(workflowData: any, level: UserExpertiseLevel): string[] {
     return [
-      "All workflow steps complete without errors",
-      "Output data meets quality standards",
-      "Processing time falls within expected ranges",
-      "All validations pass successfully"
+      'All workflow steps complete without errors',
+      'Output data meets quality standards',
+      'Processing time falls within expected ranges',
+      'All validations pass successfully',
     ]
   }
 
   private generateInputDescription(nodeData: any, level: UserExpertiseLevel): string {
-    return "Receives data from the previous step or external source"
+    return 'Receives data from the previous step or external source'
   }
 
   private generateOutputDescription(nodeData: any, level: UserExpertiseLevel): string {
-    return "Produces processed data for the next step or final output"
+    return 'Produces processed data for the next step or final output'
   }
 
   private generateTransformationExplanation(nodeData: any, level: UserExpertiseLevel): string {
-    return "Transforms input data according to configured business rules"
+    return 'Transforms input data according to configured business rules'
   }
 
-  private generateKeySettingsExplanations(nodeData: any, level: UserExpertiseLevel): Array<{setting: string, explanation: string, impact: string}> {
+  private generateKeySettingsExplanations(
+    nodeData: any,
+    level: UserExpertiseLevel
+  ): Array<{ setting: string; explanation: string; impact: string }> {
     return []
   }
 
   private generateCommonPatterns(nodeData: any): string[] {
-    return ["Standard configuration", "Common use case patterns"]
+    return ['Standard configuration', 'Common use case patterns']
   }
 
   private generateTroubleshootingTips(nodeData: any, level: UserExpertiseLevel): string[] {
-    return ["Check input data quality", "Verify configuration settings"]
+    return ['Check input data quality', 'Verify configuration settings']
   }
 
   private estimateExecutionDuration(nodeData: any): string {
-    return "Typically completes in seconds to minutes"
+    return 'Typically completes in seconds to minutes'
   }
 
   private describeResourceRequirements(nodeData: any, level: UserExpertiseLevel): string {
-    return "Moderate CPU and memory usage"
+    return 'Moderate CPU and memory usage'
   }
 
   private generateDependencyExplanation(nodeData: any, level: UserExpertiseLevel): string {
-    return "Depends on successful completion of previous steps"
+    return 'Depends on successful completion of previous steps'
   }
 
   private generateErrorScenarios(nodeData: any, level: UserExpertiseLevel): string[] {
-    return ["Input data validation failure", "Configuration errors", "External service unavailability"]
+    return [
+      'Input data validation failure',
+      'Configuration errors',
+      'External service unavailability',
+    ]
   }
 
-  private generateUsageContext(workflowData: any, level: UserExpertiseLevel): Promise<WorkflowNarrative['usageContext']> {
+  private generateUsageContext(
+    workflowData: any,
+    level: UserExpertiseLevel
+  ): Promise<WorkflowNarrative['usageContext']> {
     return Promise.resolve({
-      commonUseCases: ["Data processing", "Task automation", "Business process optimization"],
-      businessValue: "Improved efficiency and consistency",
-      userBenefits: ["Time savings", "Reduced manual errors", "Scalable processing"],
+      commonUseCases: ['Data processing', 'Task automation', 'Business process optimization'],
+      businessValue: 'Improved efficiency and consistency',
+      userBenefits: ['Time savings', 'Reduced manual errors', 'Scalable processing'],
       frequentQuestions: [
         {
-          question: "How long does this workflow take to run?",
-          answer: "Execution time varies based on input data size and complexity."
-        }
-      ]
+          question: 'How long does this workflow take to run?',
+          answer: 'Execution time varies based on input data size and complexity.',
+        },
+      ],
     })
   }
 
-  private generatePerformanceNarrative(workflowData: any, level: UserExpertiseLevel): Promise<WorkflowNarrative['performance']> {
+  private generatePerformanceNarrative(
+    workflowData: any,
+    level: UserExpertiseLevel
+  ): Promise<WorkflowNarrative['performance']> {
     return Promise.resolve({
-      typicalExecutionTime: "Minutes to hours depending on data volume",
-      scalabilityNotes: "Performance scales with available system resources",
-      resourceConsumption: "Moderate CPU and memory requirements",
+      typicalExecutionTime: 'Minutes to hours depending on data volume',
+      scalabilityNotes: 'Performance scales with available system resources',
+      resourceConsumption: 'Moderate CPU and memory requirements',
       optimizationTips: [
-        "Monitor execution times regularly",
-        "Optimize data input formats",
-        "Consider parallel processing for large datasets"
-      ]
+        'Monitor execution times regularly',
+        'Optimize data input formats',
+        'Consider parallel processing for large datasets',
+      ],
     })
   }
 
   private generateExecutionOrderExplanation(workflowData: any, level: UserExpertiseLevel): string {
-    return "Steps execute in the order defined by the workflow connections"
+    return 'Steps execute in the order defined by the workflow connections'
   }
 
-  private generateDecisionPointsExplanation(workflowData: any, level: UserExpertiseLevel): Array<{nodeId: string, decision: string, possiblePaths: string[]}> {
+  private generateDecisionPointsExplanation(
+    workflowData: any,
+    level: UserExpertiseLevel
+  ): Array<{ nodeId: string; decision: string; possiblePaths: string[] }> {
     return []
   }
 
-  private generateParallelProcessingExplanation(workflowData: any, level: UserExpertiseLevel): string[] {
+  private generateParallelProcessingExplanation(
+    workflowData: any,
+    level: UserExpertiseLevel
+  ): string[] {
     return []
   }
 
   private generateCriticalPathExplanation(workflowData: any, level: UserExpertiseLevel): string {
-    return "The longest sequence of dependent steps determines overall execution time"
+    return 'The longest sequence of dependent steps determines overall execution time'
   }
 }
 
 /**
  * Singleton service instance
  */
-export const naturalLanguageWorkflowRepresentation = new NaturalLanguageWorkflowRepresentationSystem()
+export const naturalLanguageWorkflowRepresentation =
+  new NaturalLanguageWorkflowRepresentationSystem()

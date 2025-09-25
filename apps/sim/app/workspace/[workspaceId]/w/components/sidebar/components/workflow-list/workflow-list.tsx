@@ -6,8 +6,11 @@ import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSession } from '@/lib/auth-client'
+import {
+  ChatWithWorkflowButton,
+  useChatWithWorkflow,
+} from '@/app/workspace/[workspaceId]/w/components/chat-with-workflow-button'
 import type { WorkflowMetadata } from '@/stores/workflows/registry/types'
-import { ChatWithWorkflowButton, useChatWithWorkflow } from '@/app/workspace/[workspaceId]/w/components/chat-with-workflow-button'
 
 interface WorkflowItemProps {
   workflow: WorkflowMetadata
@@ -44,14 +47,14 @@ function WorkflowItem({ workflow, active, isMarketplace }: WorkflowItemProps) {
         </span>
       </Link>
       {!isMarketplace && isHovered && (
-        <div className='absolute right-1 top-1/2 -translate-y-1/2 flex items-center'>
+        <div className='-translate-y-1/2 absolute top-1/2 right-1 flex items-center'>
           <ChatWithWorkflowButton
             workflowId={workflow.id}
             workflowName={workflow.name}
             onChatClick={startChat}
-            variant="icon-only"
-            size="sm"
-            className='h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity'
+            variant='icon-only'
+            size='sm'
+            className='h-6 w-6 p-0 opacity-0 transition-opacity group-hover:opacity-100'
           />
         </div>
       )}

@@ -9,10 +9,13 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { createLogger } from '@/lib/logs/console/logger'
 import { useUserPermissionsContext } from '@/app/workspace/[workspaceId]/providers/workspace-permissions-provider'
+import {
+  ChatWithWorkflowButton,
+  useChatWithWorkflow,
+} from '@/app/workspace/[workspaceId]/w/components/chat-with-workflow-button'
 import { useFolderStore, useIsWorkflowSelected } from '@/stores/folders/store'
 import { useWorkflowRegistry } from '@/stores/workflows/registry/store'
 import type { WorkflowMetadata } from '@/stores/workflows/registry/types'
-import { ChatWithWorkflowButton, useChatWithWorkflow } from '@/app/workspace/[workspaceId]/w/components/chat-with-workflow-button'
 
 const logger = createLogger('WorkflowItem')
 
@@ -275,8 +278,8 @@ export function WorkflowItem({
               workflowId={workflow.id}
               workflowName={workflow.name}
               onChatClick={startChat}
-              variant="icon-only"
-              size="sm"
+              variant='icon-only'
+              size='sm'
               className='h-4 w-4 p-0 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground'
             />
             {userPermissions.canEdit && (

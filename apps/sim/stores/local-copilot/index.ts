@@ -5,29 +5,27 @@
  * for use throughout the application.
  */
 
+export type { LocalCopilotStoreType } from './store'
 // Main store export
 export { default as useLocalCopilotStore } from './store'
-export type { LocalCopilotStoreType } from './store'
-
 // Type exports
 export type {
-  LocalCopilotStore,
-  LocalCopilotState,
-  LocalCopilotActions,
-  LocalCopilotMessage,
-  LocalCopilotConversation,
-  LocalCopilotToolCall,
   AgentSelection,
-  SendMessageOptions,
-  MessageFileAttachment,
-  MessageContext,
   ContentBlock,
-  StreamingState,
-  LocalCopilotPreferences,
+  LocalCopilotActions,
+  LocalCopilotConversation,
   LocalCopilotEvent,
   LocalCopilotEventType,
+  LocalCopilotMessage,
+  LocalCopilotPreferences,
+  LocalCopilotState,
+  LocalCopilotStore,
+  LocalCopilotToolCall,
+  MessageContext,
+  MessageFileAttachment,
+  SendMessageOptions,
+  StreamingState,
 } from './types'
-
 // Constant exports
 export {
   DEFAULT_LOCAL_COPILOT_PREFERENCES,
@@ -94,8 +92,9 @@ export const isLocalCopilotBusy = (state: LocalCopilotState): boolean =>
 export const getActiveLocalCopilotToolCalls = (state: LocalCopilotState): LocalCopilotToolCall[] =>
   Array.from(state.executingToolCalls.values())
 
-export const getCompletedLocalCopilotToolCalls = (state: LocalCopilotState): LocalCopilotToolCall[] =>
-  Array.from(state.completedToolCalls.values())
+export const getCompletedLocalCopilotToolCalls = (
+  state: LocalCopilotState
+): LocalCopilotToolCall[] => Array.from(state.completedToolCalls.values())
 
 // Re-export types from Parlant services for convenience
 export type { Agent } from '@/services/parlant/types'

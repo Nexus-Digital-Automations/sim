@@ -9,9 +9,9 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { UserExpertiseLevel } from './natural-language-representation'
 import type { ExecutionEvent, ExecutionPhase } from './interactive-execution-visualization'
-import type { WorkflowTranslation, TranslationContext } from './visual-to-conversational-translation'
+import type { UserExpertiseLevel } from './natural-language-representation'
+import type { WorkflowTranslation } from './visual-to-conversational-translation'
 
 const logger = createLogger('EnhancedConversationExperience')
 
@@ -19,11 +19,11 @@ const logger = createLogger('EnhancedConversationExperience')
  * Conversation intelligence levels
  */
 export enum ConversationIntelligenceLevel {
-  BASIC = 'basic',           // Simple Q&A responses
+  BASIC = 'basic', // Simple Q&A responses
   CONTEXTUAL = 'contextual', // Context-aware responses
   PREDICTIVE = 'predictive', // Anticipates needs
-  PROACTIVE = 'proactive',   // Offers suggestions
-  ADAPTIVE = 'adaptive',     // Learns and adapts
+  PROACTIVE = 'proactive', // Offers suggestions
+  ADAPTIVE = 'adaptive', // Learns and adapts
 }
 
 /**
@@ -89,13 +89,13 @@ export interface ConversationSession {
  * Conversation phases for different interaction patterns
  */
 export enum ConversationPhase {
-  DISCOVERY = 'discovery',         // Learning about the workflow
-  EXPLORATION = 'exploration',     // Exploring specific components
-  EXECUTION = 'execution',         // During workflow execution
+  DISCOVERY = 'discovery', // Learning about the workflow
+  EXPLORATION = 'exploration', // Exploring specific components
+  EXECUTION = 'execution', // During workflow execution
   TROUBLESHOOTING = 'troubleshooting', // Problem-solving mode
-  OPTIMIZATION = 'optimization',   // Improving workflow performance
-  LEARNING = 'learning',          // Educational interactions
-  MAINTENANCE = 'maintenance',    // Ongoing workflow management
+  OPTIMIZATION = 'optimization', // Improving workflow performance
+  LEARNING = 'learning', // Educational interactions
+  MAINTENANCE = 'maintenance', // Ongoing workflow management
 }
 
 /**
@@ -120,7 +120,12 @@ interface ConversationPreferences {
 interface ConversationContext {
   contextId: string
   timestamp: Date
-  contextType: 'element_focus' | 'topic_discussion' | 'execution_state' | 'problem_solving' | 'learning_goal'
+  contextType:
+    | 'element_focus'
+    | 'topic_discussion'
+    | 'execution_state'
+    | 'problem_solving'
+    | 'learning_goal'
   contextData: Record<string, any>
   priority: number
   expiresAt?: Date
@@ -232,7 +237,11 @@ interface SuggestedAction {
   actionId: string
   title: string
   description: string
-  category: 'workflow_optimization' | 'learning_opportunity' | 'problem_prevention' | 'efficiency_improvement'
+  category:
+    | 'workflow_optimization'
+    | 'learning_opportunity'
+    | 'problem_prevention'
+    | 'efficiency_improvement'
   priority: number
   estimatedBenefit: string
   executionComplexity: 'simple' | 'moderate' | 'complex'
@@ -258,7 +267,12 @@ interface LearningInsight {
 interface UserAction {
   actionId: string
   timestamp: Date
-  actionType: 'element_select' | 'workflow_execute' | 'configuration_change' | 'question_ask' | 'help_request'
+  actionType:
+    | 'element_select'
+    | 'workflow_execute'
+    | 'configuration_change'
+    | 'question_ask'
+    | 'help_request'
   elementId?: string
   actionData: Record<string, any>
   context: {
@@ -287,7 +301,6 @@ interface ResponseTemplate {
  * Enhanced conversation experience engine
  */
 export class EnhancedConversationExperience {
-
   // Active conversation sessions
   private readonly conversationSessions = new Map<string, ConversationSession>()
 
@@ -334,12 +347,11 @@ export class EnhancedConversationExperience {
       preferences?: Partial<ConversationPreferences>
     }
   ): Promise<ConversationSession> {
-
     logger.info('Starting enhanced conversation session', {
       sessionId,
       workflowId,
       userId,
-      userExpertiseLevel: initialContext.userExpertiseLevel
+      userExpertiseLevel: initialContext.userExpertiseLevel,
     })
 
     // Load user profile and preferences
@@ -357,25 +369,25 @@ export class EnhancedConversationExperience {
         conversationPhase: ConversationPhase.DISCOVERY,
         intelligenceLevel: this.determineIntelligenceLevel(userProfile),
         contextStack: [],
-        personalizationData: await this.initializePersonalizationData(userId)
+        personalizationData: await this.initializePersonalizationData(userId),
       },
       workflowContext: {
         workflowTranslation: initialContext.workflowTranslation,
-        userActions: []
+        userActions: [],
       },
       conversationHistory: [],
       intelligence: {
         patternRecognition: [],
         predictedNeeds: [],
         suggestedActions: [],
-        learningInsights: []
+        learningInsights: [],
       },
       metrics: {
         totalInteractions: 0,
         averageResponseTime: 0,
         satisfactionRatings: [],
-        topicsDiscussed: []
-      }
+        topicsDiscussed: [],
+      },
     }
 
     // Store session
@@ -391,7 +403,7 @@ export class EnhancedConversationExperience {
     logger.info('Enhanced conversation session started successfully', {
       sessionId,
       intelligenceLevel: session.conversationState.intelligenceLevel,
-      conversationPhase: session.conversationState.conversationPhase
+      conversationPhase: session.conversationState.conversationPhase,
     })
 
     return session
@@ -416,7 +428,6 @@ export class EnhancedConversationExperience {
     conversationPhase?: ConversationPhase
     confidence: number
   }> {
-
     const session = this.conversationSessions.get(sessionId)
     if (!session) {
       throw new Error(`Conversation session not found: ${sessionId}`)
@@ -426,7 +437,7 @@ export class EnhancedConversationExperience {
       sessionId,
       messageLength: userMessage.length,
       currentPhase: session.conversationState.conversationPhase,
-      contextProvided: !!context
+      contextProvided: !!context,
     })
 
     try {
@@ -448,7 +459,7 @@ export class EnhancedConversationExperience {
         userIntent: intentAnalysis.intent,
         entities: intentAnalysis.entities,
         workflowContext: context,
-        conversationTurn: userTurn
+        conversationTurn: userTurn,
       })
 
       // Generate intelligent response
@@ -467,15 +478,12 @@ export class EnhancedConversationExperience {
       )
 
       // Update personalization data
-      await this.personalizationEngine.updatePersonalization(
-        session,
-        {
-          userMessage,
-          response: responseGeneration.response,
-          intentAnalysis,
-          satisfaction: undefined // Will be updated later with user feedback
-        }
-      )
+      await this.personalizationEngine.updatePersonalization(session, {
+        userMessage,
+        response: responseGeneration.response,
+        intentAnalysis,
+        satisfaction: undefined, // Will be updated later with user feedback
+      })
 
       // Predict future needs
       const predictedNeeds = await this.predictUserNeeds(session, intentAnalysis)
@@ -490,7 +498,7 @@ export class EnhancedConversationExperience {
         userMessage,
         response: responseGeneration.response,
         intentAnalysis,
-        context
+        context,
       })
 
       // Update metrics
@@ -502,7 +510,7 @@ export class EnhancedConversationExperience {
         actions: actions.slice(0, 3), // Top 3 actions
         followUp: responseGeneration.followUp,
         conversationPhase: session.conversationState.conversationPhase,
-        confidence: responseGeneration.confidence
+        confidence: responseGeneration.confidence,
       }
 
       logger.info('User message processed successfully with enhanced intelligence', {
@@ -510,23 +518,22 @@ export class EnhancedConversationExperience {
         intent: intentAnalysis.intent,
         confidence: result.confidence,
         suggestionsCount: result.suggestions?.length || 0,
-        actionsCount: result.actions?.length || 0
+        actionsCount: result.actions?.length || 0,
       })
 
       return result
-
     } catch (error: any) {
       logger.error('Failed to process user message', {
         sessionId,
         error: error.message,
-        userMessageLength: userMessage.length
+        userMessageLength: userMessage.length,
       })
 
       // Generate fallback response
       const fallbackResponse = await this.generateFallbackResponse(session, userMessage, error)
       return {
         response: fallbackResponse,
-        confidence: 0.3
+        confidence: 0.3,
       }
     }
   }
@@ -543,7 +550,6 @@ export class EnhancedConversationExperience {
       userActions?: UserAction[]
     }
   ): Promise<void> {
-
     const session = this.conversationSessions.get(sessionId)
     if (!session) return
 
@@ -551,7 +557,7 @@ export class EnhancedConversationExperience {
       sessionId,
       currentState: executionUpdate.currentState,
       eventsCount: executionUpdate.recentEvents?.length || 0,
-      focusedElementsCount: executionUpdate.focusedElements?.length || 0
+      focusedElementsCount: executionUpdate.focusedElements?.length || 0,
     })
 
     // Update workflow context
@@ -562,7 +568,7 @@ export class EnhancedConversationExperience {
     if (executionUpdate.recentEvents) {
       session.workflowContext.recentEvents = [
         ...(session.workflowContext.recentEvents || []),
-        ...executionUpdate.recentEvents
+        ...executionUpdate.recentEvents,
       ].slice(-10) // Keep last 10 events
     }
 
@@ -573,7 +579,7 @@ export class EnhancedConversationExperience {
     if (executionUpdate.userActions) {
       session.workflowContext.userActions = [
         ...(session.workflowContext.userActions || []),
-        ...executionUpdate.userActions
+        ...executionUpdate.userActions,
       ].slice(-20) // Keep last 20 actions
     }
 
@@ -598,7 +604,6 @@ export class EnhancedConversationExperience {
     followUp?: string[]
     confidence: number
   }> {
-
     // Select appropriate response generation strategy
     const strategy = this.selectResponseStrategy(session, intentAnalysis)
 
@@ -608,7 +613,7 @@ export class EnhancedConversationExperience {
       intentAnalysis,
       workflowContext,
       strategy,
-      personalizationData: session.conversationState.personalizationData
+      personalizationData: session.conversationState.personalizationData,
     })
 
     // Apply personalization
@@ -627,7 +632,7 @@ export class EnhancedConversationExperience {
     return {
       response: personalizedResponse.text,
       followUp,
-      confidence: personalizedResponse.confidence
+      confidence: personalizedResponse.confidence,
     }
   }
 
@@ -663,7 +668,6 @@ export class EnhancedConversationExperience {
     content: string,
     intent?: string
   ): Promise<ConversationTurn> {
-
     const turnId = this.generateTurnId()
     const timestamp = new Date()
 
@@ -679,7 +683,7 @@ export class EnhancedConversationExperience {
       speaker,
       content,
       metadata,
-      intelligence
+      intelligence,
     }
 
     // Add to conversation history
@@ -716,8 +720,8 @@ export class EnhancedConversationExperience {
         performanceInsights: true,
         troubleshootingGuidance: true,
         personalization: true,
-        ...initialContext.preferences
-      }
+        ...initialContext.preferences,
+      },
     }
   }
 
@@ -726,9 +730,11 @@ export class EnhancedConversationExperience {
   ): ConversationIntelligenceLevel {
     if (userProfile.preferences.personalization && userProfile.preferences.proactiveAssistance) {
       return ConversationIntelligenceLevel.ADAPTIVE
-    } else if (userProfile.preferences.proactiveAssistance) {
+    }
+    if (userProfile.preferences.proactiveAssistance) {
       return ConversationIntelligenceLevel.PROACTIVE
-    } else if (userProfile.preferences.contextualHelp) {
+    }
+    if (userProfile.preferences.contextualHelp) {
       return ConversationIntelligenceLevel.CONTEXTUAL
     }
     return ConversationIntelligenceLevel.BASIC
@@ -741,25 +747,27 @@ export class EnhancedConversationExperience {
         preferredQuestionTypes: [],
         responseComplexityPreference: 0.5,
         topicInterests: new Map(),
-        interactionTimingPreference: []
+        interactionTimingPreference: [],
       },
       learningProgress: {
         conceptsUnderstood: new Set(),
         conceptsNeedingWork: new Set(),
         learningVelocity: 0.5,
-        preferredLearningStyle: 'mixed'
+        preferredLearningStyle: 'mixed',
       },
       workflowFamiliarity: {
         elementExpertise: new Map(),
         patternRecognition: new Map(),
-        troubleshootingSkills: new Map()
+        troubleshootingSkills: new Map(),
       },
-      adaptationHistory: []
+      adaptationHistory: [],
     }
   }
 
   private async generateWelcomeMessage(session: ConversationSession): Promise<string> {
-    const workflowName = session.workflowContext.workflowTranslation?.workflowConversation?.introduction || 'your workflow'
+    const workflowName =
+      session.workflowContext.workflowTranslation?.workflowConversation?.introduction ||
+      'your workflow'
 
     switch (session.userProfile.expertiseLevel) {
       case UserExpertiseLevel.NOVICE:
@@ -789,8 +797,8 @@ export class EnhancedConversationExperience {
     // Generate contextual follow-up suggestions
     return [
       'Would you like to explore this in more detail?',
-      'Are there other aspects you\'d like to understand?',
-      'Should we look at related workflow components?'
+      "Are there other aspects you'd like to understand?",
+      'Should we look at related workflow components?',
     ]
   }
 
@@ -806,7 +814,7 @@ export class EnhancedConversationExperience {
     session: ConversationSession,
     predictedNeeds: PredictedNeed[]
   ): Promise<string[]> {
-    return predictedNeeds.slice(0, 3).map(need => need.suggestedResponse)
+    return predictedNeeds.slice(0, 3).map((need) => need.suggestedResponse)
   }
 
   private async generateSuggestedActions(
@@ -880,7 +888,7 @@ class IntentRecognizer {
       intent: 'general_question',
       confidence: 0.8,
       entities: [],
-      context: context || {}
+      context: context || {},
     }
   }
 }
@@ -899,7 +907,7 @@ class PersonalizationEngine {
   async personalizeResponse(response: any, session: ConversationSession): Promise<any> {
     return {
       text: response,
-      confidence: 0.8
+      confidence: 0.8,
     }
   }
 
@@ -947,7 +955,7 @@ enum ResponseStrategy {
   GUIDED_DISCOVERY = 'guided_discovery',
   EDUCATIONAL_JOURNEY = 'educational_journey',
   TROUBLESHOOTING_MODE = 'troubleshooting_mode',
-  PROACTIVE_ASSISTANCE = 'proactive_assistance'
+  PROACTIVE_ASSISTANCE = 'proactive_assistance',
 }
 
 /**

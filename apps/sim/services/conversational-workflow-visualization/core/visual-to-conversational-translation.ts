@@ -167,7 +167,14 @@ interface ConversationalDescription {
  */
 interface RelationshipDescription {
   relatedElementId: string
-  relationshipType: 'flows_to' | 'flows_from' | 'grouped_with' | 'depends_on' | 'configures' | 'triggers' | 'contains'
+  relationshipType:
+    | 'flows_to'
+    | 'flows_from'
+    | 'grouped_with'
+    | 'depends_on'
+    | 'configures'
+    | 'triggers'
+    | 'contains'
   conversationalDescription: string
   importance: 'low' | 'medium' | 'high'
   visualCues: string[]
@@ -232,7 +239,6 @@ export interface WorkflowTranslation {
  * Visual-to-conversational translation engine
  */
 export class VisualToConversationalTranslationEngine {
-
   // Element type translators
   private readonly elementTranslators = new Map<VisualElementType, ElementTranslator>()
 
@@ -259,12 +265,11 @@ export class VisualToConversationalTranslationEngine {
     workflowData: any,
     context: TranslationContext
   ): Promise<WorkflowTranslation> {
-
     logger.info('Translating workflow to conversational format', {
       workflowId: context.workflowId,
       nodeCount: workflowData.nodes?.length || 0,
       edgeCount: workflowData.edges?.length || 0,
-      userExpertiseLevel: context.userExpertiseLevel
+      userExpertiseLevel: context.userExpertiseLevel,
     })
 
     try {
@@ -333,22 +338,21 @@ export class VisualToConversationalTranslationEngine {
         flowTranslations,
         recognizedPatterns,
         navigationHelpers,
-        contextualSuggestions
+        contextualSuggestions,
       }
 
       logger.info('Workflow translation completed successfully', {
         workflowId: context.workflowId,
         translationId,
         elementsTranslated: elementTranslations.size,
-        patternsRecognized: recognizedPatterns.length
+        patternsRecognized: recognizedPatterns.length,
       })
 
       return translation
-
     } catch (error: any) {
       logger.error('Failed to translate workflow', {
         workflowId: context.workflowId,
-        error: error.message
+        error: error.message,
       })
 
       return this.generateFallbackTranslation(workflowData, context)
@@ -364,7 +368,6 @@ export class VisualToConversationalTranslationEngine {
     context: TranslationContext,
     fullWorkflowData?: any
   ): Promise<TranslatedVisualElement> {
-
     // Check cache first
     const cacheKey = this.generateCacheKey(elementData, context)
     const cached = this.translationCache.get(cacheKey)
@@ -375,7 +378,7 @@ export class VisualToConversationalTranslationEngine {
     logger.debug('Translating visual element', {
       elementId: elementData.id,
       elementType,
-      userExpertiseLevel: context.userExpertiseLevel
+      userExpertiseLevel: context.userExpertiseLevel,
     })
 
     try {
@@ -434,11 +437,7 @@ export class VisualToConversationalTranslationEngine {
       )
 
       // Generate contextual information
-      const contextualInfo = this.generateContextualInfo(
-        elementData,
-        elementType,
-        context
-      )
+      const contextualInfo = this.generateContextualInfo(elementData, elementType, context)
 
       // Generate accessibility descriptions
       const accessibility = this.generateAccessibilityDescriptions(
@@ -461,8 +460,8 @@ export class VisualToConversationalTranslationEngine {
           translationVersion: '1.0.0',
           confidence: this.calculateTranslationConfidence(elementData, elementType),
           adaptations: this.getAppliedAdaptations(context),
-          fallbackUsed: false
-        }
+          fallbackUsed: false,
+        },
       }
 
       // Cache the translation
@@ -471,16 +470,15 @@ export class VisualToConversationalTranslationEngine {
       logger.debug('Visual element translated successfully', {
         elementId: elementData.id,
         elementType,
-        confidence: translation.translationMetadata.confidence
+        confidence: translation.translationMetadata.confidence,
       })
 
       return translation
-
     } catch (error: any) {
       logger.error('Failed to translate visual element', {
         elementId: elementData.id,
         elementType,
-        error: error.message
+        error: error.message,
       })
 
       return this.generateFallbackElementTranslation(elementData, elementType, context)
@@ -496,8 +494,8 @@ export class VisualToConversationalTranslationEngine {
     userLevel: UserExpertiseLevel,
     context: TranslationContext
   ): Promise<ConversationalDescription> {
-
-    const elementName = elementData.data?.name || elementData.data?.title || `${elementType} ${elementData.id}`
+    const elementName =
+      elementData.data?.name || elementData.data?.title || `${elementType} ${elementData.id}`
     const nodeType = elementData.type || 'generic'
 
     // Base descriptions by user level
@@ -512,25 +510,25 @@ export class VisualToConversationalTranslationEngine {
           visualAppearance: {
             whatItLooksLike: `This step appears as a ${this.getVisualDescription(elementData, userLevel)} on your workflow diagram.`,
             whyItLooksLikeThis: `The design helps you quickly recognize what this step does at a glance.`,
-            howToRecognizeIt: `Look for the ${this.getRecognitionHints(elementData, userLevel)}.`
+            howToRecognizeIt: `Look for the ${this.getRecognitionHints(elementData, userLevel)}.`,
           },
           interactionGuidance: {
-            howToInteract: "You can click on this step to see more details or change its settings.",
+            howToInteract: 'You can click on this step to see more details or change its settings.',
             whatYouCanDo: [
-              "Click to select and view details",
-              "Double-click to edit settings",
-              "Right-click for more options"
+              'Click to select and view details',
+              'Double-click to edit settings',
+              'Right-click for more options',
             ],
             whatToAvoid: [
               "Don't delete unless you're sure you don't need it",
-              "Be careful when changing connections to other steps"
-            ]
+              'Be careful when changing connections to other steps',
+            ],
           },
           examples: {
             typicalUseCase: this.getTypicalUseCase(nodeType, userLevel),
             alternativeUseCases: this.getAlternativeUseCases(nodeType, userLevel),
-            realWorldAnalogy: this.getRealWorldAnalogy(nodeType, userLevel)
-          }
+            realWorldAnalogy: this.getRealWorldAnalogy(nodeType, userLevel),
+          },
         }
 
       case UserExpertiseLevel.TECHNICAL:
@@ -547,27 +545,28 @@ export class VisualToConversationalTranslationEngine {
           visualAppearance: {
             whatItLooksLike: `Rendered as ${elementType} with ${JSON.stringify(elementData.style || {})}`,
             whyItLooksLikeThis: `Visual representation follows design system patterns for ${nodeType} components`,
-            howToRecognizeIt: `Identified by type="${nodeType}" and unique styling/icon patterns`
+            howToRecognizeIt: `Identified by type="${nodeType}" and unique styling/icon patterns`,
           },
           interactionGuidance: {
-            howToInteract: "Programmatic interaction via ReactFlow APIs, direct DOM manipulation, or configuration updates",
+            howToInteract:
+              'Programmatic interaction via ReactFlow APIs, direct DOM manipulation, or configuration updates',
             whatYouCanDo: [
-              "Modify configuration through data property",
-              "Update visual properties via style object",
-              "Connect to other nodes via edge definitions",
-              "Implement custom event handlers"
+              'Modify configuration through data property',
+              'Update visual properties via style object',
+              'Connect to other nodes via edge definitions',
+              'Implement custom event handlers',
             ],
             whatToAvoid: [
-              "Direct DOM mutations outside ReactFlow lifecycle",
-              "Invalid configuration schemas",
-              "Circular dependencies in node connections"
-            ]
+              'Direct DOM mutations outside ReactFlow lifecycle',
+              'Invalid configuration schemas',
+              'Circular dependencies in node connections',
+            ],
           },
           examples: {
             typicalUseCase: this.getTechnicalUseCase(nodeType, elementData),
             alternativeUseCases: this.getTechnicalAlternatives(nodeType),
-            realWorldAnalogy: undefined // Technical level doesn't need analogies
-          }
+            realWorldAnalogy: undefined, // Technical level doesn't need analogies
+          },
         }
 
       default: // INTERMEDIATE level
@@ -577,32 +576,35 @@ export class VisualToConversationalTranslationEngine {
           detailedExplanation: `This step implements ${nodeType} functionality with configurable parameters. It processes input data according to its configuration and passes results to connected components.`,
           purpose: `This component ${this.getPurposeDescription(nodeType, userLevel)}.`,
           functionality: `During execution, it ${this.getFunctionalityDescription(nodeType, userLevel)}.`,
-          configuration: elementData.data ? `Current configuration includes: ${Object.keys(elementData.data).join(', ')}` : undefined,
+          configuration: elementData.data
+            ? `Current configuration includes: ${Object.keys(elementData.data).join(', ')}`
+            : undefined,
           executionBehavior: `Executes ${this.getExecutionPattern(nodeType)} with standard error handling and logging.`,
           visualAppearance: {
             whatItLooksLike: `Displays as a ${this.getVisualDescription(elementData, userLevel)} with specific styling for ${nodeType} components.`,
             whyItLooksLikeThis: `Visual design indicates component type and current status for easy identification.`,
-            howToRecognizeIt: `Distinguished by its ${this.getRecognitionHints(elementData, userLevel)} and position in the workflow.`
+            howToRecognizeIt: `Distinguished by its ${this.getRecognitionHints(elementData, userLevel)} and position in the workflow.`,
           },
           interactionGuidance: {
-            howToInteract: "Select to view details, double-click to configure, or drag to reposition in the workflow.",
+            howToInteract:
+              'Select to view details, double-click to configure, or drag to reposition in the workflow.',
             whatYouCanDo: [
-              "Configure component parameters",
-              "Connect to other workflow components",
-              "Monitor execution status",
-              "Access detailed logs and metrics"
+              'Configure component parameters',
+              'Connect to other workflow components',
+              'Monitor execution status',
+              'Access detailed logs and metrics',
             ],
             whatToAvoid: [
-              "Breaking connections without considering data flow",
-              "Invalid parameter configurations",
-              "Creating circular dependencies"
-            ]
+              'Breaking connections without considering data flow',
+              'Invalid parameter configurations',
+              'Creating circular dependencies',
+            ],
           },
           examples: {
             typicalUseCase: this.getTypicalUseCase(nodeType, userLevel),
             alternativeUseCases: this.getAlternativeUseCases(nodeType, userLevel),
-            realWorldAnalogy: this.getRealWorldAnalogy(nodeType, userLevel)
-          }
+            realWorldAnalogy: this.getRealWorldAnalogy(nodeType, userLevel),
+          },
         }
     }
   }
@@ -627,36 +629,42 @@ export class VisualToConversationalTranslationEngine {
   // Helper methods for generating descriptions
   private getSimpleAction(nodeType: string): string {
     const actions = {
-      'function': 'does some helpful work with your information',
-      'filter': 'checks your information and only keeps what you need',
-      'transform': 'changes your information into a different format',
-      'aggregator': 'combines multiple pieces of information together',
-      'api': 'talks to other systems to get or send information',
-      'database': 'saves or retrieves information from storage',
-      'email': 'sends email messages',
-      'webhook': 'sends notifications to other systems'
+      function: 'does some helpful work with your information',
+      filter: 'checks your information and only keeps what you need',
+      transform: 'changes your information into a different format',
+      aggregator: 'combines multiple pieces of information together',
+      api: 'talks to other systems to get or send information',
+      database: 'saves or retrieves information from storage',
+      email: 'sends email messages',
+      webhook: 'sends notifications to other systems',
     }
     return actions[nodeType] || 'processes your information'
   }
 
   private getDetailedSimpleAction(nodeType: string): string {
     const actions = {
-      'function': 'takes information, does something useful with it, and gives you back the results',
-      'filter': 'looks at each piece of information and decides whether to keep it or not',
-      'transform': 'takes information in one format and converts it to another format that other steps can use',
-      'aggregator': 'collects information from different sources and puts it all together in one place',
-      'api': 'connects to other websites or services to share information back and forth',
-      'database': 'stores important information safely or finds information you stored before',
-      'email': 'creates and sends professional email messages to the right people',
-      'webhook': 'automatically notifies other systems when something important happens'
+      function: 'takes information, does something useful with it, and gives you back the results',
+      filter: 'looks at each piece of information and decides whether to keep it or not',
+      transform:
+        'takes information in one format and converts it to another format that other steps can use',
+      aggregator:
+        'collects information from different sources and puts it all together in one place',
+      api: 'connects to other websites or services to share information back and forth',
+      database: 'stores important information safely or finds information you stored before',
+      email: 'creates and sends professional email messages to the right people',
+      webhook: 'automatically notifies other systems when something important happens',
     }
-    return actions[nodeType] || 'takes your information, does something helpful with it, and passes the results along'
+    return (
+      actions[nodeType] ||
+      'takes your information, does something helpful with it, and passes the results along'
+    )
   }
 
   private getPurposeDescription(nodeType: string, level: UserExpertiseLevel): string {
     if (level === UserExpertiseLevel.NOVICE) {
       return `help your workflow accomplish its goal by handling the ${nodeType} part`
-    } else if (level === UserExpertiseLevel.TECHNICAL) {
+    }
+    if (level === UserExpertiseLevel.TECHNICAL) {
       return `implement ${nodeType} business logic with configurable parameters and error handling`
     }
     return `handle ${nodeType} operations within the workflow execution pipeline`
@@ -665,7 +673,8 @@ export class VisualToConversationalTranslationEngine {
   private getFunctionalityDescription(nodeType: string, level: UserExpertiseLevel): string {
     if (level === UserExpertiseLevel.NOVICE) {
       return `automatically do its job when it's its turn in the sequence`
-    } else if (level === UserExpertiseLevel.TECHNICAL) {
+    }
+    if (level === UserExpertiseLevel.TECHNICAL) {
       return `execute configured business logic with input validation, processing, and result output`
     }
     return `process input data according to its configuration and output results to connected components`
@@ -674,7 +683,8 @@ export class VisualToConversationalTranslationEngine {
   private getVisualDescription(elementData: any, level: UserExpertiseLevel): string {
     if (level === UserExpertiseLevel.NOVICE) {
       return 'colored box with an icon and title'
-    } else if (level === UserExpertiseLevel.TECHNICAL) {
+    }
+    if (level === UserExpertiseLevel.TECHNICAL) {
       return `ReactFlow node with style=${JSON.stringify(elementData.style || {})}`
     }
     return 'workflow component with distinctive styling and connections'
@@ -683,7 +693,8 @@ export class VisualToConversationalTranslationEngine {
   private getRecognitionHints(elementData: any, level: UserExpertiseLevel): string {
     if (level === UserExpertiseLevel.NOVICE) {
       return 'icon and title that describe what it does'
-    } else if (level === UserExpertiseLevel.TECHNICAL) {
+    }
+    if (level === UserExpertiseLevel.TECHNICAL) {
       return `type="${elementData.type}" attribute and CSS class selectors`
     }
     return 'specific icon, color scheme, and component labeling'
@@ -691,10 +702,10 @@ export class VisualToConversationalTranslationEngine {
 
   private getTypicalUseCase(nodeType: string, level: UserExpertiseLevel): string {
     const useCases = {
-      'function': 'Calculate totals, format text, or process business rules',
-      'filter': 'Remove duplicates, filter by date ranges, or quality checks',
-      'transform': 'Convert CSV to JSON, format dates, or restructure data',
-      'aggregator': 'Calculate averages, combine reports, or merge datasets'
+      function: 'Calculate totals, format text, or process business rules',
+      filter: 'Remove duplicates, filter by date ranges, or quality checks',
+      transform: 'Convert CSV to JSON, format dates, or restructure data',
+      aggregator: 'Calculate averages, combine reports, or merge datasets',
     }
     return useCases[nodeType] || 'Process data according to business requirements'
   }
@@ -703,7 +714,7 @@ export class VisualToConversationalTranslationEngine {
     return [
       'Data validation and quality assurance',
       'Format conversion and standardization',
-      'Business rule application and compliance'
+      'Business rule application and compliance',
     ]
   }
 
@@ -711,10 +722,10 @@ export class VisualToConversationalTranslationEngine {
     if (level === UserExpertiseLevel.TECHNICAL) return undefined
 
     const analogies = {
-      'function': 'Like a calculator that automatically does math on your data',
-      'filter': 'Like a coffee filter that only lets the good stuff through',
-      'transform': 'Like a translator that converts information to different languages',
-      'aggregator': 'Like collecting puzzle pieces to see the complete picture'
+      function: 'Like a calculator that automatically does math on your data',
+      filter: 'Like a coffee filter that only lets the good stuff through',
+      transform: 'Like a translator that converts information to different languages',
+      aggregator: 'Like collecting puzzle pieces to see the complete picture',
     }
     return analogies[nodeType]
   }
@@ -747,7 +758,7 @@ export class VisualToConversationalTranslationEngine {
     return [
       'Microservice architecture implementation',
       'Event-driven processing model',
-      'Batch processing optimization'
+      'Batch processing optimization',
     ]
   }
 
@@ -785,7 +796,7 @@ export class VisualToConversationalTranslationEngine {
       toElementId: edge.target,
       conversationalDescription,
       conditions: edge.data?.condition,
-      dataTransformation
+      dataTransformation,
     }
   }
 
@@ -794,19 +805,22 @@ export class VisualToConversationalTranslationEngine {
     context: TranslationContext,
     elementTranslations: Map<string, TranslatedVisualElement>
   ): Promise<WorkflowTranslation['workflowConversation']> {
-
     const nodeCount = workflowData.nodes?.length || 0
     const workflowName = workflowData.name || 'Your Workflow'
 
     return {
       introduction: `Let me walk you through "${workflowName}" - this workflow has ${nodeCount} steps that work together to accomplish your goal.`,
-      purpose: workflowData.description || 'This workflow automates a series of tasks to process your data efficiently.',
+      purpose:
+        workflowData.description ||
+        'This workflow automates a series of tasks to process your data efficiently.',
       overallStructure: `The workflow is organized as a sequence of ${nodeCount} connected steps, where each step builds on the results of the previous ones.`,
-      keyComponents: Array.from(elementTranslations.values()).map(t =>
-        t.conversationalDescriptions[context.userExpertiseLevel]?.headline || t.elementId
+      keyComponents: Array.from(elementTranslations.values()).map(
+        (t) => t.conversationalDescriptions[context.userExpertiseLevel]?.headline || t.elementId
       ),
-      executionFlow: 'Steps execute in order, with each step waiting for the previous one to complete before starting.',
-      expectedOutcomes: 'When complete, you\'ll have processed data that meets your specified requirements.'
+      executionFlow:
+        'Steps execute in order, with each step waiting for the previous one to complete before starting.',
+      expectedOutcomes:
+        "When complete, you'll have processed data that meets your specified requirements.",
     }
   }
 
@@ -828,7 +842,7 @@ export class VisualToConversationalTranslationEngine {
       tableOfContents: Array.from(elementTranslations.keys()),
       quickOverview: 'This workflow processes data through a series of connected steps.',
       deepDiveTopics: ['Configuration options', 'Error handling', 'Performance optimization'],
-      troubleshootingGuide: ['Common issues', 'Debugging steps', 'Performance problems']
+      troubleshootingGuide: ['Common issues', 'Debugging steps', 'Performance problems'],
     }
   }
 
@@ -839,10 +853,15 @@ export class VisualToConversationalTranslationEngine {
   ): WorkflowTranslation['contextualSuggestions'] {
     return {
       basedOnUserLevel: this.getUserLevelSuggestions(context.userExpertiseLevel),
-      basedOnCurrentFocus: context.visualContext.focusedElement ?
-        [`Learn more about ${context.visualContext.focusedElement}`, 'Explore connected components'] : [],
-      basedOnConversationHistory: context.conversationHistory?.length ?
-        ['Continue previous discussion', 'Explore related topics'] : []
+      basedOnCurrentFocus: context.visualContext.focusedElement
+        ? [
+            `Learn more about ${context.visualContext.focusedElement}`,
+            'Explore connected components',
+          ]
+        : [],
+      basedOnConversationHistory: context.conversationHistory?.length
+        ? ['Continue previous discussion', 'Explore related topics']
+        : [],
     }
   }
 
@@ -851,7 +870,11 @@ export class VisualToConversationalTranslationEngine {
       case UserExpertiseLevel.NOVICE:
         return ['Start with workflow basics', 'Learn about step types', 'Understand connections']
       case UserExpertiseLevel.TECHNICAL:
-        return ['Review configuration schemas', 'Examine error handling', 'Analyze performance metrics']
+        return [
+          'Review configuration schemas',
+          'Examine error handling',
+          'Analyze performance metrics',
+        ]
       default:
         return ['Explore workflow structure', 'Understand data flow', 'Learn optimization tips']
     }
@@ -914,7 +937,7 @@ export class VisualToConversationalTranslationEngine {
       incoming: [],
       outgoing: [],
       siblings: [],
-      children: []
+      children: [],
     })
   }
 
@@ -929,23 +952,23 @@ export class VisualToConversationalTranslationEngine {
       questions: [
         `What does ${elementName} actually do?`,
         `How is ${elementName} configured?`,
-        `What happens if ${elementName} fails?`
+        `What happens if ${elementName} fails?`,
       ],
       suggestions: [
         `Tell me more about ${elementName}`,
         `Show me how ${elementName} connects to other steps`,
-        `Explain the purpose of ${elementName}`
+        `Explain the purpose of ${elementName}`,
       ],
       deepDive: [
         `What are the technical details of ${elementName}?`,
         `How can I optimize ${elementName}?`,
-        `What are common issues with ${elementName}?`
+        `What are common issues with ${elementName}?`,
       ],
       troubleshooting: [
         `${elementName} is not working as expected`,
         `How do I debug problems with ${elementName}?`,
-        `What should I check if ${elementName} fails?`
-      ]
+        `What should I check if ${elementName} fails?`,
+      ],
     }
   }
 
@@ -959,7 +982,7 @@ export class VisualToConversationalTranslationEngine {
       importance: 'medium',
       complexity: 'moderate',
       commonPatterns: ['Sequential processing', 'Data transformation', 'Conditional logic'],
-      alternativeApproaches: ['Batch processing', 'Parallel execution', 'Event-driven processing']
+      alternativeApproaches: ['Batch processing', 'Parallel execution', 'Event-driven processing'],
     }
   }
 
@@ -975,13 +998,13 @@ export class VisualToConversationalTranslationEngine {
       keyboardNavigationHints: [
         'Use Tab to navigate to this element',
         'Press Enter to select',
-        'Use arrow keys to explore connections'
+        'Use arrow keys to explore connections',
       ],
       alternativeInputMethods: [
         'Voice commands supported',
         'Touch gestures available on mobile',
-        'Mouse-free navigation enabled'
-      ]
+        'Mouse-free navigation enabled',
+      ],
     }
   }
 
@@ -999,7 +1022,7 @@ export class VisualToConversationalTranslationEngine {
         overallStructure: 'Sequential processing with connected steps.',
         keyComponents: [],
         executionFlow: 'Steps execute in order.',
-        expectedOutcomes: 'Processed data output.'
+        expectedOutcomes: 'Processed data output.',
       },
       elementTranslations: new Map(),
       flowTranslations: [],
@@ -1008,13 +1031,13 @@ export class VisualToConversationalTranslationEngine {
         tableOfContents: [],
         quickOverview: 'Workflow overview not available.',
         deepDiveTopics: [],
-        troubleshootingGuide: []
+        troubleshootingGuide: [],
       },
       contextualSuggestions: {
         basedOnUserLevel: [],
         basedOnCurrentFocus: [],
-        basedOnConversationHistory: []
-      }
+        basedOnConversationHistory: [],
+      },
     }
   }
 
@@ -1032,17 +1055,17 @@ export class VisualToConversationalTranslationEngine {
       visualAppearance: {
         whatItLooksLike: `A ${elementType} component`,
         whyItLooksLikeThis: 'Standard visual design',
-        howToRecognizeIt: `Look for the ${elementType} identifier`
+        howToRecognizeIt: `Look for the ${elementType} identifier`,
       },
       interactionGuidance: {
         howToInteract: 'Click to interact with this component',
         whatYouCanDo: ['Select', 'Configure', 'Connect'],
-        whatToAvoid: ['Avoid breaking connections']
+        whatToAvoid: ['Avoid breaking connections'],
       },
       examples: {
         typicalUseCase: 'Data processing',
-        alternativeUseCases: ['Data validation', 'Data transformation']
-      }
+        alternativeUseCases: ['Data validation', 'Data transformation'],
+      },
     }
 
     return {
@@ -1060,43 +1083,49 @@ export class VisualToConversationalTranslationEngine {
         incoming: [],
         outgoing: [],
         siblings: [],
-        children: []
+        children: [],
       },
       conversationStarters: {
         questions: [],
         suggestions: [],
         deepDive: [],
-        troubleshooting: []
+        troubleshooting: [],
       },
       contextualInfo: {
         purpose: 'Data processing',
         importance: 'medium',
         complexity: 'moderate',
         commonPatterns: [],
-        alternativeApproaches: []
+        alternativeApproaches: [],
       },
       accessibility: {
         screenReaderDescription: `${elementType} component`,
         keyboardNavigationHints: [],
-        alternativeInputMethods: []
+        alternativeInputMethods: [],
       },
       translationMetadata: {
         translatedAt: new Date(),
         translationVersion: '1.0.0',
         confidence: 0.3,
         adaptations: ['Fallback translation used'],
-        fallbackUsed: true
-      }
+        fallbackUsed: true,
+      },
     }
   }
 }
 
 // Supporting types and interfaces
-type ElementTranslator = (elementData: any, context: TranslationContext) => Promise<TranslatedVisualElement>
+type ElementTranslator = (
+  elementData: any,
+  context: TranslationContext
+) => Promise<TranslatedVisualElement>
 
 interface PatternRecognizer {
   name: string
-  recognize: (workflowData: any, context: TranslationContext) => WorkflowTranslation['recognizedPatterns']
+  recognize: (
+    workflowData: any,
+    context: TranslationContext
+  ) => WorkflowTranslation['recognizedPatterns']
 }
 
 interface ConversationTemplate {

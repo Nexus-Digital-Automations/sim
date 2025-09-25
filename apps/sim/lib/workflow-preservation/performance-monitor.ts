@@ -70,7 +70,7 @@ export const DEFAULT_THRESHOLDS: PerformanceThresholds = {
   network: {
     collaborativeSync: 150, // ms
     dataLoad: 300, // ms
-  }
+  },
 }
 
 export interface PerformanceMetric {
@@ -354,9 +354,7 @@ export class ReactFlowPerformanceMonitor {
 
     const alerts = workflowId ? this.getAlerts(workflowId) : this.alerts
 
-    const statistics = workflowId
-      ? this.getStatistics(workflowId)
-      : this.getGlobalStatistics()
+    const statistics = workflowId ? this.getStatistics(workflowId) : this.getGlobalStatistics()
 
     return {
       samples,
@@ -548,11 +546,19 @@ export class ReactFlowPerformanceMonitor {
     const recentSamples = samples.slice(-10)
     const previousSamples = samples.slice(-20, -10)
 
-    const recentRenderTime = this.average(recentSamples.map((s) => s.metrics.renderTime).filter(Boolean))
-    const previousRenderTime = this.average(previousSamples.map((s) => s.metrics.renderTime).filter(Boolean))
+    const recentRenderTime = this.average(
+      recentSamples.map((s) => s.metrics.renderTime).filter(Boolean)
+    )
+    const previousRenderTime = this.average(
+      previousSamples.map((s) => s.metrics.renderTime).filter(Boolean)
+    )
 
-    const recentMemory = this.average(recentSamples.map((s) => s.metrics.memoryAfter).filter(Boolean))
-    const previousMemory = this.average(previousSamples.map((s) => s.metrics.memoryAfter).filter(Boolean))
+    const recentMemory = this.average(
+      recentSamples.map((s) => s.metrics.memoryAfter).filter(Boolean)
+    )
+    const previousMemory = this.average(
+      previousSamples.map((s) => s.metrics.memoryAfter).filter(Boolean)
+    )
 
     return {
       renderTime: this.calculateTrend(previousRenderTime, recentRenderTime),
@@ -593,7 +599,7 @@ export class ReactFlowPerformanceMonitor {
   }
 
   private calculateExpectedMemory(nodeCount: number): number {
-    return this.thresholds.memoryUsage.baseline + (nodeCount * this.thresholds.memoryUsage.perNode)
+    return this.thresholds.memoryUsage.baseline + nodeCount * this.thresholds.memoryUsage.perNode
   }
 
   private getNodeCount(): number {
@@ -622,8 +628,10 @@ export class ReactFlowPerformanceMonitor {
     const observer = new MutationObserver((mutations) => {
       let shouldSample = false
       mutations.forEach((mutation) => {
-        if (mutation.type === 'childList' &&
-            (mutation.target as Element).classList?.contains('react-flow__nodes')) {
+        if (
+          mutation.type === 'childList' &&
+          (mutation.target as Element).classList?.contains('react-flow__nodes')
+        ) {
           shouldSample = true
         }
       })

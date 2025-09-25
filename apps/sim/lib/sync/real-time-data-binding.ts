@@ -5,10 +5,9 @@
  * and chat interface state with change detection and propagation algorithms.
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import type { Edge } from 'reactflow'
-import { BidirectionalSyncEngine, type SyncEvent, type SyncEventType } from './bidirectional-sync-engine'
-import type { WorkflowState, Position, SubBlockState } from '@/stores/workflows/workflow/types'
+import { createLogger } from '@/lib/logs/console/logger'
+import type { BidirectionalSyncEngine, SyncEvent, SyncEventType } from './bidirectional-sync-engine'
 
 const logger = createLogger('RealTimeDataBinding')
 
@@ -83,10 +82,7 @@ export class RealTimeDataBinding {
   private syncEngine: BidirectionalSyncEngine
   private isProcessingChanges = false
 
-  constructor(
-    syncEngine: BidirectionalSyncEngine,
-    config: Partial<DataBindingConfig> = {}
-  ) {
+  constructor(syncEngine: BidirectionalSyncEngine, config: Partial<DataBindingConfig> = {}) {
     this.syncEngine = syncEngine
     this.config = {
       debounceMs: 100,
@@ -95,7 +91,7 @@ export class RealTimeDataBinding {
       enableChangeDetection: true,
       enableOptimisticUpdates: true,
       compressionThreshold: 100,
-      ...config
+      ...config,
     }
 
     // Initialize states
@@ -110,7 +106,7 @@ export class RealTimeDataBinding {
 
     logger.info('RealTimeDataBinding initialized', {
       bindingCount: this.bindings.size,
-      config: this.config
+      config: this.config,
     })
   }
 
@@ -160,7 +156,7 @@ export class RealTimeDataBinding {
 
     logger.debug('Visual state updated', {
       changeCount: changes.length,
-      updateKeys: Object.keys(updates)
+      updateKeys: Object.keys(updates),
     })
   }
 
@@ -182,7 +178,7 @@ export class RealTimeDataBinding {
 
     logger.debug('Chat state updated', {
       changeCount: changes.length,
-      updateKeys: Object.keys(updates)
+      updateKeys: Object.keys(updates),
     })
   }
 
@@ -209,17 +205,12 @@ export class RealTimeDataBinding {
           oldValue,
           newValue,
           source,
-          propagationPriority: this.determinePriority(path, newValue)
+          propagationPriority: this.determinePriority(path, newValue),
         })
 
         // Recursively detect nested changes for objects
         if (typeof newValue === 'object' && newValue !== null && !Array.isArray(newValue)) {
-          const nestedChanges = this.detectChanges(
-            source,
-            oldValue || {},
-            newValue,
-            path
-          )
+          const nestedChanges = this.detectChanges(source, oldValue || {}, newValue, path)
           changes.push(...nestedChanges)
         }
       }
@@ -250,8 +241,8 @@ export class RealTimeDataBinding {
 
       if (oldKeys.length !== newKeys.length) return true
 
-      return oldKeys.some(key =>
-        !newKeys.includes(key) || this.hasValueChanged(oldValue[key], newValue[key])
+      return oldKeys.some(
+        (key) => !newKeys.includes(key) || this.hasValueChanged(oldValue[key], newValue[key])
       )
     }
 
@@ -336,7 +327,8 @@ export class RealTimeDataBinding {
     // Sort by priority and timestamp
     pathChanges.sort((a, b) => {
       const priorityOrder = { high: 0, medium: 1, low: 2 }
-      const priorityDiff = priorityOrder[a.propagationPriority] - priorityOrder[b.propagationPriority]
+      const priorityDiff =
+        priorityOrder[a.propagationPriority] - priorityOrder[b.propagationPriority]
 
       if (priorityDiff !== 0) return priorityDiff
       return a.timestamp - b.timestamp
@@ -397,7 +389,7 @@ export class RealTimeDataBinding {
         logger.error('Binding application failed', {
           bindingId: binding.id,
           changePath: change.path,
-          error
+          error,
         })
       }
     }
@@ -431,11 +423,7 @@ export class RealTimeDataBinding {
    */
   private pathMatches(changePath: string, bindingPath: string): boolean {
     // Convert wildcard patterns to regex
-    const regex = new RegExp(
-      bindingPath
-        .replace(/\*/g, '.*')
-        .replace(/\?/g, '.')
-    )
+    const regex = new RegExp(bindingPath.replace(/\*/g, '.*').replace(/\?/g, '.'))
 
     return regex.test(changePath)
   }
@@ -462,7 +450,7 @@ export class RealTimeDataBinding {
     if (binding.validator && !binding.validator(transformedValue)) {
       logger.warn('Binding validation failed', {
         bindingId: binding.id,
-        value: transformedValue
+        value: transformedValue,
       })
       return
     }
@@ -477,7 +465,7 @@ export class RealTimeDataBinding {
     logger.debug('Binding applied', {
       bindingId: binding.id,
       direction,
-      targetPath
+      targetPath,
     })
   }
 
@@ -495,7 +483,7 @@ export class RealTimeDataBinding {
           logger.error('Subscriber callback failed', {
             subscriptionId,
             changePath: change.path,
-            error
+            error,
           })
         }
       }
@@ -514,7 +502,7 @@ export class RealTimeDataBinding {
       {
         path: change.path,
         value: change.newValue,
-        oldValue: change.oldValue
+        oldValue: change.oldValue,
       },
       change.source,
       { immediate: change.propagationPriority === 'high' }
@@ -574,7 +562,7 @@ export class RealTimeDataBinding {
       oldValue: event.payload.oldValue,
       newValue: event.payload.value,
       source: event.source,
-      propagationPriority: 'medium'
+      propagationPriority: 'medium',
     }
 
     this.propagateChange(change)
@@ -666,8 +654,8 @@ export class RealTimeDataBinding {
       selectedElements: [],
       viewportState: {
         zoom: 1,
-        position: { x: 0, y: 0 }
-      }
+        position: { x: 0, y: 0 },
+      },
     }
   }
 
@@ -683,9 +671,9 @@ export class RealTimeDataBinding {
       executionState: {
         running: false,
         currentStep: null,
-        results: {}
+        results: {},
       },
-      agentSelections: []
+      agentSelections: [],
     }
   }
 
@@ -721,7 +709,7 @@ export class RealTimeDataBinding {
       bindingCount: this.bindings.size,
       changeQueueSize: this.changeQueue.length,
       bufferSizes,
-      isProcessing: this.isProcessingChanges
+      isProcessing: this.isProcessingChanges,
     }
   }
 
@@ -733,7 +721,7 @@ export class RealTimeDataBinding {
     this.changeBuffer.clear()
 
     // Clear debounce timers
-    this.debounceTimers.forEach(timer => clearTimeout(timer))
+    this.debounceTimers.forEach((timer) => clearTimeout(timer))
     this.debounceTimers.clear()
 
     this.isProcessingChanges = false

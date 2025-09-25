@@ -1,24 +1,24 @@
 'use client'
 
-import React, {
+import type React from 'react'
+import {
   createContext,
-  useContext,
-  useReducer,
   useCallback,
+  useContext,
   useEffect,
-  useRef,
   useMemo,
+  useReducer,
+  useRef,
 } from 'react'
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  ViewMode,
+  HybridLayout,
   ModeConfig,
   ModeContext,
-  ModeTransitionEvent,
   ModePreferences,
-  HybridLayout,
+  ModeTransitionEvent,
   UseModeSwitch,
-  DEFAULT_MODE_PREFERENCES,
+  ViewMode,
 } from '@/types/mode-switching'
 import { DEFAULT_MODE_PREFERENCES, TRANSITION_DURATIONS } from '@/types/mode-switching'
 
@@ -120,7 +120,7 @@ function modeReducer(state: ModeState, action: ModeAction): ModeState {
         context: action.payload.context,
       }
 
-    case 'UPDATE_PREFERENCES':
+    case 'UPDATE_PREFERENCES': {
       const updatedPreferences = {
         ...state.preferences,
         ...action.payload.preferences,
@@ -137,6 +137,7 @@ function modeReducer(state: ModeState, action: ModeAction): ModeState {
         ...state,
         preferences: updatedPreferences,
       }
+    }
 
     case 'ADD_HISTORY':
       return {
@@ -284,7 +285,8 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
       })
 
       // Simulate transition duration
-      const duration = config.transitionDuration ?? TRANSITION_DURATIONS[state.preferences.transitionSpeed]
+      const duration =
+        config.transitionDuration ?? TRANSITION_DURATIONS[state.preferences.transitionSpeed]
 
       if (state.preferences.enableAnimations && duration > 0) {
         // Animate progress
@@ -332,12 +334,9 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
   const getContext = useCallback(() => state.context, [state.context])
 
   // Preserve context
-  const preserveContext = useCallback(
-    (context: Partial<ModeContext>) => {
-      dispatch({ type: 'PRESERVE_CONTEXT', payload: { context } })
-    },
-    []
-  )
+  const preserveContext = useCallback((context: Partial<ModeContext>) => {
+    dispatch({ type: 'PRESERVE_CONTEXT', payload: { context } })
+  }, [])
 
   // Restore context for a specific mode
   const restoreContext = useCallback((mode: ViewMode) => {
@@ -429,14 +428,8 @@ export function useModeContext(): ModeContextValue {
 
 // Convenient hook for mode switching
 export function useModeSwitch(): UseModeSwitch {
-  const {
-    state,
-    switchMode,
-    getCurrentMode,
-    getContext,
-    canSwitchMode,
-    getTransitionDuration,
-  } = useModeContext()
+  const { state, switchMode, getCurrentMode, getContext, canSwitchMode, getTransitionDuration } =
+    useModeContext()
 
   const switchToVisual = useCallback(() => {
     switchMode('visual')
@@ -449,7 +442,7 @@ export function useModeSwitch(): UseModeSwitch {
   const switchToHybrid = useCallback(
     (layout?: HybridLayout) => {
       switchMode('hybrid', {
-        hybridLayout: layout ?? state.preferences.hybridDefaults
+        hybridLayout: layout ?? state.preferences.hybridDefaults,
       })
     },
     [switchMode, state.preferences.hybridDefaults]

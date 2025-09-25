@@ -16,25 +16,25 @@ const logger = createLogger('InteractiveExecutionVisualization')
  * Execution state phases
  */
 export enum ExecutionPhase {
-  PRE_EXECUTION = 'pre_execution',        // Before workflow starts
-  INITIALIZING = 'initializing',          // Setting up execution context
-  RUNNING = 'running',                    // Active execution
-  STEP_TRANSITION = 'step_transition',    // Between steps
-  WAITING_INPUT = 'waiting_input',        // Waiting for user input
-  ERROR_HANDLING = 'error_handling',      // Handling errors
-  CLEANUP = 'cleanup',                    // Post-execution cleanup
-  COMPLETED = 'completed',                // Execution finished
-  CANCELLED = 'cancelled',                // User cancelled
+  PRE_EXECUTION = 'pre_execution', // Before workflow starts
+  INITIALIZING = 'initializing', // Setting up execution context
+  RUNNING = 'running', // Active execution
+  STEP_TRANSITION = 'step_transition', // Between steps
+  WAITING_INPUT = 'waiting_input', // Waiting for user input
+  ERROR_HANDLING = 'error_handling', // Handling errors
+  CLEANUP = 'cleanup', // Post-execution cleanup
+  COMPLETED = 'completed', // Execution finished
+  CANCELLED = 'cancelled', // User cancelled
 }
 
 /**
  * Commentary intensity levels
  */
 export enum CommentaryIntensity {
-  MINIMAL = 'minimal',        // Only essential updates
-  STANDARD = 'standard',      // Balanced commentary
-  DETAILED = 'detailed',      // Comprehensive explanations
-  VERBOSE = 'verbose',        // Maximum detail and context
+  MINIMAL = 'minimal', // Only essential updates
+  STANDARD = 'standard', // Balanced commentary
+  DETAILED = 'detailed', // Comprehensive explanations
+  VERBOSE = 'verbose', // Maximum detail and context
 }
 
 /**
@@ -267,7 +267,6 @@ export interface ProgressVisualization {
  * Interactive execution visualization engine
  */
 export class InteractiveExecutionVisualizationEngine {
-
   // Active execution sessions
   private readonly activeSessions = new Map<string, ExecutionSession>()
 
@@ -295,13 +294,12 @@ export class InteractiveExecutionVisualizationEngine {
     userExpertiseLevel: UserExpertiseLevel = UserExpertiseLevel.INTERMEDIATE,
     commentaryIntensity: CommentaryIntensity = CommentaryIntensity.STANDARD
   ): Promise<ExecutionSession> {
-
     logger.info('Starting execution visualization', {
       workflowId,
       userId,
       sessionId,
       userExpertiseLevel,
-      commentaryIntensity
+      commentaryIntensity,
     })
 
     const session: ExecutionSession = {
@@ -319,11 +317,12 @@ export class InteractiveExecutionVisualizationEngine {
       configuration: {
         realTimeUpdates: true,
         includePerformanceMetrics: userExpertiseLevel !== UserExpertiseLevel.NOVICE,
-        showPredictions: commentaryIntensity === CommentaryIntensity.DETAILED ||
-                       commentaryIntensity === CommentaryIntensity.VERBOSE,
+        showPredictions:
+          commentaryIntensity === CommentaryIntensity.DETAILED ||
+          commentaryIntensity === CommentaryIntensity.VERBOSE,
         interactiveElements: true,
-        personalization: await this.getUserPreferences(userId)
-      }
+        personalization: await this.getUserPreferences(userId),
+      },
     }
 
     this.activeSessions.set(sessionId, session)
@@ -339,7 +338,7 @@ export class InteractiveExecutionVisualizationEngine {
       eventType: 'workflow_started',
       phase: ExecutionPhase.PRE_EXECUTION,
       data: { userExpertiseLevel, commentaryIntensity },
-      metadata: { userContext: { userId, sessionId } }
+      metadata: { userContext: { userId, sessionId } },
     }
 
     const commentary = await this.generateCommentary(initialEvent, session)
@@ -357,7 +356,6 @@ export class InteractiveExecutionVisualizationEngine {
     sessionId: string,
     event: ExecutionEvent
   ): Promise<ExecutionCommentary | null> {
-
     const session = this.activeSessions.get(sessionId)
     if (!session || !session.isActive) {
       logger.warn('No active session found', { sessionId })
@@ -368,7 +366,7 @@ export class InteractiveExecutionVisualizationEngine {
       sessionId,
       eventType: event.eventType,
       nodeId: event.nodeId,
-      phase: event.phase
+      phase: event.phase,
     })
 
     try {
@@ -396,16 +394,15 @@ export class InteractiveExecutionVisualizationEngine {
       logger.debug('Execution event processed successfully', {
         sessionId,
         commentaryId: commentary.commentaryId,
-        eventType: event.eventType
+        eventType: event.eventType,
       })
 
       return commentary
-
     } catch (error: any) {
       logger.error('Failed to process execution event', {
         sessionId,
         eventType: event.eventType,
-        error: error.message
+        error: error.message,
       })
 
       // Generate fallback commentary
@@ -420,7 +417,6 @@ export class InteractiveExecutionVisualizationEngine {
     event: ExecutionEvent,
     session: ExecutionSession
   ): Promise<ExecutionCommentary> {
-
     const generator = this.commentaryGenerators.get(event.eventType)
     if (!generator) {
       return this.generateFallbackCommentary(event, session)
@@ -444,7 +440,6 @@ export class InteractiveExecutionVisualizationEngine {
    * Initialize commentary generators for different event types
    */
   private initializeCommentaryGenerators(): void {
-
     // Workflow-level events
     this.commentaryGenerators.set('workflow_started', async (event, session) => ({
       eventId: event.eventId,
@@ -453,49 +448,61 @@ export class InteractiveExecutionVisualizationEngine {
 
       commentary: {
         [UserExpertiseLevel.NOVICE]: {
-          headline: "🚀 Your workflow is starting up!",
-          explanation: "Great! Your automated process is beginning. I'll keep you updated on what's happening at each step.",
-          whatToExpected: "You'll see updates as each step completes. This usually takes just a few minutes.",
-          timeEstimate: "Starting now..."
+          headline: '🚀 Your workflow is starting up!',
+          explanation:
+            "Great! Your automated process is beginning. I'll keep you updated on what's happening at each step.",
+          whatToExpected:
+            "You'll see updates as each step completes. This usually takes just a few minutes.",
+          timeEstimate: 'Starting now...',
         },
         [UserExpertiseLevel.BEGINNER]: {
-          headline: "🚀 Workflow execution initiated",
-          explanation: "Your workflow is now beginning execution. Each step will be processed in order according to your configuration.",
-          technicalContext: "The system is initializing resources and preparing to execute your workflow steps sequentially.",
-          timeEstimate: "Initialization: ~30 seconds"
+          headline: '🚀 Workflow execution initiated',
+          explanation:
+            'Your workflow is now beginning execution. Each step will be processed in order according to your configuration.',
+          technicalContext:
+            'The system is initializing resources and preparing to execute your workflow steps sequentially.',
+          timeEstimate: 'Initialization: ~30 seconds',
         },
         [UserExpertiseLevel.INTERMEDIATE]: {
-          headline: "🚀 Workflow execution started",
-          explanation: "Execution engine is processing your workflow with full validation and error handling enabled.",
-          technicalDetails: "Session initialized with runtime context, resource allocation complete, dependency validation passed.",
-          performanceNotes: "Expected throughput based on workflow complexity and current system load.",
-          timeEstimate: "Est. total time: " + this.estimateWorkflowDuration(event, session)
+          headline: '🚀 Workflow execution started',
+          explanation:
+            'Execution engine is processing your workflow with full validation and error handling enabled.',
+          technicalDetails:
+            'Session initialized with runtime context, resource allocation complete, dependency validation passed.',
+          performanceNotes:
+            'Expected throughput based on workflow complexity and current system load.',
+          timeEstimate: `Est. total time: ${this.estimateWorkflowDuration(event, session)}`,
         },
         [UserExpertiseLevel.ADVANCED]: {
-          headline: "🚀 Workflow execution engine activated",
-          explanation: "Advanced execution context established with full monitoring, performance tracking, and error recovery capabilities.",
-          technicalDetails: "Runtime environment configured, resource pools allocated, execution graph validated and optimized.",
-          performanceMetrics: "Real-time performance monitoring active with configurable thresholds and alerts.",
-          optimizationNotes: "Execution path optimized based on historical performance data and current resource availability.",
-          timeEstimate: "Predicted completion: " + this.predictCompletionTime(event, session)
+          headline: '🚀 Workflow execution engine activated',
+          explanation:
+            'Advanced execution context established with full monitoring, performance tracking, and error recovery capabilities.',
+          technicalDetails:
+            'Runtime environment configured, resource pools allocated, execution graph validated and optimized.',
+          performanceMetrics:
+            'Real-time performance monitoring active with configurable thresholds and alerts.',
+          optimizationNotes:
+            'Execution path optimized based on historical performance data and current resource availability.',
+          timeEstimate: `Predicted completion: ${this.predictCompletionTime(event, session)}`,
         },
         [UserExpertiseLevel.TECHNICAL]: {
-          headline: "🚀 Workflow execution runtime initialized",
-          explanation: "Distributed execution environment online with full observability, tracing, and debugging capabilities enabled.",
+          headline: '🚀 Workflow execution runtime initialized',
+          explanation:
+            'Distributed execution environment online with full observability, tracing, and debugging capabilities enabled.',
           systemDetails: `Session: ${session.sessionId}, Runtime: ${process.version}, Memory: ${process.memoryUsage().heapUsed}MB`,
           performanceData: {
             sessionId: session.sessionId,
             startTime: event.timestamp,
             runtimeEnvironment: process.version,
-            resourceAllocation: process.memoryUsage()
+            resourceAllocation: process.memoryUsage(),
           },
           debugInfo: {
             eventMetadata: event.metadata,
             sessionConfig: session.configuration,
-            nodeGraph: "Available via /debug/execution-graph endpoint"
+            nodeGraph: 'Available via /debug/execution-graph endpoint',
           },
-          timeEstimate: `ETA: ${this.calculatePreciseETA(event, session)}`
-        }
+          timeEstimate: `ETA: ${this.calculatePreciseETA(event, session)}`,
+        },
       },
 
       interactive: {
@@ -503,65 +510,65 @@ export class InteractiveExecutionVisualizationEngine {
           type: 'bar',
           currentValue: 0,
           maxValue: 100,
-          displayText: 'Initializing...'
+          displayText: 'Initializing...',
         },
         actionButtons: [
           {
             id: 'pause',
             label: 'Pause Execution',
             action: 'pause_workflow',
-            disabled: false
+            disabled: false,
           },
           {
             id: 'cancel',
             label: 'Cancel',
             action: 'cancel_workflow',
             disabled: false,
-            confirmation: 'Are you sure you want to cancel this workflow?'
-          }
+            confirmation: 'Are you sure you want to cancel this workflow?',
+          },
         ],
         statusIndicators: [
           {
             label: 'Workflow Status',
             status: 'running',
-            icon: '▶️'
-          }
-        ]
+            icon: '▶️',
+          },
+        ],
       },
 
       contextual: {
         relatedEvents: [],
         learning: {
           funFacts: [
-            "Workflows can process thousands of items automatically",
-            "Each step validates its input before processing",
-            "You can pause and resume execution at any time"
+            'Workflows can process thousands of items automatically',
+            'Each step validates its input before processing',
+            'You can pause and resume execution at any time',
           ],
           bestPractices: [
-            "Monitor execution for optimization opportunities",
-            "Check results after completion for quality assurance",
-            "Keep workflows simple for better maintenance"
+            'Monitor execution for optimization opportunities',
+            'Check results after completion for quality assurance',
+            'Keep workflows simple for better maintenance',
           ],
           relatedConcepts: [
-            "Process automation",
-            "Data pipeline design",
-            "Error handling strategies"
-          ]
-        }
+            'Process automation',
+            'Data pipeline design',
+            'Error handling strategies',
+          ],
+        },
       },
 
       engagement: {
         tone: 'encouraging',
         emoji: '🚀',
-        encouragementMessage: "Looking good! Your workflow is off to a great start."
+        encouragementMessage: 'Looking good! Your workflow is off to a great start.',
       },
 
       personalization: {
         userExpertiseLevel: session.userExpertiseLevel,
         commentaryIntensity: session.commentaryIntensity,
         userPreferences: session.configuration.personalization || this.getDefaultPreferences(),
-        adaptationNotes: []
-      }
+        adaptationNotes: [],
+      },
     }))
 
     // Node execution events
@@ -574,29 +581,30 @@ export class InteractiveExecutionVisualizationEngine {
         [UserExpertiseLevel.NOVICE]: {
           headline: `📋 Starting: ${this.getNodeFriendlyName(event)}`,
           explanation: `Now working on: ${this.getNodeDescription(event, UserExpertiseLevel.NOVICE)}`,
-          whatToExpected: "This step will process your data and pass results to the next step.",
-          timeEstimate: this.estimateNodeDuration(event)
+          whatToExpected: 'This step will process your data and pass results to the next step.',
+          timeEstimate: this.estimateNodeDuration(event),
         },
         [UserExpertiseLevel.BEGINNER]: {
           headline: `📋 Executing: ${this.getNodeFriendlyName(event)}`,
           explanation: `Processing step: ${this.getNodeDescription(event, UserExpertiseLevel.BEGINNER)}`,
           technicalContext: `Node type: ${event.data.nodeType || 'processing'}, Input validated: ${event.data.inputValid || true}`,
-          timeEstimate: this.estimateNodeDuration(event)
+          timeEstimate: this.estimateNodeDuration(event),
         },
         [UserExpertiseLevel.INTERMEDIATE]: {
           headline: `📋 Node execution: ${this.getNodeFriendlyName(event)}`,
           explanation: `Executing: ${this.getNodeDescription(event, UserExpertiseLevel.INTERMEDIATE)}`,
           technicalDetails: `Node: ${event.nodeId}, Type: ${event.data.nodeType}, Config validated: ${event.data.configValid}`,
           performanceNotes: `Resource allocation: ${event.metadata.resourceUsage || 'standard'}`,
-          timeEstimate: this.estimateNodeDuration(event)
+          timeEstimate: this.estimateNodeDuration(event),
         },
         [UserExpertiseLevel.ADVANCED]: {
           headline: `📋 Node execution initiated: ${event.nodeId}`,
           explanation: `Advanced node processing with full monitoring and optimization enabled.`,
           technicalDetails: `Node execution context established with performance tracking and error recovery.`,
           performanceMetrics: `CPU: ${event.metadata.resourceUsage?.cpu || 'normal'}, Memory: ${event.metadata.resourceUsage?.memory || 'normal'}`,
-          optimizationNotes: "Execution optimized based on node configuration and historical performance data.",
-          timeEstimate: this.estimateNodeDuration(event)
+          optimizationNotes:
+            'Execution optimized based on node configuration and historical performance data.',
+          timeEstimate: this.estimateNodeDuration(event),
         },
         [UserExpertiseLevel.TECHNICAL]: {
           headline: `📋 Node runtime activation: ${event.nodeId}`,
@@ -606,15 +614,15 @@ export class InteractiveExecutionVisualizationEngine {
             nodeId: event.nodeId,
             startTime: event.timestamp,
             resourceUsage: event.metadata.resourceUsage,
-            executionContext: event.data
+            executionContext: event.data,
           },
           debugInfo: {
             nodeConfiguration: event.data,
             runtimeMetadata: event.metadata,
-            executionStackTrace: "Available via debug endpoint"
+            executionStackTrace: 'Available via debug endpoint',
           },
-          timeEstimate: this.calculatePreciseNodeETA(event)
-        }
+          timeEstimate: this.calculatePreciseNodeETA(event),
+        },
       },
 
       interactive: {
@@ -622,15 +630,15 @@ export class InteractiveExecutionVisualizationEngine {
           type: 'spinner',
           currentValue: 0,
           maxValue: 100,
-          displayText: `Processing ${this.getNodeFriendlyName(event)}...`
+          displayText: `Processing ${this.getNodeFriendlyName(event)}...`,
         },
         statusIndicators: [
           {
             label: this.getNodeFriendlyName(event),
             status: 'running',
-            icon: '⚙️'
-          }
-        ]
+            icon: '⚙️',
+          },
+        ],
       },
 
       contextual: {
@@ -638,26 +646,26 @@ export class InteractiveExecutionVisualizationEngine {
         troubleshooting: {
           commonIssues: this.getCommonNodeIssues(event.data.nodeType),
           quickFixes: this.getQuickFixes(event.data.nodeType),
-          when_to_worry: "If this step takes longer than expected, check your input data quality."
+          when_to_worry: 'If this step takes longer than expected, check your input data quality.',
         },
         learning: {
           funFacts: this.getNodeFunFacts(event.data.nodeType),
           bestPractices: this.getNodeBestPractices(event.data.nodeType),
-          relatedConcepts: this.getRelatedConcepts(event.data.nodeType)
-        }
+          relatedConcepts: this.getRelatedConcepts(event.data.nodeType),
+        },
       },
 
       engagement: {
         tone: 'informative',
-        emoji: '📋'
+        emoji: '📋',
       },
 
       personalization: {
         userExpertiseLevel: session.userExpertiseLevel,
         commentaryIntensity: session.commentaryIntensity,
         userPreferences: session.configuration.personalization || this.getDefaultPreferences(),
-        adaptationNotes: []
-      }
+        adaptationNotes: [],
+      },
     }))
 
     // Completion events
@@ -668,35 +676,41 @@ export class InteractiveExecutionVisualizationEngine {
 
       commentary: {
         [UserExpertiseLevel.NOVICE]: {
-          headline: "🎉 All done! Your workflow completed successfully!",
-          explanation: "Fantastic! Everything finished exactly as planned. Your results are ready to use.",
-          whatToExpected: "You can now review your results or start a new workflow if needed.",
+          headline: '🎉 All done! Your workflow completed successfully!',
+          explanation:
+            'Fantastic! Everything finished exactly as planned. Your results are ready to use.',
+          whatToExpected: 'You can now review your results or start a new workflow if needed.',
         },
         [UserExpertiseLevel.BEGINNER]: {
-          headline: "🎉 Workflow execution completed successfully",
-          explanation: "All steps have been processed successfully. Your workflow has completed without errors.",
-          technicalContext: `Total execution time: ${this.calculateTotalDuration(session)}, Steps completed: ${session.events.filter(e => e.eventType === 'node_completed').length}`,
+          headline: '🎉 Workflow execution completed successfully',
+          explanation:
+            'All steps have been processed successfully. Your workflow has completed without errors.',
+          technicalContext: `Total execution time: ${this.calculateTotalDuration(session)}, Steps completed: ${session.events.filter((e) => e.eventType === 'node_completed').length}`,
         },
         [UserExpertiseLevel.INTERMEDIATE]: {
-          headline: "🎉 Workflow execution completed",
-          explanation: "All workflow nodes have been executed successfully with full validation and quality checks passed.",
+          headline: '🎉 Workflow execution completed',
+          explanation:
+            'All workflow nodes have been executed successfully with full validation and quality checks passed.',
           technicalDetails: `Execution summary: ${this.generateExecutionSummary(session)}`,
           performanceNotes: `Performance: ${this.generatePerformanceSummary(session)}`,
         },
         [UserExpertiseLevel.ADVANCED]: {
-          headline: "🎉 Workflow execution completed successfully",
-          explanation: "Complete workflow execution with full observability, performance optimization, and quality assurance.",
-          technicalDetails: "All nodes executed within performance parameters with optimal resource utilization.",
+          headline: '🎉 Workflow execution completed successfully',
+          explanation:
+            'Complete workflow execution with full observability, performance optimization, and quality assurance.',
+          technicalDetails:
+            'All nodes executed within performance parameters with optimal resource utilization.',
           performanceMetrics: this.getDetailedPerformanceMetrics(session),
           optimizationNotes: this.generateOptimizationRecommendations(session),
         },
         [UserExpertiseLevel.TECHNICAL]: {
-          headline: "🎉 Workflow execution runtime completed",
-          explanation: "Distributed execution completed with full traceability, performance telemetry, and debugging information available.",
+          headline: '🎉 Workflow execution runtime completed',
+          explanation:
+            'Distributed execution completed with full traceability, performance telemetry, and debugging information available.',
           systemDetails: `Final state: ${JSON.stringify(this.getExecutionFinalState(session))}`,
           performanceData: this.getComprehensivePerformanceData(session),
           debugInfo: this.getDebugInformation(session),
-        }
+        },
       },
 
       interactive: {
@@ -704,76 +718,76 @@ export class InteractiveExecutionVisualizationEngine {
           type: 'bar',
           currentValue: 100,
           maxValue: 100,
-          displayText: 'Completed! ✅'
+          displayText: 'Completed! ✅',
         },
         actionButtons: [
           {
             id: 'view_results',
             label: 'View Results',
             action: 'view_workflow_results',
-            disabled: false
+            disabled: false,
           },
           {
             id: 'run_again',
             label: 'Run Again',
             action: 'restart_workflow',
-            disabled: false
+            disabled: false,
           },
           {
             id: 'export_report',
             label: 'Export Report',
             action: 'export_execution_report',
-            disabled: false
-          }
+            disabled: false,
+          },
         ],
         statusIndicators: [
           {
             label: 'Workflow Status',
             status: 'completed',
-            icon: '✅'
-          }
-        ]
+            icon: '✅',
+          },
+        ],
       },
 
       contextual: {
         relatedEvents: [],
         learning: {
           funFacts: [
-            "This workflow processed data in " + this.calculateTotalDuration(session),
-            "All quality checks passed successfully",
-            "Results are automatically validated before completion"
+            `This workflow processed data in ${this.calculateTotalDuration(session)}`,
+            'All quality checks passed successfully',
+            'Results are automatically validated before completion',
           ],
           bestPractices: [
-            "Review execution reports for optimization opportunities",
-            "Save successful configurations for future use",
-            "Monitor performance trends over time"
+            'Review execution reports for optimization opportunities',
+            'Save successful configurations for future use',
+            'Monitor performance trends over time',
           ],
           relatedConcepts: [
-            "Workflow optimization",
-            "Process improvement",
-            "Automation best practices"
-          ]
+            'Workflow optimization',
+            'Process improvement',
+            'Automation best practices',
+          ],
         },
         suggestions: {
           optimizations: this.generateOptimizationSuggestions(session),
           alternatives: this.generateAlternativeApproaches(session),
-          futureConsiderations: this.generateFutureConsiderations(session)
-        }
+          futureConsiderations: this.generateFutureConsiderations(session),
+        },
       },
 
       engagement: {
         tone: 'celebratory',
         emoji: '🎉',
         celebrationLevel: 8,
-        encouragementMessage: "Excellent work! Your workflow executed flawlessly."
+        encouragementMessage: 'Excellent work! Your workflow executed flawlessly.',
       },
 
       personalization: {
         userExpertiseLevel: session.userExpertiseLevel,
         commentaryIntensity: session.commentaryIntensity,
         userPreferences: session.configuration.personalization || this.getDefaultPreferences(),
-        adaptationNotes: []
-      }
+        adaptationNotes: [],
+      },
     }))
 
     // Add more generators for other event types...
@@ -837,7 +851,10 @@ export class InteractiveExecutionVisualizationEngine {
     return {} as ProgressVisualization
   }
 
-  private async checkForMilestones(session: ExecutionSession, event: ExecutionEvent): Promise<void> {
+  private async checkForMilestones(
+    session: ExecutionSession,
+    event: ExecutionEvent
+  ): Promise<void> {
     // Implementation for checking milestones
   }
 
@@ -849,11 +866,19 @@ export class InteractiveExecutionVisualizationEngine {
     // Implementation for personalizing commentary
   }
 
-  private addContextualInformation(commentary: ExecutionCommentary, event: ExecutionEvent, session: ExecutionSession): void {
+  private addContextualInformation(
+    commentary: ExecutionCommentary,
+    event: ExecutionEvent,
+    session: ExecutionSession
+  ): void {
     // Implementation for adding contextual information
   }
 
-  private enhanceEngagement(commentary: ExecutionCommentary, event: ExecutionEvent, session: ExecutionSession): void {
+  private enhanceEngagement(
+    commentary: ExecutionCommentary,
+    event: ExecutionEvent,
+    session: ExecutionSession
+  ): void {
     // Implementation for enhancing engagement
   }
 
@@ -867,7 +892,7 @@ export class InteractiveExecutionVisualizationEngine {
       showTechnicalDetails: false,
       includePerformanceData: false,
       showOptimizationTips: true,
-      preferredUpdateFrequency: 'medium'
+      preferredUpdateFrequency: 'medium',
     }
   }
 
@@ -875,103 +900,110 @@ export class InteractiveExecutionVisualizationEngine {
     // Implementation for additional commentary generators
   }
 
-  private generateFallbackCommentary(event: ExecutionEvent, session: ExecutionSession): ExecutionCommentary {
+  private generateFallbackCommentary(
+    event: ExecutionEvent,
+    session: ExecutionSession
+  ): ExecutionCommentary {
     return {
       eventId: event.eventId,
       commentaryId: this.generateCommentaryId(),
       timestamp: new Date(),
       commentary: {
         [UserExpertiseLevel.NOVICE]: {
-          headline: "Something is happening...",
-          explanation: "Your workflow is continuing to process.",
-          whatToExpected: "Updates will continue as progress is made."
+          headline: 'Something is happening...',
+          explanation: 'Your workflow is continuing to process.',
+          whatToExpected: 'Updates will continue as progress is made.',
         },
         [UserExpertiseLevel.BEGINNER]: {
-          headline: "Workflow event occurred",
-          explanation: "Processing continues with your workflow execution.",
-          technicalContext: `Event: ${event.eventType}`
+          headline: 'Workflow event occurred',
+          explanation: 'Processing continues with your workflow execution.',
+          technicalContext: `Event: ${event.eventType}`,
         },
         [UserExpertiseLevel.INTERMEDIATE]: {
           headline: `Workflow event: ${event.eventType}`,
-          explanation: "Workflow execution proceeding as configured.",
+          explanation: 'Workflow execution proceeding as configured.',
           technicalDetails: `Event details available in logs.`,
-          performanceNotes: "Performance within normal parameters."
+          performanceNotes: 'Performance within normal parameters.',
         },
         [UserExpertiseLevel.ADVANCED]: {
           headline: `Execution event: ${event.eventType}`,
-          explanation: "Advanced workflow execution with monitoring active.",
-          technicalDetails: "Full execution context maintained.",
-          performanceMetrics: "Metrics collection active.",
-          optimizationNotes: "No optimization recommendations at this time."
+          explanation: 'Advanced workflow execution with monitoring active.',
+          technicalDetails: 'Full execution context maintained.',
+          performanceMetrics: 'Metrics collection active.',
+          optimizationNotes: 'No optimization recommendations at this time.',
         },
         [UserExpertiseLevel.TECHNICAL]: {
           headline: `Runtime event: ${event.eventType}`,
-          explanation: "System event processed successfully.",
+          explanation: 'System event processed successfully.',
           systemDetails: JSON.stringify(event, null, 2),
           performanceData: event.metadata || {},
-          debugInfo: { message: "Fallback commentary generated" }
-        }
+          debugInfo: { message: 'Fallback commentary generated' },
+        },
       },
       interactive: {
         statusIndicators: [
           {
             label: 'Status',
-            status: 'running'
-          }
-        ]
+            status: 'running',
+          },
+        ],
       },
       contextual: {
         relatedEvents: [],
         learning: {
           funFacts: [],
           bestPractices: [],
-          relatedConcepts: []
-        }
+          relatedConcepts: [],
+        },
       },
       engagement: {
-        tone: 'informative'
+        tone: 'informative',
       },
       personalization: {
         userExpertiseLevel: session.userExpertiseLevel,
         commentaryIntensity: session.commentaryIntensity,
         userPreferences: this.getDefaultPreferences(),
-        adaptationNotes: []
-      }
+        adaptationNotes: [],
+      },
     }
   }
 
-  private generateErrorCommentary(event: ExecutionEvent, session: ExecutionSession, error: Error): ExecutionCommentary {
+  private generateErrorCommentary(
+    event: ExecutionEvent,
+    session: ExecutionSession,
+    error: Error
+  ): ExecutionCommentary {
     return {
       eventId: event.eventId,
       commentaryId: this.generateCommentaryId(),
       timestamp: new Date(),
       commentary: {
         [UserExpertiseLevel.NOVICE]: {
-          headline: "⚠️ Something needs attention",
+          headline: '⚠️ Something needs attention',
           explanation: "There was a small hiccup, but don't worry - I'm working on it!",
-          whatToExpected: "This should be resolved shortly. Your workflow will continue."
+          whatToExpected: 'This should be resolved shortly. Your workflow will continue.',
         },
         [UserExpertiseLevel.BEGINNER]: {
-          headline: "⚠️ Processing event encountered",
-          explanation: "A processing event occurred that requires attention.",
-          technicalContext: `Event type: ${event.eventType}, Status: handling`
+          headline: '⚠️ Processing event encountered',
+          explanation: 'A processing event occurred that requires attention.',
+          technicalContext: `Event type: ${event.eventType}, Status: handling`,
         },
         [UserExpertiseLevel.INTERMEDIATE]: {
-          headline: "⚠️ Execution event processing",
-          explanation: "Event processing encountered an issue but recovery is in progress.",
+          headline: '⚠️ Execution event processing',
+          explanation: 'Event processing encountered an issue but recovery is in progress.',
           technicalDetails: `Error: ${error.message}`,
-          performanceNotes: "Performance monitoring continues."
+          performanceNotes: 'Performance monitoring continues.',
         },
         [UserExpertiseLevel.ADVANCED]: {
-          headline: "⚠️ Execution event handling error",
-          explanation: "Advanced error handling activated for execution event processing.",
+          headline: '⚠️ Execution event handling error',
+          explanation: 'Advanced error handling activated for execution event processing.',
           technicalDetails: `Error details: ${error.message}`,
-          performanceMetrics: "System performance maintained.",
-          optimizationNotes: "Error handling optimization applied."
+          performanceMetrics: 'System performance maintained.',
+          optimizationNotes: 'Error handling optimization applied.',
         },
         [UserExpertiseLevel.TECHNICAL]: {
-          headline: "⚠️ Runtime exception in event processing",
-          explanation: "Exception caught in event processing pipeline with full recovery.",
+          headline: '⚠️ Runtime exception in event processing',
+          explanation: 'Exception caught in event processing pipeline with full recovery.',
           systemDetails: `Error: ${error.stack}`,
           performanceData: { error: error.message, timestamp: new Date().toISOString() },
           debugInfo: {
@@ -979,37 +1011,37 @@ export class InteractiveExecutionVisualizationEngine {
             errorDetails: {
               name: error.name,
               message: error.message,
-              stack: error.stack
-            }
-          }
-        }
+              stack: error.stack,
+            },
+          },
+        },
       },
       interactive: {
         statusIndicators: [
           {
             label: 'Processing Status',
-            status: 'running'
-          }
-        ]
+            status: 'running',
+          },
+        ],
       },
       contextual: {
         relatedEvents: [],
         learning: {
           funFacts: [],
           bestPractices: [],
-          relatedConcepts: []
-        }
+          relatedConcepts: [],
+        },
       },
       engagement: {
         tone: 'cautious',
-        emoji: '⚠️'
+        emoji: '⚠️',
       },
       personalization: {
         userExpertiseLevel: session.userExpertiseLevel,
         commentaryIntensity: session.commentaryIntensity,
         userPreferences: this.getDefaultPreferences(),
-        adaptationNotes: ['Error fallback commentary generated']
-      }
+        adaptationNotes: ['Error fallback commentary generated'],
+      },
     }
   }
 
@@ -1019,23 +1051,23 @@ export class InteractiveExecutionVisualizationEngine {
   }
 
   private getCommonNodeIssues(nodeType: string): string[] {
-    return ["Input validation issues", "Configuration problems"]
+    return ['Input validation issues', 'Configuration problems']
   }
 
   private getQuickFixes(nodeType: string): string[] {
-    return ["Check input data format", "Verify configuration settings"]
+    return ['Check input data format', 'Verify configuration settings']
   }
 
   private getNodeFunFacts(nodeType: string): string[] {
-    return ["This type of step is commonly used in workflows"]
+    return ['This type of step is commonly used in workflows']
   }
 
   private getNodeBestPractices(nodeType: string): string[] {
-    return ["Always validate inputs", "Monitor execution time"]
+    return ['Always validate inputs', 'Monitor execution time']
   }
 
   private getRelatedConcepts(nodeType: string): string[] {
-    return ["Data processing", "Workflow optimization"]
+    return ['Data processing', 'Workflow optimization']
   }
 
   private calculateTotalDuration(session: ExecutionSession): string {
@@ -1135,7 +1167,10 @@ interface ExecutionPerformanceMetrics {
   }
 }
 
-type CommentaryGenerator = (event: ExecutionEvent, session: ExecutionSession) => Promise<ExecutionCommentary>
+type CommentaryGenerator = (
+  event: ExecutionEvent,
+  session: ExecutionSession
+) => Promise<ExecutionCommentary>
 
 /**
  * Singleton service instance

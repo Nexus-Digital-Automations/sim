@@ -7,8 +7,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { ParlantJourney, JourneyState } from '../workflow-converter/types'
-import type { JourneyContext, ExecutionHistoryEntry } from './workflow-context-integration'
+import type { JourneyContext } from './workflow-context-integration'
 
 const logger = createLogger('ConversationalWorkflowDebugger')
 
@@ -539,15 +538,19 @@ export class ConversationalWorkflowDebugger {
         priority: cause.likelihood > 0.7 ? 'high' : cause.likelihood > 0.4 ? 'medium' : 'low',
         status: 'active',
         findings: [],
-        nextSteps: cause.investigationSteps.map(step => ({
+        nextSteps: cause.investigationSteps.map((step) => ({
           description: step,
           estimatedTime: 30000, // 30 seconds
           complexity: 'medium',
           dependencies: [],
           autoExecutable: true,
         })),
-        estimatedTimeToResolve: cause.resolutionComplexity === 'simple' ? 60000 :
-                                cause.resolutionComplexity === 'moderate' ? 300000 : 900000,
+        estimatedTimeToResolve:
+          cause.resolutionComplexity === 'simple'
+            ? 60000
+            : cause.resolutionComplexity === 'moderate'
+              ? 300000
+              : 900000,
       }
 
       session.activeInvestigations.push(investigation)
@@ -691,11 +694,7 @@ export class ConversationalWorkflowDebugger {
     journeyContext: JourneyContext,
     diagnosticData: DiagnosticData
   ): string[] {
-    return [
-      'workflow_engine',
-      journeyContext.currentStateId,
-      'database',
-    ]
+    return ['workflow_engine', journeyContext.currentStateId, 'database']
   }
 
   private async gatherEnvironmentContext(): Promise<EnvironmentContext> {
@@ -705,16 +704,11 @@ export class ConversationalWorkflowDebugger {
       memoryLimit: 2048,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       environmentVariables: { NODE_ENV: process.env.NODE_ENV || 'development' },
-      installedPackages: [
-        { name: 'parlant', version: '1.0.0', critical: true },
-      ],
+      installedPackages: [{ name: 'parlant', version: '1.0.0', critical: true }],
     }
   }
 
-  private async parseDebugIntent(
-    userInput: string,
-    session: DebugSession
-  ): Promise<DebugIntent> {
+  private async parseDebugIntent(userInput: string, session: DebugSession): Promise<DebugIntent> {
     const input = userInput.toLowerCase()
 
     // Simple intent parsing - would use NLP in production
@@ -753,7 +747,7 @@ export class ConversationalWorkflowDebugger {
     const logs = session.debugContext.diagnosticData.executionLogs
     let message = `📋 **Recent Execution Logs**\n\n`
 
-    logs.slice(-5).forEach(log => {
+    logs.slice(-5).forEach((log) => {
       const emoji = log.level === 'error' ? '❌' : log.level === 'warn' ? '⚠️' : 'ℹ️'
       message += `${emoji} **${log.level.toUpperCase()}** [${log.component}]: ${log.message}\n`
     })
@@ -852,9 +846,7 @@ export class ConversationalWorkflowDebugger {
   }
 
   private getKeyInsights(session: DebugSession): DebugInsight[] {
-    return session.debugHistory
-      .flatMap(interaction => interaction.insights)
-      .slice(-3)
+    return session.debugHistory.flatMap((interaction) => interaction.insights).slice(-3)
   }
 
   private getSuggestedNextSteps(session: DebugSession): string[] {
@@ -872,7 +864,7 @@ export class ConversationalWorkflowDebugger {
   }
 
   private generateDebugTimeline(session: DebugSession): any[] {
-    return session.debugHistory.map(interaction => ({
+    return session.debugHistory.map((interaction) => ({
       timestamp: interaction.timestamp,
       type: interaction.type,
       description: interaction.systemResponse.split('\n')[0],
@@ -880,7 +872,7 @@ export class ConversationalWorkflowDebugger {
   }
 
   private async consolidateFindings(session: DebugSession): Promise<Finding[]> {
-    return session.activeInvestigations.flatMap(inv => inv.findings)
+    return session.activeInvestigations.flatMap((inv) => inv.findings)
   }
 
   private async generateRecommendations(session: DebugSession): Promise<string[]> {

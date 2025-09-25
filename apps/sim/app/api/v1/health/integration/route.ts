@@ -5,10 +5,10 @@
  * including dependency checks, data flow validation, and integration readiness.
  */
 
-import { type NextRequest, NextResponse } from 'next/server'
-import { createLogger } from '@/lib/logs/console/logger'
 import { integrationHealth } from '@sim/parlant-server/integration-health'
 import { parlantLoggers } from '@sim/parlant-server/logging'
+import { type NextRequest, NextResponse } from 'next/server'
+import { createLogger } from '@/lib/logs/console/logger'
 import { checkRateLimit, createRateLimitResponse } from '../../middleware'
 
 const logger = createLogger('IntegrationHealthAPI')

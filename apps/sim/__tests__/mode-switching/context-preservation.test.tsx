@@ -2,8 +2,7 @@
  * @jest-environment jsdom
  */
 
-import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { ModeProvider } from '@/contexts/mode-context'
 import { useContextPreservation } from '@/hooks/use-context-preservation'
@@ -14,15 +13,13 @@ jest.mock('reactflow', () => ({
     getViewport: jest.fn(() => ({ x: 100, y: 200, zoom: 1.5 })),
     getNodes: jest.fn(() => [
       { id: 'node1', selected: true, position: { x: 0, y: 0 } },
-      { id: 'node2', selected: false, position: { x: 100, y: 100 } }
+      { id: 'node2', selected: false, position: { x: 100, y: 100 } },
     ]),
-    getEdges: jest.fn(() => [
-      { id: 'edge1', selected: true, source: 'node1', target: 'node2' }
-    ]),
+    getEdges: jest.fn(() => [{ id: 'edge1', selected: true, source: 'node1', target: 'node2' }]),
     setViewport: jest.fn(),
     setNodes: jest.fn(),
-    setEdges: jest.fn()
-  }))
+    setEdges: jest.fn(),
+  })),
 }))
 
 // Mock stores
@@ -30,9 +27,9 @@ jest.mock('@/stores/workflows/workflow/store', () => ({
   useWorkflowStore: {
     getState: jest.fn(() => ({
       updateBlockPosition: jest.fn(),
-      updateNodeDimensions: jest.fn()
-    }))
-  }
+      updateNodeDimensions: jest.fn(),
+    })),
+  },
 }))
 
 jest.mock('@/stores/execution/store', () => ({
@@ -44,9 +41,9 @@ jest.mock('@/stores/execution/store', () => ({
       debugMode: true,
       breakpoints: ['block3'],
       setDebugMode: jest.fn(),
-      setBreakpoints: jest.fn()
-    }))
-  }
+      setBreakpoints: jest.fn(),
+    })),
+  },
 }))
 
 // Mock logger
@@ -56,7 +53,7 @@ jest.mock('@/lib/logs/console/logger', () => ({
     debug: jest.fn(),
     error: jest.fn(),
     warn: jest.fn(),
-  }))
+  })),
 }))
 
 // Mock DOM elements and methods
@@ -101,27 +98,34 @@ beforeEach(() => {
           {
             getAttribute: jest.fn((attr) => {
               switch (attr) {
-                case 'data-message-id': return 'msg-1'
-                case 'data-message-role': return 'user'
-                case 'data-message-timestamp': return '2023-01-01T00:00:00Z'
-                default: return null
+                case 'data-message-id':
+                  return 'msg-1'
+                case 'data-message-role':
+                  return 'user'
+                case 'data-message-timestamp':
+                  return '2023-01-01T00:00:00Z'
+                default:
+                  return null
               }
             }),
-            textContent: 'Hello world'
-          }
+            textContent: 'Hello world',
+          },
         ]
       case '[data-notification]':
         return [
           {
             getAttribute: jest.fn((attr) => {
               switch (attr) {
-                case 'data-notification-id': return 'notif-1'
-                case 'data-notification-type': return 'info'
-                default: return null
+                case 'data-notification-id':
+                  return 'notif-1'
+                case 'data-notification-type':
+                  return 'info'
+                default:
+                  return null
               }
             }),
-            textContent: 'Test notification'
-          }
+            textContent: 'Test notification',
+          },
         ]
       case '[data-modal-open]':
         return []
@@ -134,10 +138,10 @@ beforeEach(() => {
   Object.defineProperty(document, 'documentElement', {
     value: {
       classList: {
-        contains: jest.fn((className) => className === 'dark')
-      }
+        contains: jest.fn((className) => className === 'dark'),
+      },
     },
-    configurable: true
+    configurable: true,
   })
 
   // Mock URL and URLSearchParams
@@ -145,12 +149,15 @@ beforeEach(() => {
     searchParams: {
       get: jest.fn((key) => {
         switch (key) {
-          case 'conversation': return 'conv-123'
-          case 'agentId': return 'agent-456'
-          default: return null
+          case 'conversation':
+            return 'conv-123'
+          case 'agentId':
+            return 'agent-456'
+          default:
+            return null
         }
-      })
-    }
+      }),
+    },
   })) as any
 
   global.URLSearchParams = jest.fn().mockImplementation((search) => ({
@@ -158,7 +165,7 @@ beforeEach(() => {
       if (search.includes('conversation=conv-123') && key === 'conversation') return 'conv-123'
       if (search.includes('agentId=agent-456') && key === 'agentId') return 'agent-456'
       return null
-    })
+    }),
   })) as any
 })
 
@@ -170,39 +177,51 @@ function TestContextPreservationComponent() {
     captureVisualContext,
     captureChatContext,
     captureExecutionContext,
-    captureUIContext
+    captureUIContext,
   } = useContextPreservation()
 
   return (
     <div>
-      <button data-testid="capture-current" onClick={captureCurrentContext}>
+      <button data-testid='capture-current' onClick={captureCurrentContext}>
         Capture Current Context
       </button>
-      <button data-testid="restore-visual" onClick={() => restoreContextForMode('visual')}>
+      <button data-testid='restore-visual' onClick={() => restoreContextForMode('visual')}>
         Restore Visual Context
       </button>
-      <button data-testid="capture-visual" onClick={() => {
-        const context = captureVisualContext()
-        console.log('Visual context:', context)
-      }}>
+      <button
+        data-testid='capture-visual'
+        onClick={() => {
+          const context = captureVisualContext()
+          console.log('Visual context:', context)
+        }}
+      >
         Capture Visual Context
       </button>
-      <button data-testid="capture-chat" onClick={() => {
-        const context = captureChatContext()
-        console.log('Chat context:', context)
-      }}>
+      <button
+        data-testid='capture-chat'
+        onClick={() => {
+          const context = captureChatContext()
+          console.log('Chat context:', context)
+        }}
+      >
         Capture Chat Context
       </button>
-      <button data-testid="capture-execution" onClick={() => {
-        const context = captureExecutionContext()
-        console.log('Execution context:', context)
-      }}>
+      <button
+        data-testid='capture-execution'
+        onClick={() => {
+          const context = captureExecutionContext()
+          console.log('Execution context:', context)
+        }}
+      >
         Capture Execution Context
       </button>
-      <button data-testid="capture-ui" onClick={() => {
-        const context = captureUIContext()
-        console.log('UI context:', context)
-      }}>
+      <button
+        data-testid='capture-ui'
+        onClick={() => {
+          const context = captureUIContext()
+          console.log('UI context:', context)
+        }}
+      >
         Capture UI Context
       </button>
     </div>
@@ -230,7 +249,7 @@ describe('useContextPreservation', () => {
           selectedEdges: ['edge1'],
           cameraPosition: { x: 100, y: 200 },
           sidebarState: 'open',
-          activePanel: 'properties'
+          activePanel: 'properties',
         })
       )
 
@@ -283,9 +302,9 @@ describe('useContextPreservation', () => {
               id: 'msg-1',
               role: 'user',
               content: 'Hello world',
-              timestamp: '2023-01-01T00:00:00Z'
-            })
-          ])
+              timestamp: '2023-01-01T00:00:00Z',
+            }),
+          ]),
         })
       )
 
@@ -333,7 +352,7 @@ describe('useContextPreservation', () => {
           activeBlocks: ['block1'],
           pendingBlocks: ['block2'],
           debugMode: true,
-          breakpoints: ['block3']
+          breakpoints: ['block3'],
         })
       )
 
@@ -362,10 +381,10 @@ describe('useContextPreservation', () => {
             expect.objectContaining({
               id: 'notif-1',
               type: 'info',
-              message: 'Test notification'
-            })
+              message: 'Test notification',
+            }),
           ]),
-          modalsOpen: []
+          modalsOpen: [],
         })
       )
 
@@ -377,10 +396,10 @@ describe('useContextPreservation', () => {
       Object.defineProperty(document, 'documentElement', {
         value: {
           classList: {
-            contains: jest.fn(() => false) // Not dark theme
-          }
+            contains: jest.fn(() => false), // Not dark theme
+          },
         },
-        configurable: true
+        configurable: true,
       })
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
@@ -396,7 +415,7 @@ describe('useContextPreservation', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         'UI context:',
         expect.objectContaining({
-          theme: 'light'
+          theme: 'light',
         })
       )
 
@@ -441,7 +460,9 @@ describe('useContextPreservation', () => {
       const mockReactFlow = require('reactflow').useReactFlow
       mockReactFlow.mockReturnValue({
         ...mockReactFlow(),
-        setViewport: jest.fn(() => { throw new Error('Restoration error') })
+        setViewport: jest.fn(() => {
+          throw new Error('Restoration error')
+        }),
       })
 
       render(
@@ -479,7 +500,7 @@ describe('useContextPreservation', () => {
       // Mock document visibility
       Object.defineProperty(document, 'visibilityState', {
         value: 'visible',
-        configurable: true
+        configurable: true,
       })
 
       render(
@@ -503,7 +524,7 @@ describe('useContextPreservation', () => {
       // Mock document visibility as hidden
       Object.defineProperty(document, 'visibilityState', {
         value: 'hidden',
-        configurable: true
+        configurable: true,
       })
 
       render(

@@ -5,13 +5,13 @@
  * with existing chat components and workflows.
  */
 
-import { useEffect, useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { createLogger } from '@/lib/logs/console/logger'
-import { useWorkflowChatSyncStore } from './store'
+import { useExecutionStore } from '@/stores/execution/store'
 import { useChatStore } from '@/stores/panel/chat/store'
 import { useWorkflowRegistry } from '@/stores/workflows/registry/store'
 import { useWorkflowStore } from '@/stores/workflows/workflow/store'
-import { useExecutionStore } from '@/stores/execution/store'
+import { useWorkflowChatSyncStore } from './store'
 import type { StateChangeEvent } from './types'
 
 const logger = createLogger('WorkflowChatSyncIntegration')
@@ -19,16 +19,10 @@ const logger = createLogger('WorkflowChatSyncIntegration')
 /**
  * Hook to enhance existing chat interface with synchronization capabilities
  */
-export function useChatSyncIntegration(options: {
-  enableOnMount?: boolean
-  autoResolveConflicts?: boolean
-  notifyOnSync?: boolean
-} = {}) {
-  const {
-    enableOnMount = true,
-    autoResolveConflicts = false,
-    notifyOnSync = true
-  } = options
+export function useChatSyncIntegration(
+  options: { enableOnMount?: boolean; autoResolveConflicts?: boolean; notifyOnSync?: boolean } = {}
+) {
+  const { enableOnMount = true, autoResolveConflicts = false, notifyOnSync = true } = options
 
   const syncStore = useWorkflowChatSyncStore()
   const chatStore = useChatStore()
@@ -46,7 +40,7 @@ export function useChatSyncIntegration(options: {
   useEffect(() => {
     if (autoResolveConflicts && syncStore.conflicts.length > 0) {
       logger.info('Auto-resolving sync conflicts')
-      syncStore.conflicts.forEach(conflict => {
+      syncStore.conflicts.forEach((conflict) => {
         const resolution = conflict.suggestedResolution || 'visual'
         syncStore.resolveConflict(conflict.id, resolution)
       })
@@ -54,47 +48,56 @@ export function useChatSyncIntegration(options: {
   }, [autoResolveConflicts, syncStore])
 
   // Notification system
-  const notifyUser = useCallback((message: string, type: 'info' | 'warning' | 'error' = 'info') => {
-    if (notifyOnSync && workflowRegistry.activeWorkflowId) {
-      const icon = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'
-      chatStore.addMessage({
-        content: `${icon} ${message}`,
-        workflowId: workflowRegistry.activeWorkflowId,
-        type: 'workflow'
-      })
-    }
-  }, [notifyOnSync, workflowRegistry.activeWorkflowId, chatStore])
+  const notifyUser = useCallback(
+    (message: string, type: 'info' | 'warning' | 'error' = 'info') => {
+      if (notifyOnSync && workflowRegistry.activeWorkflowId) {
+        const icon = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'
+        chatStore.addMessage({
+          content: `${icon} ${message}`,
+          workflowId: workflowRegistry.activeWorkflowId,
+          type: 'workflow',
+        })
+      }
+    },
+    [notifyOnSync, workflowRegistry.activeWorkflowId, chatStore]
+  )
 
   // Enhanced command processing
-  const processEnhancedCommand = useCallback((message: string) => {
-    const command = syncStore.parseChatCommand(message)
+  const processEnhancedCommand = useCallback(
+    (message: string) => {
+      const command = syncStore.parseChatCommand(message)
 
-    if (command) {
-      logger.info('Processing enhanced chat command:', command)
+      if (command) {
+        logger.info('Processing enhanced chat command:', command)
 
-      try {
-        // Add command acknowledgment
-        if (notifyOnSync && workflowRegistry.activeWorkflowId) {
-          chatStore.addMessage({
-            content: `🔄 Processing: ${command.description}`,
-            workflowId: workflowRegistry.activeWorkflowId,
-            type: 'workflow'
-          })
+        try {
+          // Add command acknowledgment
+          if (notifyOnSync && workflowRegistry.activeWorkflowId) {
+            chatStore.addMessage({
+              content: `🔄 Processing: ${command.description}`,
+              workflowId: workflowRegistry.activeWorkflowId,
+              type: 'workflow',
+            })
+          }
+
+          // Execute command
+          syncStore.executeWorkflowCommand(command)
+
+          return true
+        } catch (error) {
+          logger.error('Failed to execute enhanced command:', error)
+          notifyUser(
+            `Failed to ${command.description}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            'error'
+          )
+          return false
         }
-
-        // Execute command
-        syncStore.executeWorkflowCommand(command)
-
-        return true
-      } catch (error) {
-        logger.error('Failed to execute enhanced command:', error)
-        notifyUser(`Failed to ${command.description}: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error')
-        return false
       }
-    }
 
-    return false
-  }, [syncStore, notifyUser, chatStore, workflowRegistry.activeWorkflowId, notifyOnSync])
+      return false
+    },
+    [syncStore, notifyUser, chatStore, workflowRegistry.activeWorkflowId, notifyOnSync]
+  )
 
   // State change notifications
   useEffect(() => {
@@ -129,7 +132,6 @@ export function useChatSyncIntegration(options: {
 
     // This would be part of the event system in a full implementation
     // For now, we'll use the existing state representations
-
   }, [syncStore.isEnabled, notifyOnSync, notifyUser])
 
   return {
@@ -147,7 +149,7 @@ export function useChatSyncIntegration(options: {
     notifyUser,
 
     // State representation
-    workflowState: syncStore.workflowStateRepresentation
+    workflowState: syncStore.workflowStateRepresentation,
   }
 }
 
@@ -177,29 +179,33 @@ export function useWorkflowStateAwareness() {
       edgeCount,
       isExecuting,
       activeBlockCount: activeBlocks.length,
-      status: isExecuting ? 'running' : 'idle'
+      status: isExecuting ? 'running' : 'idle',
     }
   }, [workflowRegistry.activeWorkflowId, workflowStore, executionStore])
 
   // Get block by name or ID
-  const findBlock = useCallback((identifier: string) => {
-    return Object.values(workflowStore.blocks).find(block =>
-      block.name.toLowerCase().includes(identifier.toLowerCase()) ||
-      block.id === identifier ||
-      block.type.toLowerCase().includes(identifier.toLowerCase())
-    )
-  }, [workflowStore.blocks])
+  const findBlock = useCallback(
+    (identifier: string) => {
+      return Object.values(workflowStore.blocks).find(
+        (block) =>
+          block.name.toLowerCase().includes(identifier.toLowerCase()) ||
+          block.id === identifier ||
+          block.type.toLowerCase().includes(identifier.toLowerCase())
+      )
+    },
+    [workflowStore.blocks]
+  )
 
   // Get connection summary
   const getConnections = useCallback(() => {
-    return workflowStore.edges.map(edge => {
+    return workflowStore.edges.map((edge) => {
       const sourceBlock = workflowStore.blocks[edge.source]
       const targetBlock = workflowStore.blocks[edge.target]
       return {
         id: edge.id,
         source: sourceBlock?.name || edge.source,
         target: targetBlock?.name || edge.target,
-        description: `${sourceBlock?.name || edge.source} → ${targetBlock?.name || edge.target}`
+        description: `${sourceBlock?.name || edge.source} → ${targetBlock?.name || edge.target}`,
       }
     })
   }, [workflowStore.blocks, workflowStore.edges])
@@ -209,7 +215,7 @@ export function useWorkflowStateAwareness() {
     findBlock,
     connections: getConnections(),
     isEnabled: syncStore.isEnabled,
-    representation: syncStore.workflowStateRepresentation
+    representation: syncStore.workflowStateRepresentation,
   }
 }
 
@@ -229,7 +235,7 @@ export function createWorkflowSnapshot() {
       enabled: syncStore.isEnabled,
       state: syncStore.syncState,
       conflicts: syncStore.conflicts.length,
-      lastSync: syncStore.lastSyncTimestamp
+      lastSync: syncStore.lastSyncTimestamp,
     },
     workflow: {
       blockCount: Object.keys(workflowStore.blocks).length,
@@ -239,15 +245,15 @@ export function createWorkflowSnapshot() {
         type: block.type,
         name: block.name,
         enabled: block.enabled,
-        position: block.position
-      }))
+        position: block.position,
+      })),
     },
     execution: {
       isExecuting: executionStore.isExecuting,
       isDebugging: executionStore.isDebugging,
       activeBlocks: Array.from(executionStore.activeBlockIds),
-      pendingBlocks: executionStore.pendingBlocks
-    }
+      pendingBlocks: executionStore.pendingBlocks,
+    },
   }
 }
 
@@ -271,7 +277,7 @@ export function createEnhancedMessageHandler() {
     chatStore.addMessage({
       content: message,
       workflowId: targetWorkflowId,
-      type: 'user'
+      type: 'user',
     })
 
     // Check if it's a command
@@ -287,7 +293,7 @@ export function createEnhancedMessageHandler() {
           chatStore.addMessage({
             content: `❌ Failed to ${command.description}: ${error instanceof Error ? error.message : 'Unknown error'}`,
             workflowId: targetWorkflowId,
-            type: 'workflow'
+            type: 'workflow',
           })
           return false
         }
@@ -332,7 +338,7 @@ export class WorkflowBatchOperations {
     this.syncStore.setSyncState('syncing')
 
     try {
-      this.operations.forEach(operation => operation())
+      this.operations.forEach((operation) => operation())
       this.syncStore.setSyncState('idle')
       logger.info('Batch operations completed successfully')
     } catch (error) {
@@ -350,5 +356,5 @@ export default {
   useWorkflowStateAwareness,
   createWorkflowSnapshot,
   createEnhancedMessageHandler,
-  WorkflowBatchOperations
+  WorkflowBatchOperations,
 }

@@ -9,15 +9,8 @@
  * - Real-time data binding
  */
 
-import { describe, expect, test, beforeEach, afterEach, jest } from '@jest/globals'
-import {
-  BidirectionalSyncSystem,
-  createSyncSystem,
-  type SyncSystemConfig,
-  type SyncEvent,
-  type WorkflowVisualState,
-  type ChatWorkflowState
-} from '../index'
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
+import { type BidirectionalSyncSystem, createSyncSystem, type SyncSystemConfig } from '../index'
 
 // Mock logger to avoid console spam in tests
 jest.mock('@/lib/logs/console/logger', () => ({
@@ -25,8 +18,8 @@ jest.mock('@/lib/logs/console/logger', () => ({
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
-    debug: jest.fn()
-  })
+    debug: jest.fn(),
+  }),
 }))
 
 describe('BidirectionalSyncSystem', () => {
@@ -40,7 +33,7 @@ describe('BidirectionalSyncSystem', () => {
       workflowId: testWorkflowId,
       enableConflictResolution: true,
       enablePerformanceOptimization: true,
-      enableMonitoring: true
+      enableMonitoring: true,
     }
 
     syncSystem = await createSyncSystem(config)
@@ -77,14 +70,18 @@ describe('BidirectionalSyncSystem', () => {
       const eventReceived = jest.fn()
       const unsubscribe = syncSystem.onEvent('BLOCK_ADD', eventReceived)
 
-      await syncSystem.emitEvent('BLOCK_ADD', {
-        id: 'test-block-1',
-        type: 'textInput',
-        name: 'Test Block',
-        position: { x: 100, y: 100 }
-      }, 'visual')
+      await syncSystem.emitEvent(
+        'BLOCK_ADD',
+        {
+          id: 'test-block-1',
+          type: 'textInput',
+          name: 'Test Block',
+          position: { x: 100, y: 100 },
+        },
+        'visual'
+      )
 
-      await new Promise(resolve => setTimeout(resolve, 100)) // Wait for async processing
+      await new Promise((resolve) => setTimeout(resolve, 100)) // Wait for async processing
 
       expect(eventReceived).toHaveBeenCalled()
       unsubscribe()
@@ -96,15 +93,15 @@ describe('BidirectionalSyncSystem', () => {
 
       syncSystem.updateVisualState({
         blocks: {
-          'block1': {
+          block1: {
             id: 'block1',
             type: 'textInput',
-            position: { x: 50, y: 50 }
-          }
-        }
+            position: { x: 50, y: 50 },
+          },
+        },
       })
 
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise((resolve) => setTimeout(resolve, 50))
 
       expect(changeReceived).toHaveBeenCalled()
       unsubscribe()
@@ -118,9 +115,9 @@ describe('BidirectionalSyncSystem', () => {
             id: 'msg1',
             content: 'Hello, workflow!',
             type: 'user',
-            timestamp: new Date()
-          }
-        ]
+            timestamp: new Date(),
+          },
+        ],
       })
 
       const chatState = syncSystem.getChatState()
@@ -142,20 +139,28 @@ describe('BidirectionalSyncSystem', () => {
       const blockId = 'conflict-block-1'
 
       // Visual update
-      await syncSystem.emitEvent('BLOCK_UPDATE', {
-        id: blockId,
-        position: { x: 100, y: 100 },
-        source: 'visual'
-      }, 'visual')
+      await syncSystem.emitEvent(
+        'BLOCK_UPDATE',
+        {
+          id: blockId,
+          position: { x: 100, y: 100 },
+          source: 'visual',
+        },
+        'visual'
+      )
 
       // Chat update (concurrent)
-      await syncSystem.emitEvent('BLOCK_UPDATE', {
-        id: blockId,
-        position: { x: 200, y: 200 },
-        source: 'chat'
-      }, 'chat')
+      await syncSystem.emitEvent(
+        'BLOCK_UPDATE',
+        {
+          id: blockId,
+          position: { x: 200, y: 200 },
+          source: 'chat',
+        },
+        'chat'
+      )
 
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       const conflicts = syncSystem.getActiveConflicts()
       expect(conflicts.length).toBeGreaterThanOrEqual(0) // May or may not detect conflict depending on timing
@@ -173,13 +178,17 @@ describe('BidirectionalSyncSystem', () => {
     test('should track performance metrics', async () => {
       // Generate some events to track performance
       for (let i = 0; i < 10; i++) {
-        await syncSystem.emitEvent('BLOCK_POSITION_UPDATE', {
-          id: `block-${i}`,
-          position: { x: i * 10, y: i * 10 }
-        }, 'visual')
+        await syncSystem.emitEvent(
+          'BLOCK_POSITION_UPDATE',
+          {
+            id: `block-${i}`,
+            position: { x: i * 10, y: i * 10 },
+          },
+          'visual'
+        )
       }
 
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       const metrics = syncSystem.getPerformanceMetrics()
       expect(metrics.syncLatency.length).toBeGreaterThan(0)
@@ -192,11 +201,17 @@ describe('BidirectionalSyncSystem', () => {
       // Send a batch of similar events
       const promises = []
       for (let i = 0; i < 50; i++) {
-        promises.push(syncSystem.emitEvent('SUBBLOCK_UPDATE', {
-          blockId: 'test-block',
-          subblockId: `field-${i}`,
-          value: `value-${i}`
-        }, 'visual'))
+        promises.push(
+          syncSystem.emitEvent(
+            'SUBBLOCK_UPDATE',
+            {
+              blockId: 'test-block',
+              subblockId: `field-${i}`,
+              value: `value-${i}`,
+            },
+            'visual'
+          )
+        )
       }
 
       await Promise.all(promises)
@@ -242,7 +257,7 @@ describe('BidirectionalSyncSystem', () => {
         id: 'test-binding',
         visualPath: 'blocks.*.position',
         chatPath: 'executionState.blockPositions.*',
-        bidirectional: true
+        bidirectional: true,
       })
 
       // Should not throw an error
@@ -256,12 +271,12 @@ describe('BidirectionalSyncSystem', () => {
           'test-block': {
             id: 'test-block',
             type: 'textInput',
-            position: { x: 300, y: 300 }
-          }
-        }
+            position: { x: 300, y: 300 },
+          },
+        },
       })
 
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise((resolve) => setTimeout(resolve, 50))
 
       // Check if change propagated
       const visualState = syncSystem.getVisualState()
@@ -282,7 +297,7 @@ describe('BidirectionalSyncSystem', () => {
     test('should reset system state', () => {
       // Add some data
       syncSystem.updateVisualState({
-        blocks: { 'test': { id: 'test', type: 'test' } }
+        blocks: { test: { id: 'test', type: 'test' } },
       })
 
       // Reset
@@ -308,12 +323,12 @@ describe('BidirectionalSyncSystem', () => {
     test('should force full synchronization', async () => {
       // Setup some state
       syncSystem.updateVisualState({
-        blocks: { 'block1': { id: 'block1', type: 'test' } }
+        blocks: { block1: { id: 'block1', type: 'test' } },
       })
 
       syncSystem.updateChatState({
         activeWorkflow: testWorkflowId,
-        messages: [{ id: 'msg1', content: 'test', type: 'user', timestamp: new Date() }]
+        messages: [{ id: 'msg1', content: 'test', type: 'user', timestamp: new Date() }],
       })
 
       // Force sync should not throw
@@ -329,12 +344,16 @@ describe('BidirectionalSyncSystem', () => {
       const unsubscribe1 = syncSystem.onEvent('BLOCK_ADD', handler1)
       const unsubscribe2 = syncSystem.onEvent('BLOCK_ADD', handler2)
 
-      await syncSystem.emitEvent('BLOCK_ADD', {
-        id: 'multi-sub-test',
-        type: 'textInput'
-      }, 'visual')
+      await syncSystem.emitEvent(
+        'BLOCK_ADD',
+        {
+          id: 'multi-sub-test',
+          type: 'textInput',
+        },
+        'visual'
+      )
 
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise((resolve) => setTimeout(resolve, 50))
 
       expect(handler1).toHaveBeenCalled()
       expect(handler2).toHaveBeenCalled()
@@ -350,11 +369,15 @@ describe('BidirectionalSyncSystem', () => {
       // Unsubscribe immediately
       unsubscribe()
 
-      await syncSystem.emitEvent('BLOCK_REMOVE', {
-        id: 'unsub-test'
-      }, 'visual')
+      await syncSystem.emitEvent(
+        'BLOCK_REMOVE',
+        {
+          id: 'unsub-test',
+        },
+        'visual'
+      )
 
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise((resolve) => setTimeout(resolve, 50))
 
       // Should not have been called
       expect(handler).not.toHaveBeenCalled()
@@ -365,10 +388,16 @@ describe('BidirectionalSyncSystem', () => {
     test('should handle rapid sequential events', async () => {
       const events = []
       for (let i = 0; i < 100; i++) {
-        events.push(syncSystem.emitEvent('BLOCK_POSITION_UPDATE', {
-          id: 'rapid-block',
-          position: { x: i, y: i }
-        }, 'visual'))
+        events.push(
+          syncSystem.emitEvent(
+            'BLOCK_POSITION_UPDATE',
+            {
+              id: 'rapid-block',
+              position: { x: i, y: i },
+            },
+            'visual'
+          )
+        )
       }
 
       await Promise.all(events)
@@ -403,7 +432,7 @@ describe('BidirectionalSyncSystem', () => {
 describe('Sync System Factory', () => {
   test('should create sync system with default config', async () => {
     const system = await createSyncSystem({
-      workflowId: 'factory-test'
+      workflowId: 'factory-test',
     })
 
     expect(system.getStatus().isInitialized).toBe(true)
@@ -416,7 +445,7 @@ describe('Sync System Factory', () => {
       workflowId: 'custom-config-test',
       enableConflictResolution: false,
       enablePerformanceOptimization: false,
-      enableMonitoring: false
+      enableMonitoring: false,
     })
 
     expect(system.getStatus().isInitialized).toBe(true)

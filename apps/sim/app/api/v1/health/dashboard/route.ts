@@ -5,11 +5,11 @@
  * metrics, alerts, and system status for operational visibility.
  */
 
-import { type NextRequest, NextResponse } from 'next/server'
-import { createLogger } from '@/lib/logs/console/logger'
 import { parlantHealthChecker } from '@sim/parlant-server/health'
 import { parlantLoggers } from '@sim/parlant-server/logging'
 import { monitoring } from '@sim/parlant-server/monitoring'
+import { type NextRequest, NextResponse } from 'next/server'
+import { createLogger } from '@/lib/logs/console/logger'
 import { checkRateLimit, createRateLimitResponse } from '../../middleware'
 
 const logger = createLogger('MonitoringDashboardAPI')

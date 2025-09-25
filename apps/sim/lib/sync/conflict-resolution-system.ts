@@ -6,8 +6,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { SyncEvent, SyncEventType, ConflictStrategy } from './bidirectional-sync-engine'
-import type { ChangeEvent } from './real-time-data-binding'
+import type { ConflictStrategy, SyncEvent } from './bidirectional-sync-engine'
 
 const logger = createLogger('ConflictResolutionSystem')
 
@@ -23,12 +22,12 @@ export interface Conflict {
 }
 
 export type ConflictType =
-  | 'CONCURRENT_EDIT'        // Same element modified simultaneously
-  | 'DEPENDENT_CHANGE'       // Changes that depend on each other
-  | 'ORDERING_CONFLICT'      // Events arrived out of order
-  | 'STATE_DIVERGENCE'       // States have diverged significantly
-  | 'RESOURCE_LOCK'          // Competing for exclusive resource
-  | 'SEMANTIC_CONFLICT'      // Logically incompatible changes
+  | 'CONCURRENT_EDIT' // Same element modified simultaneously
+  | 'DEPENDENT_CHANGE' // Changes that depend on each other
+  | 'ORDERING_CONFLICT' // Events arrived out of order
+  | 'STATE_DIVERGENCE' // States have diverged significantly
+  | 'RESOURCE_LOCK' // Competing for exclusive resource
+  | 'SEMANTIC_CONFLICT' // Logically incompatible changes
 
 export type ConflictSeverity = 'low' | 'medium' | 'high' | 'critical'
 
@@ -98,14 +97,14 @@ export class ConflictResolutionSystem {
     totalConflicts: 0,
     resolvedCount: 0,
     averageResolutionTime: 0,
-    strategySuccess: new Map<string, number>()
+    strategySuccess: new Map<string, number>(),
   }
 
   constructor() {
     this.initializeMergeStrategies()
 
     logger.info('ConflictResolutionSystem initialized', {
-      strategiesCount: this.mergeStrategies.size
+      strategiesCount: this.mergeStrategies.size,
     })
   }
 
@@ -124,7 +123,7 @@ export class ConflictResolutionSystem {
       type: conflictType,
       severity: this.assessConflictSeverity(events, conflictType),
       events,
-      metadata: this.generateConflictMetadata(events, conflictType)
+      metadata: this.generateConflictMetadata(events, conflictType),
     }
 
     // Register conflict
@@ -135,7 +134,7 @@ export class ConflictResolutionSystem {
       conflictId: conflict.id,
       type: conflict.type,
       severity: conflict.severity,
-      eventCount: events.length
+      eventCount: events.length,
     })
 
     // Notify subscribers
@@ -162,14 +161,14 @@ export class ConflictResolutionSystem {
       if (!strategy) {
         logger.warn('No suitable strategy found for conflict', {
           conflictId: conflict.id,
-          type: conflict.type
+          type: conflict.type,
         })
         return this.createFailedResolution('No suitable strategy available')
       }
 
       logger.info('Resolving conflict', {
         conflictId: conflict.id,
-        strategy: strategy.name
+        strategy: strategy.name,
       })
 
       // Execute strategy
@@ -194,15 +193,14 @@ export class ConflictResolutionSystem {
         conflictId: conflict.id,
         outcome: resolution.outcome,
         strategy: resolution.strategy,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       })
 
       return resolution
-
     } catch (error) {
       logger.error('Conflict resolution failed', {
         conflictId: conflict.id,
-        error
+        error,
       })
 
       return this.createFailedResolution(String(error))
@@ -219,7 +217,7 @@ export class ConflictResolutionSystem {
     // Concurrent edits on same element
     if (targetGroups.size === 1) {
       const [target, targetEvents] = targetGroups.entries().next().value
-      const sources = new Set(targetEvents.map(e => e.source))
+      const sources = new Set(targetEvents.map((e) => e.source))
 
       if (sources.size > 1) {
         return 'CONCURRENT_EDIT'
@@ -316,15 +314,17 @@ export class ConflictResolutionSystem {
    */
   private hasDependentChanges(events: SyncEvent[]): boolean {
     // Look for add/remove dependencies
-    const additions = events.filter(e => e.type.includes('ADD'))
-    const removals = events.filter(e => e.type.includes('REMOVE'))
-    const updates = events.filter(e => e.type.includes('UPDATE'))
+    const additions = events.filter((e) => e.type.includes('ADD'))
+    const removals = events.filter((e) => e.type.includes('REMOVE'))
+    const updates = events.filter((e) => e.type.includes('UPDATE'))
 
     // Removing something that was just added or updating something that was removed
     for (const removal of removals) {
       const target = this.extractEventTarget(removal)
-      if (additions.some(add => this.extractEventTarget(add) === target) ||
-          updates.some(upd => this.extractEventTarget(upd) === target)) {
+      if (
+        additions.some((add) => this.extractEventTarget(add) === target) ||
+        updates.some((upd) => this.extractEventTarget(upd) === target)
+      ) {
         return true
       }
     }
@@ -376,9 +376,7 @@ export class ConflictResolutionSystem {
     const timeWindow = 1000 // 1 second
     const maxChanges = 10
 
-    const recentEvents = events.filter(e =>
-      Date.now() - e.timestamp < timeWindow
-    )
+    const recentEvents = events.filter((e) => Date.now() - e.timestamp < timeWindow)
 
     return recentEvents.length > maxChanges
   }
@@ -388,7 +386,7 @@ export class ConflictResolutionSystem {
    */
   private assessConflictSeverity(events: SyncEvent[], type: ConflictType): ConflictSeverity {
     // Critical: Data loss potential
-    const hasRemovalConflicts = events.some(e => e.type.includes('REMOVE'))
+    const hasRemovalConflicts = events.some((e) => e.type.includes('REMOVE'))
     if (hasRemovalConflicts && type === 'CONCURRENT_EDIT') {
       return 'critical'
     }
@@ -411,11 +409,13 @@ export class ConflictResolutionSystem {
    * Generate conflict metadata
    */
   private generateConflictMetadata(events: SyncEvent[], type: ConflictType): ConflictMetadata {
-    const affectedElements = [...new Set(events.map(e => this.extractEventTarget(e)).filter(Boolean))]
-    const userIds = [...new Set(events.map(e => e.userId).filter(Boolean))]
-    const sources = [...new Set(events.map(e => e.source))]
-    const elementTypes = [...new Set(events.map(e => this.getElementType(e)))]
-    const changeTypes = [...new Set(events.map(e => e.type))]
+    const affectedElements = [
+      ...new Set(events.map((e) => this.extractEventTarget(e)).filter(Boolean)),
+    ]
+    const userIds = [...new Set(events.map((e) => e.userId).filter(Boolean))]
+    const sources = [...new Set(events.map((e) => e.source))]
+    const elementTypes = [...new Set(events.map((e) => this.getElementType(e)))]
+    const changeTypes = [...new Set(events.map((e) => e.type))]
 
     return {
       affectedElements,
@@ -424,7 +424,7 @@ export class ConflictResolutionSystem {
       elementTypes,
       changeTypes,
       confidenceScore: this.calculateConfidenceScore(events, type),
-      automaticResolution: this.canAutoResolve(type, events)
+      automaticResolution: this.canAutoResolve(type, events),
     }
   }
 
@@ -449,11 +449,12 @@ export class ConflictResolutionSystem {
     if (type === 'SEMANTIC_CONFLICT') score += 0.4
 
     // Multiple sources increase confidence
-    const sources = new Set(events.map(e => e.source))
+    const sources = new Set(events.map((e) => e.source))
     if (sources.size > 1) score += 0.2
 
     // Time proximity increases confidence
-    const timeSpread = Math.max(...events.map(e => e.timestamp)) - Math.min(...events.map(e => e.timestamp))
+    const timeSpread =
+      Math.max(...events.map((e) => e.timestamp)) - Math.min(...events.map((e) => e.timestamp))
     if (timeSpread < 1000) score += 0.1 // Within 1 second
 
     return Math.min(1.0, score)
@@ -465,7 +466,7 @@ export class ConflictResolutionSystem {
   private canAutoResolve(type: ConflictType, events: SyncEvent[]): boolean {
     // Can auto-resolve simple concurrent edits
     if (type === 'CONCURRENT_EDIT' && events.length === 2) {
-      return !events.some(e => e.type.includes('REMOVE'))
+      return !events.some((e) => e.type.includes('REMOVE'))
     }
 
     // Can auto-resolve ordering conflicts
@@ -482,7 +483,7 @@ export class ConflictResolutionSystem {
    */
   private selectOptimalStrategy(conflict: Conflict): MergeStrategy | null {
     const applicableStrategies = Array.from(this.mergeStrategies.values())
-      .filter(strategy => strategy.applicableTypes.includes(conflict.type))
+      .filter((strategy) => strategy.applicableTypes.includes(conflict.type))
       .sort((a, b) => b.priority - a.priority)
 
     return applicableStrategies[0] || null
@@ -499,8 +500,7 @@ export class ConflictResolutionSystem {
       applicableTypes: ['CONCURRENT_EDIT', 'ORDERING_CONFLICT'],
       priority: 3,
       execute: async (conflict) => {
-        const latestEvent = conflict.events
-          .sort((a, b) => b.timestamp - a.timestamp)[0]
+        const latestEvent = conflict.events.sort((a, b) => b.timestamp - a.timestamp)[0]
 
         return {
           strategy: 'latest-wins',
@@ -508,9 +508,9 @@ export class ConflictResolutionSystem {
           resolvedEvent: latestEvent,
           reason: 'Applied most recent change',
           timestamp: Date.now(),
-          autoResolved: true
+          autoResolved: true,
         }
-      }
+      },
     })
 
     // Three-way merge strategy
@@ -529,18 +529,17 @@ export class ConflictResolutionSystem {
             mergedData: mergedData.result,
             reason: 'Successfully merged concurrent changes',
             timestamp: Date.now(),
-            autoResolved: true
-          }
-        } else {
-          return {
-            strategy: 'user-prompt',
-            outcome: 'deferred',
-            reason: 'Automatic merge failed, user intervention required',
-            timestamp: Date.now(),
-            autoResolved: false
+            autoResolved: true,
           }
         }
-      }
+        return {
+          strategy: 'user-prompt',
+          outcome: 'deferred',
+          reason: 'Automatic merge failed, user intervention required',
+          timestamp: Date.now(),
+          autoResolved: false,
+        }
+      },
     })
 
     // User prompt strategy
@@ -559,18 +558,17 @@ export class ConflictResolutionSystem {
             userChoice: userResponse.optionId,
             reason: 'User manually resolved conflict',
             timestamp: Date.now(),
-            autoResolved: false
-          }
-        } else {
-          return {
-            strategy: 'rollback',
-            outcome: 'escalated',
-            reason: 'User did not respond to prompt',
-            timestamp: Date.now(),
-            autoResolved: false
+            autoResolved: false,
           }
         }
-      }
+        return {
+          strategy: 'rollback',
+          outcome: 'escalated',
+          reason: 'User did not respond to prompt',
+          timestamp: Date.now(),
+          autoResolved: false,
+        }
+      },
     })
 
     // Rollback strategy
@@ -581,27 +579,29 @@ export class ConflictResolutionSystem {
       priority: 1,
       execute: async (conflict) => {
         // Find last stable state before conflict
-        const stableTimestamp = Math.min(...conflict.events.map(e => e.timestamp)) - 1
+        const stableTimestamp = Math.min(...conflict.events.map((e) => e.timestamp)) - 1
 
         return {
           strategy: 'rollback',
           outcome: 'resolved',
           reason: `Rolled back to state at ${new Date(stableTimestamp).toISOString()}`,
           timestamp: Date.now(),
-          autoResolved: true
+          autoResolved: true,
         }
-      }
+      },
     })
 
     logger.debug('Merge strategies initialized', {
-      strategies: Array.from(this.mergeStrategies.keys())
+      strategies: Array.from(this.mergeStrategies.keys()),
     })
   }
 
   /**
    * Perform three-way merge of conflicting events
    */
-  private async performThreeWayMerge(events: SyncEvent[]): Promise<{ success: boolean; result?: any }> {
+  private async performThreeWayMerge(
+    events: SyncEvent[]
+  ): Promise<{ success: boolean; result?: any }> {
     if (events.length !== 2) {
       return { success: false }
     }
@@ -689,7 +689,7 @@ export class ConflictResolutionSystem {
       message: this.generateUserPromptMessage(conflict),
       options: this.generateUserPromptOptions(conflict),
       timeout: 30000, // 30 seconds
-      defaultOption: 'latest'
+      defaultOption: 'latest',
     }
 
     return new Promise((resolve) => {
@@ -739,18 +739,18 @@ export class ConflictResolutionSystem {
       {
         id: 'latest',
         label: 'Keep Latest Changes',
-        description: 'Apply the most recent modifications'
+        description: 'Apply the most recent modifications',
       },
       {
         id: 'merge',
         label: 'Try to Merge',
-        description: 'Attempt to combine all changes automatically'
+        description: 'Attempt to combine all changes automatically',
       },
       {
         id: 'rollback',
         label: 'Revert Changes',
-        description: 'Go back to the previous stable state'
-      }
+        description: 'Go back to the previous stable state',
+      },
     ]
 
     // Add conflict-specific options
@@ -758,7 +758,7 @@ export class ConflictResolutionSystem {
       options.push({
         id: 'visual',
         label: 'Keep Visual Editor Changes',
-        description: 'Preserve changes made in the visual interface'
+        description: 'Preserve changes made in the visual interface',
       })
     }
 
@@ -766,7 +766,7 @@ export class ConflictResolutionSystem {
       options.push({
         id: 'chat',
         label: 'Keep Chat Interface Changes',
-        description: 'Preserve changes made in the chat interface'
+        description: 'Preserve changes made in the chat interface',
       })
     }
 
@@ -808,7 +808,7 @@ export class ConflictResolutionSystem {
    * Notify conflict subscribers
    */
   private notifyConflictSubscribers(conflict: Conflict): void {
-    this.conflictSubscribers.forEach(callback => {
+    this.conflictSubscribers.forEach((callback) => {
       try {
         callback(conflict)
       } catch (error) {
@@ -820,13 +820,18 @@ export class ConflictResolutionSystem {
   /**
    * Update resolution metrics
    */
-  private updateResolutionMetrics(strategyName: string, resolution: ConflictResolution, startTime: number): void {
+  private updateResolutionMetrics(
+    strategyName: string,
+    resolution: ConflictResolution,
+    startTime: number
+  ): void {
     const duration = Date.now() - startTime
 
     // Update average resolution time
     const totalResolutions = this.resolutionHistory.length
     this.conflictMetrics.averageResolutionTime =
-      (this.conflictMetrics.averageResolutionTime * totalResolutions + duration) / (totalResolutions + 1)
+      (this.conflictMetrics.averageResolutionTime * totalResolutions + duration) /
+      (totalResolutions + 1)
 
     // Update strategy success rate
     const currentSuccess = this.conflictMetrics.strategySuccess.get(strategyName) || 0
@@ -843,7 +848,7 @@ export class ConflictResolutionSystem {
       outcome: 'failed',
       reason,
       timestamp: Date.now(),
-      autoResolved: false
+      autoResolved: false,
     }
   }
 
@@ -867,11 +872,12 @@ export class ConflictResolutionSystem {
       activeConflicts: this.activeConflicts.size,
       resolvedConflicts: this.resolvedConflicts.length,
       totalConflicts: this.conflictMetrics.totalConflicts,
-      resolutionRate: this.conflictMetrics.totalConflicts > 0
-        ? this.conflictMetrics.resolvedCount / this.conflictMetrics.totalConflicts
-        : 0,
+      resolutionRate:
+        this.conflictMetrics.totalConflicts > 0
+          ? this.conflictMetrics.resolvedCount / this.conflictMetrics.totalConflicts
+          : 0,
       averageResolutionTime: this.conflictMetrics.averageResolutionTime,
-      strategyStats
+      strategyStats,
     }
   }
 
@@ -901,7 +907,7 @@ export class ConflictResolutionSystem {
       totalConflicts: this.activeConflicts.size,
       resolvedCount: 0,
       averageResolutionTime: 0,
-      strategySuccess: new Map()
+      strategySuccess: new Map(),
     }
 
     logger.info('Conflict resolution history cleared')

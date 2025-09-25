@@ -5,10 +5,10 @@
  * query performance metrics, and database-specific health indicators.
  */
 
-import { type NextRequest, NextResponse } from 'next/server'
-import { createLogger } from '@/lib/logs/console/logger'
 import { healthChecks } from '@sim/parlant-server/health'
 import { monitoring } from '@sim/parlant-server/monitoring'
+import { type NextRequest, NextResponse } from 'next/server'
+import { createLogger } from '@/lib/logs/console/logger'
 import { checkRateLimit, createRateLimitResponse } from '../../middleware'
 
 const logger = createLogger('DatabaseHealthAPI')

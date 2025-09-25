@@ -5,13 +5,10 @@
  * functionality for comprehensive system monitoring and incident response.
  */
 
+import { errorTracker, parlantErrorTracker } from '@sim/parlant-server/error-tracking'
+import { parlantLoggers } from '@sim/parlant-server/logging'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import {
-  errorTracker,
-  parlantErrorTracker,
-} from '@sim/parlant-server/error-tracking'
-import { parlantLoggers } from '@sim/parlant-server/logging'
 import { checkRateLimit, createRateLimitResponse } from '../../middleware'
 
 const logger = createLogger('AlertsAPI')

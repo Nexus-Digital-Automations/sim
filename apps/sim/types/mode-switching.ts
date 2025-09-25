@@ -144,20 +144,20 @@ export const DEFAULT_MODE_PREFERENCES: ModePreferences = {
   keyboardShortcuts: {
     toggleVisual: 'v',
     toggleChat: 'c',
-    toggleHybrid: 'h'
+    toggleHybrid: 'h',
   },
   hybridDefaults: {
     type: 'split-horizontal',
     ratio: 0.5,
     collapsible: true,
-    minSize: 300
+    minSize: 300,
   },
   autoSave: true,
   contextPreservation: {
     visual: true,
     chat: true,
-    execution: true
-  }
+    execution: true,
+  },
 }
 
 export const DEFAULT_HYBRID_LAYOUTS: Record<string, HybridLayout> = {
@@ -165,37 +165,37 @@ export const DEFAULT_HYBRID_LAYOUTS: Record<string, HybridLayout> = {
     type: 'split-horizontal',
     ratio: 0.5,
     collapsible: true,
-    minSize: 300
+    minSize: 300,
   },
   'split-vertical': {
     type: 'split-vertical',
     ratio: 0.6,
     collapsible: true,
-    minSize: 400
+    minSize: 400,
   },
   'sidebar-left': {
     type: 'sidebar-left',
     ratio: 0.3,
     collapsible: true,
-    minSize: 250
+    minSize: 250,
   },
   'sidebar-right': {
     type: 'sidebar-right',
     ratio: 0.3,
     collapsible: true,
-    minSize: 250
-  }
+    minSize: 250,
+  },
 }
 
 // Animation configurations
 export const TRANSITION_DURATIONS = {
   slow: 800,
   normal: 400,
-  fast: 200
+  fast: 200,
 } as const
 
 export const ANIMATION_EASING = {
   ease: 'ease-in-out',
   spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-  smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+  smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
 } as const

@@ -6,8 +6,8 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { ParlantJourney, JourneyState } from '../workflow-converter/types'
 import type { ParlantSocketClient } from '@/app/chat/workspace/[workspaceId]/agent/[agentId]/components/socket-client'
+import type { JourneyState, ParlantJourney } from '../workflow-converter/types'
 
 const logger = createLogger('WorkflowExecutionStreamer')
 
@@ -237,11 +237,7 @@ export class WorkflowExecutionStreamer {
 
     // Listen for chat commands
     this.socketClient.on('workflow-chat-command', async (data) => {
-      const response = await this.handleChatCommand(
-        data.journeyId,
-        data.command,
-        data.parameters
-      )
+      const response = await this.handleChatCommand(data.journeyId, data.command, data.parameters)
       await this.sendConversationalMessage(data.journeyId, response)
     })
   }
@@ -366,10 +362,13 @@ export class WorkflowExecutionStreamer {
     await this.sendConversationalMessage(execution.id, message)
 
     // Clean up execution after completion
-    setTimeout(() => {
-      this.activeExecutions.delete(execution.id)
-      logger.info('Cleaned up completed execution', { journeyId: execution.id })
-    }, 5 * 60 * 1000) // Clean up after 5 minutes
+    setTimeout(
+      () => {
+        this.activeExecutions.delete(execution.id)
+        logger.info('Cleaned up completed execution', { journeyId: execution.id })
+      },
+      5 * 60 * 1000
+    ) // Clean up after 5 minutes
   }
 
   private async handleWorkflowFailed(
@@ -396,11 +395,12 @@ export class WorkflowExecutionStreamer {
   private generateStepDescription(step: JourneyState | undefined, action: string): string {
     if (!step) return 'Unknown step'
 
-    const actionVerb = {
-      starting: 'Starting',
-      completed: 'Completed',
-      failed: 'Failed at',
-    }[action] || 'Processing'
+    const actionVerb =
+      {
+        starting: 'Starting',
+        completed: 'Completed',
+        failed: 'Failed at',
+      }[action] || 'Processing'
 
     return `${actionVerb} ${step.name || step.id}`
   }
@@ -428,17 +428,21 @@ export class WorkflowExecutionStreamer {
     return `📋 Step completed with results`
   }
 
-  private generateErrorExplanation(error: string | undefined, step: JourneyState | undefined): string {
+  private generateErrorExplanation(
+    error: string | undefined,
+    step: JourneyState | undefined
+  ): string {
     if (!error) return 'An unknown error occurred'
 
     // Provide user-friendly error explanations
     const commonErrors: Record<string, string> = {
-      'timeout': '⏰ The step took too long to complete. This might be due to a slow network connection or heavy processing.',
-      'authentication': '🔐 Authentication failed. Please check your credentials or permissions.',
-      'not_found': '🔍 Required resource not found. Please verify the input data.',
-      'network': '🌐 Network connection error. Please check your internet connection.',
-      'permission': '🚫 Permission denied. You may not have access to the required resources.',
-      'validation': '📝 Input validation failed. Please check the data format.',
+      timeout:
+        '⏰ The step took too long to complete. This might be due to a slow network connection or heavy processing.',
+      authentication: '🔐 Authentication failed. Please check your credentials or permissions.',
+      not_found: '🔍 Required resource not found. Please verify the input data.',
+      network: '🌐 Network connection error. Please check your internet connection.',
+      permission: '🚫 Permission denied. You may not have access to the required resources.',
+      validation: '📝 Input validation failed. Please check the data format.',
     }
 
     // Try to match common error patterns
@@ -462,7 +466,7 @@ export class WorkflowExecutionStreamer {
 
   private generateWorkflowSummary(execution: WorkflowExecution): string {
     const stepCount = execution.journey.states.length
-    const completedSteps = execution.messages.filter(m => m.type === 'result').length
+    const completedSteps = execution.messages.filter((m) => m.type === 'result').length
 
     return `**${execution.journey.title}** completed with ${completedSteps}/${stepCount} steps executed successfully.`
   }
@@ -474,11 +478,11 @@ export class WorkflowExecutionStreamer {
 
     if (hours > 0) {
       return `${hours}h ${minutes % 60}m ${seconds % 60}s`
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`
-    } else {
-      return `${seconds}s`
     }
+    if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`
+    }
+    return `${seconds}s`
   }
 
   private createConversationalMessage(params: {
@@ -529,7 +533,8 @@ export class WorkflowExecutionStreamer {
 
     return this.createConversationalMessage({
       type: 'system',
-      content: '⏸️ **Workflow Paused**\n\nExecution has been paused. Use "resume" to continue or "stop" to end the workflow.',
+      content:
+        '⏸️ **Workflow Paused**\n\nExecution has been paused. Use "resume" to continue or "stop" to end the workflow.',
       stepId: 'pause_command',
       metadata: { stepId: 'pause_command' },
     })
@@ -572,9 +577,12 @@ export class WorkflowExecutionStreamer {
     })
   }
 
-  private async debugCurrentStep(execution: WorkflowExecution, parameters: any): Promise<ConversationalMessage> {
+  private async debugCurrentStep(
+    execution: WorkflowExecution,
+    parameters: any
+  ): Promise<ConversationalMessage> {
     const currentStepId = execution.journey.states[execution.currentStep]?.id
-    const currentStep = execution.journey.states.find(s => s.id === currentStepId)
+    const currentStep = execution.journey.states.find((s) => s.id === currentStepId)
 
     const debugInfo = {
       stepId: currentStepId,
@@ -592,7 +600,10 @@ export class WorkflowExecutionStreamer {
     })
   }
 
-  private async skipCurrentStep(execution: WorkflowExecution, parameters: any): Promise<ConversationalMessage> {
+  private async skipCurrentStep(
+    execution: WorkflowExecution,
+    parameters: any
+  ): Promise<ConversationalMessage> {
     // Implementation would skip the current step
     execution.currentStep++
 

@@ -7,7 +7,6 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type { SyncEvent, SyncEventType } from './bidirectional-sync-engine'
-import type { ChangeEvent } from './real-time-data-binding'
 
 const logger = createLogger('SyncPerformanceOptimizer')
 
@@ -84,13 +83,13 @@ class IntelligentCache<T> {
     evictionRate: 0,
     memoryUsage: 0,
     entryCount: 0,
-    averageAccessTime: 0
+    averageAccessTime: 0,
   }
 
   constructor(
-    private maxL1Size: number = 100,
-    private maxL2Size: number = 1000,
-    private defaultTTL: number = 300000 // 5 minutes
+    private maxL1Size = 100,
+    private maxL2Size = 1000,
+    private defaultTTL = 300000 // 5 minutes
   ) {}
 
   /**
@@ -134,7 +133,7 @@ class IntelligentCache<T> {
       accessCount: 1,
       lastAccessed: Date.now(),
       size: this.estimateSize(value),
-      ttl: ttl || this.defaultTTL
+      ttl: ttl || this.defaultTTL,
     }
 
     // Always place new entries in L1
@@ -173,8 +172,7 @@ class IntelligentCache<T> {
     entry.lastAccessed = Date.now()
 
     const accessTime = performance.now() - startTime
-    this.stats.averageAccessTime =
-      (this.stats.averageAccessTime + accessTime) / 2
+    this.stats.averageAccessTime = (this.stats.averageAccessTime + accessTime) / 2
   }
 
   /**
@@ -230,7 +228,7 @@ class IntelligentCache<T> {
   /**
    * Update rolling rate metrics
    */
-  private updateRate(currentRate: number, newValue: number, weight: number = 0.1): number {
+  private updateRate(currentRate: number, newValue: number, weight = 0.1): number {
     return currentRate * (1 - weight) + newValue * weight
   }
 
@@ -323,13 +321,13 @@ export class SyncPerformanceOptimizer {
       memoryThreshold: 50 * 1024 * 1024, // 50MB
       gcInterval: 60000, // 1 minute
       metricsRetentionTime: 3600000, // 1 hour
-      ...config
+      ...config,
     }
 
     // Initialize caches
     this.eventCache = new IntelligentCache<SyncEvent>(
       Math.floor(this.config.cacheSize * 0.3), // 30% for hot events
-      Math.floor(this.config.cacheSize * 0.7)  // 70% for cold events
+      Math.floor(this.config.cacheSize * 0.7) // 70% for cold events
     )
 
     this.stateCache = new IntelligentCache<any>(
@@ -354,7 +352,7 @@ export class SyncPerformanceOptimizer {
     logger.info('SyncPerformanceOptimizer initialized', {
       cacheSize: this.config.cacheSize,
       batchSize: this.config.batchSize,
-      memoryThreshold: this.config.memoryThreshold
+      memoryThreshold: this.config.memoryThreshold,
     })
   }
 
@@ -389,7 +387,6 @@ export class SyncPerformanceOptimizer {
       this.updateThroughputMetrics()
 
       return optimizedEvent
-
     } catch (error) {
       this.updateErrorMetrics()
       logger.error('Event optimization failed', { eventId: event.id, error })
@@ -419,7 +416,6 @@ export class SyncPerformanceOptimizer {
       this.updateLatencyMetrics(startTime)
 
       return update
-
     } catch (error) {
       this.updateErrorMetrics()
       logger.error('State optimization failed', { key, error })
@@ -449,7 +445,6 @@ export class SyncPerformanceOptimizer {
       this.updateLatencyMetrics(startTime)
 
       return optimizedBatch
-
     } catch (error) {
       this.updateErrorMetrics()
       logger.error('Batch processing failed', { eventType, batchSize: batch.length, error })
@@ -507,8 +502,8 @@ export class SyncPerformanceOptimizer {
         ...event,
         payload: {
           compressed: true,
-          data: compressed
-        }
+          data: compressed,
+        },
       }
     } catch (error) {
       logger.error('Event compression failed', { eventId: event.id, error })
@@ -525,7 +520,7 @@ export class SyncPerformanceOptimizer {
     if (cached) return cached
 
     // Simple run-length encoding for repeated patterns
-    let compressed = data.replace(/(.)\1{2,}/g, (match, char) => {
+    const compressed = data.replace(/(.)\1{2,}/g, (match, char) => {
       return `${char}[${match.length}]`
     })
 
@@ -577,15 +572,15 @@ export class SyncPerformanceOptimizer {
    */
   private getEventPriority(eventType: SyncEventType): number {
     const priorities = {
-      'BLOCK_REMOVE': 1,
-      'EDGE_REMOVE': 2,
-      'BLOCK_UPDATE': 3,
-      'SUBBLOCK_UPDATE': 4,
-      'BLOCK_POSITION_UPDATE': 5,
-      'BLOCK_ADD': 6,
-      'EDGE_ADD': 7,
-      'CHAT_MESSAGE': 8,
-      'WORKFLOW_STATE_SYNC': 9
+      BLOCK_REMOVE: 1,
+      EDGE_REMOVE: 2,
+      BLOCK_UPDATE: 3,
+      SUBBLOCK_UPDATE: 4,
+      BLOCK_POSITION_UPDATE: 5,
+      BLOCK_ADD: 6,
+      EDGE_ADD: 7,
+      CHAT_MESSAGE: 8,
+      WORKFLOW_STATE_SYNC: 9,
     }
 
     return priorities[eventType] || 10
@@ -643,7 +638,7 @@ export class SyncPerformanceOptimizer {
         payload: {
           ...event1.payload,
           ...event2.payload, // Latest position wins
-        }
+        },
       }
     }
 
@@ -706,9 +701,9 @@ export class SyncPerformanceOptimizer {
           applied: true,
           improvement: 0.3, // Assume 30% improvement
           description: 'Cleared caches and reduced batch size',
-          metrics: { memoryUsage: metrics.memoryUsage * 0.7 }
+          metrics: { memoryUsage: metrics.memoryUsage * 0.7 },
         }
-      }
+      },
     })
 
     // High latency optimization
@@ -716,7 +711,8 @@ export class SyncPerformanceOptimizer {
       name: 'high-latency',
       description: 'Optimize for reduced latency',
       threshold: (metrics) => {
-        const avgLatency = metrics.syncLatency.reduce((a, b) => a + b, 0) / metrics.syncLatency.length
+        const avgLatency =
+          metrics.syncLatency.reduce((a, b) => a + b, 0) / metrics.syncLatency.length
         return avgLatency > 100 // 100ms threshold
       },
       execute: async (metrics) => {
@@ -728,10 +724,10 @@ export class SyncPerformanceOptimizer {
           improvement,
           description: 'Increased batch processing frequency',
           metrics: {
-            syncLatency: metrics.syncLatency.map(l => l * 0.8) // 20% improvement
-          }
+            syncLatency: metrics.syncLatency.map((l) => l * 0.8), // 20% improvement
+          },
         }
-      }
+      },
     })
 
     // Low cache hit rate optimization
@@ -747,9 +743,9 @@ export class SyncPerformanceOptimizer {
           applied: true,
           improvement,
           description: 'Optimized cache configuration',
-          metrics: { cacheHitRate: Math.min(0.9, metrics.cacheHitRate * 1.2) }
+          metrics: { cacheHitRate: Math.min(0.9, metrics.cacheHitRate * 1.2) },
         }
-      }
+      },
     })
   }
 
@@ -807,12 +803,12 @@ export class SyncPerformanceOptimizer {
           logger.info('Optimization applied', {
             strategy: strategy.name,
             improvement: result.improvement,
-            description: result.description
+            description: result.description,
           })
         } catch (error) {
           logger.error('Optimization failed', {
             strategy: strategy.name,
-            error
+            error,
           })
         }
       }
@@ -865,7 +861,7 @@ export class SyncPerformanceOptimizer {
       averageEventSize: 0,
       queueDepth: 0,
       processingTime: [],
-      errorRate: 0
+      errorRate: 0,
     }
   }
 
@@ -890,7 +886,7 @@ export class SyncPerformanceOptimizer {
     // Clean up old metrics
     const cutoffTime = Date.now() - this.config.metricsRetentionTime
     this.performanceHistory = this.performanceHistory.filter(
-      metrics => metrics.syncLatency[0] > cutoffTime
+      (metrics) => metrics.syncLatency[0] > cutoffTime
     )
 
     // Update memory usage
@@ -901,7 +897,7 @@ export class SyncPerformanceOptimizer {
 
     logger.debug('Garbage collection completed', {
       memoryUsage: this.metrics.memoryUsage,
-      historyLength: this.performanceHistory.length
+      historyLength: this.performanceHistory.length,
     })
   }
 
@@ -914,12 +910,9 @@ export class SyncPerformanceOptimizer {
     const compressionCacheStats = this.compressionCache.getStats()
 
     this.metrics.memoryUsage =
-      eventCacheStats.memoryUsage +
-      stateCacheStats.memoryUsage +
-      compressionCacheStats.memoryUsage
+      eventCacheStats.memoryUsage + stateCacheStats.memoryUsage + compressionCacheStats.memoryUsage
 
-    this.metrics.cacheHitRate =
-      (eventCacheStats.hitRate + stateCacheStats.hitRate) / 2
+    this.metrics.cacheHitRate = (eventCacheStats.hitRate + stateCacheStats.hitRate) / 2
   }
 
   /**
@@ -941,7 +934,7 @@ export class SyncPerformanceOptimizer {
     return {
       event: this.eventCache.getStats(),
       state: this.stateCache.getStats(),
-      compression: this.compressionCache.getStats()
+      compression: this.compressionCache.getStats(),
     }
   }
 

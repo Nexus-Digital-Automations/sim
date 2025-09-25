@@ -3,17 +3,22 @@
  */
 
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
+import {
+  ModeShortcutsProvider,
+  QuickShortcutHints,
+} from '@/components/mode-switching/mode-shortcuts'
 import { ModeProvider } from '@/contexts/mode-context'
-import { ModeShortcutsProvider, QuickShortcutHints } from '@/components/mode-switching/mode-shortcuts'
 
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     button: ({ children, onClick, ...props }: any) => (
-      <button onClick={onClick} {...props}>{children}</button>
+      <button onClick={onClick} {...props}>
+        {children}
+      </button>
     ),
   },
   AnimatePresence: ({ children }: any) => <>{children}</>,
@@ -26,28 +31,28 @@ jest.mock('@/lib/logs/console/logger', () => ({
     debug: jest.fn(),
     error: jest.fn(),
     warn: jest.fn(),
-  }))
+  })),
 }))
 
 // Mock utils
 jest.mock('@/lib/utils', () => ({
-  cn: (...classes: any[]) => classes.filter(Boolean).join(' ')
+  cn: (...classes: any[]) => classes.filter(Boolean).join(' '),
 }))
 
 // Mock navigator.vibrate
 const mockVibrate = jest.fn()
 Object.defineProperty(navigator, 'vibrate', {
   value: mockVibrate,
-  writable: true
+  writable: true,
 })
 
 // Test components
 function TestModeComponent() {
   return (
     <div>
-      <input data-testid="test-input" placeholder="Type here..." />
-      <textarea data-testid="test-textarea" placeholder="Type here..." />
-      <div data-testid="test-content">Test content</div>
+      <input data-testid='test-input' placeholder='Type here...' />
+      <textarea data-testid='test-textarea' placeholder='Type here...' />
+      <div data-testid='test-content'>Test content</div>
     </div>
   )
 }
@@ -59,10 +64,10 @@ function TestShortcutsComponent() {
     <ModeShortcutsProvider>
       <div>
         <TestModeComponent />
-        <button data-testid="show-help" onClick={() => setShowHelp(true)}>
+        <button data-testid='show-help' onClick={() => setShowHelp(true)}>
           Show Help
         </button>
-        <button data-testid="hide-help" onClick={() => setShowHelp(false)}>
+        <button data-testid='hide-help' onClick={() => setShowHelp(false)}>
           Hide Help
         </button>
       </div>
@@ -80,7 +85,7 @@ describe('ModeShortcuts', () => {
       render(
         <ModeProvider>
           <ModeShortcutsProvider>
-            <div data-testid="child-content">Test content</div>
+            <div data-testid='child-content'>Test content</div>
           </ModeShortcutsProvider>
         </ModeProvider>
       )
@@ -98,11 +103,9 @@ describe('ModeShortcuts', () => {
         </ModeProvider>
       )
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith(
-        'keydown',
-        expect.any(Function),
-        { capture: true }
-      )
+      expect(addEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function), {
+        capture: true,
+      })
 
       addEventListenerSpy.mockRestore()
     })
@@ -118,11 +121,9 @@ describe('ModeShortcuts', () => {
 
       unmount()
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith(
-        'keydown',
-        expect.any(Function),
-        { capture: true }
-      )
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function), {
+        capture: true,
+      })
 
       removeEventListenerSpy.mockRestore()
     })
@@ -374,9 +375,10 @@ describe('ModeShortcuts', () => {
       })
 
       // Click close button (X button)
-      const closeButton = screen.getByRole('button', { name: /close/i }) ||
-                          screen.getAllByRole('button').find(btn => btn.textContent === '×') ||
-                          screen.getAllByRole('button').find(btn => btn.innerHTML.includes('M6 18L18 6M6 6l12 12'))
+      const closeButton =
+        screen.getByRole('button', { name: /close/i }) ||
+        screen.getAllByRole('button').find((btn) => btn.textContent === '×') ||
+        screen.getAllByRole('button').find((btn) => btn.innerHTML.includes('M6 18L18 6M6 6l12 12'))
 
       if (closeButton) {
         fireEvent.click(closeButton)
@@ -443,7 +445,7 @@ describe('ModeShortcuts', () => {
     it('applies custom className', () => {
       render(
         <ModeProvider>
-          <QuickShortcutHints className="custom-hints" />
+          <QuickShortcutHints className='custom-hints' />
         </ModeProvider>
       )
 
@@ -464,7 +466,8 @@ describe('ModeShortcuts', () => {
       fireEvent.keyDown(document, { key: '?', shiftKey: true })
 
       await waitFor(() => {
-        const dialog = screen.getByRole('dialog') || screen.getByText('Keyboard Shortcuts').closest('div')
+        const dialog =
+          screen.getByRole('dialog') || screen.getByText('Keyboard Shortcuts').closest('div')
         expect(dialog).toBeInTheDocument()
       })
     })
@@ -511,7 +514,7 @@ describe('ModeShortcuts', () => {
       // Mock document.activeElement to return null
       Object.defineProperty(document, 'activeElement', {
         value: null,
-        configurable: true
+        configurable: true,
       })
 
       render(

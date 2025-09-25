@@ -237,84 +237,84 @@ export const CHAT_COMMANDS: Record<ChatCommandType, CommandSuggestion> = {
     command: 'add [block_type]',
     description: 'Add a new block to the workflow',
     example: 'add llm block',
-    category: 'structure'
+    category: 'structure',
   },
   delete_block: {
     command: 'delete [block_name]',
     description: 'Remove a block from the workflow',
     example: 'delete start block',
-    category: 'structure'
+    category: 'structure',
   },
   connect_blocks: {
     command: 'connect [source] to [target]',
     description: 'Create a connection between two blocks',
     example: 'connect start to llm',
-    category: 'structure'
+    category: 'structure',
   },
   disconnect_blocks: {
     command: 'disconnect [source] from [target]',
     description: 'Remove a connection between blocks',
     example: 'disconnect start from llm',
-    category: 'structure'
+    category: 'structure',
   },
   modify_block: {
     command: 'set [property] of [block] to [value]',
     description: 'Modify a block property',
     example: 'set name of llm block to OpenAI',
-    category: 'configuration'
+    category: 'configuration',
   },
   move_block: {
     command: 'move [block] to [position]',
     description: 'Change block position',
     example: 'move llm block to top right',
-    category: 'structure'
+    category: 'structure',
   },
   enable_block: {
     command: 'enable [block]',
     description: 'Enable a disabled block',
     example: 'enable llm block',
-    category: 'configuration'
+    category: 'configuration',
   },
   disable_block: {
     command: 'disable [block]',
     description: 'Disable a block',
     example: 'disable debug block',
-    category: 'configuration'
+    category: 'configuration',
   },
   execute_workflow: {
     command: 'run workflow / start workflow',
     description: 'Execute the current workflow',
     example: 'run workflow',
-    category: 'execution'
+    category: 'execution',
   },
   pause_workflow: {
     command: 'pause workflow',
     description: 'Pause workflow execution',
     example: 'pause workflow',
-    category: 'execution'
+    category: 'execution',
   },
   stop_workflow: {
     command: 'stop workflow',
     description: 'Stop workflow execution',
     example: 'stop workflow',
-    category: 'execution'
+    category: 'execution',
   },
   get_status: {
     command: 'status / workflow status',
     description: 'Get current workflow status',
     example: 'what is the workflow status?',
-    category: 'information'
+    category: 'information',
   },
   describe_workflow: {
     command: 'describe workflow',
     description: 'Get a description of the workflow structure',
     example: 'describe this workflow',
-    category: 'information'
+    category: 'information',
   },
   explain_block: {
     command: 'explain [block]',
     description: 'Get information about a specific block',
     example: 'explain llm block',
-    category: 'information'
-  }
+    category: 'information',
+  },
 }

@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react'
-import { motion, PanInfo } from 'framer-motion'
-import { useModeContext } from '@/contexts/mode-context'
-import { HybridLayout, ViewMode } from '@/types/mode-switching'
+import type React from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { createLogger } from '@/lib/logs/console/logger'
 import { cn } from '@/lib/utils'
+import { useModeContext } from '@/contexts/mode-context'
+import type { HybridLayout } from '@/types/mode-switching'
 
 const logger = createLogger('HybridMode')
 
@@ -29,7 +30,7 @@ interface ResizablePanel {
 function ResizableSplitter({
   direction,
   onResize,
-  className
+  className,
 }: {
   direction: 'horizontal' | 'vertical'
   onResize: (delta: number) => void
@@ -38,15 +39,18 @@ function ResizableSplitter({
   const [isDragging, setIsDragging] = useState(false)
   const startPositionRef = useRef<number>(0)
 
-  const handleDragStart = useCallback((event: React.MouseEvent | React.TouchEvent) => {
-    setIsDragging(true)
-    const clientPos = 'touches' in event ? event.touches[0] : event
-    startPositionRef.current = direction === 'horizontal' ? clientPos.clientX : clientPos.clientY
+  const handleDragStart = useCallback(
+    (event: React.MouseEvent | React.TouchEvent) => {
+      setIsDragging(true)
+      const clientPos = 'touches' in event ? event.touches[0] : event
+      startPositionRef.current = direction === 'horizontal' ? clientPos.clientX : clientPos.clientY
 
-    // Prevent text selection during drag
-    document.body.style.userSelect = 'none'
-    document.body.style.cursor = direction === 'horizontal' ? 'col-resize' : 'row-resize'
-  }, [direction])
+      // Prevent text selection during drag
+      document.body.style.userSelect = 'none'
+      document.body.style.cursor = direction === 'horizontal' ? 'col-resize' : 'row-resize'
+    },
+    [direction]
+  )
 
   const handleDragEnd = useCallback(() => {
     setIsDragging(false)
@@ -54,16 +58,19 @@ function ResizableSplitter({
     document.body.style.cursor = ''
   }, [])
 
-  const handleDrag = useCallback((event: MouseEvent | TouchEvent) => {
-    if (!isDragging) return
+  const handleDrag = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      if (!isDragging) return
 
-    const clientPos = 'touches' in event ? event.touches[0] : event
-    const currentPos = direction === 'horizontal' ? clientPos.clientX : clientPos.clientY
-    const delta = currentPos - startPositionRef.current
+      const clientPos = 'touches' in event ? event.touches[0] : event
+      const currentPos = direction === 'horizontal' ? clientPos.clientX : clientPos.clientY
+      const delta = currentPos - startPositionRef.current
 
-    onResize(delta)
-    startPositionRef.current = currentPos
-  }, [isDragging, direction, onResize])
+      onResize(delta)
+      startPositionRef.current = currentPos
+    },
+    [isDragging, direction, onResize]
+  )
 
   // Global event listeners for smooth dragging
   useEffect(() => {
@@ -107,7 +114,7 @@ function ResizableSplitter({
         className={cn(
           'absolute rounded-full bg-background ring-1 ring-border transition-all group-hover:ring-primary',
           isHorizontal ? 'h-6 w-2' : 'h-2 w-6',
-          isDragging && 'ring-primary shadow-sm'
+          isDragging && 'shadow-sm ring-primary'
         )}
       />
 
@@ -115,7 +122,7 @@ function ResizableSplitter({
       <div
         className={cn(
           'absolute',
-          isHorizontal ? '-left-2 -right-2 top-0 bottom-0' : '-top-2 -bottom-2 left-0 right-0'
+          isHorizontal ? '-left-2 -right-2 top-0 bottom-0' : '-top-2 -bottom-2 right-0 left-0'
         )}
       />
     </motion.div>
@@ -129,7 +136,7 @@ function CollapseButton({
   collapsed,
   direction,
   onToggle,
-  className
+  className,
 }: {
   collapsed: boolean
   direction: 'left' | 'right' | 'top' | 'bottom'
@@ -142,26 +149,51 @@ function CollapseButton({
     switch (direction) {
       case 'left':
         return (
-          <svg className={cn(baseClasses, collapsed && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            className={cn(baseClasses, collapsed && 'rotate-180')}
+            fill='none'
+            viewBox='0 0 24 24'
+            stroke='currentColor'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M15 19l-7-7 7-7'
+            />
           </svg>
         )
       case 'right':
         return (
-          <svg className={cn(baseClasses, collapsed && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          <svg
+            className={cn(baseClasses, collapsed && 'rotate-180')}
+            fill='none'
+            viewBox='0 0 24 24'
+            stroke='currentColor'
+          >
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
           </svg>
         )
       case 'top':
         return (
-          <svg className={cn(baseClasses, collapsed && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          <svg
+            className={cn(baseClasses, collapsed && 'rotate-180')}
+            fill='none'
+            viewBox='0 0 24 24'
+            stroke='currentColor'
+          >
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 15l7-7 7 7' />
           </svg>
         )
       case 'bottom':
         return (
-          <svg className={cn(baseClasses, collapsed && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <svg
+            className={cn(baseClasses, collapsed && 'rotate-180')}
+            fill='none'
+            viewBox='0 0 24 24'
+            stroke='currentColor'
+          >
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
           </svg>
         )
     }
@@ -171,10 +203,10 @@ function CollapseButton({
     <motion.button
       className={cn(
         'absolute z-10 rounded-md bg-background p-1 shadow-sm ring-1 ring-border transition-all hover:ring-primary',
-        direction === 'left' && 'right-2 top-2',
-        direction === 'right' && 'left-2 top-2',
-        direction === 'top' && 'bottom-2 right-2',
-        direction === 'bottom' && 'right-2 top-2',
+        direction === 'left' && 'top-2 right-2',
+        direction === 'right' && 'top-2 left-2',
+        direction === 'top' && 'right-2 bottom-2',
+        direction === 'bottom' && 'top-2 right-2',
         className
       )}
       onClick={onToggle}
@@ -192,56 +224,56 @@ function CollapseButton({
  */
 function LayoutSelector({
   currentLayout,
-  onLayoutChange
+  onLayoutChange,
 }: {
   currentLayout: HybridLayout
   onLayoutChange: (layout: HybridLayout) => void
 }) {
-  const layouts: Array<{ key: HybridLayout['type'], label: string, icon: React.ReactNode }> = [
+  const layouts: Array<{ key: HybridLayout['type']; label: string; icon: React.ReactNode }> = [
     {
       key: 'split-horizontal',
       label: 'Horizontal Split',
       icon: (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <rect x="3" y="4" width="18" height="7" rx="1" />
-          <rect x="3" y="13" width="18" height="7" rx="1" />
+        <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+          <rect x='3' y='4' width='18' height='7' rx='1' />
+          <rect x='3' y='13' width='18' height='7' rx='1' />
         </svg>
-      )
+      ),
     },
     {
       key: 'split-vertical',
       label: 'Vertical Split',
       icon: (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <rect x="3" y="4" width="7" height="16" rx="1" />
-          <rect x="14" y="4" width="7" height="16" rx="1" />
+        <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+          <rect x='3' y='4' width='7' height='16' rx='1' />
+          <rect x='14' y='4' width='7' height='16' rx='1' />
         </svg>
-      )
+      ),
     },
     {
       key: 'sidebar-left',
       label: 'Left Sidebar',
       icon: (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <rect x="3" y="4" width="6" height="16" rx="1" />
-          <rect x="11" y="4" width="10" height="16" rx="1" />
+        <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+          <rect x='3' y='4' width='6' height='16' rx='1' />
+          <rect x='11' y='4' width='10' height='16' rx='1' />
         </svg>
-      )
+      ),
     },
     {
       key: 'sidebar-right',
       label: 'Right Sidebar',
       icon: (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <rect x="3" y="4" width="10" height="16" rx="1" />
-          <rect x="15" y="4" width="6" height="16" rx="1" />
+        <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+          <rect x='3' y='4' width='10' height='16' rx='1' />
+          <rect x='15' y='4' width='6' height='16' rx='1' />
         </svg>
-      )
-    }
+      ),
+    },
   ]
 
   return (
-    <div className="absolute right-4 top-4 z-20 flex rounded-lg bg-background p-1 shadow-sm ring-1 ring-border">
+    <div className='absolute top-4 right-4 z-20 flex rounded-lg bg-background p-1 shadow-sm ring-1 ring-border'>
       {layouts.map((layout) => (
         <motion.button
           key={layout.key}
@@ -257,7 +289,7 @@ function LayoutSelector({
           title={layout.label}
         >
           {layout.icon}
-          <span className="sr-only">{layout.label}</span>
+          <span className='sr-only'>{layout.label}</span>
         </motion.button>
       ))}
     </div>
@@ -283,23 +315,26 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
   const currentLayout = state.preferences.hybridDefaults
 
   // Update layout configuration
-  const updateLayout = useCallback((newLayout: HybridLayout) => {
-    preserveContext({
-      uiContext: {
-        ...state.context.uiContext,
-        // Store layout preferences in context
+  const updateLayout = useCallback(
+    (newLayout: HybridLayout) => {
+      preserveContext({
+        uiContext: {
+          ...state.context.uiContext,
+          // Store layout preferences in context
+        },
+      })
+
+      // Reset panel sizes based on new layout
+      if (newLayout.type.includes('split-horizontal')) {
+        setTopPanelSize(newLayout.ratio * 100)
+      } else {
+        setLeftPanelSize(newLayout.ratio * 100)
       }
-    })
 
-    // Reset panel sizes based on new layout
-    if (newLayout.type.includes('split-horizontal')) {
-      setTopPanelSize(newLayout.ratio * 100)
-    } else {
-      setLeftPanelSize(newLayout.ratio * 100)
-    }
-
-    logger.info('Hybrid layout updated', { layout: newLayout })
-  }, [preserveContext, state.context.uiContext])
+      logger.info('Hybrid layout updated', { layout: newLayout })
+    },
+    [preserveContext, state.context.uiContext]
+  )
 
   // Panel resize handlers
   const handleHorizontalResize = useCallback((delta: number) => {
@@ -308,7 +343,7 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
     const containerWidth = containerRef.current.clientWidth
     const deltaPercent = (delta / containerWidth) * 100
 
-    setLeftPanelSize(prev => {
+    setLeftPanelSize((prev) => {
       const newSize = Math.max(10, Math.min(90, prev + deltaPercent))
       return newSize
     })
@@ -320,7 +355,7 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
     const containerHeight = containerRef.current.clientHeight
     const deltaPercent = (delta / containerHeight) * 100
 
-    setTopPanelSize(prev => {
+    setTopPanelSize((prev) => {
       const newSize = Math.max(10, Math.min(90, prev + deltaPercent))
       return newSize
     })
@@ -328,19 +363,19 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
 
   // Panel collapse handlers
   const toggleLeftPanel = useCallback(() => {
-    setLeftCollapsed(prev => !prev)
+    setLeftCollapsed((prev) => !prev)
   }, [])
 
   const toggleRightPanel = useCallback(() => {
-    setRightCollapsed(prev => !prev)
+    setRightCollapsed((prev) => !prev)
   }, [])
 
   const toggleTopPanel = useCallback(() => {
-    setTopCollapsed(prev => !prev)
+    setTopCollapsed((prev) => !prev)
   }, [])
 
   const toggleBottomPanel = useCallback(() => {
-    setBottomCollapsed(prev => !prev)
+    setBottomCollapsed((prev) => !prev)
   }, [])
 
   // Determine which components go where based on layout
@@ -391,7 +426,7 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
         return (
           <>
             <motion.div
-              className="relative overflow-hidden"
+              className='relative overflow-hidden'
               style={{ height: topCollapsed ? '0%' : `${topPanelSize}%` }}
               animate={{ height: topCollapsed ? '0%' : `${topPanelSize}%` }}
               transition={{ duration: 0.2 }}
@@ -400,19 +435,16 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
               {currentLayout.collapsible && (
                 <CollapseButton
                   collapsed={topCollapsed}
-                  direction="top"
+                  direction='top'
                   onToggle={toggleTopPanel}
                 />
               )}
             </motion.div>
 
-            <ResizableSplitter
-              direction="vertical"
-              onResize={handleVerticalResize}
-            />
+            <ResizableSplitter direction='vertical' onResize={handleVerticalResize} />
 
             <motion.div
-              className="relative overflow-hidden"
+              className='relative overflow-hidden'
               style={{ height: bottomCollapsed ? '0%' : `${100 - topPanelSize}%` }}
               animate={{ height: bottomCollapsed ? '0%' : `${100 - topPanelSize}%` }}
               transition={{ duration: 0.2 }}
@@ -421,7 +453,7 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
               {currentLayout.collapsible && (
                 <CollapseButton
                   collapsed={bottomCollapsed}
-                  direction="bottom"
+                  direction='bottom'
                   onToggle={toggleBottomPanel}
                 />
               )}
@@ -435,7 +467,7 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
         return (
           <>
             <motion.div
-              className="relative overflow-hidden"
+              className='relative overflow-hidden'
               style={{ width: leftCollapsed ? '0%' : `${leftPanelSize}%` }}
               animate={{ width: leftCollapsed ? '0%' : `${leftPanelSize}%` }}
               transition={{ duration: 0.2 }}
@@ -444,19 +476,16 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
               {currentLayout.collapsible && (
                 <CollapseButton
                   collapsed={leftCollapsed}
-                  direction="left"
+                  direction='left'
                   onToggle={toggleLeftPanel}
                 />
               )}
             </motion.div>
 
-            <ResizableSplitter
-              direction="horizontal"
-              onResize={handleHorizontalResize}
-            />
+            <ResizableSplitter direction='horizontal' onResize={handleHorizontalResize} />
 
             <motion.div
-              className="relative overflow-hidden"
+              className='relative overflow-hidden'
               style={{ width: rightCollapsed ? '0%' : `${100 - leftPanelSize}%` }}
               animate={{ width: rightCollapsed ? '0%' : `${100 - leftPanelSize}%` }}
               transition={{ duration: 0.2 }}
@@ -465,7 +494,7 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
               {currentLayout.collapsible && (
                 <CollapseButton
                   collapsed={rightCollapsed}
-                  direction="right"
+                  direction='right'
                   onToggle={toggleRightPanel}
                 />
               )}
@@ -488,22 +517,19 @@ export function HybridMode({ visualComponent, chatComponent, className }: Hybrid
       )}
     >
       {/* Layout selector */}
-      <LayoutSelector
-        currentLayout={currentLayout}
-        onLayoutChange={updateLayout}
-      />
+      <LayoutSelector currentLayout={currentLayout} onLayoutChange={updateLayout} />
 
       {/* Main content area */}
       {renderLayout()}
 
       {/* Sync indicator */}
       <motion.div
-        className="absolute bottom-4 left-4 flex items-center gap-2 rounded-lg bg-background/95 px-3 py-2 text-xs text-muted-foreground shadow-sm ring-1 ring-border backdrop-blur-sm"
+        className='absolute bottom-4 left-4 flex items-center gap-2 rounded-lg bg-background/95 px-3 py-2 text-muted-foreground text-xs shadow-sm ring-1 ring-border backdrop-blur-sm'
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <div className="h-2 w-2 rounded-full bg-green-500" />
+        <div className='h-2 w-2 rounded-full bg-green-500' />
         <span>Synced</span>
       </motion.div>
     </div>
@@ -518,25 +544,31 @@ export function useHybridMode() {
 
   const isHybridMode = state.currentMode === 'hybrid'
 
-  const switchToHybrid = useCallback((layout?: HybridLayout) => {
-    switchMode('hybrid', {
-      hybridLayout: layout ?? state.preferences.hybridDefaults
-    })
-  }, [switchMode, state.preferences.hybridDefaults])
+  const switchToHybrid = useCallback(
+    (layout?: HybridLayout) => {
+      switchMode('hybrid', {
+        hybridLayout: layout ?? state.preferences.hybridDefaults,
+      })
+    },
+    [switchMode, state.preferences.hybridDefaults]
+  )
 
-  const updateHybridLayout = useCallback((layout: HybridLayout) => {
-    preserveContext({
-      uiContext: {
-        ...state.context.uiContext,
-        // Store hybrid layout preferences
-      }
-    })
-  }, [preserveContext, state.context.uiContext])
+  const updateHybridLayout = useCallback(
+    (layout: HybridLayout) => {
+      preserveContext({
+        uiContext: {
+          ...state.context.uiContext,
+          // Store hybrid layout preferences
+        },
+      })
+    },
+    [preserveContext, state.context.uiContext]
+  )
 
   return {
     isHybridMode,
     switchToHybrid,
     updateHybridLayout,
-    currentLayout: state.preferences.hybridDefaults
+    currentLayout: state.preferences.hybridDefaults,
   }
 }

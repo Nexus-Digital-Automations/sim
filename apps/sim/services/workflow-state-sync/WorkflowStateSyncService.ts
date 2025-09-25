@@ -16,16 +16,15 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
+  ConflictResolutionStrategy,
+  ModificationContext,
+  PendingChange,
   StateChangeEvent,
   SyncConflict,
-  WorkflowStateRepresentation,
-  SyncState,
-  PendingChange,
-  ModificationContext,
   SyncMetrics,
-  ConflictResolutionStrategy
+  SyncState,
 } from '@/stores/workflow-chat-sync/types'
-import type { ViewMode, ModeContext } from '@/types/mode-switching'
+import type { ModeContext, ViewMode } from '@/types/mode-switching'
 
 const logger = createLogger('WorkflowStateSyncService')
 
@@ -84,7 +83,7 @@ export class WorkflowStateSyncService {
     avgSyncTime: 0,
     conflictCount: 0,
     successRate: 1.0,
-    lastSyncDuration: 0
+    lastSyncDuration: 0,
   }
 
   // State tracking
@@ -94,7 +93,7 @@ export class WorkflowStateSyncService {
     viewport: { x: 0, y: 0, zoom: 1 },
     activePanel: null,
     highlightedNodes: [],
-    executionHighlights: {}
+    executionHighlights: {},
   }
 
   private chatInterfaceState: ChatInterfaceState = {
@@ -103,7 +102,7 @@ export class WorkflowStateSyncService {
     currentInput: '',
     isTyping: false,
     selectedBlocks: [],
-    chatMode: 'command'
+    chatMode: 'command',
   }
 
   private hybridModeState: HybridModeState = {
@@ -112,7 +111,7 @@ export class WorkflowStateSyncService {
     layout: 'horizontal',
     visualVisible: true,
     chatVisible: true,
-    syncEnabled: true
+    syncEnabled: true,
   }
 
   private conflictResolutionStrategies: ConflictResolutionStrategy[] = []
@@ -127,7 +126,7 @@ export class WorkflowStateSyncService {
       enablePerformanceMetrics: true,
       enableVisualHighlighting: true,
       autoResolveSimpleConflicts: true,
-      ...config
+      ...config,
     }
 
     this.initializeService()
@@ -135,7 +134,7 @@ export class WorkflowStateSyncService {
 
     logger.info('WorkflowStateSyncService initialized', {
       config: this.config,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   }
 
@@ -162,26 +161,26 @@ export class WorkflowStateSyncService {
         type: 'concurrent_block_modification',
         autoResolve: this.config.autoResolveSimpleConflicts,
         resolver: (conflict) => this.resolveConcurrentBlockModification(conflict),
-        priority: 1
+        priority: 1,
       },
       {
         type: 'concurrent_connection_change',
         autoResolve: true,
         resolver: (conflict) => this.resolveConcurrentConnectionChange(conflict),
-        priority: 2
+        priority: 2,
       },
       {
         type: 'execution_state_conflict',
         autoResolve: false,
         resolver: () => 'manual',
-        priority: 3
+        priority: 3,
       },
       {
         type: 'structural_conflict',
         autoResolve: false,
         resolver: () => 'manual',
-        priority: 4
-      }
+        priority: 4,
+      },
     ].sort((a, b) => a.priority - b.priority)
   }
 
@@ -218,10 +217,9 @@ export class WorkflowStateSyncService {
 
       logger.debug('Batch sync completed', {
         eventsProcessed: events.length,
-        duration: duration.toFixed(2) + 'ms',
-        remainingInQueue: this.eventQueue.length
+        duration: `${duration.toFixed(2)}ms`,
+        remainingInQueue: this.eventQueue.length,
       })
-
     } catch (error) {
       logger.error('Batch sync failed', { error })
       this.updateSyncMetrics(performance.now() - startTime, false)
@@ -241,7 +239,7 @@ export class WorkflowStateSyncService {
         logger.error('Failed to process sync event', {
           event: event.type,
           error,
-          eventData: event.data
+          eventData: event.data,
         })
       }
     }
@@ -262,7 +260,7 @@ export class WorkflowStateSyncService {
       initiator: 'user',
       source: event.source,
       timestamp: event.timestamp,
-      reason: `${event.type} event from ${event.source}`
+      reason: `${event.type} event from ${event.source}`,
     }
 
     switch (event.type) {
@@ -302,7 +300,7 @@ export class WorkflowStateSyncService {
     logger.info('Handling workflow modification', {
       source: event.source,
       timestamp: event.timestamp,
-      workflowId: event.workflowId
+      workflowId: event.workflowId,
     })
 
     // Update both visual and chat representations
@@ -334,7 +332,7 @@ export class WorkflowStateSyncService {
     logger.info('Handling block change', {
       type: event.type,
       blockId,
-      source: event.source
+      source: event.source,
     })
 
     // Synchronize changes across interfaces
@@ -360,7 +358,7 @@ export class WorkflowStateSyncService {
     logger.info('Handling connection change', {
       type: event.type,
       source: event.source,
-      connectionData: event.data
+      connectionData: event.data,
     })
 
     // Synchronize connection changes
@@ -382,7 +380,7 @@ export class WorkflowStateSyncService {
       type: event.type,
       blockId: event.blockId,
       source: event.source,
-      executionData: event.data
+      executionData: event.data,
     })
 
     // Update execution highlights
@@ -465,7 +463,7 @@ export class WorkflowStateSyncService {
   private async attemptAutoConflictResolution(): Promise<void> {
     for (const conflict of this.conflicts) {
       const strategy = this.conflictResolutionStrategies.find(
-        s => s.type === conflict.type && s.autoResolve
+        (s) => s.type === conflict.type && s.autoResolve
       )
 
       if (strategy) {
@@ -489,7 +487,7 @@ export class WorkflowStateSyncService {
       fromMode,
       toMode,
       preserveContext: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
 
     // Preserve current state
@@ -589,7 +587,7 @@ export class WorkflowStateSyncService {
     conflictId: string,
     resolution: 'chat' | 'visual' | 'merge'
   ): Promise<void> {
-    const conflictIndex = this.conflicts.findIndex(c => c.id === conflictId)
+    const conflictIndex = this.conflicts.findIndex((c) => c.id === conflictId)
     if (conflictIndex === -1) {
       logger.warn('Conflict not found for resolution', { conflictId })
       return
@@ -604,9 +602,8 @@ export class WorkflowStateSyncService {
       logger.info('Conflict resolved', {
         conflictId,
         resolution,
-        type: conflict.type
+        type: conflict.type,
       })
-
     } catch (error) {
       logger.error('Failed to resolve conflict', { conflictId, error })
     }
@@ -629,10 +626,7 @@ export class WorkflowStateSyncService {
   /**
    * Subscribe to state change events
    */
-  public subscribe(
-    subscriberId: string,
-    callback: (event: StateChangeEvent) => void
-  ): () => void {
+  public subscribe(subscriberId: string, callback: (event: StateChangeEvent) => void): () => void {
     this.subscribers.set(subscriberId, callback)
 
     return () => {
@@ -672,8 +666,7 @@ export class WorkflowStateSyncService {
         this.syncMetrics.totalSyncs
     }
 
-    this.syncMetrics.successRate =
-      this.syncMetrics.successRate * 0.95 + (success ? 0.05 : 0)
+    this.syncMetrics.successRate = this.syncMetrics.successRate * 0.95 + (success ? 0.05 : 0)
   }
 
   private notifySubscribers(event: StateChangeEvent): void {
@@ -703,12 +696,16 @@ export class WorkflowStateSyncService {
     // Implementation for subscribing to execution changes
   }
 
-  private resolveConcurrentBlockModification(conflict: SyncConflict): 'chat' | 'visual' | 'merge' | 'manual' {
+  private resolveConcurrentBlockModification(
+    conflict: SyncConflict
+  ): 'chat' | 'visual' | 'merge' | 'manual' {
     // Implementation for resolving block modification conflicts
     return 'merge'
   }
 
-  private resolveConcurrentConnectionChange(conflict: SyncConflict): 'chat' | 'visual' | 'merge' | 'manual' {
+  private resolveConcurrentConnectionChange(
+    conflict: SyncConflict
+  ): 'chat' | 'visual' | 'merge' | 'manual' {
     // Implementation for resolving connection change conflicts
     return 'visual'
   }

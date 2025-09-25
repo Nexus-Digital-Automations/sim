@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { MessageSquare, Loader2 } from 'lucide-react'
+import { Loader2, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logs/console/logger'
+import { cn } from '@/lib/utils'
 
 const logger = createLogger('ChatWithWorkflowButton')
 
@@ -56,7 +56,7 @@ export function ChatWithWorkflowButton({
     if (loading) {
       return (
         <>
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className='h-4 w-4 animate-spin' />
           {variant !== 'icon-only' && <span>Starting...</span>}
         </>
       )
@@ -66,16 +66,16 @@ export function ChatWithWorkflowButton({
       case 'compact':
         return (
           <>
-            <MessageSquare className="h-3.5 w-3.5" />
+            <MessageSquare className='h-3.5 w-3.5' />
             <span>Chat</span>
           </>
         )
       case 'icon-only':
-        return <MessageSquare className="h-4 w-4" />
+        return <MessageSquare className='h-4 w-4' />
       default:
         return (
           <>
-            <MessageSquare className="h-4 w-4" />
+            <MessageSquare className='h-4 w-4' />
             <span>Chat with Workflow</span>
           </>
         )
@@ -140,17 +140,10 @@ export function ChatWithWorkflowButton({
   if (showTooltip && (variant === 'icon-only' || variant === 'compact')) {
     return (
       <Tooltip delayDuration={500}>
-        <TooltipTrigger asChild>
-          {button}
-        </TooltipTrigger>
-        <TooltipContent
-          side="top"
-          align="center"
-          sideOffset={4}
-          className="text-sm"
-        >
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent side='top' align='center' sideOffset={4} className='text-sm'>
           <p>Chat with {workflowName}</p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className='mt-1 text-muted-foreground text-xs'>
             Start a conversation about this workflow
           </p>
         </TooltipContent>

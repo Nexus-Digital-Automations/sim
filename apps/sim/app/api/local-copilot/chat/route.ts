@@ -10,13 +10,13 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { validateWorkspaceAccess } from '@/lib/auth/chat-middleware'
-import { createLogger } from '@/lib/logs/console/logger'
 import { env } from '@/lib/env'
-import { agentService } from '@/services/parlant/agent-service'
-import { createConversation, getUserConversations } from '@/lib/parlant/conversations'
+import { createLogger } from '@/lib/logs/console/logger'
+import { getUserConversations } from '@/lib/parlant/conversations'
 import { createFileContent, isSupportedFileType } from '@/lib/uploads/file-utils'
-import { downloadFile, getStorageProvider } from '@/lib/uploads/storage-client'
 import { S3_COPILOT_CONFIG } from '@/lib/uploads/setup'
+import { downloadFile, getStorageProvider } from '@/lib/uploads/storage-client'
+import { agentService } from '@/services/parlant/agent-service'
 
 const logger = createLogger('LocalCopilotChatAPI')
 
@@ -74,15 +74,8 @@ export async function POST(req: NextRequest) {
 
     // Parse and validate request
     const body = await req.json()
-    const {
-      message,
-      agentId,
-      conversationId,
-      workspaceId,
-      stream,
-      fileAttachments,
-      contexts,
-    } = ChatRequestSchema.parse(body)
+    const { message, agentId, conversationId, workspaceId, stream, fileAttachments, contexts } =
+      ChatRequestSchema.parse(body)
 
     // Validate workspace access
     const access = await validateWorkspaceAccess(session.user.id, workspaceId)
@@ -378,7 +371,7 @@ export async function POST(req: NextRequest) {
         headers: {
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
+          Connection: 'keep-alive',
           'X-Accel-Buffering': 'no',
           'X-Request-ID': requestId,
         },
@@ -405,7 +398,6 @@ export async function POST(req: NextRequest) {
         timestamp: new Date().toISOString(),
       },
     })
-
   } catch (error) {
     logger.error(`[${requestId}] Local copilot chat error:`, {
       error: error instanceof Error ? error.message : 'Unknown error',

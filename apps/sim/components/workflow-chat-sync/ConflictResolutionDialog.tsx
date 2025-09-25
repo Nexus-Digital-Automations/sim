@@ -1,32 +1,21 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { AlertTriangle, Check, Clock, Eye, GitMerge, MessageSquare } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import {
-  AlertTriangle,
-  MessageSquare,
-  Eye,
-  GitMerge,
-  Clock,
-  User,
-  Bot,
-  Check,
-  X
-} from 'lucide-react'
 import { useWorkflowChatSyncStore } from '@/stores/workflow-chat-sync/store'
-import type { SyncConflict } from '@/stores/workflow-chat-sync/types'
 
 interface ConflictResolutionDialogProps {
   open: boolean
@@ -39,23 +28,23 @@ interface ConflictResolutionDialogProps {
  * Handles conflicts between simultaneous changes in visual and chat interfaces,
  * allowing users to choose resolution strategies.
  */
-export function ConflictResolutionDialog({
-  open,
-  onOpenChange
-}: ConflictResolutionDialogProps) {
+export function ConflictResolutionDialog({ open, onOpenChange }: ConflictResolutionDialogProps) {
   const { conflicts, resolveConflict } = useWorkflowChatSyncStore()
-  const [selectedResolutions, setSelectedResolutions] = useState<Record<string, 'chat' | 'visual' | 'merge'>>({})
+  const [selectedResolutions, setSelectedResolutions] = useState<
+    Record<string, 'chat' | 'visual' | 'merge'>
+  >({})
 
   const handleResolutionChange = (conflictId: string, resolution: 'chat' | 'visual' | 'merge') => {
-    setSelectedResolutions(prev => ({
+    setSelectedResolutions((prev) => ({
       ...prev,
-      [conflictId]: resolution
+      [conflictId]: resolution,
     }))
   }
 
   const handleResolveConflicts = () => {
-    conflicts.forEach(conflict => {
-      const resolution = selectedResolutions[conflict.id] || conflict.suggestedResolution || 'visual'
+    conflicts.forEach((conflict) => {
+      const resolution =
+        selectedResolutions[conflict.id] || conflict.suggestedResolution || 'visual'
       resolveConflict(conflict.id, resolution)
     })
     setSelectedResolutions({})
@@ -64,7 +53,7 @@ export function ConflictResolutionDialog({
 
   const handleResolveAll = (resolution: 'chat' | 'visual' | 'merge') => {
     const resolutions: Record<string, 'chat' | 'visual' | 'merge'> = {}
-    conflicts.forEach(conflict => {
+    conflicts.forEach((conflict) => {
       resolutions[conflict.id] = resolution
     })
     setSelectedResolutions(resolutions)
@@ -99,11 +88,11 @@ export function ConflictResolutionDialog({
   const getResolutionIcon = (resolution: 'chat' | 'visual' | 'merge') => {
     switch (resolution) {
       case 'chat':
-        return <MessageSquare className="h-4 w-4" />
+        return <MessageSquare className='h-4 w-4' />
       case 'visual':
-        return <Eye className="h-4 w-4" />
+        return <Eye className='h-4 w-4' />
       case 'merge':
-        return <GitMerge className="h-4 w-4" />
+        return <GitMerge className='h-4 w-4' />
     }
   }
 
@@ -117,48 +106,36 @@ export function ConflictResolutionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className='max-h-[80vh] max-w-4xl overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
+          <DialogTitle className='flex items-center gap-2'>
+            <AlertTriangle className='h-5 w-5 text-amber-500' />
             Resolve Synchronization Conflicts
-            <Badge variant="destructive">{conflicts.length}</Badge>
+            <Badge variant='destructive'>{conflicts.length}</Badge>
           </DialogTitle>
           <DialogDescription>
-            Changes were made simultaneously in both the visual workflow and chat interface.
-            Please choose how to resolve each conflict.
+            Changes were made simultaneously in both the visual workflow and chat interface. Please
+            choose how to resolve each conflict.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {/* Quick Actions */}
           <Alert>
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangle className='h-4 w-4' />
             <AlertTitle>Quick Resolution</AlertTitle>
-            <AlertDescription className="mt-2">
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleResolveAll('visual')}
-                >
-                  <Eye className="h-3 w-3 mr-1" />
+            <AlertDescription className='mt-2'>
+              <div className='flex flex-wrap gap-2'>
+                <Button size='sm' variant='outline' onClick={() => handleResolveAll('visual')}>
+                  <Eye className='mr-1 h-3 w-3' />
                   Use All Visual Changes
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleResolveAll('chat')}
-                >
-                  <MessageSquare className="h-3 w-3 mr-1" />
+                <Button size='sm' variant='outline' onClick={() => handleResolveAll('chat')}>
+                  <MessageSquare className='mr-1 h-3 w-3' />
                   Use All Chat Changes
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleResolveAll('merge')}
-                >
-                  <GitMerge className="h-3 w-3 mr-1" />
+                <Button size='sm' variant='outline' onClick={() => handleResolveAll('merge')}>
+                  <GitMerge className='mr-1 h-3 w-3' />
                   Attempt to Merge All
                 </Button>
               </div>
@@ -166,43 +143,50 @@ export function ConflictResolutionDialog({
           </Alert>
 
           {/* Individual Conflicts */}
-          <div className="space-y-4">
+          <div className='space-y-4'>
             {conflicts.map((conflict, index) => (
-              <Card key={conflict.id} className="border-amber-200 dark:border-amber-800">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+              <Card key={conflict.id} className='border-amber-200 dark:border-amber-800'>
+                <CardHeader className='pb-3'>
+                  <CardTitle className='flex items-center justify-between text-sm'>
+                    <div className='flex items-center gap-2'>
                       <span>Conflict #{index + 1}</span>
-                      <Badge variant="outline">{conflict.type}</Badge>
+                      <Badge variant='outline'>{conflict.type}</Badge>
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
+                    <div className='flex items-center gap-1 text-muted-foreground text-xs'>
+                      <Clock className='h-3 w-3' />
                       {formatTimestamp(conflict.timestamp)}
                     </div>
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground">
+                  <p className='text-muted-foreground text-xs'>
                     {getConflictTypeDescription(conflict.type)}
                   </p>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
-                  <p className="text-sm">{conflict.description}</p>
+                <CardContent className='space-y-4'>
+                  <p className='text-sm'>{conflict.description}</p>
 
                   {/* Conflicting Changes */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                     {/* Visual Change */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <Eye className="h-4 w-4 text-blue-500" />
+                    <div className='space-y-2'>
+                      <div className='flex items-center gap-2 font-medium text-sm'>
+                        <Eye className='h-4 w-4 text-blue-500' />
                         Visual Interface Change
                       </div>
-                      <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-                        <CardContent className="pt-3">
-                          <div className="text-xs space-y-1">
-                            <p><strong>Type:</strong> {conflict.visualChange.type}</p>
-                            <p><strong>Time:</strong> {formatTimestamp(conflict.visualChange.timestamp)}</p>
-                            <p><strong>Data:</strong></p>
-                            <code className="block bg-background p-2 rounded text-xs overflow-x-auto">
+                      <Card className='border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20'>
+                        <CardContent className='pt-3'>
+                          <div className='space-y-1 text-xs'>
+                            <p>
+                              <strong>Type:</strong> {conflict.visualChange.type}
+                            </p>
+                            <p>
+                              <strong>Time:</strong>{' '}
+                              {formatTimestamp(conflict.visualChange.timestamp)}
+                            </p>
+                            <p>
+                              <strong>Data:</strong>
+                            </p>
+                            <code className='block overflow-x-auto rounded bg-background p-2 text-xs'>
                               {JSON.stringify(conflict.visualChange.data, null, 2)}
                             </code>
                           </div>
@@ -211,18 +195,25 @@ export function ConflictResolutionDialog({
                     </div>
 
                     {/* Chat Change */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <MessageSquare className="h-4 w-4 text-green-500" />
+                    <div className='space-y-2'>
+                      <div className='flex items-center gap-2 font-medium text-sm'>
+                        <MessageSquare className='h-4 w-4 text-green-500' />
                         Chat Interface Change
                       </div>
-                      <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
-                        <CardContent className="pt-3">
-                          <div className="text-xs space-y-1">
-                            <p><strong>Type:</strong> {conflict.chatChange.type}</p>
-                            <p><strong>Time:</strong> {formatTimestamp(conflict.chatChange.timestamp)}</p>
-                            <p><strong>Data:</strong></p>
-                            <code className="block bg-background p-2 rounded text-xs overflow-x-auto">
+                      <Card className='border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20'>
+                        <CardContent className='pt-3'>
+                          <div className='space-y-1 text-xs'>
+                            <p>
+                              <strong>Type:</strong> {conflict.chatChange.type}
+                            </p>
+                            <p>
+                              <strong>Time:</strong>{' '}
+                              {formatTimestamp(conflict.chatChange.timestamp)}
+                            </p>
+                            <p>
+                              <strong>Data:</strong>
+                            </p>
+                            <code className='block overflow-x-auto rounded bg-background p-2 text-xs'>
                               {JSON.stringify(conflict.chatChange.data, null, 2)}
                             </code>
                           </div>
@@ -234,52 +225,52 @@ export function ConflictResolutionDialog({
                   <Separator />
 
                   {/* Resolution Options */}
-                  <div className="space-y-3">
-                    <p className="text-sm font-medium">Choose resolution strategy:</p>
+                  <div className='space-y-3'>
+                    <p className='font-medium text-sm'>Choose resolution strategy:</p>
 
-                    <div className="space-y-2">
+                    <div className='space-y-2'>
                       {(['visual', 'chat', 'merge'] as const).map((resolution) => (
                         <label
                           key={resolution}
-                          className={`flex items-center gap-3 p-3 rounded border cursor-pointer transition-colors ${
+                          className={`flex cursor-pointer items-center gap-3 rounded border p-3 transition-colors ${
                             selectedResolutions[conflict.id] === resolution
                               ? 'border-primary bg-primary/5'
                               : 'border-border hover:bg-accent/50'
                           }`}
                         >
                           <input
-                            type="radio"
+                            type='radio'
                             name={`conflict-${conflict.id}`}
                             value={resolution}
                             checked={selectedResolutions[conflict.id] === resolution}
                             onChange={() => handleResolutionChange(conflict.id, resolution)}
-                            className="sr-only"
+                            className='sr-only'
                           />
-                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                            selectedResolutions[conflict.id] === resolution
-                              ? 'border-primary bg-primary'
-                              : 'border-border'
-                          }`}>
+                          <div
+                            className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
+                              selectedResolutions[conflict.id] === resolution
+                                ? 'border-primary bg-primary'
+                                : 'border-border'
+                            }`}
+                          >
                             {selectedResolutions[conflict.id] === resolution && (
-                              <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                              <Check className='h-2.5 w-2.5 text-primary-foreground' />
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className='flex items-center gap-2'>
                             {getResolutionIcon(resolution)}
-                            <span className="text-sm font-medium capitalize">
-                              {resolution}
-                            </span>
+                            <span className='font-medium text-sm capitalize'>{resolution}</span>
                           </div>
-                          <span className="text-sm text-muted-foreground">
+                          <span className='text-muted-foreground text-sm'>
                             {getResolutionDescription(resolution)}
                           </span>
                           {conflict.suggestedResolution === resolution && (
-                            <Badge variant="secondary" className="ml-auto text-xs">
+                            <Badge variant='secondary' className='ml-auto text-xs'>
                               Suggested
                             </Badge>
                           )}
                           {resolution === 'merge' && !conflict.autoResolvable && (
-                            <Badge variant="destructive" className="ml-auto text-xs">
+                            <Badge variant='destructive' className='ml-auto text-xs'>
                               May not work
                             </Badge>
                           )}
@@ -293,21 +284,19 @@ export function ConflictResolutionDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex items-center gap-2">
-          <div className="flex-1 text-xs text-muted-foreground">
-            {conflicts.filter(c => selectedResolutions[c.id]).length} of {conflicts.length} conflicts resolved
+        <DialogFooter className='flex items-center gap-2'>
+          <div className='flex-1 text-muted-foreground text-xs'>
+            {conflicts.filter((c) => selectedResolutions[c.id]).length} of {conflicts.length}{' '}
+            conflicts resolved
           </div>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
+          <Button variant='outline' onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button
             onClick={handleResolveConflicts}
-            disabled={conflicts.some(c => !selectedResolutions[c.id])}
+            disabled={conflicts.some((c) => !selectedResolutions[c.id])}
           >
-            <Check className="h-4 w-4 mr-1" />
+            <Check className='mr-1 h-4 w-4' />
             Apply Resolutions
           </Button>
         </DialogFooter>

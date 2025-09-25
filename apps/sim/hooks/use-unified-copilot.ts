@@ -6,10 +6,10 @@
  * external and local copilot systems.
  */
 
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createLogger } from '@/lib/logs/console/logger'
-import { useLocalCopilotStore } from '@/stores/local-copilot'
 import type { Agent } from '@/services/parlant/types'
+import { useLocalCopilotStore } from '@/stores/local-copilot'
 
 const logger = createLogger('UnifiedCopilotHook')
 
@@ -77,7 +77,7 @@ export function useUnifiedCopilot(workspaceId: string) {
 
   // Save preferences when they change
   const updatePreferences = useCallback((updates: Partial<UnifiedCopilotPreferences>) => {
-    setPreferences(prev => {
+    setPreferences((prev) => {
       const newPrefs = { ...prev, ...updates }
       try {
         localStorage.setItem(COPILOT_PREFERENCES_KEY, JSON.stringify(newPrefs))
@@ -89,35 +89,41 @@ export function useUnifiedCopilot(workspaceId: string) {
   }, [])
 
   // Mode switching
-  const switchMode = useCallback((mode: 'local' | 'external') => {
-    logger.info('Switching copilot mode', { from: currentMode, to: mode })
+  const switchMode = useCallback(
+    (mode: 'local' | 'external') => {
+      logger.info('Switching copilot mode', { from: currentMode, to: mode })
 
-    setCurrentMode(mode)
-    setLocalMode(mode)
+      setCurrentMode(mode)
+      setLocalMode(mode)
 
-    // Update preferences
-    if (preferences.rememberModeSelection) {
-      updatePreferences({ lastUsedMode: mode })
-    }
-  }, [currentMode, preferences.rememberModeSelection, updatePreferences, setLocalMode])
+      // Update preferences
+      if (preferences.rememberModeSelection) {
+        updatePreferences({ lastUsedMode: mode })
+      }
+    },
+    [currentMode, preferences.rememberModeSelection, updatePreferences, setLocalMode]
+  )
 
   const switchToLocal = useCallback(() => switchMode('local'), [switchMode])
   const switchToExternal = useCallback(() => switchMode('external'), [switchMode])
 
   // Agent management
-  const selectAgent = useCallback(async (agent: Agent) => {
-    logger.info('Selecting agent via unified hook', { agentId: agent.id, agentName: agent.name })
+  const selectAgent = useCallback(
+    async (agent: Agent) => {
+      logger.info('Selecting agent via unified hook', { agentId: agent.id, agentName: agent.name })
 
-    await localSelectAgent(agent)
+      await localSelectAgent(agent)
 
-    // Update preferred agent in preferences
-    updatePreferences({ preferredAgentId: agent.id })
+      // Update preferred agent in preferences
+      updatePreferences({ preferredAgentId: agent.id })
 
-    // Auto-switch to local mode if configured
-    if (preferences.autoSwitchToLocal && currentMode !== 'local') {
-      switchToLocal()
-    }
-  }, [localSelectAgent, updatePreferences, preferences.autoSwitchToLocal, currentMode, switchToLocal])
+      // Auto-switch to local mode if configured
+      if (preferences.autoSwitchToLocal && currentMode !== 'local') {
+        switchToLocal()
+      }
+    },
+    [localSelectAgent, updatePreferences, preferences.autoSwitchToLocal, currentMode, switchToLocal]
+  )
 
   // Auto-selection logic
   useEffect(() => {
@@ -128,7 +134,7 @@ export function useUnifiedCopilot(workspaceId: string) {
       preferences.preferredAgentId &&
       availableAgents.length > 0
     ) {
-      const preferredAgent = availableAgents.find(a => a.id === preferences.preferredAgentId)
+      const preferredAgent = availableAgents.find((a) => a.id === preferences.preferredAgentId)
       if (preferredAgent) {
         logger.info('Auto-selecting preferred agent', { agentId: preferredAgent.id })
         localSelectAgent(preferredAgent)

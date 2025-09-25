@@ -1,17 +1,17 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { createLogger } from '@/lib/logs/console/logger'
+import { useExecutionStore } from '@/stores/execution/store'
 import { useChatStore } from '@/stores/panel/chat/store'
 import { useWorkflowRegistry } from '@/stores/workflows/registry/store'
-import { useWorkflowStore } from '@/stores/workflows/workflow/store'
-import { useExecutionStore } from '@/stores/execution/store'
 import { useSubBlockStore } from '@/stores/workflows/subblock/store'
+import { useWorkflowStore } from '@/stores/workflows/workflow/store'
 import type {
+  ChatCommand,
+  StateChangeEvent,
+  SyncConflict,
   WorkflowChatSyncStore,
   WorkflowStateRepresentation,
-  ChatCommand,
-  SyncConflict,
-  StateChangeEvent
 } from './types'
 
 const logger = createLogger('WorkflowChatSync')
@@ -54,7 +54,7 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           isEnabled: false,
           syncState: 'idle',
           pendingChanges: [],
-          conflicts: []
+          conflicts: [],
         })
       },
 
@@ -82,7 +82,7 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           syncState: 'idle',
           lastSyncTimestamp: Date.now(),
           conflicts: [],
-          pendingChanges: []
+          pendingChanges: [],
         })
 
         logger.info('Workflow-chat synchronization initialized successfully')
@@ -110,8 +110,8 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
                 blocks: state.blocks,
                 edges: state.edges,
                 loops: state.loops,
-                parallels: state.parallels
-              }
+                parallels: state.parallels,
+              },
             })
           }
         })
@@ -137,8 +137,8 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
                 activeBlocks: Array.from(state.activeBlockIds),
                 isExecuting: state.isExecuting,
                 isDebugging: state.isDebugging,
-                pendingBlocks: state.pendingBlocks
-              }
+                pendingBlocks: state.pendingBlocks,
+              },
             })
           }
         })
@@ -151,12 +151,12 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           if (!syncStore.isEnabled || syncStore.syncState === 'syncing') return
 
           // Detect new user messages that might be chat commands
-          const newMessages = state.messages.filter(msg =>
-            !prevState.messages.some(prevMsg => prevMsg.id === msg.id) &&
-            msg.type === 'user'
+          const newMessages = state.messages.filter(
+            (msg) =>
+              !prevState.messages.some((prevMsg) => prevMsg.id === msg.id) && msg.type === 'user'
           )
 
-          newMessages.forEach(message => {
+          newMessages.forEach((message) => {
             const command = syncStore.parseChatCommand(String(message.content))
             if (command) {
               logger.debug('Chat command detected:', command)
@@ -183,14 +183,14 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           useChatStore.getState().addMessage({
             content: chatMessage,
             workflowId: useWorkflowRegistry.getState().activeWorkflowId || '',
-            type: 'workflow'
+            type: 'workflow',
           })
         }
 
         set({
           workflowStateRepresentation: representation,
           lastSyncTimestamp: Date.now(),
-          syncState: 'idle'
+          syncState: 'idle',
         })
       },
 
@@ -202,7 +202,10 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
 
         set({
           syncState: 'syncing',
-          chatCommandHistory: [...state.chatCommandHistory, { ...command, messageId, timestamp: Date.now() }]
+          chatCommandHistory: [
+            ...state.chatCommandHistory,
+            { ...command, messageId, timestamp: Date.now() },
+          ],
         })
 
         try {
@@ -212,9 +215,8 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           useChatStore.getState().addMessage({
             content: `✓ ${command.description}`,
             workflowId: useWorkflowRegistry.getState().activeWorkflowId || '',
-            type: 'workflow'
+            type: 'workflow',
           })
-
         } catch (error) {
           logger.error('Failed to execute chat command:', error)
 
@@ -222,7 +224,7 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           useChatStore.getState().addMessage({
             content: `✗ Failed to ${command.description}: ${error instanceof Error ? error.message : 'Unknown error'}`,
             workflowId: useWorkflowRegistry.getState().activeWorkflowId || '',
-            type: 'workflow'
+            type: 'workflow',
           })
         }
 
@@ -234,29 +236,33 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
 
         // Add a new block
         if (trimmedMessage.startsWith('add ') || trimmedMessage.startsWith('create ')) {
-          const blockTypeMatch = trimmedMessage.match(/(?:add|create)\s+(?:a\s+)?(\w+)(?:\s+block)?/i)
+          const blockTypeMatch = trimmedMessage.match(
+            /(?:add|create)\s+(?:a\s+)?(\w+)(?:\s+block)?/i
+          )
           if (blockTypeMatch) {
             return {
               type: 'add_block',
               description: `add ${blockTypeMatch[1]} block`,
               parameters: {
                 blockType: blockTypeMatch[1],
-                position: { x: 200, y: 200 } // Default position
-              }
+                position: { x: 200, y: 200 }, // Default position
+              },
             }
           }
         }
 
         // Delete a block
         if (trimmedMessage.startsWith('delete ') || trimmedMessage.startsWith('remove ')) {
-          const blockNameMatch = trimmedMessage.match(/(?:delete|remove)\s+(?:the\s+)?(.+?)(?:\s+block)?$/i)
+          const blockNameMatch = trimmedMessage.match(
+            /(?:delete|remove)\s+(?:the\s+)?(.+?)(?:\s+block)?$/i
+          )
           if (blockNameMatch) {
             return {
               type: 'delete_block',
               description: `delete ${blockNameMatch[1]} block`,
               parameters: {
-                blockIdentifier: blockNameMatch[1].trim()
-              }
+                blockIdentifier: blockNameMatch[1].trim(),
+              },
             }
           }
         }
@@ -270,15 +276,17 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
               description: `connect ${connectionMatch[1]} to ${connectionMatch[2]}`,
               parameters: {
                 sourceBlock: connectionMatch[1].trim(),
-                targetBlock: connectionMatch[2].trim()
-              }
+                targetBlock: connectionMatch[2].trim(),
+              },
             }
           }
         }
 
         // Modify block properties
         if (trimmedMessage.startsWith('set ') || trimmedMessage.startsWith('update ')) {
-          const propertyMatch = trimmedMessage.match(/(?:set|update)\s+(.+?)\s+(?:of|in)\s+(.+?)\s+to\s+(.+)/i)
+          const propertyMatch = trimmedMessage.match(
+            /(?:set|update)\s+(.+?)\s+(?:of|in)\s+(.+?)\s+to\s+(.+)/i
+          )
           if (propertyMatch) {
             return {
               type: 'modify_block',
@@ -286,27 +294,35 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
               parameters: {
                 blockIdentifier: propertyMatch[2].trim(),
                 property: propertyMatch[1].trim(),
-                value: propertyMatch[3].trim()
-              }
+                value: propertyMatch[3].trim(),
+              },
             }
           }
         }
 
         // Execute workflow
-        if (trimmedMessage.includes('run') || trimmedMessage.includes('execute') || trimmedMessage.includes('start')) {
+        if (
+          trimmedMessage.includes('run') ||
+          trimmedMessage.includes('execute') ||
+          trimmedMessage.includes('start')
+        ) {
           return {
             type: 'execute_workflow',
             description: 'execute workflow',
-            parameters: {}
+            parameters: {},
           }
         }
 
         // Get workflow status
-        if (trimmedMessage.includes('status') || trimmedMessage.includes('state') || trimmedMessage.includes('info')) {
+        if (
+          trimmedMessage.includes('status') ||
+          trimmedMessage.includes('state') ||
+          trimmedMessage.includes('info')
+        ) {
           return {
             type: 'get_status',
             description: 'get workflow status',
-            parameters: {}
+            parameters: {},
           }
         }
 
@@ -331,7 +347,10 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
             break
 
           case 'connect_blocks':
-            get().connectBlocksViaCommand(command.parameters.sourceBlock, command.parameters.targetBlock)
+            get().connectBlocksViaCommand(
+              command.parameters.sourceBlock,
+              command.parameters.targetBlock
+            )
             break
 
           case 'modify_block':
@@ -369,15 +388,15 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           subBlocks: {},
           outputs: {
             response: {
-              type: { input: 'any' }
-            }
+              type: { input: 'any' },
+            },
           },
           enabled: true,
           horizontalHandles: true,
           isWide: false,
           advancedMode: false,
           triggerMode: false,
-          height: 0
+          height: 0,
         }
 
         workflowStore.addBlock(newBlock)
@@ -388,10 +407,11 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
         const workflowStore = useWorkflowStore.getState()
 
         // Find block by name or ID
-        const block = Object.values(workflowStore.blocks).find(block =>
-          block.name.toLowerCase() === blockIdentifier.toLowerCase() ||
-          block.id === blockIdentifier ||
-          block.type.toLowerCase() === blockIdentifier.toLowerCase()
+        const block = Object.values(workflowStore.blocks).find(
+          (block) =>
+            block.name.toLowerCase() === blockIdentifier.toLowerCase() ||
+            block.id === blockIdentifier ||
+            block.type.toLowerCase() === blockIdentifier.toLowerCase()
         )
 
         if (!block) {
@@ -406,16 +426,18 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
         const workflowStore = useWorkflowStore.getState()
 
         // Find source and target blocks
-        const sourceBlock = Object.values(workflowStore.blocks).find(block =>
-          block.name.toLowerCase().includes(sourceIdentifier.toLowerCase()) ||
-          block.id === sourceIdentifier ||
-          block.type.toLowerCase().includes(sourceIdentifier.toLowerCase())
+        const sourceBlock = Object.values(workflowStore.blocks).find(
+          (block) =>
+            block.name.toLowerCase().includes(sourceIdentifier.toLowerCase()) ||
+            block.id === sourceIdentifier ||
+            block.type.toLowerCase().includes(sourceIdentifier.toLowerCase())
         )
 
-        const targetBlock = Object.values(workflowStore.blocks).find(block =>
-          block.name.toLowerCase().includes(targetIdentifier.toLowerCase()) ||
-          block.id === targetIdentifier ||
-          block.type.toLowerCase().includes(targetIdentifier.toLowerCase())
+        const targetBlock = Object.values(workflowStore.blocks).find(
+          (block) =>
+            block.name.toLowerCase().includes(targetIdentifier.toLowerCase()) ||
+            block.id === targetIdentifier ||
+            block.type.toLowerCase().includes(targetIdentifier.toLowerCase())
         )
 
         if (!sourceBlock) {
@@ -433,7 +455,7 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           target: targetBlock.id,
           sourceHandle: 'response',
           targetHandle: 'input',
-          type: 'default'
+          type: 'default',
         }
 
         workflowStore.addEdge(newEdge)
@@ -444,10 +466,11 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
         const workflowStore = useWorkflowStore.getState()
 
         // Find block
-        const block = Object.values(workflowStore.blocks).find(block =>
-          block.name.toLowerCase().includes(blockIdentifier.toLowerCase()) ||
-          block.id === blockIdentifier ||
-          block.type.toLowerCase().includes(blockIdentifier.toLowerCase())
+        const block = Object.values(workflowStore.blocks).find(
+          (block) =>
+            block.name.toLowerCase().includes(blockIdentifier.toLowerCase()) ||
+            block.id === blockIdentifier ||
+            block.type.toLowerCase().includes(blockIdentifier.toLowerCase())
         )
 
         if (!block) {
@@ -459,8 +482,8 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           workflowStore.updateBlock(block.id, { name: value })
         } else {
           // Try to update subblock value
-          const subBlock = Object.values(block.subBlocks).find(sb =>
-            (sb as any).id?.toLowerCase() === property.toLowerCase()
+          const subBlock = Object.values(block.subBlocks).find(
+            (sb) => (sb as any).id?.toLowerCase() === property.toLowerCase()
           )
 
           if (subBlock) {
@@ -489,14 +512,14 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
         statusMessage += `• Status: ${isExecuting ? 'Running' : 'Idle'}\n`
 
         if (activeBlocks.length > 0) {
-          const activeBlockNames = activeBlocks.map(id => workflowStore.blocks[id]?.name || id)
+          const activeBlockNames = activeBlocks.map((id) => workflowStore.blocks[id]?.name || id)
           statusMessage += `• Active blocks: ${activeBlockNames.join(', ')}\n`
         }
 
         useChatStore.getState().addMessage({
           content: statusMessage,
           workflowId: activeWorkflowId || '',
-          type: 'workflow'
+          type: 'workflow',
         })
       },
 
@@ -511,7 +534,7 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
             summary: 'No active workflow',
             blockSummaries: [],
             connectionSummaries: [],
-            executionState: 'idle'
+            executionState: 'idle',
           }
         }
 
@@ -522,25 +545,25 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
         return {
           workflowId: activeWorkflowId,
           summary: `Workflow with ${Object.keys(blocks).length} blocks and ${edges.length} connections`,
-          blockSummaries: Object.values(blocks).map(block => ({
+          blockSummaries: Object.values(blocks).map((block) => ({
             id: block.id,
             type: block.type,
             name: block.name,
             isActive: activeBlocks.includes(block.id),
             isEnabled: block.enabled,
-            position: block.position
+            position: block.position,
           })),
-          connectionSummaries: edges.map(edge => {
+          connectionSummaries: edges.map((edge) => {
             const sourceBlock = blocks[edge.source]
             const targetBlock = blocks[edge.target]
             return {
               id: edge.id,
               description: `${sourceBlock?.name || edge.source} → ${targetBlock?.name || edge.target}`,
               sourceBlock: sourceBlock?.name || edge.source,
-              targetBlock: targetBlock?.name || edge.target
+              targetBlock: targetBlock?.name || edge.target,
             }
           }),
-          executionState: executionStore.isExecuting ? 'running' : 'idle'
+          executionState: executionStore.isExecuting ? 'running' : 'idle',
         }
       },
 
@@ -552,9 +575,8 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           case 'execution_state_changed':
             if (event.data.isExecuting) {
               return '▶️ Workflow execution started'
-            } else {
-              return '⏸️ Workflow execution completed'
             }
+            return '⏸️ Workflow execution completed'
 
           default:
             return null
@@ -575,13 +597,13 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
           useChatStore.getState().addMessage({
             content: `🔗 **Synchronized with workflow:** ${representation.summary}`,
             workflowId: representation.workflowId,
-            type: 'workflow'
+            type: 'workflow',
           })
         }
 
         set({
           workflowStateRepresentation: representation,
-          lastSyncTimestamp: Date.now()
+          lastSyncTimestamp: Date.now(),
         })
 
         logger.info('Full synchronization completed')
@@ -600,7 +622,7 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
 
       resolveConflict: (conflictId: string, resolution: 'chat' | 'visual' | 'merge') => {
         const state = get()
-        const conflict = state.conflicts.find(c => c.id === conflictId)
+        const conflict = state.conflicts.find((c) => c.id === conflictId)
 
         if (!conflict) {
           logger.warn(`Conflict not found: ${conflictId}`)
@@ -611,7 +633,7 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
 
         // Remove resolved conflict
         set({
-          conflicts: state.conflicts.filter(c => c.id !== conflictId)
+          conflicts: state.conflicts.filter((c) => c.id !== conflictId),
         })
 
         // Apply resolution based on strategy
@@ -630,13 +652,13 @@ export const useWorkflowChatSyncStore = create<WorkflowChatSyncStore>()(
 
       addPendingChange: (change) => {
         set((state) => ({
-          pendingChanges: [...state.pendingChanges, change]
+          pendingChanges: [...state.pendingChanges, change],
         }))
       },
 
       clearPendingChanges: () => {
         set({ pendingChanges: [] })
-      }
+      },
     }),
     { name: 'workflow-chat-sync' }
   )
@@ -660,6 +682,6 @@ export const useInitializeWorkflowChatSync = () => {
     enableSync: store.enableSync,
     disableSync: store.disableSync,
     conflicts: store.conflicts,
-    resolveConflict: store.resolveConflict
+    resolveConflict: store.resolveConflict,
   }
 }

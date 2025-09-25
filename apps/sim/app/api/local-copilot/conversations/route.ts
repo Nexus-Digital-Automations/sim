@@ -11,8 +11,8 @@ import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { validateWorkspaceAccess } from '@/lib/auth/chat-middleware'
 import { createLogger } from '@/lib/logs/console/logger'
-import { createConversation, getUserConversations } from '@/lib/parlant/conversations'
 import { getUserCanAccessAgent } from '@/lib/parlant/agents'
+import { createConversation, getUserConversations } from '@/lib/parlant/conversations'
 import { agentService } from '@/services/parlant/agent-service'
 
 const logger = createLogger('LocalCopilotConversationsAPI')
@@ -22,7 +22,11 @@ const ConversationsQuerySchema = z.object({
   workspaceId: z.string().min(1, 'Workspace ID is required'),
   agentId: z.string().optional(),
   search: z.string().optional(),
-  includeArchived: z.string().transform(s => s === 'true').optional().default('false'),
+  includeArchived: z
+    .string()
+    .transform((s) => s === 'true')
+    .optional()
+    .default('false'),
   limit: z.string().transform(Number).pipe(z.number().min(1).max(100)).optional().default('20'),
   page: z.string().transform(Number).pipe(z.number().min(1)).optional().default('1'),
   sortBy: z.enum(['created_at', 'updated_at', 'last_active']).optional().default('updated_at'),
@@ -59,16 +63,8 @@ export async function GET(req: NextRequest) {
     // Parse and validate query parameters
     const searchParams = req.nextUrl.searchParams
     const queryParams = Object.fromEntries(searchParams.entries())
-    const {
-      workspaceId,
-      agentId,
-      search,
-      includeArchived,
-      limit,
-      page,
-      sortBy,
-      sortOrder,
-    } = ConversationsQuerySchema.parse(queryParams)
+    const { workspaceId, agentId, search, includeArchived, limit, page, sortBy, sortOrder } =
+      ConversationsQuerySchema.parse(queryParams)
 
     // Validate workspace access
     const access = await validateWorkspaceAccess(session.user.id, workspaceId)
@@ -103,16 +99,18 @@ export async function GET(req: NextRequest) {
       // Apply search filter if provided
       if (search) {
         const searchLower = search.toLowerCase()
-        filteredConversations = filteredConversations.filter((conv: any) =>
-          conv.title?.toLowerCase().includes(searchLower) ||
-          conv.agentName?.toLowerCase().includes(searchLower) ||
-          conv.lastMessage?.toLowerCase().includes(searchLower)
+        filteredConversations = filteredConversations.filter(
+          (conv: any) =>
+            conv.title?.toLowerCase().includes(searchLower) ||
+            conv.agentName?.toLowerCase().includes(searchLower) ||
+            conv.lastMessage?.toLowerCase().includes(searchLower)
         )
       }
 
       // Sort conversations
       filteredConversations.sort((a: any, b: any) => {
-        let aValue, bValue
+        let aValue
+        let bValue
 
         switch (sortBy) {
           case 'created_at':
@@ -155,7 +153,10 @@ export async function GET(req: NextRequest) {
                   agentInfo = agentResponse.data
                 }
               } catch (error) {
-                logger.warn(`[${requestId}] Failed to get agent info for conversation ${conversation.id}:`, error)
+                logger.warn(
+                  `[${requestId}] Failed to get agent info for conversation ${conversation.id}:`,
+                  error
+                )
               }
             }
 
@@ -164,9 +165,10 @@ export async function GET(req: NextRequest) {
               agentName: conversation.agentName || agentInfo?.name || 'Unknown Agent',
               agentStatus: agentInfo?.status || 'unknown',
               messageCount: conversation.messages?.length || conversation.messageCount || 0,
-              lastMessage: conversation.messages?.length > 0
-                ? conversation.messages[conversation.messages.length - 1].content.substring(0, 100) + '...'
-                : null,
+              lastMessage:
+                conversation.messages?.length > 0
+                  ? `${conversation.messages[conversation.messages.length - 1].content.substring(0, 100)}...`
+                  : null,
               isLocalCopilot: true,
             }
           } catch (error) {
@@ -205,7 +207,6 @@ export async function GET(req: NextRequest) {
           source: 'local-copilot',
         },
       })
-
     } catch (error) {
       logger.error(`[${requestId}] Failed to retrieve conversations:`, error)
       return NextResponse.json(
@@ -217,7 +218,6 @@ export async function GET(req: NextRequest) {
         { status: 500 }
       )
     }
-
   } catch (error) {
     logger.error(`[${requestId}] Local copilot conversations error:`, {
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -349,16 +349,18 @@ export async function POST(req: NextRequest) {
         workspaceId,
       })
 
-      return NextResponse.json({
-        success: true,
-        conversation: enhancedConversation,
-        metadata: {
-          requestId,
-          timestamp: new Date().toISOString(),
-          source: 'local-copilot',
+      return NextResponse.json(
+        {
+          success: true,
+          conversation: enhancedConversation,
+          metadata: {
+            requestId,
+            timestamp: new Date().toISOString(),
+            source: 'local-copilot',
+          },
         },
-      }, { status: 201 })
-
+        { status: 201 }
+      )
     } catch (error) {
       logger.error(`[${requestId}] Failed to create conversation:`, error)
       return NextResponse.json(
@@ -370,7 +372,6 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       )
     }
-
   } catch (error) {
     logger.error(`[${requestId}] Create conversation error:`, {
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -421,12 +422,13 @@ function formatConversationForResponse(conversation: any, agent?: any) {
       agentStatus: agent?.status,
       agentCapabilities: agent?.tools || [],
     },
-    lastMessage: conversation.messages?.length > 0
-      ? {
-          role: conversation.messages[conversation.messages.length - 1].role,
-          content: conversation.messages[conversation.messages.length - 1].content.substring(0, 100) + '...',
-          timestamp: conversation.messages[conversation.messages.length - 1].timestamp,
-        }
-      : null,
+    lastMessage:
+      conversation.messages?.length > 0
+        ? {
+            role: conversation.messages[conversation.messages.length - 1].role,
+            content: `${conversation.messages[conversation.messages.length - 1].content.substring(0, 100)}...`,
+            timestamp: conversation.messages[conversation.messages.length - 1].timestamp,
+          }
+        : null,
   }
 }

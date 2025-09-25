@@ -1,10 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ChatWithWorkflowButton, useChatWithWorkflow } from './chat-with-workflow-button'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { ChatWithWorkflowButton, useChatWithWorkflow } from './chat-with-workflow-button'
 
 // Mock the logger
 vi.mock('@/lib/logs/console/logger', () => ({
@@ -22,12 +22,12 @@ function TestHookComponent({ workflowId }: { workflowId: string }) {
 
   return (
     <div>
-      <div data-testid="active-workflow">{activeChatWorkflowId || 'none'}</div>
-      <div data-testid="is-chatting">{isChattingWithWorkflow(workflowId).toString()}</div>
-      <button onClick={() => startChat(workflowId)} data-testid="start-chat">
+      <div data-testid='active-workflow'>{activeChatWorkflowId || 'none'}</div>
+      <div data-testid='is-chatting'>{isChattingWithWorkflow(workflowId).toString()}</div>
+      <button onClick={() => startChat(workflowId)} data-testid='start-chat'>
         Start Chat
       </button>
-      <button onClick={endChat} data-testid="end-chat">
+      <button onClick={endChat} data-testid='end-chat'>
         End Chat
       </button>
     </div>
@@ -54,7 +54,9 @@ describe('ChatWithWorkflowButton', () => {
     it('renders default variant correctly', () => {
       render(<ChatWithWorkflowButton {...mockProps} />)
 
-      expect(screen.getByRole('button', { name: /start conversation with test workflow/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /start conversation with test workflow/i })
+      ).toBeInTheDocument()
       expect(screen.getByText('Chat with Workflow')).toBeInTheDocument()
       expect(screen.getByRole('button')).toContainHTML('svg')
     })
@@ -62,7 +64,7 @@ describe('ChatWithWorkflowButton', () => {
     it('renders compact variant correctly', () => {
       render(
         <TestWrapper>
-          <ChatWithWorkflowButton {...mockProps} variant="compact" />
+          <ChatWithWorkflowButton {...mockProps} variant='compact' />
         </TestWrapper>
       )
 
@@ -73,7 +75,7 @@ describe('ChatWithWorkflowButton', () => {
     it('renders icon-only variant correctly', () => {
       render(
         <TestWrapper>
-          <ChatWithWorkflowButton {...mockProps} variant="icon-only" />
+          <ChatWithWorkflowButton {...mockProps} variant='icon-only' />
         </TestWrapper>
       )
 
@@ -116,19 +118,19 @@ describe('ChatWithWorkflowButton', () => {
 
   describe('Variants and Styling', () => {
     it('applies custom className', () => {
-      render(<ChatWithWorkflowButton {...mockProps} className="custom-class" />)
+      render(<ChatWithWorkflowButton {...mockProps} className='custom-class' />)
 
       const button = screen.getByRole('button')
       expect(button).toHaveClass('custom-class')
     })
 
     it('renders different sizes correctly', () => {
-      const { rerender } = render(<ChatWithWorkflowButton {...mockProps} size="sm" />)
+      const { rerender } = render(<ChatWithWorkflowButton {...mockProps} size='sm' />)
 
       let button = screen.getByRole('button')
       expect(button).toHaveClass('h-9')
 
-      rerender(<ChatWithWorkflowButton {...mockProps} size="lg" />)
+      rerender(<ChatWithWorkflowButton {...mockProps} size='lg' />)
 
       button = screen.getByRole('button')
       expect(button).toHaveClass('h-11')
@@ -137,7 +139,7 @@ describe('ChatWithWorkflowButton', () => {
     it('shows tooltip for icon-only variant', () => {
       render(
         <TestWrapper>
-          <ChatWithWorkflowButton {...mockProps} variant="icon-only" showTooltip />
+          <ChatWithWorkflowButton {...mockProps} variant='icon-only' showTooltip />
         </TestWrapper>
       )
 
@@ -150,7 +152,7 @@ describe('ChatWithWorkflowButton', () => {
     it('shows tooltip for compact variant', () => {
       render(
         <TestWrapper>
-          <ChatWithWorkflowButton {...mockProps} variant="compact" showTooltip />
+          <ChatWithWorkflowButton {...mockProps} variant='compact' showTooltip />
         </TestWrapper>
       )
 
@@ -163,7 +165,7 @@ describe('ChatWithWorkflowButton', () => {
     it('does not show tooltip when showTooltip is false', () => {
       render(
         <TestWrapper>
-          <ChatWithWorkflowButton {...mockProps} variant="icon-only" showTooltip={false} />
+          <ChatWithWorkflowButton {...mockProps} variant='icon-only' showTooltip={false} />
         </TestWrapper>
       )
 
@@ -209,7 +211,7 @@ describe('ChatWithWorkflowButton', () => {
     it('shows loading state with different variants', () => {
       const { rerender } = render(
         <TestWrapper>
-          <ChatWithWorkflowButton {...mockProps} variant="default" loading />
+          <ChatWithWorkflowButton {...mockProps} variant='default' loading />
         </TestWrapper>
       )
 
@@ -217,14 +219,14 @@ describe('ChatWithWorkflowButton', () => {
 
       rerender(
         <TestWrapper>
-          <ChatWithWorkflowButton {...mockProps} variant="compact" loading />
+          <ChatWithWorkflowButton {...mockProps} variant='compact' loading />
         </TestWrapper>
       )
       expect(screen.getByText('Starting...')).toBeInTheDocument()
 
       rerender(
         <TestWrapper>
-          <ChatWithWorkflowButton {...mockProps} variant="icon-only" loading />
+          <ChatWithWorkflowButton {...mockProps} variant='icon-only' loading />
         </TestWrapper>
       )
       expect(screen.getByRole('button')).toContainHTML('svg')
@@ -245,7 +247,7 @@ describe('ChatWithWorkflowButton', () => {
 
 describe('useChatWithWorkflow', () => {
   it('manages chat workflow state correctly', () => {
-    render(<TestHookComponent workflowId="test-123" />)
+    render(<TestHookComponent workflowId='test-123' />)
 
     // Initial state
     expect(screen.getByTestId('active-workflow')).toHaveTextContent('none')
@@ -263,18 +265,18 @@ describe('useChatWithWorkflow', () => {
   })
 
   it('correctly identifies which workflow is being chatted with', () => {
-    const { rerender } = render(<TestHookComponent workflowId="test-123" />)
+    const { rerender } = render(<TestHookComponent workflowId='test-123' />)
 
     // Start chat with test-123
     fireEvent.click(screen.getByTestId('start-chat'))
     expect(screen.getByTestId('is-chatting')).toHaveTextContent('true')
 
     // Check different workflow ID
-    rerender(<TestHookComponent workflowId="different-456" />)
+    rerender(<TestHookComponent workflowId='different-456' />)
     expect(screen.getByTestId('is-chatting')).toHaveTextContent('false')
 
     // Check original workflow ID
-    rerender(<TestHookComponent workflowId="test-123" />)
+    rerender(<TestHookComponent workflowId='test-123' />)
     expect(screen.getByTestId('is-chatting')).toHaveTextContent('true')
   })
 })
@@ -287,11 +289,11 @@ describe('Integration Tests', () => {
       return (
         <div>
           <ChatWithWorkflowButton
-            workflowId="integration-test"
-            workflowName="Integration Test Workflow"
+            workflowId='integration-test'
+            workflowName='Integration Test Workflow'
             onChatClick={startChat}
           />
-          <div data-testid="chat-status">
+          <div data-testid='chat-status'>
             {isChattingWithWorkflow('integration-test') ? 'chatting' : 'not-chatting'}
           </div>
         </div>

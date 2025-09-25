@@ -9,14 +9,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Bot, Cloud, Zap, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Bot, Cloud, Loader2, Zap } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
-import { cn } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { createLogger } from '@/lib/logs/console/logger'
+import { cn } from '@/lib/utils'
 
 const logger = createLogger('ModeToggle')
 
@@ -44,7 +44,7 @@ const getModeInfo = (mode: 'local' | 'external'): ModeInfo => {
       return {
         label: 'Local Agent',
         description: 'Using Parlant agents running locally with full tool access',
-        icon: <Bot className="h-3 w-3" />,
+        icon: <Bot className='h-3 w-3' />,
         color: 'text-green-600',
         badgeVariant: 'default',
         features: [
@@ -58,7 +58,7 @@ const getModeInfo = (mode: 'local' | 'external'): ModeInfo => {
       return {
         label: 'External API',
         description: 'Using external API services for chat functionality',
-        icon: <Cloud className="h-3 w-3" />,
+        icon: <Cloud className='h-3 w-3' />,
         color: 'text-blue-600',
         badgeVariant: 'secondary',
         features: [
@@ -94,28 +94,24 @@ const SwitchVariant: React.FC<ModeToggleProps> = ({
 
   return (
     <div className={cn('flex items-center gap-3', className)}>
-      <div className="flex items-center gap-2">
+      <div className='flex items-center gap-2'>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center gap-2">
+            <div className='flex items-center gap-2'>
               <div className={cn('flex items-center gap-1', currentInfo.color)}>
                 {currentInfo.icon}
-                {showLabels && (
-                  <span className="text-xs font-medium">{currentInfo.label}</span>
-                )}
+                {showLabels && <span className='font-medium text-xs'>{currentInfo.label}</span>}
               </div>
             </div>
           </TooltipTrigger>
-          <TooltipContent side="bottom">
-            <div className="space-y-2 p-1">
-              <p className="font-medium">{currentInfo.label}</p>
-              <p className="text-xs text-muted-foreground max-w-48">
-                {currentInfo.description}
-              </p>
-              <div className="space-y-1">
+          <TooltipContent side='bottom'>
+            <div className='space-y-2 p-1'>
+              <p className='font-medium'>{currentInfo.label}</p>
+              <p className='max-w-48 text-muted-foreground text-xs'>{currentInfo.description}</p>
+              <div className='space-y-1'>
                 {currentInfo.features.map((feature) => (
-                  <div key={feature} className="flex items-center gap-1 text-xs">
-                    <Zap className="h-2 w-2" />
+                  <div key={feature} className='flex items-center gap-1 text-xs'>
+                    <Zap className='h-2 w-2' />
                     <span>{feature}</span>
                   </div>
                 ))}
@@ -128,7 +124,7 @@ const SwitchVariant: React.FC<ModeToggleProps> = ({
           checked={mode === 'local'}
           onCheckedChange={handleToggle}
           disabled={disabled}
-          className="scale-75"
+          className='scale-75'
         />
       </div>
     </div>
@@ -166,31 +162,29 @@ const ButtonVariant: React.FC<ModeToggleProps> = ({
         <TooltipTrigger asChild>
           <Button
             variant={mode === 'local' ? 'default' : 'ghost'}
-            size="sm"
+            size='sm'
             onClick={() => handleModeChange('local')}
             disabled={disabled || isChanging}
-            className="h-7 px-2 text-xs"
+            className='h-7 px-2 text-xs'
           >
             {isChanging && mode !== 'local' ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Loader2 className='h-3 w-3 animate-spin' />
             ) : (
               <>
                 {localInfo.icon}
-                <span className="ml-1">Local</span>
+                <span className='ml-1'>Local</span>
               </>
             )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom">
-          <div className="space-y-2 p-1">
-            <p className="font-medium">{localInfo.label}</p>
-            <p className="text-xs text-muted-foreground max-w-48">
-              {localInfo.description}
-            </p>
-            <div className="space-y-1">
+        <TooltipContent side='bottom'>
+          <div className='space-y-2 p-1'>
+            <p className='font-medium'>{localInfo.label}</p>
+            <p className='max-w-48 text-muted-foreground text-xs'>{localInfo.description}</p>
+            <div className='space-y-1'>
               {localInfo.features.map((feature) => (
-                <div key={feature} className="flex items-center gap-1 text-xs">
-                  <Zap className="h-2 w-2" />
+                <div key={feature} className='flex items-center gap-1 text-xs'>
+                  <Zap className='h-2 w-2' />
                   <span>{feature}</span>
                 </div>
               ))}
@@ -203,31 +197,29 @@ const ButtonVariant: React.FC<ModeToggleProps> = ({
         <TooltipTrigger asChild>
           <Button
             variant={mode === 'external' ? 'default' : 'ghost'}
-            size="sm"
+            size='sm'
             onClick={() => handleModeChange('external')}
             disabled={disabled || isChanging}
-            className="h-7 px-2 text-xs"
+            className='h-7 px-2 text-xs'
           >
             {isChanging && mode !== 'external' ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Loader2 className='h-3 w-3 animate-spin' />
             ) : (
               <>
                 {externalInfo.icon}
-                <span className="ml-1">External</span>
+                <span className='ml-1'>External</span>
               </>
             )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom">
-          <div className="space-y-2 p-1">
-            <p className="font-medium">{externalInfo.label}</p>
-            <p className="text-xs text-muted-foreground max-w-48">
-              {externalInfo.description}
-            </p>
-            <div className="space-y-1">
+        <TooltipContent side='bottom'>
+          <div className='space-y-2 p-1'>
+            <p className='font-medium'>{externalInfo.label}</p>
+            <p className='max-w-48 text-muted-foreground text-xs'>{externalInfo.description}</p>
+            <div className='space-y-1'>
               {externalInfo.features.map((feature) => (
-                <div key={feature} className="flex items-center gap-1 text-xs">
-                  <Zap className="h-2 w-2" />
+                <div key={feature} className='flex items-center gap-1 text-xs'>
+                  <Zap className='h-2 w-2' />
                   <span>{feature}</span>
                 </div>
               ))}
@@ -239,10 +231,7 @@ const ButtonVariant: React.FC<ModeToggleProps> = ({
   )
 }
 
-export const ModeToggle: React.FC<ModeToggleProps> = ({
-  variant = 'switch',
-  ...props
-}) => {
+export const ModeToggle: React.FC<ModeToggleProps> = ({ variant = 'switch', ...props }) => {
   return (
     <TooltipProvider>
       {variant === 'switch' ? <SwitchVariant {...props} /> : <ButtonVariant {...props} />}
@@ -271,26 +260,16 @@ export const ModeToggleWithStatus: React.FC<ModeToggleWithStatusProps> = ({
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      <ModeToggle
-        mode={mode}
-        onModeChange={onModeChange}
-        disabled={disabled}
-        {...props}
-      />
+      <ModeToggle mode={mode} onModeChange={onModeChange} disabled={disabled} {...props} />
 
       {showStatus && (
         <>
-          <Separator orientation="vertical" className="h-4" />
-          <div className="flex items-center gap-1">
+          <Separator orientation='vertical' className='h-4' />
+          <div className='flex items-center gap-1'>
             <div
-              className={cn(
-                'h-2 w-2 rounded-full',
-                isConnected ? 'bg-green-500' : 'bg-red-500'
-              )}
+              className={cn('h-2 w-2 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500')}
             />
-            <span className="text-xs text-muted-foreground">
-              {connectionStatus}
-            </span>
+            <span className='text-muted-foreground text-xs'>{connectionStatus}</span>
           </div>
         </>
       )}
@@ -310,7 +289,7 @@ export const CompactModeIndicator: React.FC<{
       <TooltipTrigger asChild>
         <Badge variant={info.badgeVariant} className={cn('text-xs', className)}>
           {info.icon}
-          <span className="ml-1">{info.label}</span>
+          <span className='ml-1'>{info.label}</span>
         </Badge>
       </TooltipTrigger>
       <TooltipContent>

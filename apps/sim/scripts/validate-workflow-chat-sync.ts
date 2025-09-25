@@ -18,7 +18,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   reset: '\x1b[0m',
-  bold: '\x1b[1m'
+  bold: '\x1b[1m',
 }
 
 function log(message: string, color = colors.reset) {
@@ -49,17 +49,18 @@ async function validateSynchronizationSystem() {
         const files = [
           'apps/sim/stores/workflow-chat-sync/store.ts',
           'apps/sim/stores/workflow-chat-sync/types.ts',
-          'apps/sim/stores/workflow-chat-sync/integration.ts'
+          'apps/sim/stores/workflow-chat-sync/integration.ts',
         ]
 
-        const missing = files.filter(file => !checkFileExists(file))
+        const missing = files.filter((file) => !checkFileExists(file))
         return {
           success: missing.length === 0,
-          message: missing.length === 0
-            ? `All ${files.length} core store files exist`
-            : `Missing files: ${missing.join(', ')}`
+          message:
+            missing.length === 0
+              ? `All ${files.length} core store files exist`
+              : `Missing files: ${missing.join(', ')}`,
         }
-      }
+      },
     },
 
     {
@@ -70,17 +71,18 @@ async function validateSynchronizationSystem() {
           'apps/sim/components/workflow-chat-sync/WorkflowStateDisplay.tsx',
           'apps/sim/components/workflow-chat-sync/ChatCommandSuggestions.tsx',
           'apps/sim/components/workflow-chat-sync/ConflictResolutionDialog.tsx',
-          'apps/sim/components/workflow-chat-sync/index.ts'
+          'apps/sim/components/workflow-chat-sync/index.ts',
         ]
 
-        const missing = files.filter(file => !checkFileExists(file))
+        const missing = files.filter((file) => !checkFileExists(file))
         return {
           success: missing.length === 0,
-          message: missing.length === 0
-            ? `All ${files.length} component files exist`
-            : `Missing files: ${missing.join(', ')}`
+          message:
+            missing.length === 0
+              ? `All ${files.length} component files exist`
+              : `Missing files: ${missing.join(', ')}`,
         }
-      }
+      },
     },
 
     {
@@ -88,34 +90,34 @@ async function validateSynchronizationSystem() {
       check: () => {
         const files = [
           'apps/sim/__tests__/workflow-chat-sync/store.test.ts',
-          'apps/sim/__tests__/workflow-chat-sync/integration.test.tsx'
+          'apps/sim/__tests__/workflow-chat-sync/integration.test.tsx',
         ]
 
-        const missing = files.filter(file => !checkFileExists(file))
+        const missing = files.filter((file) => !checkFileExists(file))
         return {
           success: missing.length === 0,
-          message: missing.length === 0
-            ? `All ${files.length} test files exist`
-            : `Missing files: ${missing.join(', ')}`
+          message:
+            missing.length === 0
+              ? `All ${files.length} test files exist`
+              : `Missing files: ${missing.join(', ')}`,
         }
-      }
+      },
     },
 
     {
       name: 'Documentation',
       check: () => {
-        const files = [
-          'apps/sim/stores/workflow-chat-sync/README.md'
-        ]
+        const files = ['apps/sim/stores/workflow-chat-sync/README.md']
 
-        const missing = files.filter(file => !checkFileExists(file))
+        const missing = files.filter((file) => !checkFileExists(file))
         return {
           success: missing.length === 0,
-          message: missing.length === 0
-            ? 'Documentation exists'
-            : `Missing documentation: ${missing.join(', ')}`
+          message:
+            missing.length === 0
+              ? 'Documentation exists'
+              : `Missing documentation: ${missing.join(', ')}`,
         }
-      }
+      },
     },
 
     {
@@ -127,9 +129,9 @@ async function validateSynchronizationSystem() {
           success: result.success,
           message: result.success
             ? 'TypeScript compilation successful'
-            : `TypeScript errors: ${result.output.substring(0, 200)}...`
+            : `TypeScript errors: ${result.output.substring(0, 200)}...`,
         }
-      }
+      },
     },
 
     {
@@ -138,45 +140,50 @@ async function validateSynchronizationSystem() {
         log('  Running ESLint validation...')
         const files = [
           'apps/sim/stores/workflow-chat-sync/**/*.ts',
-          'apps/sim/components/workflow-chat-sync/**/*.tsx'
+          'apps/sim/components/workflow-chat-sync/**/*.tsx',
         ]
 
         const result = runCommand(`npx eslint ${files.join(' ')} --ext .ts,.tsx`)
         return {
           success: result.success || result.output.includes('0 problems'),
-          message: result.success || result.output.includes('0 problems')
-            ? 'ESLint validation passed'
-            : `ESLint issues found: ${result.output.substring(0, 200)}...`
+          message:
+            result.success || result.output.includes('0 problems')
+              ? 'ESLint validation passed'
+              : `ESLint issues found: ${result.output.substring(0, 200)}...`,
         }
-      }
+      },
     },
 
     {
       name: 'Unit Tests',
       check: () => {
         log('  Running unit tests...')
-        const result = runCommand('npm test -- --testPathPattern=workflow-chat-sync/store.test.ts --run')
+        const result = runCommand(
+          'npm test -- --testPathPattern=workflow-chat-sync/store.test.ts --run'
+        )
         return {
           success: result.success,
           message: result.success
             ? 'Unit tests passed'
-            : `Unit test failures: ${result.output.substring(0, 200)}...`
+            : `Unit test failures: ${result.output.substring(0, 200)}...`,
         }
-      }
+      },
     },
 
     {
       name: 'Integration Tests',
       check: () => {
         log('  Running integration tests...')
-        const result = runCommand('npm test -- --testPathPattern=workflow-chat-sync/integration.test.tsx --run')
+        const result = runCommand(
+          'npm test -- --testPathPattern=workflow-chat-sync/integration.test.tsx --run'
+        )
         return {
           success: result.success,
           message: result.success
             ? 'Integration tests passed'
-            : `Integration test failures: ${result.output.substring(0, 200)}...`
+            : `Integration test failures: ${result.output.substring(0, 200)}...`,
         }
-      }
+      },
     },
 
     {
@@ -189,16 +196,17 @@ async function validateSynchronizationSystem() {
 
         const content = readFileSync(join(process.cwd(), storeFile), 'utf-8')
         const hasTypeDefinitions = content.includes('WorkflowChatSyncStore')
-        const hasProperImports = content.includes('from \'./types\'')
+        const hasProperImports = content.includes("from './types'")
         const hasErrorHandling = content.includes('try {') || content.includes('catch')
 
         return {
           success: hasTypeDefinitions && hasProperImports && hasErrorHandling,
-          message: hasTypeDefinitions && hasProperImports && hasErrorHandling
-            ? 'Store has proper type safety and error handling'
-            : 'Store missing type definitions, imports, or error handling'
+          message:
+            hasTypeDefinitions && hasProperImports && hasErrorHandling
+              ? 'Store has proper type safety and error handling'
+              : 'Store missing type definitions, imports, or error handling',
         }
-      }
+      },
     },
 
     {
@@ -216,11 +224,12 @@ async function validateSynchronizationSystem() {
 
         return {
           success: hasPropsInterface && hasPropsDestructuring && hasPropsValidation,
-          message: hasPropsInterface && hasPropsDestructuring && hasPropsValidation
-            ? 'Components have proper props validation'
-            : 'Components missing proper props interfaces'
+          message:
+            hasPropsInterface && hasPropsDestructuring && hasPropsValidation
+              ? 'Components have proper props validation'
+              : 'Components missing proper props interfaces',
         }
-      }
+      },
     },
 
     {
@@ -238,19 +247,20 @@ async function validateSynchronizationSystem() {
           'connect_blocks',
           'modify_block',
           'execute_workflow',
-          'get_status'
-        ].every(cmd => content.includes(cmd))
+          'get_status',
+        ].every((cmd) => content.includes(cmd))
 
         const hasCommandDescriptions = content.includes('CHAT_COMMANDS')
         const hasCommandExamples = content.includes('example:')
 
         return {
           success: hasAllCommandTypes && hasCommandDescriptions && hasCommandExamples,
-          message: hasAllCommandTypes && hasCommandDescriptions && hasCommandExamples
-            ? 'Command system is complete with all types and examples'
-            : 'Command system incomplete - missing types, descriptions, or examples'
+          message:
+            hasAllCommandTypes && hasCommandDescriptions && hasCommandExamples
+              ? 'Command system is complete with all types and examples'
+              : 'Command system incomplete - missing types, descriptions, or examples',
         }
-      }
+      },
     },
 
     {
@@ -269,20 +279,31 @@ async function validateSynchronizationSystem() {
         const hasConflictDetection = storeContent.includes('detectConflicts')
         const hasConflictResolution = storeContent.includes('resolveConflict')
         const hasConflictDialog = dialogContent.includes('ConflictResolutionDialog')
-        const hasResolutionStrategies = dialogContent.includes('visual') && dialogContent.includes('chat') && dialogContent.includes('merge')
+        const hasResolutionStrategies =
+          dialogContent.includes('visual') &&
+          dialogContent.includes('chat') &&
+          dialogContent.includes('merge')
 
         return {
-          success: hasConflictDetection && hasConflictResolution && hasConflictDialog && hasResolutionStrategies,
-          message: hasConflictDetection && hasConflictResolution && hasConflictDialog && hasResolutionStrategies
-            ? 'Conflict resolution system is complete'
-            : 'Conflict resolution system incomplete'
+          success:
+            hasConflictDetection &&
+            hasConflictResolution &&
+            hasConflictDialog &&
+            hasResolutionStrategies,
+          message:
+            hasConflictDetection &&
+            hasConflictResolution &&
+            hasConflictDialog &&
+            hasResolutionStrategies
+              ? 'Conflict resolution system is complete'
+              : 'Conflict resolution system incomplete',
         }
-      }
-    }
+      },
+    },
   ]
 
   let passedChecks = 0
-  let totalChecks = checks.length
+  const totalChecks = checks.length
 
   log(`Running ${totalChecks} validation checks...\n`)
 
@@ -313,12 +334,15 @@ async function validateSynchronizationSystem() {
   log(`Passed: ${passedChecks}/${totalChecks} checks`)
 
   if (passedChecks === totalChecks) {
-    log(`${colors.green}${colors.bold}🎉 All validation checks passed! The workflow-chat synchronization system is ready.${colors.reset}`)
+    log(
+      `${colors.green}${colors.bold}🎉 All validation checks passed! The workflow-chat synchronization system is ready.${colors.reset}`
+    )
     return true
-  } else {
-    log(`${colors.red}${colors.bold}⚠️  ${totalChecks - passedChecks} checks failed. Please address the issues above.${colors.reset}`)
-    return false
   }
+  log(
+    `${colors.red}${colors.bold}⚠️  ${totalChecks - passedChecks} checks failed. Please address the issues above.${colors.reset}`
+  )
+  return false
 }
 
 // Feature completeness check
@@ -329,53 +353,55 @@ function validateFeatureCompleteness() {
     {
       name: '🔄 Bidirectional Synchronization',
       description: 'Real-time sync between visual and chat interfaces',
-      implemented: true
+      implemented: true,
     },
     {
       name: '💬 Natural Language Commands',
       description: 'Chat commands for workflow modification',
-      implemented: true
+      implemented: true,
     },
     {
       name: '🎯 Real-time State Representation',
       description: 'Live workflow state in chat format',
-      implemented: true
+      implemented: true,
     },
     {
       name: '⚡ Conflict Resolution',
       description: 'Detection and resolution of sync conflicts',
-      implemented: true
+      implemented: true,
     },
     {
       name: '🛡️ Error Handling',
       description: 'Graceful error handling and recovery',
-      implemented: true
+      implemented: true,
     },
     {
       name: '🧪 Comprehensive Testing',
       description: 'Unit and integration tests',
-      implemented: true
+      implemented: true,
     },
     {
       name: '📚 Complete Documentation',
       description: 'API docs, usage examples, and guides',
-      implemented: true
+      implemented: true,
     },
     {
       name: '🔧 Integration Utilities',
       description: 'Helpers for existing component integration',
-      implemented: true
-    }
+      implemented: true,
+    },
   ]
 
-  features.forEach(feature => {
+  features.forEach((feature) => {
     const status = feature.implemented ? `${colors.green}✅` : `${colors.red}❌`
     log(`${status} ${feature.name}`)
     log(`   ${feature.description}`, colors.reset)
   })
 
-  const implementedCount = features.filter(f => f.implemented).length
-  log(`\n${colors.bold}Implementation Status: ${implementedCount}/${features.length} features complete${colors.reset}`)
+  const implementedCount = features.filter((f) => f.implemented).length
+  log(
+    `\n${colors.bold}Implementation Status: ${implementedCount}/${features.length} features complete${colors.reset}`
+  )
 
   return implementedCount === features.length
 }
@@ -398,7 +424,7 @@ function runPerformanceBenchmarks() {
         return performance.now() - start
       },
       threshold: 10, // ms
-      unit: 'ms'
+      unit: 'ms',
     },
     {
       name: 'State Representation Generation',
@@ -410,7 +436,7 @@ function runPerformanceBenchmarks() {
             id: `block-${j}`,
             name: `Block ${j}`,
             type: 'llm',
-            position: { x: j * 100, y: j * 100 }
+            position: { x: j * 100, y: j * 100 },
           }))
 
           const summary = `Workflow with ${blocks.length} blocks`
@@ -418,7 +444,7 @@ function runPerformanceBenchmarks() {
         return performance.now() - start
       },
       threshold: 50, // ms
-      unit: 'ms'
+      unit: 'ms',
     },
     {
       name: 'Large Workflow Handling',
@@ -429,28 +455,30 @@ function runPerformanceBenchmarks() {
           id: `block-${i}`,
           type: 'llm',
           name: `Block ${i}`,
-          enabled: true
+          enabled: true,
         }))
 
         const edges = Array.from({ length: 499 }, (_, i) => ({
           id: `edge-${i}`,
           source: `block-${i}`,
-          target: `block-${i + 1}`
+          target: `block-${i + 1}`,
         }))
 
         return performance.now() - start
       },
       threshold: 100, // ms
-      unit: 'ms'
-    }
+      unit: 'ms',
+    },
   ]
 
-  benchmarks.forEach(benchmark => {
+  benchmarks.forEach((benchmark) => {
     const duration = benchmark.test()
     const passed = duration <= benchmark.threshold
     const status = passed ? `${colors.green}✅` : `${colors.yellow}⚠️`
 
-    log(`${status} ${benchmark.name}: ${duration.toFixed(2)}${benchmark.unit} (threshold: ${benchmark.threshold}${benchmark.unit})`)
+    log(
+      `${status} ${benchmark.name}: ${duration.toFixed(2)}${benchmark.unit} (threshold: ${benchmark.threshold}${benchmark.unit})`
+    )
   })
 }
 
@@ -477,13 +505,16 @@ async function main() {
     log(`\n${colors.bold}🏁 Validation completed in ${duration}s${colors.reset}`)
 
     if (systemValid && featuresComplete) {
-      log(`${colors.green}${colors.bold}🚀 The Workflow Chat Synchronization System is fully validated and ready for production!${colors.reset}`)
+      log(
+        `${colors.green}${colors.bold}🚀 The Workflow Chat Synchronization System is fully validated and ready for production!${colors.reset}`
+      )
       process.exit(0)
     } else {
-      log(`${colors.red}${colors.bold}🔧 Please address the validation failures before proceeding.${colors.reset}`)
+      log(
+        `${colors.red}${colors.bold}🔧 Please address the validation failures before proceeding.${colors.reset}`
+      )
       process.exit(1)
     }
-
   } catch (error) {
     log(`❌ Validation failed with error: ${error}`, colors.red)
     process.exit(1)

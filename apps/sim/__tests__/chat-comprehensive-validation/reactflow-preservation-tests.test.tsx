@@ -15,9 +15,9 @@
  * - Collaborative Features
  */
 
-import { render, screen, } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactFlowProvider } from 'reactflow'
+import { ReactFlowProvider } from 'reactflow'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createLogger } from '@/lib/logs/console/logger'
 import { WorkflowPreservationAPI } from '@/lib/workflow-preservation'

@@ -22,7 +22,11 @@ const AgentsQuerySchema = z.object({
   status: z.enum(['active', 'inactive', 'training']).optional(),
   limit: z.string().transform(Number).pipe(z.number().min(1).max(100)).optional().default('50'),
   page: z.string().transform(Number).pipe(z.number().min(1)).optional().default('1'),
-  includeCapabilities: z.string().transform(s => s === 'true').optional().default('true'),
+  includeCapabilities: z
+    .string()
+    .transform((s) => s === 'true')
+    .optional()
+    .default('true'),
   sortBy: z.enum(['name', 'created_at', 'updated_at', 'last_used']).optional().default('name'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
 })
@@ -49,16 +53,8 @@ export async function GET(req: NextRequest) {
     // Parse and validate query parameters
     const searchParams = req.nextUrl.searchParams
     const queryParams = Object.fromEntries(searchParams.entries())
-    const {
-      workspaceId,
-      search,
-      status,
-      limit,
-      page,
-      includeCapabilities,
-      sortBy,
-      sortOrder,
-    } = AgentsQuerySchema.parse(queryParams)
+    const { workspaceId, search, status, limit, page, includeCapabilities, sortBy, sortOrder } =
+      AgentsQuerySchema.parse(queryParams)
 
     // Validate workspace access
     const access = await validateWorkspaceAccess(session.user.id, workspaceId)
@@ -107,7 +103,7 @@ export async function GET(req: NextRequest) {
       const agents = agentsResponse.data || []
 
       // Filter active agents only for local copilot
-      const activeAgents = agents.filter(agent => agent.is_active && agent.status === 'active')
+      const activeAgents = agents.filter((agent) => agent.is_active && agent.status === 'active')
 
       // Enhance agents with local copilot specific data
       const enhancedAgents = await Promise.all(
@@ -130,7 +126,8 @@ export async function GET(req: NextRequest) {
               conversationCount: stats.conversationCount || 0,
               avgResponseTime: stats.avgResponseTime || null,
               toolsAvailable: agent.tools || [],
-              description: agent.description || `AI agent specialized in ${agent.name.toLowerCase()} tasks`,
+              description:
+                agent.description || `AI agent specialized in ${agent.name.toLowerCase()} tasks`,
             }
           } catch (error) {
             logger.warn(`[${requestId}] Failed to enhance agent ${agent.id}:`, error)
@@ -172,7 +169,6 @@ export async function GET(req: NextRequest) {
           source: 'local-copilot',
         },
       })
-
     } catch (error) {
       logger.error(`[${requestId}] Failed to retrieve agents from Parlant:`, error)
       return NextResponse.json(
@@ -184,7 +180,6 @@ export async function GET(req: NextRequest) {
         { status: 500 }
       )
     }
-
   } catch (error) {
     logger.error(`[${requestId}] Local copilot agents error:`, {
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -252,7 +247,7 @@ async function getAgentCapabilities(agent: any, requestId: string): Promise<stri
             capabilities.push('Spreadsheet Management', 'Data Export/Import')
             break
           default:
-            capabilities.push(`${tool.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`)
+            capabilities.push(`${tool.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`)
         }
       })
     }
@@ -274,7 +269,6 @@ async function getAgentCapabilities(agent: any, requestId: string): Promise<stri
 
     // Remove duplicates and sort
     return [...new Set(capabilities)].sort()
-
   } catch (error) {
     logger.warn(`[${requestId}] Failed to extract capabilities for agent ${agent.id}:`, error)
     return []
@@ -284,7 +278,11 @@ async function getAgentCapabilities(agent: any, requestId: string): Promise<stri
 /**
  * Helper function to get agent usage statistics
  */
-async function getAgentUsageStats(agentId: string, workspaceId: string, requestId: string): Promise<{
+async function getAgentUsageStats(
+  agentId: string,
+  workspaceId: string,
+  requestId: string
+): Promise<{
   conversationCount: number
   lastUsed: string | null
   avgResponseTime: number | null
@@ -300,10 +298,12 @@ async function getAgentUsageStats(agentId: string, workspaceId: string, requestI
 
     return {
       conversationCount: Math.floor(Math.random() * 50), // Placeholder
-      lastUsed: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString() : null,
+      lastUsed:
+        Math.random() > 0.5
+          ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+          : null,
       avgResponseTime: Math.random() > 0.5 ? Math.floor(Math.random() * 3000) + 500 : null, // 500-3500ms
     }
-
   } catch (error) {
     logger.warn(`[${requestId}] Failed to get usage stats for agent ${agentId}:`, error)
     return {
@@ -406,25 +406,27 @@ export async function POST(req: NextRequest) {
         workspaceId,
       })
 
-      return NextResponse.json({
-        success: true,
-        agent: {
-          ...agent,
-          capabilities: await getAgentCapabilities(agent, requestId),
-          stats: { conversationCount: 0 },
-          isLocalCopilotCompatible: true,
-          lastUsed: null,
-          conversationCount: 0,
-          avgResponseTime: null,
-          toolsAvailable: agent.tools || [],
+      return NextResponse.json(
+        {
+          success: true,
+          agent: {
+            ...agent,
+            capabilities: await getAgentCapabilities(agent, requestId),
+            stats: { conversationCount: 0 },
+            isLocalCopilotCompatible: true,
+            lastUsed: null,
+            conversationCount: 0,
+            avgResponseTime: null,
+            toolsAvailable: agent.tools || [],
+          },
+          metadata: {
+            requestId,
+            timestamp: new Date().toISOString(),
+            source: 'local-copilot',
+          },
         },
-        metadata: {
-          requestId,
-          timestamp: new Date().toISOString(),
-          source: 'local-copilot',
-        },
-      }, { status: 201 })
-
+        { status: 201 }
+      )
     } catch (error) {
       logger.error(`[${requestId}] Failed to create agent:`, error)
       return NextResponse.json(
@@ -436,7 +438,6 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       )
     }
-
   } catch (error) {
     logger.error(`[${requestId}] Create agent error:`, {
       error: error instanceof Error ? error.message : 'Unknown error',

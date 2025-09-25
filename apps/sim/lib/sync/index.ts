@@ -12,33 +12,33 @@ import {
   createBidirectionalSyncEngine,
   type SyncEvent,
   type SyncEventType,
-  type SyncState
+  type SyncState,
 } from './bidirectional-sync-engine'
 import {
-  RealTimeDataBinding,
-  type DataBinding,
-  type ChangeEvent,
-  type WorkflowVisualState,
-  type ChatWorkflowState,
-  type DataBindingConfig
-} from './real-time-data-binding'
-import {
-  ConflictResolutionSystem,
   type Conflict,
   type ConflictResolution,
-  type UserPromptResponse
+  ConflictResolutionSystem,
+  type UserPromptResponse,
 } from './conflict-resolution-system'
 import {
-  SyncPerformanceOptimizer,
-  type PerformanceConfig,
-  type PerformanceMetrics
-} from './sync-performance-optimizer'
+  type ChangeEvent,
+  type ChatWorkflowState,
+  type DataBinding,
+  type DataBindingConfig,
+  RealTimeDataBinding,
+  type WorkflowVisualState,
+} from './real-time-data-binding'
 import {
-  SyncMonitoringSystem,
-  type HealthMetrics,
   type Alert,
-  type AlertSeverity
+  type AlertSeverity,
+  type HealthMetrics,
+  SyncMonitoringSystem,
 } from './sync-monitoring-system'
+import {
+  type PerformanceConfig,
+  type PerformanceMetrics,
+  SyncPerformanceOptimizer,
+} from './sync-performance-optimizer'
 
 const logger = createLogger('BidirectionalSyncSystem')
 
@@ -95,7 +95,7 @@ export class BidirectionalSyncSystem {
       enableConflictResolution: true,
       enablePerformanceOptimization: true,
       enableMonitoring: true,
-      ...config
+      ...config,
     }
 
     this.initializeComponents()
@@ -106,8 +106,8 @@ export class BidirectionalSyncSystem {
       features: {
         conflictResolution: this.config.enableConflictResolution,
         performanceOptimization: this.config.enablePerformanceOptimization,
-        monitoring: this.config.enableMonitoring
-      }
+        monitoring: this.config.enableMonitoring,
+      },
     })
   }
 
@@ -130,9 +130,8 @@ export class BidirectionalSyncSystem {
       this.isActive = true
 
       logger.info('Bidirectional sync system initialized successfully', {
-        workflowId: this.config.workflowId
+        workflowId: this.config.workflowId,
       })
-
     } catch (error) {
       logger.error('Failed to initialize sync system', { error })
       throw new Error(`Sync system initialization failed: ${error}`)
@@ -167,7 +166,7 @@ export class BidirectionalSyncSystem {
           workflowId: this.config.workflowId,
           type,
           payload,
-          version: 1
+          version: 1,
         }
 
         const optimizedEvent = await this.performanceOptimizer.optimizeEvent(event)
@@ -180,12 +179,10 @@ export class BidirectionalSyncSystem {
 
       this.eventCount++
       success = true
-
     } catch (err) {
       error = err as Error
       logger.error('Event emission failed', { type, source, error: error.message })
       throw error
-
     } finally {
       // Record metrics
       if (this.config.enableMonitoring) {
@@ -197,7 +194,7 @@ export class BidirectionalSyncSystem {
           workflowId: this.config.workflowId,
           type,
           payload,
-          version: 1
+          version: 1,
         }
 
         this.monitoring.recordSyncEvent(event, processingTime, success, error)
@@ -215,7 +212,7 @@ export class BidirectionalSyncSystem {
 
     logger.debug('Visual state updated', {
       updateKeys: Object.keys(updates),
-      workflowId: this.config.workflowId
+      workflowId: this.config.workflowId,
     })
   }
 
@@ -229,7 +226,7 @@ export class BidirectionalSyncSystem {
 
     logger.debug('Chat state updated', {
       updateKeys: Object.keys(updates),
-      workflowId: this.config.workflowId
+      workflowId: this.config.workflowId,
     })
   }
 
@@ -243,7 +240,7 @@ export class BidirectionalSyncSystem {
 
     logger.info('Sync mode changed', {
       mode,
-      workflowId: this.config.workflowId
+      workflowId: this.config.workflowId,
     })
   }
 
@@ -270,13 +267,17 @@ export class BidirectionalSyncSystem {
       isActive: this.isActive,
       currentMode: this.syncEngine.getSyncState().mode,
       syncState: this.syncEngine.getSyncState(),
-      health: this.config.enableMonitoring ? this.monitoring.getHealthStatus() : this.createEmptyHealth(),
-      performance: this.config.enablePerformanceOptimization ?
-        this.performanceOptimizer.getMetrics() : this.createEmptyMetrics(),
-      activeConflicts: this.config.enableConflictResolution ?
-        this.conflictResolution.getActiveConflicts().length : 0,
+      health: this.config.enableMonitoring
+        ? this.monitoring.getHealthStatus()
+        : this.createEmptyHealth(),
+      performance: this.config.enablePerformanceOptimization
+        ? this.performanceOptimizer.getMetrics()
+        : this.createEmptyMetrics(),
+      activeConflicts: this.config.enableConflictResolution
+        ? this.conflictResolution.getActiveConflicts().length
+        : 0,
       totalEvents: this.eventCount,
-      uptime: Date.now() - this.startTime
+      uptime: Date.now() - this.startTime,
     }
   }
 
@@ -307,14 +308,18 @@ export class BidirectionalSyncSystem {
 
     try {
       // Emit workflow state sync event
-      await this.emitEvent('WORKFLOW_STATE_SYNC', {
-        visual: this.dataBinding.getVisualState(),
-        chat: this.dataBinding.getChatState(),
-        timestamp: Date.now()
-      }, 'visual', { immediate: true })
+      await this.emitEvent(
+        'WORKFLOW_STATE_SYNC',
+        {
+          visual: this.dataBinding.getVisualState(),
+          chat: this.dataBinding.getChatState(),
+          timestamp: Date.now(),
+        },
+        'visual',
+        { immediate: true }
+      )
 
       logger.info('Full synchronization completed')
-
     } catch (error) {
       logger.error('Force synchronization failed', { error })
       throw error
@@ -481,11 +486,11 @@ export class BidirectionalSyncSystem {
       status: this.getStatus(),
       events: { total: this.eventCount },
       conflicts: this.getActiveConflicts(),
-      performance: this.getPerformanceMetrics()
+      performance: this.getPerformanceMetrics(),
     }
 
     if (this.config.enableMonitoring) {
-      (debugData as any).monitoring = this.monitoring.exportData()
+      ;(debugData as any).monitoring = this.monitoring.exportData()
     }
 
     return debugData
@@ -586,7 +591,7 @@ export class BidirectionalSyncSystem {
       errorRate: 0,
       throughput: 0,
       recoveryAttempts: 0,
-      isRecovering: false
+      isRecovering: false,
     }
 
     return {
@@ -596,7 +601,7 @@ export class BidirectionalSyncSystem {
       performance: emptyComponent,
       overall: 'healthy' as const,
       uptime: Date.now() - this.startTime,
-      lastUpdate: Date.now()
+      lastUpdate: Date.now(),
     }
   }
 
@@ -614,7 +619,7 @@ export class BidirectionalSyncSystem {
       averageEventSize: 0,
       queueDepth: 0,
       processingTime: [],
-      errorRate: 0
+      errorRate: 0,
     }
   }
 }
@@ -636,7 +641,7 @@ export {
   RealTimeDataBinding,
   ConflictResolutionSystem,
   SyncPerformanceOptimizer,
-  SyncMonitoringSystem
+  SyncMonitoringSystem,
 }
 
 export type {
@@ -657,5 +662,5 @@ export type {
   Alert,
   AlertSeverity,
   SyncSystemConfig,
-  SyncSystemStatus
+  SyncSystemStatus,
 }

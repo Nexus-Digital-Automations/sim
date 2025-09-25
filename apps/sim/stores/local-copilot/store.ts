@@ -10,27 +10,26 @@
 import { create } from 'zustand'
 import { devtools, subscribeWithSelector } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
-import { createLogger } from '@/lib/logs/console/logger'
 import { env } from '@/lib/env'
-import type { Agent } from '@/services/parlant/types'
+import { createLogger } from '@/lib/logs/console/logger'
 import {
-  localCopilotToolIntegration,
+  executeAgentTool,
   getAgentToolDescriptions,
   getContextualToolRecommendations,
-  executeAgentTool,
+  localCopilotToolIntegration,
 } from '@/services/local-copilot/tool-integration'
+import type { Agent } from '@/services/parlant/types'
 import {
-  type LocalCopilotStore,
-  type LocalCopilotState,
-  type LocalCopilotMessage,
-  type LocalCopilotConversation,
-  type LocalCopilotToolCall,
-  type SendMessageOptions,
   type AgentSelection,
-  type MessageFileAttachment,
-  type MessageContext,
   DEFAULT_LOCAL_COPILOT_PREFERENCES,
   DEFAULT_STREAMING_STATE,
+  type LocalCopilotConversation,
+  type LocalCopilotMessage,
+  type LocalCopilotState,
+  type LocalCopilotStore,
+  type LocalCopilotToolCall,
+  type MessageContext,
+  type SendMessageOptions,
 } from './types'
 
 const logger = createLogger('LocalCopilotStore')
@@ -696,7 +695,7 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
               })
               break
 
-            case 'error':
+            case 'error': {
               const errorMsg = event.data?.message || 'Unknown streaming error'
               logger.error('Streaming error received', { error: errorMsg })
               set((draft) => {
@@ -704,6 +703,7 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
                 draft.lastError = errorMsg
               })
               break
+            }
           }
         },
 

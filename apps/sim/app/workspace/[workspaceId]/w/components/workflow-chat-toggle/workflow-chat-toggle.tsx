@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { MessageSquare, Eye, ArrowLeft, Loader2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowLeft, Eye, Loader2, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logs/console/logger'
+import { cn } from '@/lib/utils'
 
 const logger = createLogger('WorkflowChatToggle')
 
@@ -64,7 +64,7 @@ export function WorkflowChatToggle({
 
   if (currentMode === 'visual') {
     return (
-      <Card className={cn('border-2 border-dashed border-primary/20 bg-primary/5', className)}>
+      <Card className={cn('border-2 border-primary/20 border-dashed bg-primary/5', className)}>
         <CardContent className='flex items-center justify-between p-4'>
           <div className='flex items-center gap-3'>
             <div className='flex h-10 w-10 items-center justify-center rounded-full bg-primary/10'>
@@ -81,7 +81,7 @@ export function WorkflowChatToggle({
             onClick={() => handleModeSwitch('chat')}
             disabled={disabled || loading || isTransitioning}
             className='gap-2'
-            size="sm"
+            size='sm'
           >
             {isTransitioning ? (
               <>
@@ -101,11 +101,13 @@ export function WorkflowChatToggle({
   }
 
   return (
-    <div className={cn('flex items-center justify-between rounded-lg border bg-card p-3', className)}>
+    <div
+      className={cn('flex items-center justify-between rounded-lg border bg-card p-3', className)}
+    >
       <div className='flex items-center gap-3'>
         <Button
-          variant="ghost"
-          size="sm"
+          variant='ghost'
+          size='sm'
           onClick={() => handleModeSwitch('visual')}
           disabled={disabled || loading || isTransitioning}
           className='gap-2'
@@ -133,8 +135,8 @@ export function WorkflowChatToggle({
         </div>
       </div>
       <Button
-        variant="outline"
-        size="sm"
+        variant='outline'
+        size='sm'
         onClick={() => handleModeSwitch('visual')}
         disabled={disabled || loading || isTransitioning}
         className='gap-2'
@@ -169,7 +171,7 @@ export function ChatModeIndicator({
       <div className='flex rounded-md border p-1'>
         <Button
           variant={currentMode === 'visual' ? 'default' : 'ghost'}
-          size="sm"
+          size='sm'
           onClick={() => onModeChange('visual')}
           className='h-7 px-2 text-xs'
         >
@@ -178,7 +180,7 @@ export function ChatModeIndicator({
         </Button>
         <Button
           variant={currentMode === 'chat' ? 'default' : 'ghost'}
-          size="sm"
+          size='sm'
           onClick={() => onModeChange('chat')}
           className='h-7 px-2 text-xs'
         >
@@ -187,9 +189,7 @@ export function ChatModeIndicator({
         </Button>
       </div>
       {currentMode === 'chat' && (
-        <span className='text-muted-foreground text-xs'>
-          Chatting with {workflowName}
-        </span>
+        <span className='text-muted-foreground text-xs'>Chatting with {workflowName}</span>
       )}
     </div>
   )

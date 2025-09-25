@@ -158,7 +158,7 @@ for (const route of apiRoutes) {
   }
 }
 
-console.log('\n' + '='.repeat(60))
+console.log(`\n${'='.repeat(60)}`)
 console.log(`📊 File Validation Summary`)
 console.log(`✅ Passed: ${passed}`)
 console.log(`❌ Failed: ${failed}`)

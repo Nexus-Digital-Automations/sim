@@ -18,43 +18,39 @@
  * - Responsive design following existing chat UI patterns
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  Play,
-  Pause,
-  Square,
-  RotateCcw,
-  SkipForward,
+  AlertTriangle,
   Bug,
+  CheckCircle,
+  Clock,
   Download,
   Eye,
   EyeOff,
-  Settings,
+  Info,
   MessageSquare,
-  Clock,
-  CheckCircle,
+  Pause,
+  Play,
+  RotateCcw,
+  SkipForward,
+  Square,
   XCircle,
-  AlertTriangle,
-  Info
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { createLogger } from '@/lib/logs/console/logger'
-
+import { cn } from '@/lib/utils'
 import type {
-  WorkflowExecutionChatProps,
   ConversationalMessage,
-  WorkflowExecution,
-  ExecutionChatState,
-  WorkflowExecutionStatus,
+  ExecutionProgress,
   WorkflowChatCommand,
-  ExecutionProgress
+  WorkflowExecution,
+  WorkflowExecutionChatProps,
+  WorkflowExecutionStatus,
 } from '@/types/workflow-execution-chat'
 import { useWorkflowExecutionChat } from './hooks/useWorkflowExecutionChat'
 
@@ -76,7 +72,7 @@ export function WorkflowExecutionChat({
   showDebugInfo = false,
   enableCommands = true,
   maxMessages = 200,
-  autoStart = false
+  autoStart = false,
 }: WorkflowExecutionChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [isExpanded, setIsExpanded] = useState(true)
@@ -94,7 +90,7 @@ export function WorkflowExecutionChat({
     updateChatState,
     getExecutionStatus,
     isExecutionActive,
-    exportLog
+    exportLog,
   } = useWorkflowExecutionChat({
     journey,
     workspaceId,
@@ -104,7 +100,7 @@ export function WorkflowExecutionChat({
     onExecutionError,
     onChatCommand,
     showDebugInfo,
-    maxMessages
+    maxMessages,
   })
 
   // Auto-scroll to latest messages
@@ -162,25 +158,25 @@ export function WorkflowExecutionChat({
   }
 
   return (
-    <Card className={cn('flex flex-col h-full max-h-[80vh] min-h-[400px]', className)}>
+    <Card className={cn('flex h-full max-h-[80vh] min-h-[400px] flex-col', className)}>
       {/* Chat Header */}
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <MessageSquare className="h-5 w-5 text-blue-600" />
+      <CardHeader className='pb-3'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center space-x-3'>
+            <MessageSquare className='h-5 w-5 text-blue-600' />
             <div>
-              <h3 className="font-semibold text-gray-900">
-                {journey.title}
-              </h3>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <h3 className='font-semibold text-gray-900'>{journey.title}</h3>
+              <div className='flex items-center space-x-2 text-gray-500 text-sm'>
                 <ExecutionStatusIndicator
                   status={getExecutionStatus()}
-                  progress={execution?.messages.length ? getProgressFromMessages(messages) : undefined}
+                  progress={
+                    execution?.messages.length ? getProgressFromMessages(messages) : undefined
+                  }
                 />
                 {chatState.isConnected && (
                   <>
                     <span>•</span>
-                    <span className="text-green-600">Real-time</span>
+                    <span className='text-green-600'>Real-time</span>
                   </>
                 )}
                 {execution && (
@@ -193,7 +189,7 @@ export function WorkflowExecutionChat({
             </div>
           </div>
 
-          <div className="flex items-center space-x-1">
+          <div className='flex items-center space-x-1'>
             {/* Execution Controls */}
             {enableCommands && (
               <ExecutionControls
@@ -210,18 +206,18 @@ export function WorkflowExecutionChat({
             )}
 
             {/* Settings and Export */}
-            <div className="flex items-center space-x-1 ml-2 border-l pl-2">
+            <div className='ml-2 flex items-center space-x-1 border-l pl-2'>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant='ghost'
+                    size='sm'
                     onClick={() => updateChatState({ showDebugInfo: !chatState.showDebugInfo })}
                   >
                     {chatState.showDebugInfo ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className='h-4 w-4' />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className='h-4 w-4' />
                     )}
                   </Button>
                 </TooltipTrigger>
@@ -233,22 +229,18 @@ export function WorkflowExecutionChat({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant='ghost'
+                    size='sm'
                     onClick={handleExport}
                     disabled={messages.length === 0}
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className='h-4 w-4' />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Export execution log</TooltipContent>
               </Tooltip>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleExpanded}
-              >
+              <Button variant='ghost' size='sm' onClick={toggleExpanded}>
                 {isExpanded ? '−' : '+'}
               </Button>
             </div>
@@ -257,7 +249,7 @@ export function WorkflowExecutionChat({
 
         {/* Progress Bar */}
         {execution && isExpanded && (
-          <div className="mt-3">
+          <div className='mt-3'>
             <ExecutionProgressBar execution={execution} />
           </div>
         )}
@@ -265,9 +257,9 @@ export function WorkflowExecutionChat({
 
       {/* Messages Area */}
       {isExpanded && (
-        <CardContent className="flex-1 flex flex-col p-0">
-          <ScrollArea className="flex-1 px-4">
-            <div className="space-y-3 py-2">
+        <CardContent className='flex flex-1 flex-col p-0'>
+          <ScrollArea className='flex-1 px-4'>
+            <div className='space-y-3 py-2'>
               {messages.length === 0 ? (
                 <EmptyState
                   status={getExecutionStatus()}
@@ -293,9 +285,9 @@ export function WorkflowExecutionChat({
 
           {/* Connection Status */}
           {chatState.connectionError && (
-            <div className="border-t p-3 bg-red-50">
-              <div className="flex items-center space-x-2 text-sm text-red-600">
-                <XCircle className="h-4 w-4" />
+            <div className='border-t bg-red-50 p-3'>
+              <div className='flex items-center space-x-2 text-red-600 text-sm'>
+                <XCircle className='h-4 w-4' />
                 <span>Connection Error: {chatState.connectionError}</span>
               </div>
             </div>
@@ -311,7 +303,7 @@ export function WorkflowExecutionChat({
  */
 function ExecutionStatusIndicator({
   status,
-  progress
+  progress,
 }: {
   status: WorkflowExecutionStatus
   progress?: ExecutionProgress
@@ -323,56 +315,56 @@ function ExecutionStatusIndicator({
           label: 'Ready',
           color: 'bg-gray-500',
           icon: Clock,
-          variant: 'secondary' as const
+          variant: 'secondary' as const,
         }
       case 'starting':
         return {
           label: 'Starting...',
           color: 'bg-blue-500',
           icon: Play,
-          variant: 'default' as const
+          variant: 'default' as const,
         }
       case 'running':
         return {
           label: progress ? `Step ${progress.currentStep}/${progress.totalSteps}` : 'Running...',
           color: 'bg-blue-500 animate-pulse',
           icon: Play,
-          variant: 'default' as const
+          variant: 'default' as const,
         }
       case 'paused':
         return {
           label: 'Paused',
           color: 'bg-yellow-500',
           icon: Pause,
-          variant: 'secondary' as const
+          variant: 'secondary' as const,
         }
       case 'completed':
         return {
           label: 'Completed',
           color: 'bg-green-500',
           icon: CheckCircle,
-          variant: 'default' as const
+          variant: 'default' as const,
         }
       case 'failed':
         return {
           label: 'Failed',
           color: 'bg-red-500',
           icon: XCircle,
-          variant: 'destructive' as const
+          variant: 'destructive' as const,
         }
       case 'stopped':
         return {
           label: 'Stopped',
           color: 'bg-gray-500',
           icon: Square,
-          variant: 'secondary' as const
+          variant: 'secondary' as const,
         }
       default:
         return {
           label: 'Unknown',
           color: 'bg-gray-500',
           icon: AlertTriangle,
-          variant: 'secondary' as const
+          variant: 'secondary' as const,
         }
     }
   }
@@ -381,9 +373,9 @@ function ExecutionStatusIndicator({
   const Icon = config.icon
 
   return (
-    <Badge variant={config.variant} className="flex items-center space-x-1">
-      <div className={cn('w-2 h-2 rounded-full', config.color)} />
-      <Icon className="h-3 w-3" />
+    <Badge variant={config.variant} className='flex items-center space-x-1'>
+      <div className={cn('h-2 w-2 rounded-full', config.color)} />
+      <Icon className='h-3 w-3' />
       <span>{config.label}</span>
     </Badge>
   )
@@ -401,7 +393,7 @@ function ExecutionControls({
   onStop,
   onRetry,
   onSkip,
-  onDebug
+  onDebug,
 }: {
   status: WorkflowExecutionStatus
   isActive: boolean
@@ -414,12 +406,12 @@ function ExecutionControls({
   onDebug: () => void
 }) {
   return (
-    <div className="flex items-center space-x-1">
+    <div className='flex items-center space-x-1'>
       {status === 'idle' && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="default" size="sm" onClick={onStart}>
-              <Play className="h-4 w-4" />
+            <Button variant='default' size='sm' onClick={onStart}>
+              <Play className='h-4 w-4' />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Start execution</TooltipContent>
@@ -430,8 +422,8 @@ function ExecutionControls({
         <>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={onPause}>
-                <Pause className="h-4 w-4" />
+              <Button variant='outline' size='sm' onClick={onPause}>
+                <Pause className='h-4 w-4' />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Pause execution</TooltipContent>
@@ -439,8 +431,8 @@ function ExecutionControls({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="destructive" size="sm" onClick={onStop}>
-                <Square className="h-4 w-4" />
+              <Button variant='destructive' size='sm' onClick={onStop}>
+                <Square className='h-4 w-4' />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Stop execution</TooltipContent>
@@ -452,8 +444,8 @@ function ExecutionControls({
         <>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="default" size="sm" onClick={onResume}>
-                <Play className="h-4 w-4" />
+              <Button variant='default' size='sm' onClick={onResume}>
+                <Play className='h-4 w-4' />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Resume execution</TooltipContent>
@@ -461,8 +453,8 @@ function ExecutionControls({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="destructive" size="sm" onClick={onStop}>
-                <Square className="h-4 w-4" />
+              <Button variant='destructive' size='sm' onClick={onStop}>
+                <Square className='h-4 w-4' />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Stop execution</TooltipContent>
@@ -474,8 +466,8 @@ function ExecutionControls({
         <>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={onRetry}>
-                <RotateCcw className="h-4 w-4" />
+              <Button variant='outline' size='sm' onClick={onRetry}>
+                <RotateCcw className='h-4 w-4' />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Retry current step</TooltipContent>
@@ -483,8 +475,8 @@ function ExecutionControls({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={onSkip}>
-                <SkipForward className="h-4 w-4" />
+              <Button variant='outline' size='sm' onClick={onSkip}>
+                <SkipForward className='h-4 w-4' />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Skip current step</TooltipContent>
@@ -492,8 +484,8 @@ function ExecutionControls({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={onDebug}>
-                <Bug className="h-4 w-4" />
+              <Button variant='outline' size='sm' onClick={onDebug}>
+                <Bug className='h-4 w-4' />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Debug current step</TooltipContent>
@@ -511,18 +503,16 @@ function ExecutionProgressBar({ execution }: { execution: WorkflowExecution }) {
   const progress = getProgressFromMessages(execution.messages)
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm">
-        <span className="text-gray-600">
+    <div className='space-y-2'>
+      <div className='flex justify-between text-sm'>
+        <span className='text-gray-600'>
           Progress: {progress.currentStep} of {progress.totalSteps} steps
         </span>
-        <span className="text-gray-600">
-          {progress.percentComplete.toFixed(0)}% complete
-        </span>
+        <span className='text-gray-600'>{progress.percentComplete.toFixed(0)}% complete</span>
       </div>
-      <Progress value={progress.percentComplete} className="h-2" />
+      <Progress value={progress.percentComplete} className='h-2' />
       {execution.estimatedTimeRemaining && (
-        <div className="text-xs text-gray-500">
+        <div className='text-gray-500 text-xs'>
           Estimated time remaining: {formatDuration(execution.estimatedTimeRemaining)}
         </div>
       )}
@@ -539,7 +529,7 @@ function ChatMessage({
   onRetry,
   onSkip,
   onDebug,
-  enableCommands
+  enableCommands,
 }: {
   message: ConversationalMessage
   showDebugInfo: boolean
@@ -551,17 +541,17 @@ function ChatMessage({
   const getMessageIcon = (type: ConversationalMessage['type']) => {
     switch (type) {
       case 'system':
-        return <Info className="h-4 w-4 text-blue-500" />
+        return <Info className='h-4 w-4 text-blue-500' />
       case 'progress':
-        return <Clock className="h-4 w-4 text-blue-500" />
+        return <Clock className='h-4 w-4 text-blue-500' />
       case 'result':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
+        return <CheckCircle className='h-4 w-4 text-green-500' />
       case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />
+        return <XCircle className='h-4 w-4 text-red-500' />
       case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
+        return <AlertTriangle className='h-4 w-4 text-yellow-500' />
       default:
-        return <Info className="h-4 w-4 text-gray-500" />
+        return <Info className='h-4 w-4 text-gray-500' />
     }
   }
 
@@ -582,31 +572,31 @@ function ChatMessage({
 
   return (
     <div className={cn('rounded-lg border p-3', getMessageStyle(message.type))}>
-      <div className="flex items-start space-x-2">
+      <div className='flex items-start space-x-2'>
         {getMessageIcon(message.type)}
-        <div className="flex-1 min-w-0">
-          <div className="prose prose-sm max-w-none">
+        <div className='min-w-0 flex-1'>
+          <div className='prose prose-sm max-w-none'>
             <div dangerouslySetInnerHTML={{ __html: formatMessageContent(message.content) }} />
           </div>
 
           {/* Message Actions */}
           {message.metadata.userActionRequired && enableCommands && (
-            <div className="flex items-center space-x-2 mt-2">
+            <div className='mt-2 flex items-center space-x-2'>
               {message.metadata.canRetry && (
-                <Button variant="outline" size="sm" onClick={onRetry}>
-                  <RotateCcw className="h-3 w-3 mr-1" />
+                <Button variant='outline' size='sm' onClick={onRetry}>
+                  <RotateCcw className='mr-1 h-3 w-3' />
                   Retry
                 </Button>
               )}
               {message.metadata.canSkip && (
-                <Button variant="outline" size="sm" onClick={onSkip}>
-                  <SkipForward className="h-3 w-3 mr-1" />
+                <Button variant='outline' size='sm' onClick={onSkip}>
+                  <SkipForward className='mr-1 h-3 w-3' />
                   Skip
                 </Button>
               )}
               {message.metadata.canDebug && (
-                <Button variant="outline" size="sm" onClick={onDebug}>
-                  <Bug className="h-3 w-3 mr-1" />
+                <Button variant='outline' size='sm' onClick={onDebug}>
+                  <Bug className='mr-1 h-3 w-3' />
                   Debug
                 </Button>
               )}
@@ -615,23 +605,21 @@ function ChatMessage({
 
           {/* Debug Information */}
           {showDebugInfo && (
-            <details className="mt-2">
-              <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-700">
+            <details className='mt-2'>
+              <summary className='cursor-pointer text-gray-500 text-xs hover:text-gray-700'>
                 Debug Info
               </summary>
-              <pre className="mt-1 text-xs bg-gray-100 p-2 rounded overflow-x-auto">
+              <pre className='mt-1 overflow-x-auto rounded bg-gray-100 p-2 text-xs'>
                 {JSON.stringify(message.metadata, null, 2)}
               </pre>
             </details>
           )}
 
           {/* Timestamp */}
-          <div className="text-xs text-gray-500 mt-1">
+          <div className='mt-1 text-gray-500 text-xs'>
             {formatTimestamp(message.timestamp)}
             {message.metadata.executionTime && (
-              <span className="ml-2">
-                ({formatDuration(message.metadata.executionTime)})
-              </span>
+              <span className='ml-2'>({formatDuration(message.metadata.executionTime)})</span>
             )}
           </div>
         </div>
@@ -646,7 +634,7 @@ function ChatMessage({
 function EmptyState({
   status,
   onStart,
-  enableStart
+  enableStart,
 }: {
   status: WorkflowExecutionStatus
   onStart: () => void
@@ -654,25 +642,25 @@ function EmptyState({
 }) {
   if (status !== 'idle') {
     return (
-      <div className="text-center py-8">
-        <div className="animate-pulse">
-          <div className="mx-auto h-8 w-8 rounded-full bg-blue-500 mb-2" />
+      <div className='py-8 text-center'>
+        <div className='animate-pulse'>
+          <div className='mx-auto mb-2 h-8 w-8 rounded-full bg-blue-500' />
         </div>
-        <p className="text-gray-500">Initializing workflow execution...</p>
+        <p className='text-gray-500'>Initializing workflow execution...</p>
       </div>
     )
   }
 
   return (
-    <div className="text-center py-8">
-      <MessageSquare className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-      <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Execute</h3>
-      <p className="text-gray-500 mb-4">
+    <div className='py-8 text-center'>
+      <MessageSquare className='mx-auto mb-4 h-12 w-12 text-gray-400' />
+      <h3 className='mb-2 font-medium text-gray-900 text-lg'>Ready to Execute</h3>
+      <p className='mb-4 text-gray-500'>
         Start the workflow execution to see real-time progress updates.
       </p>
       {enableStart && (
         <Button onClick={onStart}>
-          <Play className="h-4 w-4 mr-2" />
+          <Play className='mr-2 h-4 w-4' />
           Start Execution
         </Button>
       )}
@@ -689,7 +677,7 @@ function EmptyState({
  */
 function getProgressFromMessages(messages: ConversationalMessage[]): ExecutionProgress {
   // Find the latest progress message
-  const progressMessages = messages.filter(m => m.metadata.progressData)
+  const progressMessages = messages.filter((m) => m.metadata.progressData)
   const latestProgress = progressMessages[progressMessages.length - 1]?.metadata.progressData
 
   if (latestProgress) {
@@ -697,17 +685,18 @@ function getProgressFromMessages(messages: ConversationalMessage[]): ExecutionPr
   }
 
   // Fallback: calculate from message types
-  const resultMessages = messages.filter(m => m.type === 'result').length
-  const errorMessages = messages.filter(m => m.type === 'error').length
+  const resultMessages = messages.filter((m) => m.type === 'result').length
+  const errorMessages = messages.filter((m) => m.type === 'error').length
   const totalMessages = messages.length
 
   return {
     currentStep: resultMessages + errorMessages,
     totalSteps: Math.max(totalMessages, 1),
-    percentComplete: totalMessages > 0 ? ((resultMessages + errorMessages) / totalMessages) * 100 : 0,
+    percentComplete:
+      totalMessages > 0 ? ((resultMessages + errorMessages) / totalMessages) * 100 : 0,
     stepsCompleted: resultMessages,
     stepsFailed: errorMessages,
-    stepsSkipped: 0
+    stepsSkipped: 0,
   }
 }
 
@@ -731,7 +720,7 @@ function formatTimestamp(timestamp: string): string {
   return new Date(timestamp).toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit'
+    second: '2-digit',
   })
 }
 
@@ -745,9 +734,9 @@ function formatDuration(ms: number): string {
 
   if (hours > 0) {
     return `${hours}h ${minutes % 60}m ${seconds % 60}s`
-  } else if (minutes > 0) {
-    return `${minutes}m ${seconds % 60}s`
-  } else {
-    return `${seconds}s`
   }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds % 60}s`
+  }
+  return `${seconds}s`
 }

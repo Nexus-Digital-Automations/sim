@@ -11,7 +11,38 @@ CORE OPERATION PRINCIPLES (Display at start of every response):
 7. 🚨 ONE AGENT AT A TIME - Default to sequential agent processing, concurrent only for independent errors
 8. CLAUDE.md PROTECTION - NEVER EVER EVER EDIT CLAUDE.md WITHOUT EXPLICIT USER PERMISSION
 9. ABSOLUTE CLAUDE.md COMPLIANCE - It is an ABSOLUTE MANDATE to follow ALL CLAUDE.md instructions
+10. 🚨 FOCUSED CODE ONLY - NEVER add features the user did not EXPLICITLY approve - implement EXACTLY what was requested, nothing more
+11. 🚨 MANDATORY TIMEOUTS - ALWAYS use reasonable timeouts for commands or run in background if operations will take time
 </law>
+
+## 🚨 COMMAND TIMEOUT MANDATE
+**MANDATORY TIMEOUT PROTOCOLS:**
+- **✅ ALWAYS**: Use reasonable timeouts for all commands or run in background if >2min expected
+- **✅ TASKMANAGER**: Exactly 10 seconds timeout for ALL TaskManager API calls
+- **✅ SHORT OPS**: 30-60s timeout (git, ls, npm run lint)
+- **✅ LONG OPS**: Background execution with BashOutput monitoring (builds, tests, installs)
+
+## 🚨 FOCUSED CODE MANDATE
+**ABSOLUTE PROHIBITION - NEVER ADD UNAPPROVED FEATURES:**
+
+**🔴 FOCUSED IMPLEMENTATION ONLY:**
+- **❌ NEVER ADD**: Features, functionality, or capabilities not explicitly requested by user
+- **❌ NEVER EXPAND**: Scope beyond what was specifically asked for
+- **❌ NEVER IMPLEMENT**: "Convenient" additions, "helpful" extras, or "while we're at it" features
+- **❌ NEVER CREATE**: New features without explicit user authorization
+- **❌ NEVER SUGGEST**: Automatic improvements or enhancements without user request
+- **✅ IMPLEMENT EXACTLY**: Only what user specifically requested - nothing more, nothing less
+
+**MANDATORY FOCUS VALIDATION:**
+- Before any implementation: Ask "Did the user explicitly request THIS specific feature?"
+- During implementation: Stay laser-focused on ONLY the requested functionality
+- Before completion: Verify you implemented ONLY what was requested, nothing extra
+
+**FOCUSED CODE PRINCIPLES:**
+- **EXACT SPECIFICATION COMPLIANCE**: Implement precisely what was described
+- **NO SCOPE CREEP**: Resist urge to add "obvious" improvements or features
+- **USER DIRECTION SUPREMACY**: User's explicit request is the ONLY specification that matters
+- **FOCUSED CODEBASE**: Create purposeful, targeted code - avoid extravagant or flamboyant solutions
 
 ## CLAUDE.md COMPLIANCE
 
@@ -189,8 +220,8 @@ timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-ap
 4. **DEFENSIVE PROGRAMMING**: Anticipate edge cases and handle errors gracefully
 5. **PERFORMANCE AWARENESS**: Consider performance without premature optimization
 6. **SECURITY MINDSET**: Think like an attacker to build secure systems
-7. **FOCUSED IMPLEMENTATION**: Create focused, purposeful codebases - avoid extravagant or flamboyant solutions
-8. **USER DIRECTION FIDELITY**: Constantly refer to and follow user directions and project essentials
+7. **FOCUSED IMPLEMENTATION**: Create focused, purposeful codebases - NEVER add features not explicitly requested by user
+8. **USER DIRECTION FIDELITY**: Constantly refer to and follow user directions and project essentials - implement EXACTLY what was requested
 
 ### AUTONOMOUS BOUNDARIES
 - **✅ AUTONOMOUS**: Technical implementation, architecture choices, code organization
@@ -258,6 +289,8 @@ timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-ap
 **BOUNDARY RULES:**
 - **❌ NEVER**: Create feature tasks without explicit user request, expand scope beyond description, implement "suggested" features, add "convenient" improvements
 - **❌ NEVER**: Create error tasks or test tasks for outdated/deprecated materials - remove them instead
+- **❌ NEVER**: Add features the user did not EXPLICITLY approve - no matter how "helpful" or "obvious" they seem
+- **❌ NEVER**: Implement "while we're at it" additions or scope expansions beyond user's specific request
 - **✅ AUTONOMOUS**: Technical implementation decisions, code organization, performance optimizations, error handling, testing approaches
 - **✅ AUTONOMOUS**: Refactoring existing code when it improves the current task, selecting optimal libraries and patterns
 - **✅ ONLY IMPLEMENT**: Features explicitly requested by user or existing in FEATURES.json with "suggested" or "approved" status
@@ -449,6 +482,8 @@ git status                                   # Verify clean/up-to-date
 **IMMEDIATE DEPLOYMENT TRIGGER:**
 - **INSTANT RESPONSE**: The moment linter or type errors are detected, immediately deploy appropriate concurrent agents
 - **NO DELAY**: Do not wait or analyze - deploy concurrent agents for error resolution immediately when appropriate
+- **MAXIMIZE CONCURRENT AGENTS**: When there are many isolated errors, maximize the number of concurrent agents to fix as many errors simultaneously as possible
+- **OPTIMAL PARALLELIZATION**: Deploy the maximum appropriate number of agents based on error count and isolation (e.g., 10 agents for 10+ isolated linter errors, 8 agents for multiple TypeScript module errors)
 - **MANDATORY NUMBER DECLARATION**: ALWAYS state the exact number of concurrent agents being deployed (e.g., "Deploying 3 concurrent agents for linter error fixes", "Using 5 agents for TypeScript error resolution")
 
 **🚨 FORBIDDEN FOR CONCURRENT AGENTS:**
@@ -483,7 +518,7 @@ git status                                   # Verify clean/up-to-date
 **MANDATORY REFERENCE PROTOCOL:**
 - **BEFORE EVERY DECISION**: Check user directions and essentials files for guidance
 - **DURING IMPLEMENTATION**: Continuously validate against user requirements and project guidelines
-- **FOCUSED IMPLEMENTATION**: Create focused, purposeful codebases - not extravagant or flamboyant ones
+- **FOCUSED IMPLEMENTATION**: Create focused, purposeful codebases - NEVER add features not explicitly requested by user
 
 ### PROJECT REQUIREMENTS
 **STANDARD COMPLETION CRITERIA (ADAPT TO CODEBASE):**

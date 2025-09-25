@@ -5,9 +5,9 @@
  * This endpoint is optimized for frequent polling with minimal overhead.
  */
 
+import { quickHealthCheck } from '@sim/parlant-server'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { quickHealthCheck } from '@sim/parlant-server'
 
 const logger = createLogger('HealthStatusAPI')
 

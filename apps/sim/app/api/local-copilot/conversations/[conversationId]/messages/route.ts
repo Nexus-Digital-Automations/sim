@@ -10,7 +10,7 @@ import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { validateWorkspaceAccess } from '@/lib/auth/chat-middleware'
 import { createLogger } from '@/lib/logs/console/logger'
-import { getUserConversation, getConversationMessages } from '@/lib/parlant/conversations'
+import { getConversationMessages, getUserConversation } from '@/lib/parlant/conversations'
 
 const logger = createLogger('LocalCopilotMessagesAPI')
 
@@ -19,9 +19,17 @@ const MessagesQuerySchema = z.object({
   limit: z.string().transform(Number).pipe(z.number().min(1).max(100)).optional().default('50'),
   offset: z.string().transform(Number).pipe(z.number().min(0)).optional().default('0'),
   before: z.string().optional(), // Message ID to get messages before
-  after: z.string().optional(),  // Message ID to get messages after
-  includeToolCalls: z.string().transform(s => s === 'true').optional().default('true'),
-  includeAttachments: z.string().transform(s => s === 'true').optional().default('true'),
+  after: z.string().optional(), // Message ID to get messages after
+  includeToolCalls: z
+    .string()
+    .transform((s) => s === 'true')
+    .optional()
+    .default('true'),
+  includeAttachments: z
+    .string()
+    .transform((s) => s === 'true')
+    .optional()
+    .default('true'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
 })
 
@@ -51,15 +59,8 @@ export async function GET(
     // Parse and validate query parameters
     const searchParams = req.nextUrl.searchParams
     const queryParams = Object.fromEntries(searchParams.entries())
-    const {
-      limit,
-      offset,
-      before,
-      after,
-      includeToolCalls,
-      includeAttachments,
-      sortOrder,
-    } = MessagesQuerySchema.parse(queryParams)
+    const { limit, offset, before, after, includeToolCalls, includeAttachments, sortOrder } =
+      MessagesQuerySchema.parse(queryParams)
 
     try {
       // Get conversation first to validate access
@@ -125,12 +126,12 @@ export async function GET(
 
         // Filter tool calls if requested
         if (!includeToolCalls && enhancedMessage.toolCalls) {
-          delete enhancedMessage.toolCalls
+          enhancedMessage.toolCalls = undefined
         }
 
         // Filter attachments if requested
         if (!includeAttachments && enhancedMessage.fileAttachments) {
-          delete enhancedMessage.fileAttachments
+          enhancedMessage.fileAttachments = undefined
         }
 
         // Add message metadata
@@ -181,7 +182,6 @@ export async function GET(
           includeAttachments,
         },
       })
-
     } catch (error) {
       logger.error(`[${requestId}] Failed to retrieve messages:`, error)
 
@@ -201,7 +201,6 @@ export async function GET(
         { status: 500 }
       )
     }
-
   } catch (error) {
     logger.error(`[${requestId}] Get messages error:`, {
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -232,13 +231,16 @@ export async function GET(
 /**
  * Helper function to format messages for response
  */
-function formatMessageForResponse(message: any, options: {
-  includeToolCalls: boolean
-  includeAttachments: boolean
-  conversationId: string
-  agentId?: string
-  agentName?: string
-}) {
+function formatMessageForResponse(
+  message: any,
+  options: {
+    includeToolCalls: boolean
+    includeAttachments: boolean
+    conversationId: string
+    agentId?: string
+    agentName?: string
+  }
+) {
   const formatted: any = {
     id: message.id,
     role: message.role,
@@ -349,7 +351,6 @@ async function validateMessageAccess(
       conversation,
       hasAccess: true,
     }
-
   } catch (error) {
     return {
       conversation: null,

@@ -7,8 +7,8 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type { SyncEvent, SyncEventType } from './bidirectional-sync-engine'
-import type { PerformanceMetrics } from './sync-performance-optimizer'
 import type { Conflict } from './conflict-resolution-system'
+import type { PerformanceMetrics } from './sync-performance-optimizer'
 
 const logger = createLogger('SyncMonitoringSystem')
 
@@ -103,20 +103,20 @@ export class SyncMonitoringSystem {
     healthThresholds: {
       latency: {
         warning: 100, // 100ms
-        error: 500,   // 500ms
-        critical: 2000 // 2 seconds
+        error: 500, // 500ms
+        critical: 2000, // 2 seconds
       },
       errorRate: {
         warning: 0.05, // 5%
-        error: 0.15,   // 15%
-        critical: 0.3  // 30%
+        error: 0.15, // 15%
+        critical: 0.3, // 30%
       },
       throughput: {
-        warning: 10,   // events/sec
-        error: 5,      // events/sec
-        critical: 1    // events/sec
-      }
-    }
+        warning: 10, // events/sec
+        error: 5, // events/sec
+        critical: 1, // events/sec
+      },
+    },
   }
 
   constructor() {
@@ -130,7 +130,7 @@ export class SyncMonitoringSystem {
     this.startMonitoring()
 
     logger.info('SyncMonitoringSystem initialized', {
-      monitoringInterval: this.config.monitoringInterval
+      monitoringInterval: this.config.monitoringInterval,
     })
   }
 
@@ -161,7 +161,7 @@ export class SyncMonitoringSystem {
   recordPerformanceMetrics(metrics: PerformanceMetrics): void {
     this.performanceHistory.push({
       ...metrics,
-      syncLatency: [...metrics.syncLatency] // Clone array
+      syncLatency: [...metrics.syncLatency], // Clone array
     })
 
     // Trim history
@@ -199,7 +199,7 @@ export class SyncMonitoringSystem {
    * Get active alerts
    */
   getActiveAlerts(): Alert[] {
-    return this.alerts.filter(alert => !alert.resolved)
+    return this.alerts.filter((alert) => !alert.resolved)
   }
 
   /**
@@ -259,14 +259,17 @@ export class SyncMonitoringSystem {
 
       componentHealth.isRecovering = false
       return result
-
     } catch (recoveryError) {
       componentHealth.isRecovering = false
-      logger.error('Recovery execution failed', { component, strategy: strategy.name, recoveryError })
+      logger.error('Recovery execution failed', {
+        component,
+        strategy: strategy.name,
+        recoveryError,
+      })
 
       return {
         success: false,
-        description: `Recovery strategy ${strategy.name} threw an error: ${recoveryError}`
+        description: `Recovery strategy ${strategy.name} threw an error: ${recoveryError}`,
       }
     }
   }
@@ -276,9 +279,7 @@ export class SyncMonitoringSystem {
    */
   clearOldAlerts(): void {
     const cutoffTime = Date.now() - this.config.alertRetentionTime
-    this.alerts = this.alerts.filter(alert =>
-      !alert.resolved || alert.resolvedAt! > cutoffTime
-    )
+    this.alerts = this.alerts.filter((alert) => !alert.resolved || alert.resolvedAt! > cutoffTime)
   }
 
   /**
@@ -300,14 +301,19 @@ export class SyncMonitoringSystem {
 
     // Calculate performance metrics
     const recentMetrics = this.performanceHistory.slice(-100) // Last 100 measurements
-    const averageLatency = recentMetrics.length > 0
-      ? recentMetrics.reduce((sum, m) => sum + m.syncLatency.reduce((s, l) => s + l, 0) / m.syncLatency.length, 0) / recentMetrics.length
-      : 0
+    const averageLatency =
+      recentMetrics.length > 0
+        ? recentMetrics.reduce(
+            (sum, m) => sum + m.syncLatency.reduce((s, l) => s + l, 0) / m.syncLatency.length,
+            0
+          ) / recentMetrics.length
+        : 0
 
-    const peakThroughput = Math.max(...recentMetrics.map(m => m.throughput), 0)
-    const errorRate = recentMetrics.length > 0
-      ? recentMetrics.reduce((sum, m) => sum + m.errorRate, 0) / recentMetrics.length
-      : 0
+    const peakThroughput = Math.max(...recentMetrics.map((m) => m.throughput), 0)
+    const errorRate =
+      recentMetrics.length > 0
+        ? recentMetrics.reduce((sum, m) => sum + m.errorRate, 0) / recentMetrics.length
+        : 0
 
     const uptime = Date.now() - this.startTime
     const uptimePercentage = 99.9 // Would calculate based on actual downtime tracking
@@ -322,9 +328,9 @@ export class SyncMonitoringSystem {
         averageLatency,
         peakThroughput,
         errorRate,
-        uptimePercentage
+        uptimePercentage,
       },
-      recommendations
+      recommendations,
     }
   }
 
@@ -332,7 +338,11 @@ export class SyncMonitoringSystem {
    * Get event component based on event type
    */
   private getEventComponent(eventType: SyncEventType): string {
-    if (eventType.includes('BLOCK') || eventType.includes('EDGE') || eventType.includes('SUBBLOCK')) {
+    if (
+      eventType.includes('BLOCK') ||
+      eventType.includes('EDGE') ||
+      eventType.includes('SUBBLOCK')
+    ) {
       return 'syncEngine'
     }
     if (eventType.includes('CHAT')) {
@@ -347,17 +357,22 @@ export class SyncMonitoringSystem {
   /**
    * Update component health metrics
    */
-  private updateComponentHealth(component: string, processingTime: number, success: boolean, error?: Error): void {
+  private updateComponentHealth(
+    component: string,
+    processingTime: number,
+    success: boolean,
+    error?: Error
+  ): void {
     const health = this.healthMetrics[component as keyof HealthMetrics] as ComponentHealth
 
     if (!health) return
 
     // Update latency (rolling average)
-    health.latency = (health.latency * 0.9) + (processingTime * 0.1)
+    health.latency = health.latency * 0.9 + processingTime * 0.1
 
     // Update error rate (rolling average)
     const errorValue = success ? 0 : 1
-    health.errorRate = (health.errorRate * 0.95) + (errorValue * 0.05)
+    health.errorRate = health.errorRate * 0.95 + errorValue * 0.05
 
     // Update throughput (events per monitoring interval)
     health.throughput++
@@ -378,9 +393,10 @@ export class SyncMonitoringSystem {
   private updatePerformanceHealth(metrics: PerformanceMetrics): void {
     const health = this.healthMetrics.performance
 
-    const avgLatency = metrics.syncLatency.length > 0
-      ? metrics.syncLatency.reduce((a, b) => a + b, 0) / metrics.syncLatency.length
-      : 0
+    const avgLatency =
+      metrics.syncLatency.length > 0
+        ? metrics.syncLatency.reduce((a, b) => a + b, 0) / metrics.syncLatency.length
+        : 0
 
     health.latency = avgLatency
     health.errorRate = metrics.errorRate
@@ -396,23 +412,29 @@ export class SyncMonitoringSystem {
     const thresholds = this.config.healthThresholds
 
     // Check for critical conditions
-    if (latency > thresholds.latency.critical ||
-        errorRate > thresholds.errorRate.critical ||
-        throughput < thresholds.throughput.critical) {
+    if (
+      latency > thresholds.latency.critical ||
+      errorRate > thresholds.errorRate.critical ||
+      throughput < thresholds.throughput.critical
+    ) {
       return 'critical'
     }
 
     // Check for error conditions
-    if (latency > thresholds.latency.error ||
-        errorRate > thresholds.errorRate.error ||
-        throughput < thresholds.throughput.error) {
+    if (
+      latency > thresholds.latency.error ||
+      errorRate > thresholds.errorRate.error ||
+      throughput < thresholds.throughput.error
+    ) {
       return 'unhealthy'
     }
 
     // Check for warning conditions
-    if (latency > thresholds.latency.warning ||
-        errorRate > thresholds.errorRate.warning ||
-        throughput < thresholds.throughput.warning) {
+    if (
+      latency > thresholds.latency.warning ||
+      errorRate > thresholds.errorRate.warning ||
+      throughput < thresholds.throughput.warning
+    ) {
       return 'degraded'
     }
 
@@ -427,11 +449,11 @@ export class SyncMonitoringSystem {
       this.healthMetrics.syncEngine,
       this.healthMetrics.dataBinding,
       this.healthMetrics.conflictResolution,
-      this.healthMetrics.performance
+      this.healthMetrics.performance,
     ]
 
     // Overall health is the worst component health
-    const statuses = components.map(c => c.status)
+    const statuses = components.map((c) => c.status)
 
     if (statuses.includes('critical')) {
       this.healthMetrics.overall = 'critical'
@@ -464,7 +486,7 @@ export class SyncMonitoringSystem {
     logger.error('Sync system error recorded', {
       component,
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     })
   }
 
@@ -480,7 +502,7 @@ export class SyncMonitoringSystem {
         failures: 0,
         lastFailureTime: 0,
         nextRetryTime: 0,
-        successCount: 0
+        successCount: 0,
       }
       this.circuitBreakers.set(component, state)
     }
@@ -515,7 +537,11 @@ export class SyncMonitoringSystem {
    */
   private checkForAlerts(): void {
     for (const [componentName, health] of Object.entries(this.healthMetrics)) {
-      if (componentName === 'overall' || componentName === 'uptime' || componentName === 'lastUpdate') {
+      if (
+        componentName === 'overall' ||
+        componentName === 'uptime' ||
+        componentName === 'lastUpdate'
+      ) {
         continue
       }
 
@@ -523,16 +549,28 @@ export class SyncMonitoringSystem {
 
       // Check for new alerts
       if (component.status === 'critical') {
-        this.createAlert('critical', componentName, `Component ${componentName} is in critical state`)
+        this.createAlert(
+          'critical',
+          componentName,
+          `Component ${componentName} is in critical state`
+        )
       } else if (component.status === 'unhealthy') {
         this.createAlert('error', componentName, `Component ${componentName} is unhealthy`)
       } else if (component.status === 'degraded') {
-        this.createAlert('warning', componentName, `Component ${componentName} performance is degraded`)
+        this.createAlert(
+          'warning',
+          componentName,
+          `Component ${componentName} performance is degraded`
+        )
       }
 
       // Check for high error rate
       if (component.errorRate > this.config.healthThresholds.errorRate.error) {
-        this.createAlert('error', componentName, `High error rate: ${(component.errorRate * 100).toFixed(1)}%`)
+        this.createAlert(
+          'error',
+          componentName,
+          `High error rate: ${(component.errorRate * 100).toFixed(1)}%`
+        )
       }
 
       // Check for high latency
@@ -545,13 +583,19 @@ export class SyncMonitoringSystem {
   /**
    * Create alert
    */
-  private createAlert(severity: AlertSeverity, component: string, message: string, metadata?: Record<string, any>): void {
+  private createAlert(
+    severity: AlertSeverity,
+    component: string,
+    message: string,
+    metadata?: Record<string, any>
+  ): void {
     // Check if similar alert already exists and is not resolved
-    const existingAlert = this.alerts.find(alert =>
-      !alert.resolved &&
-      alert.component === component &&
-      alert.message === message &&
-      alert.severity === severity
+    const existingAlert = this.alerts.find(
+      (alert) =>
+        !alert.resolved &&
+        alert.component === component &&
+        alert.message === message &&
+        alert.severity === severity
     )
 
     if (existingAlert) return // Don't create duplicate alerts
@@ -563,7 +607,7 @@ export class SyncMonitoringSystem {
       component,
       message,
       metadata,
-      resolved: false
+      resolved: false,
     }
 
     this.alerts.push(alert)
@@ -575,7 +619,7 @@ export class SyncMonitoringSystem {
       id: alert.id,
       severity,
       component,
-      message
+      message,
     })
 
     // Auto-resolve info alerts after 1 minute
@@ -595,7 +639,7 @@ export class SyncMonitoringSystem {
    * Resolve alert
    */
   private resolveAlert(alertId: string): void {
-    const alert = this.alerts.find(a => a.id === alertId)
+    const alert = this.alerts.find((a) => a.id === alertId)
     if (alert && !alert.resolved) {
       alert.resolved = true
       alert.resolvedAt = Date.now()
@@ -603,7 +647,7 @@ export class SyncMonitoringSystem {
 
       logger.info('Alert resolved', {
         id: alertId,
-        duration: alert.duration
+        duration: alert.duration,
       })
     }
   }
@@ -612,7 +656,7 @@ export class SyncMonitoringSystem {
    * Notify alert subscribers
    */
   private notifyAlertSubscribers(alert: Alert): void {
-    this.subscribers.forEach(callback => {
+    this.subscribers.forEach((callback) => {
       try {
         callback(alert)
       } catch (error) {
@@ -626,7 +670,7 @@ export class SyncMonitoringSystem {
    */
   private notifyHealthSubscribers(): void {
     const health = this.getHealthStatus()
-    this.healthSubscribers.forEach(callback => {
+    this.healthSubscribers.forEach((callback) => {
       try {
         callback(health)
       } catch (error) {
@@ -648,15 +692,15 @@ export class SyncMonitoringSystem {
       maxAttempts: 3,
       execute: async (component) => {
         // Simulate component restart
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
 
         this.resetComponentHealth(component)
 
         return {
           success: true,
-          description: `Component ${component} restarted successfully`
+          description: `Component ${component} restarted successfully`,
         }
-      }
+      },
     })
 
     // Clear cache strategy
@@ -672,9 +716,9 @@ export class SyncMonitoringSystem {
 
         return {
           success: true,
-          description: 'Caches cleared and state reset'
+          description: 'Caches cleared and state reset',
         }
-      }
+      },
     })
 
     // Reduce load strategy
@@ -691,9 +735,9 @@ export class SyncMonitoringSystem {
         return {
           success: true,
           description: 'System load reduced temporarily',
-          retryAfter: 300000 // 5 minutes
+          retryAfter: 300000, // 5 minutes
         }
-      }
+      },
     })
   }
 
@@ -701,19 +745,20 @@ export class SyncMonitoringSystem {
    * Select appropriate recovery strategy
    */
   private selectRecoveryStrategy(component: string): RecoveryStrategy | null {
-    const applicableStrategies = Array.from(this.recoveryStrategies.values())
-      .filter(strategy => strategy.applicableComponents.includes(component))
+    const applicableStrategies = Array.from(this.recoveryStrategies.values()).filter((strategy) =>
+      strategy.applicableComponents.includes(component)
+    )
 
     // Select strategy based on component health and previous attempts
     const componentHealth = this.healthMetrics[component as keyof HealthMetrics] as ComponentHealth
 
     if (componentHealth.recoveryAttempts < 2) {
-      return applicableStrategies.find(s => s.name === 'restart') || applicableStrategies[0]
-    } else if (componentHealth.recoveryAttempts < 4) {
-      return applicableStrategies.find(s => s.name === 'clear-cache') || applicableStrategies[1]
-    } else {
-      return applicableStrategies.find(s => s.name === 'reduce-load') || applicableStrategies[2]
+      return applicableStrategies.find((s) => s.name === 'restart') || applicableStrategies[0]
     }
+    if (componentHealth.recoveryAttempts < 4) {
+      return applicableStrategies.find((s) => s.name === 'clear-cache') || applicableStrategies[1]
+    }
+    return applicableStrategies.find((s) => s.name === 'reduce-load') || applicableStrategies[2]
   }
 
   /**
@@ -749,9 +794,9 @@ export class SyncMonitoringSystem {
    */
   private performMonitoringCheck(): void {
     // Reset throughput counters (they accumulate over the interval)
-    Object.values(this.healthMetrics).forEach(component => {
+    Object.values(this.healthMetrics).forEach((component) => {
       if (typeof component === 'object' && 'throughput' in component) {
-        (component as ComponentHealth).throughput = 0
+        ;(component as ComponentHealth).throughput = 0
       }
     })
 
@@ -786,12 +831,17 @@ export class SyncMonitoringSystem {
   /**
    * Generate recommendations based on current health
    */
-  private generateRecommendations(health: HealthMetrics, recentMetrics: PerformanceMetrics[]): string[] {
+  private generateRecommendations(
+    health: HealthMetrics,
+    recentMetrics: PerformanceMetrics[]
+  ): string[] {
     const recommendations: string[] = []
 
     // Check overall health
     if (health.overall !== 'healthy') {
-      recommendations.push('System health is degraded. Consider reviewing error logs and performance metrics.')
+      recommendations.push(
+        'System health is degraded. Consider reviewing error logs and performance metrics.'
+      )
     }
 
     // Check component-specific issues
@@ -801,11 +851,15 @@ export class SyncMonitoringSystem {
       const comp = component as ComponentHealth
 
       if (comp.status === 'critical') {
-        recommendations.push(`${componentName} requires immediate attention - critical status detected.`)
+        recommendations.push(
+          `${componentName} requires immediate attention - critical status detected.`
+        )
       }
 
       if (comp.errorRate > this.config.healthThresholds.errorRate.warning) {
-        recommendations.push(`High error rate in ${componentName}. Consider investigating root cause.`)
+        recommendations.push(
+          `High error rate in ${componentName}. Consider investigating root cause.`
+        )
       }
 
       if (comp.latency > this.config.healthThresholds.latency.warning) {
@@ -815,16 +869,23 @@ export class SyncMonitoringSystem {
 
     // Performance-based recommendations
     if (recentMetrics.length > 0) {
-      const avgMemoryUsage = recentMetrics.reduce((sum, m) => sum + m.memoryUsage, 0) / recentMetrics.length
+      const avgMemoryUsage =
+        recentMetrics.reduce((sum, m) => sum + m.memoryUsage, 0) / recentMetrics.length
 
-      if (avgMemoryUsage > 40 * 1024 * 1024) { // 40MB
-        recommendations.push('High memory usage detected. Consider clearing caches or optimizing data structures.')
+      if (avgMemoryUsage > 40 * 1024 * 1024) {
+        // 40MB
+        recommendations.push(
+          'High memory usage detected. Consider clearing caches or optimizing data structures.'
+        )
       }
 
-      const avgCacheHitRate = recentMetrics.reduce((sum, m) => sum + m.cacheHitRate, 0) / recentMetrics.length
+      const avgCacheHitRate =
+        recentMetrics.reduce((sum, m) => sum + m.cacheHitRate, 0) / recentMetrics.length
 
       if (avgCacheHitRate < 0.7) {
-        recommendations.push('Low cache hit rate. Consider adjusting cache sizes or improving cache strategies.')
+        recommendations.push(
+          'Low cache hit rate. Consider adjusting cache sizes or improving cache strategies.'
+        )
       }
     }
 
@@ -841,7 +902,7 @@ export class SyncMonitoringSystem {
       errorRate: 0,
       throughput: 0,
       recoveryAttempts: 0,
-      isRecovering: false
+      isRecovering: false,
     })
 
     return {
@@ -851,7 +912,7 @@ export class SyncMonitoringSystem {
       performance: createEmptyComponent(),
       overall: 'healthy',
       uptime: 0,
-      lastUpdate: Date.now()
+      lastUpdate: Date.now(),
     }
   }
 
@@ -880,7 +941,7 @@ export class SyncMonitoringSystem {
       alerts: [...this.alerts],
       errors,
       performance: [...this.performanceHistory],
-      circuitBreakers
+      circuitBreakers,
     }
   }
 

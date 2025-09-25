@@ -5,11 +5,11 @@
  * auth service status, token validation, and integration health.
  */
 
+import { db } from '@sim/db'
+import { parlantLoggers } from '@sim/parlant-server/logging'
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { db } from '@sim/db'
-import { parlantLoggers } from '@sim/parlant-server/logging'
 import { checkRateLimit, createRateLimitResponse } from '../../middleware'
 
 const logger = createLogger('AuthHealthAPI')

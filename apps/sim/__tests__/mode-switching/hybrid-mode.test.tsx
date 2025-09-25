@@ -2,20 +2,23 @@
  * @jest-environment jsdom
  */
 
-import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { ModeProvider } from '@/contexts/mode-context'
 import { HybridMode, useHybridMode } from '@/components/mode-switching/hybrid-mode'
+import { ModeProvider } from '@/contexts/mode-context'
 
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
     div: ({ children, style, animate, ...props }: any) => (
-      <div style={{ ...style, ...(animate || {}) }} {...props}>{children}</div>
+      <div style={{ ...style, ...(animate || {}) }} {...props}>
+        {children}
+      </div>
     ),
     button: ({ children, onClick, ...props }: any) => (
-      <button onClick={onClick} {...props}>{children}</button>
+      <button onClick={onClick} {...props}>
+        {children}
+      </button>
     ),
   },
   AnimatePresence: ({ children }: any) => <>{children}</>,
@@ -28,23 +31,23 @@ jest.mock('@/lib/logs/console/logger', () => ({
     debug: jest.fn(),
     error: jest.fn(),
     warn: jest.fn(),
-  }))
+  })),
 }))
 
 // Mock utils
 jest.mock('@/lib/utils', () => ({
-  cn: (...classes: any[]) => classes.filter(Boolean).join(' ')
+  cn: (...classes: any[]) => classes.filter(Boolean).join(' '),
 }))
 
 // Test components
 const MockVisualComponent = () => (
-  <div data-testid="visual-component" style={{ height: '100%', background: 'blue' }}>
+  <div data-testid='visual-component' style={{ height: '100%', background: 'blue' }}>
     Visual Editor Content
   </div>
 )
 
 const MockChatComponent = () => (
-  <div data-testid="chat-component" style={{ height: '100%', background: 'green' }}>
+  <div data-testid='chat-component' style={{ height: '100%', background: 'green' }}>
     Chat Interface Content
   </div>
 )
@@ -54,7 +57,7 @@ function TestHybridModeComponent() {
     <HybridMode
       visualComponent={<MockVisualComponent />}
       chatComponent={<MockChatComponent />}
-      className="test-hybrid"
+      className='test-hybrid'
     />
   )
 }
@@ -64,25 +67,24 @@ function TestHybridHookComponent() {
 
   return (
     <div>
-      <div data-testid="is-hybrid">{isHybridMode.toString()}</div>
-      <div data-testid="layout-type">{currentLayout.type}</div>
-      <div data-testid="layout-ratio">{currentLayout.ratio}</div>
+      <div data-testid='is-hybrid'>{isHybridMode.toString()}</div>
+      <div data-testid='layout-type'>{currentLayout.type}</div>
+      <div data-testid='layout-ratio'>{currentLayout.ratio}</div>
 
-      <button
-        data-testid="switch-hybrid"
-        onClick={() => switchToHybrid()}
-      >
+      <button data-testid='switch-hybrid' onClick={() => switchToHybrid()}>
         Switch to Hybrid
       </button>
 
       <button
-        data-testid="update-layout"
-        onClick={() => updateHybridLayout({
-          type: 'split-vertical',
-          ratio: 0.7,
-          collapsible: true,
-          minSize: 200
-        })}
+        data-testid='update-layout'
+        onClick={() =>
+          updateHybridLayout({
+            type: 'split-vertical',
+            ratio: 0.7,
+            collapsible: true,
+            minSize: 200,
+          })
+        }
       >
         Update Layout
       </button>
@@ -376,10 +378,7 @@ describe('HybridMode', () => {
     it('handles missing components gracefully', () => {
       render(
         <ModeProvider>
-          <HybridMode
-            visualComponent={null}
-            chatComponent={<MockChatComponent />}
-          />
+          <HybridMode visualComponent={null} chatComponent={<MockChatComponent />} />
         </ModeProvider>
       )
 
@@ -414,7 +413,7 @@ describe('HybridMode', () => {
 
       // Should have accessible buttons
       const buttons = screen.getAllByRole('button')
-      buttons.forEach(button => {
+      buttons.forEach((button) => {
         expect(button).toBeInTheDocument()
       })
     })
@@ -429,7 +428,7 @@ describe('HybridMode', () => {
       const buttons = screen.getAllByRole('button')
 
       // Should be able to focus buttons
-      buttons.forEach(button => {
+      buttons.forEach((button) => {
         button.focus()
         expect(document.activeElement).toBe(button)
       })

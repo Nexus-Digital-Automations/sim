@@ -7,8 +7,8 @@
  * and UI state management.
  */
 
-import type { ParlantJourney } from '@/services/parlant/workflow-converter/types'
 import type { ParlantSocketClient } from '@/app/chat/workspace/[workspaceId]/agent/[agentId]/components/socket-client'
+import type { ParlantJourney } from '@/services/parlant/workflow-converter/types'
 
 // ========================================
 // EXECUTION CHAT CORE TYPES
@@ -18,7 +18,15 @@ import type { ParlantSocketClient } from '@/app/chat/workspace/[workspaceId]/age
  * Workflow execution event from the journey engine
  */
 export interface WorkflowExecutionEvent {
-  type: 'step_started' | 'step_completed' | 'step_failed' | 'workflow_completed' | 'workflow_failed' | 'workflow_paused' | 'workflow_resumed' | 'workflow_stopped'
+  type:
+    | 'step_started'
+    | 'step_completed'
+    | 'step_failed'
+    | 'workflow_completed'
+    | 'workflow_failed'
+    | 'workflow_paused'
+    | 'workflow_resumed'
+    | 'workflow_stopped'
   journeyId: string
   stepId: string
   stepName: string

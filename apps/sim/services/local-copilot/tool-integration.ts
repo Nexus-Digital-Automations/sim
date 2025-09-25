@@ -6,18 +6,17 @@
  * tool execution integration for conversational AI interactions.
  */
 
-import type { BlockConfig } from '@/blocks/types'
-import type { Agent } from '@/services/parlant/types'
-import type { MessageContext, LocalCopilotToolCall } from '@/stores/local-copilot/types'
-import {
-  toolRegistry,
-  toolAdapter,
-  intelligenceEngine,
-  type EnhancedToolDescription,
-  type ToolRecommendationContext,
-  type ToolRecommendation,
-} from '@/services/parlant/tool-adapter'
 import { createLogger } from '@/lib/logs/console/logger'
+import type { BlockConfig } from '@/blocks/types'
+import {
+  type EnhancedToolDescription,
+  intelligenceEngine,
+  type ToolRecommendation,
+  type ToolRecommendationContext,
+  toolRegistry,
+} from '@/services/parlant/tool-adapter'
+import type { Agent } from '@/services/parlant/types'
+import type { LocalCopilotToolCall, MessageContext } from '@/stores/local-copilot/types'
 
 const logger = createLogger('LocalCopilotToolIntegration')
 
@@ -81,7 +80,7 @@ export class LocalCopilotToolIntegration {
     agent: Agent,
     conversationHistory: Array<{ role: 'user' | 'assistant', content: string, timestamp: Date }>,
     userIntents: string[] = [],
-    limit: number = 5
+    limit = 5
   ): Promise<ToolRecommendation[]> {
     if (!this.initialized) {
       throw new Error('Tool integration not initialized')
@@ -439,7 +438,7 @@ export async function getContextualToolRecommendations(
   agent: Agent,
   conversationHistory: Array<{ role: 'user' | 'assistant', content: string, timestamp: Date }>,
   userMessage?: string,
-  limit: number = 3
+  limit = 3
 ): Promise<ToolRecommendation[]> {
   const userIntents = userMessage ? [userMessage] : []
 

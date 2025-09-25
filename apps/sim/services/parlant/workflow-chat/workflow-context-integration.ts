@@ -7,7 +7,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { ParlantJourney, JourneyState, StateTransition } from '../workflow-converter/types'
+import type { ParlantJourney } from '../workflow-converter/types'
 import type { WorkflowExecutionStreamer } from './real-time-execution-streamer'
 
 const logger = createLogger('WorkflowContextIntegration')
@@ -390,7 +390,7 @@ export class WorkflowContextIntegration {
     score += journey.states.length * 2
 
     // Add complexity for different state types
-    journey.states.forEach(state => {
+    journey.states.forEach((state) => {
       switch (state.type) {
         case 'conditional':
           score += 5
@@ -436,7 +436,7 @@ export class WorkflowContextIntegration {
   private estimateJourneyDuration(journey: ParlantJourney): number {
     // Simple estimation based on journey complexity
     const baseTimePerStep = 30000 // 30 seconds base time per step
-    const complexityMultiplier = 1 + (this.calculateComplexityScore(journey) / 10)
+    const complexityMultiplier = 1 + this.calculateComplexityScore(journey) / 10
 
     return journey.states.length * baseTimePerStep * complexityMultiplier
   }
@@ -528,7 +528,7 @@ export class WorkflowContextIntegration {
 
   private getStepName(context: JourneyContext, stepId: string): string {
     // This would lookup step name from journey definition
-    return stepId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    return stepId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
   }
 
   private async analyzeUserIntent(
@@ -550,7 +550,11 @@ export class WorkflowContextIntegration {
       primary = 'monitor'
       confidence = 0.8
       contextWords.push('status_inquiry')
-    } else if (content.includes('debug') || content.includes('error') || content.includes('problem')) {
+    } else if (
+      content.includes('debug') ||
+      content.includes('error') ||
+      content.includes('problem')
+    ) {
       primary = 'troubleshoot'
       confidence = 0.9
       contextWords.push('troubleshooting')
@@ -613,7 +617,10 @@ export class WorkflowContextIntegration {
     return `I can help troubleshoot the current workflow. Let me check the recent execution history and identify any issues...`
   }
 
-  private generateExplanationResponse(message: ConversationMessage, context: JourneyContext): string {
+  private generateExplanationResponse(
+    message: ConversationMessage,
+    context: JourneyContext
+  ): string {
     return `Let me explain what's happening in the workflow. Currently, we're at step "${context.currentStateId}"...`
   }
 
@@ -677,9 +684,11 @@ export class WorkflowContextIntegration {
     const memory = context.conversationContext.contextMemory
 
     // Extract and store user concerns
-    if (message.content.toLowerCase().includes('concern') ||
-        message.content.toLowerCase().includes('worry') ||
-        message.content.toLowerCase().includes('problem')) {
+    if (
+      message.content.toLowerCase().includes('concern') ||
+      message.content.toLowerCase().includes('worry') ||
+      message.content.toLowerCase().includes('problem')
+    ) {
       memory.userMentionedConcerns.push(message.content)
     }
   }
@@ -700,7 +709,7 @@ export class WorkflowContextIntegration {
       context: this.getContextualInformation(context.journeyId),
     }
 
-    listeners.forEach(listener => {
+    listeners.forEach((listener) => {
       try {
         listener(updateEvent)
       } catch (error) {
@@ -722,8 +731,8 @@ export class WorkflowContextIntegration {
 
   private getProgressSummary(context: JourneyContext): ProgressSummary {
     const total = context.variables.get('total_steps')
-    const completed = context.executionHistory.filter(e => e.success).length
-    const failed = context.executionHistory.filter(e => !e.success && e.endTime).length
+    const completed = context.executionHistory.filter((e) => e.success).length
+    const failed = context.executionHistory.filter((e) => !e.success && e.endTime).length
 
     return {
       totalSteps: total,
@@ -742,8 +751,8 @@ export class WorkflowContextIntegration {
     const messages = context.conversationContext.messageHistory
     return {
       totalMessages: messages.length,
-      userMessages: messages.filter(m => m.type === 'user').length,
-      assistantMessages: messages.filter(m => m.type === 'assistant').length,
+      userMessages: messages.filter((m) => m.type === 'user').length,
+      assistantMessages: messages.filter((m) => m.type === 'assistant').length,
       recentTopics: context.conversationContext.contextMemory.recentTopics.slice(0, 5),
     }
   }
@@ -760,9 +769,11 @@ export class WorkflowContextIntegration {
   private predictNextStep(context: JourneyContext): NextStepPrediction {
     // Simple prediction based on current execution
     const currentHistory = context.executionHistory
-    const avgStepTime = currentHistory.length > 0
-      ? currentHistory.reduce((sum, entry) => sum + (entry.executionTime || 0), 0) / currentHistory.length
-      : 30000
+    const avgStepTime =
+      currentHistory.length > 0
+        ? currentHistory.reduce((sum, entry) => sum + (entry.executionTime || 0), 0) /
+          currentHistory.length
+        : 30000
 
     return {
       estimatedTimeToNext: avgStepTime,
@@ -772,8 +783,9 @@ export class WorkflowContextIntegration {
   }
 
   private getTroubleshootingContext(context: JourneyContext): TroubleshootingContext {
-    const recentFailures = context.executionHistory.filter(e => !e.success).slice(-3)
-    const troubleshootingHistory = context.conversationContext.contextMemory.troubleshootingHistory.slice(-5)
+    const recentFailures = context.executionHistory.filter((e) => !e.success).slice(-3)
+    const troubleshootingHistory =
+      context.conversationContext.contextMemory.troubleshootingHistory.slice(-5)
 
     return {
       recentFailures,

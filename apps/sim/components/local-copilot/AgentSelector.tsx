@@ -8,18 +8,24 @@
 
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
-import { Search, Bot, Zap, Clock, MessageCircle, X, Star, Settings2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useCallback, useMemo, useState } from 'react'
+import { Bot, Clock, MessageCircle, Search, Settings2, Star, X, Zap } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
+import { Input } from '@/components/ui/input'
 import { LoadingAgent } from '@/components/ui/loading-agent'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createLogger } from '@/lib/logs/console/logger'
 import type { Agent } from '@/services/parlant/types'
 import type { AgentSelection } from '@/stores/local-copilot/types'
@@ -50,74 +56,74 @@ const AgentCard: React.FC<AgentCardProps> = ({
   selection,
   isSelected,
   onSelect,
-  showDetails = false
+  showDetails = false,
 }) => {
-  const capabilities = selection?.capabilities || agent.tools?.map(tool =>
-    tool.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-  ) || []
+  const capabilities =
+    selection?.capabilities ||
+    agent.tools?.map((tool) => tool.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())) ||
+    []
 
-  const stats = selection ? {
-    conversationCount: selection.conversationCount,
-    lastUsed: selection.lastUsed,
-    isAvailable: selection.isAvailable,
-  } : {
-    conversationCount: 0,
-    lastUsed: null,
-    isAvailable: agent.is_active,
-  }
+  const stats = selection
+    ? {
+        conversationCount: selection.conversationCount,
+        lastUsed: selection.lastUsed,
+        isAvailable: selection.isAvailable,
+      }
+    : {
+        conversationCount: 0,
+        lastUsed: null,
+        isAvailable: agent.is_active,
+      }
 
   return (
     <Card
       className={`cursor-pointer transition-all hover:shadow-md ${
-        isSelected ? 'ring-2 ring-primary bg-primary/5' : ''
+        isSelected ? 'bg-primary/5 ring-2 ring-primary' : ''
       } ${!stats.isAvailable ? 'opacity-60' : ''}`}
       onClick={() => stats.isAvailable && onSelect(agent)}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-              <Bot className="h-4 w-4 text-primary" />
+      <CardHeader className='pb-3'>
+        <div className='flex items-start justify-between'>
+          <div className='flex items-center gap-2'>
+            <div className='flex h-8 w-8 items-center justify-center rounded-full bg-primary/10'>
+              <Bot className='h-4 w-4 text-primary' />
             </div>
             <div>
-              <CardTitle className="text-sm font-medium">{agent.name}</CardTitle>
-              <CardDescription className="text-xs">
+              <CardTitle className='font-medium text-sm'>{agent.name}</CardTitle>
+              <CardDescription className='text-xs'>
                 {agent.description || `AI agent for ${agent.name.toLowerCase()} tasks`}
               </CardDescription>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className='flex items-center gap-1'>
             {isSelected && (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary">
-                <Star className="h-3 w-3 text-primary-foreground" />
+              <div className='flex h-6 w-6 items-center justify-center rounded-full bg-primary'>
+                <Star className='h-3 w-3 text-primary-foreground' />
               </div>
             )}
-            <Badge
-              variant={stats.isAvailable ? 'secondary' : 'destructive'}
-              className="text-xs"
-            >
+            <Badge variant={stats.isAvailable ? 'secondary' : 'destructive'} className='text-xs'>
               {stats.isAvailable ? 'Available' : 'Unavailable'}
             </Badge>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0">
+      <CardContent className='pt-0'>
         {/* Capabilities */}
         {capabilities.length > 0 && (
-          <div className="mb-3">
-            <div className="mb-1 flex items-center gap-1">
-              <Zap className="h-3 w-3 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground">Capabilities</span>
+          <div className='mb-3'>
+            <div className='mb-1 flex items-center gap-1'>
+              <Zap className='h-3 w-3 text-muted-foreground' />
+              <span className='font-medium text-muted-foreground text-xs'>Capabilities</span>
             </div>
-            <div className="flex flex-wrap gap-1">
+            <div className='flex flex-wrap gap-1'>
               {capabilities.slice(0, showDetails ? capabilities.length : 3).map((capability) => (
-                <Badge key={capability} variant="outline" className="text-xs">
+                <Badge key={capability} variant='outline' className='text-xs'>
                   {capability}
                 </Badge>
               ))}
               {!showDetails && capabilities.length > 3 && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant='outline' className='text-xs'>
                   +{capabilities.length - 3} more
                 </Badge>
               )}
@@ -126,11 +132,11 @@ const AgentCard: React.FC<AgentCardProps> = ({
         )}
 
         {/* Stats */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-3">
+        <div className='flex items-center justify-between text-muted-foreground text-xs'>
+          <div className='flex items-center gap-3'>
             <Tooltip>
-              <TooltipTrigger className="flex items-center gap-1">
-                <MessageCircle className="h-3 w-3" />
+              <TooltipTrigger className='flex items-center gap-1'>
+                <MessageCircle className='h-3 w-3' />
                 <span>{stats.conversationCount}</span>
               </TooltipTrigger>
               <TooltipContent>
@@ -140,8 +146,8 @@ const AgentCard: React.FC<AgentCardProps> = ({
 
             {stats.lastUsed && (
               <Tooltip>
-                <TooltipTrigger className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
+                <TooltipTrigger className='flex items-center gap-1'>
+                  <Clock className='h-3 w-3' />
                   <span>{formatRelativeTime(stats.lastUsed)}</span>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -153,8 +159,8 @@ const AgentCard: React.FC<AgentCardProps> = ({
 
           {agent.tools && agent.tools.length > 0 && (
             <Tooltip>
-              <TooltipTrigger className="flex items-center gap-1">
-                <Settings2 className="h-3 w-3" />
+              <TooltipTrigger className='flex items-center gap-1'>
+                <Settings2 className='h-3 w-3' />
                 <span>{agent.tools.length} tools</span>
               </TooltipTrigger>
               <TooltipContent>
@@ -166,15 +172,15 @@ const AgentCard: React.FC<AgentCardProps> = ({
 
         {showDetails && agent.tools && agent.tools.length > 0 && (
           <>
-            <Separator className="my-3" />
+            <Separator className='my-3' />
             <div>
-              <div className="mb-1 flex items-center gap-1">
-                <Settings2 className="h-3 w-3 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground">Tools</span>
+              <div className='mb-1 flex items-center gap-1'>
+                <Settings2 className='h-3 w-3 text-muted-foreground' />
+                <span className='font-medium text-muted-foreground text-xs'>Tools</span>
               </div>
-              <div className="flex flex-wrap gap-1">
+              <div className='flex flex-wrap gap-1'>
                 {agent.tools.map((tool) => (
-                  <Badge key={tool} variant="secondary" className="text-xs">
+                  <Badge key={tool} variant='secondary' className='text-xs'>
                     {tool.replace(/_/g, ' ')}
                   </Badge>
                 ))}
@@ -203,15 +209,17 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
 
   // Create agent selections with metadata
   const agentSelections: AgentSelection[] = useMemo(() => {
-    return agents.map(agent => ({
+    return agents.map((agent) => ({
       agent,
-      capabilities: agent.tools?.map(tool =>
-        tool.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-      ) || [],
+      capabilities:
+        agent.tools?.map((tool) =>
+          tool.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+        ) || [],
       isAvailable: agent.is_active,
-      lastUsed: Math.random() > 0.5
-        ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-        : undefined,
+      lastUsed:
+        Math.random() > 0.5
+          ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+          : undefined,
       conversationCount: Math.floor(Math.random() * 20),
     }))
   }, [agents])
@@ -223,20 +231,21 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
-      filtered = filtered.filter(({ agent, capabilities }) =>
-        agent.name.toLowerCase().includes(query) ||
-        agent.description?.toLowerCase().includes(query) ||
-        capabilities.some(cap => cap.toLowerCase().includes(query))
+      filtered = filtered.filter(
+        ({ agent, capabilities }) =>
+          agent.name.toLowerCase().includes(query) ||
+          agent.description?.toLowerCase().includes(query) ||
+          capabilities.some((cap) => cap.toLowerCase().includes(query))
       )
     }
 
     // Apply category filter
     switch (filterBy) {
       case 'recent':
-        filtered = filtered.filter(selection => selection.lastUsed)
+        filtered = filtered.filter((selection) => selection.lastUsed)
         break
       case 'tools':
-        filtered = filtered.filter(selection => selection.capabilities.length > 0)
+        filtered = filtered.filter((selection) => selection.capabilities.length > 0)
         break
       default:
         // Show all
@@ -253,7 +262,6 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
           return new Date(b.lastUsed).getTime() - new Date(a.lastUsed).getTime()
         case 'conversations':
           return b.conversationCount - a.conversationCount
-        case 'name':
         default:
           return a.agent.name.localeCompare(b.agent.name)
       }
@@ -262,15 +270,18 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
     return filtered
   }, [agentSelections, searchQuery, filterBy, sortBy])
 
-  const handleAgentSelect = useCallback((agent: Agent) => {
-    logger.info('Agent selected from selector', {
-      agentId: agent.id,
-      agentName: agent.name,
-      workspaceId,
-    })
-    onSelectAgent(agent)
-    onClose()
-  }, [onSelectAgent, onClose, workspaceId])
+  const handleAgentSelect = useCallback(
+    (agent: Agent) => {
+      logger.info('Agent selected from selector', {
+        agentId: agent.id,
+        agentName: agent.name,
+        workspaceId,
+      })
+      onSelectAgent(agent)
+      onClose()
+    },
+    [onSelectAgent, onClose, workspaceId]
+  )
 
   const popularAgents = useMemo(() => {
     return [...agentSelections]
@@ -280,7 +291,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
 
   const recentAgents = useMemo(() => {
     return agentSelections
-      .filter(selection => selection.lastUsed)
+      .filter((selection) => selection.lastUsed)
       .sort((a, b) => {
         if (!a.lastUsed || !b.lastUsed) return 0
         return new Date(b.lastUsed).getTime() - new Date(a.lastUsed).getTime()
@@ -291,10 +302,10 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
   if (isLoading) {
     return (
       <div className={`border-t bg-background p-4 ${className}`}>
-        <div className="flex items-center justify-center py-8">
-          <div className="flex flex-col items-center gap-3">
-            <LoadingAgent size="sm" />
-            <p className="text-sm text-muted-foreground">Loading agents...</p>
+        <div className='flex items-center justify-center py-8'>
+          <div className='flex flex-col items-center gap-3'>
+            <LoadingAgent size='sm' />
+            <p className='text-muted-foreground text-sm'>Loading agents...</p>
           </div>
         </div>
       </div>
@@ -304,66 +315,66 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
   return (
     <TooltipProvider>
       <div className={`border-t bg-background ${className}`}>
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <h3 className="text-sm font-medium">Select Agent</h3>
-          <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
-            <X className="h-4 w-4" />
+        <div className='flex items-center justify-between border-b px-4 py-3'>
+          <h3 className='font-medium text-sm'>Select Agent</h3>
+          <Button variant='ghost' size='sm' onClick={onClose} className='h-8 w-8 p-0'>
+            <X className='h-4 w-4' />
           </Button>
         </div>
 
-        <Tabs defaultValue="browse" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
-            <TabsTrigger value="browse">Browse</TabsTrigger>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
+        <Tabs defaultValue='browse' className='w-full'>
+          <TabsList className='mx-4 mt-4 grid w-full grid-cols-2'>
+            <TabsTrigger value='browse'>Browse</TabsTrigger>
+            <TabsTrigger value='overview'>Overview</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="browse" className="mt-4 px-4 pb-4">
+          <TabsContent value='browse' className='mt-4 px-4 pb-4'>
             {/* Search and filters */}
-            <div className="mb-4 space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <div className='mb-4 space-y-3'>
+              <div className='relative'>
+                <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
                 <Input
-                  placeholder="Search agents by name, description, or capabilities..."
+                  placeholder='Search agents by name, description, or capabilities...'
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className='pl-10'
                 />
               </div>
 
-              <div className="flex gap-2">
+              <div className='flex gap-2'>
                 <Select value={filterBy} onValueChange={(value: any) => setFilterBy(value)}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className='w-32'>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Agents</SelectItem>
-                    <SelectItem value="recent">Recent</SelectItem>
-                    <SelectItem value="tools">With Tools</SelectItem>
+                    <SelectItem value='all'>All Agents</SelectItem>
+                    <SelectItem value='recent'>Recent</SelectItem>
+                    <SelectItem value='tools'>With Tools</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className='w-32'>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="name">Name</SelectItem>
-                    <SelectItem value="recent">Last Used</SelectItem>
-                    <SelectItem value="conversations">Usage</SelectItem>
+                    <SelectItem value='name'>Name</SelectItem>
+                    <SelectItem value='recent'>Last Used</SelectItem>
+                    <SelectItem value='conversations'>Usage</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             {/* Agent list */}
-            <ScrollArea className="h-96">
-              <div className="space-y-3 pr-4">
+            <ScrollArea className='h-96'>
+              <div className='space-y-3 pr-4'>
                 {filteredAndSortedAgents.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <Bot className="h-12 w-12 text-muted-foreground/50" />
-                    <p className="mt-2 text-sm text-muted-foreground">No agents found</p>
+                  <div className='flex flex-col items-center justify-center py-8 text-center'>
+                    <Bot className='h-12 w-12 text-muted-foreground/50' />
+                    <p className='mt-2 text-muted-foreground text-sm'>No agents found</p>
                     {searchQuery && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className='text-muted-foreground text-xs'>
                         Try adjusting your search or filters
                       </p>
                     )}
@@ -383,13 +394,13 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="overview" className="mt-4 px-4 pb-4">
-            <div className="space-y-4">
+          <TabsContent value='overview' className='mt-4 px-4 pb-4'>
+            <div className='space-y-4'>
               {/* Popular Agents */}
               {popularAgents.length > 0 && (
                 <div>
-                  <h4 className="mb-3 text-sm font-medium">Popular Agents</h4>
-                  <div className="space-y-2">
+                  <h4 className='mb-3 font-medium text-sm'>Popular Agents</h4>
+                  <div className='space-y-2'>
                     {popularAgents.map((selection) => (
                       <AgentCard
                         key={`popular-${selection.agent.id}`}
@@ -406,8 +417,8 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
               {/* Recent Agents */}
               {recentAgents.length > 0 && (
                 <div>
-                  <h4 className="mb-3 text-sm font-medium">Recently Used</h4>
-                  <div className="space-y-2">
+                  <h4 className='mb-3 font-medium text-sm'>Recently Used</h4>
+                  <div className='space-y-2'>
                     {recentAgents.map((selection) => (
                       <AgentCard
                         key={`recent-${selection.agent.id}`}
@@ -422,17 +433,17 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
               )}
 
               {/* Stats */}
-              <div className="rounded-lg border bg-muted/50 p-3">
-                <div className="grid grid-cols-2 gap-4 text-center">
+              <div className='rounded-lg border bg-muted/50 p-3'>
+                <div className='grid grid-cols-2 gap-4 text-center'>
                   <div>
-                    <div className="text-lg font-semibold">{agents.length}</div>
-                    <div className="text-xs text-muted-foreground">Total Agents</div>
+                    <div className='font-semibold text-lg'>{agents.length}</div>
+                    <div className='text-muted-foreground text-xs'>Total Agents</div>
                   </div>
                   <div>
-                    <div className="text-lg font-semibold">
-                      {agents.filter(a => a.is_active).length}
+                    <div className='font-semibold text-lg'>
+                      {agents.filter((a) => a.is_active).length}
                     </div>
-                    <div className="text-xs text-muted-foreground">Available</div>
+                    <div className='text-muted-foreground text-xs'>Available</div>
                   </div>
                 </div>
               </div>
