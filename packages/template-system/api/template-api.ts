@@ -8,12 +8,49 @@
 
 import type { NextFunction, Request, Response } from 'express'
 import { z } from 'zod'
+
+// Extend Request interface to include file property from multer
+declare global {
+  namespace Express {
+    interface Request {
+      file?: {
+        buffer: Buffer
+        originalname: string
+        mimetype: string
+        size: number
+        fieldname: string
+        encoding: string
+        destination?: string
+        filename?: string
+        path?: string
+      }
+    }
+  }
+}
+
+// Alternative interface extension for better TypeScript compatibility
+interface MulterFile {
+  buffer: Buffer
+  originalname: string
+  mimetype: string
+  size: number
+  fieldname: string
+  encoding: string
+  destination?: string
+  filename?: string
+  path?: string
+}
+
+interface RequestWithFile extends Request {
+  file?: MulterFile
+}
 import { JourneyGenerator } from '../generators/journey-generator'
 import { TemplateLibrary } from '../library/template-library'
 import type { JourneyGenerationRequest } from '../types/journey-types'
 import type {
   TemplateExportData,
   TemplateImportOptions,
+  TemplateParameter,
   WorkflowTemplate,
 } from '../types/template-types'
 
@@ -33,6 +70,7 @@ const CreateTemplateSchema = z.object({
   parameters: z
     .array(
       z.object({
+        id: z.string().optional(), // Allow optional id for creation, will be generated if not provided
         name: z.string().min(1),
         type: z.enum([
           'string',
@@ -50,6 +88,8 @@ const CreateTemplateSchema = z.object({
         defaultValue: z.any().optional(),
         validation: z.object({}).optional(),
         displayOrder: z.number().default(0),
+        category: z.string().optional(),
+        metadata: z.record(z.any()).optional(),
       })
     )
     .default([]),
@@ -211,6 +251,43 @@ export class TemplateAPIController {
 
       const templateData = validation.data
 
+      // Add missing properties to parameters and workflowData
+      const processedTemplateData = {
+        ...templateData,
+        parameters: templateData.parameters?.map((param: any, index: number) => ({
+          id: param.id || `param_${Date.now()}_${index}`,
+          name: param.name,
+          type: param.type,
+          description: param.description,
+          defaultValue: param.defaultValue,
+          required: param.required ?? false,
+          validation: param.validation || {},
+          displayOrder: param.displayOrder ?? 0,
+          category: param.category,
+          metadata: param.metadata || {},
+        })) || [],
+        workflowData: templateData.workflowData ? {
+          ...templateData.workflowData,
+          parameterMappings: (templateData.workflowData as any).parameterMappings || [],
+          conditionalBlocks: (templateData.workflowData as any).conditionalBlocks || [],
+          dynamicContent: (templateData.workflowData as any).dynamicContent || [],
+          optimizationHints: (templateData.workflowData as any).optimizationHints || [],
+          performanceSettings: (templateData.workflowData as any).performanceSettings || {
+            enableCaching: true,
+            cacheStrategy: {
+              scope: 'session' as const,
+              duration: 300000,
+              invalidationRules: [],
+              compressionEnabled: false,
+            },
+            prefetchParameters: false,
+            optimizeRendering: true,
+            lazyLoadBlocks: false,
+            compressionLevel: 'none' as const,
+          },
+        } : undefined,
+      }
+
       // Check permissions
       if (!(await this.hasCreatePermission(userId, workspaceId))) {
         res.status(403).json({ error: 'Insufficient permissions to create templates' })
@@ -218,7 +295,7 @@ export class TemplateAPIController {
       }
 
       // Create template
-      const template = await this.templateLibrary.createTemplate(templateData, workspaceId, userId)
+      const template = await this.templateLibrary.createTemplate(processedTemplateData, workspaceId, userId)
 
       res.status(201).json({
         template: this.sanitizeTemplateForResponse(template),
@@ -254,6 +331,43 @@ export class TemplateAPIController {
 
       const updates = validation.data
 
+      // Add missing properties to parameters and workflowData
+      const processedUpdates = {
+        ...updates,
+        parameters: updates.parameters?.map((param: any, index: number) => ({
+          id: param.id || `param_${Date.now()}_${index}`,
+          name: param.name,
+          type: param.type,
+          description: param.description,
+          defaultValue: param.defaultValue,
+          required: param.required ?? false,
+          validation: param.validation || {},
+          displayOrder: param.displayOrder ?? 0,
+          category: param.category,
+          metadata: param.metadata || {},
+        })) || updates.parameters,
+        workflowData: updates.workflowData ? {
+          ...updates.workflowData,
+          parameterMappings: (updates.workflowData as any).parameterMappings || [],
+          conditionalBlocks: (updates.workflowData as any).conditionalBlocks || [],
+          dynamicContent: (updates.workflowData as any).dynamicContent || [],
+          optimizationHints: (updates.workflowData as any).optimizationHints || [],
+          performanceSettings: (updates.workflowData as any).performanceSettings || {
+            enableCaching: true,
+            cacheStrategy: {
+              scope: 'session' as const,
+              duration: 300000,
+              invalidationRules: [],
+              compressionEnabled: false,
+            },
+            prefetchParameters: false,
+            optimizeRendering: true,
+            lazyLoadBlocks: false,
+            compressionLevel: 'none' as const,
+          },
+        } : updates.workflowData,
+      }
+
       // Check if template exists
       const existingTemplate = await this.templateLibrary.getTemplate(templateId, workspaceId)
       if (!existingTemplate) {
@@ -270,7 +384,7 @@ export class TemplateAPIController {
       // Update template
       const updatedTemplate = await this.templateLibrary.updateTemplate(
         templateId,
-        updates,
+        processedUpdates,
         workspaceId,
         userId
       )
@@ -498,7 +612,7 @@ export class TemplateAPIController {
   /**
    * POST /api/templates/import - Import template
    */
-  async importTemplate(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async importTemplate(req: RequestWithFile, res: Response, next: NextFunction): Promise<void> {
     try {
       const workspaceId = this.extractWorkspaceId(req)
       const userId = this.extractUserId(req)
@@ -623,14 +737,29 @@ export class TemplateAPIController {
 
     return {
       ...sanitized,
-      // Only include basic workflow data structure
+      // Only include basic workflow data structure for response
       workflowData: workflowData
         ? {
-            blocks: workflowData.blocks?.length || 0,
-            edges: workflowData.edges?.length || 0,
-            hasParameters: (workflowData.parameterMappings?.length || 0) > 0,
-            hasConditionals: (workflowData.conditionalBlocks?.length || 0) > 0,
-            hasDynamicContent: (workflowData.dynamicContent?.length || 0) > 0,
+            blocks: workflowData.blocks || [],
+            edges: workflowData.edges || [],
+            variables: workflowData.variables || {},
+            parameterMappings: workflowData.parameterMappings || [],
+            conditionalBlocks: workflowData.conditionalBlocks || [],
+            dynamicContent: workflowData.dynamicContent || [],
+            optimizationHints: workflowData.optimizationHints || [],
+            performanceSettings: workflowData.performanceSettings || {
+              enableCaching: true,
+              cacheStrategy: {
+                scope: 'session' as const,
+                duration: 300000,
+                invalidationRules: [],
+                compressionEnabled: false,
+              },
+              prefetchParameters: false,
+              optimizeRendering: true,
+              lazyLoadBlocks: false,
+              compressionLevel: 'none' as const,
+            },
           }
         : undefined,
     }
@@ -734,41 +863,45 @@ export function createTemplateAPIRoutes(): any {
 // ============================================================================
 
 export function validateWorkspaceAccess() {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const workspaceId = req.headers['x-workspace-id']
     if (!workspaceId) {
-      return res.status(400).json({ error: 'Workspace ID is required' })
+      res.status(400).json({ error: 'Workspace ID is required' })
+      return
     }
     next()
   }
 }
 
 export function validateAuthentication() {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const userId = req.headers['x-user-id']
     if (!userId) {
-      return res.status(401).json({ error: 'Authentication required' })
+      res.status(401).json({ error: 'Authentication required' })
+      return
     }
     next()
   }
 }
 
 export function handleAPIErrors() {
-  return (error: Error, req: Request, res: Response, next: NextFunction) => {
+  return (error: Error, req: Request, res: Response, next: NextFunction): void => {
     console.error('Template API Error:', error)
 
     if (error.name === 'TemplateValidationError') {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Template validation failed',
         details: (error as any).errors,
       })
+      return
     }
 
     if (error.name === 'TemplateProcessingError') {
-      return res.status(500).json({
+      res.status(500).json({
         error: 'Template processing failed',
         details: error.message,
       })
+      return
     }
 
     res.status(500).json({
