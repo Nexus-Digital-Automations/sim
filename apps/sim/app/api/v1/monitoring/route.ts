@@ -7,7 +7,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { monitoring } from '../../../../../packages/parlant-server/monitoring'
+import { monitoring } from '@sim/parlant-server/monitoring'
 import { checkRateLimit, createRateLimitResponse } from '../middleware'
 
 const logger = createLogger('MonitoringAPI')

@@ -19,22 +19,20 @@
  * 10. Vulnerability Assessment and Penetration Testing
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest'
-import { render, fireEvent, screen, waitFor } from '@testing-library/react'
 import { db } from '@packages/db'
 import {
-  ChatMessageStorage,
-  ChatHistoryRetrieval,
   BrowserSessionManager,
-  ChatDataExporter
+  ChatDataExporter,
+  ChatHistoryRetrieval,
+  ChatMessageStorage,
 } from '@packages/db/chat-persistence-queries'
+import { chatMessage, parlantAgent, parlantSession, user, workspace } from '@packages/db/schema'
+import DOMPurify from 'dompurify'
+import { eq } from 'drizzle-orm'
+import { v4 as uuidv4 } from 'uuid'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { SessionPersistenceService } from '../../services/chat-persistence/session-persistence'
 import { agentService } from '../../services/parlant/agent-service'
-import { parlantAgent, parlantSession, chatMessage, workspace, user } from '@packages/db/schema'
-import { eq, sql } from 'drizzle-orm'
-import { v4 as uuidv4 } from 'uuid'
-import DOMPurify from 'dompurify'
-import rateLimit from 'express-rate-limit'
 
 // Security testing utilities and fixtures
 interface SecurityTestContext {
@@ -119,7 +117,7 @@ const MALICIOUS_INPUTS = {
     '<iframe src="javascript:alert(\'XSS\')"></iframe>',
     '"><script>alert("XSS")</script>',
     "';alert('XSS');//",
-    '<body onload=alert("XSS")>'
+    '<body onload=alert("XSS")>',
   ],
   sqlInjection: [
     "'; DROP TABLE users; --",
@@ -129,7 +127,7 @@ const MALICIOUS_INPUTS = {
     "'; INSERT INTO users VALUES ('hacker', 'password'); --",
     "1' OR 1=1#",
     "admin' OR '1'='1' /*",
-    "'; EXEC xp_cmdshell('dir'); --"
+    "'; EXEC xp_cmdshell('dir'); --",
   ],
   pathTraversal: [
     '../../../etc/passwd',
@@ -137,7 +135,7 @@ const MALICIOUS_INPUTS = {
     '....//....//....//etc/passwd',
     '%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd',
     '..%252f..%252f..%252fetc%252fpasswd',
-    '..%c0%af..%c0%af..%c0%afetc%c0%afpasswd'
+    '..%c0%af..%c0%af..%c0%afetc%c0%afpasswd',
   ],
   ldapInjection: [
     '*)(uid=*',
@@ -145,7 +143,7 @@ const MALICIOUS_INPUTS = {
     '*)(&(objectClass=user)(cn=*',
     '*))%00',
     '*(|(password=*))',
-    '*)(userPassword=*)'
+    '*)(userPassword=*)',
   ],
   commandInjection: [
     '; ls -la',
@@ -154,8 +152,8 @@ const MALICIOUS_INPUTS = {
     '`id`',
     '$(ls -la)',
     '; rm -rf /',
-    '|| net user hacker password /add'
-  ]
+    '|| net user hacker password /add',
+  ],
 }
 
 // GDPR compliance test data
@@ -167,14 +165,14 @@ const GDPR_TEST_DATA = {
     address: '123 Privacy Street, GDPR City, EU 12345',
     ipAddress: '192.168.1.100',
     biometricData: 'fingerprint_hash_123',
-    healthData: 'blood_type_o_positive'
+    healthData: 'blood_type_o_positive',
   },
   sensitiveData: {
     medicalInfo: 'Patient has diabetes',
     financialInfo: 'Credit card: 4111-1111-1111-1111',
     legalInfo: 'Court case #2023-001234',
-    politicalOpinion: 'Supports environmental policies'
-  }
+    politicalOpinion: 'Supports environmental policies',
+  },
 }
 
 describe('Security Testing and Compliance Verification', () => {
@@ -199,7 +197,7 @@ describe('Security Testing and Compliance Verification', () => {
       workspace_id: workspaceId,
       permissions: ['chat:read', 'chat:write', 'agent:read', 'session:create'],
       token: 'valid-jwt-token-12345',
-      sessionId: uuidv4()
+      sessionId: uuidv4(),
     }
 
     const invalidAuthContext: AuthContext = {
@@ -207,7 +205,7 @@ describe('Security Testing and Compliance Verification', () => {
       workspace_id: 'invalid-workspace',
       permissions: [],
       token: 'invalid-token',
-      sessionId: 'invalid-session'
+      sessionId: 'invalid-session',
     }
 
     // Initialize services
@@ -222,7 +220,7 @@ describe('Security Testing and Compliance Verification', () => {
       complianceChecks: [],
       securityEvents: [],
       rateLimitTests: [],
-      encryptionTests: []
+      encryptionTests: [],
     }
 
     testContext = {
@@ -236,30 +234,39 @@ describe('Security Testing and Compliance Verification', () => {
       sessionManager,
       dataExporter,
       sessionPersistence,
-      securityMetrics
+      securityMetrics,
     }
 
     // Setup test data
-    await db.insert(workspace).values({
-      id: workspaceId,
-      name: 'Security Test Workspace',
-      slug: 'security-test-workspace'
-    }).onConflictDoNothing()
+    await db
+      .insert(workspace)
+      .values({
+        id: workspaceId,
+        name: 'Security Test Workspace',
+        slug: 'security-test-workspace',
+      })
+      .onConflictDoNothing()
 
-    await db.insert(user).values({
-      id: userId,
-      email: 'security-test@example.com',
-      name: 'Security Test User'
-    }).onConflictDoNothing()
+    await db
+      .insert(user)
+      .values({
+        id: userId,
+        email: 'security-test@example.com',
+        name: 'Security Test User',
+      })
+      .onConflictDoNothing()
 
-    await db.insert(parlantAgent).values({
-      id: agentId,
-      workspaceId,
-      createdBy: userId,
-      name: 'Security Test Agent',
-      description: 'Agent for security testing',
-      status: 'active'
-    }).onConflictDoNothing()
+    await db
+      .insert(parlantAgent)
+      .values({
+        id: agentId,
+        workspaceId,
+        createdBy: userId,
+        name: 'Security Test Agent',
+        description: 'Agent for security testing',
+        status: 'active',
+      })
+      .onConflictDoNothing()
 
     console.log(`🔐 Security test environment initialized - Workspace: ${workspaceId}`)
   })
@@ -279,28 +286,39 @@ describe('Security Testing and Compliance Verification', () => {
 
   afterAll(() => {
     // Analyze security metrics
-    const criticalVulnerabilities = testContext?.securityMetrics?.vulnerabilityTests?.filter(v => v.severity === 'critical' && v.isVulnerable) || []
-    const highVulnerabilities = testContext?.securityMetrics?.vulnerabilityTests?.filter(v => v.severity === 'high' && v.isVulnerable) || []
-    const complianceGaps = testContext?.securityMetrics?.complianceChecks?.filter(c => !c.compliant) || []
+    const criticalVulnerabilities =
+      testContext?.securityMetrics?.vulnerabilityTests?.filter(
+        (v) => v.severity === 'critical' && v.isVulnerable
+      ) || []
+    const highVulnerabilities =
+      testContext?.securityMetrics?.vulnerabilityTests?.filter(
+        (v) => v.severity === 'high' && v.isVulnerable
+      ) || []
+    const complianceGaps =
+      testContext?.securityMetrics?.complianceChecks?.filter((c) => !c.compliant) || []
 
     console.log('🔒 Security Testing Summary:')
-    console.log(`   • Vulnerability Tests: ${testContext?.securityMetrics?.vulnerabilityTests?.length || 0}`)
+    console.log(
+      `   • Vulnerability Tests: ${testContext?.securityMetrics?.vulnerabilityTests?.length || 0}`
+    )
     console.log(`   • Critical Vulnerabilities: ${criticalVulnerabilities.length}`)
     console.log(`   • High Vulnerabilities: ${highVulnerabilities.length}`)
-    console.log(`   • Compliance Checks: ${testContext?.securityMetrics?.complianceChecks?.length || 0}`)
+    console.log(
+      `   • Compliance Checks: ${testContext?.securityMetrics?.complianceChecks?.length || 0}`
+    )
     console.log(`   • Compliance Gaps: ${complianceGaps.length}`)
     console.log(`   • Security Events Logged: ${securityLogger.length}`)
 
     if (criticalVulnerabilities.length > 0) {
       console.error('❌ CRITICAL SECURITY VULNERABILITIES DETECTED:')
-      criticalVulnerabilities.forEach(vuln => {
+      criticalVulnerabilities.forEach((vuln) => {
         console.error(`   • ${vuln.testName}: ${vuln.details}`)
       })
     }
 
     if (complianceGaps.length > 0) {
       console.warn('⚠️  COMPLIANCE GAPS DETECTED:')
-      complianceGaps.forEach(gap => {
+      complianceGaps.forEach((gap) => {
         console.warn(`   • ${gap.regulation} - ${gap.requirement}`)
       })
     }
@@ -315,31 +333,37 @@ describe('Security Testing and Compliance Verification', () => {
       const testOperations = [
         {
           name: 'store_message',
-          operation: () => testContext.messageStorage.storeMessage({
-            sessionId: uuidv4(),
-            workspaceId: testContext.workspaceId,
-            messageType: 'text',
-            content: { text: 'Unauthorized test message' },
-            rawContent: 'Unauthorized test message',
-            senderId: 'unauthorized-user',
-            senderType: 'user',
-            senderName: 'Unauthorized User'
-          })
+          operation: () =>
+            testContext.messageStorage.storeMessage({
+              sessionId: uuidv4(),
+              workspaceId: testContext.workspaceId,
+              messageType: 'text',
+              content: { text: 'Unauthorized test message' },
+              rawContent: 'Unauthorized test message',
+              senderId: 'unauthorized-user',
+              senderType: 'user',
+              senderName: 'Unauthorized User',
+            }),
         },
         {
           name: 'retrieve_history',
-          operation: () => testContext.historyRetrieval.getSessionHistory({
-            sessionId: uuidv4(),
-            workspaceId: 'unauthorized-workspace',
-            limit: 10
-          })
+          operation: () =>
+            testContext.historyRetrieval.getSessionHistory({
+              sessionId: uuidv4(),
+              workspaceId: 'unauthorized-workspace',
+              limit: 10,
+            }),
         },
         {
           name: 'agent_listing',
-          operation: () => agentService.listAgents({
-            workspace_id: 'unauthorized-workspace'
-          }, testContext.invalidAuthContext)
-        }
+          operation: () =>
+            agentService.listAgents(
+              {
+                workspace_id: 'unauthorized-workspace',
+              },
+              testContext.invalidAuthContext
+            ),
+        },
       ]
 
       for (const test of testOperations) {
@@ -353,10 +377,12 @@ describe('Security Testing and Compliance Verification', () => {
         } catch (error) {
           // Check if error is related to authentication/authorization
           const errorMsg = error instanceof Error ? error.message.toLowerCase() : 'unknown error'
-          if (errorMsg.includes('unauthorized') ||
-              errorMsg.includes('permission') ||
-              errorMsg.includes('forbidden') ||
-              errorMsg.includes('access denied')) {
+          if (
+            errorMsg.includes('unauthorized') ||
+            errorMsg.includes('permission') ||
+            errorMsg.includes('forbidden') ||
+            errorMsg.includes('access denied')
+          ) {
             authenticationEnforced = true
             errorMessage = errorMsg
           }
@@ -367,15 +393,19 @@ describe('Security Testing and Compliance Verification', () => {
           vulnerabilityType: 'authentication_bypass',
           isVulnerable: !authenticationEnforced,
           severity: 'critical',
-          details: authenticationEnforced ? `Authentication properly enforced: ${errorMessage}` : 'Authentication bypass possible',
-          mitigated: authenticationEnforced
+          details: authenticationEnforced
+            ? `Authentication properly enforced: ${errorMessage}`
+            : 'Authentication bypass possible',
+          mitigated: authenticationEnforced,
         }
 
         testContext.securityMetrics.vulnerabilityTests.push(vulnerabilityResult)
 
         // For testing purposes, we expect some operations to work (they might not have auth implemented yet)
         // But we log the results for security review
-        console.log(`   • ${test.name}: ${authenticationEnforced ? '✅ Protected' : '⚠️  Not protected'}`)
+        console.log(
+          `   • ${test.name}: ${authenticationEnforced ? '✅ Protected' : '⚠️  Not protected'}`
+        )
       }
 
       console.log('✅ Authentication enforcement testing completed')
@@ -387,41 +417,48 @@ describe('Security Testing and Compliance Verification', () => {
       const jwtTestCases = [
         {
           name: 'expired_token',
-          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.invalid',
+          token:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.invalid',
           expectedValid: false,
-          severity: 'high' as const
+          severity: 'high' as const,
         },
         {
           name: 'invalid_signature',
-          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.tampered_signature',
+          token:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.tampered_signature',
           expectedValid: false,
-          severity: 'critical' as const
+          severity: 'critical' as const,
         },
         {
           name: 'malformed_token',
           token: 'invalid.jwt.token',
           expectedValid: false,
-          severity: 'medium' as const
+          severity: 'medium' as const,
         },
         {
           name: 'missing_token',
           token: '',
           expectedValid: false,
-          severity: 'high' as const
-        }
+          severity: 'high' as const,
+        },
       ]
 
       for (const testCase of jwtTestCases) {
         const testAuthContext: AuthContext = {
           ...testContext.validAuthContext,
-          token: testCase.token
+          token: testCase.token,
         }
 
         let tokenValidated = true
 
         try {
           // Mock JWT validation (in real implementation, this would be handled by middleware)
-          if (!testCase.token || testCase.token === '' || testCase.token.includes('invalid') || testCase.token.includes('tampered')) {
+          if (
+            !testCase.token ||
+            testCase.token === '' ||
+            testCase.token.includes('invalid') ||
+            testCase.token.includes('tampered')
+          ) {
             throw new Error('Invalid JWT token')
           }
 
@@ -436,8 +473,10 @@ describe('Security Testing and Compliance Verification', () => {
           vulnerabilityType: 'jwt_validation',
           isVulnerable: !tokenValidated,
           severity: testCase.severity,
-          details: tokenValidated ? 'JWT properly validated and rejected' : 'Invalid JWT was accepted',
-          mitigated: tokenValidated
+          details: tokenValidated
+            ? 'JWT properly validated and rejected'
+            : 'Invalid JWT was accepted',
+          mitigated: tokenValidated,
         }
 
         testContext.securityMetrics.vulnerabilityTests.push(vulnerabilityResult)
@@ -465,14 +504,14 @@ describe('Security Testing and Compliance Verification', () => {
         rawContent: 'Workspace isolation test message',
         senderId: testContext.userId,
         senderType: 'user',
-        senderName: 'Test User'
+        senderName: 'Test User',
       })
 
       // Try to access data from another workspace
       const crossWorkspaceAccess = await testContext.historyRetrieval.getSessionHistory({
         sessionId: uuidv4(),
         workspaceId: otherWorkspaceId, // Different workspace
-        limit: 10
+        limit: 10,
       })
 
       // Should return no messages due to workspace isolation
@@ -483,8 +522,10 @@ describe('Security Testing and Compliance Verification', () => {
         vulnerabilityType: 'authorization_bypass',
         isVulnerable: !isolationEnforced,
         severity: 'high',
-        details: isolationEnforced ? 'Workspace isolation properly enforced' : 'Cross-workspace data access possible',
-        mitigated: isolationEnforced
+        details: isolationEnforced
+          ? 'Workspace isolation properly enforced'
+          : 'Cross-workspace data access possible',
+        mitigated: isolationEnforced,
       }
 
       testContext.securityMetrics.vulnerabilityTests.push(vulnerabilityResult)
@@ -512,24 +553,26 @@ describe('Security Testing and Compliance Verification', () => {
             rawContent: xssPayload,
             senderId: testContext.userId,
             senderType: 'user',
-            senderName: 'XSS Test User'
+            senderName: 'XSS Test User',
           })
 
           // Check if content was sanitized
           const sanitized = DOMPurify.sanitize(xssPayload)
-          const contentSanitized = message.rawContent !== xssPayload || message.rawContent === sanitized
+          const contentSanitized =
+            message.rawContent !== xssPayload || message.rawContent === sanitized
 
           const testResult: VulnerabilityTestResult = {
             testName: `xss_sanitization_${xssTestResults.length + 1}`,
             vulnerabilityType: 'xss',
             isVulnerable: !contentSanitized,
             severity: 'high',
-            details: contentSanitized ? 'XSS payload sanitized' : `XSS payload stored unsanitized: ${xssPayload}`,
-            mitigated: contentSanitized
+            details: contentSanitized
+              ? 'XSS payload sanitized'
+              : `XSS payload stored unsanitized: ${xssPayload}`,
+            mitigated: contentSanitized,
           }
 
           xssTestResults.push(testResult)
-
         } catch (error) {
           // If error thrown, input validation rejected the payload (good)
           const testResult: VulnerabilityTestResult = {
@@ -538,7 +581,7 @@ describe('Security Testing and Compliance Verification', () => {
             isVulnerable: false,
             severity: 'high',
             details: `XSS payload rejected by input validation: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            mitigated: true
+            mitigated: true,
           }
 
           xssTestResults.push(testResult)
@@ -547,8 +590,11 @@ describe('Security Testing and Compliance Verification', () => {
 
       testContext.securityMetrics.vulnerabilityTests.push(...xssTestResults)
 
-      const vulnerableToXSS = xssTestResults.some(result => result.isVulnerable)
-      const xssProtectionRate = ((xssTestResults.length - xssTestResults.filter(r => r.isVulnerable).length) / xssTestResults.length) * 100
+      const vulnerableToXSS = xssTestResults.some((result) => result.isVulnerable)
+      const xssProtectionRate =
+        ((xssTestResults.length - xssTestResults.filter((r) => r.isVulnerable).length) /
+          xssTestResults.length) *
+        100
 
       console.log(`✅ XSS testing completed:`)
       console.log(`   • Payloads tested: ${MALICIOUS_INPUTS.xss.length}`)
@@ -567,14 +613,15 @@ describe('Security Testing and Compliance Verification', () => {
           const searchResult = await testContext.historyRetrieval.searchMessages({
             workspaceId: testContext.workspaceId,
             query: sqlPayload,
-            limit: 10
+            limit: 10,
           })
 
           // If search completes normally without error, check if it returned suspicious results
-          const suspiciousResults = searchResult.messages.some(msg =>
-            msg.rawContent?.includes('users') ||
-            msg.rawContent?.includes('password') ||
-            msg.rawContent?.includes('admin')
+          const suspiciousResults = searchResult.messages.some(
+            (msg) =>
+              msg.rawContent?.includes('users') ||
+              msg.rawContent?.includes('password') ||
+              msg.rawContent?.includes('admin')
           )
 
           const testResult: VulnerabilityTestResult = {
@@ -582,28 +629,32 @@ describe('Security Testing and Compliance Verification', () => {
             vulnerabilityType: 'sql_injection',
             isVulnerable: suspiciousResults,
             severity: 'critical',
-            details: suspiciousResults ? `SQL injection may be possible: ${sqlPayload}` : 'SQL injection payload handled safely',
-            mitigated: !suspiciousResults
+            details: suspiciousResults
+              ? `SQL injection may be possible: ${sqlPayload}`
+              : 'SQL injection payload handled safely',
+            mitigated: !suspiciousResults,
           }
 
           sqlInjectionTestResults.push(testResult)
-
         } catch (error) {
           // Error handling during SQL injection attempt
           const errorMessage = error instanceof Error ? error.message : 'Unknown error'
 
           // Check if error indicates SQL injection attempt was blocked
-          const blocked = errorMessage.toLowerCase().includes('syntax') ||
-                         errorMessage.toLowerCase().includes('invalid') ||
-                         errorMessage.toLowerCase().includes('forbidden')
+          const blocked =
+            errorMessage.toLowerCase().includes('syntax') ||
+            errorMessage.toLowerCase().includes('invalid') ||
+            errorMessage.toLowerCase().includes('forbidden')
 
           const testResult: VulnerabilityTestResult = {
             testName: `sql_injection_${sqlInjectionTestResults.length + 1}`,
             vulnerabilityType: 'sql_injection',
             isVulnerable: !blocked,
             severity: 'critical',
-            details: blocked ? 'SQL injection blocked by input validation' : `Unexpected error: ${errorMessage}`,
-            mitigated: blocked
+            details: blocked
+              ? 'SQL injection blocked by input validation'
+              : `Unexpected error: ${errorMessage}`,
+            mitigated: blocked,
           }
 
           sqlInjectionTestResults.push(testResult)
@@ -612,8 +663,12 @@ describe('Security Testing and Compliance Verification', () => {
 
       testContext.securityMetrics.vulnerabilityTests.push(...sqlInjectionTestResults)
 
-      const vulnerableToSQLi = sqlInjectionTestResults.some(result => result.isVulnerable)
-      const sqliProtectionRate = ((sqlInjectionTestResults.length - sqlInjectionTestResults.filter(r => r.isVulnerable).length) / sqlInjectionTestResults.length) * 100
+      const vulnerableToSQLi = sqlInjectionTestResults.some((result) => result.isVulnerable)
+      const sqliProtectionRate =
+        ((sqlInjectionTestResults.length -
+          sqlInjectionTestResults.filter((r) => r.isVulnerable).length) /
+          sqlInjectionTestResults.length) *
+        100
 
       console.log(`✅ SQL injection testing completed:`)
       console.log(`   • Payloads tested: ${MALICIOUS_INPUTS.sqlInjection.length}`)
@@ -629,26 +684,26 @@ describe('Security Testing and Compliance Verification', () => {
           name: 'oversized_message',
           input: 'A'.repeat(10000), // Very long message
           field: 'message_content',
-          expectedValid: false
+          expectedValid: false,
         },
         {
           name: 'oversized_name',
           input: 'B'.repeat(1000), // Very long name
           field: 'sender_name',
-          expectedValid: false
+          expectedValid: false,
         },
         {
           name: 'null_injection',
           input: 'message\x00with\x00nulls',
           field: 'message_content',
-          expectedValid: false
+          expectedValid: false,
         },
         {
           name: 'unicode_abuse',
           input: '𝕏𝖘𝖘 𝕮𝖍𝖆𝖗 𝕸𝖓𝖛𝖆𝖘𝖎𝖔𝖓',
           field: 'message_content',
-          expectedValid: true // Unicode should be allowed but handled safely
-        }
+          expectedValid: true, // Unicode should be allowed but handled safely
+        },
       ]
 
       for (const test of validationTests) {
@@ -665,7 +720,7 @@ describe('Security Testing and Compliance Verification', () => {
               rawContent: test.input,
               senderId: testContext.userId,
               senderType: 'user',
-              senderName: 'Validation Test User'
+              senderName: 'Validation Test User',
             })
           } else if (test.field === 'sender_name') {
             await testContext.messageStorage.storeMessage({
@@ -676,7 +731,7 @@ describe('Security Testing and Compliance Verification', () => {
               rawContent: 'Test message',
               senderId: testContext.userId,
               senderType: 'user',
-              senderName: test.input
+              senderName: test.input,
             })
           }
 
@@ -693,8 +748,10 @@ describe('Security Testing and Compliance Verification', () => {
           vulnerabilityType: 'input_validation',
           isVulnerable: !validationEnforced,
           severity: 'medium',
-          details: validationEnforced ? 'Input validation working correctly' : `Input validation bypassed: ${errorMessage}`,
-          mitigated: validationEnforced
+          details: validationEnforced
+            ? 'Input validation working correctly'
+            : `Input validation bypassed: ${errorMessage}`,
+          mitigated: validationEnforced,
         }
 
         testContext.securityMetrics.vulnerabilityTests.push(vulnerabilityResult)
@@ -724,16 +781,16 @@ describe('Security Testing and Compliance Verification', () => {
               rawContent: `My email is ${GDPR_TEST_DATA.personalData.email}`,
               senderId: testContext.userId,
               senderType: 'user',
-              senderName: GDPR_TEST_DATA.personalData.name
+              senderName: GDPR_TEST_DATA.personalData.name,
             })
 
             // Verify data is stored (for functionality)
             return {
               compliant: true, // Assume compliant for now
               evidence: [`Personal data stored with message ID: ${message.id}`],
-              gaps: []
+              gaps: [],
             }
-          }
+          },
         },
         {
           name: 'data_export_rights',
@@ -746,15 +803,17 @@ describe('Security Testing and Compliance Verification', () => {
               exportScope: 'user',
               targetIds: [testContext.userId],
               exportFormat: 'json',
-              includeMetadata: true
+              includeMetadata: true,
             })
 
             return {
               compliant: !!exportRequest.requestToken,
-              evidence: exportRequest.requestToken ? [`Export request created: ${exportRequest.requestToken}`] : [],
-              gaps: !exportRequest.requestToken ? ['Data export functionality not working'] : []
+              evidence: exportRequest.requestToken
+                ? [`Export request created: ${exportRequest.requestToken}`]
+                : [],
+              gaps: !exportRequest.requestToken ? ['Data export functionality not working'] : [],
             }
-          }
+          },
         },
         {
           name: 'data_retention_policy',
@@ -767,9 +826,9 @@ describe('Security Testing and Compliance Verification', () => {
             return {
               compliant: hasRetentionPolicy,
               evidence: hasRetentionPolicy ? ['Retention policy mechanisms in place'] : [],
-              gaps: !hasRetentionPolicy ? ['No automatic data retention policy'] : []
+              gaps: !hasRetentionPolicy ? ['No automatic data retention policy'] : [],
             }
-          }
+          },
         },
         {
           name: 'consent_management',
@@ -781,10 +840,10 @@ describe('Security Testing and Compliance Verification', () => {
             return {
               compliant: hasConsentManagement,
               evidence: hasConsentManagement ? ['Consent management system available'] : [],
-              gaps: !hasConsentManagement ? ['No consent management system'] : []
+              gaps: !hasConsentManagement ? ['No consent management system'] : [],
             }
-          }
-        }
+          },
+        },
       ]
 
       const complianceResults: ComplianceCheckResult[] = []
@@ -798,18 +857,17 @@ describe('Security Testing and Compliance Verification', () => {
             requirement: gdprTest.requirement,
             compliant: result.compliant,
             evidence: result.evidence,
-            gaps: result.gaps
+            gaps: result.gaps,
           }
 
           complianceResults.push(complianceCheck)
-
         } catch (error) {
           const complianceCheck: ComplianceCheckResult = {
             regulation: 'GDPR',
             requirement: gdprTest.requirement,
             compliant: false,
             evidence: [],
-            gaps: [`Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`]
+            gaps: [`Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`],
           }
 
           complianceResults.push(complianceCheck)
@@ -818,17 +876,18 @@ describe('Security Testing and Compliance Verification', () => {
 
       testContext.securityMetrics.complianceChecks.push(...complianceResults)
 
-      const complianceRate = (complianceResults.filter(r => r.compliant).length / complianceResults.length) * 100
+      const complianceRate =
+        (complianceResults.filter((r) => r.compliant).length / complianceResults.length) * 100
 
       console.log(`✅ GDPR compliance testing completed:`)
       console.log(`   • Tests performed: ${complianceResults.length}`)
       console.log(`   • Compliance rate: ${complianceRate.toFixed(1)}%`)
 
-      complianceResults.forEach(result => {
+      complianceResults.forEach((result) => {
         const status = result.compliant ? '✅' : '❌'
         console.log(`   • ${status} ${result.requirement.substring(0, 50)}...`)
         if (result.gaps.length > 0) {
-          result.gaps.forEach(gap => console.log(`     - Gap: ${gap}`))
+          result.gaps.forEach((gap) => console.log(`     - Gap: ${gap}`))
         }
       })
     })
@@ -849,22 +908,23 @@ describe('Security Testing and Compliance Verification', () => {
         metadata: {
           unnecessaryData: 'This should not be stored',
           personalInfo: 'User personal details',
-          location: 'User location data'
-        }
+          location: 'User location data',
+        },
       })
 
       // Check if unnecessary metadata was filtered out
-      const hasUnnecessaryData = testMessage.metadata &&
+      const hasUnnecessaryData =
+        testMessage.metadata &&
         (testMessage.metadata.unnecessaryData ||
-         testMessage.metadata.personalInfo ||
-         testMessage.metadata.location)
+          testMessage.metadata.personalInfo ||
+          testMessage.metadata.location)
 
       const complianceCheck: ComplianceCheckResult = {
         regulation: 'GDPR',
         requirement: 'Data minimization - only necessary data should be collected',
         compliant: !hasUnnecessaryData,
         evidence: !hasUnnecessaryData ? ['Unnecessary metadata filtered out'] : [],
-        gaps: hasUnnecessaryData ? ['Unnecessary personal data stored in metadata'] : []
+        gaps: hasUnnecessaryData ? ['Unnecessary personal data stored in metadata'] : [],
       }
 
       testContext.securityMetrics.complianceChecks.push(complianceCheck)
@@ -886,12 +946,13 @@ describe('Security Testing and Compliance Verification', () => {
         rawContent: 'Data to be deleted',
         senderId: testContext.userId,
         senderType: 'user',
-        senderName: 'Test User'
+        senderName: 'Test User',
       })
 
       // Simulate data deletion request (soft delete)
       try {
-        await db.update(chatMessage)
+        await db
+          .update(chatMessage)
           .set({ deletedAt: new Date() })
           .where(eq(chatMessage.id, testMessage.id))
 
@@ -899,23 +960,22 @@ describe('Security Testing and Compliance Verification', () => {
         const history = await testContext.historyRetrieval.getSessionHistory({
           sessionId,
           workspaceId: testContext.workspaceId,
-          includeDeleted: false
+          includeDeleted: false,
         })
 
-        const deletedMessageFound = history.messages.some(msg => msg.id === testMessage.id)
+        const deletedMessageFound = history.messages.some((msg) => msg.id === testMessage.id)
 
         const complianceCheck: ComplianceCheckResult = {
           regulation: 'GDPR',
           requirement: 'Right to erasure - deleted data must not be accessible',
           compliant: !deletedMessageFound,
           evidence: !deletedMessageFound ? ['Deleted data properly excluded from queries'] : [],
-          gaps: deletedMessageFound ? ['Deleted data still accessible'] : []
+          gaps: deletedMessageFound ? ['Deleted data still accessible'] : [],
         }
 
         testContext.securityMetrics.complianceChecks.push(complianceCheck)
 
         console.log(`✅ Data deletion: ${!deletedMessageFound ? 'Compliant' : 'Non-compliant'}`)
-
       } catch (error) {
         console.warn('Data deletion test failed:', error)
       }
@@ -946,7 +1006,7 @@ describe('Security Testing and Compliance Verification', () => {
             senderId: testContext.userId,
             senderType: 'user',
             senderName: 'Rate Limit Test User',
-            metadata: { rateLimitTest: true }
+            metadata: { rateLimitTest: true },
           })
           successCount++
         } catch (error) {
@@ -969,7 +1029,7 @@ describe('Security Testing and Compliance Verification', () => {
         requestCount: testMessageCount,
         timeWindow: rateLimitWindow,
         blocked: blockedCount > 0,
-        responseTime: totalTime
+        responseTime: totalTime,
       }
 
       testContext.securityMetrics.rateLimitTests.push(rateLimitResult)
@@ -1004,15 +1064,19 @@ describe('Security Testing and Compliance Verification', () => {
             userId: testContext.userId,
             chatState: {
               conversationId: uuidv4(),
-              metadata: { concurrencyTest: true }
+              metadata: { concurrencyTest: true },
             },
-            expirationHours: 1
+            expirationHours: 1,
           })
 
           successfulSessions++
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message.toLowerCase() : ''
-          if (errorMsg.includes('limit') || errorMsg.includes('maximum') || errorMsg.includes('concurrent')) {
+          if (
+            errorMsg.includes('limit') ||
+            errorMsg.includes('maximum') ||
+            errorMsg.includes('concurrent')
+          ) {
             rejectedSessions++
           } else {
             // Other errors are not related to connection limits
@@ -1030,7 +1094,9 @@ describe('Security Testing and Compliance Verification', () => {
       console.log(`   • Sessions attempted: ${testSessionCount}`)
       console.log(`   • Sessions successful: ${successfulSessions}`)
       console.log(`   • Sessions rejected: ${rejectedSessions}`)
-      console.log(`   • Connection limiting: ${rejectedSessions > 0 ? 'Implemented' : 'Not implemented'}`)
+      console.log(
+        `   • Connection limiting: ${rejectedSessions > 0 ? 'Implemented' : 'Not implemented'}`
+      )
     })
   })
 
@@ -1041,7 +1107,7 @@ describe('Security Testing and Compliance Verification', () => {
       const sensitiveData = {
         message: 'This is sensitive information that should be encrypted',
         personalInfo: GDPR_TEST_DATA.personalData.email,
-        confidential: 'Trade secret information'
+        confidential: 'Trade secret information',
       }
 
       // Store sensitive message
@@ -1056,18 +1122,20 @@ describe('Security Testing and Compliance Verification', () => {
         senderName: 'Encryption Test User',
         metadata: {
           personalInfo: sensitiveData.personalInfo,
-          confidential: sensitiveData.confidential
-        }
+          confidential: sensitiveData.confidential,
+        },
       })
 
       // Check if data appears to be encrypted (basic check)
       // In a real implementation, we would verify actual encryption
       const dataLooksEncrypted = {
         message: message.rawContent !== sensitiveData.message,
-        metadata: JSON.stringify(message.metadata) !== JSON.stringify({
-          personalInfo: sensitiveData.personalInfo,
-          confidential: sensitiveData.confidential
-        })
+        metadata:
+          JSON.stringify(message.metadata) !==
+          JSON.stringify({
+            personalInfo: sensitiveData.personalInfo,
+            confidential: sensitiveData.confidential,
+          }),
       }
 
       const encryptionTests = [
@@ -1076,31 +1144,31 @@ describe('Security Testing and Compliance Verification', () => {
           encryptionMethod: 'AES-256-GCM',
           encrypted: dataLooksEncrypted.message,
           keyStrength: 'AES-256',
-          validated: true
+          validated: true,
         },
         {
           dataType: 'message_metadata',
           encryptionMethod: 'AES-256-GCM',
           encrypted: dataLooksEncrypted.metadata,
           keyStrength: 'AES-256',
-          validated: true
-        }
+          validated: true,
+        },
       ]
 
-      encryptionTests.forEach(test => {
+      encryptionTests.forEach((test) => {
         const encryptionResult: EncryptionTestResult = {
           dataType: test.dataType,
           encryptionMethod: test.encryptionMethod,
           encrypted: test.encrypted,
           keyStrength: test.keyStrength,
-          validated: test.validated
+          validated: test.validated,
         }
 
         testContext.securityMetrics.encryptionTests.push(encryptionResult)
       })
 
       console.log(`✅ Encryption testing completed:`)
-      encryptionTests.forEach(test => {
+      encryptionTests.forEach((test) => {
         const status = test.encrypted ? '✅ Encrypted' : '❌ Not encrypted'
         console.log(`   • ${test.dataType}: ${status} (${test.encryptionMethod})`)
       })
@@ -1119,23 +1187,23 @@ describe('Security Testing and Compliance Verification', () => {
         {
           check: 'HTTPS enforcement',
           secure: true, // Would check actual protocol
-          details: 'All HTTP requests redirected to HTTPS'
+          details: 'All HTTP requests redirected to HTTPS',
         },
         {
           check: 'TLS version',
           secure: true, // Would check minimum TLS 1.2
-          details: 'TLS 1.3 supported, minimum TLS 1.2'
+          details: 'TLS 1.3 supported, minimum TLS 1.2',
         },
         {
           check: 'Certificate validation',
           secure: true, // Would verify SSL certificates
-          details: 'Valid SSL certificate from trusted CA'
+          details: 'Valid SSL certificate from trusted CA',
         },
         {
           check: 'WebSocket security',
           secure: true, // Would check WSS protocol
-          details: 'WebSocket connections use WSS (secure)'
-        }
+          details: 'WebSocket connections use WSS (secure)',
+        },
       ]
 
       securityChecks.forEach((check, index) => {
@@ -1145,16 +1213,16 @@ describe('Security Testing and Compliance Verification', () => {
           isVulnerable: !check.secure,
           severity: 'high',
           details: check.details,
-          mitigated: check.secure
+          mitigated: check.secure,
         }
 
         testContext.securityMetrics.vulnerabilityTests.push(vulnerabilityResult)
       })
 
-      const secureChannels = securityChecks.every(check => check.secure)
+      const secureChannels = securityChecks.every((check) => check.secure)
 
       console.log(`✅ Secure communication testing completed:`)
-      securityChecks.forEach(check => {
+      securityChecks.forEach((check) => {
         const status = check.secure ? '✅' : '❌'
         console.log(`   • ${status} ${check.check}: ${check.details}`)
       })
@@ -1170,35 +1238,35 @@ describe('Security Testing and Compliance Verification', () => {
       const securityEvents = [
         {
           eventType: 'authentication_failure',
-          details: { attemptedUser: 'invalid-user', source: 'login_form' }
+          details: { attemptedUser: 'invalid-user', source: 'login_form' },
         },
         {
           eventType: 'unauthorized_access_attempt',
-          details: { resource: 'other-workspace-data', user: testContext.userId }
+          details: { resource: 'other-workspace-data', user: testContext.userId },
         },
         {
           eventType: 'rate_limit_exceeded',
-          details: { endpoint: 'message_storage', user: testContext.userId, attempts: 20 }
+          details: { endpoint: 'message_storage', user: testContext.userId, attempts: 20 },
         },
         {
           eventType: 'data_export_request',
-          details: { requestedBy: testContext.userId, scope: 'user_data' }
+          details: { requestedBy: testContext.userId, scope: 'user_data' },
         },
         {
           eventType: 'suspicious_input_detected',
-          details: { inputType: 'xss_attempt', blocked: true }
-        }
+          details: { inputType: 'xss_attempt', blocked: true },
+        },
       ]
 
       // Simulate logging of security events
-      securityEvents.forEach(event => {
+      securityEvents.forEach((event) => {
         const securityEvent: SecurityEvent = {
           timestamp: new Date(),
           eventType: event.eventType,
           severity: 'medium',
           details: event.details,
           userId: testContext.userId,
-          workspaceId: testContext.workspaceId
+          workspaceId: testContext.workspaceId,
         }
 
         securityLogger.push(securityEvent)
@@ -1214,14 +1282,16 @@ describe('Security Testing and Compliance Verification', () => {
         isVulnerable: eventsLogged === 0,
         severity: 'medium',
         details: `Security events logged: ${eventsLogged}`,
-        mitigated: eventsLogged > 0
+        mitigated: eventsLogged > 0,
       }
 
       testContext.securityMetrics.vulnerabilityTests.push(auditingResult)
 
       console.log(`✅ Security audit logging tested:`)
       console.log(`   • Events logged: ${eventsLogged}`)
-      console.log(`   • Event types: ${[...new Set(securityEvents.map(e => e.eventType))].join(', ')}`)
+      console.log(
+        `   • Event types: ${[...new Set(securityEvents.map((e) => e.eventType))].join(', ')}`
+      )
 
       expect(eventsLogged).toBeGreaterThan(0)
     })
@@ -1235,24 +1305,24 @@ describe('Security Testing and Compliance Verification', () => {
           pattern: 'multiple_failed_auth',
           count: 5,
           timeWindow: 60000, // 1 minute
-          threshold: 3
+          threshold: 3,
         },
         {
           pattern: 'rapid_message_sending',
           count: 50,
           timeWindow: 5000, // 5 seconds
-          threshold: 20
+          threshold: 20,
         },
         {
           pattern: 'cross_workspace_access',
           count: 3,
           timeWindow: 30000, // 30 seconds
-          threshold: 1
-        }
+          threshold: 1,
+        },
       ]
 
-      const alertsTriggered = suspiciousActivities.filter(activity =>
-        activity.count > activity.threshold
+      const alertsTriggered = suspiciousActivities.filter(
+        (activity) => activity.count > activity.threshold
       )
 
       alertsTriggered.forEach((alert, index) => {
@@ -1265,10 +1335,10 @@ describe('Security Testing and Compliance Verification', () => {
             count: alert.count,
             threshold: alert.threshold,
             timeWindow: alert.timeWindow,
-            alerted: true
+            alerted: true,
           },
           userId: testContext.userId,
-          workspaceId: testContext.workspaceId
+          workspaceId: testContext.workspaceId,
         }
 
         testContext.securityMetrics.securityEvents.push(securityEvent)
@@ -1277,7 +1347,7 @@ describe('Security Testing and Compliance Verification', () => {
 
       console.log(`✅ Security monitoring tested:`)
       console.log(`   • Suspicious patterns detected: ${alertsTriggered.length}`)
-      alertsTriggered.forEach(alert => {
+      alertsTriggered.forEach((alert) => {
         console.log(`   • ${alert.pattern}: ${alert.count}/${alert.threshold} (triggered)`)
       })
 
@@ -1290,12 +1360,20 @@ describe('Security Testing and Compliance Verification', () => {
       console.log('🔧 Testing security configuration...')
 
       const securityHeaders = [
-        { name: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self'", required: true },
+        {
+          name: 'Content-Security-Policy',
+          value: "default-src 'self'; script-src 'self'",
+          required: true,
+        },
         { name: 'X-Frame-Options', value: 'DENY', required: true },
         { name: 'X-Content-Type-Options', value: 'nosniff', required: true },
-        { name: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains', required: true },
+        {
+          name: 'Strict-Transport-Security',
+          value: 'max-age=31536000; includeSubDomains',
+          required: true,
+        },
         { name: 'X-XSS-Protection', value: '1; mode=block', required: true },
-        { name: 'Referrer-Policy', value: 'strict-origin-when-cross-origin', required: true }
+        { name: 'Referrer-Policy', value: 'strict-origin-when-cross-origin', required: true },
       ]
 
       const configurationResults: VulnerabilityTestResult[] = []
@@ -1313,7 +1391,7 @@ describe('Security Testing and Compliance Verification', () => {
           details: headerPresent
             ? `Security header '${header.name}' properly configured: ${header.value}`
             : `Missing required security header: ${header.name}`,
-          mitigated: headerPresent
+          mitigated: headerPresent,
         }
 
         configurationResults.push(configResult)
@@ -1321,7 +1399,7 @@ describe('Security Testing and Compliance Verification', () => {
 
       testContext.securityMetrics.vulnerabilityTests.push(...configurationResults)
 
-      const properlyConfigured = configurationResults.filter(r => !r.isVulnerable).length
+      const properlyConfigured = configurationResults.filter((r) => !r.isVulnerable).length
       const configurationScore = (properlyConfigured / configurationResults.length) * 100
 
       console.log(`✅ Security configuration tested:`)

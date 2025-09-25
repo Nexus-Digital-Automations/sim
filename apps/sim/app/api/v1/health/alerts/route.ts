@@ -10,8 +10,8 @@ import { createLogger } from '@/lib/logs/console/logger'
 import {
   errorTracker,
   parlantErrorTracker,
-} from '../../../../../../packages/parlant-server/error-tracking'
-import { parlantLoggers } from '../../../../../../packages/parlant-server/logging'
+} from '@sim/parlant-server/error-tracking'
+import { parlantLoggers } from '@sim/parlant-server/logging'
 import { checkRateLimit, createRateLimitResponse } from '../../middleware'
 
 const logger = createLogger('AlertsAPI')

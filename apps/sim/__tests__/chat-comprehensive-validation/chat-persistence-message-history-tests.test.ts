@@ -18,19 +18,27 @@
  * 10. Workspace Isolation Validation
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest'
 import { db } from '@packages/db'
 import {
-  ChatMessageStorage,
-  ChatHistoryRetrieval,
-  ConversationManager,
   BrowserSessionManager,
-  ChatDataExporter
+  ChatDataExporter,
+  ChatHistoryRetrieval,
+  ChatMessageStorage,
+  ConversationManager,
 } from '@packages/db/chat-persistence-queries'
-import { SessionPersistenceService } from '../../services/chat-persistence/session-persistence'
-import { chatMessage, chatConversation, chatBrowserSession, parlantSession, parlantAgent, workspace, user } from '@packages/db/schema'
-import { eq, and, sql } from 'drizzle-orm'
+import {
+  chatBrowserSession,
+  chatConversation,
+  chatMessage,
+  parlantAgent,
+  parlantSession,
+  user,
+  workspace,
+} from '@packages/db/schema'
+import { and, eq } from 'drizzle-orm'
 import { v4 as uuidv4 } from 'uuid'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { SessionPersistenceService } from '../../services/chat-persistence/session-persistence'
 
 // Test fixtures and utilities
 interface TestContext {
@@ -72,7 +80,7 @@ describe('Chat Persistence and Message History', () => {
       sessionRestorationTime: [],
       averageResponseTime: 0,
       throughputMessages: 0,
-      concurrentUsers: 0
+      concurrentUsers: 0,
     }
 
     console.log('🧪 Starting Chat Persistence and Message History Tests...')
@@ -107,40 +115,52 @@ describe('Chat Persistence and Message History', () => {
       conversationManager,
       browserSessionManager,
       dataExporter,
-      sessionPersistence
+      sessionPersistence,
     }
 
     // Create test workspace, user, and agent
-    await db.insert(workspace).values({
-      id: workspaceId,
-      name: 'Test Workspace',
-      slug: 'test-workspace'
-    }).onConflictDoNothing()
+    await db
+      .insert(workspace)
+      .values({
+        id: workspaceId,
+        name: 'Test Workspace',
+        slug: 'test-workspace',
+      })
+      .onConflictDoNothing()
 
-    await db.insert(user).values({
-      id: userId,
-      email: 'test@example.com',
-      name: 'Test User'
-    }).onConflictDoNothing()
+    await db
+      .insert(user)
+      .values({
+        id: userId,
+        email: 'test@example.com',
+        name: 'Test User',
+      })
+      .onConflictDoNothing()
 
-    await db.insert(parlantAgent).values({
-      id: agentId,
-      workspaceId,
-      createdBy: userId,
-      name: 'Test Agent',
-      description: 'Test agent for persistence testing',
-      status: 'active'
-    }).onConflictDoNothing()
+    await db
+      .insert(parlantAgent)
+      .values({
+        id: agentId,
+        workspaceId,
+        createdBy: userId,
+        name: 'Test Agent',
+        description: 'Test agent for persistence testing',
+        status: 'active',
+      })
+      .onConflictDoNothing()
 
     // Create Parlant session
-    await db.insert(parlantSession).values({
-      id: sessionId,
-      agentId,
-      workspaceId,
-      userId,
-      mode: 'auto',
-      status: 'active'
-    }).onConflictDoNothing()
+    await db
+      .insert(parlantSession)
+      .values({
+        id: sessionId,
+        agentId,
+        workspaceId,
+        userId,
+        mode: 'auto',
+        status: 'active',
+      })
+      .onConflictDoNothing()
 
     console.log(`✅ Test environment initialized - Workspace: ${workspaceId}`)
   })
@@ -149,8 +169,12 @@ describe('Chat Persistence and Message History', () => {
     // Cleanup test data
     try {
       await db.delete(chatMessage).where(eq(chatMessage.workspaceId, testContext.workspaceId))
-      await db.delete(chatBrowserSession).where(eq(chatBrowserSession.workspaceId, testContext.workspaceId))
-      await db.delete(chatConversation).where(eq(chatConversation.workspaceId, testContext.workspaceId))
+      await db
+        .delete(chatBrowserSession)
+        .where(eq(chatBrowserSession.workspaceId, testContext.workspaceId))
+      await db
+        .delete(chatConversation)
+        .where(eq(chatConversation.workspaceId, testContext.workspaceId))
       await db.delete(parlantSession).where(eq(parlantSession.workspaceId, testContext.workspaceId))
       await db.delete(parlantAgent).where(eq(parlantAgent.workspaceId, testContext.workspaceId))
       await db.delete(workspace).where(eq(workspace.id, testContext.workspaceId))
@@ -162,9 +186,15 @@ describe('Chat Persistence and Message History', () => {
 
   afterAll(() => {
     // Calculate and log performance metrics
-    const avgStorageTime = performanceMetrics.messageStorageTime.reduce((a, b) => a + b, 0) / performanceMetrics.messageStorageTime.length
-    const avgRetrievalTime = performanceMetrics.historyRetrievalTime.reduce((a, b) => a + b, 0) / performanceMetrics.historyRetrievalTime.length
-    const avgSearchTime = performanceMetrics.searchTime.reduce((a, b) => a + b, 0) / performanceMetrics.searchTime.length
+    const avgStorageTime =
+      performanceMetrics.messageStorageTime.reduce((a, b) => a + b, 0) /
+      performanceMetrics.messageStorageTime.length
+    const avgRetrievalTime =
+      performanceMetrics.historyRetrievalTime.reduce((a, b) => a + b, 0) /
+      performanceMetrics.historyRetrievalTime.length
+    const avgSearchTime =
+      performanceMetrics.searchTime.reduce((a, b) => a + b, 0) /
+      performanceMetrics.searchTime.length
 
     console.log('📊 Performance Metrics Summary:')
     console.log(`   • Average Message Storage Time: ${avgStorageTime?.toFixed(2) || 0}ms`)
@@ -191,8 +221,8 @@ describe('Chat Persistence and Message History', () => {
         metadata: {
           timestamp: new Date().toISOString(),
           source: 'web_interface',
-          userAgent: 'test-browser'
-        }
+          userAgent: 'test-browser',
+        },
       }
 
       // Store message
@@ -210,7 +240,7 @@ describe('Chat Persistence and Message History', () => {
       const history = await testContext.historyRetrieval.getSessionHistory({
         sessionId: testContext.sessionId,
         workspaceId: testContext.workspaceId,
-        limit: 10
+        limit: 10,
       })
 
       expect(history.messages).toHaveLength(1)
@@ -238,7 +268,7 @@ describe('Chat Persistence and Message History', () => {
         senderId: index % 2 === 0 ? testContext.userId : testContext.agentId,
         senderType: (index % 2 === 0 ? 'user' : 'agent') as 'user' | 'agent',
         senderName: index % 2 === 0 ? 'Test User' : 'Test Agent',
-        status: 'sent' as const
+        status: 'sent' as const,
       }))
 
       // Batch store messages
@@ -255,7 +285,7 @@ describe('Chat Persistence and Message History', () => {
       const history = await testContext.historyRetrieval.getSessionHistory({
         sessionId: testContext.sessionId,
         workspaceId: testContext.workspaceId,
-        limit: 20
+        limit: 20,
       })
 
       expect(history.messages).toHaveLength(10)
@@ -278,7 +308,7 @@ describe('Chat Persistence and Message History', () => {
         rawContent: 'Message for status tracking',
         senderId: testContext.userId,
         senderType: 'user',
-        senderName: 'Test User'
+        senderName: 'Test User',
       })
 
       // Update status to delivered
@@ -325,13 +355,13 @@ describe('Chat Persistence and Message History', () => {
           theme: 'dark',
           fontSize: 16,
           compactMode: true,
-          soundEnabled: false
+          soundEnabled: false,
         },
         metadata: {
           initialized: new Date().toISOString(),
           userAgent: 'test-browser',
-          sessionVersion: '1.0'
-        }
+          sessionVersion: '1.0',
+        },
       }
 
       // Initialize session
@@ -345,8 +375,8 @@ describe('Chat Persistence and Message History', () => {
         deviceInfo: {
           userAgent: 'test-browser',
           platform: 'web',
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       })
 
       expect(initResult.success).toBe(true)
@@ -358,7 +388,7 @@ describe('Chat Persistence and Message History', () => {
       const updateSuccess = await testContext.sessionPersistence.updateSessionState({
         scrollPosition: 300,
         draft: 'Updated draft message',
-        uiPreferences: { theme: 'light' }
+        uiPreferences: { theme: 'light' },
       })
 
       expect(updateSuccess).toBe(true)
@@ -390,11 +420,12 @@ describe('Chat Persistence and Message History', () => {
         workspaceId: testContext.workspaceId,
         userId: testContext.userId,
         chatState: { expired: true },
-        expirationHours: -1 // Force expiration
+        expirationHours: -1, // Force expiration
       })
 
       // Attempt to restore expired session
-      const restoreResult = await testContext.sessionPersistence.restoreExistingSession(expiredToken)
+      const restoreResult =
+        await testContext.sessionPersistence.restoreExistingSession(expiredToken)
 
       expect(restoreResult.success).toBe(false)
       expect(restoreResult.requiresNewSession).toBe(true)
@@ -420,8 +451,8 @@ describe('Chat Persistence and Message History', () => {
         createdBy: testContext.userId,
         metadata: {
           priority: 'high',
-          topic: 'testing'
-        }
+          topic: 'testing',
+        },
       })
 
       expect(conversation).toBeDefined()
@@ -447,7 +478,7 @@ describe('Chat Persistence and Message History', () => {
           senderId: i % 2 === 0 ? testContext.userId : testContext.agentId,
           senderType: i % 2 === 0 ? 'user' : 'agent',
           senderName: i % 2 === 0 ? 'Test User' : 'Test Agent',
-          threadId: conversation.id
+          threadId: conversation.id,
         })
         messages.push(message)
       }
@@ -456,7 +487,7 @@ describe('Chat Persistence and Message History', () => {
       const conversationHistory = await testContext.historyRetrieval.getConversationHistory({
         conversationId: conversation.id,
         workspaceId: testContext.workspaceId,
-        limit: 10
+        limit: 10,
       })
 
       expect(conversationHistory.messages).toHaveLength(5)
@@ -465,12 +496,14 @@ describe('Chat Persistence and Message History', () => {
       // Test conversation archival
       await testContext.conversationManager.archiveConversation(conversation.id)
 
-      const archivedConversations = await testContext.conversationManager.getWorkspaceConversations({
-        workspaceId: testContext.workspaceId,
-        includeArchived: true
-      })
+      const archivedConversations = await testContext.conversationManager.getWorkspaceConversations(
+        {
+          workspaceId: testContext.workspaceId,
+          includeArchived: true,
+        }
+      )
 
-      const archivedConv = archivedConversations.conversations.find(c => c.id === conversation.id)
+      const archivedConv = archivedConversations.conversations.find((c) => c.id === conversation.id)
       expect(archivedConv?.isArchived).toBe(true)
 
       console.log('✅ Conversation threading and continuity validated')
@@ -495,8 +528,8 @@ describe('Chat Persistence and Message History', () => {
           senderName: `${senderTypes[i % senderTypes.length]} ${i + 1}`,
           metadata: {
             priority: i % 2 === 0 ? 'high' : 'normal',
-            tags: [`tag_${i % 3}`, `category_${i % 4}`]
-          }
+            tags: [`tag_${i % 3}`, `category_${i % 4}`],
+          },
         })
       }
     })
@@ -513,7 +546,7 @@ describe('Chat Persistence and Message History', () => {
           sessionId: testContext.sessionId,
           workspaceId: testContext.workspaceId,
           limit: pageSize,
-          offset: page * pageSize
+          offset: page * pageSize,
         })
 
         expect(history.messages.length).toBeLessThanOrEqual(pageSize)
@@ -532,7 +565,9 @@ describe('Chat Persistence and Message History', () => {
       const retrievalTime = Date.now() - startTime
       performanceMetrics.historyRetrievalTime.push(retrievalTime)
 
-      console.log(`✅ Pagination validated - Retrieved ${totalRetrieved} messages in ${retrievalTime}ms`)
+      console.log(
+        `✅ Pagination validated - Retrieved ${totalRetrieved} messages in ${retrievalTime}ms`
+      )
     })
 
     it('should filter messages by type and metadata', async () => {
@@ -541,10 +576,10 @@ describe('Chat Persistence and Message History', () => {
         sessionId: testContext.sessionId,
         workspaceId: testContext.workspaceId,
         messageTypes: ['text'],
-        limit: 50
+        limit: 50,
       })
 
-      textMessages.messages.forEach(msg => {
+      textMessages.messages.forEach((msg) => {
         expect(msg.messageType).toBe('text')
       })
 
@@ -553,14 +588,16 @@ describe('Chat Persistence and Message History', () => {
         sessionId: testContext.sessionId,
         workspaceId: testContext.workspaceId,
         messageTypes: ['tool_call', 'tool_result'],
-        limit: 50
+        limit: 50,
       })
 
-      toolMessages.messages.forEach(msg => {
+      toolMessages.messages.forEach((msg) => {
         expect(['tool_call', 'tool_result']).toContain(msg.messageType)
       })
 
-      console.log(`✅ Message filtering validated - Text: ${textMessages.messages.length}, Tools: ${toolMessages.messages.length}`)
+      console.log(
+        `✅ Message filtering validated - Text: ${textMessages.messages.length}, Tools: ${toolMessages.messages.length}`
+      )
     })
 
     it('should handle cursor-based pagination', async () => {
@@ -568,7 +605,7 @@ describe('Chat Persistence and Message History', () => {
       const firstPage = await testContext.historyRetrieval.getSessionHistory({
         sessionId: testContext.sessionId,
         workspaceId: testContext.workspaceId,
-        limit: 5
+        limit: 5,
       })
 
       expect(firstPage.messages).toHaveLength(5)
@@ -580,13 +617,13 @@ describe('Chat Persistence and Message History', () => {
         sessionId: testContext.sessionId,
         workspaceId: testContext.workspaceId,
         limit: 5,
-        beforeMessage: lastMessage.id
+        beforeMessage: lastMessage.id,
       })
 
       // Verify no overlap
-      const firstPageIds = new Set(firstPage.messages.map(m => m.id))
-      const nextPageIds = new Set(nextPage.messages.map(m => m.id))
-      const intersection = [...firstPageIds].filter(id => nextPageIds.has(id))
+      const firstPageIds = new Set(firstPage.messages.map((m) => m.id))
+      const nextPageIds = new Set(nextPage.messages.map((m) => m.id))
+      const intersection = [...firstPageIds].filter((id) => nextPageIds.has(id))
 
       expect(intersection).toHaveLength(0)
 
@@ -602,7 +639,7 @@ describe('Chat Persistence and Message History', () => {
         'Database optimization techniques for PostgreSQL performance',
         'JavaScript async/await patterns and best practices',
         'Docker containerization for microservices architecture',
-        'GraphQL vs REST API design considerations'
+        'GraphQL vs REST API design considerations',
       ]
 
       for (const content of searchableMessages) {
@@ -614,7 +651,7 @@ describe('Chat Persistence and Message History', () => {
           rawContent: content,
           senderId: testContext.userId,
           senderType: 'user',
-          senderName: 'Test User'
+          senderName: 'Test User',
         })
       }
     })
@@ -627,22 +664,25 @@ describe('Chat Persistence and Message History', () => {
         workspaceId: testContext.workspaceId,
         query: 'React authentication',
         sessionIds: [testContext.sessionId],
-        limit: 10
+        limit: 10,
       })
 
       expect(searchResults.messages.length).toBeGreaterThan(0)
 
       // Verify search results contain the query terms
-      const foundReactAuth = searchResults.messages.some(msg =>
-        msg.rawContent?.toLowerCase().includes('react') &&
-        msg.rawContent?.toLowerCase().includes('authentication')
+      const foundReactAuth = searchResults.messages.some(
+        (msg) =>
+          msg.rawContent?.toLowerCase().includes('react') &&
+          msg.rawContent?.toLowerCase().includes('authentication')
       )
       expect(foundReactAuth).toBe(true)
 
       const searchTime = Date.now() - startTime
       performanceMetrics.searchTime.push(searchTime)
 
-      console.log(`✅ Full-text search validated in ${searchTime}ms - Found ${searchResults.messages.length} results`)
+      console.log(
+        `✅ Full-text search validated in ${searchTime}ms - Found ${searchResults.messages.length} results`
+      )
     })
 
     it('should search with date range filtering', async () => {
@@ -656,13 +696,13 @@ describe('Chat Persistence and Message History', () => {
         workspaceId: testContext.workspaceId,
         query: 'JavaScript',
         dateRange: { start: yesterday, end: tomorrow },
-        limit: 10
+        limit: 10,
       })
 
       expect(dateRangeResults.messages.length).toBeGreaterThan(0)
 
       // Verify all results are within date range
-      dateRangeResults.messages.forEach(msg => {
+      dateRangeResults.messages.forEach((msg) => {
         expect(msg.createdAt).toBeInstanceOf(Date)
         expect(msg.createdAt.getTime()).toBeGreaterThanOrEqual(yesterday.getTime())
         expect(msg.createdAt.getTime()).toBeLessThanOrEqual(tomorrow.getTime())
@@ -687,8 +727,8 @@ describe('Chat Persistence and Message History', () => {
           senderName: 'Test User',
           metadata: {
             exportable: true,
-            category: 'test_data'
-          }
+            category: 'test_data',
+          },
         })
       }
 
@@ -700,7 +740,7 @@ describe('Chat Persistence and Message History', () => {
         targetIds: [testContext.sessionId],
         exportFormat: 'json',
         includeMetadata: true,
-        includeAttachments: false
+        includeAttachments: false,
       })
 
       expect(exportRequest).toBeDefined()
@@ -710,7 +750,9 @@ describe('Chat Persistence and Message History', () => {
       expect(exportRequest.status).toBe('pending')
 
       // Retrieve export request
-      const retrievedRequest = await testContext.dataExporter.getExportRequest(exportRequest.requestToken)
+      const retrievedRequest = await testContext.dataExporter.getExportRequest(
+        exportRequest.requestToken
+      )
       expect(retrievedRequest).toBeDefined()
       expect(retrievedRequest!.id).toBe(exportRequest.id)
 
@@ -722,11 +764,15 @@ describe('Chat Persistence and Message History', () => {
         10
       )
 
-      const completedRequest = await testContext.dataExporter.getExportRequest(exportRequest.requestToken)
+      const completedRequest = await testContext.dataExporter.getExportRequest(
+        exportRequest.requestToken
+      )
       expect(completedRequest!.status).toBe('completed')
       expect(completedRequest!.recordCount).toBe(10)
 
-      console.log(`✅ Data export functionality validated - Export ID: ${exportRequest.requestToken}`)
+      console.log(
+        `✅ Data export functionality validated - Export ID: ${exportRequest.requestToken}`
+      )
     })
   })
 
@@ -751,8 +797,8 @@ describe('Chat Persistence and Message History', () => {
         metadata: {
           batch: 'performance_test',
           index,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       }))
 
       const storedMessages = await testContext.messageStorage.batchStoreMessages(batchMessages)
@@ -767,7 +813,7 @@ describe('Chat Persistence and Message History', () => {
       const history = await testContext.historyRetrieval.getSessionHistory({
         sessionId: testContext.sessionId,
         workspaceId: testContext.workspaceId,
-        limit: messageCount + 10
+        limit: messageCount + 10,
       })
       const retrievalTime = Date.now() - retrievalStart
 
@@ -788,7 +834,9 @@ describe('Chat Persistence and Message History', () => {
       const concurrentSessions = 5
       const messagesPerSession = 10
 
-      console.log(`🔀 Concurrency test: ${concurrentSessions} sessions, ${messagesPerSession} messages each`)
+      console.log(
+        `🔀 Concurrency test: ${concurrentSessions} sessions, ${messagesPerSession} messages each`
+      )
 
       // Create multiple sessions
       const sessions = await Promise.all(
@@ -796,15 +844,18 @@ describe('Chat Persistence and Message History', () => {
           const sessionId = uuidv4()
 
           // Create Parlant session
-          await db.insert(parlantSession).values({
-            id: sessionId,
-            agentId: testContext.agentId,
-            workspaceId: testContext.workspaceId,
-            userId: testContext.userId,
-            mode: 'auto',
-            status: 'active',
-            title: `Concurrent Session ${index + 1}`
-          }).onConflictDoNothing()
+          await db
+            .insert(parlantSession)
+            .values({
+              id: sessionId,
+              agentId: testContext.agentId,
+              workspaceId: testContext.workspaceId,
+              userId: testContext.userId,
+              mode: 'auto',
+              status: 'active',
+              title: `Concurrent Session ${index + 1}`,
+            })
+            .onConflictDoNothing()
 
           return sessionId
         })
@@ -821,7 +872,7 @@ describe('Chat Persistence and Message History', () => {
           senderId: testContext.userId,
           senderType: 'user' as const,
           senderName: 'Test User',
-          status: 'sent' as const
+          status: 'sent' as const,
         }))
 
         return testContext.messageStorage.batchStoreMessages(sessionMessages)
@@ -834,7 +885,10 @@ describe('Chat Persistence and Message History', () => {
       const totalStoredMessages = results.reduce((sum, batch) => sum + batch.length, 0)
       expect(totalStoredMessages).toBe(concurrentSessions * messagesPerSession)
 
-      performanceMetrics.concurrentUsers = Math.max(performanceMetrics.concurrentUsers, concurrentSessions)
+      performanceMetrics.concurrentUsers = Math.max(
+        performanceMetrics.concurrentUsers,
+        concurrentSessions
+      )
 
       console.log(`✅ Concurrency test completed in ${totalTime}ms`)
       console.log(`   • Sessions: ${concurrentSessions}`)
@@ -842,12 +896,14 @@ describe('Chat Persistence and Message History', () => {
       console.log(`   • Total messages: ${totalStoredMessages}`)
 
       // Cleanup concurrent test sessions
-      await db.delete(parlantSession).where(
-        and(
-          eq(parlantSession.workspaceId, testContext.workspaceId),
-          eq(parlantSession.agentId, testContext.agentId)
+      await db
+        .delete(parlantSession)
+        .where(
+          and(
+            eq(parlantSession.workspaceId, testContext.workspaceId),
+            eq(parlantSession.agentId, testContext.agentId)
+          )
         )
-      )
     })
   })
 
@@ -866,7 +922,7 @@ describe('Chat Persistence and Message History', () => {
         await testContext.historyRetrieval.getSessionHistory({
           sessionId: testContext.sessionId,
           workspaceId: testContext.workspaceId,
-          limit: 10
+          limit: 10,
         })
 
         // Should not reach here
@@ -882,7 +938,7 @@ describe('Chat Persistence and Message History', () => {
       const history = await testContext.historyRetrieval.getSessionHistory({
         sessionId: testContext.sessionId,
         workspaceId: testContext.workspaceId,
-        limit: 10
+        limit: 10,
       })
 
       expect(history).toBeDefined()
@@ -893,7 +949,8 @@ describe('Chat Persistence and Message History', () => {
     it('should handle invalid session restoration gracefully', async () => {
       const invalidToken = 'invalid_session_token_12345'
 
-      const restoreResult = await testContext.sessionPersistence.restoreExistingSession(invalidToken)
+      const restoreResult =
+        await testContext.sessionPersistence.restoreExistingSession(invalidToken)
 
       expect(restoreResult.success).toBe(false)
       expect(restoreResult.requiresNewSession).toBe(true)
@@ -909,7 +966,7 @@ describe('Chat Persistence and Message History', () => {
       const history = await testContext.historyRetrieval.getSessionHistory({
         sessionId: testContext.sessionId,
         workspaceId: otherWorkspaceId, // Wrong workspace
-        limit: 10
+        limit: 10,
       })
 
       // Should return no messages due to workspace isolation
@@ -935,14 +992,14 @@ describe('Chat Persistence and Message History', () => {
           senderId: testContext.userId,
           senderType: 'user',
           senderName: 'Test User',
-          metadata: { concurrentTest: true, index }
+          metadata: { concurrentTest: true, index },
         })
       )
 
       const messages = await Promise.all(writeOperations)
 
       // Verify all messages have unique sequence numbers
-      const sequenceNumbers = messages.map(m => m.sequenceNumber)
+      const sequenceNumbers = messages.map((m) => m.sequenceNumber)
       const uniqueSequences = new Set(sequenceNumbers)
 
       expect(uniqueSequences.size).toBe(concurrentWrites)
@@ -959,7 +1016,7 @@ describe('Chat Persistence and Message History', () => {
         title: 'FK Test Conversation',
         createdBy: testContext.userId,
         participantIds: [testContext.userId],
-        agentIds: [testContext.agentId]
+        agentIds: [testContext.agentId],
       })
 
       await testContext.conversationManager.linkSessionToConversation(
@@ -977,13 +1034,13 @@ describe('Chat Persistence and Message History', () => {
         senderId: testContext.userId,
         senderType: 'user',
         senderName: 'Test User',
-        threadId: conversation.id
+        threadId: conversation.id,
       })
 
       // Verify relationship exists
       const history = await testContext.historyRetrieval.getConversationHistory({
         conversationId: conversation.id,
-        workspaceId: testContext.workspaceId
+        workspaceId: testContext.workspaceId,
       })
 
       expect(history.messages.length).toBeGreaterThan(0)
@@ -998,15 +1055,35 @@ describe('Chat Persistence and Message History', () => {
 
       const conversationSteps = [
         { role: 'user', message: 'Hello, I need help with my account' },
-        { role: 'agent', message: 'Hello! I\'d be happy to help you with your account. What specific issue are you experiencing?' },
-        { role: 'user', message: 'I can\'t log in anymore. It says my password is incorrect' },
-        { role: 'agent', message: 'I understand that can be frustrating. Let me help you reset your password. Can you confirm your email address?' },
-        { role: 'user', message: 'Yes, it\'s user@example.com' },
-        { role: 'agent', message: 'Thank you. I\'ve sent a password reset link to user@example.com. Please check your email and follow the instructions.' },
+        {
+          role: 'agent',
+          message:
+            "Hello! I'd be happy to help you with your account. What specific issue are you experiencing?",
+        },
+        { role: 'user', message: "I can't log in anymore. It says my password is incorrect" },
+        {
+          role: 'agent',
+          message:
+            'I understand that can be frustrating. Let me help you reset your password. Can you confirm your email address?',
+        },
+        { role: 'user', message: "Yes, it's user@example.com" },
+        {
+          role: 'agent',
+          message:
+            "Thank you. I've sent a password reset link to user@example.com. Please check your email and follow the instructions.",
+        },
         { role: 'user', message: 'Great, I got the email. Let me try resetting it now.' },
-        { role: 'agent', message: 'Perfect! Once you\'ve reset your password, try logging in again. Is there anything else I can help you with today?' },
+        {
+          role: 'agent',
+          message:
+            "Perfect! Once you've reset your password, try logging in again. Is there anything else I can help you with today?",
+        },
         { role: 'user', message: 'That worked! Thank you so much for your help.' },
-        { role: 'agent', message: 'You\'re very welcome! I\'m glad I could help resolve the login issue. Have a great day!' }
+        {
+          role: 'agent',
+          message:
+            "You're very welcome! I'm glad I could help resolve the login issue. Have a great day!",
+        },
       ]
 
       const storedMessages = []
@@ -1017,7 +1094,7 @@ describe('Chat Persistence and Message History', () => {
 
         // Add realistic delay between messages
         if (i > 0) {
-          await new Promise(resolve => setTimeout(resolve, 100)) // Reduced for testing
+          await new Promise((resolve) => setTimeout(resolve, 100)) // Reduced for testing
         }
 
         const message = await testContext.messageStorage.storeMessage({
@@ -1032,8 +1109,8 @@ describe('Chat Persistence and Message History', () => {
           metadata: {
             conversationStep: i + 1,
             topic: 'account_support',
-            urgency: 'normal'
-          }
+            urgency: 'normal',
+          },
         })
 
         storedMessages.push(message)
@@ -1049,7 +1126,7 @@ describe('Chat Persistence and Message History', () => {
       const fullHistory = await testContext.historyRetrieval.getSessionHistory({
         sessionId: testContext.sessionId,
         workspaceId: testContext.workspaceId,
-        limit: 20
+        limit: 20,
       })
 
       expect(fullHistory.messages).toHaveLength(conversationSteps.length)
@@ -1059,7 +1136,7 @@ describe('Chat Persistence and Message History', () => {
       const searchResults = await testContext.historyRetrieval.searchMessages({
         workspaceId: testContext.workspaceId,
         query: 'password reset',
-        sessionIds: [testContext.sessionId]
+        sessionIds: [testContext.sessionId],
       })
 
       expect(searchResults.messages.length).toBeGreaterThan(0)
@@ -1073,7 +1150,9 @@ describe('Chat Persistence and Message History', () => {
 
       performanceMetrics.throughputMessages += conversationSteps.length
 
-      console.log(`✅ Real user conversation simulation completed - ${conversationSteps.length} messages`)
+      console.log(
+        `✅ Real user conversation simulation completed - ${conversationSteps.length} messages`
+      )
       console.log(`   • Search results: ${searchResults.messages.length} matches`)
       console.log(`   • Message sequence verified`)
       console.log(`   • Status tracking validated`)

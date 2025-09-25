@@ -5,19 +5,14 @@
  * and conversational (Journey) modes, including conflict resolution and data consistency.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Change, Conflict } from '@/lib/workflow-journey-mapping/dual-mode-architecture'
 import {
   dualModeArchitecture,
   initializeDualMode,
-  switchWorkflowMode
+  switchWorkflowMode,
 } from '@/lib/workflow-journey-mapping/dual-mode-architecture'
-import type { WorkflowState, BlockState } from '@/stores/workflows/workflow/types'
-import type {
-  WorkflowExecutionContext,
-  Change,
-  Conflict,
-  SynchronizationStatus
-} from '@/lib/workflow-journey-mapping/dual-mode-architecture'
+import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
 
 // Mock dependencies
 vi.mock('@/lib/logs/console/logger', () => ({
@@ -25,8 +20,8 @@ vi.mock('@/lib/logs/console/logger', () => ({
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
-    debug: vi.fn()
-  }))
+    debug: vi.fn(),
+  })),
 }))
 
 vi.mock('@/blocks', () => ({
@@ -35,8 +30,8 @@ vi.mock('@/blocks', () => ({
     name: `Mock ${type} block`,
     description: `Mock block for ${type}`,
     icon: 'test-icon',
-    category: 'test'
-  }))
+    category: 'test',
+  })),
 }))
 
 describe('Hybrid Workflow Synchronization Framework', () => {
@@ -56,7 +51,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           name: 'Start Sync',
           position: { x: 100, y: 100 },
           enabled: true,
-          config: { message: 'Starting sync workflow' }
+          config: { message: 'Starting sync workflow' },
         } as BlockState,
         'sync-block-2': {
           id: 'sync-block-2',
@@ -64,7 +59,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           name: 'Sync Decision',
           position: { x: 300, y: 100 },
           enabled: true,
-          config: { condition: 'syncReady === true' }
+          config: { condition: 'syncReady === true' },
         } as BlockState,
         'sync-block-3': {
           id: 'sync-block-3',
@@ -72,8 +67,8 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           name: 'Sync API',
           position: { x: 500, y: 100 },
           enabled: true,
-          config: { url: 'https://sync.example.com', method: 'POST' }
-        } as BlockState
+          config: { url: 'https://sync.example.com', method: 'POST' },
+        } as BlockState,
       },
       edges: [
         {
@@ -82,7 +77,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           target: 'sync-block-2',
           sourceHandle: 'output',
           targetHandle: 'input',
-          type: 'default'
+          type: 'default',
         },
         {
           id: 'sync-edge-2',
@@ -90,11 +85,11 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           target: 'sync-block-3',
           sourceHandle: 'true',
           targetHandle: 'input',
-          type: 'default'
-        }
+          type: 'default',
+        },
       ],
       viewport: { x: 0, y: 0, zoom: 1 },
-      isExecuting: false
+      isExecuting: false,
     }
   })
 
@@ -201,8 +196,8 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           description: 'Block name mismatch',
           reactFlowValue: 'ReactFlow Name',
           journeyValue: 'Journey Name',
-          resolution: 'PREFER_REACTFLOW'
-        } as Conflict
+          resolution: 'PREFER_REACTFLOW',
+        } as Conflict,
       ])
 
       // Trigger synchronization
@@ -221,8 +216,8 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           description: 'Block configuration mismatch',
           reactFlowValue: { message: 'ReactFlow Version' },
           journeyValue: { message: 'Journey Version' },
-          resolution: 'PREFER_REACTFLOW'
-        }
+          resolution: 'PREFER_REACTFLOW',
+        },
       ]
 
       // Mock conflict resolution
@@ -239,8 +234,8 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           entityId: 'sync-block-1',
           timestamp: new Date(),
           source: 'reactflow',
-          data: { message: 'ReactFlow Version' }
-        } as Change
+          data: { message: 'ReactFlow Version' },
+        } as Change,
       ])
 
       await dualModeArchitecture.synchronizeStates(context)
@@ -258,8 +253,8 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           description: 'Execution path divergence',
           reactFlowValue: 'path-a',
           journeyValue: 'path-b',
-          resolution: 'PREFER_JOURNEY'
-        }
+          resolution: 'PREFER_JOURNEY',
+        },
       ]
 
       const resolveConflictsSpy = vi.spyOn(dualModeArchitecture as any, 'resolveConflicts')
@@ -286,8 +281,8 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           description: 'Critical state inconsistency requiring manual resolution',
           reactFlowValue: 'critical-state-a',
           journeyValue: 'critical-state-b',
-          resolution: 'MANUAL_RESOLUTION_REQUIRED'
-        }
+          resolution: 'MANUAL_RESOLUTION_REQUIRED',
+        },
       ]
 
       const resolveConflictsSpy = vi.spyOn(dualModeArchitecture as any, 'resolveConflicts')
@@ -306,7 +301,9 @@ describe('Hybrid Workflow Synchronization Framework', () => {
 
       // Should mark conflicts for manual resolution
       expect(context.synchronizationStatus.conflicts).toHaveLength(1)
-      expect(context.synchronizationStatus.conflicts[0].resolution).toBe('MANUAL_RESOLUTION_REQUIRED')
+      expect(context.synchronizationStatus.conflicts[0].resolution).toBe(
+        'MANUAL_RESOLUTION_REQUIRED'
+      )
     })
 
     it('should track conflict resolution history', async () => {
@@ -323,7 +320,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
             timestamp: new Date(),
             type: conflict.type,
             resolution: conflict.resolution,
-            resolved: true
+            resolved: true,
           })
         }
       })
@@ -335,8 +332,8 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           description: 'Test conflict',
           reactFlowValue: 'a',
           journeyValue: 'b',
-          resolution: 'PREFER_REACTFLOW'
-        }
+          resolution: 'PREFER_REACTFLOW',
+        },
       ])
 
       const detectChangesSpy = vi.spyOn(dualModeArchitecture as any, 'detectStateChanges')
@@ -419,7 +416,10 @@ describe('Hybrid Workflow Synchronization Framework', () => {
       const context = dualModeArchitecture.getExecutionContext(testWorkflowId)!
 
       // Simulate data corruption
-      const validateConsistencySpy = vi.spyOn(dualModeArchitecture as any, 'validateExecutionConsistency')
+      const validateConsistencySpy = vi.spyOn(
+        dualModeArchitecture as any,
+        'validateExecutionConsistency'
+      )
       validateConsistencySpy.mockImplementation(async () => {
         throw new Error('Data corruption detected')
       })
@@ -447,13 +447,14 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           entityId: 'sync-block-1',
           timestamp: new Date(),
           source: 'reactflow',
-          data: {}
-        } as Change
+          data: {},
+        } as Change,
       ])
 
       // Synchronization should fail gracefully
-      await expect(dualModeArchitecture.synchronizeStates(context))
-        .rejects.toThrow('Partial sync failure')
+      await expect(dualModeArchitecture.synchronizeStates(context)).rejects.toThrow(
+        'Partial sync failure'
+      )
 
       // System should remain stable
       expect(context.synchronizationStatus.isInSync).toBe(false)
@@ -489,7 +490,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           name: `Block ${i}`,
           position: { x: (i % 10) * 150, y: Math.floor(i / 10) * 100 },
           enabled: true,
-          config: { data: `config-${i}` }
+          config: { data: `config-${i}` },
         } as BlockState
 
         if (i > 0) {
@@ -499,7 +500,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
             target: blockId,
             sourceHandle: 'output',
             targetHandle: 'input',
-            type: 'default'
+            type: 'default',
           })
         }
       }
@@ -523,9 +524,27 @@ describe('Hybrid Workflow Synchronization Framework', () => {
       // Mock multiple changes
       const detectChangesSpy = vi.spyOn(dualModeArchitecture as any, 'detectStateChanges')
       detectChangesSpy.mockResolvedValue([
-        { type: 'BLOCK_MODIFIED', entityId: 'sync-block-1', timestamp: new Date(), source: 'reactflow', data: {} },
-        { type: 'BLOCK_MODIFIED', entityId: 'sync-block-2', timestamp: new Date(), source: 'reactflow', data: {} },
-        { type: 'EDGE_MODIFIED', entityId: 'sync-edge-1', timestamp: new Date(), source: 'reactflow', data: {} }
+        {
+          type: 'BLOCK_MODIFIED',
+          entityId: 'sync-block-1',
+          timestamp: new Date(),
+          source: 'reactflow',
+          data: {},
+        },
+        {
+          type: 'BLOCK_MODIFIED',
+          entityId: 'sync-block-2',
+          timestamp: new Date(),
+          source: 'reactflow',
+          data: {},
+        },
+        {
+          type: 'EDGE_MODIFIED',
+          entityId: 'sync-edge-1',
+          timestamp: new Date(),
+          source: 'reactflow',
+          data: {},
+        },
       ] as Change[])
 
       const applyChangesSpy = vi.spyOn(dualModeArchitecture as any, 'applyChanges')

@@ -33,7 +33,17 @@
     "test:chat:visual": "playwright test __tests__/chat-testing-framework/visual --config=__tests__/visual/playwright.config.ts",
     "test:chat:all": "npm run test:chat:ui && npm run test:chat:realtime && npm run test:chat:agents && npm run test:chat:security && npm run test:chat:performance && npm run test:chat:e2e",
     "test:chat:dev": "concurrently -n \"Services,Tests\" -c \"cyan,magenta\" \"npm run dev:full\" \"npm run test:chat:watch\"",
-    "test:chat:ci": "npm run test:chat:coverage -- --reporter=json --outputFile=test-results.json"
+    "test:chat:ci": "npm run test:chat:coverage -- --reporter=json --outputFile=test-results.json",
+    "test:hybrid": "vitest run __tests__/hybrid-workflow-framework --config __tests__/hybrid-workflow-framework/test-runner.config.ts",
+    "test:hybrid:watch": "vitest __tests__/hybrid-workflow-framework --config __tests__/hybrid-workflow-framework/test-runner.config.ts",
+    "test:hybrid:coverage": "vitest run __tests__/hybrid-workflow-framework --config __tests__/hybrid-workflow-framework/test-runner.config.ts --coverage",
+    "test:hybrid:mode-switching": "vitest run __tests__/hybrid-workflow-framework/mode-switching --config __tests__/hybrid-workflow-framework/test-runner.config.ts",
+    "test:hybrid:sync": "vitest run __tests__/hybrid-workflow-framework/synchronization --config __tests__/hybrid-workflow-framework/test-runner.config.ts",
+    "test:hybrid:integration": "vitest run __tests__/hybrid-workflow-framework/workflow-integration --config __tests__/hybrid-workflow-framework/test-runner.config.ts",
+    "test:hybrid:ux": "vitest run __tests__/hybrid-workflow-framework/user-experience --config __tests__/hybrid-workflow-framework/test-runner.config.ts",
+    "test:hybrid:performance": "vitest run __tests__/hybrid-workflow-framework/performance --config __tests__/hybrid-workflow-framework/test-runner.config.ts",
+    "test:hybrid:all": "npm run test:hybrid:mode-switching && npm run test:hybrid:sync && npm run test:hybrid:integration && npm run test:hybrid:ux && npm run test:hybrid:performance",
+    "test:all": "npm run test && npm run test:chat && npm run test:hybrid"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

@@ -5,14 +5,14 @@
  * and real-time execution streaming with progress updates in hybrid mode.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   dualModeArchitecture,
+  executeDualModeWorkflow,
   initializeDualMode,
   switchWorkflowMode,
-  executeDualModeWorkflow
 } from '@/lib/workflow-journey-mapping/dual-mode-architecture'
-import type { WorkflowState, BlockState } from '@/stores/workflows/workflow/types'
+import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
 
 // Mock socket.io for real-time communication testing
 const mockSocket = {
@@ -21,11 +21,11 @@ const mockSocket = {
   off: vi.fn(),
   disconnect: vi.fn(),
   connected: true,
-  id: 'test-socket-id'
+  id: 'test-socket-id',
 }
 
 vi.mock('socket.io-client', () => ({
-  io: vi.fn(() => mockSocket)
+  io: vi.fn(() => mockSocket),
 }))
 
 // Mock dependencies
@@ -34,8 +34,8 @@ vi.mock('@/lib/logs/console/logger', () => ({
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
-    debug: vi.fn()
-  }))
+    debug: vi.fn(),
+  })),
 }))
 
 vi.mock('@/blocks', () => ({
@@ -45,8 +45,8 @@ vi.mock('@/blocks', () => ({
     description: `Mock block for ${type}`,
     icon: 'test-icon',
     category: 'test',
-    execute: vi.fn().mockResolvedValue({ success: true, output: `${type} executed` })
-  }))
+    execute: vi.fn().mockResolvedValue({ success: true, output: `${type} executed` }),
+  })),
 }))
 
 // Mock workflow execution utilities
@@ -57,14 +57,14 @@ vi.mock('@/app/workspace/[workspaceId]/w/[workflowId]/lib/workflow-execution-uti
     results: { message: 'Workflow executed successfully' },
     steps: [
       { blockId: 'exec-block-1', status: 'completed', output: 'Step 1 completed' },
-      { blockId: 'exec-block-2', status: 'completed', output: 'Step 2 completed' }
-    ]
+      { blockId: 'exec-block-2', status: 'completed', output: 'Step 2 completed' },
+    ],
   }),
   getWorkflowExecutionContext: vi.fn(() => ({
     workflowId: 'test-workflow',
     userId: 'test-user',
-    executionId: 'test-execution-id'
-  }))
+    executionId: 'test-execution-id',
+  })),
 }))
 
 // Mock chat service
@@ -73,11 +73,11 @@ const mockChatService = {
   subscribeToExecution: vi.fn(),
   unsubscribeFromExecution: vi.fn(),
   getExecutionProgress: vi.fn(),
-  modifyWorkflowViaChat: vi.fn()
+  modifyWorkflowViaChat: vi.fn(),
 }
 
 vi.mock('@/services/chat/chat-service', () => ({
-  chatService: mockChatService
+  chatService: mockChatService,
 }))
 
 describe('Workflow Integration Testing Framework', () => {
@@ -102,7 +102,7 @@ describe('Workflow Integration Testing Framework', () => {
           name: 'Start Execution',
           position: { x: 100, y: 100 },
           enabled: true,
-          config: { message: 'Starting execution test' }
+          config: { message: 'Starting execution test' },
         } as BlockState,
         'exec-block-2': {
           id: 'exec-block-2',
@@ -110,7 +110,7 @@ describe('Workflow Integration Testing Framework', () => {
           name: 'Execution Decision',
           position: { x: 300, y: 100 },
           enabled: true,
-          config: { condition: 'execution.status === "ready"' }
+          config: { condition: 'execution.status === "ready"' },
         } as BlockState,
         'exec-block-3': {
           id: 'exec-block-3',
@@ -118,7 +118,7 @@ describe('Workflow Integration Testing Framework', () => {
           name: 'Execute API',
           position: { x: 500, y: 100 },
           enabled: true,
-          config: { url: 'https://execution.example.com', method: 'POST' }
+          config: { url: 'https://execution.example.com', method: 'POST' },
         } as BlockState,
         'exec-block-4': {
           id: 'exec-block-4',
@@ -126,8 +126,8 @@ describe('Workflow Integration Testing Framework', () => {
           name: 'Notify Complete',
           position: { x: 700, y: 100 },
           enabled: true,
-          config: { message: 'Execution completed successfully' }
-        } as BlockState
+          config: { message: 'Execution completed successfully' },
+        } as BlockState,
       },
       edges: [
         {
@@ -136,7 +136,7 @@ describe('Workflow Integration Testing Framework', () => {
           target: 'exec-block-2',
           sourceHandle: 'output',
           targetHandle: 'input',
-          type: 'default'
+          type: 'default',
         },
         {
           id: 'exec-edge-2',
@@ -144,7 +144,7 @@ describe('Workflow Integration Testing Framework', () => {
           target: 'exec-block-3',
           sourceHandle: 'true',
           targetHandle: 'input',
-          type: 'default'
+          type: 'default',
         },
         {
           id: 'exec-edge-3',
@@ -152,11 +152,11 @@ describe('Workflow Integration Testing Framework', () => {
           target: 'exec-block-4',
           sourceHandle: 'output',
           targetHandle: 'input',
-          type: 'default'
-        }
+          type: 'default',
+        },
       ],
       viewport: { x: 0, y: 0, zoom: 1 },
-      isExecuting: false
+      isExecuting: false,
     }
   })
 
@@ -181,13 +181,13 @@ describe('Workflow Integration Testing Framework', () => {
       // Execute workflow
       const result = await executeDualModeWorkflow(testWorkflowId, {
         mode: 'journey',
-        enableProgressTracking: true
+        enableProgressTracking: true,
       })
 
       expect(result.success).toBe(true)
       expect(mockSocket.emit).toHaveBeenCalledWith('subscribe-execution', {
         workflowId: testWorkflowId,
-        executionId: expect.any(String)
+        executionId: expect.any(String),
       })
     })
 
@@ -204,14 +204,14 @@ describe('Workflow Integration Testing Framework', () => {
             blockId: 'exec-block-1',
             status: 'executing',
             timestamp: new Date(),
-            progress: 0.25
+            progress: 0.25,
           })
           executionSteps.push({
             blockId: 'exec-block-1',
             status: 'completed',
             timestamp: new Date(),
             progress: 1.0,
-            output: 'Block executed successfully'
+            output: 'Block executed successfully',
           })
           callback(executionSteps[executionSteps.length - 1])
         }
@@ -227,7 +227,7 @@ describe('Workflow Integration Testing Framework', () => {
       await switchWorkflowMode(testWorkflowId, 'journey')
 
       const result = await executeDualModeWorkflow(testWorkflowId, {
-        includeExecutionSummary: true
+        includeExecutionSummary: true,
       })
 
       // Verify execution summary contains expected information
@@ -241,7 +241,7 @@ describe('Workflow Integration Testing Framework', () => {
         success: true,
         executionTime: expect.any(Number),
         blocksExecuted: expect.any(Number),
-        results: expect.any(Object)
+        results: expect.any(Object),
       })
     })
 
@@ -250,21 +250,23 @@ describe('Workflow Integration Testing Framework', () => {
       await switchWorkflowMode(testWorkflowId, 'journey')
 
       // Mock execution failure
-      const executeWorkflowWithLoggingSpy = await import('@/app/workspace/[workspaceId]/w/[workflowId]/lib/workflow-execution-utils')
+      const executeWorkflowWithLoggingSpy = await import(
+        '@/app/workspace/[workspaceId]/w/[workflowId]/lib/workflow-execution-utils'
+      )
       vi.mocked(executeWorkflowWithLoggingSpy.executeWorkflowWithLogging).mockRejectedValue(
         new Error('Block execution failed')
       )
 
-      const result = await executeDualModeWorkflow(testWorkflowId).catch(err => ({
+      const result = await executeDualModeWorkflow(testWorkflowId).catch((err) => ({
         success: false,
-        error: err.message
+        error: err.message,
       }))
 
       expect(result.success).toBe(false)
       expect(mockSocket.emit).toHaveBeenCalledWith('execution-error', {
         workflowId: testWorkflowId,
         error: 'Block execution failed',
-        timestamp: expect.any(Date)
+        timestamp: expect.any(Date),
       })
     })
 
@@ -277,14 +279,14 @@ describe('Workflow Integration Testing Framework', () => {
           executionId: 'exec-1',
           timestamp: new Date(Date.now() - 3600000), // 1 hour ago
           success: true,
-          duration: 15000
+          duration: 15000,
         },
         {
           executionId: 'exec-2',
           timestamp: new Date(Date.now() - 1800000), // 30 minutes ago
           success: false,
-          error: 'Network timeout'
-        }
+          error: 'Network timeout',
+        },
       ]
 
       mockChatService.getExecutionHistory = vi.fn().mockResolvedValue(executionHistory)
@@ -306,11 +308,11 @@ describe('Workflow Integration Testing Framework', () => {
         name: context.reactFlowState.name,
         totalBlocks: Object.keys(context.reactFlowState.blocks).length,
         totalConnections: context.reactFlowState.edges.length,
-        blocks: Object.values(context.reactFlowState.blocks).map(block => ({
+        blocks: Object.values(context.reactFlowState.blocks).map((block) => ({
           name: block.name,
           type: block.type,
-          enabled: block.enabled
-        }))
+          enabled: block.enabled,
+        })),
       }
 
       expect(chatFormattedWorkflow.totalBlocks).toBe(4)
@@ -329,7 +331,7 @@ describe('Workflow Integration Testing Framework', () => {
         blockId: 'exec-block-1',
         property: 'name',
         value: 'Modified Start Block',
-        userId: 'test-user'
+        userId: 'test-user',
       }
 
       mockChatService.modifyWorkflowViaChat.mockResolvedValue({
@@ -338,16 +340,19 @@ describe('Workflow Integration Testing Framework', () => {
           {
             type: 'BLOCK_MODIFIED',
             blockId: 'exec-block-1',
-            changes: { name: 'Modified Start Block' }
-          }
-        ]
+            changes: { name: 'Modified Start Block' },
+          },
+        ],
       })
 
       const result = await mockChatService.modifyWorkflowViaChat(testWorkflowId, chatCommand)
 
       expect(result.success).toBe(true)
       expect(result.changes).toHaveLength(1)
-      expect(mockChatService.modifyWorkflowViaChat).toHaveBeenCalledWith(testWorkflowId, chatCommand)
+      expect(mockChatService.modifyWorkflowViaChat).toHaveBeenCalledWith(
+        testWorkflowId,
+        chatCommand
+      )
     })
 
     it('should add new blocks via chat interface', async () => {
@@ -362,8 +367,8 @@ describe('Workflow Integration Testing Framework', () => {
         config: {
           to: 'user@example.com',
           subject: 'Workflow Complete',
-          body: 'Your workflow has completed successfully.'
-        }
+          body: 'Your workflow has completed successfully.',
+        },
       }
 
       mockChatService.modifyWorkflowViaChat.mockResolvedValue({
@@ -378,10 +383,10 @@ describe('Workflow Integration Testing Framework', () => {
               name: 'Send Email',
               position: { x: 600, y: 200 },
               enabled: true,
-              config: addBlockCommand.config
-            }
-          }
-        ]
+              config: addBlockCommand.config,
+            },
+          },
+        ],
       })
 
       const result = await mockChatService.modifyWorkflowViaChat(testWorkflowId, addBlockCommand)
@@ -400,7 +405,7 @@ describe('Workflow Integration Testing Framework', () => {
         sourceBlockId: 'exec-block-4',
         targetBlockId: 'new-email-block',
         sourceHandle: 'output',
-        targetHandle: 'input'
+        targetHandle: 'input',
       }
 
       mockChatService.modifyWorkflowViaChat.mockResolvedValue({
@@ -415,13 +420,16 @@ describe('Workflow Integration Testing Framework', () => {
               target: 'new-email-block',
               sourceHandle: 'output',
               targetHandle: 'input',
-              type: 'default'
-            }
-          }
-        ]
+              type: 'default',
+            },
+          },
+        ],
       })
 
-      const result = await mockChatService.modifyWorkflowViaChat(testWorkflowId, connectBlocksCommand)
+      const result = await mockChatService.modifyWorkflowViaChat(
+        testWorkflowId,
+        connectBlocksCommand
+      )
 
       expect(result.success).toBe(true)
       expect(result.changes[0].type).toBe('EDGE_ADDED')
@@ -435,7 +443,7 @@ describe('Workflow Integration Testing Framework', () => {
       const disableBlockCommand = {
         type: 'toggle_block',
         blockId: 'exec-block-2',
-        enabled: false
+        enabled: false,
       }
 
       mockChatService.modifyWorkflowViaChat.mockResolvedValue({
@@ -444,12 +452,15 @@ describe('Workflow Integration Testing Framework', () => {
           {
             type: 'BLOCK_MODIFIED',
             blockId: 'exec-block-2',
-            changes: { enabled: false }
-          }
-        ]
+            changes: { enabled: false },
+          },
+        ],
       })
 
-      const result = await mockChatService.modifyWorkflowViaChat(testWorkflowId, disableBlockCommand)
+      const result = await mockChatService.modifyWorkflowViaChat(
+        testWorkflowId,
+        disableBlockCommand
+      )
 
       expect(result.success).toBe(true)
       expect(result.changes[0].changes.enabled).toBe(false)
@@ -463,7 +474,7 @@ describe('Workflow Integration Testing Framework', () => {
         type: 'modify_block',
         blockId: 'non-existent-block',
         property: 'name',
-        value: 'Invalid Modification'
+        value: 'Invalid Modification',
       }
 
       mockChatService.modifyWorkflowViaChat.mockResolvedValue({
@@ -472,9 +483,9 @@ describe('Workflow Integration Testing Framework', () => {
         validationErrors: [
           {
             field: 'blockId',
-            message: 'Block with ID "non-existent-block" does not exist'
-          }
-        ]
+            message: 'Block with ID "non-existent-block" does not exist',
+          },
+        ],
       })
 
       const result = await mockChatService.modifyWorkflowViaChat(testWorkflowId, invalidCommand)
@@ -490,7 +501,7 @@ describe('Workflow Integration Testing Framework', () => {
 
       const getSuggestionsCommand = {
         type: 'get_suggestions',
-        context: 'improve_workflow_performance'
+        context: 'improve_workflow_performance',
       }
 
       mockChatService.getWorkflowSuggestions = vi.fn().mockResolvedValue({
@@ -500,7 +511,7 @@ describe('Workflow Integration Testing Framework', () => {
             title: 'Add Error Handling',
             description: 'Consider adding error handling blocks after API calls',
             priority: 'medium',
-            blocks: ['exec-block-3']
+            blocks: ['exec-block-3'],
           },
           {
             type: 'enhancement',
@@ -509,13 +520,16 @@ describe('Workflow Integration Testing Framework', () => {
             priority: 'low',
             suggestedBlocks: [
               { type: 'log', name: 'Log Start', position: 'after:exec-block-1' },
-              { type: 'log', name: 'Log Complete', position: 'after:exec-block-4' }
-            ]
-          }
-        ]
+              { type: 'log', name: 'Log Complete', position: 'after:exec-block-4' },
+            ],
+          },
+        ],
       })
 
-      const suggestions = await mockChatService.getWorkflowSuggestions(testWorkflowId, getSuggestionsCommand)
+      const suggestions = await mockChatService.getWorkflowSuggestions(
+        testWorkflowId,
+        getSuggestionsCommand
+      )
 
       expect(suggestions.suggestions).toHaveLength(2)
       expect(suggestions.suggestions[0].title).toBe('Add Error Handling')
@@ -535,13 +549,13 @@ describe('Workflow Integration Testing Framework', () => {
         if (event === 'execution-progress') {
           // Simulate progress updates
           setTimeout(() => callback({ blockId: 'exec-block-1', progress: 0.25 }), 100)
-          setTimeout(() => callback({ blockId: 'exec-block-1', progress: 0.50 }), 200)
+          setTimeout(() => callback({ blockId: 'exec-block-1', progress: 0.5 }), 200)
           setTimeout(() => callback({ blockId: 'exec-block-1', progress: 1.0 }), 300)
           setTimeout(() => callback({ blockId: 'exec-block-2', progress: 0.33 }), 400)
         }
       })
 
-      const progressPromise = new Promise(resolve => {
+      const progressPromise = new Promise((resolve) => {
         mockSocket.on('execution-progress', (update: any) => {
           progressUpdates.push(update)
           if (progressUpdates.length === 4) resolve(progressUpdates)
@@ -565,10 +579,30 @@ describe('Workflow Integration Testing Framework', () => {
       mockSocket.on.mockImplementation((event: string, callback: Function) => {
         if (event === 'execution-log') {
           const logs = [
-            { level: 'info', message: 'Starting workflow execution', timestamp: new Date(), blockId: null },
-            { level: 'info', message: 'Executing block: Start Execution', timestamp: new Date(), blockId: 'exec-block-1' },
-            { level: 'info', message: 'Block completed successfully', timestamp: new Date(), blockId: 'exec-block-1' },
-            { level: 'info', message: 'Evaluating condition: execution.status === "ready"', timestamp: new Date(), blockId: 'exec-block-2' }
+            {
+              level: 'info',
+              message: 'Starting workflow execution',
+              timestamp: new Date(),
+              blockId: null,
+            },
+            {
+              level: 'info',
+              message: 'Executing block: Start Execution',
+              timestamp: new Date(),
+              blockId: 'exec-block-1',
+            },
+            {
+              level: 'info',
+              message: 'Block completed successfully',
+              timestamp: new Date(),
+              blockId: 'exec-block-1',
+            },
+            {
+              level: 'info',
+              message: 'Evaluating condition: execution.status === "ready"',
+              timestamp: new Date(),
+              blockId: 'exec-block-2',
+            },
           ]
 
           logs.forEach((log, index) => {
@@ -577,7 +611,7 @@ describe('Workflow Integration Testing Framework', () => {
         }
       })
 
-      const logsPromise = new Promise(resolve => {
+      const logsPromise = new Promise((resolve) => {
         mockSocket.on('execution-log', (log: any) => {
           executionLogs.push(log)
           if (executionLogs.length === 4) resolve(executionLogs)
@@ -601,9 +635,18 @@ describe('Workflow Integration Testing Framework', () => {
       mockSocket.on.mockImplementation((event: string, callback: Function) => {
         if (event === 'block-output') {
           const outputs = [
-            { blockId: 'exec-block-1', output: { message: 'Workflow started', timestamp: new Date() } },
-            { blockId: 'exec-block-2', output: { condition: true, reason: 'execution.status === "ready" evaluated to true' } },
-            { blockId: 'exec-block-3', output: { response: { status: 200, data: { result: 'success' } } } }
+            {
+              blockId: 'exec-block-1',
+              output: { message: 'Workflow started', timestamp: new Date() },
+            },
+            {
+              blockId: 'exec-block-2',
+              output: { condition: true, reason: 'execution.status === "ready" evaluated to true' },
+            },
+            {
+              blockId: 'exec-block-3',
+              output: { response: { status: 200, data: { result: 'success' } } },
+            },
           ]
 
           outputs.forEach((output, index) => {
@@ -612,7 +655,7 @@ describe('Workflow Integration Testing Framework', () => {
         }
       })
 
-      const outputsPromise = new Promise(resolve => {
+      const outputsPromise = new Promise((resolve) => {
         mockSocket.on('block-output', (output: any) => {
           blockOutputs.push(output)
           if (blockOutputs.length === 3) resolve(blockOutputs)
@@ -642,7 +685,7 @@ describe('Workflow Integration Testing Framework', () => {
       // Should attempt to reconnect for streaming
       expect(mockSocket.emit).toHaveBeenCalledWith('reconnect-execution-stream', {
         workflowId: testWorkflowId,
-        executionId: expect.any(String)
+        executionId: expect.any(String),
       })
     })
 
@@ -661,7 +704,7 @@ describe('Workflow Integration Testing Framework', () => {
       // Simulate reconnection and replay
       setTimeout(() => {
         mockSocket.connected = true
-        bufferedEvents.forEach(event => mockSocket.emit('buffered-event', event))
+        bufferedEvents.forEach((event) => mockSocket.emit('buffered-event', event))
       }, 500)
 
       await executeDualModeWorkflow(testWorkflowId, { enableRealTimeProgress: true })
@@ -685,7 +728,7 @@ describe('Workflow Integration Testing Framework', () => {
             { metric: 'blocks_executed', value: 1, timestamp: new Date() },
             { metric: 'execution_time', value: 1500, timestamp: new Date() },
             { metric: 'memory_usage', value: 45.2, timestamp: new Date() },
-            { metric: 'api_calls_made', value: 2, timestamp: new Date() }
+            { metric: 'api_calls_made', value: 2, timestamp: new Date() },
           ]
 
           metrics.forEach((metric, index) => {
@@ -694,7 +737,7 @@ describe('Workflow Integration Testing Framework', () => {
         }
       })
 
-      const metricsPromise = new Promise(resolve => {
+      const metricsPromise = new Promise((resolve) => {
         mockSocket.on('execution-metrics', (metric: any) => {
           executionMetrics.push(metric)
           if (executionMetrics.length === 4) resolve(executionMetrics)
@@ -705,8 +748,8 @@ describe('Workflow Integration Testing Framework', () => {
 
       const metrics = await metricsPromise
       expect(metrics).toHaveLength(4)
-      expect(metrics.find(m => m.metric === 'blocks_executed')?.value).toBe(1)
-      expect(metrics.find(m => m.metric === 'execution_time')?.value).toBe(1500)
+      expect(metrics.find((m) => m.metric === 'blocks_executed')?.value).toBe(1)
+      expect(metrics.find((m) => m.metric === 'execution_time')?.value).toBe(1500)
     })
   })
 
@@ -716,20 +759,20 @@ describe('Workflow Integration Testing Framework', () => {
       await switchWorkflowMode(testWorkflowId, 'journey')
 
       const executionPromise = executeDualModeWorkflow(testWorkflowId, {
-        enableRealTimeProgress: true
+        enableRealTimeProgress: true,
       })
 
       const modificationPromise = mockChatService.modifyWorkflowViaChat(testWorkflowId, {
         type: 'modify_block',
         blockId: 'exec-block-1',
         property: 'name',
-        value: 'Modified During Execution'
+        value: 'Modified During Execution',
       })
 
       // Both should handle concurrency gracefully
       const [execResult, modResult] = await Promise.allSettled([
         executionPromise,
-        modificationPromise
+        modificationPromise,
       ])
 
       expect(execResult.status).toBe('fulfilled')
@@ -756,16 +799,13 @@ describe('Workflow Integration Testing Framework', () => {
         }
       })
 
-      const streamPromise = new Promise(resolve => {
+      const streamPromise = new Promise((resolve) => {
         mockSocket.on('high-frequency-stream', () => {
           if (streamEvents.length === 100) resolve(streamEvents)
         })
       })
 
-      await Promise.all([
-        executeDualModeWorkflow(testWorkflowId),
-        streamPromise
-      ])
+      await Promise.all([executeDualModeWorkflow(testWorkflowId), streamPromise])
 
       const duration = performance.now() - startTime
 

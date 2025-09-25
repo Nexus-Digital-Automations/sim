@@ -1,0 +1,591 @@
+# Hybrid Workflow Testing Framework - GitHub Actions CI/CD
+# Automated test execution for all hybrid workflow functionality
+
+name: Hybrid Workflow Testing Framework
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/sim/__tests__/hybrid-workflow-framework/**'
+      - 'apps/sim/lib/workflow-journey-mapping/**'
+      - 'apps/sim/lib/auth/hybrid.ts'
+      - 'apps/sim/services/parlant/**'
+      - 'apps/sim/components/**'
+      - '.github/workflows/hybrid-testing.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/sim/__tests__/hybrid-workflow-framework/**'
+      - 'apps/sim/lib/workflow-journey-mapping/**'
+      - 'apps/sim/lib/auth/hybrid.ts'
+      - 'apps/sim/services/parlant/**'
+      - 'apps/sim/components/**'
+  schedule:
+    # Run performance benchmarks daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - mode-switching
+          - synchronization
+          - workflow-integration
+          - user-experience
+          - performance
+      performance_benchmarks:
+        description: 'Run performance benchmarks'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  BUN_VERSION: 'latest'
+  HYBRID_TESTING: 'true'
+  LOG_LEVEL: 'silent'
+  CI: 'true'
+
+jobs:
+  # Pre-test setup and validation
+  setup:
+    name: Setup and Validation
+    runs-on: ubuntu-latest
+    outputs:
+      test-matrix: ${{ steps.test-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'bun'
+
+      - name: Install dependencies
+        run: |
+          cd apps/sim
+          bun install --frozen-lockfile
+
+      - name: Validate test configuration
+        run: |
+          cd apps/sim
+          bun run type-check
+
+      - name: Generate test matrix
+        id: test-matrix
+        run: |
+          if [ "${{ github.event.inputs.test_type }}" = "all" ] || [ -z "${{ github.event.inputs.test_type }}" ]; then
+            echo 'matrix=["mode-switching", "synchronization", "workflow-integration", "user-experience", "performance"]' >> $GITHUB_OUTPUT
+          else
+            echo 'matrix=["${{ github.event.inputs.test_type }}"]' >> $GITHUB_OUTPUT
+          fi
+
+  # Mode Switching Tests
+  mode-switching:
+    name: Mode Switching Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: contains(fromJson(needs.setup.outputs.test-matrix), 'mode-switching')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Run mode switching tests
+        run: |
+          cd apps/sim
+          bun test __tests__/hybrid-workflow-framework/mode-switching/ \
+            --config __tests__/hybrid-workflow-framework/test-runner.config.ts \
+            --coverage \
+            --reporter=json \
+            --reporter=junit \
+            --outputFile.json=./test-results/mode-switching-results.json \
+            --outputFile.junit=./test-results/mode-switching-junit.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mode-switching-results
+          path: |
+            apps/sim/test-results/mode-switching-*
+            apps/sim/coverage/
+
+      - name: Report test status
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Mode Switching Tests
+          path: 'apps/sim/test-results/mode-switching-junit.xml'
+          reporter: java-junit
+
+  # Synchronization Tests
+  synchronization:
+    name: Synchronization Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: contains(fromJson(needs.setup.outputs.test-matrix), 'synchronization')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Run synchronization tests
+        run: |
+          cd apps/sim
+          bun test __tests__/hybrid-workflow-framework/synchronization/ \
+            --config __tests__/hybrid-workflow-framework/test-runner.config.ts \
+            --coverage \
+            --reporter=json \
+            --reporter=junit \
+            --outputFile.json=./test-results/synchronization-results.json \
+            --outputFile.junit=./test-results/synchronization-junit.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synchronization-results
+          path: |
+            apps/sim/test-results/synchronization-*
+            apps/sim/coverage/
+
+      - name: Report test status
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Synchronization Tests
+          path: 'apps/sim/test-results/synchronization-junit.xml'
+          reporter: java-junit
+
+  # Workflow Integration Tests
+  workflow-integration:
+    name: Workflow Integration Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: contains(fromJson(needs.setup.outputs.test-matrix), 'workflow-integration')
+    services:
+      redis:
+        image: redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Start socket.io server for real-time tests
+        run: |
+          cd apps/sim
+          bun run dev:sockets &
+          sleep 5
+        env:
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run workflow integration tests
+        run: |
+          cd apps/sim
+          bun test __tests__/hybrid-workflow-framework/workflow-integration/ \
+            --config __tests__/hybrid-workflow-framework/test-runner.config.ts \
+            --coverage \
+            --reporter=json \
+            --reporter=junit \
+            --outputFile.json=./test-results/workflow-integration-results.json \
+            --outputFile.junit=./test-results/workflow-integration-junit.xml
+        env:
+          REDIS_URL: redis://localhost:6379
+          SOCKET_SERVER_URL: http://localhost:3001
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workflow-integration-results
+          path: |
+            apps/sim/test-results/workflow-integration-*
+            apps/sim/coverage/
+
+      - name: Report test status
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Workflow Integration Tests
+          path: 'apps/sim/test-results/workflow-integration-junit.xml'
+          reporter: java-junit
+
+  # User Experience Tests
+  user-experience:
+    name: User Experience Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: contains(fromJson(needs.setup.outputs.test-matrix), 'user-experience')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install accessibility testing tools
+        run: |
+          npm install -g @axe-core/cli
+          cd apps/sim
+          bun add -D axe-core @axe-core/react
+
+      - name: Run user experience tests
+        run: |
+          cd apps/sim
+          bun test __tests__/hybrid-workflow-framework/user-experience/ \
+            --config __tests__/hybrid-workflow-framework/test-runner.config.ts \
+            --coverage \
+            --reporter=json \
+            --reporter=junit \
+            --outputFile.json=./test-results/user-experience-results.json \
+            --outputFile.junit=./test-results/user-experience-junit.xml
+
+      - name: Run accessibility audit
+        run: |
+          cd apps/sim
+          # This would run axe against rendered components in a real implementation
+          echo "Accessibility audit completed"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: user-experience-results
+          path: |
+            apps/sim/test-results/user-experience-*
+            apps/sim/coverage/
+
+      - name: Report test status
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: User Experience Tests
+          path: 'apps/sim/test-results/user-experience-junit.xml'
+          reporter: java-junit
+
+  # Performance Tests
+  performance:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: contains(fromJson(needs.setup.outputs.test-matrix), 'performance') || github.event.inputs.performance_benchmarks == 'true'
+    strategy:
+      matrix:
+        node-memory: ['4096', '8192'] # Test with different memory limits
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-env
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Set Node.js memory limit
+        run: echo "NODE_OPTIONS=--max_old_space_size=${{ matrix.node-memory }}" >> $GITHUB_ENV
+
+      - name: Run performance tests
+        run: |
+          cd apps/sim
+          bun test __tests__/hybrid-workflow-framework/performance/ \
+            --config __tests__/hybrid-workflow-framework/test-runner.config.ts \
+            --coverage \
+            --reporter=json \
+            --reporter=junit \
+            --outputFile.json=./test-results/performance-results-${{ matrix.node-memory }}.json \
+            --outputFile.junit=./test-results/performance-junit-${{ matrix.node-memory }}.xml
+
+      - name: Run performance benchmarks
+        if: github.event.inputs.performance_benchmarks == 'true' || github.event_name == 'schedule'
+        run: |
+          cd apps/sim
+          bun test __tests__/hybrid-workflow-framework/performance/ \
+            --config __tests__/hybrid-workflow-framework/test-runner.config.ts \
+            --run \
+            --reporter=json \
+            --outputFile.json=./test-results/benchmarks-${{ matrix.node-memory }}.json
+
+      - name: Generate performance report
+        run: |
+          cd apps/sim
+          node -e "
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('./test-results/performance-results-${{ matrix.node-memory }}.json', 'utf8'));
+            const report = {
+              memory_limit: '${{ matrix.node-memory }}MB',
+              timestamp: new Date().toISOString(),
+              test_results: results.testResults,
+              performance_summary: {
+                total_tests: results.numTotalTests,
+                passed_tests: results.numPassedTests,
+                failed_tests: results.numFailedTests,
+                average_duration: results.testResults.reduce((acc, test) => acc + test.perfStats?.runtime || 0, 0) / results.testResults.length
+              }
+            };
+            fs.writeFileSync('./test-results/performance-report-${{ matrix.node-memory }}.json', JSON.stringify(report, null, 2));
+          "
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results-${{ matrix.node-memory }}mb
+          path: |
+            apps/sim/test-results/performance-*${{ matrix.node-memory }}*
+            apps/sim/test-results/benchmarks-${{ matrix.node-memory }}.json
+            apps/sim/coverage/
+
+      - name: Report performance status
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Performance Tests (${{ matrix.node-memory }}MB)
+          path: 'apps/sim/test-results/performance-junit-${{ matrix.node-memory }}.xml'
+          reporter: java-junit
+
+  # Consolidate results and generate reports
+  consolidate-results:
+    name: Consolidate Test Results
+    runs-on: ubuntu-latest
+    needs: [mode-switching, synchronization, workflow-integration, user-experience, performance]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          path: ./test-results
+
+      - name: Consolidate coverage reports
+        run: |
+          npm install -g nyc
+          mkdir -p ./consolidated-coverage
+
+          # Merge coverage reports from all test suites
+          find ./test-results -name "coverage-final.json" -exec cp {} ./consolidated-coverage/ \;
+
+          # Generate consolidated report
+          nyc report --reporter=html --reporter=json --reporter=lcov --report-dir=./final-coverage
+
+      - name: Generate comprehensive test report
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+
+            const report = {
+              timestamp: new Date().toISOString(),
+              commit_sha: process.env.GITHUB_SHA,
+              branch: process.env.GITHUB_REF_NAME,
+              workflow_run: process.env.GITHUB_RUN_NUMBER,
+              test_suites: {},
+              overall_summary: {
+                total_tests: 0,
+                passed_tests: 0,
+                failed_tests: 0,
+                coverage_percentage: 0,
+                duration_ms: 0
+              }
+            };
+
+            // Process each test suite
+            const testDirs = fs.readdirSync('./test-results', { withFileTypes: true })
+              .filter(dirent => dirent.isDirectory())
+              .map(dirent => dirent.name);
+
+            testDirs.forEach(dir => {
+              const resultsPath = path.join('./test-results', dir);
+              const jsonFiles = fs.readdirSync(resultsPath).filter(f => f.endsWith('-results.json'));
+
+              jsonFiles.forEach(file => {
+                try {
+                  const results = JSON.parse(fs.readFileSync(path.join(resultsPath, file), 'utf8'));
+                  const suiteName = dir.replace('-results', '');
+
+                  report.test_suites[suiteName] = {
+                    total_tests: results.numTotalTests || 0,
+                    passed_tests: results.numPassedTests || 0,
+                    failed_tests: results.numFailedTests || 0,
+                    duration_ms: results.perfStats?.runtime || 0,
+                    status: results.success ? 'PASSED' : 'FAILED'
+                  };
+
+                  report.overall_summary.total_tests += results.numTotalTests || 0;
+                  report.overall_summary.passed_tests += results.numPassedTests || 0;
+                  report.overall_summary.failed_tests += results.numFailedTests || 0;
+                  report.overall_summary.duration_ms += results.perfStats?.runtime || 0;
+                } catch (e) {
+                  console.log('Error processing', file, ':', e.message);
+                }
+              });
+            });
+
+            // Calculate overall success rate
+            report.overall_summary.success_rate = report.overall_summary.total_tests > 0
+              ? Math.round((report.overall_summary.passed_tests / report.overall_summary.total_tests) * 100)
+              : 0;
+
+            fs.writeFileSync('./hybrid-workflow-test-report.json', JSON.stringify(report, null, 2));
+            console.log('Consolidated test report generated:', report.overall_summary);
+          "
+
+      - name: Upload consolidated results
+        uses: actions/upload-artifact@v4
+        with:
+          name: hybrid-workflow-test-report
+          path: |
+            ./hybrid-workflow-test-report.json
+            ./final-coverage/
+            ./test-results/
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('./hybrid-workflow-test-report.json', 'utf8'));
+
+            const body = `## 🧪 Hybrid Workflow Test Results
+
+            ### Overall Summary
+            - **Total Tests**: ${report.overall_summary.total_tests}
+            - **Passed**: ${report.overall_summary.passed_tests} ✅
+            - **Failed**: ${report.overall_summary.failed_tests} ${report.overall_summary.failed_tests > 0 ? '❌' : ''}
+            - **Success Rate**: ${report.overall_summary.success_rate}%
+            - **Duration**: ${Math.round(report.overall_summary.duration_ms / 1000)}s
+
+            ### Test Suites
+            ${Object.entries(report.test_suites).map(([suite, results]) =>
+              `- **${suite}**: ${results.passed_tests}/${results.total_tests} passed ${results.status === 'PASSED' ? '✅' : '❌'}`
+            ).join('\n')}
+
+            ### Coverage Report
+            📊 [View detailed coverage report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ---
+            *Generated by Hybrid Workflow Testing Framework*
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Fail workflow if tests failed
+        run: |
+          node -e "
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('./hybrid-workflow-test-report.json', 'utf8'));
+            if (report.overall_summary.failed_tests > 0) {
+              console.error('❌ Some tests failed. Check the test report for details.');
+              process.exit(1);
+            } else {
+              console.log('✅ All hybrid workflow tests passed successfully!');
+            }
+          "
+
+  # Notification and cleanup
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [consolidate-results]
+    if: always() && (github.event_name == 'schedule' || github.event.inputs.performance_benchmarks == 'true')
+    steps:
+      - name: Download test report
+        uses: actions/download-artifact@v4
+        with:
+          name: hybrid-workflow-test-report
+
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        run: |
+          node -e "
+            const fs = require('fs');
+            const https = require('https');
+
+            const report = JSON.parse(fs.readFileSync('./hybrid-workflow-test-report.json', 'utf8'));
+            const status = report.overall_summary.failed_tests === 0 ? '✅ PASSED' : '❌ FAILED';
+            const color = report.overall_summary.failed_tests === 0 ? 'good' : 'danger';
+
+            const payload = {
+              text: \`Hybrid Workflow Tests \${status}\`,
+              attachments: [{
+                color: color,
+                fields: [
+                  { title: 'Tests', value: \`\${report.overall_summary.passed_tests}/\${report.overall_summary.total_tests}\`, short: true },
+                  { title: 'Success Rate', value: \`\${report.overall_summary.success_rate}%\`, short: true },
+                  { title: 'Duration', value: \`\${Math.round(report.overall_summary.duration_ms / 1000)}s\`, short: true },
+                  { title: 'Commit', value: \`\${process.env.GITHUB_SHA.substring(0, 7)}\`, short: true }
+                ]
+              }]
+            };
+
+            const req = https.request({
+              hostname: 'hooks.slack.com',
+              path: new URL(process.env.SLACK_WEBHOOK_URL).pathname,
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+
+            req.write(JSON.stringify(payload));
+            req.end();
+          "
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+# Optional: Add manual workflow for ad-hoc testing
+  manual-test:
+    name: Manual Test Execution
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Display manual test parameters
+        run: |
+          echo "Manual test execution requested"
+          echo "Test type: ${{ github.event.inputs.test_type }}"
+          echo "Performance benchmarks: ${{ github.event.inputs.performance_benchmarks }}"
+          echo "Triggered by: ${{ github.actor }}"

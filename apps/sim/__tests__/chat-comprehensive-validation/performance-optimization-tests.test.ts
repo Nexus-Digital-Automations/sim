@@ -19,20 +19,20 @@
  * 10. Performance Regression Testing
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest'
-import { performance, PerformanceObserver } from 'perf_hooks'
+import { performance } from 'perf_hooks'
 import { db } from '@packages/db'
 import {
-  ChatMessageStorage,
-  ChatHistoryRetrieval,
   BrowserSessionManager,
-  ConversationManager
+  ChatHistoryRetrieval,
+  ChatMessageStorage,
+  ConversationManager,
 } from '@packages/db/chat-persistence-queries'
-import { AgentSessionManager } from '../../services/parlant/lifecycle/agent-session-manager'
-import { SessionPersistenceService } from '../../services/chat-persistence/session-persistence'
-import { parlantAgent, parlantSession, chatMessage, workspace, user } from '@packages/db/schema'
+import { chatMessage, parlantAgent, parlantSession, user, workspace } from '@packages/db/schema'
 import { eq, sql } from 'drizzle-orm'
 import { v4 as uuidv4 } from 'uuid'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { SessionPersistenceService } from '../../services/chat-persistence/session-persistence'
+import { AgentSessionManager } from '../../services/parlant/lifecycle/agent-session-manager'
 
 // Performance measurement utilities
 interface PerformanceMetrics {
@@ -95,7 +95,7 @@ class MemoryMonitor {
   private measurements: NodeJS.MemoryUsage[] = []
   private interval: NodeJS.Timeout | null = null
 
-  startMonitoring(intervalMs: number = 1000) {
+  startMonitoring(intervalMs = 1000) {
     this.measurements = []
     this.interval = setInterval(() => {
       this.measurements.push(process.memoryUsage())
@@ -127,7 +127,7 @@ class MemoryMonitor {
       return {
         hasLeak: true,
         leakSize: heapGrowth,
-        leakType: 'heap_growth'
+        leakType: 'heap_growth',
       }
     }
 
@@ -137,7 +137,7 @@ class MemoryMonitor {
 
 // Performance timer utility
 class PerformanceTimer {
-  private startTime: number = 0
+  private startTime = 0
   private measurements: Array<{ name: string; duration: number }> = []
 
   start(): void {
@@ -197,7 +197,7 @@ describe('Performance Testing and Optimization Validation', () => {
       throughputMetrics: [],
       concurrencyResults: [],
       resourceUtilization: [],
-      optimizationResults: []
+      optimizationResults: [],
     }
 
     testContext = {
@@ -210,39 +210,51 @@ describe('Performance Testing and Optimization Validation', () => {
       conversationManager,
       agentSessionManager,
       sessionPersistence,
-      metrics
+      metrics,
     }
 
     // Setup test data
-    await db.insert(workspace).values({
-      id: workspaceId,
-      name: 'Performance Test Workspace',
-      slug: 'perf-test-workspace'
-    }).onConflictDoNothing()
+    await db
+      .insert(workspace)
+      .values({
+        id: workspaceId,
+        name: 'Performance Test Workspace',
+        slug: 'perf-test-workspace',
+      })
+      .onConflictDoNothing()
 
-    await db.insert(user).values({
-      id: userId,
-      email: 'perf-test@example.com',
-      name: 'Performance Test User'
-    }).onConflictDoNothing()
+    await db
+      .insert(user)
+      .values({
+        id: userId,
+        email: 'perf-test@example.com',
+        name: 'Performance Test User',
+      })
+      .onConflictDoNothing()
 
-    await db.insert(parlantAgent).values({
-      id: agentId,
-      workspaceId,
-      createdBy: userId,
-      name: 'Performance Test Agent',
-      description: 'Agent for performance testing',
-      status: 'active'
-    }).onConflictDoNothing()
+    await db
+      .insert(parlantAgent)
+      .values({
+        id: agentId,
+        workspaceId,
+        createdBy: userId,
+        name: 'Performance Test Agent',
+        description: 'Agent for performance testing',
+        status: 'active',
+      })
+      .onConflictDoNothing()
 
-    await db.insert(parlantSession).values({
-      id: uuidv4(),
-      agentId,
-      workspaceId,
-      userId,
-      mode: 'auto',
-      status: 'active'
-    }).onConflictDoNothing()
+    await db
+      .insert(parlantSession)
+      .values({
+        id: uuidv4(),
+        agentId,
+        workspaceId,
+        userId,
+        mode: 'auto',
+        status: 'active',
+      })
+      .onConflictDoNothing()
 
     console.log(`✅ Performance test environment initialized - Workspace: ${workspaceId}`)
   })
@@ -271,9 +283,11 @@ describe('Performance Testing and Optimization Validation', () => {
     const leakAnalysis = memoryMonitor.detectLeaks()
 
     // Calculate performance summary
-    const avgResponseTime = testContext.metrics.responseTimes.length > 0
-      ? testContext.metrics.responseTimes.reduce((a, b) => a + b, 0) / testContext.metrics.responseTimes.length
-      : 0
+    const avgResponseTime =
+      testContext.metrics.responseTimes.length > 0
+        ? testContext.metrics.responseTimes.reduce((a, b) => a + b, 0) /
+          testContext.metrics.responseTimes.length
+        : 0
 
     console.log('📊 Performance Testing Summary:')
     console.log(`   • Average Response Time: ${avgResponseTime.toFixed(2)}ms`)
@@ -283,13 +297,15 @@ describe('Performance Testing and Optimization Validation', () => {
     console.log(`   • Memory Leak Detection: ${leakAnalysis.hasLeak ? 'DETECTED' : 'CLEAN'}`)
 
     if (leakAnalysis.hasLeak) {
-      console.warn(`   ⚠️  Memory leak detected: ${(leakAnalysis.leakSize / 1024 / 1024).toFixed(2)}MB (${leakAnalysis.leakType})`)
+      console.warn(
+        `   ⚠️  Memory leak detected: ${(leakAnalysis.leakSize / 1024 / 1024).toFixed(2)}MB (${leakAnalysis.leakType})`
+      )
     }
 
     // Log optimization results
     if (testContext.metrics.optimizationResults.length > 0) {
       console.log('🎯 Optimization Results:')
-      testContext.metrics.optimizationResults.forEach(result => {
+      testContext.metrics.optimizationResults.forEach((result) => {
         console.log(`   • ${result.feature}: ${result.improvementPercent.toFixed(1)}% improvement`)
       })
     }
@@ -323,8 +339,8 @@ describe('Performance Testing and Optimization Validation', () => {
           metadata: {
             batch: batch,
             loadTest: true,
-            timestamp: new Date().toISOString()
-          }
+            timestamp: new Date().toISOString(),
+          },
         }))
 
         try {
@@ -340,7 +356,7 @@ describe('Performance Testing and Optimization Validation', () => {
         }
 
         // Small delay to prevent overwhelming the database
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise((resolve) => setTimeout(resolve, 10))
       }
 
       const totalTime = performance.now() - startTime
@@ -352,7 +368,7 @@ describe('Performance Testing and Optimization Validation', () => {
         messagesPerSecond: throughput,
         totalMessages,
         duration: totalTime,
-        errorRate
+        errorRate,
       }
 
       testContext.metrics.throughputMetrics.push(throughputMetric)
@@ -392,7 +408,7 @@ describe('Performance Testing and Optimization Validation', () => {
             senderId: testContext.userId,
             senderType: 'user',
             senderName: 'Sustained Load User',
-            metadata: { sustainedLoad: true }
+            metadata: { sustainedLoad: true },
           })
 
           const responseTime = performance.now() - msgStartTime
@@ -405,7 +421,7 @@ describe('Performance Testing and Optimization Validation', () => {
       }, messageInterval)
 
       // Wait for test duration
-      await new Promise(resolve => setTimeout(resolve, testDuration))
+      await new Promise((resolve) => setTimeout(resolve, testDuration))
       clearInterval(sustainedLoadTest)
 
       const totalTime = performance.now() - startTime
@@ -449,10 +465,10 @@ describe('Performance Testing and Optimization Validation', () => {
             metadata: {
               memoryTest: true,
               iteration: i,
-              randomData: 'A'.repeat(100) // Add some data
-            }
+              randomData: 'A'.repeat(100), // Add some data
+            },
           },
-          expirationHours: 1
+          expirationHours: 1,
         })
 
         sessions.push(sessionToken)
@@ -467,7 +483,7 @@ describe('Performance Testing and Optimization Validation', () => {
             rawContent: `Memory test message ${i}`,
             senderId: testContext.userId,
             senderType: 'user',
-            senderName: 'Memory Test User'
+            senderName: 'Memory Test User',
           })
         }
 
@@ -497,7 +513,7 @@ describe('Performance Testing and Optimization Validation', () => {
       // Force garbage collection if available
       if (global.gc) {
         global.gc()
-        await new Promise(resolve => setTimeout(resolve, 1000)) // Wait for GC
+        await new Promise((resolve) => setTimeout(resolve, 1000)) // Wait for GC
       }
 
       // Assertions
@@ -532,14 +548,14 @@ describe('Performance Testing and Optimization Validation', () => {
           metadata: {
             index: index,
             timestamp: new Date().toISOString(),
-            additionalData: 'X'.repeat(200) // Add some bulk
-          }
+            additionalData: 'X'.repeat(200), // Add some bulk
+          },
         },
         rawContent: `Large history message ${index + 1}`,
         senderId: testContext.userId,
         senderType: 'user' as const,
         senderName: 'Memory Test User',
-        status: 'sent' as const
+        status: 'sent' as const,
       }))
 
       // Store in batches
@@ -559,14 +575,14 @@ describe('Performance Testing and Optimization Validation', () => {
           sessionId,
           workspaceId: testContext.workspaceId,
           limit,
-          offset
+          offset,
         })
 
         retrievedCount += history.messages.length
         offset += limit
 
         // Simulate processing the messages
-        history.messages.forEach(message => {
+        history.messages.forEach((message) => {
           expect(message.rawContent).toContain('Large history message')
         })
 
@@ -595,13 +611,13 @@ describe('Performance Testing and Optimization Validation', () => {
         'store_message',
         'retrieve_history',
         'search_messages',
-        'update_status'
+        'update_status',
       ]
 
       const responseTimes: Record<string, number[]> = {}
 
       // Initialize response time tracking
-      testOperations.forEach(op => {
+      testOperations.forEach((op) => {
         responseTimes[op] = []
       })
 
@@ -620,7 +636,7 @@ describe('Performance Testing and Optimization Validation', () => {
           rawContent: `Response time test message ${i + 1}`,
           senderId: testContext.userId,
           senderType: 'user',
-          senderName: 'Response Time Test User'
+          senderName: 'Response Time Test User',
         })
         const storeTime = performance.now() - storeStartTime
         responseTimes.store_message.push(storeTime)
@@ -630,7 +646,7 @@ describe('Performance Testing and Optimization Validation', () => {
         const history = await testContext.historyRetrieval.getSessionHistory({
           sessionId,
           workspaceId: testContext.workspaceId,
-          limit: 10
+          limit: 10,
         })
         const retrieveTime = performance.now() - retrieveStartTime
         responseTimes.retrieve_history.push(retrieveTime)
@@ -641,7 +657,7 @@ describe('Performance Testing and Optimization Validation', () => {
           await testContext.historyRetrieval.searchMessages({
             workspaceId: testContext.workspaceId,
             query: 'test message',
-            limit: 5
+            limit: 5,
           })
           const searchTime = performance.now() - searchStartTime
           responseTimes.search_messages.push(searchTime)
@@ -649,26 +665,29 @@ describe('Performance Testing and Optimization Validation', () => {
 
         // Add small delay to prevent overwhelming the system
         if (i % 20 === 0) {
-          await new Promise(resolve => setTimeout(resolve, 10))
+          await new Promise((resolve) => setTimeout(resolve, 10))
         }
       }
 
       // Calculate statistics
-      const stats = testOperations.reduce((acc, operation) => {
-        const times = responseTimes[operation]
-        if (times.length > 0) {
-          const sorted = times.sort((a, b) => a - b)
-          acc[operation] = {
-            avg: times.reduce((sum, time) => sum + time, 0) / times.length,
-            p50: sorted[Math.floor(sorted.length * 0.5)],
-            p95: sorted[Math.floor(sorted.length * 0.95)],
-            p99: sorted[Math.floor(sorted.length * 0.99)],
-            max: Math.max(...times),
-            count: times.length
+      const stats = testOperations.reduce(
+        (acc, operation) => {
+          const times = responseTimes[operation]
+          if (times.length > 0) {
+            const sorted = times.sort((a, b) => a - b)
+            acc[operation] = {
+              avg: times.reduce((sum, time) => sum + time, 0) / times.length,
+              p50: sorted[Math.floor(sorted.length * 0.5)],
+              p95: sorted[Math.floor(sorted.length * 0.95)],
+              p99: sorted[Math.floor(sorted.length * 0.99)],
+              max: Math.max(...times),
+              count: times.length,
+            }
           }
-        }
-        return acc
-      }, {} as Record<string, any>)
+          return acc
+        },
+        {} as Record<string, any>
+      )
 
       // Performance assertions
       expect(stats.store_message.avg).toBeLessThan(100) // Average < 100ms
@@ -704,28 +723,31 @@ describe('Performance Testing and Optimization Validation', () => {
 
         // Create concurrent operations
         for (let i = 0; i < concurrency; i++) {
-          const operationPromises = Array.from({ length: operationsPerLevel }, async (_, opIndex) => {
-            try {
-              const sessionId = uuidv4()
+          const operationPromises = Array.from(
+            { length: operationsPerLevel },
+            async (_, opIndex) => {
+              try {
+                const sessionId = uuidv4()
 
-              await testContext.messageStorage.storeMessage({
-                sessionId,
-                workspaceId: testContext.workspaceId,
-                messageType: 'text',
-                content: { text: `Concurrent test ${i}-${opIndex}` },
-                rawContent: `Concurrent test ${i}-${opIndex}`,
-                senderId: testContext.userId,
-                senderType: 'user',
-                senderName: 'Concurrent Test User',
-                metadata: { concurrency, worker: i }
-              })
+                await testContext.messageStorage.storeMessage({
+                  sessionId,
+                  workspaceId: testContext.workspaceId,
+                  messageType: 'text',
+                  content: { text: `Concurrent test ${i}-${opIndex}` },
+                  rawContent: `Concurrent test ${i}-${opIndex}`,
+                  senderId: testContext.userId,
+                  senderType: 'user',
+                  senderName: 'Concurrent Test User',
+                  metadata: { concurrency, worker: i },
+                })
 
-              successCount++
-            } catch (error) {
-              errorCount++
-              console.warn(`Concurrent operation failed:`, error)
+                successCount++
+              } catch (error) {
+                errorCount++
+                console.warn(`Concurrent operation failed:`, error)
+              }
             }
-          })
+          )
 
           operations.push(...operationPromises)
         }
@@ -744,7 +766,7 @@ describe('Performance Testing and Optimization Validation', () => {
           averageResponseTime: averageTime,
           successRate,
           peakMemoryUsage: process.memoryUsage().heapUsed,
-          totalOperations: concurrency * operationsPerLevel
+          totalOperations: concurrency * operationsPerLevel,
         }
 
         testContext.metrics.concurrencyResults.push(result)
@@ -775,7 +797,11 @@ describe('Performance Testing and Optimization Validation', () => {
       const messages = Array.from({ length: messageCount }, (_, index) => ({
         sessionId,
         workspaceId: testContext.workspaceId,
-        messageType: (index % 3 === 0 ? 'text' : index % 3 === 1 ? 'tool_call' : 'tool_result') as any,
+        messageType: (index % 3 === 0
+          ? 'text'
+          : index % 3 === 1
+            ? 'tool_call'
+            : 'tool_result') as any,
         content: { text: `Query optimization test ${index + 1}` },
         rawContent: `Query optimization test ${index + 1}`,
         senderId: testContext.userId,
@@ -785,8 +811,8 @@ describe('Performance Testing and Optimization Validation', () => {
         metadata: {
           category: ['support', 'sales', 'technical'][index % 3],
           priority: index % 2 === 0 ? 'high' : 'normal',
-          tags: [`tag_${index % 5}`, `category_${index % 3}`]
-        }
+          tags: [`tag_${index % 5}`, `category_${index % 3}`],
+        },
       }))
 
       // Store in batches
@@ -800,43 +826,47 @@ describe('Performance Testing and Optimization Validation', () => {
       const queryTests = [
         {
           name: 'basic_pagination',
-          test: () => testContext.historyRetrieval.getSessionHistory({
-            sessionId,
-            workspaceId: testContext.workspaceId,
-            limit: 50,
-            offset: 100
-          })
+          test: () =>
+            testContext.historyRetrieval.getSessionHistory({
+              sessionId,
+              workspaceId: testContext.workspaceId,
+              limit: 50,
+              offset: 100,
+            }),
         },
         {
           name: 'filtered_by_type',
-          test: () => testContext.historyRetrieval.getSessionHistory({
-            sessionId,
-            workspaceId: testContext.workspaceId,
-            messageTypes: ['text'],
-            limit: 50
-          })
+          test: () =>
+            testContext.historyRetrieval.getSessionHistory({
+              sessionId,
+              workspaceId: testContext.workspaceId,
+              messageTypes: ['text'],
+              limit: 50,
+            }),
         },
         {
           name: 'search_query',
-          test: () => testContext.historyRetrieval.searchMessages({
-            workspaceId: testContext.workspaceId,
-            query: 'optimization test',
-            sessionIds: [sessionId],
-            limit: 25
-          })
+          test: () =>
+            testContext.historyRetrieval.searchMessages({
+              workspaceId: testContext.workspaceId,
+              query: 'optimization test',
+              sessionIds: [sessionId],
+              limit: 25,
+            }),
         },
         {
           name: 'date_range_filter',
-          test: () => testContext.historyRetrieval.searchMessages({
-            workspaceId: testContext.workspaceId,
-            query: 'test',
-            dateRange: {
-              start: new Date(Date.now() - 24 * 60 * 60 * 1000),
-              end: new Date()
-            },
-            limit: 30
-          })
-        }
+          test: () =>
+            testContext.historyRetrieval.searchMessages({
+              workspaceId: testContext.workspaceId,
+              query: 'test',
+              dateRange: {
+                start: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                end: new Date(),
+              },
+              limit: 30,
+            }),
+        },
       ]
 
       const queryResults: Record<string, { time: number; resultCount: number }> = {}
@@ -848,7 +878,7 @@ describe('Performance Testing and Optimization Validation', () => {
 
         queryResults[queryTest.name] = {
           time: queryTime,
-          resultCount: result.messages?.length || 0
+          resultCount: result.messages?.length || 0,
         }
 
         // Query performance assertions
@@ -859,7 +889,9 @@ describe('Performance Testing and Optimization Validation', () => {
       // Log query performance results
       console.log(`✅ Database query optimization test completed:`)
       Object.entries(queryResults).forEach(([queryName, result]) => {
-        console.log(`   • ${queryName}: ${result.time.toFixed(2)}ms (${result.resultCount} results)`)
+        console.log(
+          `   • ${queryName}: ${result.time.toFixed(2)}ms (${result.resultCount} results)`
+        )
       })
 
       // Test index effectiveness by measuring query plan performance
@@ -876,7 +908,8 @@ describe('Performance Testing and Optimization Validation', () => {
       // Execute multiple queries concurrently to test connection pooling
       for (let i = 0; i < testQueries; i++) {
         queryPromises.push(
-          db.select({ count: sql<number>`count(*)` })
+          db
+            .select({ count: sql<number>`count(*)` })
             .from(chatMessage)
             .where(eq(chatMessage.workspaceId, testContext.workspaceId))
         )
@@ -904,52 +937,57 @@ describe('Performance Testing and Optimization Validation', () => {
       const messagesPerConnection = 20
 
       // Simulate multiple WebSocket connections
-      const connectionPromises = Array.from({ length: mockSocketConnections }, async (_, connectionIndex) => {
-        const startTime = performance.now()
-        let messagesSent = 0
+      const connectionPromises = Array.from(
+        { length: mockSocketConnections },
+        async (_, connectionIndex) => {
+          const startTime = performance.now()
+          let messagesSent = 0
 
-        // Simulate sending messages through this connection
-        for (let msgIndex = 0; msgIndex < messagesPerConnection; msgIndex++) {
-          await testContext.messageStorage.storeMessage({
-            sessionId: uuidv4(),
-            workspaceId: testContext.workspaceId,
-            messageType: 'text',
-            content: {
-              text: `WebSocket message ${msgIndex + 1}`,
-              connectionId: connectionIndex
-            },
-            rawContent: `WebSocket message ${msgIndex + 1}`,
-            senderId: testContext.userId,
-            senderType: 'user',
-            senderName: `WebSocket User ${connectionIndex}`,
-            metadata: {
-              websocketTest: true,
-              connectionId: connectionIndex,
-              messageIndex: msgIndex
-            }
-          })
+          // Simulate sending messages through this connection
+          for (let msgIndex = 0; msgIndex < messagesPerConnection; msgIndex++) {
+            await testContext.messageStorage.storeMessage({
+              sessionId: uuidv4(),
+              workspaceId: testContext.workspaceId,
+              messageType: 'text',
+              content: {
+                text: `WebSocket message ${msgIndex + 1}`,
+                connectionId: connectionIndex,
+              },
+              rawContent: `WebSocket message ${msgIndex + 1}`,
+              senderId: testContext.userId,
+              senderType: 'user',
+              senderName: `WebSocket User ${connectionIndex}`,
+              metadata: {
+                websocketTest: true,
+                connectionId: connectionIndex,
+                messageIndex: msgIndex,
+              },
+            })
 
-          messagesSent++
+            messagesSent++
 
-          // Simulate realistic message timing
-          await new Promise(resolve => setTimeout(resolve, Math.random() * 100 + 50))
+            // Simulate realistic message timing
+            await new Promise((resolve) => setTimeout(resolve, Math.random() * 100 + 50))
+          }
+
+          const connectionTime = performance.now() - startTime
+          return {
+            connectionId: connectionIndex,
+            messagesSent,
+            totalTime: connectionTime,
+            messagesPerSecond: (messagesSent / connectionTime) * 1000,
+          }
         }
-
-        const connectionTime = performance.now() - startTime
-        return {
-          connectionId: connectionIndex,
-          messagesSent,
-          totalTime: connectionTime,
-          messagesPerSecond: (messagesSent / connectionTime) * 1000
-        }
-      })
+      )
 
       const connectionResults = await Promise.all(connectionPromises)
 
       // Calculate aggregate statistics
       const totalMessages = connectionResults.reduce((sum, result) => sum + result.messagesSent, 0)
-      const totalTime = Math.max(...connectionResults.map(r => r.totalTime))
-      const avgMessagesPerSecond = connectionResults.reduce((sum, result) => sum + result.messagesPerSecond, 0) / connectionResults.length
+      const totalTime = Math.max(...connectionResults.map((r) => r.totalTime))
+      const avgMessagesPerSecond =
+        connectionResults.reduce((sum, result) => sum + result.messagesPerSecond, 0) /
+        connectionResults.length
 
       // Performance assertions
       expect(totalMessages).toBe(mockSocketConnections * messagesPerConnection)
@@ -959,7 +997,9 @@ describe('Performance Testing and Optimization Validation', () => {
       console.log(`   • Concurrent connections: ${mockSocketConnections}`)
       console.log(`   • Messages per connection: ${messagesPerConnection}`)
       console.log(`   • Total messages: ${totalMessages}`)
-      console.log(`   • Average throughput per connection: ${avgMessagesPerSecond.toFixed(2)} msg/sec`)
+      console.log(
+        `   • Average throughput per connection: ${avgMessagesPerSecond.toFixed(2)} msg/sec`
+      )
       console.log(`   • Total test time: ${totalTime.toFixed(2)}ms`)
     })
   })
@@ -984,7 +1024,7 @@ describe('Performance Testing and Optimization Validation', () => {
           rawContent: `Baseline message ${i + 1}`,
           senderId: testContext.userId,
           senderType: 'user',
-          senderName: 'Baseline User'
+          senderName: 'Baseline User',
         })
       }
 
@@ -1003,7 +1043,7 @@ describe('Performance Testing and Optimization Validation', () => {
         senderId: testContext.userId,
         senderType: 'user' as const,
         senderName: 'Optimized User',
-        status: 'sent' as const
+        status: 'sent' as const,
       }))
 
       await testContext.messageStorage.batchStoreMessages(batchedMessages)
@@ -1017,7 +1057,7 @@ describe('Performance Testing and Optimization Validation', () => {
         beforeMetric: baselineTime,
         afterMetric: optimizedTime,
         improvementPercent,
-        testType: 'throughput'
+        testType: 'throughput',
       }
 
       testContext.metrics.optimizationResults.push(optimizationResult)
@@ -1052,9 +1092,9 @@ describe('Performance Testing and Optimization Validation', () => {
           chatState: {
             conversationId: uuidv4(),
             scrollPosition: Math.random() * 1000,
-            metadata: { optimizationTest: true }
+            metadata: { optimizationTest: true },
           },
-          expirationHours: 24
+          expirationHours: 24,
         })
 
         sessionTokens.push(sessionToken)
@@ -1101,10 +1141,13 @@ describe('Performance Testing and Optimization Validation', () => {
         message_storage_avg: 50, // milliseconds
         message_retrieval_avg: 100, // milliseconds
         search_avg: 250, // milliseconds
-        session_create_avg: 75 // milliseconds
+        session_create_avg: 75, // milliseconds
       }
 
-      const regressionResults: Record<string, { current: number; benchmark: number; regression: boolean }> = {}
+      const regressionResults: Record<
+        string,
+        { current: number; benchmark: number; regression: boolean }
+      > = {}
 
       // Test message storage performance
       const storageStartTime = performance.now()
@@ -1116,14 +1159,14 @@ describe('Performance Testing and Optimization Validation', () => {
         rawContent: 'Regression test message',
         senderId: testContext.userId,
         senderType: 'user',
-        senderName: 'Regression Test User'
+        senderName: 'Regression Test User',
       })
       const storageTime = performance.now() - storageStartTime
 
       regressionResults.message_storage_avg = {
         current: storageTime,
         benchmark: performanceBenchmarks.message_storage_avg,
-        regression: storageTime > performanceBenchmarks.message_storage_avg * 1.5 // 50% tolerance
+        regression: storageTime > performanceBenchmarks.message_storage_avg * 1.5, // 50% tolerance
       }
 
       // Test message retrieval performance
@@ -1131,14 +1174,14 @@ describe('Performance Testing and Optimization Validation', () => {
       await testContext.historyRetrieval.getSessionHistory({
         sessionId: uuidv4(),
         workspaceId: testContext.workspaceId,
-        limit: 10
+        limit: 10,
       })
       const retrievalTime = performance.now() - retrievalStartTime
 
       regressionResults.message_retrieval_avg = {
         current: retrievalTime,
         benchmark: performanceBenchmarks.message_retrieval_avg,
-        regression: retrievalTime > performanceBenchmarks.message_retrieval_avg * 1.5
+        regression: retrievalTime > performanceBenchmarks.message_retrieval_avg * 1.5,
       }
 
       // Check for regressions
@@ -1150,7 +1193,9 @@ describe('Performance Testing and Optimization Validation', () => {
       console.log(`✅ Performance regression test completed:`)
       Object.entries(regressionResults).forEach(([operation, result]) => {
         const status = result.regression ? '🔴 REGRESSION' : '✅ OK'
-        console.log(`   • ${operation}: ${result.current.toFixed(2)}ms vs ${result.benchmark}ms ${status}`)
+        console.log(
+          `   • ${operation}: ${result.current.toFixed(2)}ms vs ${result.benchmark}ms ${status}`
+        )
       })
 
       if (regressions.length > 0) {
@@ -1172,7 +1217,7 @@ describe('Performance Testing and Optimization Validation', () => {
       let operationCount = 0
       let errorCount = 0
       let maxResponseTime = 0
-      let minResponseTime = Infinity
+      let minResponseTime = Number.POSITIVE_INFINITY
       let totalResponseTime = 0
 
       const stabilityTest = setInterval(async () => {
@@ -1188,7 +1233,7 @@ describe('Performance Testing and Optimization Validation', () => {
             senderId: testContext.userId,
             senderType: 'user',
             senderName: 'Stability Test User',
-            metadata: { stabilityTest: true, operation: operationCount }
+            metadata: { stabilityTest: true, operation: operationCount },
           })
 
           const responseTime = performance.now() - operationStartTime
@@ -1204,7 +1249,7 @@ describe('Performance Testing and Optimization Validation', () => {
       }, operationInterval)
 
       // Wait for test duration
-      await new Promise(resolve => setTimeout(resolve, testDuration))
+      await new Promise((resolve) => setTimeout(resolve, testDuration))
       clearInterval(stabilityTest)
 
       const totalTestTime = performance.now() - startTime
@@ -1224,7 +1269,9 @@ describe('Performance Testing and Optimization Validation', () => {
       console.log(`   • Error count: ${errorCount}`)
       console.log(`   • Error rate: ${errorRate.toFixed(2)}%`)
       console.log(`   • Operations per second: ${operationsPerSecond.toFixed(2)}`)
-      console.log(`   • Response times: min=${minResponseTime.toFixed(2)}ms, avg=${averageResponseTime.toFixed(2)}ms, max=${maxResponseTime.toFixed(2)}ms`)
+      console.log(
+        `   • Response times: min=${minResponseTime.toFixed(2)}ms, avg=${averageResponseTime.toFixed(2)}ms, max=${maxResponseTime.toFixed(2)}ms`
+      )
     })
   })
 })

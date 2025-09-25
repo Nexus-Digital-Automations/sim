@@ -7,7 +7,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { quickHealthCheck } from '../../../../../../packages/parlant-server'
+import { quickHealthCheck } from '@sim/parlant-server'
 
 const logger = createLogger('HealthStatusAPI')
 

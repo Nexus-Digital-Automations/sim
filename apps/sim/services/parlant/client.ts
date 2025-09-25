@@ -463,3 +463,8 @@ export async function closeParlantClient(): Promise<void> {
     defaultClientInstance = null
   }
 }
+
+/**
+ * Default client instance for backwards compatibility
+ */
+export const parlantClient = getParlantClient()

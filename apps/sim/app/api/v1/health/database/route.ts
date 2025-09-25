@@ -7,8 +7,8 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { healthChecks } from '../../../../../../packages/parlant-server/health'
-import { monitoring } from '../../../../../../packages/parlant-server/monitoring'
+import { healthChecks } from '@sim/parlant-server/health'
+import { monitoring } from '@sim/parlant-server/monitoring'
 import { checkRateLimit, createRateLimitResponse } from '../../middleware'
 
 const logger = createLogger('DatabaseHealthAPI')

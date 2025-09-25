@@ -7,8 +7,8 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { integrationHealth } from '../../../../../../packages/parlant-server/integration-health'
-import { parlantLoggers } from '../../../../../../packages/parlant-server/logging'
+import { integrationHealth } from '@sim/parlant-server/integration-health'
+import { parlantLoggers } from '@sim/parlant-server/logging'
 import { checkRateLimit, createRateLimitResponse } from '../../middleware'
 
 const logger = createLogger('IntegrationHealthAPI')

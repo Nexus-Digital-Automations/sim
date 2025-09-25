@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Parlant Chat Widget Theme Integration */
-@import "../components/ui/chat/styles/sim-chat-theme.css";
-
 /* ==========================================================================
    WORKFLOW COMPONENT Z-INDEX FIXES
    ========================================================================== */

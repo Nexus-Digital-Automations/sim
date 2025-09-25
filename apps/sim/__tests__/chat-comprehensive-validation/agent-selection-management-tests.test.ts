@@ -19,17 +19,21 @@
  * 10. Real-time Agent Events and Communication
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest'
-import { render, fireEvent, waitFor, screen } from '@testing-library/react'
-import { renderHook, act } from '@testing-library/react'
-import { useAgentSelection } from '../../app/chat/hooks/use-agent-selection'
-import { AgentService, agentService } from '../../services/parlant/agent-service'
-import { AgentSessionManager, agentSessionManager } from '../../services/parlant/lifecycle/agent-session-manager'
 import { db } from '@packages/db'
-import { parlantAgent, parlantSession, workspace, user } from '@packages/db/schema'
-import { eq, and } from 'drizzle-orm'
+import { parlantAgent, parlantSession, user, workspace } from '@packages/db/schema'
+import { act, renderHook, waitFor } from '@testing-library/react'
+import { eq } from 'drizzle-orm'
 import { v4 as uuidv4 } from 'uuid'
-import type { Agent, AuthContext, AgentCreateRequest, AgentSessionContext } from '../../services/parlant/types'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { useAgentSelection } from '../../app/chat/hooks/use-agent-selection'
+import { type AgentService, agentService } from '../../services/parlant/agent-service'
+import { AgentSessionManager } from '../../services/parlant/lifecycle/agent-session-manager'
+import type {
+  Agent,
+  AgentCreateRequest,
+  AgentSessionContext,
+  AuthContext,
+} from '../../services/parlant/types'
 
 // Mock localStorage for browser environment simulation
 const localStorageMock = {
@@ -77,7 +81,7 @@ describe('Agent Selection and Management', () => {
       averageOperationTime: 0,
       concurrentAgentSessions: 0,
       memoryUsage: 0,
-      errorCount: 0
+      errorCount: 0,
     }
 
     console.log('🤖 Starting Agent Selection and Management Tests...')
@@ -96,7 +100,7 @@ describe('Agent Selection and Management', () => {
     const authContext: AuthContext = {
       user_id: userId,
       workspace_id: workspaceId,
-      permissions: ['agent:read', 'agent:create', 'agent:update', 'session:create']
+      permissions: ['agent:read', 'agent:create', 'agent:update', 'session:create'],
     }
 
     // Initialize services
@@ -104,17 +108,23 @@ describe('Agent Selection and Management', () => {
     const activeSessions = new Map<string, AgentSessionContext>()
 
     // Create test workspace and user
-    await db.insert(workspace).values({
-      id: workspaceId,
-      name: 'Agent Test Workspace',
-      slug: 'agent-test-workspace'
-    }).onConflictDoNothing()
+    await db
+      .insert(workspace)
+      .values({
+        id: workspaceId,
+        name: 'Agent Test Workspace',
+        slug: 'agent-test-workspace',
+      })
+      .onConflictDoNothing()
 
-    await db.insert(user).values({
-      id: userId,
-      email: 'agent-test@example.com',
-      name: 'Agent Test User'
-    }).onConflictDoNothing()
+    await db
+      .insert(user)
+      .values({
+        id: userId,
+        email: 'agent-test@example.com',
+        name: 'Agent Test User',
+      })
+      .onConflictDoNothing()
 
     // Create test agents with various configurations
     const testAgents: Agent[] = []
@@ -127,8 +137,8 @@ describe('Agent Selection and Management', () => {
           model: 'gpt-4',
           temperature: 0.7,
           maxTokens: 2000,
-          systemPrompt: 'You are a helpful customer support agent.'
-        }
+          systemPrompt: 'You are a helpful customer support agent.',
+        },
       },
       {
         name: 'Sales Assistant',
@@ -138,8 +148,8 @@ describe('Agent Selection and Management', () => {
           model: 'gpt-4',
           temperature: 0.8,
           maxTokens: 1500,
-          systemPrompt: 'You are a professional sales assistant.'
-        }
+          systemPrompt: 'You are a professional sales assistant.',
+        },
       },
       {
         name: 'Technical Support',
@@ -149,8 +159,8 @@ describe('Agent Selection and Management', () => {
           model: 'gpt-4-turbo',
           temperature: 0.5,
           maxTokens: 3000,
-          systemPrompt: 'You are a technical support specialist.'
-        }
+          systemPrompt: 'You are a technical support specialist.',
+        },
       },
       {
         name: 'Training Agent',
@@ -160,8 +170,8 @@ describe('Agent Selection and Management', () => {
           model: 'gpt-3.5-turbo',
           temperature: 0.6,
           maxTokens: 1000,
-          systemPrompt: 'You are learning to assist users.'
-        }
+          systemPrompt: 'You are learning to assist users.',
+        },
       },
       {
         name: 'Inactive Agent',
@@ -171,9 +181,9 @@ describe('Agent Selection and Management', () => {
           model: 'gpt-4',
           temperature: 0.7,
           maxTokens: 2000,
-          systemPrompt: 'Inactive agent for testing.'
-        }
-      }
+          systemPrompt: 'Inactive agent for testing.',
+        },
+      },
     ]
 
     // Insert test agents into database
@@ -181,19 +191,22 @@ describe('Agent Selection and Management', () => {
       const config = agentConfigs[i]
       const agentId = uuidv4()
 
-      await db.insert(parlantAgent).values({
-        id: agentId,
-        workspaceId,
-        createdBy: userId,
-        name: config.name,
-        description: config.description,
-        status: config.status,
-        systemPrompt: config.config.systemPrompt,
-        modelProvider: 'openai',
-        modelName: config.config.model,
-        temperature: Math.round(config.config.temperature * 100),
-        maxTokens: config.config.maxTokens
-      }).onConflictDoNothing()
+      await db
+        .insert(parlantAgent)
+        .values({
+          id: agentId,
+          workspaceId,
+          createdBy: userId,
+          name: config.name,
+          description: config.description,
+          status: config.status,
+          systemPrompt: config.config.systemPrompt,
+          modelProvider: 'openai',
+          modelName: config.config.model,
+          temperature: Math.round(config.config.temperature * 100),
+          maxTokens: config.config.maxTokens,
+        })
+        .onConflictDoNothing()
 
       const agent: Agent = {
         id: agentId,
@@ -204,7 +217,7 @@ describe('Agent Selection and Management', () => {
         created_by: userId,
         config: config.config,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       testAgents.push(agent)
@@ -217,10 +230,12 @@ describe('Agent Selection and Management', () => {
       testAgents,
       agentService,
       sessionManager,
-      activeSessions
+      activeSessions,
     }
 
-    console.log(`✅ Agent test environment initialized - Workspace: ${workspaceId}, Agents: ${testAgents.length}`)
+    console.log(
+      `✅ Agent test environment initialized - Workspace: ${workspaceId}, Agents: ${testAgents.length}`
+    )
   })
 
   afterEach(async () => {
@@ -240,9 +255,15 @@ describe('Agent Selection and Management', () => {
 
   afterAll(() => {
     // Calculate and log performance metrics
-    const avgListingTime = performanceMetrics.agentListingTime.reduce((a, b) => a + b, 0) / performanceMetrics.agentListingTime.length
-    const avgSelectionTime = performanceMetrics.agentSelectionTime.reduce((a, b) => a + b, 0) / performanceMetrics.agentSelectionTime.length
-    const avgSessionTime = performanceMetrics.sessionCreationTime.reduce((a, b) => a + b, 0) / performanceMetrics.sessionCreationTime.length
+    const avgListingTime =
+      performanceMetrics.agentListingTime.reduce((a, b) => a + b, 0) /
+      performanceMetrics.agentListingTime.length
+    const avgSelectionTime =
+      performanceMetrics.agentSelectionTime.reduce((a, b) => a + b, 0) /
+      performanceMetrics.agentSelectionTime.length
+    const avgSessionTime =
+      performanceMetrics.sessionCreationTime.reduce((a, b) => a + b, 0) /
+      performanceMetrics.sessionCreationTime.length
 
     console.log('📊 Agent Management Performance Metrics:')
     console.log(`   • Average Agent Listing Time: ${avgListingTime?.toFixed(2) || 0}ms`)
@@ -260,49 +281,55 @@ describe('Agent Selection and Management', () => {
       // Mock successful agent listing response
       const mockAgentListResponse = {
         success: true,
-        data: testContext.testAgents.filter(a => a.status === 'active'),
+        data: testContext.testAgents.filter((a) => a.status === 'active'),
         timestamp: new Date().toISOString(),
         pagination: {
-          total: testContext.testAgents.filter(a => a.status === 'active').length,
+          total: testContext.testAgents.filter((a) => a.status === 'active').length,
           limit: 20,
           offset: 0,
-          has_more: false
-        }
+          has_more: false,
+        },
       }
 
       // Mock the agent service call
       vi.spyOn(testContext.agentService, 'listAgents').mockResolvedValue(mockAgentListResponse)
 
       // Test agent listing
-      const result = await testContext.agentService.listAgents({
-        workspace_id: testContext.workspaceId,
-        status: 'active',
-        limit: 20,
-        offset: 0
-      }, testContext.authContext)
+      const result = await testContext.agentService.listAgents(
+        {
+          workspace_id: testContext.workspaceId,
+          status: 'active',
+          limit: 20,
+          offset: 0,
+        },
+        testContext.authContext
+      )
 
       expect(result.success).toBe(true)
       expect(result.data).toHaveLength(3) // Only active agents
-      expect(result.data.every(agent => agent.status === 'active')).toBe(true)
+      expect(result.data.every((agent) => agent.status === 'active')).toBe(true)
 
       // Verify workspace isolation
-      result.data.forEach(agent => {
+      result.data.forEach((agent) => {
         expect(agent.workspace_id).toBe(testContext.workspaceId)
       })
 
       const listingTime = Date.now() - startTime
       performanceMetrics.agentListingTime.push(listingTime)
 
-      console.log(`✅ Agent listing validated - Found ${result.data.length} active agents in ${listingTime}ms`)
+      console.log(
+        `✅ Agent listing validated - Found ${result.data.length} active agents in ${listingTime}ms`
+      )
     })
 
     it('should search agents by name and description', async () => {
       const startTime = Date.now()
 
       const searchQuery = 'support'
-      const expectedAgents = testContext.testAgents.filter(agent =>
-        agent.name.toLowerCase().includes(searchQuery) ||
-        agent.description?.toLowerCase().includes(searchQuery)
+      const expectedAgents = testContext.testAgents.filter(
+        (agent) =>
+          agent.name.toLowerCase().includes(searchQuery) ||
+          agent.description?.toLowerCase().includes(searchQuery)
       )
 
       // Mock search response
@@ -314,8 +341,8 @@ describe('Agent Selection and Management', () => {
           total: expectedAgents.length,
           limit: 10,
           offset: 0,
-          has_more: false
-        }
+          has_more: false,
+        },
       }
 
       vi.spyOn(testContext.agentService, 'searchAgents').mockResolvedValue(mockSearchResponse)
@@ -332,7 +359,7 @@ describe('Agent Selection and Management', () => {
       expect(searchResult.data.length).toBeGreaterThan(0)
 
       // Verify search results contain the query term
-      searchResult.data.forEach(agent => {
+      searchResult.data.forEach((agent) => {
         const matchesName = agent.name.toLowerCase().includes(searchQuery)
         const matchesDescription = agent.description?.toLowerCase().includes(searchQuery)
         expect(matchesName || matchesDescription).toBe(true)
@@ -341,7 +368,9 @@ describe('Agent Selection and Management', () => {
       const searchTime = Date.now() - startTime
       performanceMetrics.agentListingTime.push(searchTime)
 
-      console.log(`✅ Agent search validated - Found ${searchResult.data.length} results in ${searchTime}ms`)
+      console.log(
+        `✅ Agent search validated - Found ${searchResult.data.length} results in ${searchTime}ms`
+      )
     })
 
     it('should handle pagination for large agent lists', async () => {
@@ -359,17 +388,20 @@ describe('Agent Selection and Management', () => {
             total: testContext.testAgents.length,
             limit: pageSize,
             offset: currentPage * pageSize,
-            has_more: (currentPage + 1) * pageSize < testContext.testAgents.length
-          }
+            has_more: (currentPage + 1) * pageSize < testContext.testAgents.length,
+          },
         }
 
         vi.spyOn(testContext.agentService, 'listAgents').mockResolvedValue(mockPageResponse)
 
-        const pageResult = await testContext.agentService.listAgents({
-          workspace_id: testContext.workspaceId,
-          limit: pageSize,
-          offset: currentPage * pageSize
-        }, testContext.authContext)
+        const pageResult = await testContext.agentService.listAgents(
+          {
+            workspace_id: testContext.workspaceId,
+            limit: pageSize,
+            offset: currentPage * pageSize,
+          },
+          testContext.authContext
+        )
 
         expect(pageResult.success).toBe(true)
         totalAgents += pageResult.data.length
@@ -384,7 +416,9 @@ describe('Agent Selection and Management', () => {
 
       expect(totalAgents).toBe(testContext.testAgents.length)
 
-      console.log(`✅ Agent pagination validated - Processed ${totalAgents} agents across ${currentPage + 1} pages`)
+      console.log(
+        `✅ Agent pagination validated - Processed ${totalAgents} agents across ${currentPage + 1} pages`
+      )
     })
   })
 
@@ -396,11 +430,13 @@ describe('Agent Selection and Management', () => {
       localStorageMock.getItem.mockReturnValue(null) // No initial selection
       localStorageMock.setItem.mockImplementation(() => {})
 
-      const { result } = renderHook(() => useAgentSelection({
-        workspaceId: testContext.workspaceId,
-        persistToStorage: true,
-        maxRecentAgents: 5
-      }))
+      const { result } = renderHook(() =>
+        useAgentSelection({
+          workspaceId: testContext.workspaceId,
+          persistToStorage: true,
+          maxRecentAgents: 5,
+        })
+      )
 
       // Wait for initialization
       await waitFor(() => {
@@ -436,10 +472,12 @@ describe('Agent Selection and Management', () => {
     })
 
     it('should manage recent agents list with proper ordering', async () => {
-      const { result } = renderHook(() => useAgentSelection({
-        workspaceId: testContext.workspaceId,
-        maxRecentAgents: 3
-      }))
+      const { result } = renderHook(() =>
+        useAgentSelection({
+          workspaceId: testContext.workspaceId,
+          maxRecentAgents: 3,
+        })
+      )
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
@@ -454,7 +492,7 @@ describe('Agent Selection and Management', () => {
         })
 
         // Small delay to ensure different timestamps
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise((resolve) => setTimeout(resolve, 10))
       }
 
       // Verify recent agents list
@@ -467,15 +505,19 @@ describe('Agent Selection and Management', () => {
 
       // Verify current selection is not in recent list
       expect(result.current.selectedAgent).toBe(agentsToSelect[3])
-      expect(recentAgents.find(a => a.id === agentsToSelect[3].id)).toBeUndefined()
+      expect(recentAgents.find((a) => a.id === agentsToSelect[3].id)).toBeUndefined()
 
-      console.log(`✅ Recent agents management validated - Maintains ${recentAgents.length} recent agents`)
+      console.log(
+        `✅ Recent agents management validated - Maintains ${recentAgents.length} recent agents`
+      )
     })
 
     it('should handle favorite agents with toggle functionality', async () => {
-      const { result } = renderHook(() => useAgentSelection({
-        workspaceId: testContext.workspaceId
-      }))
+      const { result } = renderHook(() =>
+        useAgentSelection({
+          workspaceId: testContext.workspaceId,
+        })
+      )
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
@@ -533,10 +575,12 @@ describe('Agent Selection and Management', () => {
         return null
       })
 
-      const { result } = renderHook(() => useAgentSelection({
-        workspaceId: testContext.workspaceId,
-        persistToStorage: true
-      }))
+      const { result } = renderHook(() =>
+        useAgentSelection({
+          workspaceId: testContext.workspaceId,
+          persistToStorage: true,
+        })
+      )
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
@@ -569,8 +613,8 @@ describe('Agent Selection and Management', () => {
           enableResourceMonitoring: true,
           customMetadata: {
             testSession: true,
-            purpose: 'automated-testing'
-          }
+            purpose: 'automated-testing',
+          },
         }
       )
 
@@ -591,7 +635,9 @@ describe('Agent Selection and Management', () => {
         testContext.activeSessions.size
       )
 
-      console.log(`✅ Agent session created in ${sessionCreationTime}ms - Session: ${sessionContext.sessionId}`)
+      console.log(
+        `✅ Agent session created in ${sessionCreationTime}ms - Session: ${sessionContext.sessionId}`
+      )
     })
 
     it('should handle session state transitions correctly', async () => {
@@ -652,15 +698,15 @@ describe('Agent Selection and Management', () => {
           type: 'user_message',
           content: { text: 'Hello, I need help' },
           metadata: { tokensUsed: 15 },
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         {
           id: 'event2',
           type: 'agent_message',
           content: { text: 'How can I assist you today?' },
           metadata: { tokensUsed: 12 },
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       ]
 
       // Update session with activity
@@ -679,7 +725,9 @@ describe('Agent Selection and Management', () => {
       expect(updatedSession?.conversationHistory).toHaveLength(2)
       expect(updatedSession?.performanceMetrics.averageResponseTimeMs).toBeGreaterThan(0)
 
-      console.log(`✅ Session activity tracking validated - ${updatedSession?.resourceUsage.messagesProcessed} messages processed`)
+      console.log(
+        `✅ Session activity tracking validated - ${updatedSession?.resourceUsage.messagesProcessed} messages processed`
+      )
     })
   })
 
@@ -690,15 +738,11 @@ describe('Agent Selection and Management', () => {
       const sessions: AgentSessionContext[] = []
 
       // Create multiple concurrent sessions
-      const sessionPromises = concurrentAgents.map(agent =>
-        testContext.sessionManager.createAgentSession(
-          agent.id,
-          testContext.authContext,
-          {
-            enablePerformanceTracking: true,
-            customMetadata: { concurrent: true, agentName: agent.name }
-          }
-        )
+      const sessionPromises = concurrentAgents.map((agent) =>
+        testContext.sessionManager.createAgentSession(agent.id, testContext.authContext, {
+          enablePerformanceTracking: true,
+          customMetadata: { concurrent: true, agentName: agent.name },
+        })
       )
 
       const createdSessions = await Promise.all(sessionPromises)
@@ -706,7 +750,7 @@ describe('Agent Selection and Management', () => {
 
       // Verify all sessions created successfully
       expect(sessions).toHaveLength(3)
-      sessions.forEach(session => {
+      sessions.forEach((session) => {
         expect(session.state).toBe('active')
         expect(session.metadata.concurrent).toBe(true)
       })
@@ -718,7 +762,7 @@ describe('Agent Selection and Management', () => {
           type: 'user_message',
           content: { text: `Message to ${session.metadata.agentName}` },
           metadata: { tokensUsed: 10 },
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         }
 
         await testContext.sessionManager.updateSessionActivity(
@@ -731,7 +775,7 @@ describe('Agent Selection and Management', () => {
       await Promise.all(activityPromises)
 
       // Verify concurrent activity
-      sessions.forEach(session => {
+      sessions.forEach((session) => {
         const updatedSession = testContext.sessionManager.getAgentSession(session.sessionId)
         expect(updatedSession?.resourceUsage.messagesProcessed).toBe(1)
       })
@@ -750,7 +794,9 @@ describe('Agent Selection and Management', () => {
         sessions.length
       )
 
-      console.log(`✅ Multi-agent coordination validated - ${sessions.length} concurrent sessions in ${concurrencyTime}ms`)
+      console.log(
+        `✅ Multi-agent coordination validated - ${sessions.length} concurrent sessions in ${concurrencyTime}ms`
+      )
     })
 
     it('should support agent switching within a conversation', async () => {
@@ -771,7 +817,7 @@ describe('Agent Selection and Management', () => {
         type: 'user_message',
         content: { text: 'I need technical support' },
         metadata: {},
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       // Switch to technical support agent
@@ -781,8 +827,8 @@ describe('Agent Selection and Management', () => {
         {
           customMetadata: {
             previousSession: session1.sessionId,
-            switchReason: 'escalation_to_technical'
-          }
+            switchReason: 'escalation_to_technical',
+          },
         }
       )
 
@@ -798,7 +844,7 @@ describe('Agent Selection and Management', () => {
         type: 'user_message',
         content: { text: 'Continuing from previous conversation' },
         metadata: { continuedFrom: session1.sessionId },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       // Verify agent switch
@@ -822,9 +868,9 @@ describe('Agent Selection and Management', () => {
             agent.id,
             testContext.authContext,
             {
-              maxMemoryMB: 100 + (i * 50),
+              maxMemoryMB: 100 + i * 50,
               enableResourceMonitoring: true,
-              customMetadata: { resourceTier: i + 1 }
+              customMetadata: { resourceTier: i + 1 },
             }
           )
           sessions.push(session)
@@ -838,7 +884,9 @@ describe('Agent Selection and Management', () => {
       expect(analytics.activeSessions).toBeGreaterThan(0)
       expect(analytics.resourceUtilization.activeSessionsCount).toBeGreaterThan(0)
 
-      console.log(`✅ Resource coordination validated - ${analytics.activeSessions} active sessions`)
+      console.log(
+        `✅ Resource coordination validated - ${analytics.activeSessions} active sessions`
+      )
       console.log(`   • Resource utilization: ${JSON.stringify(analytics.resourceUtilization)}`)
     })
   })
@@ -853,15 +901,15 @@ describe('Agent Selection and Management', () => {
           model: 'gpt-4-turbo',
           temperature: 0.9,
           maxTokens: 4000,
-          systemPrompt: 'You are a specialized test agent with advanced capabilities.'
+          systemPrompt: 'You are a specialized test agent with advanced capabilities.',
         },
         guidelines: [
           {
             condition: 'When user asks about testing',
             action: 'Provide comprehensive testing guidance',
-            priority: 100
-          }
-        ]
+            priority: 100,
+          },
+        ],
       }
 
       // Mock successful creation
@@ -871,16 +919,19 @@ describe('Agent Selection and Management', () => {
         status: 'active',
         created_by: testContext.userId,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       vi.spyOn(testContext.agentService, 'createAgent').mockResolvedValue({
         success: true,
         data: mockCreatedAgent,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
-      const result = await testContext.agentService.createAgent(createRequest, testContext.authContext)
+      const result = await testContext.agentService.createAgent(
+        createRequest,
+        testContext.authContext
+      )
 
       expect(result.success).toBe(true)
       expect(result.data.name).toBe(createRequest.name)
@@ -898,21 +949,21 @@ describe('Agent Selection and Management', () => {
         config: {
           ...agentToUpdate.config,
           temperature: 0.8,
-          maxTokens: 2500
-        }
+          maxTokens: 2500,
+        },
       }
 
       // Mock successful update
       const mockUpdatedAgent: Agent = {
         ...agentToUpdate,
         ...updates,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       vi.spyOn(testContext.agentService, 'updateAgent').mockResolvedValue({
         success: true,
         data: mockUpdatedAgent,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       const result = await testContext.agentService.updateAgent(
@@ -941,19 +992,19 @@ describe('Agent Selection and Management', () => {
         name: newName,
         description: `Copy of ${sourceAgent.description}`,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       vi.spyOn(testContext.agentService, 'getAgent').mockResolvedValue({
         success: true,
         data: sourceAgent,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       vi.spyOn(testContext.agentService, 'createAgent').mockResolvedValue({
         success: true,
         data: mockDuplicatedAgent,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       const result = await testContext.agentService.duplicateAgent(
@@ -967,7 +1018,9 @@ describe('Agent Selection and Management', () => {
       expect(result.data.description).toContain('Copy of')
       expect(result.data.id).not.toBe(sourceAgent.id)
 
-      console.log(`✅ Agent duplication validated - Original: ${sourceAgent.name}, Copy: ${result.data.name}`)
+      console.log(
+        `✅ Agent duplication validated - Original: ${sourceAgent.name}, Copy: ${result.data.name}`
+      )
     })
   })
 
@@ -981,7 +1034,7 @@ describe('Agent Selection and Management', () => {
         {
           enablePerformanceTracking: true,
           enableResourceMonitoring: true,
-          maxMemoryMB: 200
+          maxMemoryMB: 200,
         }
       )
 
@@ -992,7 +1045,7 @@ describe('Agent Selection and Management', () => {
         type: 'user_message',
         content: { text: `Performance test message ${index + 1}` },
         metadata: { tokensUsed: Math.floor(Math.random() * 50) + 10 },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }))
 
       const startTime = Date.now()
@@ -1020,9 +1073,15 @@ describe('Agent Selection and Management', () => {
       expect(analytics.totalMessagesProcessed).toBeGreaterThan(0)
       expect(analytics.averageResponseTime).toBeGreaterThan(0)
 
-      console.log(`✅ Performance monitoring validated - ${eventCount} events processed in ${processingTime}ms`)
-      console.log(`   • Average response time: ${updatedSession?.performanceMetrics.averageResponseTimeMs.toFixed(2)}ms`)
-      console.log(`   • Success rate: ${(updatedSession?.performanceMetrics.successRate * 100).toFixed(1)}%`)
+      console.log(
+        `✅ Performance monitoring validated - ${eventCount} events processed in ${processingTime}ms`
+      )
+      console.log(
+        `   • Average response time: ${updatedSession?.performanceMetrics.averageResponseTimeMs.toFixed(2)}ms`
+      )
+      console.log(
+        `   • Success rate: ${(updatedSession?.performanceMetrics.successRate * 100).toFixed(1)}%`
+      )
     })
 
     it('should handle memory and resource limits', async () => {
@@ -1035,7 +1094,7 @@ describe('Agent Selection and Management', () => {
         {
           maxMemoryMB: 50, // Very low limit for testing
           enableResourceMonitoring: true,
-          idleTimeoutMs: 5000 // Short timeout
+          idleTimeoutMs: 5000, // Short timeout
         }
       )
 
@@ -1052,7 +1111,7 @@ describe('Agent Selection and Management', () => {
         type: 'user_message',
         content: { text: 'A'.repeat(1000) }, // Large content
         metadata: { tokensUsed: 100 },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }))
 
       for (const event of largeEvents) {
@@ -1076,9 +1135,12 @@ describe('Agent Selection and Management', () => {
       )
 
       try {
-        await testContext.agentService.listAgents({
-          workspace_id: testContext.workspaceId
-        }, testContext.authContext)
+        await testContext.agentService.listAgents(
+          {
+            workspace_id: testContext.workspaceId,
+          },
+          testContext.authContext
+        )
 
         // Should not reach here
         expect(false).toBe(true)
@@ -1101,10 +1163,7 @@ describe('Agent Selection and Management', () => {
       })
 
       try {
-        await testContext.sessionManager.createAgentSession(
-          agentToUse.id,
-          testContext.authContext
-        )
+        await testContext.sessionManager.createAgentSession(agentToUse.id, testContext.authContext)
 
         expect(false).toBe(true) // Should not reach here
       } catch (error) {
@@ -1129,9 +1188,11 @@ describe('Agent Selection and Management', () => {
     })
 
     it('should handle invalid agent selection gracefully', async () => {
-      const { result } = renderHook(() => useAgentSelection({
-        workspaceId: testContext.workspaceId
-      }))
+      const { result } = renderHook(() =>
+        useAgentSelection({
+          workspaceId: testContext.workspaceId,
+        })
+      )
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
@@ -1145,7 +1206,7 @@ describe('Agent Selection and Management', () => {
         workspace_id: testContext.workspaceId,
         created_by: testContext.userId,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       // Selection should still work (hook doesn't validate against backend)
@@ -1164,9 +1225,9 @@ describe('Agent Selection and Management', () => {
       const otherWorkspaceId = uuidv4()
 
       // Mock response with wrong workspace agents
-      const wrongWorkspaceAgents = testContext.testAgents.map(agent => ({
+      const wrongWorkspaceAgents = testContext.testAgents.map((agent) => ({
         ...agent,
-        workspace_id: otherWorkspaceId
+        workspace_id: otherWorkspaceId,
       }))
 
       vi.spyOn(testContext.agentService, 'listAgents').mockResolvedValue({
@@ -1177,17 +1238,20 @@ describe('Agent Selection and Management', () => {
           total: wrongWorkspaceAgents.length,
           limit: 20,
           offset: 0,
-          has_more: false
-        }
+          has_more: false,
+        },
       })
 
-      const result = await testContext.agentService.listAgents({
-        workspace_id: otherWorkspaceId // Different workspace
-      }, testContext.authContext)
+      const result = await testContext.agentService.listAgents(
+        {
+          workspace_id: otherWorkspaceId, // Different workspace
+        },
+        testContext.authContext
+      )
 
       // Should return agents from the queried workspace only
       expect(result.success).toBe(true)
-      result.data.forEach(agent => {
+      result.data.forEach((agent) => {
         expect(agent.workspace_id).toBe(otherWorkspaceId)
         expect(agent.workspace_id).not.toBe(testContext.workspaceId)
       })
@@ -1198,7 +1262,7 @@ describe('Agent Selection and Management', () => {
     it('should validate user permissions for agent operations', async () => {
       const restrictedAuth: AuthContext = {
         ...testContext.authContext,
-        permissions: ['agent:read'] // Only read permissions
+        permissions: ['agent:read'], // Only read permissions
       }
 
       const agentToUpdate = testContext.testAgents[0]
@@ -1249,7 +1313,7 @@ describe('Agent Selection and Management', () => {
                 type: 'user_message',
                 content: { text: `Analytics test message ${j}` },
                 metadata: { tokensUsed: 20 },
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
               },
               Math.random() * 1000 + 200
             )
@@ -1273,10 +1337,12 @@ describe('Agent Selection and Management', () => {
     })
 
     it('should track agent usage patterns and preferences', async () => {
-      const { result } = renderHook(() => useAgentSelection({
-        workspaceId: testContext.workspaceId,
-        maxRecentAgents: 5
-      }))
+      const { result } = renderHook(() =>
+        useAgentSelection({
+          workspaceId: testContext.workspaceId,
+          maxRecentAgents: 5,
+        })
+      )
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
@@ -1303,7 +1369,7 @@ describe('Agent Selection and Management', () => {
           })
         }
 
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise((resolve) => setTimeout(resolve, 10))
       }
 
       // Analyze usage statistics
@@ -1327,30 +1393,35 @@ describe('Agent Selection and Management', () => {
       // Step 1: User browses available agents
       const browseMock = {
         success: true,
-        data: testContext.testAgents.filter(a => a.status === 'active'),
+        data: testContext.testAgents.filter((a) => a.status === 'active'),
         timestamp: new Date().toISOString(),
-        pagination: { total: 3, limit: 20, offset: 0, has_more: false }
+        pagination: { total: 3, limit: 20, offset: 0, has_more: false },
       }
 
       vi.spyOn(testContext.agentService, 'listAgents').mockResolvedValue(browseMock)
 
-      const availableAgents = await testContext.agentService.listAgents({
-        workspace_id: testContext.workspaceId,
-        status: 'active'
-      }, testContext.authContext)
+      const availableAgents = await testContext.agentService.listAgents(
+        {
+          workspace_id: testContext.workspaceId,
+          status: 'active',
+        },
+        testContext.authContext
+      )
 
       expect(availableAgents.data.length).toBeGreaterThan(0)
 
       // Step 2: User selects an agent for customer support
-      const { result: selectionResult } = renderHook(() => useAgentSelection({
-        workspaceId: testContext.workspaceId
-      }))
+      const { result: selectionResult } = renderHook(() =>
+        useAgentSelection({
+          workspaceId: testContext.workspaceId,
+        })
+      )
 
       await waitFor(() => {
         expect(selectionResult.current.isLoading).toBe(false)
       })
 
-      const selectedAgent = availableAgents.data.find(a => a.name.includes('Customer Support'))!
+      const selectedAgent = availableAgents.data.find((a) => a.name.includes('Customer Support'))!
 
       act(() => {
         selectionResult.current.selectAgent(selectedAgent)
@@ -1372,7 +1443,7 @@ describe('Agent Selection and Management', () => {
         'Hello, I need help with my order',
         'Can you check the status of order #12345?',
         'I want to return an item',
-        'Thank you for your help!'
+        'Thank you for your help!',
       ]
 
       for (let i = 0; i < conversationFlow.length; i++) {
@@ -1385,17 +1456,17 @@ describe('Agent Selection and Management', () => {
             type: 'user_message',
             content: { text: userMessage },
             metadata: { tokensUsed: userMessage.length / 4 },
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           },
           Math.random() * 800 + 300
         )
 
         // Add small delay to simulate realistic conversation pace
-        await new Promise(resolve => setTimeout(resolve, 50))
+        await new Promise((resolve) => setTimeout(resolve, 50))
       }
 
       // Step 5: User decides to escalate to technical support
-      const technicalAgent = availableAgents.data.find(a => a.name.includes('Technical'))!
+      const technicalAgent = availableAgents.data.find((a) => a.name.includes('Technical'))!
 
       act(() => {
         selectionResult.current.selectAgent(technicalAgent)
@@ -1408,22 +1479,19 @@ describe('Agent Selection and Management', () => {
         {
           customMetadata: {
             escalatedFrom: session.sessionId,
-            escalationReason: 'technical_issue'
-          }
+            escalationReason: 'technical_issue',
+          },
         }
       )
 
       // Step 6: Continue conversation with technical agent
-      await testContext.sessionManager.updateSessionActivity(
-        technicalSession.sessionId,
-        {
-          id: 'escalation-msg',
-          type: 'user_message',
-          content: { text: 'I have a technical issue that needs expert help' },
-          metadata: { escalated: true, previousSession: session.sessionId },
-          timestamp: new Date().toISOString()
-        }
-      )
+      await testContext.sessionManager.updateSessionActivity(technicalSession.sessionId, {
+        id: 'escalation-msg',
+        type: 'user_message',
+        content: { text: 'I have a technical issue that needs expert help' },
+        metadata: { escalated: true, previousSession: session.sessionId },
+        timestamp: new Date().toISOString(),
+      })
 
       // Step 7: Mark customer support agent as favorite
       act(() => {
@@ -1432,7 +1500,10 @@ describe('Agent Selection and Management', () => {
 
       // Step 8: End sessions
       await testContext.sessionManager.endAgentSession(session.sessionId, testContext.authContext)
-      await testContext.sessionManager.endAgentSession(technicalSession.sessionId, testContext.authContext)
+      await testContext.sessionManager.endAgentSession(
+        technicalSession.sessionId,
+        testContext.authContext
+      )
 
       // Verify complete workflow
       expect(selectionResult.current.selectedAgent).toBe(technicalAgent)

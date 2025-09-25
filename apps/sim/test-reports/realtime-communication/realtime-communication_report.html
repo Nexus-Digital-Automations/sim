@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Report - WebSocket Real-time Communication Testing</title>
+    <style>
+        
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="report-header">
+            <h1>🧪 Test Execution Report</h1>
+            <div class="suite-info">
+                <h2>WebSocket Real-time Communication Testing</h2>
+                <p>Comprehensive validation of Socket.io messaging, connection handling, and network resilience</p>
+                <div class="meta-info">
+                    <span>🕐 Started: 9/24/2025, 12:23:08 PM</span>
+                    <span>⏱️ Duration: 26.2s</span>
+                    <span>📊 Tests: 7</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="summary-section">
+            <h3>📈 Executive Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-card success">
+                    <h4>✅ Passed</h4>
+                    <div class="metric">6</div>
+                    <div class="percentage">85.7%</div>
+                </div>
+                <div class="summary-card failure">
+                    <h4>❌ Failed</h4>
+                    <div class="metric">1</div>
+                    <div class="percentage">14.3%</div>
+                </div>
+                <div class="summary-card error">
+                    <h4>🚫 Errors</h4>
+                    <div class="metric">0</div>
+                    <div class="percentage">0.0%</div>
+                </div>
+                <div class="summary-card skipped">
+                    <h4>⏭️ Skipped</h4>
+                    <div class="metric">0</div>
+                    <div class="percentage">0.0%</div>
+                </div>
+            </div>
+
+            <div class="performance-summary">
+                <h4>🚀 Performance Metrics</h4>
+                <div class="performance-grid">
+                    <div class="perf-metric">
+                        <span>Average Duration</span>
+                        <strong>813ms</strong>
+                    </div>
+                    <div class="perf-metric">
+                        <span>Success Rate</span>
+                        <strong>85.7%</strong>
+                    </div>
+                    <div class="perf-metric">
+                        <span>Performance Score</span>
+                        <strong>94.5</strong>
+                    </div>
+                    <div class="perf-metric">
+                        <span>Coverage</span>
+                        <strong>0.0%</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="charts-section">
+            <h3>📊 Visual Analytics</h3>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <canvas id="resultsChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="detailed-results">
+            <h3>🔍 Detailed Test Results</h3>
+            <div class="results-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Test Name</th>
+                            <th>Status</th>
+                            <th>Duration</th>
+                            <th>Accuracy</th>
+                            <th>Performance</th>
+                            <th>Issues</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                            <tr class="result-row passed">
+                                <td>
+                                    <div class="test-name">WebSocket Connection Establishment</div>
+                                    <div class="test-meta">Complexity: simple</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge passed">
+                                        ✅ PASSED
+                                    </span>
+                                </td>
+                                <td>27ms</td>
+                                <td>NaN%</td>
+                                <td>100.0</td>
+                                <td>
+                                    
+                                    
+                                </td>
+                            </tr>
+                        
+                            <tr class="result-row passed">
+                                <td>
+                                    <div class="test-name">WebSocket Concurrent Connections</div>
+                                    <div class="test-meta">Complexity: complex</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge passed">
+                                        ✅ PASSED
+                                    </span>
+                                </td>
+                                <td>100ms</td>
+                                <td>NaN%</td>
+                                <td>100.0</td>
+                                <td>
+                                    
+                                    
+                                </td>
+                            </tr>
+                        
+                            <tr class="result-row passed">
+                                <td>
+                                    <div class="test-name">WebSocket Connection Authentication</div>
+                                    <div class="test-meta">Complexity: medium</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge passed">
+                                        ✅ PASSED
+                                    </span>
+                                </td>
+                                <td>10ms</td>
+                                <td>NaN%</td>
+                                <td>100.0</td>
+                                <td>
+                                    
+                                    
+                                </td>
+                            </tr>
+                        
+                            <tr class="result-row failed">
+                                <td>
+                                    <div class="test-name">Message Queuing During Disconnection</div>
+                                    <div class="test-meta">Complexity: complex</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge failed">
+                                        ❌ FAILED
+                                    </span>
+                                </td>
+                                <td>212ms</td>
+                                <td>NaN%</td>
+                                <td>100.0</td>
+                                <td>
+                                    
+                                    
+                                </td>
+                            </tr>
+                        
+                            <tr class="result-row passed">
+                                <td>
+                                    <div class="test-name">Network Interruption Handling</div>
+                                    <div class="test-meta">Complexity: complex</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge passed">
+                                        ✅ PASSED
+                                    </span>
+                                </td>
+                                <td>2.1s</td>
+                                <td>NaN%</td>
+                                <td>95.0</td>
+                                <td>
+                                    
+                                    
+                                </td>
+                            </tr>
+                        
+                            <tr class="result-row passed">
+                                <td>
+                                    <div class="test-name">Exponential Backoff Reconnection</div>
+                                    <div class="test-meta">Complexity: complex</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge passed">
+                                        ✅ PASSED
+                                    </span>
+                                </td>
+                                <td>3.0s</td>
+                                <td>NaN%</td>
+                                <td>66.4</td>
+                                <td>
+                                    
+                                    
+                                </td>
+                            </tr>
+                        
+                            <tr class="result-row passed">
+                                <td>
+                                    <div class="test-name">Server Overload Handling</div>
+                                    <div class="test-meta">Complexity: extreme</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge passed">
+                                        ✅ PASSED
+                                    </span>
+                                </td>
+                                <td>227ms</td>
+                                <td>NaN%</td>
+                                <td>100.0</td>
+                                <td>
+                                    
+                                    
+                                </td>
+                            </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        
+        
+
+        <footer class="report-footer">
+            <p>Generated on 9/24/2025, 12:23:34 PM by Workflow-Journey Testing Framework</p>
+        </footer>
+    </div>
+
+    <script>
+        
+    </script>
+</body>
+</html>

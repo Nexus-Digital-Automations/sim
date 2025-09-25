@@ -8,8 +8,8 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { db } from '../../../../../../packages/db'
-import { parlantLoggers } from '../../../../../../packages/parlant-server/logging'
+import { db } from '@sim/db'
+import { parlantLoggers } from '@sim/parlant-server/logging'
 import { checkRateLimit, createRateLimitResponse } from '../../middleware'
 
 const logger = createLogger('AuthHealthAPI')

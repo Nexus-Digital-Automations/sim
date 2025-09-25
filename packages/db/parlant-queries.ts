@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, in as inOp, isNull, lte, or, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray as inOp, isNull, lte, or, sql } from 'drizzle-orm'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import {
   parlantAgent,

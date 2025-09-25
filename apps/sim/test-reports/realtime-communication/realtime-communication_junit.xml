@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+    <testsuite
+        name="WebSocket Real-time Communication Testing"
+        tests="7"
+        failures="1"
+        errors="0"
+        skipped="0"
+        time="26.183"
+        timestamp="2025-09-24T17:23:08.248Z"
+    >
+        
+        <testcase
+            name="WebSocket Connection Establishment"
+            classname="WorkflowJourneyTest"
+            time="0.027"
+        >
+            
+            
+            
+        </testcase>
+        
+        <testcase
+            name="WebSocket Concurrent Connections"
+            classname="WorkflowJourneyTest"
+            time="0.100"
+        >
+            
+            
+            
+        </testcase>
+        
+        <testcase
+            name="WebSocket Connection Authentication"
+            classname="WorkflowJourneyTest"
+            time="0.010"
+        >
+            
+            
+            
+        </testcase>
+        
+        <testcase
+            name="Message Queuing During Disconnection"
+            classname="WorkflowJourneyTest"
+            time="0.212"
+        >
+            
+            <failure message="Test failed">
+                
+            </failure>
+            
+            
+            
+        </testcase>
+        
+        <testcase
+            name="Network Interruption Handling"
+            classname="WorkflowJourneyTest"
+            time="2.105"
+        >
+            
+            
+            
+        </testcase>
+        
+        <testcase
+            name="Exponential Backoff Reconnection"
+            classname="WorkflowJourneyTest"
+            time="3.010"
+        >
+            
+            
+            
+        </testcase>
+        
+        <testcase
+            name="Server Overload Handling"
+            classname="WorkflowJourneyTest"
+            time="0.227"
+        >
+            
+            
+            
+        </testcase>
+        
+    </testsuite>
+</testsuites>

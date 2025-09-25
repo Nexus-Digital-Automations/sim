@@ -5,16 +5,15 @@
  * with comprehensive state preservation validation.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  DualModeExecutionArchitecture,
   dualModeArchitecture,
-  initializeDualMode,
-  switchWorkflowMode,
   getWorkflowExecutionMode,
-  isDualModeSupported
+  initializeDualMode,
+  isDualModeSupported,
+  switchWorkflowMode,
 } from '@/lib/workflow-journey-mapping/dual-mode-architecture'
-import type { WorkflowState, BlockState } from '@/stores/workflows/workflow/types'
+import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
 
 // Mock logger to prevent console spam during tests
 vi.mock('@/lib/logs/console/logger', () => ({
@@ -22,8 +21,8 @@ vi.mock('@/lib/logs/console/logger', () => ({
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
-    debug: vi.fn()
-  }))
+    debug: vi.fn(),
+  })),
 }))
 
 // Mock block registry
@@ -33,8 +32,8 @@ vi.mock('@/blocks', () => ({
     name: `Mock ${type} block`,
     description: `Mock block for ${type}`,
     icon: 'test-icon',
-    category: 'test'
-  }))
+    category: 'test',
+  })),
 }))
 
 describe('Hybrid Mode Switching Framework', () => {
@@ -55,7 +54,7 @@ describe('Hybrid Mode Switching Framework', () => {
           name: 'Start Block',
           position: { x: 100, y: 100 },
           enabled: true,
-          config: { message: 'Starting workflow' }
+          config: { message: 'Starting workflow' },
         } as BlockState,
         'block-2': {
           id: 'block-2',
@@ -63,7 +62,7 @@ describe('Hybrid Mode Switching Framework', () => {
           name: 'Decision Block',
           position: { x: 300, y: 100 },
           enabled: true,
-          config: { condition: 'user.age > 18' }
+          config: { condition: 'user.age > 18' },
         } as BlockState,
         'block-3': {
           id: 'block-3',
@@ -71,8 +70,8 @@ describe('Hybrid Mode Switching Framework', () => {
           name: 'API Call',
           position: { x: 500, y: 100 },
           enabled: true,
-          config: { url: 'https://api.example.com', method: 'POST' }
-        } as BlockState
+          config: { url: 'https://api.example.com', method: 'POST' },
+        } as BlockState,
       },
       edges: [
         {
@@ -81,7 +80,7 @@ describe('Hybrid Mode Switching Framework', () => {
           target: 'block-2',
           sourceHandle: 'output',
           targetHandle: 'input',
-          type: 'default'
+          type: 'default',
         },
         {
           id: 'edge-2',
@@ -89,11 +88,11 @@ describe('Hybrid Mode Switching Framework', () => {
           target: 'block-3',
           sourceHandle: 'true',
           targetHandle: 'input',
-          type: 'default'
-        }
+          type: 'default',
+        },
       ],
       viewport: { x: 0, y: 0, zoom: 1 },
-      isExecuting: false
+      isExecuting: false,
     }
   })
 
@@ -183,8 +182,9 @@ describe('Hybrid Mode Switching Framework', () => {
 
     it('should reject invalid mode switches', async () => {
       // Try to switch mode without initialization
-      await expect(switchWorkflowMode('non-existent-workflow', 'journey'))
-        .rejects.toThrow('No dual-mode context found')
+      await expect(switchWorkflowMode('non-existent-workflow', 'journey')).rejects.toThrow(
+        'No dual-mode context found'
+      )
     })
 
     it('should handle mode switch failures gracefully', async () => {
@@ -197,8 +197,7 @@ describe('Hybrid Mode Switching Framework', () => {
       )
 
       // Attempt mode switch - should fail gracefully
-      await expect(switchWorkflowMode(testWorkflowId, 'journey'))
-        .rejects.toThrow()
+      await expect(switchWorkflowMode(testWorkflowId, 'journey')).rejects.toThrow()
 
       // Restore original method
       dualModeArchitecture.synchronizeStates = originalSync
@@ -226,7 +225,7 @@ describe('Hybrid Mode Switching Framework', () => {
       const originalConfigs = Object.fromEntries(
         Object.entries(context.reactFlowState.blocks).map(([id, block]) => [
           id,
-          { ...block.config }
+          { ...block.config },
         ])
       )
 
@@ -243,7 +242,7 @@ describe('Hybrid Mode Switching Framework', () => {
 
     it('should preserve edge connections during mode switches', async () => {
       const context = await initializeDualMode(testWorkflowId, mockWorkflowState)
-      const originalEdges = context.reactFlowState.edges.map(edge => ({ ...edge }))
+      const originalEdges = context.reactFlowState.edges.map((edge) => ({ ...edge }))
 
       // Switch modes
       await switchWorkflowMode(testWorkflowId, 'journey')
@@ -319,7 +318,7 @@ describe('Hybrid Mode Switching Framework', () => {
       const switches = [
         switchWorkflowMode(testWorkflowId, 'journey'),
         switchWorkflowMode(testWorkflowId, 'reactflow'),
-        switchWorkflowMode(testWorkflowId, 'journey')
+        switchWorkflowMode(testWorkflowId, 'journey'),
       ]
 
       // Should handle gracefully without corruption
@@ -356,7 +355,7 @@ describe('Hybrid Mode Switching Framework', () => {
   describe('Error Handling and Recovery', () => {
     it('should recover from journey mode initialization failures', async () => {
       // Mock journey state initialization failure
-      const originalInitJourney = dualModeArchitecture['initializeJourneyState']
+      const originalInitJourney = dualModeArchitecture.initializeJourneyState
       vi.spyOn(dualModeArchitecture as any, 'initializeJourneyState').mockRejectedValue(
         new Error('Journey init failed')
       )
@@ -367,6 +366,7 @@ describe('Hybrid Mode Switching Framework', () => {
       expect(context.journeyState).toBeUndefined()
 
       // Restore original method
+
       ;(dualModeArchitecture as any).initializeJourneyState = originalInitJourney
     })
 
@@ -374,9 +374,7 @@ describe('Hybrid Mode Switching Framework', () => {
       await initializeDualMode(testWorkflowId, mockWorkflowState)
 
       // Mock synchronization failure
-      vi.spyOn(dualModeArchitecture, 'synchronizeStates').mockRejectedValue(
-        new Error('Sync error')
-      )
+      vi.spyOn(dualModeArchitecture, 'synchronizeStates').mockRejectedValue(new Error('Sync error'))
 
       // Mode switch should fail but not corrupt system
       await expect(switchWorkflowMode(testWorkflowId, 'journey')).rejects.toThrow()
@@ -391,7 +389,7 @@ describe('Hybrid Mode Switching Framework', () => {
       // Create incompatible workflow state
       const incompatibleWorkflow = {
         ...mockWorkflowState,
-        blocks: {} // Empty blocks should be incompatible
+        blocks: {}, // Empty blocks should be incompatible
       }
 
       // Should handle gracefully

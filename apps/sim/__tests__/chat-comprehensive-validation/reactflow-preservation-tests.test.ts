@@ -15,16 +15,15 @@
  * - Collaborative Features
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ReactFlowProvider } from 'reactflow'
+import type { ReactFlowProvider } from 'reactflow'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createLogger } from '@/lib/logs/console/logger'
 import { WorkflowPreservationAPI } from '@/lib/workflow-preservation'
 import type { WorkflowState } from '@/stores/workflows/workflow/types'
-
 // Mock data and utilities
-import { createMockWorkflow, createMockReactFlowInstance } from '../utils/test-data-generator'
+import { createMockReactFlowInstance, createMockWorkflow } from '../utils/test-data-generator'
 
 const logger = createLogger('ReactFlowPreservationTests')
 
