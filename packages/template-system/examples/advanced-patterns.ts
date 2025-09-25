@@ -274,7 +274,7 @@ async function demonstrateTemplateMixins() {
         conditionalVisibility: {
           operator: 'eq',
           operands: [
-            { type: 'parameter', parameterId: 'collectSatisfaction' },
+            { type: 'parameter', parameterId: 'collectSatisfaction', value: true },
             { type: 'constant', value: true },
           ],
         },
@@ -338,9 +338,11 @@ async function demonstrateTemplateMixins() {
               {
                 type: 'parameter',
                 parameterId: 'enableEscalation',
+                value: true,
               },
               {
                 type: 'computed',
+                value: null,
                 computationRule: {
                   type: 'javascript',
                   expression: 'currentTime - startTime > escalationThreshold * 60000',
@@ -420,12 +422,14 @@ async function demonstrateConditionalLogic() {
     operands: [
       {
         type: 'expression',
+        value: null,
         expression: {
           operator: 'and',
           operands: [
             {
               type: 'parameter',
               parameterId: 'priority',
+              value: 'critical',
             },
             {
               type: 'constant',
@@ -436,12 +440,14 @@ async function demonstrateConditionalLogic() {
       },
       {
         type: 'expression',
+        value: null,
         expression: {
           operator: 'and',
           operands: [
             {
               type: 'parameter',
               parameterId: 'customerTier',
+              value: 'enterprise',
             },
             {
               type: 'constant',
@@ -450,6 +456,7 @@ async function demonstrateConditionalLogic() {
             {
               type: 'parameter',
               parameterId: 'issueImpact',
+              value: 'high',
             },
             {
               type: 'constant',
@@ -466,6 +473,7 @@ async function demonstrateConditionalLogic() {
     operands: [
       {
         type: 'computed',
+        value: null,
         computationRule: {
           type: 'javascript',
           expression: 'new Date().getHours() >= 17 || new Date().getHours() < 9',
@@ -477,6 +485,7 @@ async function demonstrateConditionalLogic() {
       {
         type: 'parameter',
         parameterId: 'requiresImmediateAttention',
+        value: true,
       },
     ],
   }
@@ -811,25 +820,6 @@ async function demonstrateCustomValidation() {
         description: 'Complex configuration object',
         required: true,
         validation: {
-          properties: {
-            timeout: { type: 'number', minimum: 1000, maximum: 300000 },
-            retries: { type: 'integer', minimum: 0, maximum: 5 },
-            endpoints: {
-              type: 'array',
-              items: { type: 'string', format: 'uri' },
-              minItems: 1,
-              maxItems: 10,
-            },
-            features: {
-              type: 'object',
-              properties: {
-                caching: { type: 'boolean' },
-                compression: { type: 'boolean' },
-                encryption: { type: 'boolean' },
-              },
-              required: ['caching'],
-            },
-          },
           required: ['timeout', 'endpoints'],
           additionalProperties: false,
         },

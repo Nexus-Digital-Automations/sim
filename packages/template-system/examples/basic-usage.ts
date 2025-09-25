@@ -42,8 +42,18 @@ async function basicJourneyGeneration() {
         optimizationTargets: ['performance', 'user_experience'],
         maxStates: 20,
         maxTransitions: 40,
+        allowSkipping: true,
+        allowRevisiting: false,
+        generateDescriptions: true,
+        generateHelpTexts: true,
+        includeTooltips: true,
         validateGeneration: true,
+        runTestConversations: false,
         useCache: true,
+        cacheStrategy: 'conservative',
+        outputFormat: 'parlant',
+        includeMetadata: true,
+        includeAnalytics: true,
       },
       context: {
         agentCapabilities: [
@@ -200,11 +210,6 @@ async function createCustomTemplate() {
           description: 'Customer information object',
           required: true,
           validation: {
-            properties: {
-              name: { type: 'string', minLength: 1 },
-              email: { type: 'string', format: 'email' },
-              tier: { type: 'string', enum: ['basic', 'premium', 'enterprise'] },
-            },
             required: ['name', 'email'],
           },
           displayOrder: 4,
@@ -220,6 +225,7 @@ async function createCustomTemplate() {
           type: 'boolean',
           description: 'Enable automatic resolution for simple issues',
           required: false,
+          validation: {},
           displayOrder: 5,
           defaultValue: true,
         },
@@ -274,10 +280,10 @@ async function createCustomTemplate() {
                   },
                 },
                 caching: {
-                  enabled: true,
-                  duration: 300,
                   scope: 'session',
-                  keys: ['priority', 'ticketId'],
+                  duration: 300,
+                  invalidationRules: [],
+                  compressionEnabled: false,
                 },
               },
             ],
@@ -293,14 +299,14 @@ async function createCustomTemplate() {
                 {
                   operator: 'eq',
                   operands: [
-                    { type: 'parameter', parameterId: 'priority' },
+                    { type: 'parameter', parameterId: 'priority', value: 'critical' },
                     { type: 'constant', value: 'critical' },
                   ],
                 },
                 {
                   operator: 'eq',
                   operands: [
-                    { type: 'parameter', parameterId: 'category' },
+                    { type: 'parameter', parameterId: 'category', value: 'billing' },
                     { type: 'constant', value: 'billing' },
                   ],
                 },
@@ -328,7 +334,7 @@ async function createCustomTemplate() {
             conditionalConnection: {
               operator: 'eq',
               operands: [
-                { type: 'parameter', parameterId: 'enableAutoResolve' },
+                { type: 'parameter', parameterId: 'enableAutoResolve', value: true },
                 { type: 'constant', value: true },
               ],
             },
@@ -357,7 +363,7 @@ async function createCustomTemplate() {
             condition: {
               operator: 'eq',
               operands: [
-                { type: 'parameter', parameterId: 'priority' },
+                { type: 'parameter', parameterId: 'priority', value: 'critical' },
                 { type: 'constant', value: 'critical' },
               ],
             },
