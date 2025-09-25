@@ -122,7 +122,7 @@ export class ValidationSchemas {
   /**
    * Create schema for workspace-scoped resources
    */
-  static workspaceResource(resourceSchema: z.ZodSchema<any>): z.ZodSchema<any> {
+  static workspaceResource(resourceSchema: z.ZodObject<any>): z.ZodSchema<any> {
     return z.object({
       workspaceId: ValidationSchemas.workspaceId,
       ...resourceSchema.shape,
@@ -304,7 +304,8 @@ export class ValidationEngine {
 
       return { data: validatedData!, errors }
     } catch (error) {
-      logger.error('Input validation failed', { error: error.message })
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      logger.error('Input validation failed', { error: errorMessage })
       throw new ValidationError('Input validation failed', errors)
     }
   }
@@ -365,10 +366,11 @@ export class ValidationEngine {
           })
         }
       } catch (error) {
-        logger.error(`Business rule evaluation failed: ${rule.name}`, { error: error.message })
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        logger.error(`Business rule evaluation failed: ${rule.name}`, { error: errorMessage })
         errors.push({
           field: rule.field || 'business_rule',
-          message: `Business rule error: ${error.message}`,
+          message: `Business rule error: ${errorMessage}`,
           code: 'business_rule_error',
         })
       }
@@ -404,7 +406,7 @@ export class ValidationEngine {
       case 'rate_limit':
         return BusinessRuleValidators.validateRateLimit(
           context.userId,
-          context.toolName || 'unknown',
+          'unknown', // Tool name not available in ParlantExecutionContext
           context
         )
 
@@ -456,10 +458,11 @@ export class ValidationEngine {
           })
         }
       } catch (error) {
-        logger.error(`Custom validator failed: ${name}`, { error: error.message })
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        logger.error(`Custom validator failed: ${name}`, { error: errorMessage })
         errors.push({
           field: 'custom_validation',
-          message: `Custom validator error: ${error.message}`,
+          message: `Custom validator error: ${errorMessage}`,
           code: 'custom_validator_error',
         })
       }
@@ -481,12 +484,13 @@ export class ValidationEngine {
     try {
       conditionMet = await this.evaluateCondition(conditionalValidation.condition, data, context)
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       return {
         valid: false,
         errors: [
           {
             field: 'conditional',
-            message: `Condition evaluation failed: ${error.message}`,
+            message: `Condition evaluation failed: ${errorMessage}`,
             code: 'condition_error',
           },
         ],
@@ -513,12 +517,13 @@ export class ValidationEngine {
         }
       }
 
+      const errorMessage = error instanceof Error ? error.message : String(error)
       return {
         valid: false,
         errors: [
           {
             field: 'conditional',
-            message: error.message,
+            message: errorMessage,
             code: 'validation_error',
           },
         ],
@@ -609,9 +614,10 @@ export class ValidationEngine {
           })),
         }
       }
+      const errorMessage = error instanceof Error ? error.message : String(error)
       return {
         success: false,
-        errors: [{ field: 'unknown', message: error.message, code: 'unknown' }],
+        errors: [{ field: 'unknown', message: errorMessage, code: 'unknown' }],
       }
     }
   }

@@ -1749,9 +1749,10 @@ class PlatformEventEmitter {
         try {
           await handler(data)
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error)
           this.logger.error('Event handler error', {
             eventType,
-            error: error.message,
+            error: errorMessage,
           })
         }
       })

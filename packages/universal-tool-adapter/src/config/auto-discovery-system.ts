@@ -12,7 +12,7 @@ import EventEmitter from 'events'
 import { type FSWatcher, watch } from 'fs'
 import { readdir, readFile, stat } from 'fs/promises'
 import { basename, extname, join } from 'path'
-import type { BlockCategory, BlockConfig } from '@/blocks/types'
+import type { BlockCategory, BlockConfig } from '../types/blocks-types'
 import type { EnhancedAdapterFramework } from '../core/enhanced-adapter-framework'
 import type { EnhancedAdapterRegistry } from '../registry/enhanced-adapter-registry'
 import type { AdapterConfiguration } from '../types/adapter-interfaces'
@@ -110,8 +110,9 @@ export class AutoDiscoverySystem extends EventEmitter {
 
       logger.info('Auto discovery system started successfully')
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.error('Failed to initialize auto discovery system', {
-        error: error.message,
+        error: errorMessage,
       })
       throw error
     }
@@ -152,7 +153,8 @@ export class AutoDiscoverySystem extends EventEmitter {
 
       return result
     } catch (error) {
-      logger.error('Full discovery failed', { error: error.message })
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      logger.error('Full discovery failed', { error: errorMessage })
       this.emit('discovery:error', error)
       throw error
     } finally {
@@ -194,7 +196,8 @@ export class AutoDiscoverySystem extends EventEmitter {
 
       return result
     } catch (error) {
-      logger.error('Incremental discovery failed', { error: error.message })
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      logger.error('Incremental discovery failed', { error: errorMessage })
       throw error
     } finally {
       this.isDiscovering = false
@@ -222,13 +225,14 @@ export class AutoDiscoverySystem extends EventEmitter {
         const files = await this.discoverFiles(scanPath)
         allFiles.push(...files)
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
         logger.warn('Failed to scan path', {
           path: scanPath,
-          error: error.message,
+          error: errorMessage,
         })
         result.errors.push({
           type: 'path_scan_error',
-          message: `Failed to scan ${scanPath}: ${error.message}`,
+          message: `Failed to scan ${scanPath}: ${errorMessage}`,
           path: scanPath,
         })
       }
@@ -261,7 +265,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     try {
       await this.scanDirectory(scanPath, files)
     } catch (error) {
-      if (error.code !== 'ENOENT') {
+      if (error && typeof error === 'object' && 'code' in error && error.code !== 'ENOENT') {
         throw error
       }
       logger.debug('Scan path does not exist', { path: scanPath })
@@ -298,9 +302,10 @@ export class AutoDiscoverySystem extends EventEmitter {
         }
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.warn('Failed to read directory', {
         path: dirPath,
-        error: error.message,
+        error: errorMessage,
       })
     }
   }
@@ -329,9 +334,10 @@ export class AutoDiscoverySystem extends EventEmitter {
         try {
           return await this.processFile(filePath)
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error)
           logger.debug('Failed to process file', {
             path: filePath,
-            error: error.message,
+            error: errorMessage,
           })
           return null
         }
@@ -354,9 +360,10 @@ export class AutoDiscoverySystem extends EventEmitter {
               await this.registerBlockConfig(blockResult)
               result.registeredAdapters++
             } catch (error) {
+              const errorMessage = error instanceof Error ? error.message : String(error)
               result.errors.push({
                 type: 'registration_error',
-                message: `Failed to register ${blockResult.blockConfig.type}: ${error.message}`,
+                message: `Failed to register ${blockResult.blockConfig.type}: ${errorMessage}`,
                 path: filePath,
                 blockType: blockResult.blockConfig.type,
               })
@@ -412,9 +419,10 @@ export class AutoDiscoverySystem extends EventEmitter {
 
       return entry
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.debug('Error processing file', {
         path: filePath,
-        error: error.message,
+        error: errorMessage,
       })
       throw error
     }
@@ -487,17 +495,19 @@ export class AutoDiscoverySystem extends EventEmitter {
         }
       } catch (importError) {
         // If dynamic import fails, use static analysis
+        const errorMessage = importError instanceof Error ? importError.message : String(importError)
         logger.debug('Dynamic import failed, using static analysis', {
           path: filePath,
-          error: importError.message,
+          error: errorMessage,
         })
 
         return this.parseBlockConfigStatic(content, blockName)
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.debug('Failed to extract BlockConfig from TS/JS file', {
         path: filePath,
-        error: error.message,
+        error: errorMessage,
       })
     }
 
@@ -515,7 +525,8 @@ export class AutoDiscoverySystem extends EventEmitter {
         return parsed as BlockConfig
       }
     } catch (error) {
-      logger.debug('Failed to parse JSON BlockConfig', { error: error.message })
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      logger.debug('Failed to parse JSON BlockConfig', { error: errorMessage })
     }
 
     return null
@@ -548,7 +559,8 @@ export class AutoDiscoverySystem extends EventEmitter {
       // This would need to be much more sophisticated in a real implementation
       return this.createMinimalBlockConfig(blockName, content)
     } catch (error) {
-      logger.debug('Static parsing failed', { error: error.message })
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      logger.debug('Static parsing failed', { error: errorMessage })
       return null
     }
   }
@@ -650,9 +662,10 @@ export class AutoDiscoverySystem extends EventEmitter {
         category: entry.blockConfig.category,
       })
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.error('Failed to register BlockConfig adapter', {
         type: entry.blockConfig.type,
-        error: error.message,
+        error: errorMessage,
       })
       throw error
     }
@@ -709,9 +722,10 @@ export class AutoDiscoverySystem extends EventEmitter {
 
         logger.debug('Set up file watching', { path: scanPath })
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
         logger.warn('Failed to setup file watching', {
           path: scanPath,
-          error: error.message,
+          error: errorMessage,
         })
       }
     }
@@ -826,9 +840,10 @@ export class AutoDiscoverySystem extends EventEmitter {
       }
       return false
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.error('Failed to rediscover file', {
         path: filePath,
-        error: error.message,
+        error: errorMessage,
       })
       return false
     }
@@ -846,9 +861,10 @@ export class AutoDiscoverySystem extends EventEmitter {
         watcher.close()
         logger.debug('Closed file watcher', { path })
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
         logger.warn('Error closing file watcher', {
           path,
-          error: error.message,
+          error: errorMessage,
         })
       }
     }
@@ -973,9 +989,10 @@ export async function extractBlockConfigFromFile(filePath: string): Promise<Bloc
     const content = await readFile(filePath, 'utf-8')
     return await (discovery as any).extractBlockConfig(filePath, content)
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
     logger.error('Failed to extract BlockConfig from file', {
       path: filePath,
-      error: error.message,
+      error: errorMessage,
     })
     return null
   }

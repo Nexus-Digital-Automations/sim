@@ -10,7 +10,7 @@
  */
 
 import { z } from 'zod'
-import type { SubBlockConfig } from '@/blocks/types'
+import type { SubBlockConfig } from '../types/blocks-types'
 import type {
   BusinessRule,
   ContextualValue,
@@ -29,7 +29,7 @@ const logger = createLogger('EnhancedValidationEngine')
 export class EnhancedValidationEngine {
   // Validation caches for performance
   private readonly schemaCache = new Map<string, z.ZodSchema<any>>()
-  private readonly validationCache = new Map<string, ValidationResult>()
+  private readonly validationCache = new Map<string, CachedValidationResult>()
   private readonly businessRuleCache = new Map<string, boolean>()
 
   // Type conversion registry
@@ -111,9 +111,10 @@ export class EnhancedValidationEngine {
 
       return result
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.error('Parameter validation failed', {
         validationId,
-        error: error.message,
+        error: errorMessage,
         duration: Date.now() - startTime,
       })
 
@@ -122,14 +123,14 @@ export class EnhancedValidationEngine {
         errors: [
           {
             field: 'validation_system',
-            message: `Validation system error: ${error.message}`,
+            message: `Validation system error: ${errorMessage}`,
             code: 'VALIDATION_SYSTEM_ERROR',
           },
         ],
         transformedParameters: parameters,
         metadata: {
           validationId,
-          error: error.message,
+          error: errorMessage,
         },
       }
     }
@@ -192,9 +193,10 @@ export class EnhancedValidationEngine {
         },
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.error('Single parameter validation failed', {
         parameter: parameterName,
-        error: error.message,
+        error: errorMessage,
       })
 
       return {
@@ -203,14 +205,14 @@ export class EnhancedValidationEngine {
         errors: [
           {
             field: parameterName,
-            message: error.message,
+            message: errorMessage,
             code: 'PARAMETER_VALIDATION_ERROR',
           },
         ],
         transformations: [],
         metadata: {
           originalValue: value,
-          error: error.message,
+          error: errorMessage,
         },
       }
     }
@@ -432,9 +434,10 @@ export class EnhancedValidationEngine {
             })
           }
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error)
           errors.push({
             field: parameterName,
-            message: `Custom validation error: ${error.message}`,
+            message: `Custom validation error: ${errorMessage}`,
             code: 'CUSTOM_VALIDATION_ERROR',
           })
         }
@@ -492,14 +495,15 @@ export class EnhancedValidationEngine {
             })
           }
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error)
           logger.warn('Business rule evaluation failed', {
             rule: rule.name,
-            error: error.message,
+            error: errorMessage,
           })
 
           errors.push({
             field: mapping.parlantParameter,
-            message: `Business rule evaluation failed: ${error.message}`,
+            message: `Business rule evaluation failed: ${errorMessage}`,
             code: 'BUSINESS_RULE_ERROR',
           })
         }
@@ -642,9 +646,10 @@ export class EnhancedValidationEngine {
           return value
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.warn('Transformation failed', {
         type: transformation.type,
-        error: error.message,
+        error: errorMessage,
       })
       throw error
     }
@@ -664,12 +669,13 @@ export class EnhancedValidationEngine {
     try {
       return await converter(value, parameterName)
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.warn('Type conversion failed', {
         targetType,
         parameter: parameterName,
-        error: error.message,
+        error: errorMessage,
       })
-      throw new Error(`Type conversion failed for ${parameterName}: ${error.message}`)
+      throw new Error(`Type conversion failed for ${parameterName}: ${errorMessage}`)
     }
   }
 
@@ -699,7 +705,7 @@ export class EnhancedValidationEngine {
         if (subBlock.options) {
           const options =
             typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
-          const enumValues = options.map((opt) => opt.id) as [string, ...string[]]
+          const enumValues = options.map((opt: { id: string }) => opt.id) as [string, ...string[]]
           return z.enum(enumValues)
         }
         return z.string()
@@ -896,7 +902,8 @@ export class EnhancedValidationEngine {
         return JSON.parse(value)
       } catch (error) {
         if (config.validateJson) {
-          throw new Error(`Invalid JSON: ${error.message}`)
+          const errorMessage = error instanceof Error ? error.message : String(error)
+          throw new Error(`Invalid JSON: ${errorMessage}`)
         }
         return value
       }
@@ -971,10 +978,12 @@ export class EnhancedValidationEngine {
   }
 
   private cacheValidationResult(id: string, result: ValidationResult): void {
-    if (this.validationCache.size >= this.config.maxCacheSize) {
+    if (this.validationCache.size >= (this.config.maxCacheSize ?? 1000)) {
       // Simple LRU: remove oldest entry
       const firstKey = this.validationCache.keys().next().value
-      this.validationCache.delete(firstKey)
+      if (firstKey) {
+        this.validationCache.delete(firstKey)
+      }
     }
 
     this.validationCache.set(id, {
@@ -984,7 +993,7 @@ export class EnhancedValidationEngine {
   }
 
   private isCacheExpired(timestamp: number): boolean {
-    return Date.now() - timestamp > this.config.cacheTimeout
+    return Date.now() - timestamp > (this.config.cacheTimeout ?? 300000)
   }
 
   private calculateCacheHitRate(): number {
@@ -1101,15 +1110,4 @@ interface CachedValidationResult {
 type TypeConverter = (value: any, parameterName: string) => Promise<any>
 type CustomValidator = (value: any, parameterName: string) => Promise<boolean>
 
-// Extend ValidationResult interface
-declare module '../types/adapter-interfaces' {
-  interface ValidationResult {
-    transformedParameters?: Record<string, any>
-    metadata?: Record<string, any>
-    timestamp?: number
-  }
-
-  interface ParameterMapping {
-    targetType?: string
-  }
-}
+// Type definitions have been moved to ../types/adapter-interfaces.ts
