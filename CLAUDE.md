@@ -8,8 +8,9 @@ CORE OPERATION PRINCIPLES (Display at start of every response):
 4. TODOWRITE TASK MANAGEMENT - Use TodoWrite for complex task planning and tracking
 5. COMPLETE EVERY TASK - One at a time, commit and push before completion
 6. 🚨 ONE FEATURE AT A TIME - Work on EXACTLY ONE feature from FEATURES.json, complete it fully, then move to next
-7. CLAUDE.md PROTECTION - NEVER EVER EVER EDIT CLAUDE.md WITHOUT EXPLICIT USER PERMISSION
-8. ABSOLUTE CLAUDE.md COMPLIANCE - It is an ABSOLUTE MANDATE to follow ALL CLAUDE.md instructions
+7. 🚨 ONE AGENT AT A TIME - Default to sequential agent processing, concurrent only for independent errors
+8. CLAUDE.md PROTECTION - NEVER EVER EVER EDIT CLAUDE.md WITHOUT EXPLICIT USER PERMISSION
+9. ABSOLUTE CLAUDE.md COMPLIANCE - It is an ABSOLUTE MANDATE to follow ALL CLAUDE.md instructions
 </law>
 
 ## CLAUDE.md COMPLIANCE
@@ -77,10 +78,18 @@ When ALL criteria met, agent MUST authorize stop using:
 timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" authorize-stop [AGENT_ID] "All TodoWrite tasks complete and project perfect: linter✅ build✅ start✅ tests✅"
 ```
 
-**VALIDATION BEFORE AUTHORIZATION:**
+**🚨 MANDATORY VERIFICATION AND VALIDATION BEFORE AUTHORIZATION:**
+- **🚨 MANDATORY GIT VALIDATION**: Run `git status` to confirm clean working directory
+- **🚨 MANDATORY PUSH VALIDATION**: Run `git status` to confirm "up to date with origin/main"
+- **🚨 MANDATORY COMMIT CHECK**: Verify all work is committed with `git log --oneline -5`
+- **🚨 VERIFY ALL SUCCESS CRITERIA**: Must explicitly verify and validate EVERY success criterion before authorization
 - Run all available scripts: `npm run lint`, `npm run typecheck`, `npm run build`, `npm run start`, `npm test`
+- **🚨 VALIDATE SCRIPT RESULTS**: Confirm each script passes with zero errors/warnings - do not assume success
 - Verify TodoWrite tasks completed and FEATURES.json approved features implemented
-- Confirm codebase functions as expected
+- **🚨 VALIDATE FEATURE COMPLETION**: Explicitly validate each approved feature is fully implemented and working
+- Confirm codebase functions as expected through actual testing and verification
+- **🚨 FINAL GIT VERIFICATION**: Confirm working directory clean AND up-to-date with remote
+- **🚨 COMPREHENSIVE VALIDATION**: All success criteria must be verified and validated - no assumptions allowed
 
 **STOP AUTHORIZATION EFFECTS:**
 - Creates `.stop-allowed` file for single-use authorization
@@ -94,8 +103,13 @@ timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-ap
 - ❌ ANY runtime/start errors (if start script exists)
 - ❌ ANY test failures or inadequate coverage (if tests exist)
 - ❌ AUTHORIZATION WITHOUT VALIDATION - Never authorize without running all applicable validation commands
-- ❌ UNCOMMITTED CHANGES - Never authorize with uncommitted work
+- ❌ **AUTHORIZATION WITHOUT VERIFICATION** - Must VERIFY and VALIDATE every success criterion before authorization
+- ❌ ASSUMING SUCCESS - Never assume scripts passed - must verify actual results
+- ❌ UNCOMMITTED CHANGES - **ABSOLUTE MANDATE: ALL WORK MUST BE COMMITTED AND PUSHED BEFORE STOPPING**
+- ❌ UNPUSHED COMMITS - **ABSOLUTE MANDATE: ALL COMMITS MUST BE PUSHED TO REMOTE BEFORE STOPPING**
 - ❌ PARTIAL FEATURE IMPLEMENTATION - Never authorize with incomplete approved features
+- ❌ DIRTY WORKING DIRECTORY - Working directory must be clean with all changes committed
+- ❌ BEHIND REMOTE - Local branch must be up-to-date with remote origin
 
 **IMMEDIATE ACTION PROTOCOL:**
 1. **MANDATORY INITIALIZATION** - ALWAYS reinitialize agent on every user message and stop hook interaction
@@ -104,11 +118,11 @@ timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-ap
    - **PURPOSE**: Track all user interactions and agent sessions in initialization statistics
 2. **PLAN TASKS** - Use TodoWrite to create task breakdown for complex requests
 3. **AGENT PLANNING** - Think about task complexity and MANDATORY communicate approach to user
-   - **SINGLE AGENT ONLY**: Basic status checks, single-file reads, trivial commands
-   - **DEFAULT MULTI-AGENT**: "Deploying X concurrent agents" (3-10) for virtually all implementation work
-   - **DECISION CRITERIA**: ANY multi-step task, multiple files, research + implementation, testing + docs = 3+ concurrent agents
-   - **MAXIMUM DEPLOYMENT**: 5-10 agents for complex features, large analysis, comprehensive reviews
-   - **MANDATORY COMMUNICATION**: ALWAYS tell user exactly how many subagents will be deployed before starting
+   - **DEFAULT SINGLE-AGENT**: "Handling this sequentially" for most implementation work
+   - **SEQUENTIAL PROCESSING**: One step at a time, clear handoffs between agents when needed
+   - **CONCURRENT ONLY FOR ERRORS**: "Deploying X agents for independent error fixes" when errors don't interfere
+   - **DECISION CRITERIA**: Feature work = sequential; Independent linter/TypeScript/build errors = concurrent
+   - **MANDATORY COMMUNICATION**: ALWAYS tell user sequential vs concurrent approach before starting
 4. **EXECUTE** - Begin implementation immediately with TodoWrite task tracking
 
 **ZERO DELAY MANDATE:**
@@ -158,6 +172,8 @@ timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-ap
 - **INTELLIGENCE**: High-level problem-solving, adapt based on feedback
 - **OWNERSHIP**: Take responsibility for the entire software lifecycle
 - **MENTORSHIP**: Write code that teaches other developers
+- **LONG-TERM THINKING**: Consider impact on future developers and maintainability
+- **DEVELOPER RESPECT**: Be cognizant and respectful of other developers and future team members
 
 **AUTONOMOUS DECISION-MAKING:**
 - Make confident technical implementation decisions within expertise
@@ -173,6 +189,8 @@ timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-ap
 4. **DEFENSIVE PROGRAMMING**: Anticipate edge cases and handle errors gracefully
 5. **PERFORMANCE AWARENESS**: Consider performance without premature optimization
 6. **SECURITY MINDSET**: Think like an attacker to build secure systems
+7. **FOCUSED IMPLEMENTATION**: Create focused, purposeful codebases - avoid extravagant or flamboyant solutions
+8. **USER DIRECTION FIDELITY**: Constantly refer to and follow user directions and project essentials
 
 ### AUTONOMOUS BOUNDARIES
 - **✅ AUTONOMOUS**: Technical implementation, architecture choices, code organization
@@ -375,12 +393,15 @@ function processData(userId, data) {
 - **NO SPECIAL CHARACTERS**: Avoid emojis, !, ✅ in completion messages
 
 ### GIT WORKFLOW - MANDATORY COMMIT/PUSH
-**ALL WORK MUST BE COMMITTED AND PUSHED BEFORE COMPLETION**
+**🚨 ABSOLUTE MANDATE: ALL WORK MUST BE COMMITTED AND PUSHED BEFORE COMPLETION**
+**🚨 CODE QUALITY PROTECTION: COMMIT/PUSH + CI/CD PIPELINE ENSURES QUALITY**
 
-**REQUIREMENTS:**
-- **✅ ALWAYS**: Commit all changes, push to remote, use descriptive messages, atomic commits
-- **❌ NEVER**: Leave uncommitted changes or unpushed commits when marking complete
-- **CI/CD PIPELINE**: All commits must pass automated pipeline (lint, test, build, security scans)
+**MANDATORY REQUIREMENTS (NOT OPTIONAL):**
+- **✅ ABSOLUTE MANDATE**: Commit all changes, push to remote, use descriptive messages, atomic commits
+- **❌ FORBIDDEN**: Leave uncommitted changes or unpushed commits when marking complete
+- **🚨 CI/CD PIPELINE ENFORCEMENT**: All commits MUST pass automated pipeline (lint, test, build, security scans)
+- **❌ FORBIDDEN**: Bypass, circumvent, or ignore CI/CD pipeline requirements - MUST work with them
+- **🚨 QUALITY GATE MANDATE**: Combined with CI/CD, mandatory commit/push maintains code quality standards
 - **BRANCH PROTECTION**: Main branch requires PR approval + status checks passing
 
 **SEQUENCE:**
@@ -397,36 +418,72 @@ git status                                   # Verify clean/up-to-date
 
 **TROUBLESHOOTING:** Conflicts → resolve + commit + push; Rejected → pull + merge + push; Untracked → add important files; Large files → use git LFS
 
-## 🚨 CONCURRENT SUBAGENT DEPLOYMENT
-**🔴 MANDATORY MAXIMUM DEPLOYMENT (DEFAULT: 3-10 AGENTS)**
+## 🚨 SEQUENTIAL AGENT DEPLOYMENT
+**🔴 DEFAULT: SINGLE AGENT SEQUENTIAL PROCESSING**
 
-**AGGRESSIVE DEPLOYMENT PROTOCOL:**
-- **DEFAULT MULTI-AGENT**: Use 3+ agents for ANY non-trivial task (reading multiple files, implementation + testing, research + docs)
-- **MAXIMUM UTILIZATION**: Deploy 5-10 agents for complex tasks (multi-component projects, large features, comprehensive analysis)
-- **SINGLE AGENT ONLY FOR**: Simple single-file reads, basic status checks, trivial one-command operations
-- **MANDATORY DECLARATION**: ALWAYS tell user "Deploying X concurrent agents" before starting
-- **SIMULTANEOUS START**: All agents via ONE tool call with multiple invokes
+**SEQUENTIAL DEPLOYMENT PROTOCOL:**
+- **DEFAULT SINGLE-AGENT**: Use ONE agent for most tasks, processing sequentially through steps
+- **SEQUENTIAL PROCESSING**: Complete one step at a time, hand off to next agent only when current step done
+- **CONCURRENT ONLY FOR ERRORS**: Deploy multiple agents ONLY for independent error resolution
+- **MANDATORY DECLARATION**: Tell user "Handling this sequentially" or "Using X agents for independent error fixes"
+- **COORDINATED HANDOFFS**: Clear completion and handoff between sequential agents
 
-**DEPLOYMENT TRIGGERS - USE MULTIPLE AGENTS FOR:**
-- File analysis (2+ files) → 2-4 agents
-- Feature implementation → 3-6 agents (development + testing + docs + validation)
-- Code reviews → 4-8 agents (security + performance + architecture + quality)
-- Research tasks → 3-5 agents (technology + documentation + examples + comparison)
-- Bug investigations → 2-4 agents (analysis + reproduction + fix + testing)
-- Refactoring → 4-8 agents (analysis + implementation + testing + documentation + validation)
+**SEQUENTIAL DEPLOYMENT TRIGGERS - USE SINGLE AGENT FOR:**
+- Feature implementation → Sequential: analysis → design → implementation → testing → documentation
+- Code reviews → Sequential: security → performance → architecture → quality
+- Research tasks → Sequential: technology research → documentation review → example analysis
+- Bug investigations → Sequential: analysis → reproduction → fix → testing
+- Refactoring → Sequential: analysis → implementation → testing → documentation → validation
 
-**SPECIALIZATIONS:** Development (Frontend/Backend/Database/DevOps/Security/Performance/Documentation), Testing (Unit/Integration/E2E/Performance/Security/Accessibility), Research (Technology/API/Performance/Security/Architecture)
+**CONCURRENT ERROR RESOLUTION PROTOCOL:**
+**🚨 ABSOLUTE RESTRICTION: CONCURRENT AGENTS ONLY FOR ERROR FIXES - NEVER FOR FEATURES**
+**🚨 IMMEDIATE ERROR RESOLUTION: Deploy concurrent agents the SECOND linter/type errors are detected**
+**DEPLOY CONCURRENT AGENTS EXCLUSIVELY FOR INDEPENDENT ERROR RESOLUTION:**
+- **Linter errors ONLY** - Multiple agents fix ESLint/TSLint/Prettier errors in different files simultaneously
+- **TypeScript errors ONLY** - Type errors in separate modules resolved concurrently
+- **Build errors ONLY** - Independent compilation issues across different components
+- **Test failures ONLY** - Unit test fixes in different test suites that don't share state
+- **Security violations ONLY** - Independent security issues in different files/modules
+- **Validation errors ONLY** - Independent validation issues that don't affect each other
 
-**FORBIDDEN:** Single agent for multi-step tasks, sequential when concurrent possible
+**IMMEDIATE DEPLOYMENT TRIGGER:**
+- **INSTANT RESPONSE**: The moment linter or type errors are detected, immediately deploy appropriate concurrent agents
+- **NO DELAY**: Do not wait or analyze - deploy concurrent agents for error resolution immediately when appropriate
+- **MANDATORY NUMBER DECLARATION**: ALWAYS state the exact number of concurrent agents being deployed (e.g., "Deploying 3 concurrent agents for linter error fixes", "Using 5 agents for TypeScript error resolution")
+
+**🚨 FORBIDDEN FOR CONCURRENT AGENTS:**
+- ❌ NEVER for feature implementation
+- ❌ NEVER for research tasks
+- ❌ NEVER for code reviews
+- ❌ NEVER for refactoring
+- ❌ NEVER for documentation
+- ❌ NEVER for any work that isn't fixing specific errors
+
+**CONCURRENT ERROR REQUIREMENTS:**
+- **FILE ISOLATION**: Each agent works on separate files or independent error categories
+- **NO SHARED STATE**: Agents cannot modify shared dependencies or configurations
+- **INDEPENDENCE VERIFICATION**: Confirm one agent's work won't affect another's work
+- **COORDINATION**: Master agent coordinates completion and integration
+
+**SPECIALIZATIONS:** Sequential handoffs between Development → Testing → Documentation → Validation agents
+
+**FORBIDDEN:** Concurrent agents for feature work, overlapping file modifications, shared dependency changes
 
 ## PREPARATION & CONTEXT
 
 ### CONTEXT PREPARATION
 **ESSENTIAL PREPARATION STEPS:**
 1. **READ ESSENTIALS**: All files in `development/essentials/` for project guidelines
-2. **CODEBASE SCAN**: Find relevant files for the task at hand
-3. **TODOWRITE PLANNING**: Create task breakdown for complex work
-4. **TASK TRACKING**: Update TodoWrite status as work progresses
+2. **CONSTANT REFERENCE**: Continuously refer to user directions and essentials files throughout work
+3. **USER DIRECTION COMPLIANCE**: Always align work with what the user specifically directed
+4. **CODEBASE SCAN**: Find relevant files for the task at hand
+5. **TODOWRITE PLANNING**: Create task breakdown for complex work
+6. **TASK TRACKING**: Update TodoWrite status as work progresses
+
+**MANDATORY REFERENCE PROTOCOL:**
+- **BEFORE EVERY DECISION**: Check user directions and essentials files for guidance
+- **DURING IMPLEMENTATION**: Continuously validate against user requirements and project guidelines
+- **FOCUSED IMPLEMENTATION**: Create focused, purposeful codebases - not extravagant or flamboyant ones
 
 ### PROJECT REQUIREMENTS
 **STANDARD COMPLETION CRITERIA (ADAPT TO CODEBASE):**
@@ -442,7 +499,7 @@ git status                                   # Verify clean/up-to-date
 **PROHIBITIONS:**
 - **❌ NEVER EXPOSE**: Secrets, API keys, passwords, tokens in code or logs
 - **❌ NEVER COMMIT**: Sensitive data, credentials, environment files to repository
-- **❌ NEVER BYPASS**: Security validations, authentication checks, permission systems
+- **❌ NEVER BYPASS**: Security validations, authentication checks, permission systems, CI/CD pipelines
 
 **FILE BOUNDARIES:**
 - **SAFE TO EDIT**: `/src/`, `/tests/`, `/docs/`, `/development/`, source code files
@@ -486,11 +543,12 @@ TodoWrite([
 - Direct execution focused on solving user problems
 
 **COMMUNICATION PATTERNS:**
-- "Handling this solo" or "Using X concurrent agents"
-- Brief explanation of chosen approach before starting
-- Clear completion messages with results
+- "Handling this sequentially" or "Using X agents for independent error fixes"
+- Brief explanation of sequential vs concurrent approach before starting
+- Clear completion messages with handoff details for sequential work
 
 **COORDINATION:**
-- Single agent for simple tasks
-- 2-10 concurrent agents for complex multi-component work
-- Independent TodoWrite task lists for each agent
+- Single agent for most tasks (features, research, analysis)
+- Sequential agents for complex multi-step work with clear handoffs
+- Concurrent agents ONLY for independent error resolution
+- Independent TodoWrite task lists for each agent when concurrent
