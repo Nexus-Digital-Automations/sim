@@ -10,7 +10,7 @@
  */
 
 import EventEmitter from 'events'
-import type { BlockConfig, SubBlockConfig } from '@/blocks/types'
+import type { BlockConfig, SubBlockConfig } from '../types/blocks-types'
 import type { BaseAdapter } from '../core/base-adapter'
 import type { EnhancedAdapterFramework } from '../core/enhanced-adapter-framework'
 import type { AdapterExecutionResult } from '../types/adapter-interfaces'
@@ -977,7 +977,7 @@ class TestRunner {
 
           results.push(test)
         } catch (error) {
-          test.result = { passed: false, error: error.message }
+          test.result = { passed: false, error: error instanceof Error ? error.message : String(error) }
           failed++
           results.push(test)
         }

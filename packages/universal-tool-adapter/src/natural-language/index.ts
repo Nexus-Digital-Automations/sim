@@ -112,7 +112,7 @@ export {
 // Unified Natural Language Engine
 // =============================================================================
 
-import type { ToolConfig } from '@/tools/types'
+import type { ToolConfig } from '../types/tools-types'
 import { DescriptionGenerator } from './description-generator'
 import type { HelpQuery, HelpResponse } from './help-system'
 import { NaturalLanguageHelpSystem } from './help-system'

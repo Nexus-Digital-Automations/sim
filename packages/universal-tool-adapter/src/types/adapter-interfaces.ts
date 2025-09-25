@@ -258,6 +258,9 @@ export interface ParameterMapping {
 
   // Contextual value resolution
   contextualValue?: ContextualValue
+
+  // Target type for type conversion
+  targetType?: string
 }
 
 /**
@@ -420,6 +423,9 @@ export interface ConditionalValidation {
 export interface ValidationResult {
   valid: boolean
   errors: ValidationError[]
+  transformedParameters?: Record<string, any>
+  metadata?: Record<string, any>
+  timestamp?: number
 }
 
 /**

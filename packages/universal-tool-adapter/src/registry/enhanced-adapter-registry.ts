@@ -9,21 +9,16 @@
  */
 
 import EventEmitter from 'events'
+import type { BaseAdapter } from '../core/base-adapter'
 import type {
-  AdapterRegistryEntry,
-  ToolDiscoveryQuery,
-  DiscoveredTool,
   AdapterExecutionResult,
   AdapterPlugin,
-  AdapterConfiguration,
-  MonitoringConfig,
-  PerformanceConfig,
+  AdapterRegistryEntry,
+  DiscoveredTool,
+  ToolDiscoveryQuery,
 } from '../types/adapter-interfaces'
-
-import type { ParlantTool, ParlantExecutionContext } from '../types/parlant-interfaces'
-
+import type { ParlantExecutionContext } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
-import { BaseAdapter } from '../core/base-adapter'
 
 const logger = createLogger('EnhancedAdapterRegistry')
 
@@ -1199,7 +1194,7 @@ class FailoverManager {
           })
 
           // Exponential backoff
-          await new Promise((resolve) => setTimeout(resolve, backoffMs * Math.pow(2, attempt)))
+          await new Promise((resolve) => setTimeout(resolve, backoffMs * 2 ** attempt))
         }
       }
     }

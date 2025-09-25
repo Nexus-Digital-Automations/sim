@@ -261,7 +261,14 @@ export class ToolIntegrationExamplesCollection {
           language: 'typescript',
           framework: 'react',
           code: `
-import { RunWorkflowClientTool } from '@/lib/copilot/tools/client/workflow/run-workflow'
+// Example import - commented out to avoid path resolution issues
+// import { RunWorkflowClientTool } from '@/lib/copilot/tools/client/workflow/run-workflow'
+
+// Placeholder type for example purposes
+type RunWorkflowClientTool = {
+  execute: (params: any) => Promise<any>
+  description: string
+}
 
 // Basic workflow execution
 async function executeWorkflowWithInput(workflowInput: string) {

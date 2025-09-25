@@ -10,15 +10,8 @@
  */
 
 import EventEmitter from 'events'
-import type {
-  AdapterRegistryEntry,
-  AdapterExecutionResult,
-  AdapterExecutionContext,
-  MonitoringConfig,
-} from '../types/adapter-interfaces'
-
+import type { AdapterExecutionResult, AdapterRegistryEntry } from '../types/adapter-interfaces'
 import type { ParlantExecutionContext } from '../types/parlant-interfaces'
-
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('AnalyticsSystem')
@@ -730,7 +723,7 @@ export class AnalyticsSystem extends EventEmitter {
 
     const errorsByType = new Map<string, number>()
     const errorsByHour = new Array(24).fill(0)
-    let totalErrors = relevantErrors.length
+    const totalErrors = relevantErrors.length
     let recoverableErrors = 0
 
     for (const error of relevantErrors) {
@@ -758,7 +751,7 @@ export class AnalyticsSystem extends EventEmitter {
   }
 
   private analyzeErrorsForAllAdapters(startTime: number, endTime: number): ErrorAnalysis {
-    let combinedAnalysis: ErrorAnalysis = {
+    const combinedAnalysis: ErrorAnalysis = {
       totalErrors: 0,
       errorRate: 0,
       recoverableErrors: 0,

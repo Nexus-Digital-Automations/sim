@@ -10,15 +10,8 @@
  */
 
 import EventEmitter from 'events'
-import type {
-  CachingConfig,
-  PerformanceConfig,
-  AdapterExecutionResult,
-  AdapterExecutionContext,
-} from '../types/adapter-interfaces'
-
+import type { AdapterExecutionResult } from '../types/adapter-interfaces'
 import type { ParlantExecutionContext, ParlantToolResult } from '../types/parlant-interfaces'
-
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('PerformanceOptimizationEngine')

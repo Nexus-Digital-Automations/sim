@@ -17,7 +17,7 @@
  * @version 1.0.0
  */
 
-import type { ToolConfig } from '@/tools/types'
+import type { ToolConfig } from '../../types/tools-types'
 import type { BaseAdapter } from '../core/base-adapter'
 import {
   ComprehensiveToolErrorManager,

@@ -181,8 +181,9 @@ export class PluginManager {
             results.push(result)
           }
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error)
           logger.error(`Plugin hook failed: ${plugin.name}.${extensionPoint}`, {
-            error: error.message,
+            error: errorMessage,
           })
           // Continue with other plugins
         }

@@ -146,11 +146,13 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       return finalResult
     } catch (error) {
       const duration = Date.now() - startTime
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorType = error instanceof Error ? error.constructor.name : 'unknown'
       logger.error(`Tool execution failed`, {
         executionId,
         duration,
-        error: error.message,
-        errorType: error.constructor.name,
+        error: errorMessage,
+        errorType,
       })
 
       // Handle different error types appropriately
@@ -192,7 +194,8 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
     try {
       return this.outputSchema.parse(result)
     } catch (error) {
-      logger.error('Output validation failed', { error: error.message })
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      logger.error('Output validation failed', { error: errorMessage })
       // Return a safe fallback result
       return {
         type: 'error',
@@ -261,7 +264,8 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       }
       return result
     } catch (error) {
-      throw new ExecutionError(`Sim tool execution failed: ${error.message}`, error)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      throw new ExecutionError(`Sim tool execution failed: ${errorMessage}`, error)
     }
   }
 

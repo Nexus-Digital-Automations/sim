@@ -14,7 +14,7 @@ import type {
   BlockConfig,
   SubBlockConfig,
   SubBlockType,
-} from '@/blocks/types'
+} from '../types/blocks-types'
 import { ResultFormatter } from '../formatting/result-formatter'
 import { ParameterMapper } from '../mapping/parameter-mapper'
 import type {
@@ -150,9 +150,10 @@ export class EnhancedAdapterFramework {
       return adapter
     } catch (error) {
       const duration = Date.now() - startTime
+      const errorMessage = error instanceof Error ? error.message : String(error)
       logger.error('Failed to create adapter from BlockConfig', {
         type: blockConfig.type,
-        error: error.message,
+        error: errorMessage,
         duration,
       })
 
@@ -487,9 +488,10 @@ export class EnhancedAdapterFramework {
           try {
             return subBlock.value!(context.originalParameters || {})
           } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error)
             logger.warn('Error computing contextual value', {
               subBlockId: subBlock.id,
-              error: error.message,
+              error: errorMessage,
             })
             return originalValue
           }
