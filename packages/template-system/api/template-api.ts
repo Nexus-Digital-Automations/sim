@@ -254,20 +254,25 @@ export class TemplateAPIController {
       // Add missing properties to parameters and workflowData
       const processedTemplateData = {
         ...templateData,
-        parameters: templateData.parameters?.map((param: any, index: number) => ({
-          id: param.id || `param_${Date.now()}_${index}`,
-          name: param.name,
-          type: param.type,
-          description: param.description,
-          defaultValue: param.defaultValue,
-          required: param.required ?? false,
-          validation: param.validation || {},
-          displayOrder: param.displayOrder ?? 0,
-          category: param.category,
-          metadata: param.metadata || {},
-        })) || [],
+        parameters: templateData.parameters?.map((param: any, index: number): TemplateParameter => {
+          const paramId = param.id || `param_${Date.now()}_${index}`;
+          return {
+            id: paramId,
+            name: param.name || '',
+            type: param.type || 'string',
+            description: param.description || '',
+            defaultValue: param.defaultValue,
+            required: param.required ?? false,
+            validation: param.validation || {},
+            displayOrder: param.displayOrder ?? 0,
+            category: param.category || 'general',
+            metadata: param.metadata || {},
+          };
+        }) || [],
         workflowData: templateData.workflowData ? {
-          ...templateData.workflowData,
+          blocks: (templateData.workflowData as any).blocks || [],
+          edges: (templateData.workflowData as any).edges || [],
+          variables: (templateData.workflowData as any).variables || {},
           parameterMappings: (templateData.workflowData as any).parameterMappings || [],
           conditionalBlocks: (templateData.workflowData as any).conditionalBlocks || [],
           dynamicContent: (templateData.workflowData as any).dynamicContent || [],
@@ -332,40 +337,50 @@ export class TemplateAPIController {
       const updates = validation.data
 
       // Add missing properties to parameters and workflowData
-      const processedUpdates = {
-        ...updates,
-        parameters: updates.parameters?.map((param: any, index: number) => ({
-          id: param.id || `param_${Date.now()}_${index}`,
-          name: param.name,
-          type: param.type,
-          description: param.description,
-          defaultValue: param.defaultValue,
-          required: param.required ?? false,
-          validation: param.validation || {},
-          displayOrder: param.displayOrder ?? 0,
-          category: param.category,
-          metadata: param.metadata || {},
-        })) || updates.parameters,
-        workflowData: updates.workflowData ? {
-          ...updates.workflowData,
-          parameterMappings: (updates.workflowData as any).parameterMappings || [],
-          conditionalBlocks: (updates.workflowData as any).conditionalBlocks || [],
-          dynamicContent: (updates.workflowData as any).dynamicContent || [],
-          optimizationHints: (updates.workflowData as any).optimizationHints || [],
-          performanceSettings: (updates.workflowData as any).performanceSettings || {
-            enableCaching: true,
-            cacheStrategy: {
-              scope: 'session' as const,
-              duration: 300000,
-              invalidationRules: [],
-              compressionEnabled: false,
+      const { parameters: updatesParameters, workflowData: updatesWorkflowData, ...otherUpdates } = updates;
+      const processedUpdates: Partial<WorkflowTemplate> = {
+        ...otherUpdates,
+        ...(updatesParameters ? {
+          parameters: updatesParameters.map((param: any, index: number): TemplateParameter => {
+            const paramId = param.id || `param_${Date.now()}_${index}`;
+            return {
+              id: paramId,
+              name: param.name || '',
+              type: param.type || 'string',
+              description: param.description || '',
+              defaultValue: param.defaultValue,
+              required: param.required ?? false,
+              validation: param.validation || {},
+              displayOrder: param.displayOrder ?? 0,
+              category: param.category || 'general',
+              metadata: param.metadata || {},
+            };
+          })
+        } : {}),
+        ...(updatesWorkflowData ? {
+          workflowData: {
+            blocks: (updatesWorkflowData as any).blocks || [],
+            edges: (updatesWorkflowData as any).edges || [],
+            variables: (updatesWorkflowData as any).variables || {},
+            parameterMappings: (updatesWorkflowData as any).parameterMappings || [],
+            conditionalBlocks: (updatesWorkflowData as any).conditionalBlocks || [],
+            dynamicContent: (updatesWorkflowData as any).dynamicContent || [],
+            optimizationHints: (updatesWorkflowData as any).optimizationHints || [],
+            performanceSettings: (updatesWorkflowData as any).performanceSettings || {
+              enableCaching: true,
+              cacheStrategy: {
+                scope: 'session' as const,
+                duration: 300000,
+                invalidationRules: [],
+                compressionEnabled: false,
+              },
+              prefetchParameters: false,
+              optimizeRendering: true,
+              lazyLoadBlocks: false,
+              compressionLevel: 'none' as const,
             },
-            prefetchParameters: false,
-            optimizeRendering: true,
-            lazyLoadBlocks: false,
-            compressionLevel: 'none' as const,
-          },
-        } : updates.workflowData,
+          }
+        } : {}),
       }
 
       // Check if template exists
