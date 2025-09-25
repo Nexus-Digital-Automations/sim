@@ -112,6 +112,9 @@ export class JourneyGenerator {
     } catch (error) {
       console.error(`Journey generation failed:`, error)
 
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorStack = error instanceof Error ? error.stack : undefined
+
       return {
         success: false,
         conversionId,
@@ -130,10 +133,10 @@ export class JourneyGenerator {
         errors: [
           {
             code: 'GENERATION_FAILED',
-            message: error.message,
+            message: errorMessage,
             category: 'system',
             fatal: true,
-            context: { error: error.stack },
+            context: { error: errorStack },
           },
         ],
         performance: this.calculatePerformanceMetrics(startTime),

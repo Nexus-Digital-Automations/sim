@@ -609,17 +609,22 @@ async function demonstrateConditionalLogic() {
                   valueSource: {
                     type: 'computed',
                     computationRule: {
-                      type: 'reference',
+                      type: 'builtin',
                       expression: 'personalized-response',
                       dependencies: [],
                       cacheability: 'session',
                     },
                   },
                   caching: {
-                    enabled: true,
-                    duration: 300,
                     scope: 'session',
-                    keys: ['priority', 'customerTier'],
+                    duration: 300,
+                    invalidationRules: [
+                      {
+                        trigger: 'parameter_change',
+                        parameters: ['priority', 'customerTier'],
+                      },
+                    ],
+                    compressionEnabled: false,
                   },
                 },
               ],
@@ -692,8 +697,8 @@ async function demonstrateCustomValidation() {
     value: any,
     context: ValidationContext
   ): Promise<ValidationResult> => {
-    const errors = []
-    const warnings = []
+    const errors: ValidationError[] = []
+    const warnings: ValidationWarning[] = []
 
     if (typeof value !== 'string') {
       errors.push({

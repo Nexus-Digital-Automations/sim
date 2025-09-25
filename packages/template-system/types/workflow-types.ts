@@ -7,6 +7,7 @@
  */
 
 import type { ConditionalExpression } from './template-types'
+import type { InputValidation } from './journey-types'
 
 // ============================================================================
 // Workflow Analysis Types

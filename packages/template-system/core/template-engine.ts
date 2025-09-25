@@ -72,10 +72,12 @@ export class TemplateEngine {
         },
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorCause = error instanceof Error ? error : new Error(String(error))
       throw new TemplateProcessingError(
-        `Failed to process template ${template.id}: ${error.message}`,
+        `Failed to process template ${template.id}: ${errorMessage}`,
         [],
-        error
+        errorCause
       )
     }
   }
@@ -385,9 +387,10 @@ export class TemplateEngine {
         errors.push(...customResult.errors)
         warnings.push(...customResult.warnings)
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
         errors.push({
           code: 'CUSTOM_VALIDATION_ERROR',
-          message: `Custom validation failed: ${error.message}`,
+          message: `Custom validation failed: ${errorMessage}`,
         })
       }
     }
@@ -479,11 +482,11 @@ export class TemplateEngine {
         )
 
         if (shouldActivate) {
-          conditionalBlock.blocksToShow?.forEach((blockId) => activeBlocks.add(blockId))
-          conditionalBlock.edgesToActivate?.forEach((edgeId) => activeEdges.add(edgeId))
+          conditionalBlock.blocksToShow?.forEach((blockId: string) => activeBlocks.add(blockId))
+          conditionalBlock.edgesToActivate?.forEach((edgeId: string) => activeEdges.add(edgeId))
         } else {
-          conditionalBlock.blocksToHide?.forEach((blockId) => activeBlocks.delete(blockId))
-          conditionalBlock.edgesToDeactivate?.forEach((edgeId) => activeEdges.delete(edgeId))
+          conditionalBlock.blocksToHide?.forEach((blockId: string) => activeBlocks.delete(blockId))
+          conditionalBlock.edgesToDeactivate?.forEach((edgeId: string) => activeEdges.delete(edgeId))
         }
       }
 
@@ -521,7 +524,7 @@ export class TemplateEngine {
   private async applyOptimizations(workflowData: any, context: ProcessingContext): Promise<any> {
     let result = { ...workflowData }
 
-    if (context.optimizationLevel === 'none') {
+    if (context.optimizationLevel === 'minimal') {
       return result
     }
 
@@ -697,7 +700,7 @@ export class TemplateEngine {
   }
 
   private shouldApplyOptimization(hint: any, context: ProcessingContext): boolean {
-    return context.optimizationLevel !== 'none'
+    return context.optimizationLevel !== 'minimal'
   }
 
   private async applyOptimizationHint(
@@ -766,7 +769,7 @@ export interface ProcessingContext {
   userId?: string
   agentId?: string
   environment?: 'development' | 'production' | 'test'
-  optimizationLevel: 'none' | 'basic' | 'aggressive'
+  optimizationLevel: 'minimal' | 'standard' | 'aggressive'
   cacheEnabled: boolean
   validationEnabled: boolean
 }

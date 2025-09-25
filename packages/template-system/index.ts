@@ -15,22 +15,61 @@
  * - Template analytics and usage tracking
  */
 
-export * from './api/generation-api'
-export * from './api/management-api'
+// Export API modules
 export * from './api/template-api'
-export * from './core/inheritance-system'
-export * from './core/parameter-system'
+
+// Export core modules
 export * from './core/template-engine'
-export * from './core/template-registry'
+
+// Export generators
 export * from './generators/journey-generator'
-export * from './generators/optimization-engine'
-export * from './generators/workflow-converter'
-export * from './library/pattern-matcher'
-export * from './library/template-discovery'
+
+// Export library modules
 export * from './library/template-library'
-export * from './types/journey-types'
-export * from './types/template-types'
-export * from './types/workflow-types'
-export * from './utils/analytics-tracker'
-export * from './utils/cache-manager'
-export * from './utils/template-validator'
+
+// Export types selectively to avoid conflicts
+// Core template types
+export type {
+  WorkflowTemplate,
+  TemplateParameter,
+  TemplateParameterType,
+  WorkflowTemplateData,
+  TemplateBlock,
+  TemplateEdge,
+  ConditionalExpression,
+  ConditionalOperand,
+  ParameterMapping as TemplateParameterMapping,
+  ValidationResult as TemplateValidationResult,
+  ValidationError as TemplateValidationError,
+  ValidationWarning as TemplateValidationWarning,
+  ParameterValidation as TemplateParameterValidation,
+  TemplateSearchFilters,
+  TemplateSearchResult,
+  TemplateAnalytics,
+  TemplateExportData,
+  TemplateImportOptions
+} from './types/template-types'
+
+// Journey types
+export type {
+  JourneyGenerationRequest,
+  JourneyGenerationOptions,
+  JourneyGenerationContext,
+  GeneratedJourney,
+  JourneyState,
+  JourneyStateType as JourneyStateTypeEnum,
+  JourneyStateContent
+} from './types/journey-types'
+
+// Workflow types
+export type {
+  WorkflowAnalysis,
+  WorkflowComplexity,
+  JourneySuitability,
+  ConversionRecommendation,
+  WorkflowMetadata,
+  WorkflowBlockType,
+  BlockConversionResult,
+  ConversionError as WorkflowConversionError,
+  ConversionWarning as WorkflowConversionWarning
+} from './types/workflow-types'
