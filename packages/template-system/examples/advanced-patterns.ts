@@ -12,7 +12,9 @@ import type {
   ConditionalExpression,
   TemplateMixin,
   ValidationContext,
+  ValidationError,
   ValidationResult,
+  ValidationWarning,
   WorkflowTemplate,
 } from '../types/template-types'
 
@@ -693,10 +695,10 @@ async function demonstrateCustomValidation() {
   console.log('\n=== Custom Parameter Validation Pattern ===')
 
   // Custom validation function for business hours
-  const businessHoursValidator = async (
+  const businessHoursValidator = (
     value: any,
     context: ValidationContext
-  ): Promise<ValidationResult> => {
+  ): ValidationResult => {
     const errors: ValidationError[] = []
     const warnings: ValidationWarning[] = []
 
@@ -743,12 +745,12 @@ async function demonstrateCustomValidation() {
   }
 
   // Custom validation for email domain restrictions
-  const domainRestrictedEmailValidator = async (
+  const domainRestrictedEmailValidator = (
     value: any,
     context: ValidationContext
-  ): Promise<ValidationResult> => {
-    const errors = []
-    const warnings = []
+  ): ValidationResult => {
+    const errors: ValidationError[] = []
+    const warnings: ValidationWarning[] = []
 
     if (typeof value !== 'string') {
       errors.push({
