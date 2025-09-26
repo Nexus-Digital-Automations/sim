@@ -174,9 +174,9 @@ export class EnhancedAdapterFramework {
   ): Promise<AdapterConfiguration> {
     const config: AdapterConfiguration = {
       // Basic identification
-      parlantId: customConfig.parlantId || `sim_${blockConfig.type}`,
-      displayName: customConfig.displayName || blockConfig.name,
-      description: customConfig.description || blockConfig.description,
+      parlantId: customConfig.parlantId || `sim_${blockConfig.type || blockConfig.id || 'unknown'}`,
+      displayName: customConfig.displayName || blockConfig.name || blockConfig.title,
+      description: customConfig.description || blockConfig.description || '',
       category: customConfig.category || this.mapBlockCategory(blockConfig.category || 'utility'),
       tags: customConfig.tags || this.generateTags(blockConfig),
 
@@ -568,14 +568,16 @@ export class EnhancedAdapterFramework {
     const actionWords = this.extractActionWords(blockConfig)
     const capabilities = this.extractCapabilities(blockConfig)
 
-    let description = `Use this tool to ${blockConfig.description?.toLowerCase() || 'perform operations'}`
+    const baseDescription = blockConfig.description?.toLowerCase() || 'perform operations'
+    let description = `Use this tool to ${baseDescription}`
 
     if (capabilities.length > 0) {
       description += `. Capabilities include: ${capabilities.join(', ')}`
     }
 
     // BlockConfig doesn't have longDescription, using description length as alternative
-    if (blockConfig.description && blockConfig.description.length > 50) {
+    const descLength = blockConfig.description?.length || 0
+    if (descLength > 50) {
       description += `. Additional details available.`
     }
 
@@ -589,10 +591,10 @@ export class EnhancedAdapterFramework {
     const examples: string[] = []
 
     // Base example
-    examples.push(`When you need to ${blockConfig.description.toLowerCase()}`)
+    examples.push(`When you need to ${blockConfig.description?.toLowerCase() || 'use this tool'}`)
 
     // Operation-specific examples
-    const operationBlock = blockConfig.subBlocks.find((sb) => sb.id === 'operation')
+    const operationBlock = blockConfig.subBlocks?.find((sb) => sb.id === 'operation')
     if (operationBlock?.options) {
       const options =
         typeof operationBlock.options === 'function'
@@ -605,15 +607,15 @@ export class EnhancedAdapterFramework {
 
     // Category-specific examples
     switch (blockConfig.category) {
-      case 'tools':
+      case 'integration':
         examples.push(`For ${blockConfig.name} integration tasks`)
         examples.push(`When working with ${blockConfig.name} data`)
         break
-      case 'blocks':
+      case 'workflow':
         examples.push(`For workflow ${blockConfig.name} operations`)
         break
-      case 'triggers':
-        examples.push(`To set up ${blockConfig.name} event triggers`)
+      case 'communication':
+        examples.push(`To set up ${blockConfig.name} communication triggers`)
         break
     }
 
@@ -628,12 +630,12 @@ export class EnhancedAdapterFramework {
     parameters: string
     results: string
   } {
-    const requiredParams = blockConfig.subBlocks
+    const requiredParams = (blockConfig.subBlocks || [])
       .filter((sb) => sb.required && !sb.hidden)
       .map((sb) => sb.title || sb.id)
 
     return {
-      whenToUse: `This tool is helpful when you need to ${blockConfig.description.toLowerCase()}, especially for ${blockConfig.category} operations`,
+      whenToUse: `This tool is helpful when you need to ${blockConfig.description?.toLowerCase() || 'use this tool'}, especially for ${blockConfig.category || 'general'} operations`,
       parameters:
         requiredParams.length > 0
           ? `I'll help you provide the required information: ${requiredParams.join(', ')}`
@@ -699,7 +701,7 @@ export class EnhancedAdapterFramework {
   ): Promise<void> {
     if (!this.config.enablePlugins) return
 
-    for (const [pluginName, plugin] of this.plugins) {
+    for (const [pluginName, plugin] of Array.from(this.plugins.entries())) {
       try {
         if (plugin.onInitialize) {
           await plugin.onInitialize(adapter)
@@ -710,10 +712,11 @@ export class EnhancedAdapterFramework {
           adapterId: adapter.id,
         })
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
         logger.warn('Failed to apply plugin', {
           pluginName,
           adapterId: adapter.id,
-          error: error.message,
+          error: errorMessage,
         })
       }
     }
@@ -725,7 +728,7 @@ export class EnhancedAdapterFramework {
   async discoverTools(query: ToolDiscoveryQuery): Promise<DiscoveredTool[]> {
     const results: DiscoveredTool[] = []
 
-    for (const [id, entry] of this.registry) {
+    for (const [id, entry] of Array.from(this.registry.entries())) {
       const relevanceScore = this.calculateRelevance(entry, query)
 
       if (relevanceScore > 0) {
@@ -815,15 +818,16 @@ export class EnhancedAdapterFramework {
 
     // Apply to existing adapters if needed
     if (plugin.onInitialize) {
-      for (const entry of this.registry.values()) {
+      for (const entry of Array.from(this.registry.values())) {
         if (entry.adapter) {
           try {
             await plugin.onInitialize(entry.adapter)
           } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error)
             logger.warn('Failed to apply new plugin to existing adapter', {
               pluginName: plugin.name,
               adapterId: entry.id,
-              error: error.message,
+              error: errorMessage,
             })
           }
         }
@@ -870,17 +874,18 @@ export class EnhancedAdapterFramework {
     const tags = ['sim-block', blockConfig.category || 'utility']
 
     // Add name-based tags
-    const nameParts = (blockConfig.name || '').toLowerCase().split(/[\s_-]+/)
+    const blockName = blockConfig.name || blockConfig.title || ''
+    const nameParts = blockName.toLowerCase().split(/[\s_-]+/).filter(part => part.length > 0)
     tags.push(...nameParts)
 
     // Add capability tags
     tags.push(...this.extractCapabilities(blockConfig).map((cap) => cap.toLowerCase()))
 
-    return [...new Set(tags)] // Remove duplicates
+    return Array.from(new Set(tags)) // Remove duplicates
   }
 
   private extractActionWords(blockConfig: BlockConfig): string[] {
-    const operations = blockConfig.subBlocks.find((sb) => sb.id === 'operation')
+    const operations = blockConfig.subBlocks?.find((sb) => sb.id === 'operation')
     if (operations?.options) {
       const options =
         typeof operations.options === 'function' ? operations.options() : operations.options
@@ -903,7 +908,7 @@ export class EnhancedAdapterFramework {
     }
 
     // From subBlocks features
-    blockConfig.subBlocks.forEach((subBlock) => {
+    (blockConfig.subBlocks || []).forEach((subBlock) => {
       switch (subBlock.type) {
         case 'oauth-input':
           capabilities.push('authentication')
@@ -920,40 +925,46 @@ export class EnhancedAdapterFramework {
       }
     })
 
-    return [...new Set(capabilities)]
+    return Array.from(new Set(capabilities))
   }
 
   private generateKeywords(blockConfig: BlockConfig): string[] {
+    const blockName = blockConfig.name || blockConfig.title || ''
+    const blockType = blockConfig.type || blockConfig.id || ''
+    const blockCategory = blockConfig.category || 'utility'
+
     const keywords = [
-      (blockConfig.name || '').toLowerCase(),
-      ...(blockConfig.name || '').toLowerCase().split(/[\s_-]+/),
-      blockConfig.type || '',
-      blockConfig.category || 'utility',
+      blockName.toLowerCase(),
+      ...blockName.toLowerCase().split(/[\s_-]+/),
+      blockType,
+      blockCategory,
     ].filter(Boolean) as string[]
 
     // Add description keywords
-    const descWords = (blockConfig.description || '')
+    const description = blockConfig.description || ''
+    const descWords = description
       .toLowerCase()
       .split(/\s+/)
       .filter((word) => word.length > 3)
     keywords.push(...descWords)
 
-    return [...new Set(keywords)]
+    return Array.from(new Set(keywords))
   }
 
   private generateAliases(blockConfig: BlockConfig): string[] {
     const aliases: string[] = []
 
     // Common aliases for popular tools
-    const commonAliases = {
+    const commonAliases: Record<string, string[]> = {
       google_sheets: ['sheets', 'spreadsheet', 'gsheets'],
       slack: ['slack', 'messaging', 'chat'],
       github: ['git', 'repository', 'repo'],
       openai: ['gpt', 'chatgpt', 'ai'],
     }
 
-    if (commonAliases[blockConfig.type]) {
-      aliases.push(...commonAliases[blockConfig.type])
+    const blockType = blockConfig.type || blockConfig.id
+    if (blockType && commonAliases[blockType]) {
+      aliases.push(...commonAliases[blockType])
     }
 
     return aliases
@@ -1076,26 +1087,34 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
   protected buildParameterDefinitions(): ParameterDefinition[] {
     const parameters: ParameterDefinition[] = []
 
-    for (const subBlock of this.blockConfig.subBlocks) {
+    for (const subBlock of this.blockConfig.subBlocks || []) {
       if (subBlock.hidden || subBlock.type === 'trigger-config') {
         continue
       }
 
       const param: ParameterDefinition = {
         name: subBlock.id,
-        type: this.mapSubBlockTypeToParameterType(subBlock.type),
+        type: this.mapSubBlockTypeToParameterType(subBlock),
         description: subBlock.description || subBlock.title || subBlock.id,
         required: subBlock.required || false,
-        enum: this.extractEnumValues(subBlock),
-        default: subBlock.defaultValue,
-        // Additional metadata for better natural language understanding
-        metadata: {
-          subBlockType: subBlock.type,
-          placeholder: subBlock.placeholder,
-          provider: subBlock.provider,
-          dependsOn: subBlock.dependsOn,
+        defaultValue: subBlock.defaultValue,
+        examples: subBlock.placeholder ? [subBlock.placeholder] : undefined,
+        conversationalHints: {
+          prompt: subBlock.placeholder || `Enter ${subBlock.title || subBlock.id}`,
+          clarification: subBlock.description || `Please provide ${subBlock.title || subBlock.id}`,
         },
       }
+
+      // Store additional metadata if needed for adapter functionality
+      // Note: This would be stored separately as ParameterDefinition doesn't support metadata
+      const additionalMetadata = {
+        subBlockType: subBlock.type,
+        placeholder: subBlock.placeholder,
+        provider: subBlock.provider,
+        dependsOn: subBlock.dependsOn,
+        enumValues: this.extractEnumValues(subBlock),
+      }
+      // Additional metadata could be stored in a separate mapping if needed
 
       parameters.push(param)
     }
@@ -1109,7 +1128,7 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
   protected buildInputSchema(): z.ZodSchema<any> {
     const shape: Record<string, z.ZodTypeAny> = {}
 
-    for (const subBlock of this.blockConfig.subBlocks) {
+    for (const subBlock of this.blockConfig.subBlocks || []) {
       if (subBlock.hidden || subBlock.type === 'trigger-config') {
         continue
       }
@@ -1136,8 +1155,8 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
 
   // Helper methods for BlockConfig-specific processing
 
-  private mapSubBlockTypeToParameterType(type: SubBlockType): ParameterType {
-    switch (type) {
+  private mapSubBlockTypeToParameterType(subBlock: SubBlockConfig): ParameterType {
+    switch (subBlock.type) {
       case 'short-input':
       case 'long-input':
       case 'oauth-input':
@@ -1279,16 +1298,17 @@ class FrameworkMonitor {
         issues: [],
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       entry.health = {
         status: 'unhealthy',
         lastCheckAt: new Date(),
-        issues: [error.message],
+        issues: [errorMessage],
       }
     }
   }
 
   async shutdown(): Promise<void> {
-    for (const interval of this.healthChecks.values()) {
+    for (const interval of Array.from(this.healthChecks.values())) {
       clearInterval(interval)
     }
     this.healthChecks.clear()

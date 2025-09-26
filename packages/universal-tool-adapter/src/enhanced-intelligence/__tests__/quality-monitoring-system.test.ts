@@ -1275,5 +1275,3 @@ describe('Quality Monitoring System', () => {
   })
 })
 
-export { QualityMonitoringSystem }
-export default QualityMonitoringSystem

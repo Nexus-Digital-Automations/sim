@@ -1548,5 +1548,3 @@ describe('Enhanced Tool Intelligence Testing Framework', () => {
 // Export Framework for Standalone Use
 // =============================================================================
 
-export { IntelligenceTestingFramework }
-export default IntelligenceTestingFramework

@@ -1658,5 +1658,3 @@ describe('Performance Benchmark Suite', () => {
   })
 })
 
-export { PerformanceBenchmarkSuite, MetricsCollector }
-export default PerformanceBenchmarkSuite

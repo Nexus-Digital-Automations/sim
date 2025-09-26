@@ -1574,5 +1574,3 @@ describe('User Experience Testing Framework', () => {
   })
 })
 
-export { UserExperienceTestingFramework, ABTestingManager }
-export default UserExperienceTestingFramework

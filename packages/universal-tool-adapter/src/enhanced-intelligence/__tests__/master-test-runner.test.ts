@@ -877,6 +877,4 @@ describe('Master Test Runner for Enhanced Tool Intelligence', () => {
 // Export for use in CI/CD and other contexts
 // =============================================================================
 
-export { MasterTestRunner }
 export type { MasterTestReport, QualityGate, TestExecutionRecord, CICDSummary, TestPhase }
-export default MasterTestRunner

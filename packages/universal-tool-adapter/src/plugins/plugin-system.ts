@@ -8,7 +8,7 @@
  * @version 2.0.0
  */
 
-import EventEmitter from 'events'
+import { EventEmitter } from 'events'
 import { readdir, readFile, stat } from 'fs/promises'
 import { extname, join } from 'path'
 import type { AdapterPlugin, ExtensionPoint } from '../types/adapter-interfaces'
@@ -67,7 +67,7 @@ export class PluginSystem extends EventEmitter {
     this.initializePluginLoaders()
 
     logger.info('Plugin System initialized', {
-      pluginPaths: this.config.pluginPaths.length,
+      pluginPaths: this.config.pluginPaths?.length || 0,
       autoLoad: this.config.autoLoadPlugins,
       strictMode: this.config.strictMode,
       sandboxing: this.config.sandboxPlugins,
@@ -111,7 +111,7 @@ export class PluginSystem extends EventEmitter {
       })
     } catch (error) {
       logger.error('Failed to initialize plugin system', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -121,8 +121,8 @@ export class PluginSystem extends EventEmitter {
    * Register a plugin with the system
    */
   async registerPlugin(plugin: AdapterPlugin): Promise<void> {
-    if (this.plugins.size >= this.config.maxPlugins) {
-      throw new Error(`Maximum number of plugins (${this.config.maxPlugins}) exceeded`)
+    if (this.plugins.size >= (this.config.maxPlugins || 100)) {
+      throw new Error(`Maximum number of plugins (${this.config.maxPlugins || 100}) exceeded`)
     }
 
     logger.info('Registering plugin', {
@@ -203,7 +203,7 @@ export class PluginSystem extends EventEmitter {
     } catch (error) {
       logger.error('Failed to initialize plugin', {
         plugin: plugin.name,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -257,7 +257,7 @@ export class PluginSystem extends EventEmitter {
     } catch (error) {
       logger.error('Failed to unregister plugin', {
         plugin: pluginName,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -352,13 +352,13 @@ export class PluginSystem extends EventEmitter {
           plugin: middleware.pluginName,
           extensionPoint,
           hook: middleware.hookName,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         })
 
         this.emit('plugin:error', {
           plugin: middleware.pluginName,
           extensionPoint,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         })
 
         // Continue with other plugins unless in strict mode
@@ -419,23 +419,23 @@ export class PluginSystem extends EventEmitter {
           result.failed++
           result.errors.push({
             file: filePath,
-            error: error.message,
+            error: error instanceof Error ? error.message : String(error),
           })
 
           logger.warn('Failed to load plugin', {
             file: filePath,
-            error: error.message,
+            error: error instanceof Error ? error.message : String(error),
           })
         }
       }
     } catch (error) {
       logger.error('Failed to scan plugin path', {
         path: pluginPath,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       result.errors.push({
         file: pluginPath,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
     }
 
@@ -475,7 +475,7 @@ export class PluginSystem extends EventEmitter {
       totalErrors: pluginStats.reduce((sum, p) => sum + p.statistics.errorCount, 0),
       averageExecutionTime: this.calculateAverageExecutionTime(pluginStats),
       memoryUsage: this.getPluginMemoryUsage(),
-      hotReloadEnabled: this.config.enableHotReload,
+      hotReloadEnabled: this.config.enableHotReload || false,
     }
   }
 
@@ -487,7 +487,7 @@ export class PluginSystem extends EventEmitter {
 
     try {
       // Disable all plugins
-      for (const [pluginName, registeredPlugin] of this.plugins) {
+      for (const [pluginName, registeredPlugin] of Array.from(this.plugins)) {
         if (registeredPlugin.enabled) {
           registeredPlugin.enabled = false
         }
@@ -504,7 +504,7 @@ export class PluginSystem extends EventEmitter {
           } catch (error) {
             logger.warn('Plugin cleanup failed during shutdown', {
               plugin: pluginName,
-              error: error.message,
+              error: error instanceof Error ? error.message : String(error),
             })
           }
         }
@@ -526,7 +526,7 @@ export class PluginSystem extends EventEmitter {
       logger.info('Plugin system shutdown complete')
     } catch (error) {
       logger.error('Error during plugin system shutdown', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -540,14 +540,14 @@ export class PluginSystem extends EventEmitter {
     try {
       const loadResults: LoadResult[] = []
 
-      for (const pluginPath of this.config.pluginPaths) {
+      for (const pluginPath of this.config.pluginPaths || []) {
         try {
           const result = await this.loadPluginsFromPath(pluginPath)
           loadResults.push(result)
         } catch (error) {
           logger.warn('Failed to load plugins from path', {
             path: pluginPath,
-            error: error.message,
+            error: error instanceof Error ? error.message : String(error),
           })
         }
       }
@@ -558,7 +558,7 @@ export class PluginSystem extends EventEmitter {
       logger.info('Auto-load plugins completed', {
         totalLoaded,
         totalFailed,
-        paths: this.config.pluginPaths.length,
+        paths: this.config.pluginPaths?.length || 0,
       })
     } finally {
       this.loadingInProgress = false
@@ -584,7 +584,7 @@ export class PluginSystem extends EventEmitter {
         }
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
+      if ((error as any)?.code !== 'ENOENT') {
         throw error
       }
     }
@@ -774,10 +774,10 @@ export class PluginSystem extends EventEmitter {
     this.middlewareStacks.clear()
 
     // Build middleware stacks for each extension point
-    for (const extensionPointName of this.extensionPoints.keys()) {
+    for (const extensionPointName of Array.from(this.extensionPoints.keys())) {
       const middlewares: PluginMiddleware[] = []
 
-      for (const [pluginName, registeredPlugin] of this.plugins) {
+      for (const [pluginName, registeredPlugin] of Array.from(this.plugins)) {
         if (!registeredPlugin.enabled) continue
 
         const plugin = registeredPlugin.plugin
@@ -825,7 +825,7 @@ export class PluginSystem extends EventEmitter {
     context: string
   ): Promise<any> {
     const plugin = registeredPlugin.plugin
-    const hook = plugin[hookName]
+    const hook = plugin[hookName] as (...args: any[]) => any
 
     if (typeof hook !== 'function') {
       return undefined
@@ -864,7 +864,7 @@ export class PluginSystem extends EventEmitter {
         plugin: plugin.name,
         hook: hookName,
         context,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
 
       throw error
@@ -874,7 +874,7 @@ export class PluginSystem extends EventEmitter {
   private findDependentPlugins(pluginName: string): string[] {
     const dependents: string[] = []
 
-    for (const [name, dependencies] of this.pluginDependencies) {
+    for (const [name, dependencies] of Array.from(this.pluginDependencies)) {
       if (dependencies.has(pluginName)) {
         dependents.push(name)
       }

@@ -486,4 +486,3 @@ if (require.main === module) {
 }
 
 export { EnhancedToolValidationRunner, ValidationReportGenerator }
-export default EnhancedToolValidationRunner

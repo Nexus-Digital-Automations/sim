@@ -1892,5 +1892,3 @@ describe('Automated Testing Suite for Enhanced Tool Intelligence', () => {
   })
 })
 
-export { AutomatedTestingSuite }
-export default AutomatedTestingSuite

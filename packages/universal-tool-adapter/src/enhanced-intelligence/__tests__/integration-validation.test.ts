@@ -1347,5 +1347,3 @@ describe('Integration Validation Suite', () => {
   })
 })
 
-export { IntegrationValidationSuite }
-export default IntegrationValidationSuite

@@ -1952,5 +1952,3 @@ describe('Analytics and Feedback Collection System', () => {
   })
 })
 
-export { AnalyticsFeedbackSystem }
-export default AnalyticsFeedbackSystem
