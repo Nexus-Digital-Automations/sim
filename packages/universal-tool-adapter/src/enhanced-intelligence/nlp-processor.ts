@@ -103,8 +103,8 @@ export class NLPProcessor {
       ...settings,
     }
 
-    this.vocabularyEnhancer = new VocabularyEnhancer(this.settings)
-    this.semanticAnalyzer = new SemanticAnalyzer(this.settings)
+    this.vocabularyEnhancer = new VocabularyEnhancer()
+    this.semanticAnalyzer = new SemanticAnalyzer()
     this.contentGenerator = new ContentGenerator(this.settings)
     this.qualityAssessor = new QualityAssessor(this.settings)
 
@@ -182,7 +182,7 @@ export class NLPProcessor {
 
       return result
     } catch (error) {
-      logger.error(`Failed to extract key information for ${toolConfig.id}:`, error)
+      logger.error(`Failed to extract key information for ${toolConfig.id}:`, error as Error)
 
       // Fallback to basic analysis
       return this.generateFallbackKeyInformation(toolConfig)
@@ -274,7 +274,7 @@ export class NLPProcessor {
 
       return result
     } catch (error) {
-      logger.error(`Failed comprehensive analysis for ${toolConfig.id}:`, error)
+      logger.error(`Failed comprehensive analysis for ${toolConfig.id}:`, error as Error)
 
       // Fallback to basic comprehensive analysis
       return this.generateFallbackComprehensiveAnalysis(toolConfig)
@@ -287,9 +287,9 @@ export class NLPProcessor {
 
   private async analyzeToolStructure(toolConfig: ToolConfig): Promise<StructuralAnalysis> {
     const parameterCount = Object.keys(toolConfig.params || {}).length
-    const outputCount = Object.keys(toolConfig.outputs || {}).length
+    const outputCount = Object.keys(toolConfig.output || {}).length
     const hasDescription = Boolean(toolConfig.description)
-    const hasMetadata = Boolean(toolConfig.metadata)
+    const hasMetadata = Boolean(toolConfig.category || toolConfig.tags || toolConfig.version)
 
     // Analyze parameter complexity
     const parameterComplexity = await this.analyzeParameterComplexity(toolConfig.params || {})
@@ -654,7 +654,7 @@ export class NLPProcessor {
     }
 
     const category = this.inferToolCategory(toolConfig)
-    const categoryCapabilities = {
+    const categoryCapabilities: Record<string, string> = {
       communication: 'messages',
       data_storage: 'data',
       search_research: 'information',
@@ -707,8 +707,9 @@ export class NLPProcessor {
     let score = 0
     if (toolConfig.description) score += 0.3
     if (toolConfig.params && Object.keys(toolConfig.params).length > 0) score += 0.3
-    if (toolConfig.outputs && Object.keys(toolConfig.outputs).length > 0) score += 0.2
-    if (toolConfig.metadata) score += 0.2
+    if (toolConfig.output && Object.keys(toolConfig.output).length > 0) score += 0.2
+    // Check for metadata-like properties (category, tags, etc.)
+    if (toolConfig.category || toolConfig.tags || toolConfig.version) score += 0.2
     return score
   }
 
@@ -721,6 +722,301 @@ export class NLPProcessor {
         factors.completeness,
       1.0
     )
+  }
+
+  // =============================================================================
+  // Missing Method Implementations
+  // =============================================================================
+
+  private async calculateSemanticDensity(description: string): Promise<number> {
+    // Calculate semantic density based on meaningful words vs total words
+    const words = description.split(/\s+/).filter(w => w.length > 3)
+    const totalWords = description.split(/\s+/).length
+    return totalWords > 0 ? words.length / totalWords : 0
+  }
+
+  private async extractTechnicalTerms(description: string, toolName: string): Promise<string[]> {
+    const text = `${description} ${toolName}`.toLowerCase()
+    const technicalTerms = [
+      'api', 'database', 'authentication', 'oauth', 'jwt', 'rest', 'graphql',
+      'webhook', 'encryption', 'ssl', 'json', 'xml', 'http', 'https',
+      'integration', 'endpoint', 'parameter', 'response', 'request'
+    ]
+    return technicalTerms.filter(term => text.includes(term))
+  }
+
+  private async extractActionWords(description: string, toolConfig: ToolConfig): Promise<string[]> {
+    const text = `${description} ${toolConfig.name || toolConfig.id}`.toLowerCase()
+    const actionWords = [
+      'send', 'get', 'create', 'update', 'delete', 'search', 'query',
+      'execute', 'process', 'analyze', 'generate', 'retrieve', 'store'
+    ]
+    return actionWords.filter(action => text.includes(action))
+  }
+
+  private async assessContentClarity(description: string): Promise<number> {
+    if (description.length < 10) return 0.2
+    if (description.length < 50) return 0.5
+    if (description.split('.').length > 1) return 0.8
+    return 0.6
+  }
+
+  private async assessReadability(description: string): Promise<number> {
+    const sentences = description.split(/[.!?]+/).filter(s => s.trim())
+    const words = description.split(/\s+/)
+    const avgWordsPerSentence = sentences.length > 0 ? words.length / sentences.length : 0
+
+    if (avgWordsPerSentence < 10) return 0.9
+    if (avgWordsPerSentence < 20) return 0.7
+    return 0.5
+  }
+
+  private calculateContentQuality(factors: {
+    semanticDensity: number
+    clarityScore: number
+    readabilityScore: number
+    wordCount: number
+  }): number {
+    const weights = {
+      semanticDensity: 0.3,
+      clarity: 0.3,
+      readability: 0.25,
+      length: 0.15
+    }
+
+    const lengthScore = Math.min(factors.wordCount / 50, 1.0)
+
+    return (
+      factors.semanticDensity * weights.semanticDensity +
+      factors.clarityScore * weights.clarity +
+      factors.readabilityScore * weights.readability +
+      lengthScore * weights.length
+    )
+  }
+
+  private async inferFunctionType(toolConfig: ToolConfig): Promise<string> {
+    const name = (toolConfig.name || toolConfig.id).toLowerCase()
+    const description = (toolConfig.description || '').toLowerCase()
+
+    if (name.includes('send') || description.includes('send')) return 'communication'
+    if (name.includes('get') || name.includes('fetch') || description.includes('retrieve')) return 'data-retrieval'
+    if (name.includes('create') || name.includes('generate')) return 'content-generation'
+    if (name.includes('search') || name.includes('find')) return 'search'
+    if (name.includes('analyze') || name.includes('process')) return 'analysis'
+
+    return 'general-utility'
+  }
+
+  private async analyzeDataFlow(toolConfig: ToolConfig): Promise<string> {
+    const paramCount = Object.keys(toolConfig.params || {}).length
+    const outputCount = Object.keys(toolConfig.output || {}).length
+
+    if (paramCount > outputCount) return 'data-transformation'
+    if (outputCount > paramCount) return 'data-expansion'
+    return 'data-processing'
+  }
+
+  private async identifyInteractionPattern(toolConfig: ToolConfig): Promise<string> {
+    const hasOAuth = Boolean(toolConfig.oauth)
+    const isAsync = toolConfig.timeout && toolConfig.timeout > 5000
+
+    if (hasOAuth) return 'authenticated-service'
+    if (isAsync) return 'long-running-operation'
+    return 'synchronous-request-response'
+  }
+
+  private async assessBusinessValue(toolConfig: ToolConfig): Promise<string> {
+    const category = this.inferToolCategory(toolConfig)
+    const businessValues: Record<string, string> = {
+      communication: 'enhanced-collaboration',
+      data_storage: 'data-management',
+      search_research: 'information-discovery',
+      ai_ml: 'intelligent-automation',
+      productivity: 'workflow-optimization'
+    }
+
+    return businessValues[category] || 'operational-efficiency'
+  }
+
+  private calculateFunctionalComplexity(toolConfig: ToolConfig): number {
+    const paramCount = Object.keys(toolConfig.params || {}).length
+    const hasOAuth = Boolean(toolConfig.oauth)
+    const hasValidation = Object.values(toolConfig.params || {}).some(p => p.validation)
+
+    let complexity = paramCount * 0.1
+    if (hasOAuth) complexity += 0.3
+    if (hasValidation) complexity += 0.2
+
+    return Math.min(complexity, 1.0)
+  }
+
+  private inferGeneralPurpose(toolConfig: ToolConfig): string {
+    return 'enhancing productivity and workflow automation'
+  }
+
+  private generateUseCaseDescription(useCase: string, toolConfig: ToolConfig): string {
+    const descriptions: Record<string, string> = {
+      communication: 'Facilitating team communication and messaging workflows',
+      data_management: 'Managing and organizing data across systems and platforms',
+      search_research: 'Discovering and retrieving relevant information efficiently',
+      content_creation: 'Creating and generating various types of content',
+      analysis: 'Analyzing data and providing actionable insights',
+      automation: 'Automating repetitive tasks and business processes'
+    }
+
+    return descriptions[useCase] || 'Supporting various business and technical operations'
+  }
+
+  private extractCapabilityFromName(name: string): string | null {
+    const nameText = name.toLowerCase()
+
+    if (nameText.includes('email') || nameText.includes('mail')) return 'email management'
+    if (nameText.includes('search')) return 'search functionality'
+    if (nameText.includes('data') || nameText.includes('db')) return 'data operations'
+    if (nameText.includes('ai') || nameText.includes('gpt')) return 'AI-powered processing'
+    if (nameText.includes('auth')) return 'authentication services'
+
+    return null
+  }
+
+  private async analyzeBenefits(
+    toolConfig: ToolConfig,
+    semantic: SemanticAnalysis,
+    functional: FunctionalAnalysis
+  ): Promise<string[]> {
+    const benefits = ['Improved workflow efficiency', 'Seamless integration capabilities']
+
+    if (toolConfig.oauth) {
+      benefits.push('Secure authentication and authorization')
+    }
+
+    if (functional.functionType === 'automation') {
+      benefits.push('Reduced manual effort', 'Consistent task execution')
+    }
+
+    if (functional.businessValue === 'enhanced-collaboration') {
+      benefits.push('Better team communication', 'Streamlined collaboration')
+    }
+
+    return benefits
+  }
+
+  private async analyzeLimitations(
+    toolConfig: ToolConfig,
+    structural: StructuralAnalysis,
+    functional: FunctionalAnalysis
+  ): Promise<string[]> {
+    const limitations = []
+
+    if (toolConfig.oauth) {
+      limitations.push('Requires proper authentication setup')
+    }
+
+    if (structural.parameterCount > 5) {
+      limitations.push('Complex configuration requirements')
+    }
+
+    if (toolConfig.timeout && toolConfig.timeout > 10000) {
+      limitations.push('May have longer response times')
+    }
+
+    if (!toolConfig.retryable) {
+      limitations.push('Not automatically retryable on failure')
+    }
+
+    return limitations.length > 0 ? limitations : ['Standard operational limitations apply']
+  }
+
+  private async extractTechnicalDetails(
+    toolConfig: ToolConfig,
+    structural: StructuralAnalysis,
+    content: ContentAnalysis
+  ): Promise<TechnicalDetails> {
+    const architecture = ['REST API based']
+    const dependencies = []
+    const integrationPoints = ['HTTP endpoints']
+    const securityConsiderations = []
+    const scalabilityFactors = []
+
+    if (toolConfig.oauth) {
+      dependencies.push('OAuth 2.0 provider')
+      securityConsiderations.push('OAuth token management', 'Secure credential storage')
+    }
+
+    if (toolConfig.timeout) {
+      scalabilityFactors.push(`Timeout limit: ${toolConfig.timeout}ms`)
+    }
+
+    if (structural.parameterCount > 3) {
+      architecture.push('Multi-parameter configuration')
+    }
+
+    return {
+      architecture,
+      dependencies: dependencies.length > 0 ? dependencies : ['Standard runtime dependencies'],
+      integrationPoints,
+      securityConsiderations: securityConsiderations.length > 0 ? securityConsiderations : ['Standard security practices'],
+      scalabilityFactors: scalabilityFactors.length > 0 ? scalabilityFactors : ['Standard scalability considerations']
+    }
+  }
+
+  private async identifyUsagePatterns(
+    toolConfig: ToolConfig,
+    semantic: SemanticAnalysis,
+    functional: FunctionalAnalysis
+  ): Promise<UsagePattern[]> {
+    const patterns: UsagePattern[] = []
+
+    // Basic usage pattern
+    patterns.push({
+      pattern: 'Standard Operation',
+      frequency: 'common',
+      complexity: functional.functionalComplexity > 0.7 ? 'complex' : functional.functionalComplexity > 0.4 ? 'moderate' : 'simple',
+      description: 'Regular usage following standard configuration and execution flow',
+      examples: ['Basic parameter configuration', 'Standard API call execution']
+    })
+
+    // OAuth pattern if applicable
+    if (toolConfig.oauth) {
+      patterns.push({
+        pattern: 'Authenticated Access',
+        frequency: 'common',
+        complexity: 'moderate',
+        description: 'Usage requiring proper authentication and authorization setup',
+        examples: ['Initial OAuth setup', 'Token refresh handling', 'Authorized API access']
+      })
+    }
+
+    return patterns
+  }
+
+  private async analyzePerformanceCharacteristics(
+    toolConfig: ToolConfig,
+    structural: StructuralAnalysis,
+    functional: FunctionalAnalysis
+  ): Promise<PerformanceCharacteristics> {
+    const timeout = toolConfig.timeout || 30000
+    const isComplex = structural.parameterCount > 5 || functional.functionalComplexity > 0.7
+
+    return {
+      expectedLatency: timeout > 10000 ? 'High (>10s)' : timeout > 5000 ? 'Moderate (5-10s)' : 'Low (<5s)',
+      throughputCapacity: isComplex ? 'Limited by complexity' : 'Standard API limits',
+      resourceRequirements: [
+        'Network connectivity',
+        ...(toolConfig.oauth ? ['Authentication tokens'] : []),
+        ...(isComplex ? ['Additional processing time'] : [])
+      ],
+      scalabilityLimits: [
+        'API rate limiting',
+        ...(toolConfig.oauth ? ['OAuth token limits'] : []),
+        'Service availability'
+      ],
+      optimizationOpportunities: [
+        'Parameter optimization',
+        'Caching strategies',
+        ...(toolConfig.retryable ? ['Retry logic tuning'] : [])
+      ]
+    }
   }
 
   // Additional method implementations would continue here...
