@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useId } from 'react'
 import {
   ArrowUp,
   BinaryIcon,
@@ -142,6 +142,9 @@ const SAMPLE_WORKFLOW_EDGES = [
  * Hero component for the landing page featuring service integrations and workflow preview
  */
 export default function Hero() {
+  const heroSectionId = useId()
+  const heroHeadingId = useId()
+  const agentDescriptionId = useId()
   const router = useRouter()
 
   /**
@@ -384,12 +387,12 @@ export default function Hero() {
 
   return (
     <section
-      id='hero'
+      id={heroSectionId}
       className={`${soehne.className} flex w-full flex-col items-center justify-center pt-[36px] sm:pt-[80px]`}
-      aria-labelledby='hero-heading'
+      aria-labelledby={heroHeadingId}
     >
       <h1
-        id='hero-heading'
+        id={heroHeadingId}
         className='px-4 text-center font-medium text-[36px] leading-none tracking-tight sm:px-0 sm:text-[74px]'
       >
         Workflows for LLMs
@@ -425,7 +428,7 @@ export default function Hero() {
             Describe the AI agent you want to build
           </label>
           <textarea
-            id='agent-description'
+            id={agentDescriptionId}
             placeholder={
               isMobile ? 'Build an AI agent...' : 'Ask Sim to build an agent to read my emails...'
             }

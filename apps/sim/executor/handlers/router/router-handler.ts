@@ -3,7 +3,6 @@ import { createLogger } from '@/lib/logs/console/logger'
 import { generateRouterPrompt } from '@/blocks/blocks/router'
 import type { BlockOutput } from '@/blocks/types'
 import { BlockType } from '@/executor/consts'
-import type { PathTracker } from '@/executor/path/path'
 import type { BlockHandler, ExecutionContext } from '@/executor/types'
 import { calculateCost, getProviderFromModel } from '@/providers/utils'
 import type { SerializedBlock } from '@/serializer/types'
@@ -14,11 +13,6 @@ const logger = createLogger('RouterBlockHandler')
  * Handler for Router blocks that dynamically select execution paths.
  */
 export class RouterBlockHandler implements BlockHandler {
-  /**
-   * @param pathTracker - Utility for tracking execution paths
-   */
-  constructor(_pathTracker: PathTracker) {}
-
   canHandle(block: SerializedBlock): boolean {
     return block.metadata?.id === BlockType.ROUTER
   }

@@ -13,7 +13,7 @@
  * - Integration with Parlant agent creation API
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Brain, HelpCircle, Plus, Trash2, Wand2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -120,6 +120,14 @@ export function CreateAgentModal({
   onOpenChange,
   onAgentCreated,
 }: CreateAgentModalProps) {
+  // Generate unique IDs for form fields
+  const nameId = useId()
+  const descriptionId = useId()
+  const maxTurnsId = useId()
+  const systemPromptId = useId()
+  const conditionId = useId()
+  const actionId = useId()
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -342,9 +350,9 @@ export function CreateAgentModal({
             <TabsContent value='basic' className='mt-6 space-y-4'>
               <div className='grid gap-4'>
                 <div>
-                  <Label htmlFor='name'>Agent Name *</Label>
+                  <Label htmlFor={nameId}>Agent Name *</Label>
                   <Input
-                    id='name'
+                    id={nameId}
                     value={formData.name}
                     onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder='Enter agent name...'
@@ -354,9 +362,9 @@ export function CreateAgentModal({
                 </div>
 
                 <div>
-                  <Label htmlFor='description'>Description</Label>
+                  <Label htmlFor={descriptionId}>Description</Label>
                   <Textarea
-                    id='description'
+                    id={descriptionId}
                     value={formData.description}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, description: e.target.value }))
@@ -422,9 +430,9 @@ export function CreateAgentModal({
                 </div>
 
                 <div>
-                  <Label htmlFor='max_turns'>Maximum Conversation Turns</Label>
+                  <Label htmlFor={maxTurnsId}>Maximum Conversation Turns</Label>
                   <Input
-                    id='max_turns'
+                    id={maxTurnsId}
                     type='number'
                     value={config.max_turns}
                     onChange={(e) =>
@@ -443,9 +451,9 @@ export function CreateAgentModal({
                 </div>
 
                 <div>
-                  <Label htmlFor='system_prompt'>System Prompt</Label>
+                  <Label htmlFor={systemPromptId}>System Prompt</Label>
                   <Textarea
-                    id='system_prompt'
+                    id={systemPromptId}
                     value={config.system_prompt}
                     onChange={(e) =>
                       setConfig((prev) => ({ ...prev, system_prompt: e.target.value }))
@@ -468,9 +476,9 @@ export function CreateAgentModal({
                 </CardHeader>
                 <CardContent className='space-y-4'>
                   <div>
-                    <Label htmlFor='condition'>When (Condition)</Label>
+                    <Label htmlFor={conditionId}>When (Condition)</Label>
                     <Input
-                      id='condition'
+                      id={conditionId}
                       value={newGuideline.condition}
                       onChange={(e) =>
                         setNewGuideline((prev) => ({ ...prev, condition: e.target.value }))
@@ -479,9 +487,9 @@ export function CreateAgentModal({
                     />
                   </div>
                   <div>
-                    <Label htmlFor='action'>Then (Action)</Label>
+                    <Label htmlFor={actionId}>Then (Action)</Label>
                     <Input
-                      id='action'
+                      id={actionId}
                       value={newGuideline.action}
                       onChange={(e) =>
                         setNewGuideline((prev) => ({ ...prev, action: e.target.value }))

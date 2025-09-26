@@ -704,7 +704,9 @@ describe('Workflow Integration Testing Framework', () => {
       // Simulate reconnection and replay
       setTimeout(() => {
         mockSocket.connected = true
-        bufferedEvents.forEach((event) => mockSocket.emit('buffered-event', event))
+        for (const event of bufferedEvents) {
+          mockSocket.emit('buffered-event', event)
+        }
       }, 500)
 
       await executeDualModeWorkflow(testWorkflowId, { enableRealTimeProgress: true })

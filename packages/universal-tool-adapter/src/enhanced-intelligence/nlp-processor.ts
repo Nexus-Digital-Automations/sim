@@ -87,10 +87,8 @@ export interface NLPSettings {
  */
 export class NLPProcessor {
   private settings: NLPSettings
-  private vocabularyEnhancer: VocabularyEnhancer
   private semanticAnalyzer: SemanticAnalyzer
   private contentGenerator: ContentGenerator
-  private qualityAssessor: QualityAssessor
 
   constructor(settings: NLPSettings = {}) {
     this.settings = {
@@ -1086,8 +1084,6 @@ class SemanticAnalyzer {
 }
 
 class ContentGenerator {
-  constructor(_settings: NLPSettings) {}
-
   async generateOverview(
     toolConfig: ToolConfig,
     structural: StructuralAnalysis,
@@ -1122,8 +1118,6 @@ class ContentGenerator {
 }
 
 class QualityAssessor {
-  constructor(_settings: NLPSettings) {}
-
   async assessContentQuality(content: string): Promise<number> {
     // Implementation for content quality assessment
     if (content.length < 10) return 0.2

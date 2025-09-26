@@ -100,7 +100,9 @@ export class ComprehensiveTestDataGenerator {
     }
 
     // Cache scenarios for reuse
-    scenarios.forEach((scenario) => this.scenarios.set(scenario.id, scenario))
+    for (const scenario of scenarios) {
+      this.scenarios.set(scenario.id, scenario)
+    }
 
     return scenarios
   }

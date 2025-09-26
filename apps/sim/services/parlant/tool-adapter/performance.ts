@@ -577,8 +577,6 @@ class Connection {
   private healthy = true
   private lastUsed = Date.now()
 
-  constructor(_serviceName: string) {}
-
   isHealthy(): boolean {
     // Consider connection stale after 5 minutes
     const maxAge = 5 * 60 * 1000

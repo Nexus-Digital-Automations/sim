@@ -200,12 +200,16 @@ function main() {
 
     if (warnings.length > 0) {
       console.log(`\n⚠️  Warnings:`)
-      warnings.forEach((warning) => console.log(`   ${warning}`))
+      for (const warning of warnings) {
+        console.log(`   ${warning}`)
+      }
     }
 
     if (errors.length > 0) {
       console.log(`\n❌ Errors:`)
-      errors.forEach((error) => console.log(`   ${error}`))
+      for (const error of errors) {
+        console.log(`   ${error}`)
+      }
       console.log(`\n💡 Fix these errors before starting Parlant server`)
       process.exit(1)
     } else {

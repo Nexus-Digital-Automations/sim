@@ -990,8 +990,6 @@ export class AdapterTestFramework extends EventEmitter {
 // Supporting classes (simplified implementations)
 
 class TestRunner {
-  constructor(_config: TestFrameworkConfig, _framework: AdapterTestFramework) {}
-
   async runSuite(suite: TestSuite): Promise<TestSuiteResult> {
     const startTime = new Date()
     const results: TestCase[] = []
@@ -1053,8 +1051,6 @@ class TestRunner {
 }
 
 class MockGenerator {
-  constructor(_config: TestFrameworkConfig, _framework: AdapterTestFramework) {}
-
   async generateMockData(
     adapter: BaseAdapter,
     scenario: string,
@@ -1076,8 +1072,6 @@ class MockGenerator {
 }
 
 class FixtureManager {
-  constructor(_config: TestFrameworkConfig) {}
-
   async createFromExecution(
     adapterId: string,
     context: ParlantExecutionContext,
@@ -1101,8 +1095,6 @@ class FixtureManager {
 class AssertionEngine {
   private assertions: AssertionResult[] = []
 
-  constructor(_config: TestFrameworkConfig) {}
-
   assert(condition: boolean, message: string): void {
     this.assertions.push({
       passed: condition,
@@ -1121,8 +1113,6 @@ class AssertionEngine {
 }
 
 class PerformanceTester {
-  constructor(_config: TestFrameworkConfig, _framework: AdapterTestFramework) {}
-
   async benchmark(
     adapter: BaseAdapter,
     benchmarkConfig: BenchmarkConfig

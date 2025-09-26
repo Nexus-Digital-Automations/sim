@@ -826,10 +826,10 @@ describe('Journey Execution Integration Tests', () => {
       const results = await Promise.all(promises)
 
       expect(results).toHaveLength(concurrentExecutions)
-      results.forEach((result, index) => {
+      for (const [index, result] of results.entries()) {
         expect(result.sessionId).toBeDefined()
         expect(result.journeyId).toContain(`${index}`)
-      })
+      }
     })
 
     test('should maintain performance under message load', async () => {
@@ -862,10 +862,10 @@ describe('Journey Execution Integration Tests', () => {
       const avgResponseTime = totalTime / messageCount
       console.log(`📊 Average response time: ${avgResponseTime}ms`)
 
-      responses.forEach((response) => {
+      for (const response of responses) {
         expect(response).toBeDefined()
         expect(response.message).toBeTruthy()
-      })
+      }
     })
 
     test('should handle memory usage efficiently', async () => {

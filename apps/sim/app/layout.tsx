@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
@@ -60,6 +61,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = generateBrandedMetadata()
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const themeStyleId = useId()
   const structuredData = generateStructuredData()
   const themeCSS = generateThemeCSS()
 
@@ -77,7 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Theme CSS Override */}
         {themeCSS && (
           <style
-            id='theme-override'
+            id={themeStyleId}
             dangerouslySetInnerHTML={{
               __html: themeCSS,
             }}

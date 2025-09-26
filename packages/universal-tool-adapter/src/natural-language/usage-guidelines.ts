@@ -162,7 +162,6 @@ export interface ConversationExample {
 export class UsageGuidelinesEngine {
   private guidelines: Map<string, UsageGuideline[]> = new Map()
   private intentClassifier: IntentClassifier
-  private contextAnalyzer: ContextAnalyzer
 
   constructor() {
     this.contextAnalyzer = new ContextAnalyzer()

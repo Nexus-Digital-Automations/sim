@@ -187,7 +187,9 @@ class ParlantTestRunner {
     const fileCheck = this.checkTestFiles()
     if (!fileCheck.allExist) {
       console.error('❌ Missing test files:')
-      fileCheck.missing.forEach((file) => console.error(`   - ${file}`))
+      for (const file of fileCheck.missing) {
+        console.error(`   - ${file}`)
+      }
       return {
         success: false,
         results: [],

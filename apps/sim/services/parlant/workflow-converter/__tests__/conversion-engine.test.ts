@@ -147,11 +147,13 @@ describe('WorkflowConversionEngine', () => {
       expect(result.journey?.transitions).toHaveLength(2)
 
       // Check transition structure
-      result.journey?.transitions.forEach((transition) => {
-        expect(transition.id).toBeDefined()
-        expect(transition.sourceStateId).toBeDefined()
-        expect(transition.targetStateId).toBeDefined()
-      })
+      if (result.journey?.transitions) {
+        for (const transition of result.journey.transitions) {
+          expect(transition.id).toBeDefined()
+          expect(transition.sourceStateId).toBeDefined()
+          expect(transition.targetStateId).toBeDefined()
+        }
+      }
     })
   })
 
@@ -167,12 +169,14 @@ describe('WorkflowConversionEngine', () => {
       expect(result.success).toBe(true)
 
       // Check that positions are preserved
-      result.journey?.states.forEach((state) => {
-        const originalNode = mockWorkflow.nodes.find((n) => state.name === n.data.name)
-        if (originalNode) {
-          expect(state.position).toEqual(originalNode.position)
+      if (result.journey?.states) {
+        for (const state of result.journey.states) {
+          const originalNode = mockWorkflow.nodes.find((n) => state.name === n.data.name)
+          if (originalNode) {
+            expect(state.position).toEqual(originalNode.position)
+          }
         }
-      })
+      }
     })
 
     test('should handle validation option', async () => {

@@ -44,11 +44,6 @@ export class EnhancedAdapterFramework {
   private readonly cache = new Map<string, any>()
   private readonly metrics = new Map<string, number>()
 
-  // Core framework components
-  private readonly parameterMapper: ParameterMapper
-  private readonly validationEngine: ValidationEngine
-  private readonly resultFormatter: ResultFormatter
-
   // Framework configuration
   private readonly config: FrameworkConfiguration
 
@@ -1252,8 +1247,6 @@ class PerformanceOptimizer {
   private cacheHits = 0
   private cacheRequests = 0
 
-  constructor(_config: FrameworkConfiguration) {}
-
   getCacheHitRate(): number {
     return this.cacheRequests > 0 ? this.cacheHits / this.cacheRequests : 0
   }
@@ -1317,8 +1310,6 @@ class FrameworkMonitor {
 
 class UsageAnalytics {
   private executionTimes: number[] = []
-
-  constructor(_config: FrameworkConfiguration) {}
 
   recordAdapterCreation(type: string, duration: number): void {
     // Record metrics

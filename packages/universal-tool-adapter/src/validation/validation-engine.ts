@@ -109,7 +109,9 @@ export class ValidationSchemas {
       const schema = condition(data) ? trueSchema : falseSchema
       const result = schema.safeParse(data)
       if (!result.success) {
-        result.error.issues.forEach((issue) => ctx.addIssue(issue))
+        for (const issue of result.error.issues) {
+          ctx.addIssue(issue)
+        }
       }
     }) as z.ZodSchema<T>
   }

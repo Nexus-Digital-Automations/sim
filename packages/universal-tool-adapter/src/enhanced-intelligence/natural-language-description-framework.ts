@@ -1286,8 +1286,6 @@ class QualityValidator {
 }
 
 class NLPProcessor {
-  constructor(_settings?: NLPSettings) {}
-
   async extractKeyInformation(toolConfig: ToolConfig): Promise<KeyInformationResult> {
     return {
       oneSentenceSummary: `${toolConfig.name || toolConfig.id} helps you accomplish tasks efficiently`,

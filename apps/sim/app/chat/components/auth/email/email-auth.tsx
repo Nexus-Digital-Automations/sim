@@ -1,6 +1,6 @@
 'use client'
 
-import { type KeyboardEvent, useEffect, useState } from 'react'
+import { type KeyboardEvent, useEffect, useId, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,6 +44,9 @@ export default function EmailAuth({
   title = 'chat',
   primaryColor = 'var(--brand-primary-hover-hex)',
 }: EmailAuthProps) {
+  // Generate unique ID for form elements
+  const emailId = useId()
+
   // Email auth state
   const [email, setEmail] = useState('')
   const [authError, setAuthError] = useState<string | null>(null)
@@ -263,10 +266,10 @@ export default function EmailAuth({
                   <div className='space-y-6'>
                     <div className='space-y-2'>
                       <div className='flex items-center justify-between'>
-                        <Label htmlFor='email'>Email</Label>
+                        <Label htmlFor={emailId}>Email</Label>
                       </div>
                       <Input
-                        id='email'
+                        id={emailId}
                         name='email'
                         placeholder='Enter your email'
                         required

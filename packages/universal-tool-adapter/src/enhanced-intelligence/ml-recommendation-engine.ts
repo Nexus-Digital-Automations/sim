@@ -358,9 +358,7 @@ export interface UserPreferences {
 export class MLRecommendationEngine {
   private config: MLRecommendationConfig
   private collaborativeModel: CollaborativeFilteringModel | null = null
-  private contentBasedModel: ContentBasedModel | null = null
   private sequentialModel: SequentialModel | null = null
-  private hybridModel: HybridModel | null = null
 
   private userProfiles: Map<string, UserProfile> = new Map()
   private interactionHistory: InteractionData[] = []

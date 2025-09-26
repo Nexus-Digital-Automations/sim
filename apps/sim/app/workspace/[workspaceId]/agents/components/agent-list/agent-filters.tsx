@@ -7,6 +7,7 @@
 
 'use client'
 
+import { useId } from 'react'
 import { X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,12 @@ interface AgentFiltersProps {
 }
 
 export function AgentFilters({ filters, onFiltersChange, onReset }: AgentFiltersProps) {
+  // Generate unique IDs for form controls
+  const statusFilterId = useId()
+  const sortFilterId = useId()
+  const orderFilterId = useId()
+  const createdByFilterId = useId()
+
   const updateFilter = (key: keyof AgentListQuery, value: any) => {
     if (value === 'all' || value === '') {
       const newFilters = { ...filters }
@@ -62,14 +69,14 @@ export function AgentFilters({ filters, onFiltersChange, onReset }: AgentFilters
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
           {/* Status Filter */}
           <div className='space-y-2'>
-            <Label htmlFor='status-filter' className='font-medium text-xs'>
+            <Label htmlFor={statusFilterId} className='font-medium text-xs'>
               Status
             </Label>
             <Select
               value={filters.status || 'all'}
               onValueChange={(value) => updateFilter('status', value)}
             >
-              <SelectTrigger id='status-filter' className='h-8'>
+              <SelectTrigger id={statusFilterId} className='h-8'>
                 <SelectValue placeholder='Any status' />
               </SelectTrigger>
               <SelectContent>
@@ -98,14 +105,14 @@ export function AgentFilters({ filters, onFiltersChange, onReset }: AgentFilters
 
           {/* Sort By */}
           <div className='space-y-2'>
-            <Label htmlFor='sort-filter' className='font-medium text-xs'>
+            <Label htmlFor={sortFilterId} className='font-medium text-xs'>
               Sort by
             </Label>
             <Select
               value={filters.sort_by || 'updated_at'}
               onValueChange={(value) => updateFilter('sort_by', value)}
             >
-              <SelectTrigger id='sort-filter' className='h-8'>
+              <SelectTrigger id={sortFilterId} className='h-8'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -119,14 +126,14 @@ export function AgentFilters({ filters, onFiltersChange, onReset }: AgentFilters
 
           {/* Order */}
           <div className='space-y-2'>
-            <Label htmlFor='order-filter' className='font-medium text-xs'>
+            <Label htmlFor={orderFilterId} className='font-medium text-xs'>
               Order
             </Label>
             <Select
               value={filters.sort_order || 'desc'}
               onValueChange={(value) => updateFilter('sort_order', value)}
             >
-              <SelectTrigger id='order-filter' className='h-8'>
+              <SelectTrigger id={orderFilterId} className='h-8'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -138,14 +145,14 @@ export function AgentFilters({ filters, onFiltersChange, onReset }: AgentFilters
 
           {/* Created By Filter (if applicable) */}
           <div className='space-y-2'>
-            <Label htmlFor='created-by-filter' className='font-medium text-xs'>
+            <Label htmlFor={createdByFilterId} className='font-medium text-xs'>
               Created by
             </Label>
             <Select
               value={filters.created_by || 'all'}
               onValueChange={(value) => updateFilter('created_by', value)}
             >
-              <SelectTrigger id='created-by-filter' className='h-8'>
+              <SelectTrigger id={createdByFilterId} className='h-8'>
                 <SelectValue placeholder='Anyone' />
               </SelectTrigger>
               <SelectContent>

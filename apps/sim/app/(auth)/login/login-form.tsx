@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -94,6 +94,9 @@ export default function LoginPage({
   googleAvailable: boolean
   isProduction: boolean
 }) {
+  const emailInputId = useId()
+  const passwordInputId = useId()
+  const resetEmailInputId = useId()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
@@ -400,10 +403,10 @@ export default function LoginPage({
         <div className='space-y-6'>
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='email'>Email</Label>
+              <Label htmlFor={emailInputId}>Email</Label>
             </div>
             <Input
-              id='email'
+              id={emailInputId}
               name='email'
               placeholder='Enter your email'
               required
@@ -429,7 +432,7 @@ export default function LoginPage({
           </div>
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='password'>Password</Label>
+              <Label htmlFor={passwordInputId}>Password</Label>
               <button
                 type='button'
                 onClick={() => setForgotPasswordOpen(true)}
@@ -440,7 +443,7 @@ export default function LoginPage({
             </div>
             <div className='relative'>
               <Input
-                id='password'
+                id={passwordInputId}
                 name='password'
                 required
                 type={showPassword ? 'text' : 'password'}
@@ -550,10 +553,10 @@ export default function LoginPage({
           <div className='space-y-4'>
             <div className='space-y-2'>
               <div className='flex items-center justify-between'>
-                <Label htmlFor='reset-email'>Email</Label>
+                <Label htmlFor={resetEmailInputId}>Email</Label>
               </div>
               <Input
-                id='reset-email'
+                id={resetEmailInputId}
                 value={forgotPasswordEmail}
                 onChange={(e) => setForgotPasswordEmail(e.target.value)}
                 placeholder='Enter your email'

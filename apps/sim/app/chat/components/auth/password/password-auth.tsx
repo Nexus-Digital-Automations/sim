@@ -1,6 +1,6 @@
 'use client'
 
-import { type KeyboardEvent, useEffect, useState } from 'react'
+import { type KeyboardEvent, useEffect, useId, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +26,9 @@ export default function PasswordAuth({
   title = 'chat',
   primaryColor = 'var(--brand-primary-hover-hex)',
 }: PasswordAuthProps) {
+  // Generate unique ID for form elements
+  const passwordId = useId()
+
   // Password auth state
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState<string | null>(null)
@@ -154,11 +157,11 @@ export default function PasswordAuth({
               <div className='space-y-6'>
                 <div className='space-y-2'>
                   <div className='flex items-center justify-between'>
-                    <Label htmlFor='password'>Password</Label>
+                    <Label htmlFor={passwordId}>Password</Label>
                   </div>
                   <div className='relative'>
                     <Input
-                      id='password'
+                      id={passwordId}
                       name='password'
                       required
                       type={showPassword ? 'text' : 'password'}

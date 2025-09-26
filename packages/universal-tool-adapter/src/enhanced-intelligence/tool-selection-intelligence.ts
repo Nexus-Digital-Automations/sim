@@ -197,10 +197,8 @@ class SimToolCatalog {
 
 export class ToolSelectionIntelligenceEngine {
   private simToolCatalog: SimToolCatalog
-  private toolClassifier!: SimToolClassifier
   private contextAnalyzer: ContextAnalyzer
   private userProfiler: UserProfiler
-  private recommendationEngine!: RecommendationEngine
   private reasoningEngine: ReasoningEngine
 
   constructor(config?: ToolSelectionConfig) {
@@ -708,15 +706,21 @@ export class ToolSelectionIntelligenceEngine {
 
     // From tool name
     const nameActions = this.extractActionsFromText(tool.toolName)
-    nameActions.forEach((action) => actions.add(action))
+    nameActions.forEach((action) => {
+      actions.add(action)
+    })
 
     // From display name
     const displayActions = this.extractActionsFromText(tool.displayName)
-    displayActions.forEach((action) => actions.add(action))
+    displayActions.forEach((action) => {
+      actions.add(action)
+    })
 
     // Add category-based actions
     const categoryActions = this.getCategoryActions(tool.category)
-    categoryActions.forEach((action) => actions.add(action))
+    categoryActions.forEach((action) => {
+      actions.add(action)
+    })
 
     return Array.from(actions)
   }
@@ -1315,8 +1319,6 @@ export class ToolSelectionIntelligenceEngine {
 // =============================================================================
 
 class ContextAnalyzer {
-  constructor(_settings?: ContextAnalysisSettings) {}
-
   async analyzeContext(userContext: UserContext): Promise<ContextualAnalysisResult> {
     return {
       workflowStage: userContext.workflowStage?.stage || 'planning',
@@ -1328,8 +1330,6 @@ class ContextAnalyzer {
 }
 
 class UserProfiler {
-  constructor(_settings?: UserProfilingSettings) {}
-
   async analyzeContext(userContext: UserContext): Promise<ContextualProfile> {
     return {
       workEnvironment: 'office',
@@ -1370,8 +1370,6 @@ class UserProfiler {
 class RecommendationEngine {}
 
 class ReasoningEngine {
-  constructor(_settings?: ReasoningSettings) {}
-
   async generateSelectionReasoning(
     primary: EnrichedToolRecommendation,
     alternatives: EnrichedToolRecommendation[],

@@ -179,7 +179,9 @@ describe('Knowledge Search Utils', () => {
   describe('generateSearchEmbedding', () => {
     it('should use Azure OpenAI when KB-specific config is provided', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
       Object.assign(env, {
         AZURE_OPENAI_API_KEY: 'test-azure-key',
         AZURE_OPENAI_ENDPOINT: 'https://test.openai.azure.com',
@@ -209,12 +211,16 @@ describe('Knowledge Search Utils', () => {
       expect(result).toEqual([0.1, 0.2, 0.3])
 
       // Clean up
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
     })
 
     it('should fallback to OpenAI when no KB Azure config provided', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
       Object.assign(env, {
         OPENAI_API_KEY: 'test-openai-key',
       })
@@ -240,12 +246,16 @@ describe('Knowledge Search Utils', () => {
       expect(result).toEqual([0.1, 0.2, 0.3])
 
       // Clean up
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
     })
 
     it('should use default API version when not provided in Azure config', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
       Object.assign(env, {
         AZURE_OPENAI_API_KEY: 'test-azure-key',
         AZURE_OPENAI_ENDPOINT: 'https://test.openai.azure.com',
@@ -269,12 +279,16 @@ describe('Knowledge Search Utils', () => {
       )
 
       // Clean up
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
     })
 
     it('should use custom model name when provided in Azure config', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
       Object.assign(env, {
         AZURE_OPENAI_API_KEY: 'test-azure-key',
         AZURE_OPENAI_ENDPOINT: 'https://test.openai.azure.com',
@@ -299,12 +313,16 @@ describe('Knowledge Search Utils', () => {
       )
 
       // Clean up
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
     })
 
     it('should throw error when no API configuration provided', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
 
       await expect(generateSearchEmbedding('test query')).rejects.toThrow(
         'Either OPENAI_API_KEY or Azure OpenAI configuration (AZURE_OPENAI_API_KEY + AZURE_OPENAI_ENDPOINT) must be configured'
@@ -313,7 +331,9 @@ describe('Knowledge Search Utils', () => {
 
     it('should handle Azure OpenAI API errors properly', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
       Object.assign(env, {
         AZURE_OPENAI_API_KEY: 'test-azure-key',
         AZURE_OPENAI_ENDPOINT: 'https://test.openai.azure.com',
@@ -332,12 +352,16 @@ describe('Knowledge Search Utils', () => {
       await expect(generateSearchEmbedding('test query')).rejects.toThrow('Embedding API failed')
 
       // Clean up
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
     })
 
     it('should handle OpenAI API errors properly', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
       Object.assign(env, {
         OPENAI_API_KEY: 'test-openai-key',
       })
@@ -353,12 +377,16 @@ describe('Knowledge Search Utils', () => {
       await expect(generateSearchEmbedding('test query')).rejects.toThrow('Embedding API failed')
 
       // Clean up
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
     })
 
     it('should include correct request body for Azure OpenAI', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
       Object.assign(env, {
         AZURE_OPENAI_API_KEY: 'test-azure-key',
         AZURE_OPENAI_ENDPOINT: 'https://test.openai.azure.com',
@@ -387,12 +415,16 @@ describe('Knowledge Search Utils', () => {
       )
 
       // Clean up
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
     })
 
     it('should include correct request body for OpenAI', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
       Object.assign(env, {
         OPENAI_API_KEY: 'test-openai-key',
       })
@@ -419,7 +451,9 @@ describe('Knowledge Search Utils', () => {
       )
 
       // Clean up
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
     })
   })
 

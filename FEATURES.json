@@ -44,9 +44,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": [
-        "parlant-server-setup"
-      ],
+      "dependencies": ["parlant-server-setup"],
       "components": [
         "Create apps/sim/services/parlant/ integration layer",
         "Bridge authentication between Sim users and Parlant agents",
@@ -85,9 +83,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": [
-        "parlant-server-setup"
-      ],
+      "dependencies": ["parlant-server-setup"],
       "components": [
         "Add Parlant agent tables (agents, guidelines, journeys, sessions)",
         "Link agents to Sim workspaces and users",
@@ -126,9 +122,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "sim-parlant-bridge"
-      ],
+      "dependencies": ["sim-parlant-bridge"],
       "components": [
         "Create adapter pattern for Sim tools → Parlant format",
         "Wrap existing tools with Parlant-compatible interfaces",
@@ -166,9 +160,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["universal-tool-adapter"],
       "components": [
         "Map ReactFlow nodes to Parlant journey states",
         "Enable dynamic journey creation from workflow templates",
@@ -207,9 +199,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["universal-tool-adapter"],
       "components": [
         "Add natural language descriptions to all tools",
         "Create usage guidelines for each integration",
@@ -249,9 +239,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "sim-parlant-bridge"
-      ],
+      "dependencies": ["sim-parlant-bridge"],
       "components": [
         "Install and configure parlant-chat-react widget",
         "Create new /chat routes with agent selection",
@@ -292,10 +280,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "parlant-chat-interface",
-        "workflow-journey-mapping"
-      ],
+      "dependencies": ["parlant-chat-interface", "workflow-journey-mapping"],
       "components": [
         "Add 'Chat with Workflow' buttons to workflow cards",
         "Enable switching between visual editor and chat mode",
@@ -334,9 +319,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "parlant-chat-interface"
-      ],
+      "dependencies": ["parlant-chat-interface"],
       "components": [
         "Create agent configuration panels in workspace settings",
         "Build visual guideline builder integrated with tool registry",
@@ -374,9 +357,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "agent-management-ui"
-      ],
+      "dependencies": ["agent-management-ui"],
       "components": [
         "Connect existing knowledge bases to Parlant retrievers",
         "Implement RAG for workflow documentation and help",
@@ -413,9 +394,7 @@
       "priority": "low",
       "status": "implemented",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "knowledge-integration"
-      ],
+      "dependencies": ["knowledge-integration"],
       "components": [
         "Create agent teams for complex workflows",
         "Implement handoff between specialized agents",
@@ -452,9 +431,7 @@
       "priority": "low",
       "status": "implemented",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "multi-agent-orchestration"
-      ],
+      "dependencies": ["multi-agent-orchestration"],
       "components": [
         "Implement canned responses for compliance and branding",
         "Add advanced security scanning for conversations",
@@ -492,10 +469,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "parlant-chat-interface",
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["parlant-chat-interface", "universal-tool-adapter"],
       "components": [
         "Create local copilot store system using Parlant agents",
         "Build API endpoints for local copilot communication",
@@ -537,14 +511,17 @@
       "description": "Replace <img> element with Next.js <Image /> component in apps/docs/components/ui/lightbox.tsx for better LCP and bandwidth optimization",
       "business_value": "Improves page load performance and reduces bandwidth usage, better user experience",
       "category": "performance",
-      "status": "approved",
+      "status": "implemented",
       "created_at": "2025-09-26T20:43:04.821Z",
-      "updated_at": "2025-09-26T20:43:38.001Z",
+      "updated_at": "2025-09-26T21:19:45.000Z",
       "suggested_by": "system",
       "metadata": {},
       "approved_by": "claude-code-agent",
       "approval_date": "2025-09-26T20:43:38.002Z",
-      "approval_notes": "Critical performance issue - img elements should use Next.js Image component for optimization"
+      "approval_notes": "Critical performance issue - img elements should use Next.js Image component for optimization",
+      "implemented_by": "LOCALHOST_CONNECTION_DEBUG_AGENT",
+      "implementation_date": "2025-09-26T21:19:45.000Z",
+      "implementation_notes": "Feature was already implemented - lightbox component already uses Next.js Image component with proper optimization (fill, priority, sizes). No img elements found to replace."
     },
     {
       "id": "feature_1758919397353_5f459efe1ed9",
@@ -552,14 +529,17 @@
       "description": "Fix 4+ linting errors where forEach callbacks return values instead of void. Found in test files: security-compliance-tests.test.ts, performance-benchmarking.test.ts, workflow-execution-visibility.test.ts",
       "business_value": "Improves code quality and prevents potential bugs in callback functions",
       "category": "bug-fix",
-      "status": "approved",
+      "status": "implemented",
       "created_at": "2025-09-26T20:43:17.353Z",
-      "updated_at": "2025-09-26T20:43:47.212Z",
+      "updated_at": "2025-09-26T21:23:00.000Z",
       "suggested_by": "system",
       "metadata": {},
       "approved_by": "claude-code-agent",
       "approval_date": "2025-09-26T20:43:47.213Z",
-      "approval_notes": "Critical code quality issue - forEach callbacks should not return values"
+      "approval_notes": "Critical code quality issue - forEach callbacks should not return values",
+      "implemented_by": "LOCALHOST_CONNECTION_DEBUG_AGENT",
+      "implementation_date": "2025-09-26T21:23:00.000Z",
+      "implementation_notes": "Successfully fixed the 4 original forEach callback return value issues: 3 instances in packages/universal-tool-adapter/src/usage-guidelines/knowledge-base.ts (lines 501, 513, 535) and 1 instance in packages/universal-tool-adapter/src/validation/validation-engine.ts (line 112). Replaced forEach callbacks with for...of loops to eliminate return value issues. Test file issues were already resolved in previous session."
     },
     {
       "id": "feature_1758919408248_d4e73d0a7c6d",
@@ -567,14 +547,17 @@
       "description": "Replace static id=chat-input-help with useId() hook in apps/sim/__tests__/hybrid-workflow-framework/user-experience/accessibility-responsive-testing.test.tsx to prevent duplicate IDs",
       "business_value": "Prevents DOM validation errors and improves accessibility compliance when components are used multiple times",
       "category": "bug-fix",
-      "status": "approved",
+      "status": "implemented",
       "created_at": "2025-09-26T20:43:28.248Z",
-      "updated_at": "2025-09-26T20:43:56.808Z",
+      "updated_at": "2025-09-26T21:25:00.000Z",
       "suggested_by": "system",
       "metadata": {},
       "approved_by": "claude-code-agent",
       "approval_date": "2025-09-26T20:43:56.809Z",
-      "approval_notes": "Critical accessibility issue - static IDs cause DOM validation errors when components used multiple times"
+      "approval_notes": "Critical accessibility issue - static IDs cause DOM validation errors when components used multiple times",
+      "implemented_by": "LOCALHOST_CONNECTION_DEBUG_AGENT",
+      "implementation_date": "2025-09-26T21:25:00.000Z",
+      "implementation_notes": "Feature was already implemented - accessibility test file already imports and uses useId() hook correctly (line 8: import, line 16: const chatInputHelpId = useId()). No static IDs found that needed replacement."
     }
   ],
   "metadata": {
@@ -586,7 +569,7 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 62,
-      "total_reinitializations": 208,
+      "total_reinitializations": 210,
       "current_day": "2025-09-26",
       "time_buckets": {
         "10:00-14:59": {
@@ -595,7 +578,7 @@
         },
         "15:00-19:59": {
           "init": 0,
-          "reinit": 6
+          "reinit": 8
         },
         "20:00-00:59": {
           "init": 0,
@@ -667,7 +650,7 @@
         }
       ],
       "last_reset": "2025-09-26T07:07:58.790Z",
-      "last_updated": "2025-09-26T20:50:06.396Z"
+      "last_updated": "2025-09-26T20:58:33.145Z"
     },
     "approval_history": [
       {
@@ -780,28 +763,18 @@
     "total_features": 16
   },
   "agents": {
-    "LOCALHOST_CONNECTION_DEBUG_AGENT": {
-      "lastHeartbeat": "2025-09-26T20:47:40.906Z",
+    "LINTER_FIX_AGENT": {
+      "lastHeartbeat": "2025-09-26T20:58:32.959Z",
       "status": "active",
-      "reinitialized": "2025-09-26T20:47:40.906Z",
-      "sessionId": "a1a0bea3b9d6eab7",
-      "previousSessions": [
-        "0d099191a8b71401",
-        "2585dce0ae7a37ab",
-        "4852ca7f4efccfe9",
-        "b5903027c193705c",
-        "594ceb8291266822",
-        "ea04303c693834f1",
-        "98a7445232ac1bad",
-        "03c24d6bb98184c3",
-        "5f236b4d6bc3e14c"
-      ]
+      "reinitialized": "2025-09-26T20:58:32.959Z",
+      "sessionId": "c5e230cd9abfb32b",
+      "previousSessions": []
     },
-    "agent_typescript_fixes": {
-      "lastHeartbeat": "2025-09-26T20:50:06.392Z",
+    "LINTING_AGENT": {
+      "lastHeartbeat": "2025-09-26T20:58:33.138Z",
       "status": "active",
-      "reinitialized": "2025-09-26T20:50:06.392Z",
-      "sessionId": "67b172b9fc915416",
+      "reinitialized": "2025-09-26T20:58:33.138Z",
+      "sessionId": "366e88197e74e7d0",
       "previousSessions": []
     }
   },

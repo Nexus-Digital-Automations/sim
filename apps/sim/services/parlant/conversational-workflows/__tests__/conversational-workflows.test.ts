@@ -639,10 +639,10 @@ describe('Conversational Workflows System', () => {
 
       // Verify all sessions were created successfully
       expect(results.length).toBe(3)
-      results.forEach((result, index) => {
+      for (const [index, result] of results.entries()) {
         expect(result.sessionId).toBeDefined()
         expect(result.initialState.workflowId).toBe(`${mockWorkflowId}_${index}`)
-      })
+      }
 
       // Clean up sessions
       for (const result of results) {
@@ -670,10 +670,10 @@ describe('Conversational Workflows System', () => {
       expect(totalTime).toBeLessThan(10000) // Should complete within 10 seconds
 
       // Check that all requests were processed
-      results.forEach((result) => {
+      for (const result of results) {
         expect(result).toHaveProperty('detectedIntent')
         expect(result).toHaveProperty('mappedCommand')
-      })
+      }
     })
 
     it('should handle rapid state updates efficiently', async () => {

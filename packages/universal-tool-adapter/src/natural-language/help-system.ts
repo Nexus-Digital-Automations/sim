@@ -421,7 +421,9 @@ export class NaturalLanguageHelpSystem {
 
     history.slice(-10).forEach((message) => {
       if (message.tools) {
-        message.tools.forEach((tool) => tools.add(tool))
+        message.tools.forEach((tool) => {
+          tools.add(tool)
+        })
       }
     })
 
@@ -740,8 +742,6 @@ class HelpQueryClassifier {
 }
 
 class HelpResponseGenerator {
-  constructor(_knowledgeBase: HelpKnowledgeBase) {}
-
   async generateResponse(
     query: HelpQuery,
     classification: QueryClassification,

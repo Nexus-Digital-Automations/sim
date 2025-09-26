@@ -953,7 +953,9 @@ export class EnhancedAdapterRegistry extends EventEmitter {
         Math.floor(this.executionCache.size * 0.1)
       )
 
-      keysToDelete.forEach((key) => this.executionCache.delete(key))
+      keysToDelete.forEach((key) => {
+        this.executionCache.delete(key)
+      })
     }
 
     // Clean discovery cache
@@ -963,7 +965,9 @@ export class EnhancedAdapterRegistry extends EventEmitter {
         Math.floor(this.discoveryCache.size * 0.1)
       )
 
-      keysToDelete.forEach((key) => this.discoveryCache.delete(key))
+      keysToDelete.forEach((key) => {
+        this.discoveryCache.delete(key)
+      })
     }
   }
 

@@ -255,7 +255,9 @@ describe('Knowledge Utils', () => {
 
     it('should use Azure OpenAI when Azure config is provided', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
       Object.assign(env, {
         AZURE_OPENAI_API_KEY: 'test-azure-key',
         AZURE_OPENAI_ENDPOINT: 'https://test.openai.azure.com',
@@ -283,12 +285,16 @@ describe('Knowledge Utils', () => {
         })
       )
 
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
     })
 
     it('should fallback to OpenAI when no Azure config provided', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
       Object.assign(env, {
         OPENAI_API_KEY: 'test-openai-key',
       })
@@ -312,12 +318,16 @@ describe('Knowledge Utils', () => {
         })
       )
 
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
     })
 
     it('should throw error when no API configuration provided', async () => {
       const { env } = await import('@/lib/env')
-      Object.keys(env).forEach((key) => delete (env as any)[key])
+      for (const key of Object.keys(env)) {
+        delete (env as any)[key]
+      }
 
       await expect(generateEmbeddings(['test text'])).rejects.toThrow(
         'Either OPENAI_API_KEY or Azure OpenAI configuration (AZURE_OPENAI_API_KEY + AZURE_OPENAI_ENDPOINT) must be configured'

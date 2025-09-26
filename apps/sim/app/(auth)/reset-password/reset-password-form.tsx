@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,6 +27,7 @@ export function RequestResetForm({
   statusMessage,
   className,
 }: RequestResetFormProps) {
+  const emailInputId = useId()
   const [buttonClass, setButtonClass] = useState('auth-button-gradient')
 
   useEffect(() => {
@@ -66,10 +67,10 @@ export function RequestResetForm({
       <div className='space-y-6'>
         <div className='space-y-2'>
           <div className='flex items-center justify-between'>
-            <Label htmlFor='reset-email'>Email</Label>
+            <Label htmlFor={emailInputId}>Email</Label>
           </div>
           <Input
-            id='reset-email'
+            id={emailInputId}
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
             placeholder='Enter your email'
@@ -121,6 +122,8 @@ export function SetNewPasswordForm({
   statusMessage,
   className,
 }: SetNewPasswordFormProps) {
+  const passwordInputId = useId()
+  const confirmPasswordInputId = useId()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [validationMessage, setValidationMessage] = useState('')
@@ -177,11 +180,11 @@ export function SetNewPasswordForm({
       <div className='space-y-6'>
         <div className='space-y-2'>
           <div className='flex items-center justify-between'>
-            <Label htmlFor='password'>New Password</Label>
+            <Label htmlFor={passwordInputId}>New Password</Label>
           </div>
           <div className='relative'>
             <Input
-              id='password'
+              id={passwordInputId}
               type={showPassword ? 'text' : 'password'}
               autoCapitalize='none'
               autoComplete='new-password'
@@ -209,11 +212,11 @@ export function SetNewPasswordForm({
         </div>
         <div className='space-y-2'>
           <div className='flex items-center justify-between'>
-            <Label htmlFor='confirmPassword'>Confirm Password</Label>
+            <Label htmlFor={confirmPasswordInputId}>Confirm Password</Label>
           </div>
           <div className='relative'>
             <Input
-              id='confirmPassword'
+              id={confirmPasswordInputId}
               type={showConfirmPassword ? 'text' : 'password'}
               autoCapitalize='none'
               autoComplete='new-password'

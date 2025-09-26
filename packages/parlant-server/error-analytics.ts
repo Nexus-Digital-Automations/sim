@@ -952,8 +952,6 @@ interface MLModel {
  * Simple linear regression model
  */
 class LinearRegressionModel implements MLModel {
-  constructor(_metric: string) {}
-
   async predict(lookAheadHours: number): Promise<{ value: number; confidence: number }> {
     // Simplified prediction
     return {

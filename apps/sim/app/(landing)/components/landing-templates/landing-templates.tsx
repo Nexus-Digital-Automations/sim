@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { inter } from '@/app/fonts/inter'
 import LandingTemplatePreview from './components/landing-template-preview'
 
@@ -78,14 +79,16 @@ const templates = [
 ]
 
 export default function LandingTemplates() {
+  const templatesSectionId = useId()
+  const templatesHeadingId = useId()
   return (
     <section
-      id='templates'
+      id={templatesSectionId}
       className={`${inter.className} flex flex-col px-4 pt-[40px] sm:px-[50px] sm:pt-[34px]`}
-      aria-labelledby='templates-heading'
+      aria-labelledby={templatesHeadingId}
     >
       <h2
-        id='templates-heading'
+        id={templatesHeadingId}
         className='mb-[16px] font-medium text-[28px] text-foreground tracking-tight sm:mb-[24px]'
       >
         Templates

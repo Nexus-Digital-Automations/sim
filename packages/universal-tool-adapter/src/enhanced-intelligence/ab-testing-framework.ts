@@ -427,7 +427,6 @@ export class ABTestingFramework {
   // Statistical engines
   private statisticalEngine: StatisticalEngine
   private powerAnalysisEngine: PowerAnalysisEngine
-  private segmentationEngine: SegmentationEngine
 
   // Monitoring and safety
   private testMonitor: TestMonitor

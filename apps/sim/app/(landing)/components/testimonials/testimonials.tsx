@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import Image from 'next/image'
 import { getAssetUrl } from '@/lib/utils'
 import { inter } from '@/app/fonts/inter'
@@ -91,6 +91,7 @@ const allTestimonials: Testimonial[] = [
 ]
 
 export default function Testimonials() {
+  const testimonialsSectionId = useId()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
@@ -128,7 +129,7 @@ export default function Testimonials() {
 
   return (
     <section
-      id='testimonials'
+      id={testimonialsSectionId}
       className={`flex hidden h-[150px] items-center sm:block ${inter.variable}`}
       aria-label='Social proof testimonials'
     >

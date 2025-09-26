@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { SimChatContainer, useChatTheme } from '@/components/ui/chat'
@@ -24,6 +24,15 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 
 export default function ChatTestPage() {
+  // Generate unique IDs
+  const workspaceIdInputId = useId()
+  const agentIdInputId = useId()
+  const userIdInputId = useId()
+  const serverUrlInputId = useId()
+  const enableVoiceId = useId()
+  const enableAnimationsId = useId()
+  const enableDebugId = useId()
+
   // Test configuration state
   const [workspaceId, setWorkspaceId] = useState('test-workspace-123')
   const [agentId, setAgentId] = useState('test-agent-456')
@@ -60,9 +69,9 @@ export default function ChatTestPage() {
           <CardContent className='space-y-4'>
             {/* Basic Settings */}
             <div className='space-y-2'>
-              <Label htmlFor='workspace-id'>Workspace ID</Label>
+              <Label htmlFor={workspaceIdInputId}>Workspace ID</Label>
               <Input
-                id='workspace-id'
+                id={workspaceIdInputId}
                 value={workspaceId}
                 onChange={(e) => setWorkspaceId(e.target.value)}
                 placeholder='Enter workspace ID'
@@ -70,9 +79,9 @@ export default function ChatTestPage() {
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='agent-id'>Agent ID</Label>
+              <Label htmlFor={agentIdInputId}>Agent ID</Label>
               <Input
-                id='agent-id'
+                id={agentIdInputId}
                 value={agentId}
                 onChange={(e) => setAgentId(e.target.value)}
                 placeholder='Enter agent ID'
@@ -80,9 +89,9 @@ export default function ChatTestPage() {
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='user-id'>User ID</Label>
+              <Label htmlFor={userIdInputId}>User ID</Label>
               <Input
-                id='user-id'
+                id={userIdInputId}
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
                 placeholder='Enter user ID'
@@ -90,9 +99,9 @@ export default function ChatTestPage() {
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='server-url'>Parlant Server URL</Label>
+              <Label htmlFor={serverUrlInputId}>Parlant Server URL</Label>
               <Input
-                id='server-url'
+                id={serverUrlInputId}
                 value={serverUrl}
                 onChange={(e) => setServerUrl(e.target.value)}
                 placeholder='http://localhost:8000'
@@ -136,25 +145,25 @@ export default function ChatTestPage() {
             {/* Feature Toggles */}
             <div className='space-y-3'>
               <div className='flex items-center space-x-2'>
-                <Switch id='enable-voice' checked={enableVoice} onCheckedChange={setEnableVoice} />
-                <Label htmlFor='enable-voice'>Enable Voice Input</Label>
+                <Switch id={enableVoiceId} checked={enableVoice} onCheckedChange={setEnableVoice} />
+                <Label htmlFor={enableVoiceId}>Enable Voice Input</Label>
               </div>
 
               <div className='flex items-center space-x-2'>
                 <Switch
-                  id='enable-animations'
+                  id={enableAnimationsId}
                   checked={enableAnimations}
                   onCheckedChange={(checked) => {
                     setEnableAnimations(checked)
                     updateTheme({ enableAnimations: checked })
                   }}
                 />
-                <Label htmlFor='enable-animations'>Enable Animations</Label>
+                <Label htmlFor={enableAnimationsId}>Enable Animations</Label>
               </div>
 
               <div className='flex items-center space-x-2'>
-                <Switch id='enable-debug' checked={enableDebug} onCheckedChange={setEnableDebug} />
-                <Label htmlFor='enable-debug'>Enable Debug Mode</Label>
+                <Switch id={enableDebugId} checked={enableDebug} onCheckedChange={setEnableDebug} />
+                <Label htmlFor={enableDebugId}>Enable Debug Mode</Label>
               </div>
             </div>
 

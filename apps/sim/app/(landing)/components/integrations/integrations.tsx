@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import * as Icons from '@/components/icons'
 import { inter } from '@/app/fonts/inter'
 
@@ -121,14 +122,16 @@ function TickerRow({ direction, offset, showOdd, icons }: TickerRowProps) {
 }
 
 export default function Integrations() {
+  const integrationsSectionId = useId()
+  const integrationsHeadingId = useId()
   return (
     <section
-      id='integrations'
+      id={integrationsSectionId}
       className={`${inter.className} flex flex-col pt-[40px] pb-[27px] sm:pt-[24px]`}
-      aria-labelledby='integrations-heading'
+      aria-labelledby={integrationsHeadingId}
     >
       <h2
-        id='integrations-heading'
+        id={integrationsHeadingId}
         className='mb-[4px] px-4 font-medium text-[28px] text-foreground tracking-tight sm:pl-[50px]'
       >
         Integrations

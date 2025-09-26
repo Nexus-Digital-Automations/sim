@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useId, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -78,6 +78,9 @@ function SignupFormContent({
   googleAvailable: boolean
   isProduction: boolean
 }) {
+  const nameInputId = useId()
+  const emailInputId = useId()
+  const passwordInputId = useId()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { refetch: refetchSession } = useSession()
@@ -407,10 +410,10 @@ function SignupFormContent({
         <div className='space-y-6'>
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='name'>Full name</Label>
+              <Label htmlFor={nameInputId}>Full name</Label>
             </div>
             <Input
-              id='name'
+              id={nameInputId}
               name='name'
               placeholder='Enter your name'
               type='text'
@@ -436,10 +439,10 @@ function SignupFormContent({
           </div>
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='email'>Email</Label>
+              <Label htmlFor={emailInputId}>Email</Label>
             </div>
             <Input
-              id='email'
+              id={emailInputId}
               name='email'
               placeholder='Enter your email'
               autoCapitalize='none'
@@ -468,11 +471,11 @@ function SignupFormContent({
           </div>
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='password'>Password</Label>
+              <Label htmlFor={passwordInputId}>Password</Label>
             </div>
             <div className='relative'>
               <Input
-                id='password'
+                id={passwordInputId}
                 name='password'
                 type={showPassword ? 'text' : 'password'}
                 autoCapitalize='none'

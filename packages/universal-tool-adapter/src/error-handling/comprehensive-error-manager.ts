@@ -258,7 +258,6 @@ export class ComprehensiveToolErrorManager {
   private proactiveValidationConfig: ProactiveValidationConfig
   private userSkillProfiles = new Map<string, UserSkillLevel>()
   private errorRecoveryAttempts = new Map<string, number>()
-  private errorExplanationService: ErrorExplanationService
 
   constructor() {
     this.errorAnalytics = {

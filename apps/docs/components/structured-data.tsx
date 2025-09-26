@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import Script from 'next/script'
 
 interface StructuredDataProps {
@@ -17,6 +18,12 @@ export function StructuredData({
   dateModified,
   breadcrumb,
 }: StructuredDataProps) {
+  const articleId = useId()
+  const breadcrumbId = useId()
+  const websiteId = useId()
+  const faqId = useId()
+  const softwareId = useId()
+
   const baseUrl = 'https://docs.sim.ai'
 
   const articleStructuredData = {
@@ -127,7 +134,7 @@ export function StructuredData({
   return (
     <>
       <Script
-        id='article-structured-data'
+        id={articleId}
         type='application/ld+json'
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(articleStructuredData),
@@ -135,7 +142,7 @@ export function StructuredData({
       />
       {breadcrumbStructuredData && (
         <Script
-          id='breadcrumb-structured-data'
+          id={breadcrumbId}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(breadcrumbStructuredData),
@@ -144,7 +151,7 @@ export function StructuredData({
       )}
       {websiteStructuredData && (
         <Script
-          id='website-structured-data'
+          id={websiteId}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(websiteStructuredData),
@@ -153,7 +160,7 @@ export function StructuredData({
       )}
       {faqStructuredData && (
         <Script
-          id='faq-structured-data'
+          id={faqId}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(faqStructuredData),
@@ -162,7 +169,7 @@ export function StructuredData({
       )}
       {url === baseUrl && (
         <Script
-          id='software-structured-data'
+          id={softwareId}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(softwareStructuredData),

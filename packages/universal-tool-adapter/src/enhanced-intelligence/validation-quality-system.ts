@@ -1219,8 +1219,6 @@ class ImprovementEngine {
 }
 
 class ReportingService {
-  constructor(_config: ReportingConfig) {}
-
   async generateQualityReport(
     description: EnhancedDescriptionSchema,
     result: ComprehensiveValidationResult,

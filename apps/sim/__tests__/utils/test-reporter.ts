@@ -255,11 +255,15 @@ export class ComprehensiveTestReporter {
     )
 
     if (result.errors.length > 0) {
-      result.errors.forEach((error) => console.error(`   ❌ ${error.message}`))
+      for (const error of result.errors) {
+        console.error(`   ❌ ${error.message}`)
+      }
     }
 
     if (result.warnings.length > 0) {
-      result.warnings.forEach((warning) => console.warn(`   ⚠️  ${warning.message}`))
+      for (const warning of result.warnings) {
+        console.warn(`   ⚠️  ${warning.message}`)
+      }
     }
   }
 

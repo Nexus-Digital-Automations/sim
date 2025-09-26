@@ -992,8 +992,6 @@ class AlertManager {
 }
 
 class HealthChecker {
-  constructor(_config: AnalyticsConfig, _analytics: AnalyticsSystem) {}
-
   performSystemCheck(): void {
     // System health check logic
   }
@@ -1038,8 +1036,6 @@ class AggregationEngine {
 }
 
 class ReportGenerator {
-  constructor(_config: AnalyticsConfig, _analytics: AnalyticsSystem) {}
-
   async generate(options: ReportOptions): Promise<AnalyticsReport> {
     // Report generation logic
     return {

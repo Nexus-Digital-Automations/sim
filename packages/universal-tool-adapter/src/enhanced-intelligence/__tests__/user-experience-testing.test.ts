@@ -1010,8 +1010,6 @@ class ABTestingManager {
 }
 
 class UserSimulator {
-  constructor(_engine: EnhancedToolIntelligenceEngine) {}
-
   generateScenariosForSkillLevel(skillLevel: UserSkillLevel): UserScenario[] {
     const baseScenarios = [
       { id: 'workflow_creation', description: 'Create a new workflow', complexity: 'medium' },

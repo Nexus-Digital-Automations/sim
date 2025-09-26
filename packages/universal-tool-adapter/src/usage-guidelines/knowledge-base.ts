@@ -498,7 +498,9 @@ export class KnowledgeBase {
       query.types.forEach((type) => {
         const ids = this.indexByType.get(type)
         if (ids) {
-          ids.forEach((id) => typeIds.add(id))
+          for (const id of ids) {
+            typeIds.add(id)
+          }
         }
       })
       candidateIds = new Set([...candidateIds].filter((id) => typeIds.has(id)))
@@ -510,7 +512,9 @@ export class KnowledgeBase {
       query.toolIds.forEach((toolId) => {
         const ids = this.indexByTool.get(toolId)
         if (ids) {
-          ids.forEach((id) => toolIds.add(id))
+          for (const id of ids) {
+            toolIds.add(id)
+          }
         }
       })
       candidateIds = new Set([...candidateIds].filter((id) => toolIds.has(id)))
@@ -532,7 +536,9 @@ export class KnowledgeBase {
       query.domains.forEach((domain) => {
         const ids = this.indexByDomain.get(domain)
         if (ids) {
-          ids.forEach((id) => domainIds.add(id))
+          for (const id of ids) {
+            domainIds.add(id)
+          }
         }
       })
       candidateIds = new Set([...candidateIds].filter((id) => domainIds.has(id)))

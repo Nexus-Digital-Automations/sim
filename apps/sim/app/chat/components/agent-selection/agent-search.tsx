@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useState } from 'react'
 import { ChevronDown, Search, SlidersHorizontal, Star, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -56,6 +56,8 @@ const defaultFilters: FilterState = {
  * Includes text search, status filtering, sorting, and advanced filters.
  */
 export function AgentSearch({ agents, onFilter, onSearch, className = '' }: AgentSearchProps) {
+  const hasGuidelinesId = useId()
+  const hasJourneysId = useId()
   const [filters, setFilters] = useState<FilterState>(defaultFilters)
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false)
   const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null)
@@ -385,7 +387,7 @@ export function AgentSearch({ agents, onFilter, onSearch, className = '' }: Agen
               <div className='space-y-2'>
                 <div className='flex items-center space-x-2'>
                   <Checkbox
-                    id='has-guidelines'
+                    id={hasGuidelinesId}
                     checked={filters.hasGuidelines === true}
                     onCheckedChange={(checked) =>
                       setFilters((prev) => ({
@@ -398,14 +400,14 @@ export function AgentSearch({ agents, onFilter, onSearch, className = '' }: Agen
                       }))
                     }
                   />
-                  <Label htmlFor='has-guidelines' className='cursor-pointer text-sm'>
+                  <Label htmlFor={hasGuidelinesId} className='cursor-pointer text-sm'>
                     Has Guidelines
                   </Label>
                 </div>
 
                 <div className='flex items-center space-x-2'>
                   <Checkbox
-                    id='has-journeys'
+                    id={hasJourneysId}
                     checked={filters.hasJourneys === true}
                     onCheckedChange={(checked) =>
                       setFilters((prev) => ({
@@ -414,7 +416,7 @@ export function AgentSearch({ agents, onFilter, onSearch, className = '' }: Agen
                       }))
                     }
                   />
-                  <Label htmlFor='has-journeys' className='cursor-pointer text-sm'>
+                  <Label htmlFor={hasJourneysId} className='cursor-pointer text-sm'>
                     Has Journeys
                   </Label>
                 </div>

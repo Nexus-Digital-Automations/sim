@@ -646,9 +646,6 @@ export class UsageAnalyticsFramework {
   private config: AnalyticsConfig
   private eventQueue: UsageEvent[] = []
   private eventStorage!: EventStorage
-  private analyticsProcessor!: AnalyticsProcessor
-  private insightGenerator!: InsightGenerator
-  private predictiveEngine!: PredictiveEngine
   private realTimeMonitor!: RealTimeMonitor
 
   constructor(config: Partial<AnalyticsConfig> = {}) {

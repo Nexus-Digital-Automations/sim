@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -96,6 +97,7 @@ interface FooterProps {
 }
 
 export default function Footer({ fullWidth = false }: FooterProps) {
+  const filterId = useId()
   return (
     <footer className={`${inter.className} relative w-full overflow-hidden bg-white`}>
       <div
@@ -350,7 +352,7 @@ export default function Footer({ fullWidth = false }: FooterProps) {
           </g>
           <defs>
             <filter
-              id='filter0_dd_122_4989'
+              id={filterId}
               x='0'
               y='0'
               width='1128'

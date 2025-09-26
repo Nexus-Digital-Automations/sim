@@ -377,7 +377,6 @@ export class RecommendationAPI {
   private rateLimiter!: RateLimiter
   private circuitBreaker!: CircuitBreaker
   private abTesting!: ABTestingManager
-  private alertManager!: AlertManager
 
   // Request processing
   private requestQueue: Map<string, Promise<RecommendationAPIResponse>> = new Map()

@@ -321,11 +321,8 @@ export interface ProcessingMetadata {
  */
 export class NLPEnhancementEngine {
   private config: NLPEnhancementConfig
-  private textGenerator: TextGenerationService
   private semanticAnalyzer: SemanticAnalysisService
   private qualityAssessor: QualityAssessmentService
-  private knowledgeBase: KnowledgeBaseService
-  private cacheService: CacheService
   private enhancementStrategies: Map<string, EnhancementStrategy> = new Map()
 
   constructor(config: NLPEnhancementConfig) {
@@ -981,8 +978,6 @@ export class NLPEnhancementEngine {
 // =============================================================================
 
 class TextGenerationService {
-  constructor(_config: ModelConfig) {}
-
   async generateText(prompt: string, parameters: ModelParameters): Promise<string> {
     // Implementation would integrate with actual text generation models
     return `Generated text based on: ${prompt.substring(0, 50)}...`

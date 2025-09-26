@@ -887,7 +887,9 @@ describe('Security Testing and Compliance Verification', () => {
         const status = result.compliant ? '✅' : '❌'
         console.log(`   • ${status} ${result.requirement.substring(0, 50)}...`)
         if (result.gaps.length > 0) {
-          result.gaps.forEach((gap) => console.log(`     - Gap: ${gap}`))
+          for (const gap of result.gaps) {
+            console.log(`     - Gap: ${gap}`)
+          }
         }
       })
     })

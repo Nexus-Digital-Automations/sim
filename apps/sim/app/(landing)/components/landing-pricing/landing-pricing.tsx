@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   ArrowRight,
@@ -227,8 +227,13 @@ function PricingCard({
  * Landing page pricing section displaying tiered pricing plans
  */
 export default function LandingPricing() {
+  const pricingSectionId = useId()
   return (
-    <section id='pricing' className='px-4 pt-[19px] sm:px-0 sm:pt-0' aria-label='Pricing plans'>
+    <section
+      id={pricingSectionId}
+      className='px-4 pt-[19px] sm:px-0 sm:pt-0'
+      aria-label='Pricing plans'
+    >
       <h2 className='sr-only'>Pricing Plans</h2>
       <div className='relative mx-auto w-full max-w-[1289px]'>
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-0 lg:grid-cols-4'>

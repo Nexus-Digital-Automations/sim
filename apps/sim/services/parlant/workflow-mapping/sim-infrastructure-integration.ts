@@ -630,8 +630,6 @@ class WorkspaceManager {
 }
 
 class ToolAdapterBridge {
-  constructor(_config: any) {}
-
   async initialize(): Promise<void> {
     // Initialize connection to universal tool adapter system
     console.log('Tool adapter bridge initialized')
@@ -639,8 +637,6 @@ class ToolAdapterBridge {
 }
 
 class DatabaseIntegration {
-  constructor(_config: any) {}
-
   async initialize(): Promise<JourneyPersistenceService> {
     // Mock persistence service
     return {
@@ -661,8 +657,6 @@ class DatabaseIntegration {
 }
 
 class MonitoringService {
-  constructor(_config: any) {}
-
   async initialize(): Promise<void> {
     console.log('Monitoring service initialized')
   }

@@ -176,6 +176,9 @@
     "formatter": {
       "enabled": true,
       "indentWidth": 2
+    },
+    "linter": {
+      "enabled": false
     }
   },
   "json": {

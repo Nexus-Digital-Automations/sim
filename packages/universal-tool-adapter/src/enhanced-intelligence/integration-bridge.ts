@@ -310,7 +310,6 @@ export interface UsageAnalytics {
 export class IntegrationBridge {
   private recommendationEngine: ContextualRecommendationEngine
   private explanationEngine: RecommendationExplanationEngine
-  private recommendationAPI: RecommendationAPI
 
   // Integration state
   private parlantIntegrations: Map<string, ParlantIntegration> = new Map()

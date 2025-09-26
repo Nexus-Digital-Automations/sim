@@ -444,7 +444,9 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
       performanceMonitor.end()
 
       // All executions should succeed
-      results.forEach((result) => expect(result.success).toBe(true))
+      for (const result of results) {
+        expect(result.success).toBe(true)
+      }
 
       const totalDuration = performanceMonitor.getDuration()
       expect(totalDuration).toBeLessThan(2000) // Parallel execution should be efficient
@@ -786,7 +788,9 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
       const operationTime = performance.now() - operationStart
 
       // All operations should succeed
-      results.forEach((result) => expect(result.success).toBe(true))
+      for (const result of results) {
+        expect(result.success).toBe(true)
+      }
 
       // Should handle concurrency efficiently
       expect(initTime).toBeLessThan(5000) // < 5s to initialize all
