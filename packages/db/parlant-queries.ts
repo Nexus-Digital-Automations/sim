@@ -378,10 +378,11 @@ export class ParlantAgentQueries {
     }
 
     if (filters.search) {
+      const searchTerm = `%${filters.search}%`
       conditions.push(
         or(
-          sql`${parlantAgent.name} ILIKE ${`%${filters.search}%`}`,
-          sql`${parlantAgent.description} ILIKE ${`%${filters.search}%`}`
+          sql`${parlantAgent.name} ILIKE ${searchTerm}`,
+          sql`${parlantAgent.description} ILIKE ${searchTerm}`
         )
       )
     }
@@ -433,8 +434,8 @@ export class ParlantSessionQueries {
     const [agent, events, currentJourney, currentState, variables] = await Promise.all([
       this.getSessionAgent(session.agentId),
       this.getSessionEvents(id),
-      session.currentJourneyId ? this.getJourneyById(session.currentJourneyId) : null,
-      session.currentStateId ? this.getJourneyStateById(session.currentStateId) : null,
+      session.currentJourneyId ? this.getJourneyById(session.currentJourneyId).then(result => result || undefined) : Promise.resolve(undefined),
+      session.currentStateId ? this.getJourneyStateById(session.currentStateId).then(result => result || undefined) : Promise.resolve(undefined),
       this.getSessionVariables(id),
     ])
 
@@ -639,10 +640,11 @@ export class ParlantSessionQueries {
     }
 
     if (filters.search) {
+      const searchTerm = `%${filters.search}%`
       conditions.push(
         or(
-          sql`${parlantSession.title} ILIKE ${`%${filters.search}%`}`,
-          sql`${parlantSession.metadata}::text ILIKE ${`%${filters.search}%`}`
+          sql`${parlantSession.title} ILIKE ${searchTerm}`,
+          sql`${parlantSession.metadata}::text ILIKE ${searchTerm}`
         )
       )
     }
@@ -839,7 +841,7 @@ export async function withErrorHandling<T>(
 /**
  * Batch insert with error handling
  */
-export async function batchInsert<T>(
+export async function batchInsert<T extends Record<string, any>>(
   db: Database,
   table: any,
   items: T[],
@@ -865,7 +867,7 @@ export async function batchInsert<T>(
       // If batch fails, try individual inserts to identify specific failures
       for (const item of batch) {
         try {
-          const [inserted] = await db.insert(table).values(item).returning()
+          const [inserted] = await db.insert(table).values(item).returning() as T[]
           result.successful.push(inserted)
           result.totalSuccessful++
         } catch (itemError) {
