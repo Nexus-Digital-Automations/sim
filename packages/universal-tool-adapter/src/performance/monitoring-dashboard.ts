@@ -485,7 +485,9 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
         errorRate: metrics.execution.errorRate,
       })
     } catch (error) {
-      logger.error('Failed to collect metrics', { error: error instanceof Error ? error.message : String(error) })
+      logger.error('Failed to collect metrics', {
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
   }
 

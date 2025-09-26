@@ -236,7 +236,10 @@ export class AdvancedCacheSystem {
           invalidatedCount += keys.length
         }
       } catch (error) {
-        logger.error('Redis pattern invalidation failed', { pattern, error: error instanceof Error ? error.message : String(error) })
+        logger.error('Redis pattern invalidation failed', {
+          pattern,
+          error: error instanceof Error ? error.message : String(error),
+        })
       }
     }
 
@@ -381,7 +384,10 @@ export class AdvancedCacheSystem {
       const data = await this.redisClient.get(fullKey)
       return data ? JSON.parse(data) : null
     } catch (error) {
-      logger.error('Redis get failed', { key, error: error instanceof Error ? error.message : String(error) })
+      logger.error('Redis get failed', {
+        key,
+        error: error instanceof Error ? error.message : String(error),
+      })
       return null
     }
   }
@@ -394,7 +400,10 @@ export class AdvancedCacheSystem {
       const serialized = JSON.stringify(data)
       await this.redisClient.setex(fullKey, ttlSeconds, serialized)
     } catch (error) {
-      logger.error('Redis set failed', { key, error: error instanceof Error ? error.message : String(error) })
+      logger.error('Redis set failed', {
+        key,
+        error: error instanceof Error ? error.message : String(error),
+      })
       throw error
     }
   }
@@ -406,7 +415,10 @@ export class AdvancedCacheSystem {
       const fullKey = `${this.config.levels.redis.keyPrefix}${key}`
       await this.redisClient.del(fullKey)
     } catch (error) {
-      logger.error('Redis delete failed', { key, error: error instanceof Error ? error.message : String(error) })
+      logger.error('Redis delete failed', {
+        key,
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
   }
 
@@ -599,7 +611,10 @@ export class AdvancedCacheSystem {
       () => {
         for (const strategy of this.config.warming.strategies) {
           this.warmCache(strategy).catch((error) => {
-            logger.error('Cache warming failed', { strategy, error: error instanceof Error ? error.message : String(error) })
+            logger.error('Cache warming failed', {
+              strategy,
+              error: error instanceof Error ? error.message : String(error),
+            })
           })
         }
       },

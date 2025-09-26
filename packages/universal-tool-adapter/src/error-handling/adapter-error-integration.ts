@@ -72,7 +72,8 @@ export class ErrorAwareParameterMapper {
     } catch (error) {
       logger.error('Parameter mapping failed', {
         executionId: context.executionId,
-        error: error instanceof Error ? error instanceof Error ? error.message : String(error) : error,
+        error:
+          error instanceof Error ? (error instanceof Error ? error.message : String(error)) : error,
       })
 
       // Handle mapping error through comprehensive error manager
@@ -267,7 +268,8 @@ export class ErrorAwareResultFormatter {
     } catch (error) {
       logger.error('Result formatting failed', {
         executionId: context.executionId,
-        error: error instanceof Error ? error instanceof Error ? error.message : String(error) : error,
+        error:
+          error instanceof Error ? (error instanceof Error ? error.message : String(error)) : error,
       })
 
       // Handle formatting error
@@ -504,7 +506,8 @@ export class ErrorAwareExecutionWrapper {
 
       logger.error('Execution failed', {
         executionId,
-        error: error instanceof Error ? error instanceof Error ? error.message : String(error) : error,
+        error:
+          error instanceof Error ? (error instanceof Error ? error.message : String(error)) : error,
         durationMs: completedAt.getTime() - startTime.getTime(),
       })
 
@@ -614,7 +617,12 @@ export function withErrorHandling(config?: Partial<ErrorHandlingConfig>) {
         logger.error('Method execution failed', {
           method: propertyName,
           executionId: context.executionId,
-          error: error instanceof Error ? error instanceof Error ? error.message : String(error) : error,
+          error:
+            error instanceof Error
+              ? error instanceof Error
+                ? error.message
+                : String(error)
+              : error,
         })
 
         const errorResult = await handleToolError(error as Error, context, config)

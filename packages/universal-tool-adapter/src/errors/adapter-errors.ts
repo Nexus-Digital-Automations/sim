@@ -651,8 +651,10 @@ export class ErrorUtils {
     // Default recovery logic for non-adapter errors
     const nonRecoverablePatterns = ['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'MODULE_NOT_FOUND']
 
-    return !nonRecoverablePatterns.some(
-      (pattern) => error instanceof Error ? error.message : String(error).includes(pattern) || error.name.includes(pattern)
+    return !nonRecoverablePatterns.some((pattern) =>
+      error instanceof Error
+        ? error.message
+        : String(error).includes(pattern) || error.name.includes(pattern)
     )
   }
 

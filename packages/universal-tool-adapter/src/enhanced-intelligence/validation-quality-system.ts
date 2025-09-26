@@ -489,7 +489,7 @@ export class ValidationQualitySystem {
 
     const quickValidation = validationOptions?.quickValidation !== false
     const validationTypes = quickValidation
-      ? ['syntax', 'grammar', 'spelling'] as ValidationType[]
+      ? (['syntax', 'grammar', 'spelling'] as ValidationType[])
       : this.config.validation.enabledValidations
 
     const results = await this.runPartialValidations(description, changes, validationTypes)
@@ -1155,7 +1155,6 @@ class AccessibilityValidator extends Validator {
 }
 
 class QualityAssessor {
-  constructor(config?: QualityAssessmentConfig) {}
   async assessQuality(
     description: EnhancedDescriptionSchema,
     validationResults: ValidationTypeResult[]
@@ -1179,7 +1178,6 @@ class QualityAssessor {
 }
 
 class ComplianceChecker {
-  constructor(config?: ComplianceConfig) {}
   async checkCompliance(
     description: EnhancedDescriptionSchema,
     validationResults: ValidationTypeResult[]
@@ -1189,7 +1187,6 @@ class ComplianceChecker {
 }
 
 class PerformanceMonitor {
-  constructor(config?: PerformanceConfig) {}
   async recordValidation(
     descriptionId: string,
     executionTime: number,
@@ -1207,7 +1204,6 @@ class PerformanceMonitor {
 }
 
 class ImprovementEngine {
-  constructor(config?: ContinuousImprovementConfig) {}
   async generateSuggestions(
     description: EnhancedDescriptionSchema,
     overallResult: OverallValidationResult,

@@ -809,7 +809,9 @@ export class EnhancedToolIntelligenceEngine {
     toolId: string,
     context: UsageContext
   ): Promise<string> {
-    return Promise.resolve(`Error occurred while using ${toolId}: ${error instanceof Error ? error.message : String(error)}`)
+    return Promise.resolve(
+      `Error occurred while using ${toolId}: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
   private createUserLevelExplanations(error: any, toolId: string): Record<UserSkillLevel, string> {
     return {} as any

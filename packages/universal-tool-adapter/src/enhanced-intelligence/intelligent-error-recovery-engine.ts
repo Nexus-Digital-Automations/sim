@@ -1326,7 +1326,9 @@ export class IntelligentErrorRecoveryEngine {
 
   private generatePlanId(error: Error, context: ErrorRecoveryContext): string {
     const timestamp = Date.now().toString(36)
-    const errorHash = this.hashString(error instanceof Error ? error.message : String(error)).toString(36)
+    const errorHash = this.hashString(
+      error instanceof Error ? error.message : String(error)
+    ).toString(36)
     const contextHash = this.hashString(context.toolId || 'unknown').toString(36)
     return `plan-${timestamp}-${errorHash}-${contextHash}`
   }

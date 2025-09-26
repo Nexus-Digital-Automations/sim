@@ -569,7 +569,10 @@ export class NaturalLanguageRegistryIntegration {
           if (options?.failFast) {
             throw error
           }
-          failed.push({ entryId: entry.id, error: error instanceof Error ? error.message : String(error) })
+          failed.push({
+            entryId: entry.id,
+            error: error instanceof Error ? error.message : String(error),
+          })
           return null
         }
       })

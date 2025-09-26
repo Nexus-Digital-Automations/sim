@@ -589,7 +589,11 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
           validationResult: {
             valid: false,
             errors: error.validationErrors || [
-              { field: 'unknown', message: error instanceof Error ? error.message : String(error), code: 'unknown' },
+              {
+                field: 'unknown',
+                message: error instanceof Error ? error.message : String(error),
+                code: 'unknown',
+              },
             ],
           },
         }

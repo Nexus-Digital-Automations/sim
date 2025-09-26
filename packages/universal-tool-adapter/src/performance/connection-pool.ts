@@ -836,7 +836,17 @@ class MetricsCollector {
     this.totalDestroyed++
   }
 
-  getMetrics(): Pick<ConnectionMetrics, 'poolName' | 'totalAcquired' | 'totalReleased' | 'totalCreated' | 'totalDestroyed' | 'errorCount' | 'averageAcquireTimeMs' | 'averageConnectionLifetimeMs'> {
+  getMetrics(): Pick<
+    ConnectionMetrics,
+    | 'poolName'
+    | 'totalAcquired'
+    | 'totalReleased'
+    | 'totalCreated'
+    | 'totalDestroyed'
+    | 'errorCount'
+    | 'averageAcquireTimeMs'
+    | 'averageConnectionLifetimeMs'
+  > {
     return {
       poolName: this.poolName,
       totalAcquired: this.totalAcquired,

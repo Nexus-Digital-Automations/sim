@@ -458,7 +458,9 @@ export class ResultFormatter {
 
       return finalResult
     } catch (error) {
-      logger.error('Result formatting failed', { error: error instanceof Error ? error.message : String(error) })
+      logger.error('Result formatting failed', {
+        error: error instanceof Error ? error.message : String(error),
+      })
 
       // Return safe fallback result
       return {
@@ -622,7 +624,9 @@ export class ResultFormatter {
             return template
           }
         } catch (error) {
-          logger.warn('Template condition evaluation failed', { error: error instanceof Error ? error.message : String(error) })
+          logger.warn('Template condition evaluation failed', {
+            error: error instanceof Error ? error.message : String(error),
+          })
         }
       }
     }

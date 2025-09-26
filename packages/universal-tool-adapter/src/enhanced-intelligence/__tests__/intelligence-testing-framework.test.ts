@@ -360,7 +360,12 @@ export class IntelligenceTestingFramework {
       const hasQualityContent = this.validateDescriptionQuality(description)
       const hasAppropriateLength = this.validateDescriptionLength(description)
 
-      const score = (((hasRequiredFields ? 1 : 0) + (hasQualityContent ? 1 : 0) + (hasAppropriateLength ? 1 : 0)) / 3) * 100
+      const score =
+        (((hasRequiredFields ? 1 : 0) +
+          (hasQualityContent ? 1 : 0) +
+          (hasAppropriateLength ? 1 : 0)) /
+          3) *
+        100
 
       return {
         testName: `Description Quality - ${toolId}`,
@@ -449,7 +454,8 @@ export class IntelligenceTestingFramework {
           ...mockUsageContext,
           userProfile: {
             role: 'developer',
-            experience: level === 'expert' ? 'advanced' : (level as 'beginner' | 'intermediate' | 'advanced'),
+            experience:
+              level === 'expert' ? 'advanced' : (level as 'beginner' | 'intermediate' | 'advanced'),
             domains: ['workflow', 'automation'],
             frequentTools: ['build_workflow', 'run_workflow'],
             preferences: {
@@ -459,7 +465,10 @@ export class IntelligenceTestingFramework {
             },
           },
         }
-        const description = await this.engine.getEnhancedToolDescription(toolId, context as UsageContext)
+        const description = await this.engine.getEnhancedToolDescription(
+          toolId,
+          context as UsageContext
+        )
 
         if (description) {
           const guidance = description.skillLevelGuidance[level]
@@ -738,7 +747,10 @@ export class IntelligenceTestingFramework {
             ...mockUsageContext,
             userProfile: {
               role: 'developer',
-              experience: contextConfig.skillLevel === 'expert' ? 'advanced' : (contextConfig.skillLevel as 'beginner' | 'intermediate' | 'advanced'),
+              experience:
+                contextConfig.skillLevel === 'expert'
+                  ? 'advanced'
+                  : (contextConfig.skillLevel as 'beginner' | 'intermediate' | 'advanced'),
               domains: ['workflow', 'automation'],
               frequentTools: ['build_workflow', 'run_workflow'],
               preferences: {
@@ -809,7 +821,10 @@ export class IntelligenceTestingFramework {
             ...mockUsageContext,
             userProfile: {
               role: 'developer',
-              experience: level === 'expert' ? 'advanced' : (level as 'beginner' | 'intermediate' | 'advanced'),
+              experience:
+                level === 'expert'
+                  ? 'advanced'
+                  : (level as 'beginner' | 'intermediate' | 'advanced'),
               domains: ['workflow', 'automation'],
               frequentTools: ['build_workflow', 'run_workflow'],
               preferences: {

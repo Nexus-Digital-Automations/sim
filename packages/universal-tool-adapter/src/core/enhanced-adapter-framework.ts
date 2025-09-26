@@ -908,8 +908,8 @@ export class EnhancedAdapterFramework {
         ...blockConfig.tools.access.map((tool) => tool.replace(/^.*_/, '').replace(/_/g, ' '))
       )
     }
-
     // From subBlocks features
+
     ;(blockConfig.subBlocks || []).forEach((subBlock) => {
       switch (subBlock.type) {
         case 'oauth-input':

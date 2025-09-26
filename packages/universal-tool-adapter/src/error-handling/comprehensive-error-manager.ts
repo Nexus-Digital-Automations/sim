@@ -638,7 +638,13 @@ export class ComprehensiveToolErrorManager {
     }
 
     // Classify based on error type and context
-    if (error instanceof Error ? error.message : String(error).includes('timeout') || error instanceof Error ? error.message : String(error).includes('TIMEOUT')) {
+    if (
+      error instanceof Error
+        ? error.message
+        : String(error).includes('timeout') || error instanceof Error
+          ? error.message
+          : String(error).includes('TIMEOUT')
+    ) {
       return new ToolExecutionError(
         error instanceof Error ? error.message : String(error),
         'timeout',
@@ -649,7 +655,13 @@ export class ComprehensiveToolErrorManager {
       )
     }
 
-    if (error instanceof Error ? error.message : String(error).includes('authentication') || error instanceof Error ? error.message : String(error).includes('unauthorized')) {
+    if (
+      error instanceof Error
+        ? error.message
+        : String(error).includes('authentication') || error instanceof Error
+          ? error.message
+          : String(error).includes('unauthorized')
+    ) {
       return new ToolAuthenticationError(
         error instanceof Error ? error.message : String(error),
         'invalid_credentials',
@@ -659,11 +671,27 @@ export class ComprehensiveToolErrorManager {
       )
     }
 
-    if (error instanceof Error ? error.message : String(error).includes('validation') || error instanceof Error ? error.message : String(error).includes('invalid parameter')) {
-      return new UserInputError(error instanceof Error ? error.message : String(error), 'invalid_format', toolContext)
+    if (
+      error instanceof Error
+        ? error.message
+        : String(error).includes('validation') || error instanceof Error
+          ? error.message
+          : String(error).includes('invalid parameter')
+    ) {
+      return new UserInputError(
+        error instanceof Error ? error.message : String(error),
+        'invalid_format',
+        toolContext
+      )
     }
 
-    if (error instanceof Error ? error.message : String(error).includes('rate limit') || error instanceof Error ? error.message : String(error).includes('quota')) {
+    if (
+      error instanceof Error
+        ? error.message
+        : String(error).includes('rate limit') || error instanceof Error
+          ? error.message
+          : String(error).includes('quota')
+    ) {
       return new ToolAuthenticationError(
         error instanceof Error ? error.message : String(error),
         'rate_limit_exceeded',

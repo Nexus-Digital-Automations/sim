@@ -1044,7 +1044,9 @@ class SystemLoadMonitor {
         await this.rateLimiter.adjustLimitsForLoad(this.currentLoad)
       }
     } catch (error) {
-      logger.error('System load check failed', { error: error instanceof Error ? error.message : String(error) })
+      logger.error('System load check failed', {
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
   }
 }

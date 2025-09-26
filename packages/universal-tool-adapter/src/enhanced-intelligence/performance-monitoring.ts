@@ -523,12 +523,13 @@ const optimizedConfig = {
     } catch (error) {
       logger.error('Failed to implement optimization recommendation', {
         recommendationId,
-        error: error instanceof Error ? error instanceof Error ? error.message : String(error) : error,
+        error:
+          error instanceof Error ? (error instanceof Error ? error.message : String(error)) : error,
       })
 
       return {
         success: false,
-        message: `Failed to implement recommendation: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
+        message: `Failed to implement recommendation: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : 'Unknown error'}`,
         appliedChanges: [],
       }
     }
@@ -876,7 +877,8 @@ const optimizedConfig = {
     } catch (error) {
       logger.error('Auto-remediation failed', {
         alertId: alert.id,
-        error: error instanceof Error ? error instanceof Error ? error.message : String(error) : error,
+        error:
+          error instanceof Error ? (error instanceof Error ? error.message : String(error)) : error,
       })
     }
   }

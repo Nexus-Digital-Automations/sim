@@ -284,14 +284,24 @@ export class ParameterMapper {
     // Process each mapping rule
     for (const [parlantParam, mapping] of allMappings) {
       try {
-        const value = await this.applyParameterMapping(parlantParam as string, mapping, parlantArgs, context)
+        const value = await this.applyParameterMapping(
+          parlantParam as string,
+          mapping,
+          parlantArgs,
+          context
+        )
 
         if (value !== undefined) {
           // Handle nested parameter paths
           this.setNestedValue(simArgs, mapping.simParameter, value)
         }
       } catch (error) {
-        const errorMsg = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown mapping error'
+        const errorMsg =
+          error instanceof Error
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : 'Unknown mapping error'
         logger.warn(`Parameter mapping failed`, {
           parlantParameter: parlantParam,
           simParameter: mapping.simParameter,

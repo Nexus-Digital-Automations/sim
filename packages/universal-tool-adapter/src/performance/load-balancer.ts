@@ -798,7 +798,11 @@ export class AdvancedLoadBalancer extends EventEmitter {
           error: error instanceof Error ? error.message : String(error),
         })
 
-        this.setInstanceHealth(instance.id, false, `health-check-error: ${error instanceof Error ? error.message : String(error)}`)
+        this.setInstanceHealth(
+          instance.id,
+          false,
+          `health-check-error: ${error instanceof Error ? error.message : String(error)}`
+        )
       }
     })
 

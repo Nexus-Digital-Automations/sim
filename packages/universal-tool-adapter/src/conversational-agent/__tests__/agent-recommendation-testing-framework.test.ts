@@ -204,7 +204,12 @@ class AgentRecommendationTestingFramework {
 
       return results
     } catch (error) {
-      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
+      const errorMessage =
+        error instanceof Error
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : 'Unknown error occurred'
       console.error('❌ Test suite execution failed:', errorMessage)
       throw error
     }
@@ -257,7 +262,12 @@ class AgentRecommendationTestingFramework {
         error: validationResults.error,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
+      const errorMessage =
+        error instanceof Error
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'context_analysis',
@@ -400,7 +410,12 @@ class AgentRecommendationTestingFramework {
         error: validationResults.error,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
+      const errorMessage =
+        error instanceof Error
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'recommendation_quality',
@@ -578,7 +593,12 @@ class AgentRecommendationTestingFramework {
         error: validationResults.error,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
+      const errorMessage =
+        error instanceof Error
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'workflow_integration',
@@ -727,7 +747,12 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
+      const errorMessage =
+        error instanceof Error
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'websocket_connection',
@@ -759,7 +784,12 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
+      const errorMessage =
+        error instanceof Error
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'realtime_recommendations',
@@ -805,7 +835,12 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
+      const errorMessage =
+        error instanceof Error
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'concurrent_users',
@@ -835,7 +870,12 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
+      const errorMessage =
+        error instanceof Error
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'connection_failover',

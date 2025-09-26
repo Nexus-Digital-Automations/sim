@@ -817,7 +817,10 @@ export class IntelligenceIntegrationLayer {
       if (error instanceof Error ? error.message : String(error).includes('Validation failed:')) {
         throw error // Re-throw validation errors
       }
-      logger.warn('Proactive validation error', { adapterId, error: error instanceof Error ? error.message : String(error) })
+      logger.warn('Proactive validation error', {
+        adapterId,
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
   }
 

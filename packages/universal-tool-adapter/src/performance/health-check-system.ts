@@ -799,7 +799,13 @@ class HealthChecker {
         },
       ]
 
-      const health = this.buildComponentHealth(state, score, responseTime, error instanceof Error ? error.message : String(error), issues)
+      const health = this.buildComponentHealth(
+        state,
+        score,
+        responseTime,
+        error instanceof Error ? error.message : String(error),
+        issues
+      )
 
       this.lastHealth = health
       return health

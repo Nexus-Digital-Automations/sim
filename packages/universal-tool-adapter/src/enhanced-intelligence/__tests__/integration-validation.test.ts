@@ -442,8 +442,8 @@ export class IntegrationValidationSuite {
           guidance: guidance
             ? {
                 description: guidance.description?.substring(0, 100),
-                complexity: "moderate",
-                estimatedTime: "5-10 minutes",
+                complexity: 'moderate',
+                estimatedTime: '5-10 minutes',
               }
             : null,
         })
@@ -519,7 +519,8 @@ export class IntegrationValidationSuite {
         if (isIntelligent) intelligentExplanationCount++
 
         results.push({
-          errorType: scenario.error instanceof Error ? scenario.error.message : String(scenario.error),
+          errorType:
+            scenario.error instanceof Error ? scenario.error.message : String(scenario.error),
           toolId: scenario.toolId,
           skillLevel: scenario.skillLevel,
           hasContextualMessage,
@@ -923,7 +924,10 @@ export class IntegrationValidationSuite {
       ...this.createMockContext(),
       userProfile: {
         role: 'developer',
-        experience: skillLevel === 'expert' ? 'advanced' : (skillLevel as 'beginner' | 'intermediate' | 'advanced'),
+        experience:
+          skillLevel === 'expert'
+            ? 'advanced'
+            : (skillLevel as 'beginner' | 'intermediate' | 'advanced'),
         domains: ['workflow', 'automation'],
         frequentTools: ['build_workflow', 'run_workflow'],
         preferences: {

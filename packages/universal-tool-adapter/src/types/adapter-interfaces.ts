@@ -991,4 +991,10 @@ export type AdapterTestingPerformanceTypes = PerformanceThresholds | TestConfigu
 /**
  * Re-export UsageContext from usage-guidelines for easier imports
  */
-export type { UsageContext, ConversationMessage, UserIntent, UserProfile, UserPreferences } from '../natural-language/usage-guidelines'
+export type {
+  ConversationMessage,
+  UsageContext,
+  UserIntent,
+  UserPreferences,
+  UserProfile,
+} from '../natural-language/usage-guidelines'

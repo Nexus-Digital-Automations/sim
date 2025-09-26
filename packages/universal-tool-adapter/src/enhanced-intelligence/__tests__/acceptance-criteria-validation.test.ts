@@ -687,7 +687,9 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
 
       return result
     } catch (error) {
-      console.log(`   Result: ❌ FAILED (Error: ${error instanceof Error ? error.message : String(error)})`)
+      console.log(
+        `   Result: ❌ FAILED (Error: ${error instanceof Error ? error.message : String(error)})`
+      )
 
       return {
         criteriaId: criteria.id,
@@ -696,7 +698,9 @@ describe('Comprehensive Acceptance Criteria Validation', () => {
         expectedValue: criteria.successCriteria.minimumThreshold,
         confidence: 0,
         evidence: [],
-        recommendations: [`Fix critical error preventing validation: ${error instanceof Error ? error.message : String(error)}`],
+        recommendations: [
+          `Fix critical error preventing validation: ${error instanceof Error ? error.message : String(error)}`,
+        ],
         timestamp: new Date().toISOString(),
       }
     }

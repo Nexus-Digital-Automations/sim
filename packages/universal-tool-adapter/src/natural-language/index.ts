@@ -403,7 +403,7 @@ export class NaturalLanguageEngine {
       description: `Tool for ${toolId}`,
       version: '1.0.0',
       params: {},
-      output: {}
+      output: {},
     }
 
     const config = this.descriptionGenerator.generateNaturalLanguageConfig(mockTool)

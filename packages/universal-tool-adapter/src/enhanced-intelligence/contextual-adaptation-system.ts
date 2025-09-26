@@ -628,7 +628,9 @@ export class ContextualAdaptationEngine {
 
       return true
     } catch (error) {
-      logger.error('Example addition failed:', error)
+      logger.error('Example addition failed:', {
+        error: error instanceof Error ? error.message : String(error),
+      })
       return false
     }
   }
@@ -659,7 +661,9 @@ export class ContextualAdaptationEngine {
 
       return true
     } catch (error) {
-      logger.error('Tone adjustment failed:', error)
+      logger.error('Tone adjustment failed:', {
+        error: error instanceof Error ? error.message : String(error),
+      })
       return false
     }
   }
