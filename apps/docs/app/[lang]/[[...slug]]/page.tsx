@@ -9,6 +9,41 @@ import { source } from '@/lib/source'
 
 export const dynamic = 'force-dynamic'
 
+interface CustomFooterProps {
+  neighbours: {
+    previous?: { url: string; name: string }
+    next?: { url: string; name: string }
+  } | null
+}
+
+const CustomFooter = ({ neighbours }: CustomFooterProps) => (
+  <div className='mt-12 flex items-center justify-between border-border border-t py-8'>
+    {neighbours?.previous ? (
+      <Link
+        href={neighbours.previous.url}
+        className='group flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground'
+      >
+        <ChevronLeft className='group-hover:-translate-x-1 h-4 w-4 transition-transform' />
+        <span className='font-medium'>{neighbours.previous.name}</span>
+      </Link>
+    ) : (
+      <div />
+    )}
+
+    {neighbours?.next ? (
+      <Link
+        href={neighbours.next.url}
+        className='group flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground'
+      >
+        <span className='font-medium'>{neighbours.next.name}</span>
+        <ChevronRight className='h-4 w-4 transition-transform group-hover:translate-x-1' />
+      </Link>
+    ) : (
+      <div />
+    )}
+  </div>
+)
+
 export default async function Page(props: { params: Promise<{ slug?: string[]; lang: string }> }) {
   const params = await props.params
   const page = source.getPage(params.slug, params.lang)
@@ -21,34 +56,6 @@ export default async function Page(props: { params: Promise<{ slug?: string[]; l
   const pageTree =
     pageTreeRecord[params.lang] ?? pageTreeRecord.en ?? Object.values(pageTreeRecord)[0]
   const neighbours = pageTree ? findNeighbour(pageTree, page.url) : null
-
-  const CustomFooter = () => (
-    <div className='mt-12 flex items-center justify-between border-border border-t py-8'>
-      {neighbours?.previous ? (
-        <Link
-          href={neighbours.previous.url}
-          className='group flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground'
-        >
-          <ChevronLeft className='group-hover:-translate-x-1 h-4 w-4 transition-transform' />
-          <span className='font-medium'>{neighbours.previous.name}</span>
-        </Link>
-      ) : (
-        <div />
-      )}
-
-      {neighbours?.next ? (
-        <Link
-          href={neighbours.next.url}
-          className='group flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground'
-        >
-          <span className='font-medium'>{neighbours.next.name}</span>
-          <ChevronRight className='h-4 w-4 transition-transform group-hover:translate-x-1' />
-        </Link>
-      ) : (
-        <div />
-      )}
-    </div>
-  )
 
   return (
     <>
@@ -76,7 +83,7 @@ export default async function Page(props: { params: Promise<{ slug?: string[]; l
         }}
         footer={{
           enabled: true,
-          component: <CustomFooter />,
+          component: <CustomFooter neighbours={neighbours} />,
         }}
       >
         <DocsTitle>{page.data.title}</DocsTitle>
