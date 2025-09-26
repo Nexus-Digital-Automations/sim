@@ -19,6 +19,58 @@ interface NavProps {
   variant?: 'landing' | 'auth' | 'legal'
 }
 
+interface NavLinksProps {
+  githubStars: string
+  onEnterpriseClick: () => void
+}
+
+const NavLinks = ({ githubStars, onEnterpriseClick }: NavLinksProps) => (
+  <>
+    <li>
+      <Link
+        href='https://docs.sim.ai'
+        target='_blank'
+        rel='noopener noreferrer'
+        className='text-[16px] text-muted-foreground transition-colors hover:text-foreground'
+        prefetch={false}
+      >
+        Docs
+      </Link>
+    </li>
+    <li>
+      <Link
+        href='#pricing'
+        className='text-[16px] text-muted-foreground transition-colors hover:text-foreground'
+        scroll={true}
+      >
+        Pricing
+      </Link>
+    </li>
+    <li>
+      <button
+        onClick={onEnterpriseClick}
+        className='text-[16px] text-muted-foreground transition-colors hover:text-foreground'
+        type='button'
+        aria-label='Contact for Enterprise pricing'
+      >
+        Enterprise
+      </button>
+    </li>
+    <li>
+      <a
+        href='https://github.com/simstudioai/sim'
+        target='_blank'
+        rel='noopener noreferrer'
+        className='flex items-center gap-2 text-[16px] text-muted-foreground transition-colors hover:text-foreground'
+        aria-label={`GitHub repository - ${githubStars} stars`}
+      >
+        <GithubIcon className='h-[16px] w-[16px]' aria-hidden='true' />
+        <span aria-live='polite'>{githubStars}</span>
+      </a>
+    </li>
+  </>
+)
+
 export default function Nav({ hideAuthButtons = false, variant = 'landing' }: NavProps = {}) {
   const [githubStars, setGithubStars] = useState('15k')
   const [isHovered, setIsHovered] = useState(false)
@@ -55,53 +107,6 @@ export default function Nav({ hideAuthButtons = false, variant = 'landing' }: Na
   const handleEnterpriseClick = useCallback(() => {
     window.open('https://form.typeform.com/to/jqCO12pF', '_blank', 'noopener,noreferrer')
   }, [])
-
-  const NavLinks = () => (
-    <>
-      <li>
-        <Link
-          href='https://docs.sim.ai'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='text-[16px] text-muted-foreground transition-colors hover:text-foreground'
-          prefetch={false}
-        >
-          Docs
-        </Link>
-      </li>
-      <li>
-        <Link
-          href='#pricing'
-          className='text-[16px] text-muted-foreground transition-colors hover:text-foreground'
-          scroll={true}
-        >
-          Pricing
-        </Link>
-      </li>
-      <li>
-        <button
-          onClick={handleEnterpriseClick}
-          className='text-[16px] text-muted-foreground transition-colors hover:text-foreground'
-          type='button'
-          aria-label='Contact for Enterprise pricing'
-        >
-          Enterprise
-        </button>
-      </li>
-      <li>
-        <a
-          href='https://github.com/simstudioai/sim'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='flex items-center gap-2 text-[16px] text-muted-foreground transition-colors hover:text-foreground'
-          aria-label={`GitHub repository - ${githubStars} stars`}
-        >
-          <GithubIcon className='h-[16px] w-[16px]' aria-hidden='true' />
-          <span aria-live='polite'>{githubStars}</span>
-        </a>
-      </li>
-    </>
-  )
 
   return (
     <nav
@@ -143,7 +148,7 @@ export default function Nav({ hideAuthButtons = false, variant = 'landing' }: Na
         {/* Desktop Navigation Links - only show on landing and if hosted */}
         {variant === 'landing' && isHosted && (
           <ul className='hidden items-center justify-center gap-[20px] pt-[4px] md:flex'>
-            <NavLinks />
+            <NavLinks githubStars={githubStars} onEnterpriseClick={handleEnterpriseClick} />
           </ul>
         )}
       </div>
