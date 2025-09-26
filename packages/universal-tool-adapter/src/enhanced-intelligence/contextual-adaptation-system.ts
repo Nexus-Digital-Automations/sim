@@ -690,7 +690,7 @@ export class ContextualAdaptationEngine {
 
       return true
     } catch (error) {
-      logger.error('Guidance addition failed:', error)
+      logger.error('Guidance addition failed:', { error: error instanceof Error ? error.message : String(error) })
       return false
     }
   }
