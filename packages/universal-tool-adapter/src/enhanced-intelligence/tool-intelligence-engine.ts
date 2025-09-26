@@ -304,7 +304,7 @@ export class EnhancedToolIntelligenceEngine {
       errorType: this.categorizeError(error),
       severity: this.assessErrorSeverity(error),
       impact: this.assessErrorImpact(error),
-      userMessage: error.message,
+      userMessage: error instanceof Error ? error.message : String(error),
       detailedExplanation: error.details || '',
       immediateActions: [],
       preventionSteps: [],
@@ -809,7 +809,7 @@ export class EnhancedToolIntelligenceEngine {
     toolId: string,
     context: UsageContext
   ): Promise<string> {
-    return Promise.resolve(`Error occurred while using ${toolId}: ${error.message}`)
+    return Promise.resolve(`Error occurred while using ${toolId}: ${error instanceof Error ? error.message : String(error)}`)
   }
   private createUserLevelExplanations(error: any, toolId: string): Record<UserSkillLevel, string> {
     return {} as any

@@ -365,7 +365,7 @@ export class AnalyticsSystem extends EventEmitter {
   async cleanup(): Promise<CleanupResult> {
     logger.info('Starting analytics data cleanup')
 
-    const cutoffTime = Date.now() - this.config.retentionDays * 86400000
+    const cutoffTime = Date.now() - (this.config.retentionDays || 30) * 86400000
     let removedRecords = 0
 
     // Clean up execution history
@@ -449,7 +449,7 @@ export class AnalyticsSystem extends EventEmitter {
       'realtime',
       setInterval(() => {
         this.updateRealtimeCalculations()
-      }, this.config.realTimeIntervalMs)
+      }, this.config.realTimeIntervalMs || 5000)
     )
 
     // Performance metrics aggregation
@@ -457,7 +457,7 @@ export class AnalyticsSystem extends EventEmitter {
       'metrics',
       setInterval(() => {
         this.aggregatePerformanceMetrics()
-      }, this.config.metricsIntervalMs)
+      }, this.config.metricsIntervalMs || 30000)
     )
 
     // Health checks
@@ -465,7 +465,7 @@ export class AnalyticsSystem extends EventEmitter {
       'health',
       setInterval(() => {
         this.performHealthChecks()
-      }, this.config.healthCheckIntervalMs)
+      }, this.config.healthCheckIntervalMs || 60000)
     )
 
     // Data cleanup
@@ -486,7 +486,7 @@ export class AnalyticsSystem extends EventEmitter {
           this.persistData().catch((error) => {
             logger.error('Data persistence failed', { error: error.message })
           })
-        }, this.config.persistenceInterval)
+        }, this.config.persistenceInterval || 300000)
       )
     }
   }
@@ -500,8 +500,8 @@ export class AnalyticsSystem extends EventEmitter {
     records.push(record)
 
     // Trim records if exceeding limit
-    if (records.length > this.config.maxRecordsPerAdapter) {
-      records.splice(0, records.length - this.config.maxRecordsPerAdapter)
+    if (records.length > (this.config.maxRecordsPerAdapter || 1000)) {
+      records.splice(0, records.length - (this.config.maxRecordsPerAdapter || 1000))
     }
 
     // Track errors separately
@@ -604,7 +604,7 @@ export class AnalyticsSystem extends EventEmitter {
     }
 
     // Track slow executions
-    if (record.duration > this.config.slowExecutionThresholdMs) {
+    if (record.duration > (this.config.slowExecutionThresholdMs || 5000)) {
       metrics.slowExecutions++
     }
 
@@ -703,7 +703,7 @@ export class AnalyticsSystem extends EventEmitter {
 
     if (errorRate > 0.1) return 'unhealthy' // > 10% error rate
     if (errorRate > 0.05) return 'degraded' // > 5% error rate
-    if (this.realTimeMetrics.averageResponseTime > this.config.responseTimeThreshold) {
+    if (this.realTimeMetrics.averageResponseTime > (this.config.responseTimeThreshold || 10000)) {
       return 'degraded'
     }
 

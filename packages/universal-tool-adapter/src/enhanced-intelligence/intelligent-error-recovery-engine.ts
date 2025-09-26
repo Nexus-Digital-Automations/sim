@@ -833,7 +833,7 @@ export class IntelligentErrorRecoveryEngine {
       primary: this.identifyPrimaryRootCause(error, context),
       secondary: this.identifySecondaryRootCauses(error, context),
       confidence: 0.8,
-      technicalDetails: error.message,
+      technicalDetails: error instanceof Error ? error.message : String(error),
       userFriendlyExplanation: this.generateUserFriendlyRootCauseExplanation(error, context),
     }
 
@@ -999,7 +999,7 @@ export class IntelligentErrorRecoveryEngine {
     try {
       // Use the contextual recommendation engine to get alternatives
       const recommendationRequest: ContextualRecommendationRequest = {
-        userMessage: `Find alternative to ${context.toolId} due to error: ${error.message}`,
+        userMessage: `Find alternative to ${context.toolId} due to error: ${error instanceof Error ? error.message : String(error)}`,
         conversationHistory: [],
         currentContext: this.buildAdvancedUsageContext(context),
         maxRecommendations: 5,
@@ -1326,7 +1326,7 @@ export class IntelligentErrorRecoveryEngine {
 
   private generatePlanId(error: Error, context: ErrorRecoveryContext): string {
     const timestamp = Date.now().toString(36)
-    const errorHash = this.hashString(error.message).toString(36)
+    const errorHash = this.hashString(error instanceof Error ? error.message : String(error)).toString(36)
     const contextHash = this.hashString(context.toolId || 'unknown').toString(36)
     return `plan-${timestamp}-${errorHash}-${contextHash}`
   }
@@ -1462,7 +1462,7 @@ export class IntelligentErrorRecoveryEngine {
   // (Many methods are abbreviated for brevity but would be fully implemented)
 
   private classifyErrorCategory(error: Error): string {
-    const message = error.message.toLowerCase()
+    const message = error instanceof Error ? error.message : String(error).toLowerCase()
     if (message.includes('timeout')) return 'timeout'
     if (message.includes('auth') || message.includes('permission')) return 'authentication'
     if (message.includes('network') || message.includes('connection')) return 'network'
@@ -1479,7 +1479,7 @@ export class IntelligentErrorRecoveryEngine {
   }
 
   private identifyPrimaryRootCause(error: Error, context: ErrorRecoveryContext): string {
-    return `Error in ${context.toolId}: ${error.message}`
+    return `Error in ${context.toolId}: ${error instanceof Error ? error.message : String(error)}`
   }
 
   private identifySecondaryRootCauses(error: Error, context: ErrorRecoveryContext): string[] {
@@ -1490,7 +1490,7 @@ export class IntelligentErrorRecoveryEngine {
     error: Error,
     context: ErrorRecoveryContext
   ): string {
-    return `The ${context.toolId} tool couldn't complete your request because ${error.message.toLowerCase()}`
+    return `The ${context.toolId} tool couldn't complete your request because ${error instanceof Error ? error.message : String(error).toLowerCase()}`
   }
 
   private mapSeverity(severity: any): 'low' | 'medium' | 'high' | 'critical' {
@@ -1635,9 +1635,9 @@ export class IntelligentErrorRecoveryEngine {
         severity: 'medium',
         impact: 'moderate',
         rootCause: {
-          primary: error.message,
+          primary: error instanceof Error ? error.message : String(error),
           confidence: 0.5,
-          technicalDetails: error.message,
+          technicalDetails: error instanceof Error ? error.message : String(error),
           userFriendlyExplanation: 'An unexpected error occurred',
         },
         contributingFactors: [],

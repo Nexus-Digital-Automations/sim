@@ -1,15 +1,17 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import * as schema from './schema';
-// Re-export everything from schema for type consistency
-export * from './schema';
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
+import * as schema from './schema'
+
 // Re-export Parlant types and utilities
-export * from './parlant-exports';
+export * from './parlant-exports'
+// Re-export everything from schema for type consistency
+export * from './schema'
+
 // In production, use the Vercel-generated POSTGRES_URL
 // In development, use the direct DATABASE_URL
-const connectionString = process.env.POSTGRES_URL ?? process.env.DATABASE_URL ?? '';
+const connectionString = process.env.POSTGRES_URL ?? process.env.DATABASE_URL ?? ''
 if (!connectionString) {
-    throw new Error('Missing POSTGRES_URL or DATABASE_URL environment variable');
+  throw new Error('Missing POSTGRES_URL or DATABASE_URL environment variable')
 }
 /**
  * Connection Pool Allocation Strategy
@@ -25,13 +27,12 @@ if (!connectionString) {
  * - Supabase limit: 400 connections (16XL instance direct connection pool)
  */
 const postgresClient = postgres(connectionString, {
-    prepare: false,
-    idle_timeout: 20,
-    connect_timeout: 30,
-    max: 60,
-    onnotice: () => { },
-});
-const drizzleClient = drizzle(postgresClient, { schema });
-export const db = globalThis.database || drizzleClient;
-if (process.env.NODE_ENV !== 'production')
-    globalThis.database = db;
+  prepare: false,
+  idle_timeout: 20,
+  connect_timeout: 30,
+  max: 60,
+  onnotice: () => {},
+})
+const drizzleClient = drizzle(postgresClient, { schema })
+export const db = globalThis.database || drizzleClient
+if (process.env.NODE_ENV !== 'production') globalThis.database = db

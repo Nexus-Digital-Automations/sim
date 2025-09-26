@@ -533,7 +533,7 @@ export class AdvancedHealthCheckSystem extends EventEmitter {
         logger.error('Health check failed', {
           checkerId: checker.getId(),
           checkType,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         })
 
         const circuitBreaker = this.circuitBreakers.get(checker.getId())
@@ -792,14 +792,14 @@ class HealthChecker {
           severity: 'error',
           component: this.id,
           type: 'health_check_error',
-          message: error.message,
+          message: error instanceof Error ? error.message : String(error),
           timestamp: new Date(),
           resolved: false,
           recommendedActions: this.getRecommendedActions(state),
         },
       ]
 
-      const health = this.buildComponentHealth(state, score, responseTime, error.message, issues)
+      const health = this.buildComponentHealth(state, score, responseTime, error instanceof Error ? error.message : String(error), issues)
 
       this.lastHealth = health
       return health
@@ -1110,7 +1110,7 @@ class RecoveryManager {
         actionId,
         componentId,
         recoveryType,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
 
       this.healthSystem.emit('recoveryFailed', action)
@@ -1209,7 +1209,7 @@ class RecoveryManager {
       logger.error('Failed to process recovery from queue', {
         componentId,
         type,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
     }
   }

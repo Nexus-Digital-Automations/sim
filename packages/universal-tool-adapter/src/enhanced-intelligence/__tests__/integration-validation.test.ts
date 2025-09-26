@@ -442,8 +442,8 @@ export class IntegrationValidationSuite {
           guidance: guidance
             ? {
                 description: guidance.description?.substring(0, 100),
-                complexity: guidance.difficulty,
-                estimatedTime: guidance.estimatedTime,
+                complexity: "moderate",
+                estimatedTime: "5-10 minutes",
               }
             : null,
         })
@@ -519,7 +519,7 @@ export class IntegrationValidationSuite {
         if (isIntelligent) intelligentExplanationCount++
 
         results.push({
-          errorType: scenario.error.message,
+          errorType: scenario.error instanceof Error ? scenario.error.message : String(scenario.error),
           toolId: scenario.toolId,
           skillLevel: scenario.skillLevel,
           hasContextualMessage,
@@ -879,25 +879,22 @@ export class IntegrationValidationSuite {
   private createMockContext(): UsageContext {
     return {
       userProfile: {
-        skillLevel: 'intermediate',
         role: 'developer',
-        experience: 'moderate',
+        experience: 'intermediate',
+        domains: ['workflow', 'automation'],
+        frequentTools: ['build_workflow', 'run_workflow'],
         preferences: {
-          verbosity: 'detailed',
-          examples: true,
-          stepByStep: true,
+          communication: 'detailed',
+          automation: 'guided',
+          explanation: 'comprehensive',
         },
       },
-      sessionContext: {
-        currentTask: 'testing',
-        timeAvailable: 'moderate',
-        urgency: 'medium',
-      },
-      workflowContext: {
-        currentWorkflow: 'test_workflow',
-        workflowComplexity: 'simple',
-        lastActions: [],
-      },
+      userId: 'test-user',
+      workspaceId: 'test-workspace',
+      workflowId: 'test_workflow',
+      currentStep: 'testing',
+      timeOfDay: 'afternoon',
+      dayOfWeek: 'weekday',
     }
   }
 
@@ -905,14 +902,19 @@ export class IntegrationValidationSuite {
     return {
       ...this.createMockContext(),
       userProfile: {
-        ...this.createMockContext().userProfile,
-        skillLevel: scenario.skillLevel,
+        role: 'developer',
+        experience: scenario.skillLevel,
+        domains: ['workflow', 'automation'],
+        frequentTools: ['build_workflow', 'run_workflow'],
+        preferences: {
+          communication: 'detailed',
+          automation: 'guided',
+          explanation: 'comprehensive',
+        },
       },
-      sessionContext: {
-        ...this.createMockContext().sessionContext,
-        currentTask: scenario.task,
-        urgency: scenario.urgency,
-      },
+      currentStep: scenario.task,
+      timeOfDay: 'afternoon',
+      dayOfWeek: scenario.urgency === 'high' ? 'weekday' : 'weekend',
     }
   }
 
@@ -920,8 +922,15 @@ export class IntegrationValidationSuite {
     return {
       ...this.createMockContext(),
       userProfile: {
-        ...this.createMockContext().userProfile,
-        skillLevel,
+        role: 'developer',
+        experience: skillLevel === 'expert' ? 'advanced' : (skillLevel as 'beginner' | 'intermediate' | 'advanced'),
+        domains: ['workflow', 'automation'],
+        frequentTools: ['build_workflow', 'run_workflow'],
+        preferences: {
+          communication: 'detailed',
+          automation: 'guided',
+          explanation: 'comprehensive',
+        },
       },
     }
   }
@@ -1346,4 +1355,3 @@ describe('Integration Validation Suite', () => {
     expect(results.securityLevel).toBeDefined()
   })
 })
-

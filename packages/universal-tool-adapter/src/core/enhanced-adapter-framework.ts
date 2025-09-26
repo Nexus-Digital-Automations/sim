@@ -27,7 +27,6 @@ import type {
   // Sim BlockConfig types
   BlockConfig,
   SubBlockConfig,
-  SubBlockType,
 } from '../types/blocks-types'
 import type { ParameterDefinition, ParameterType } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
@@ -85,7 +84,7 @@ export class EnhancedAdapterFramework {
 
     // Initialize performance systems
     this.performanceOptimizer = new PerformanceOptimizer(this.config)
-    this.connectionPool = new ConnectionPool(this.config)
+    this.connectionPool = new ConnectionPool()
 
     // Initialize monitoring
     this.monitor = new FrameworkMonitor(this.config)
@@ -875,7 +874,10 @@ export class EnhancedAdapterFramework {
 
     // Add name-based tags
     const blockName = blockConfig.name || blockConfig.title || ''
-    const nameParts = blockName.toLowerCase().split(/[\s_-]+/).filter(part => part.length > 0)
+    const nameParts = blockName
+      .toLowerCase()
+      .split(/[\s_-]+/)
+      .filter((part) => part.length > 0)
     tags.push(...nameParts)
 
     // Add capability tags
@@ -908,7 +910,7 @@ export class EnhancedAdapterFramework {
     }
 
     // From subBlocks features
-    (blockConfig.subBlocks || []).forEach((subBlock) => {
+    ;(blockConfig.subBlocks || []).forEach((subBlock) => {
       switch (subBlock.type) {
         case 'oauth-input':
           capabilities.push('authentication')
@@ -1267,8 +1269,6 @@ class PerformanceOptimizer {
 }
 
 class ConnectionPool {
-  constructor(private config: any) {}
-
   async close(): Promise<void> {
     // Close any open connections
   }

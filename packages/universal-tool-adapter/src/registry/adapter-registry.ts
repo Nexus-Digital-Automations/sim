@@ -8,10 +8,8 @@
  * @version 1.0.0
  */
 
-import { BaseAdapter } from '../core/base-adapter'
-import { ConcreteAdapter } from './concrete-adapter'
+import type { BaseAdapter } from '../core/base-adapter'
 import { AdapterError, ConfigurationError, RegistryError } from '../errors/adapter-errors'
-import { z } from 'zod'
 import type {
   AdapterConfiguration,
   AdapterMigration,
@@ -20,7 +18,6 @@ import type {
   ExtensionPoint,
   SimToolDefinition,
   VersionCompatibility,
-  ValidationResult,
 } from '../types/adapter-interfaces'
 import type {
   ParlantTool,
@@ -29,11 +26,9 @@ import type {
   ToolRecommendation,
   ToolSearchQuery,
   ToolSearchResult,
-  ParameterDefinition,
-  ParlantExecutionContext,
-  ParlantToolResult,
 } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
+import { ConcreteAdapter } from './concrete-adapter'
 
 const logger = createLogger('AdapterRegistry')
 
@@ -219,7 +214,9 @@ export class PluginManager {
     }
 
     const methodName = hookMap[extensionPoint]
-    return methodName ? (plugin[methodName as keyof AdapterPlugin] as ((...args: any[]) => any) | undefined) : undefined
+    return methodName
+      ? (plugin[methodName as keyof AdapterPlugin] as ((...args: any[]) => any) | undefined)
+      : undefined
   }
 
   /**
@@ -231,11 +228,9 @@ export class PluginManager {
     }
 
     if (this.plugins.has(plugin.name)) {
-      throw new RegistryError(
-        `Plugin already registered: ${plugin.name}`,
-        'register',
-        { plugin: plugin.name }
-      )
+      throw new RegistryError(`Plugin already registered: ${plugin.name}`, 'register', {
+        plugin: plugin.name,
+      })
     }
 
     // Additional validation could be added here
@@ -255,7 +250,9 @@ export class PluginManager {
       try {
         await this.discoverPluginsInDirectory(directory)
       } catch (error) {
-        logger.warn(`Plugin discovery failed for directory: ${directory}`, { error: error instanceof Error ? error.message : String(error) })
+        logger.warn(`Plugin discovery failed for directory: ${directory}`, {
+          error: error instanceof Error ? error.message : String(error),
+        })
       }
     }
   }
@@ -324,7 +321,9 @@ export class HealthMonitor {
       this.recordHealthCheck(adapterId, healthy)
       return healthy
     } catch (error) {
-      logger.warn(`Health check failed for adapter: ${adapterId}`, { error: error instanceof Error ? error.message : String(error) })
+      logger.warn(`Health check failed for adapter: ${adapterId}`, {
+        error: error instanceof Error ? error.message : String(error),
+      })
       this.recordHealthCheck(adapterId, false)
       return false
     }
@@ -399,7 +398,9 @@ export class HealthMonitor {
       try {
         await this.checkAllHealth()
       } catch (error) {
-        logger.error('Health monitoring cycle failed', { error: error instanceof Error ? error.message : String(error) })
+        logger.error('Health monitoring cycle failed', {
+          error: error instanceof Error ? error.message : String(error),
+        })
       }
     }, intervalMs)
 
@@ -537,7 +538,9 @@ export class MigrationManager {
             migratedData = migration.rollback(migratedData)
             logger.info(`Migration rolled back successfully`)
           } catch (rollbackError) {
-            logger.error(`Migration rollback failed`, { error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError) })
+            logger.error(`Migration rollback failed`, {
+              error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+            })
           }
         }
 
@@ -622,11 +625,7 @@ export class AdapterRegistry implements ToolDiscovery {
 
     // Check if adapter already exists
     if (this.adapters.has(adapterId)) {
-      throw new RegistryError(
-        `Adapter already registered: ${adapterId}`,
-        'register',
-        { adapterId }
-      )
+      throw new RegistryError(`Adapter already registered: ${adapterId}`, 'register', { adapterId })
     }
 
     // Create registry entry
@@ -731,8 +730,12 @@ export class AdapterRegistry implements ToolDiscovery {
       logger.debug(`Adapter instance created: ${adapterId}`)
       return entry.adapter
     } catch (error) {
-      logger.error(`Failed to create adapter instance: ${adapterId}`, { error: error instanceof Error ? error.message : String(error) })
-      throw new AdapterError(`Failed to create adapter: ${error instanceof Error ? error.message : String(error)}`)
+      logger.error(`Failed to create adapter instance: ${adapterId}`, {
+        error: error instanceof Error ? error.message : String(error),
+      })
+      throw new AdapterError(
+        `Failed to create adapter: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 

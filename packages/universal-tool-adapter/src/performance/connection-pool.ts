@@ -146,7 +146,7 @@ export class AdvancedConnectionPool extends EventEmitter {
 
       logger.error('Failed to acquire connection', {
         poolName: this.config.poolName,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         acquireTimeMs: acquireTime,
       })
 
@@ -190,7 +190,7 @@ export class AdvancedConnectionPool extends EventEmitter {
       logger.error('Error releasing connection', {
         poolName: this.config.poolName,
         connectionId: connection.id,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
 
       await this.destroyConnection(connection)
@@ -498,7 +498,7 @@ export class AdvancedConnectionPool extends EventEmitter {
       logger.error('Error destroying connection', {
         poolName: this.config.poolName,
         connectionId: connection.id,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
     }
   }
@@ -527,7 +527,7 @@ export class AdvancedConnectionPool extends EventEmitter {
       } catch (error) {
         logger.error('Failed to maintain minimum connections', {
           poolName: this.config.poolName,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         })
       }
     }
@@ -646,7 +646,7 @@ class PooledConnection implements Connection {
       logger.error('Connection execution failed', {
         poolName: this.poolName,
         connectionId: this.id,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       this.isHealthy = false
       throw error

@@ -204,7 +204,7 @@ class AgentRecommendationTestingFramework {
 
       return results
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
       console.error('❌ Test suite execution failed:', errorMessage)
       throw error
     }
@@ -257,7 +257,7 @@ class AgentRecommendationTestingFramework {
         error: validationResults.error,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'context_analysis',
@@ -400,7 +400,7 @@ class AgentRecommendationTestingFramework {
         error: validationResults.error,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'recommendation_quality',
@@ -578,7 +578,7 @@ class AgentRecommendationTestingFramework {
         error: validationResults.error,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'workflow_integration',
@@ -727,7 +727,7 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'websocket_connection',
@@ -759,7 +759,7 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'realtime_recommendations',
@@ -805,7 +805,7 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'concurrent_users',
@@ -835,7 +835,7 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'connection_failover',
@@ -1340,9 +1340,9 @@ describe('Agent Tool Recommendation System', () => {
             auditTrail: true,
           },
           dataCompatibility: {
-            'json': 0.9,
-            'csv': 0.8,
-            'xml': 0.7,
+            json: 0.9,
+            csv: 0.8,
+            xml: 0.7,
           },
         },
         availableTools: [],

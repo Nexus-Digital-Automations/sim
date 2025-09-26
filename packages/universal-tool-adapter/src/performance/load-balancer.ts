@@ -322,7 +322,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
       return decision
     } catch (error) {
       logger.error('Instance selection failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         availableInstances: this.getAvailableInstances().length,
         totalInstances: this.instances.size,
       })
@@ -795,10 +795,10 @@ export class AdvancedLoadBalancer extends EventEmitter {
       } catch (error) {
         logger.error('Health check failed', {
           instanceId: instance.id,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         })
 
-        this.setInstanceHealth(instance.id, false, `health-check-error: ${error.message}`)
+        this.setInstanceHealth(instance.id, false, `health-check-error: ${error instanceof Error ? error.message : String(error)}`)
       }
     })
 
@@ -979,7 +979,7 @@ class HealthChecker {
       logger.debug('Health check failed', {
         instanceId: instance.id,
         endpoint: instance.endpoint,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       return false
     }

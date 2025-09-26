@@ -242,7 +242,7 @@ export class FormattingStrategies {
     if (typeof error === 'string') {
       details = error
     } else if (error && typeof error === 'object') {
-      if (error.message) {
+      if (error instanceof Error ? error.message : String(error)) {
         details = error.message
       } else {
         details = JSON.stringify(error, null, 2)
@@ -458,7 +458,7 @@ export class ResultFormatter {
 
       return finalResult
     } catch (error) {
-      logger.error('Result formatting failed', { error: error.message })
+      logger.error('Result formatting failed', { error: error instanceof Error ? error.message : String(error) })
 
       // Return safe fallback result
       return {
@@ -622,7 +622,7 @@ export class ResultFormatter {
             return template
           }
         } catch (error) {
-          logger.warn('Template condition evaluation failed', { error: error.message })
+          logger.warn('Template condition evaluation failed', { error: error instanceof Error ? error.message : String(error) })
         }
       }
     }

@@ -383,7 +383,7 @@ export class IntelligenceIntegrationLayer {
           durationMs: Date.now() - startTime,
           error: {
             type: error.constructor.name,
-            message: error.message,
+            message: error instanceof Error ? error.message : String(error),
             recoverable: true,
             intelligentExplanation: enhancedError,
           },
@@ -455,7 +455,7 @@ export class IntelligenceIntegrationLayer {
     } catch (error) {
       logger.error('Failed to get enhanced tool description', {
         toolId,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       return null
     }
@@ -634,7 +634,7 @@ export class IntelligenceIntegrationLayer {
       } catch (error) {
         logger.warn('Failed to generate intelligence for newly registered adapter', {
           adapterId: entry.id,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         })
       }
     })
@@ -692,7 +692,7 @@ export class IntelligenceIntegrationLayer {
     } catch (error) {
       logger.warn('Failed to generate intelligence for adapter', {
         adapterId,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
     }
   }
@@ -814,10 +814,10 @@ export class IntelligenceIntegrationLayer {
         })
       }
     } catch (error) {
-      if (error.message.includes('Validation failed:')) {
+      if (error instanceof Error ? error.message : String(error).includes('Validation failed:')) {
         throw error // Re-throw validation errors
       }
-      logger.warn('Proactive validation error', { adapterId, error: error.message })
+      logger.warn('Proactive validation error', { adapterId, error: error instanceof Error ? error.message : String(error) })
     }
   }
 
@@ -849,7 +849,7 @@ export class IntelligenceIntegrationLayer {
         severity: 'error' as any,
         impact: 'medium' as any,
         userMessage: 'An error occurred while executing the tool. Please try again.',
-        detailedExplanation: error.message,
+        detailedExplanation: error instanceof Error ? error.message : String(error),
         immediateActions: [
           {
             action: 'Try Again',

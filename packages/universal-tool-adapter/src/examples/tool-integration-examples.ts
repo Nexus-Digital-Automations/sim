@@ -287,7 +287,7 @@ async function executeWorkflowWithInput(workflowInput: string) {
 
     console.log('Workflow execution initiated successfully')
   } catch (error) {
-    console.error('Workflow execution failed:', error.message)
+    console.error('Workflow execution failed:', error instanceof Error ? error.message : String(error))
     throw error
   }
 }
@@ -357,10 +357,10 @@ async function robustWorkflowExecution(input: string) {
     runTool.onError((error) => {
       logger.error('Workflow execution error:', error)
       // Handle specific error types
-      if (error.message.includes('dependency')) {
+      if (error instanceof Error ? error.message : String(error).includes('dependency')) {
         // Handle dependency errors
         showUserMessage('Missing dependencies. Please check workflow configuration.')
-      } else if (error.message.includes('permission')) {
+      } else if (error instanceof Error ? error.message : String(error).includes('permission')) {
         // Handle permission errors
         showUserMessage('Insufficient permissions. Please contact administrator.')
       }
@@ -371,8 +371,8 @@ async function robustWorkflowExecution(input: string) {
   } catch (error) {
     // Log error for debugging
     logger.error('Workflow execution failed:', {
-      error: error.message,
-      stack: error.stack,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
       input: input.substring(0, 100) // Log first 100 chars only
     })
 
@@ -458,7 +458,7 @@ async function executeWorkflow(workflowInput) {
     await runTool.handleAccept(args)
     console.log('Workflow started successfully')
   } catch (error) {
-    console.error('Error:', error.message)
+    console.error('Error:', error instanceof Error ? error.message : String(error))
   }
 }
 `,
@@ -843,7 +843,7 @@ async function buildComplexWorkflow(request: WorkflowBuildRequest): Promise<Buil
 
   } catch (error) {
     console.error('Workflow build failed:', error)
-    throw new Error(\`Failed to build workflow: \${error.message}\`)
+    throw new Error(\`Failed to build workflow: \${error instanceof Error ? error.message : String(error)}\`)
   }
 }
 
@@ -874,7 +874,7 @@ buildComplexWorkflow(workflowRequest)
     console.log('Generated steps:', result.workflow_steps?.length)
   })
   .catch(error => {
-    console.error('Build failed:', error.message)
+    console.error('Build failed:', error instanceof Error ? error.message : String(error))
   })
 `,
           explanation:
@@ -1005,28 +1005,28 @@ async function robustWorkflowBuild(request: WorkflowBuildRequest): Promise<Build
       throw new Error(\`Validation failed: \${validationErrors}\`)
     }
 
-    if (error.message.includes('network')) {
+    if (error instanceof Error ? error.message : String(error).includes('network')) {
       throw new Error('Network error: Please check your connection and try again')
     }
 
-    if (error.message.includes('timeout')) {
+    if (error instanceof Error ? error.message : String(error).includes('timeout')) {
       throw new Error('Build timeout: The workflow was too complex to build quickly')
     }
 
-    if (error.message.includes('permissions')) {
+    if (error instanceof Error ? error.message : String(error).includes('permissions')) {
       throw new Error('Permission denied: You do not have permission to build workflows')
     }
 
     // Generic error handling
     console.error('Workflow build error:', {
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       request: {
         description: request.description.substring(0, 100),
         requirementCount: request.requirements?.length || 0
       }
     })
 
-    throw new Error(\`Workflow build failed: \${error.message}\`)
+    throw new Error(\`Workflow build failed: \${error instanceof Error ? error.message : String(error)}\`)
   }
 }
 
@@ -1041,9 +1041,9 @@ async function buildWorkflowWithRetry(
       return await robustWorkflowBuild(request)
     } catch (error) {
       // Don't retry for validation errors
-      if (error.message.includes('Validation failed') ||
-          error.message.includes('required') ||
-          error.message.includes('too long')) {
+      if (error instanceof Error ? error.message : String(error).includes('Validation failed') ||
+          error instanceof Error ? error.message : String(error).includes('required') ||
+          error instanceof Error ? error.message : String(error).includes('too long')) {
         throw error
       }
 

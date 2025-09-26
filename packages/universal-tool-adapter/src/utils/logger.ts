@@ -108,7 +108,7 @@ export class LogFormatters {
         error: entry.error
           ? {
               name: entry.error.name,
-              message: entry.error.message,
+              message: entry.error instanceof Error ? error.message : String(error),
               stack: entry.error.stack,
             }
           : undefined,

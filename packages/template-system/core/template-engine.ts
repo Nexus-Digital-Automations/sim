@@ -486,7 +486,9 @@ export class TemplateEngine {
           conditionalBlock.edgesToActivate?.forEach((edgeId: string) => activeEdges.add(edgeId))
         } else {
           conditionalBlock.blocksToHide?.forEach((blockId: string) => activeBlocks.delete(blockId))
-          conditionalBlock.edgesToDeactivate?.forEach((edgeId: string) => activeEdges.delete(edgeId))
+          conditionalBlock.edgesToDeactivate?.forEach((edgeId: string) =>
+            activeEdges.delete(edgeId)
+          )
         }
       }
 

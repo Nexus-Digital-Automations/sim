@@ -37,7 +37,7 @@ type UserSkillLevel = 'beginner' | 'intermediate' | 'advanced'
 
 // Placeholder implementation
 const explainError = (error: any, skillLevel: UserSkillLevel): string => {
-  return `Error: ${error.message || error}`
+  return `Error: ${error instanceof Error ? error.message : String(error) || error}`
 }
 
 import {
@@ -297,7 +297,7 @@ export class ComprehensiveToolErrorManager {
       toolId: context.toolId,
       executionId: context.executionId,
       errorType: error.constructor.name,
-      message: error.message,
+      message: error instanceof Error ? error.message : String(error),
     })
 
     try {
@@ -347,7 +347,7 @@ export class ComprehensiveToolErrorManager {
     } catch (handlingError) {
       logger.error('Error handling failed', {
         errorId,
-        originalError: error.message,
+        originalError: error instanceof Error ? error.message : String(error),
         handlingError: handlingError instanceof Error ? handlingError.message : handlingError,
       })
 
@@ -638,9 +638,9 @@ export class ComprehensiveToolErrorManager {
     }
 
     // Classify based on error type and context
-    if (error.message.includes('timeout') || error.message.includes('TIMEOUT')) {
+    if (error instanceof Error ? error.message : String(error).includes('timeout') || error instanceof Error ? error.message : String(error).includes('TIMEOUT')) {
       return new ToolExecutionError(
-        error.message,
+        error instanceof Error ? error.message : String(error),
         'timeout',
         context.toolId,
         toolContext,
@@ -649,9 +649,9 @@ export class ComprehensiveToolErrorManager {
       )
     }
 
-    if (error.message.includes('authentication') || error.message.includes('unauthorized')) {
+    if (error instanceof Error ? error.message : String(error).includes('authentication') || error instanceof Error ? error.message : String(error).includes('unauthorized')) {
       return new ToolAuthenticationError(
-        error.message,
+        error instanceof Error ? error.message : String(error),
         'invalid_credentials',
         context.toolId,
         toolContext,
@@ -659,13 +659,13 @@ export class ComprehensiveToolErrorManager {
       )
     }
 
-    if (error.message.includes('validation') || error.message.includes('invalid parameter')) {
-      return new UserInputError(error.message, 'invalid_format', toolContext)
+    if (error instanceof Error ? error.message : String(error).includes('validation') || error instanceof Error ? error.message : String(error).includes('invalid parameter')) {
+      return new UserInputError(error instanceof Error ? error.message : String(error), 'invalid_format', toolContext)
     }
 
-    if (error.message.includes('rate limit') || error.message.includes('quota')) {
+    if (error instanceof Error ? error.message : String(error).includes('rate limit') || error instanceof Error ? error.message : String(error).includes('quota')) {
       return new ToolAuthenticationError(
-        error.message,
+        error instanceof Error ? error.message : String(error),
         'rate_limit_exceeded',
         context.toolId,
         toolContext,
@@ -675,7 +675,7 @@ export class ComprehensiveToolErrorManager {
 
     // Default to generic tool adapter error
     return new ToolAdapterError(
-      error.message,
+      error instanceof Error ? error.message : String(error),
       'interface_mismatch',
       context.toolId,
       toolContext,
@@ -731,7 +731,7 @@ export class ComprehensiveToolErrorManager {
       impact: error.impact,
       userMessage: baseExplanation.messages[userSkillLevel],
       detailedExplanation: baseExplanation.summary,
-      technicalDetails: error.message,
+      technicalDetails: error instanceof Error ? error.message : String(error),
       immediateActions: baseExplanation.quickActions.map((action) => ({
         action: action.title,
         description: action.description,
@@ -865,7 +865,7 @@ export class ComprehensiveToolErrorManager {
       impact: ErrorImpact.MEDIUM,
       userMessage:
         'An unexpected error occurred while executing the tool. Please try again or contact support.',
-      detailedExplanation: error.message,
+      detailedExplanation: error instanceof Error ? error.message : String(error),
       immediateActions: [
         {
           action: 'Try Again',

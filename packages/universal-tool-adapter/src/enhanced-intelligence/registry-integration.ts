@@ -213,8 +213,8 @@ export class NaturalLanguageRegistryIntegration {
       return enhancedEntry
     } catch (error) {
       logger.error(`Failed to enhance adapter entry: ${entry.id}`, {
-        error: error.message,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       })
       return entry // Return original entry if enhancement fails
     }
@@ -267,8 +267,8 @@ export class NaturalLanguageRegistryIntegration {
       return results
     } catch (error) {
       logger.error('Enhanced tool discovery failed', {
-        error: error.message,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       })
       throw error
     }
@@ -321,7 +321,7 @@ export class NaturalLanguageRegistryIntegration {
     } catch (error) {
       logger.error('Semantic search failed', {
         query: searchQuery,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -423,7 +423,7 @@ export class NaturalLanguageRegistryIntegration {
     } catch (error) {
       logger.error('Advanced semantic search failed', {
         query,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -450,7 +450,7 @@ export class NaturalLanguageRegistryIntegration {
     } catch (error) {
       logger.error('Failed to get search suggestions', {
         partialQuery,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       return []
     }
@@ -475,7 +475,7 @@ export class NaturalLanguageRegistryIntegration {
       logger.debug('Search feedback recorded successfully')
     } catch (error) {
       logger.error('Failed to record search feedback', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
     }
   }
@@ -522,7 +522,7 @@ export class NaturalLanguageRegistryIntegration {
       return enhancedDescriptions
     } catch (error) {
       logger.error(`Failed to generate adapted description: ${tool.id}`, {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -569,7 +569,7 @@ export class NaturalLanguageRegistryIntegration {
           if (options?.failFast) {
             throw error
           }
-          failed.push({ entryId: entry.id, error: error.message })
+          failed.push({ entryId: entry.id, error: error instanceof Error ? error.message : String(error) })
           return null
         }
       })
@@ -679,7 +679,7 @@ export class NaturalLanguageRegistryIntegration {
       return enhancedTool
     } catch (error) {
       logger.warn(`Failed to process entry for discovery: ${entry.id}`, {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       return null
     }

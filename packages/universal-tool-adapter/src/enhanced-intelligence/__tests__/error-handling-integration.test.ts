@@ -33,13 +33,13 @@ class MockErrorIntelligenceService extends EventEmitter {
     let severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'
 
     // Simple error classification based on error properties
-    if (error.message.includes('network') || error.message.includes('timeout')) {
+    if (error instanceof Error ? error.message : String(error).includes('network') || error instanceof Error ? error.message : String(error).includes('timeout')) {
       category = 'network'
       severity = 'high'
-    } else if (error.message.includes('validation') || error.message.includes('invalid')) {
+    } else if (error instanceof Error ? error.message : String(error).includes('validation') || error instanceof Error ? error.message : String(error).includes('invalid')) {
       category = 'validation'
       severity = 'low'
-    } else if (error.message.includes('system') || error.message.includes('memory')) {
+    } else if (error instanceof Error ? error.message : String(error).includes('system') || error instanceof Error ? error.message : String(error).includes('memory')) {
       category = 'system'
       severity = 'critical'
     }
@@ -57,17 +57,17 @@ class MockErrorIntelligenceService extends EventEmitter {
     await this.simulateDelay(50)
 
     const errorType = error.constructor.name
-    let userFriendlyMessage = `An error occurred: ${error.message}`
-    let technicalDetails = `${errorType}: ${error.message}`
+    let userFriendlyMessage = `An error occurred: ${error instanceof Error ? error.message : String(error)}`
+    let technicalDetails = `${errorType}: ${error instanceof Error ? error.message : String(error)}`
 
-    if (error.message.includes('network')) {
+    if (error instanceof Error ? error.message : String(error).includes('network')) {
       userFriendlyMessage =
         'A network connection problem prevented this operation from completing. This is usually temporary.'
-      technicalDetails = `Network error: ${error.message}. Stack: ${error.stack?.slice(0, 200)}`
-    } else if (error.message.includes('validation')) {
+      technicalDetails = `Network error: ${error instanceof Error ? error.message : String(error)}. Stack: ${error.stack?.slice(0, 200)}`
+    } else if (error instanceof Error ? error.message : String(error).includes('validation')) {
       userFriendlyMessage =
         "The information provided doesn't meet the required format. Please check your input and try again."
-      technicalDetails = `Validation error: ${error.message}`
+      technicalDetails = `Validation error: ${error instanceof Error ? error.message : String(error)}`
     }
 
     return {
@@ -93,7 +93,7 @@ class MockErrorIntelligenceService extends EventEmitter {
       },
     ]
 
-    if (error.message.includes('network')) {
+    if (error instanceof Error ? error.message : String(error).includes('network')) {
       recommendations.push(
         {
           action: 'check_connection',
@@ -106,7 +106,7 @@ class MockErrorIntelligenceService extends EventEmitter {
           reasoning: 'Alternative endpoints may be available',
         }
       )
-    } else if (error.message.includes('validation')) {
+    } else if (error instanceof Error ? error.message : String(error).includes('validation')) {
       recommendations.push(
         {
           action: 'correct_input',
@@ -202,16 +202,16 @@ class MockNaturalLanguageFramework extends EventEmitter {
     if (typeof content === 'object' && content.error) {
       const error = content.error
 
-      if (error.message.includes('network')) {
+      if (error instanceof Error ? error.message : String(error).includes('network')) {
         brief = 'Network connection failed'
         detailed =
           'A network connection error prevented data from being retrieved or sent. This is often temporary and may resolve quickly.'
-        expert = `Network error: ${error.message}. Connection details: ${JSON.stringify(context, null, 2)}`
-      } else if (error.message.includes('validation')) {
+        expert = `Network error: ${error instanceof Error ? error.message : String(error)}. Connection details: ${JSON.stringify(context, null, 2)}`
+      } else if (error instanceof Error ? error.message : String(error).includes('validation')) {
         brief = 'Data format error'
         detailed =
           "The data provided doesn't match the expected format. Please verify your input and try again."
-        expert = `Validation error: ${error.message}. Input validation failed on: ${JSON.stringify(content.parameters, null, 2)}`
+        expert = `Validation error: ${error instanceof Error ? error.message : String(error)}. Input validation failed on: ${JSON.stringify(content.parameters, null, 2)}`
       }
     }
 

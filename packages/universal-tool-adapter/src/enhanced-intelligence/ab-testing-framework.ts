@@ -434,11 +434,11 @@ export class ABTestingFramework {
   private safetyChecker: SafetyChecker
 
   constructor(config: ABTestingConfig = {}) {
-    this.statisticalEngine = new StatisticalEngine(config.statistical)
+    this.statisticalEngine = new StatisticalEngine()
     this.powerAnalysisEngine = new PowerAnalysisEngine()
     this.segmentationEngine = new SegmentationEngine()
-    this.testMonitor = new TestMonitor(config.monitoring)
-    this.safetyChecker = new SafetyChecker(config.safety)
+    this.testMonitor = new TestMonitor()
+    this.safetyChecker = new SafetyChecker()
 
     logger.info('A/B Testing Framework initialized')
   }
@@ -524,7 +524,7 @@ export class ABTestingFramework {
       await this.performPreStartValidations(test)
 
       // Initialize test metrics collection
-      const metricsCollector = new TestMetricsCollector(test)
+      const metricsCollector = new TestMetricsCollector()
       this.testMetrics.set(testId, metricsCollector)
 
       // Update test status
@@ -896,8 +896,6 @@ export class ABTestingFramework {
 // =============================================================================
 
 class StatisticalEngine {
-  constructor(private config?: any) {}
-
   async performTests(variants: any, metrics: any, config: any): Promise<StatisticalTest[]> {
     // Perform statistical tests
     return []
@@ -905,8 +903,6 @@ class StatisticalEngine {
 }
 
 class PowerAnalysisEngine {
-  constructor(private config?: any) {}
-
   async analyze(testDefinition: any): Promise<PowerAnalysis> {
     // Perform power analysis
     return {
@@ -924,13 +920,10 @@ class PowerAnalysisEngine {
 }
 
 class SegmentationEngine {
-  constructor(private config?: any) {}
   // Implementation for user segmentation
 }
 
 class TestMonitor {
-  constructor(private config?: any) {}
-
   startMonitoring(test: ABTest): void {
     // Start monitoring test
   }
@@ -941,16 +934,12 @@ class TestMonitor {
 }
 
 class SafetyChecker {
-  constructor(private config?: any) {}
-
   async checkEvent(event: TestEvent, test: ABTest): Promise<void> {
     // Check for safety violations
   }
 }
 
 class TestMetricsCollector {
-  constructor(private test?: any) {}
-
   async recordEvent(event: TestEvent): Promise<void> {
     // Record test event
   }

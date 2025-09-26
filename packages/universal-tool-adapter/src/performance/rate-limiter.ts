@@ -159,7 +159,7 @@ export class AdvancedRateLimiter extends EventEmitter {
     } catch (error) {
       logger.error('Rate limit check failed', {
         key,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         latency: Date.now() - startTime,
       })
 
@@ -1044,7 +1044,7 @@ class SystemLoadMonitor {
         await this.rateLimiter.adjustLimitsForLoad(this.currentLoad)
       }
     } catch (error) {
-      logger.error('System load check failed', { error: error.message })
+      logger.error('System load check failed', { error: error instanceof Error ? error.message : String(error) })
     }
   }
 }

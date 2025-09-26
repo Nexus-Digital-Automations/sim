@@ -60,7 +60,7 @@ export class ParameterTransformations {
      */
     template: (template: string, context: ParlantExecutionContext) => {
       return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-        const contextValue = context.variables?.[key] || context[key]
+        const contextValue = (context.variables as any)?.[key] || (context as any)[key]
         return contextValue ? String(contextValue) : match
       })
     },
@@ -223,17 +223,17 @@ export class ParameterMapper {
 
     // Number transformations
     Object.entries(ParameterTransformations.number).forEach(([name, fn]) => {
-      this.transformations.set(`number.${name}`, fn)
+      this.transformations.set(`number.${name}`, fn as TransformationFunction)
     })
 
     // Array transformations
     Object.entries(ParameterTransformations.array).forEach(([name, fn]) => {
-      this.transformations.set(`array.${name}`, fn)
+      this.transformations.set(`array.${name}`, fn as TransformationFunction)
     })
 
     // Object transformations
     Object.entries(ParameterTransformations.object).forEach(([name, fn]) => {
-      this.transformations.set(`object.${name}`, fn)
+      this.transformations.set(`object.${name}`, fn as unknown as TransformationFunction)
     })
 
     // Contextual transformations
@@ -243,7 +243,7 @@ export class ParameterMapper {
 
     // Validation transformations
     Object.entries(ParameterTransformations.validation).forEach(([name, fn]) => {
-      this.transformations.set(`validation.${name}`, fn)
+      this.transformations.set(`validation.${name}`, fn as TransformationFunction)
     })
   }
 
@@ -268,8 +268,8 @@ export class ParameterMapper {
   ): Promise<Record<string, any>> {
     const startTime = Date.now()
     const allMappings = new Map([
-      ...this.mappings,
-      ...additionalMappings.map((m) => [m.parlantParameter, m]),
+      ...Array.from(this.mappings.entries()),
+      ...additionalMappings.map((m) => [m.parlantParameter, m] as [string, ParameterMapping]),
     ])
 
     logger.debug(`Starting parameter mapping`, {
@@ -284,14 +284,14 @@ export class ParameterMapper {
     // Process each mapping rule
     for (const [parlantParam, mapping] of allMappings) {
       try {
-        const value = await this.applyParameterMapping(parlantParam, mapping, parlantArgs, context)
+        const value = await this.applyParameterMapping(parlantParam as string, mapping, parlantArgs, context)
 
         if (value !== undefined) {
           // Handle nested parameter paths
           this.setNestedValue(simArgs, mapping.simParameter, value)
         }
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown mapping error'
+        const errorMsg = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown mapping error'
         logger.warn(`Parameter mapping failed`, {
           parlantParameter: parlantParam,
           simParameter: mapping.simParameter,
@@ -299,7 +299,7 @@ export class ParameterMapper {
         })
 
         errors.push({
-          parameter: parlantParam,
+          parameter: parlantParam as string,
           error: errorMsg,
         })
       }
@@ -504,7 +504,7 @@ export class ParameterMapper {
   ): any {
     switch (contextualValue.source) {
       case 'context':
-        return this.getNestedValue(context as any, contextualValue.path)
+        return this.getNestedValue(context as any, contextualValue.path || '')
 
       case 'user':
         return context.userId

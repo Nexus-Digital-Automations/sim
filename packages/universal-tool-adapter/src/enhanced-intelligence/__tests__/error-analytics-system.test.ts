@@ -123,7 +123,7 @@ describe('ErrorAnalyticsSystem', () => {
     it('should emit analytics events during recording', (done) => {
       analyticsSystem.once('error_recorded', (event) => {
         expect(event).toBeDefined()
-        expect(event.error.message).toBe('Event emission test error')
+        expect(event.error instanceof Error ? error.message : String(error)).toBe('Event emission test error')
         done()
       })
 

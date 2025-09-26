@@ -484,7 +484,7 @@ export class IntegrationBridge {
       })
 
       // Return empty result with error
-      return this.createErrorResult(error.message)
+      return this.createErrorResult(error instanceof Error ? error.message : String(error))
     }
   }
 

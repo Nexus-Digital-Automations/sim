@@ -134,8 +134,8 @@ export class EnhancedRegistryWrapper {
       logger.info('Enhanced registry wrapper initialized successfully')
     } catch (error) {
       logger.error('Failed to initialize enhanced registry wrapper', {
-        error: error.message,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       })
       throw error
     }
@@ -172,8 +172,8 @@ export class EnhancedRegistryWrapper {
       logger.info(`Tool registered successfully: ${simTool.name}`)
     } catch (error) {
       logger.error(`Failed to register tool: ${simTool.name}`, {
-        error: error.message,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       })
       throw error
     }
@@ -202,8 +202,8 @@ export class EnhancedRegistryWrapper {
       return this.convertToEnhancedResults(standardResults)
     } catch (error) {
       logger.error('Enhanced tool discovery failed', {
-        error: error.message,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       })
 
       // Fallback to standard discovery
@@ -246,7 +246,7 @@ export class EnhancedRegistryWrapper {
     } catch (error) {
       logger.error('Semantic search failed', {
         query: searchQuery,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -296,7 +296,7 @@ export class EnhancedRegistryWrapper {
       return enhancedTool
     } catch (error) {
       logger.error(`Failed to get enhanced tool: ${toolId}`, {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       return null
     }
@@ -344,7 +344,7 @@ export class EnhancedRegistryWrapper {
       return response
     } catch (error) {
       logger.error('Conversational assistance failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -389,7 +389,7 @@ export class EnhancedRegistryWrapper {
           }
           throw new Error('Tool not found or enhancement failed')
         } catch (error) {
-          failed.push({ toolId, error: error.message })
+          failed.push({ toolId, error: error instanceof Error ? error.message : String(error) })
           return null
         }
       })
@@ -466,7 +466,7 @@ export class EnhancedRegistryWrapper {
       logger.info('Enhanced registry wrapper shut down successfully')
     } catch (error) {
       logger.error('Error during shutdown', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -655,7 +655,7 @@ export class EnhancedRegistryWrapper {
         logger.debug(`Background enhancement completed for: ${toolId}`)
       } catch (error) {
         logger.warn(`Background enhancement failed for: ${toolId}`, {
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         })
       }
     })
@@ -678,7 +678,7 @@ export class EnhancedRegistryWrapper {
       logger.info(`Preloaded ${popularTools.length} popular tools`)
     } catch (error) {
       logger.warn('Failed to preload popular tools', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
     }
   }

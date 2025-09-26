@@ -6,8 +6,8 @@
  * workflow analysis, block mapping, and conversion utilities.
  */
 
-import type { ConditionalExpression } from './template-types'
 import type { InputValidation } from './journey-types'
+import type { ConditionalExpression } from './template-types'
 
 // ============================================================================
 // Workflow Analysis Types

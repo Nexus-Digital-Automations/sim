@@ -1951,4 +1951,3 @@ describe('Analytics and Feedback Collection System', () => {
     expect(predictive.qualityPredictions).toBeDefined()
   })
 })
-

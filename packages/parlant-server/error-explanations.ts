@@ -354,8 +354,8 @@ export class ErrorExplanationService {
             [UserSkillLevel.BEGINNER]: stepTemplate.instructions.beginner.map((inst: string) =>
               this.interpolateTemplate(inst, error)
             ),
-            [UserSkillLevel.INTERMEDIATE]: stepTemplate.instructions.intermediate.map((inst: string) =>
-              this.interpolateTemplate(inst, error)
+            [UserSkillLevel.INTERMEDIATE]: stepTemplate.instructions.intermediate.map(
+              (inst: string) => this.interpolateTemplate(inst, error)
             ),
             [UserSkillLevel.ADVANCED]: stepTemplate.instructions.advanced.map((inst: string) =>
               this.interpolateTemplate(inst, error)

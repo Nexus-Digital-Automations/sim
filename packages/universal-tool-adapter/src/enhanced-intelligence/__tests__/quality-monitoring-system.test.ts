@@ -1274,4 +1274,3 @@ describe('Quality Monitoring System', () => {
     expect(dashboardData.tables).toBeInstanceOf(Array)
   })
 })
-

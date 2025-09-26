@@ -10,9 +10,9 @@ import { EventEmitter } from 'events'
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
 import {
   type ErrorExplanation,
+  ExplanationFormat,
   errorExplanationService,
   UserSkillLevel,
-  ExplanationFormat,
 } from './error-explanations'
 import type { BaseToolError } from './error-handler'
 import { ErrorCategory } from './error-taxonomy'
@@ -557,7 +557,8 @@ export class ErrorIntelligenceService extends EventEmitter {
       } catch (translationError) {
         logger.warn('Failed to generate localized message', {
           language,
-          error: translationError instanceof Error ? translationError.message : String(translationError),
+          error:
+            translationError instanceof Error ? translationError.message : String(translationError),
         })
       }
     }

@@ -526,11 +526,11 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
   ): ParlantToolResult {
     return {
       type: 'error',
-      message: error.message,
+      message: error instanceof Error ? error.message : String(error),
       data: { originalError: error.originalError?.message },
       conversational: {
         summary: 'The tool encountered an issue during execution.',
-        details: error.message,
+        details: error instanceof Error ? error.message : String(error),
         suggestion: 'Please try again or check if all required conditions are met.',
       },
     }
@@ -543,7 +543,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
     return {
       type: 'error',
       message: 'An unexpected error occurred',
-      data: { error: error.message },
+      data: { error: error instanceof Error ? error.message : String(error) },
       conversational: {
         summary: 'Something unexpected happened while using this tool.',
         suggestion: 'Please try again or contact support if the problem persists.',
@@ -589,7 +589,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
           validationResult: {
             valid: false,
             errors: error.validationErrors || [
-              { field: 'unknown', message: error.message, code: 'unknown' },
+              { field: 'unknown', message: error instanceof Error ? error.message : String(error), code: 'unknown' },
             ],
           },
         }

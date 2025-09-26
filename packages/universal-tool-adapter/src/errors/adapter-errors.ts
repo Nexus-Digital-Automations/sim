@@ -652,7 +652,7 @@ export class ErrorUtils {
     const nonRecoverablePatterns = ['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'MODULE_NOT_FOUND']
 
     return !nonRecoverablePatterns.some(
-      (pattern) => error.message.includes(pattern) || error.name.includes(pattern)
+      (pattern) => error instanceof Error ? error.message : String(error).includes(pattern) || error.name.includes(pattern)
     )
   }
 
@@ -665,23 +665,23 @@ export class ErrorUtils {
     }
 
     // Convert common error types to user-friendly messages
-    if (error.message.includes('ENOTFOUND')) {
+    if (error instanceof Error ? error.message : String(error).includes('ENOTFOUND')) {
       return 'Network connection failed. Please check your internet connection and try again.'
     }
 
-    if (error.message.includes('ETIMEDOUT')) {
+    if (error instanceof Error ? error.message : String(error).includes('ETIMEDOUT')) {
       return 'The operation timed out. Please try again later.'
     }
 
-    if (error.message.includes('ECONNREFUSED')) {
+    if (error instanceof Error ? error.message : String(error).includes('ECONNREFUSED')) {
       return 'Could not connect to the service. Please try again later.'
     }
 
-    if (error.message.includes('EACCES')) {
+    if (error instanceof Error ? error.message : String(error).includes('EACCES')) {
       return 'Permission denied. Please check your access rights.'
     }
 
-    return error.message || 'An unexpected error occurred.'
+    return error instanceof Error ? error.message : String(error) || 'An unexpected error occurred.'
   }
 
   /**

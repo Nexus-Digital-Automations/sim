@@ -695,10 +695,7 @@ async function demonstrateCustomValidation() {
   console.log('\n=== Custom Parameter Validation Pattern ===')
 
   // Custom validation function for business hours
-  const businessHoursValidator = (
-    value: any,
-    context: ValidationContext
-  ): ValidationResult => {
+  const businessHoursValidator = (value: any, context: ValidationContext): ValidationResult => {
     const errors: ValidationError[] = []
     const warnings: ValidationWarning[] = []
 

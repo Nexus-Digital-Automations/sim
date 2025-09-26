@@ -356,10 +356,10 @@ export class ValidationQualitySystem {
   constructor(config: ValidationQualityConfig) {
     this.config = config
     this.validationEngine = new ValidationEngine(config.validation)
-    this.qualityAssessor = new QualityAssessor(config.qualityAssessment)
-    this.complianceChecker = new ComplianceChecker(config.compliance)
-    this.performanceMonitor = new PerformanceMonitor(config.performance)
-    this.improvementEngine = new ImprovementEngine(config.continuousImprovement)
+    this.qualityAssessor = new QualityAssessor()
+    this.complianceChecker = new ComplianceChecker()
+    this.performanceMonitor = new PerformanceMonitor()
+    this.improvementEngine = new ImprovementEngine()
     this.reportingService = new ReportingService(config.reporting)
 
     logger.info('Validation and Quality System initialized')
@@ -450,7 +450,7 @@ export class ValidationQualitySystem {
       )
       return result
     } catch (error) {
-      logger.error(`Validation failed for description ${description.toolId}:`, error)
+      logger.error(`Validation failed for description ${description.toolId}:`, error as Error)
       throw error
     }
   }
@@ -489,7 +489,7 @@ export class ValidationQualitySystem {
 
     const quickValidation = validationOptions?.quickValidation !== false
     const validationTypes = quickValidation
-      ? ['syntax', 'grammar', 'spelling']
+      ? ['syntax', 'grammar', 'spelling'] as ValidationType[]
       : this.config.validation.enabledValidations
 
     const results = await this.runPartialValidations(description, changes, validationTypes)
@@ -618,7 +618,7 @@ export class ValidationQualitySystem {
         },
       }
     } catch (error) {
-      logger.error(`Single validation failed for type ${validationType}:`, error)
+      logger.error(`Single validation failed for type ${validationType}:`, error as Error)
       throw error
     }
   }
@@ -1155,6 +1155,7 @@ class AccessibilityValidator extends Validator {
 }
 
 class QualityAssessor {
+  constructor(config?: QualityAssessmentConfig) {}
   async assessQuality(
     description: EnhancedDescriptionSchema,
     validationResults: ValidationTypeResult[]
@@ -1178,6 +1179,7 @@ class QualityAssessor {
 }
 
 class ComplianceChecker {
+  constructor(config?: ComplianceConfig) {}
   async checkCompliance(
     description: EnhancedDescriptionSchema,
     validationResults: ValidationTypeResult[]
@@ -1187,6 +1189,7 @@ class ComplianceChecker {
 }
 
 class PerformanceMonitor {
+  constructor(config?: PerformanceConfig) {}
   async recordValidation(
     descriptionId: string,
     executionTime: number,
@@ -1204,6 +1207,7 @@ class PerformanceMonitor {
 }
 
 class ImprovementEngine {
+  constructor(config?: ContinuousImprovementConfig) {}
   async generateSuggestions(
     description: EnhancedDescriptionSchema,
     overallResult: OverallValidationResult,

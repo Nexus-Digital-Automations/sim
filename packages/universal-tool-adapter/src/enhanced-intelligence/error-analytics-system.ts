@@ -1549,7 +1549,7 @@ export class ErrorAnalyticsSystem extends EventEmitter {
       event.id,
       event.timestamp.toISOString(),
       event.error.type,
-      event.error.message.replace(/"/g, '""'), // Escape quotes
+      event.error instanceof Error ? error.message : String(error).replace(/"/g, '""'), // Escape quotes
       event.outcome?.success ? 'Yes' : 'No',
       event.outcome?.resolutionTimeMs || '',
       event.userFeedback?.satisfactionRating || '',

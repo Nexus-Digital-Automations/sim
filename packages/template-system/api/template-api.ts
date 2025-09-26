@@ -44,6 +44,7 @@ interface MulterFile {
 interface RequestWithFile extends Request {
   file?: MulterFile
 }
+
 import { JourneyGenerator } from '../generators/journey-generator'
 import { TemplateLibrary } from '../library/template-library'
 import type { JourneyGenerationRequest } from '../types/journey-types'
@@ -254,43 +255,46 @@ export class TemplateAPIController {
       // Add missing properties to parameters and workflowData
       const processedTemplateData = {
         ...templateData,
-        parameters: templateData.parameters?.map((param: any, index: number): TemplateParameter => {
-          const paramId = param.id || `param_${Date.now()}_${index}`;
-          return {
-            id: paramId,
-            name: param.name || '',
-            type: param.type || 'string',
-            description: param.description || '',
-            defaultValue: param.defaultValue,
-            required: param.required ?? false,
-            validation: param.validation || {},
-            displayOrder: param.displayOrder ?? 0,
-            category: param.category || 'general',
-            metadata: param.metadata || {},
-          };
-        }) || [],
-        workflowData: templateData.workflowData ? {
-          blocks: (templateData.workflowData as any).blocks || [],
-          edges: (templateData.workflowData as any).edges || [],
-          variables: (templateData.workflowData as any).variables || {},
-          parameterMappings: (templateData.workflowData as any).parameterMappings || [],
-          conditionalBlocks: (templateData.workflowData as any).conditionalBlocks || [],
-          dynamicContent: (templateData.workflowData as any).dynamicContent || [],
-          optimizationHints: (templateData.workflowData as any).optimizationHints || [],
-          performanceSettings: (templateData.workflowData as any).performanceSettings || {
-            enableCaching: true,
-            cacheStrategy: {
-              scope: 'session' as const,
-              duration: 300000,
-              invalidationRules: [],
-              compressionEnabled: false,
-            },
-            prefetchParameters: false,
-            optimizeRendering: true,
-            lazyLoadBlocks: false,
-            compressionLevel: 'none' as const,
-          },
-        } : undefined,
+        parameters:
+          templateData.parameters?.map((param: any, index: number): TemplateParameter => {
+            const paramId = param.id || `param_${Date.now()}_${index}`
+            return {
+              id: paramId,
+              name: param.name || '',
+              type: param.type || 'string',
+              description: param.description || '',
+              defaultValue: param.defaultValue,
+              required: param.required ?? false,
+              validation: param.validation || {},
+              displayOrder: param.displayOrder ?? 0,
+              category: param.category || 'general',
+              metadata: param.metadata || {},
+            }
+          }) || [],
+        workflowData: templateData.workflowData
+          ? {
+              blocks: (templateData.workflowData as any).blocks || [],
+              edges: (templateData.workflowData as any).edges || [],
+              variables: (templateData.workflowData as any).variables || {},
+              parameterMappings: (templateData.workflowData as any).parameterMappings || [],
+              conditionalBlocks: (templateData.workflowData as any).conditionalBlocks || [],
+              dynamicContent: (templateData.workflowData as any).dynamicContent || [],
+              optimizationHints: (templateData.workflowData as any).optimizationHints || [],
+              performanceSettings: (templateData.workflowData as any).performanceSettings || {
+                enableCaching: true,
+                cacheStrategy: {
+                  scope: 'session' as const,
+                  duration: 300000,
+                  invalidationRules: [],
+                  compressionEnabled: false,
+                },
+                prefetchParameters: false,
+                optimizeRendering: true,
+                lazyLoadBlocks: false,
+                compressionLevel: 'none' as const,
+              },
+            }
+          : undefined,
       }
 
       // Check permissions
@@ -300,7 +304,11 @@ export class TemplateAPIController {
       }
 
       // Create template
-      const template = await this.templateLibrary.createTemplate(processedTemplateData, workspaceId, userId)
+      const template = await this.templateLibrary.createTemplate(
+        processedTemplateData,
+        workspaceId,
+        userId
+      )
 
       res.status(201).json({
         template: this.sanitizeTemplateForResponse(template),
@@ -337,50 +345,58 @@ export class TemplateAPIController {
       const updates = validation.data
 
       // Add missing properties to parameters and workflowData
-      const { parameters: updatesParameters, workflowData: updatesWorkflowData, ...otherUpdates } = updates;
+      const {
+        parameters: updatesParameters,
+        workflowData: updatesWorkflowData,
+        ...otherUpdates
+      } = updates
       const processedUpdates: Partial<WorkflowTemplate> = {
         ...otherUpdates,
-        ...(updatesParameters ? {
-          parameters: updatesParameters.map((param: any, index: number): TemplateParameter => {
-            const paramId = param.id || `param_${Date.now()}_${index}`;
-            return {
-              id: paramId,
-              name: param.name || '',
-              type: param.type || 'string',
-              description: param.description || '',
-              defaultValue: param.defaultValue,
-              required: param.required ?? false,
-              validation: param.validation || {},
-              displayOrder: param.displayOrder ?? 0,
-              category: param.category || 'general',
-              metadata: param.metadata || {},
-            };
-          })
-        } : {}),
-        ...(updatesWorkflowData ? {
-          workflowData: {
-            blocks: (updatesWorkflowData as any).blocks || [],
-            edges: (updatesWorkflowData as any).edges || [],
-            variables: (updatesWorkflowData as any).variables || {},
-            parameterMappings: (updatesWorkflowData as any).parameterMappings || [],
-            conditionalBlocks: (updatesWorkflowData as any).conditionalBlocks || [],
-            dynamicContent: (updatesWorkflowData as any).dynamicContent || [],
-            optimizationHints: (updatesWorkflowData as any).optimizationHints || [],
-            performanceSettings: (updatesWorkflowData as any).performanceSettings || {
-              enableCaching: true,
-              cacheStrategy: {
-                scope: 'session' as const,
-                duration: 300000,
-                invalidationRules: [],
-                compressionEnabled: false,
+        ...(updatesParameters
+          ? {
+              parameters: updatesParameters.map((param: any, index: number): TemplateParameter => {
+                const paramId = param.id || `param_${Date.now()}_${index}`
+                return {
+                  id: paramId,
+                  name: param.name || '',
+                  type: param.type || 'string',
+                  description: param.description || '',
+                  defaultValue: param.defaultValue,
+                  required: param.required ?? false,
+                  validation: param.validation || {},
+                  displayOrder: param.displayOrder ?? 0,
+                  category: param.category || 'general',
+                  metadata: param.metadata || {},
+                }
+              }),
+            }
+          : {}),
+        ...(updatesWorkflowData
+          ? {
+              workflowData: {
+                blocks: (updatesWorkflowData as any).blocks || [],
+                edges: (updatesWorkflowData as any).edges || [],
+                variables: (updatesWorkflowData as any).variables || {},
+                parameterMappings: (updatesWorkflowData as any).parameterMappings || [],
+                conditionalBlocks: (updatesWorkflowData as any).conditionalBlocks || [],
+                dynamicContent: (updatesWorkflowData as any).dynamicContent || [],
+                optimizationHints: (updatesWorkflowData as any).optimizationHints || [],
+                performanceSettings: (updatesWorkflowData as any).performanceSettings || {
+                  enableCaching: true,
+                  cacheStrategy: {
+                    scope: 'session' as const,
+                    duration: 300000,
+                    invalidationRules: [],
+                    compressionEnabled: false,
+                  },
+                  prefetchParameters: false,
+                  optimizeRendering: true,
+                  lazyLoadBlocks: false,
+                  compressionLevel: 'none' as const,
+                },
               },
-              prefetchParameters: false,
-              optimizeRendering: true,
-              lazyLoadBlocks: false,
-              compressionLevel: 'none' as const,
-            },
-          }
-        } : {}),
+            }
+          : {}),
       }
 
       // Check if template exists

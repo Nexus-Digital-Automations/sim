@@ -21,14 +21,231 @@
  * import { isCustomerMessageContent } from '@sim/db/parlant'
  * ```
  */
-export { agentStatusEnum, compositionModeEnum, eventTypeEnum, journeyStateTypeEnum, parlantAgent, parlantAgentApiKey, parlantAgentKnowledgeBase, parlantAgentTool, parlantAgentWorkflow, parlantCannedResponse, parlantEnums, parlantEvent, parlantGuideline, parlantJourney, parlantJourneyGuideline, parlantJourneyState, parlantJourneyTransition, parlantSession, parlantSessionWorkflow, parlantTables, parlantTerm, parlantTool, parlantToolIntegration, parlantVariable, sessionModeEnum, sessionStatusEnum, } from './parlant-schema';
-export type { AgentFilters, AgentStats, AgentStatus, AgentWithRelations, BatchOperationResult, CompositionMode, CreateAgentParams, CreateEventParams, CreateGuidelineParams, CreateJourneyParams, CreateSessionParams, CreateToolParams, EventFilters, EventType, InferInsertModel, InferSelectModel, JourneyAnalytics, JourneyFilters, JourneyStateType, JourneyWithFlow, PaginatedResponse, PaginationParams, ParlantAgent, ParlantAgentInsert, ParlantAgentKnowledgeBase, ParlantAgentKnowledgeBaseInsert, ParlantAgentKnowledgeBaseUpdate, ParlantAgentTool, ParlantAgentToolInsert, ParlantAgentToolUpdate, ParlantAgentUpdate, ParlantApiResponse, ParlantBulkApiResponse, ParlantCannedResponse, ParlantCannedResponseInsert, ParlantCannedResponseUpdate, ParlantError, ParlantEvent, ParlantEventInsert, ParlantEventUpdate, ParlantGuideline, ParlantGuidelineInsert, ParlantGuidelineUpdate, ParlantJourney, ParlantJourneyGuideline, ParlantJourneyGuidelineInsert, ParlantJourneyGuidelineUpdate, ParlantJourneyInsert, ParlantJourneyState, ParlantJourneyStateInsert, ParlantJourneyStateUpdate, ParlantJourneyTransition, ParlantJourneyTransitionInsert, ParlantJourneyTransitionUpdate, ParlantJourneyUpdate, ParlantSession, ParlantSessionInsert, ParlantSessionUpdate, ParlantTerm, ParlantTermInsert, ParlantTermUpdate, ParlantTool, ParlantToolInsert, ParlantToolIntegration, ParlantToolIntegrationInsert, ParlantToolIntegrationUpdate, ParlantToolUpdate, ParlantVariable, ParlantVariableInsert, ParlantVariableUpdate, SessionAnalytics, SessionFilters, SessionMode, SessionStatus, SessionWithRelations, ToolWithIntegration, ValidationError, } from './parlant-types';
-export type { AgentMessageContent, AgentQueryResult, AnonymousSessionContext, AuthenticatedSessionContext, ChatStateConfig, CustomerMessageContent, CustomerSessionContext, CustomToolIntegration, DecisionStateConfig, EventFactory, ExternalApiIntegration, FinalStateConfig, JourneyQueryResult, JourneyStateConfiguration, JourneyTransitionContent, McpServerIntegration, ParlantEventContent, ParlantUnionTypes, SessionContext, SessionQueryResult, StateFactory, StatusUpdateContent, ToolCallContent, ToolIntegrationConfiguration, ToolResultContent, ToolStateConfig, TypedJourneyState, TypedParlantEvent, TypedParlantSession, TypedParlantTool, VariableUpdateContent, WorkflowBlockIntegration, } from './parlant-unions';
-export { isAgentMessageContent, isAnonymousSession, isAuthenticatedSession, isChatStateConfig, isCustomerMessageContent, isCustomerSession, isCustomToolIntegration, isDecisionStateConfig, isFinalStateConfig, isJourneyTransitionContent, isMcpServerIntegration, isToolCallContent, isToolResultContent, isToolStateConfig, isWorkflowBlockIntegration, } from './parlant-unions';
-export type { ParlantQueries, } from './parlant-queries';
-export { batchInsert, createParlantQueries, ParlantAgentQueries, ParlantEventQueries, ParlantSessionQueries, withErrorHandling, withWorkspaceScope, } from './parlant-queries';
-export type { ValidatedAgentFilters, ValidatedCreateAgent, ValidatedCreateEvent, ValidatedCreateSession, ValidatedPagination, ValidatedSessionFilters, } from './parlant-validation';
-export { agentFilterSchema, agentResponseSchema, agentStatusSchema, apiResponseSchema, bulkCreateAgentSchema, bulkCreateSessionSchema, compositionModeSchema, createAgentSchema, createEventSchema, createGuidelineSchema, createJourneySchema, createJourneyStateSchema, createSessionSchema, createToolSchema, createVariableSchema, eventResponseSchema, eventTypeSchema, formatValidationErrors, guidelineResponseSchema, journeyResponseSchema, journeyStateResponseSchema, journeyStateTypeSchema, jsonArraySchema, jsonObjectSchema, jsonSchema, paginatedResponseSchema, paginationSchema, parlantSchemas, safeValidate, sessionFilterSchema, sessionModeSchema, sessionResponseSchema, sessionStatusSchema, timestampSchema, toolResponseSchema, updateAgentSchema, updateGuidelineSchema, updateJourneySchema, updateSessionSchema, uuidSchema, validateAgentFilters, validateCreateAgent, validateCreateEvent, validateCreateSession, validatePagination, validateSessionFilters, variableResponseSchema, } from './parlant-validation';
+export {
+  agentStatusEnum,
+  compositionModeEnum,
+  eventTypeEnum,
+  journeyStateTypeEnum,
+  parlantAgent,
+  parlantAgentApiKey,
+  parlantAgentKnowledgeBase,
+  parlantAgentTool,
+  parlantAgentWorkflow,
+  parlantCannedResponse,
+  parlantEnums,
+  parlantEvent,
+  parlantGuideline,
+  parlantJourney,
+  parlantJourneyGuideline,
+  parlantJourneyState,
+  parlantJourneyTransition,
+  parlantSession,
+  parlantSessionWorkflow,
+  parlantTables,
+  parlantTerm,
+  parlantTool,
+  parlantToolIntegration,
+  parlantVariable,
+  sessionModeEnum,
+  sessionStatusEnum,
+} from './parlant-schema'
+export type {
+  AgentFilters,
+  AgentStats,
+  AgentStatus,
+  AgentWithRelations,
+  BatchOperationResult,
+  CompositionMode,
+  CreateAgentParams,
+  CreateEventParams,
+  CreateGuidelineParams,
+  CreateJourneyParams,
+  CreateSessionParams,
+  CreateToolParams,
+  EventFilters,
+  EventType,
+  InferInsertModel,
+  InferSelectModel,
+  JourneyAnalytics,
+  JourneyFilters,
+  JourneyStateType,
+  JourneyWithFlow,
+  PaginatedResponse,
+  PaginationParams,
+  ParlantAgent,
+  ParlantAgentInsert,
+  ParlantAgentKnowledgeBase,
+  ParlantAgentKnowledgeBaseInsert,
+  ParlantAgentKnowledgeBaseUpdate,
+  ParlantAgentTool,
+  ParlantAgentToolInsert,
+  ParlantAgentToolUpdate,
+  ParlantAgentUpdate,
+  ParlantApiResponse,
+  ParlantBulkApiResponse,
+  ParlantCannedResponse,
+  ParlantCannedResponseInsert,
+  ParlantCannedResponseUpdate,
+  ParlantError,
+  ParlantEvent,
+  ParlantEventInsert,
+  ParlantEventUpdate,
+  ParlantGuideline,
+  ParlantGuidelineInsert,
+  ParlantGuidelineUpdate,
+  ParlantJourney,
+  ParlantJourneyGuideline,
+  ParlantJourneyGuidelineInsert,
+  ParlantJourneyGuidelineUpdate,
+  ParlantJourneyInsert,
+  ParlantJourneyState,
+  ParlantJourneyStateInsert,
+  ParlantJourneyStateUpdate,
+  ParlantJourneyTransition,
+  ParlantJourneyTransitionInsert,
+  ParlantJourneyTransitionUpdate,
+  ParlantJourneyUpdate,
+  ParlantSession,
+  ParlantSessionInsert,
+  ParlantSessionUpdate,
+  ParlantTerm,
+  ParlantTermInsert,
+  ParlantTermUpdate,
+  ParlantTool,
+  ParlantToolInsert,
+  ParlantToolIntegration,
+  ParlantToolIntegrationInsert,
+  ParlantToolIntegrationUpdate,
+  ParlantToolUpdate,
+  ParlantVariable,
+  ParlantVariableInsert,
+  ParlantVariableUpdate,
+  SessionAnalytics,
+  SessionFilters,
+  SessionMode,
+  SessionStatus,
+  SessionWithRelations,
+  ToolWithIntegration,
+  ValidationError,
+} from './parlant-types'
+export type {
+  AgentMessageContent,
+  AgentQueryResult,
+  AnonymousSessionContext,
+  AuthenticatedSessionContext,
+  ChatStateConfig,
+  CustomerMessageContent,
+  CustomerSessionContext,
+  CustomToolIntegration,
+  DecisionStateConfig,
+  EventFactory,
+  ExternalApiIntegration,
+  FinalStateConfig,
+  JourneyQueryResult,
+  JourneyStateConfiguration,
+  JourneyTransitionContent,
+  McpServerIntegration,
+  ParlantEventContent,
+  ParlantUnionTypes,
+  SessionContext,
+  SessionQueryResult,
+  StateFactory,
+  StatusUpdateContent,
+  ToolCallContent,
+  ToolIntegrationConfiguration,
+  ToolResultContent,
+  ToolStateConfig,
+  TypedJourneyState,
+  TypedParlantEvent,
+  TypedParlantSession,
+  TypedParlantTool,
+  VariableUpdateContent,
+  WorkflowBlockIntegration,
+} from './parlant-unions'
+export {
+  isAgentMessageContent,
+  isAnonymousSession,
+  isAuthenticatedSession,
+  isChatStateConfig,
+  isCustomerMessageContent,
+  isCustomerSession,
+  isCustomToolIntegration,
+  isDecisionStateConfig,
+  isFinalStateConfig,
+  isJourneyTransitionContent,
+  isMcpServerIntegration,
+  isToolCallContent,
+  isToolResultContent,
+  isToolStateConfig,
+  isWorkflowBlockIntegration,
+} from './parlant-unions'
+export type { ParlantQueries } from './parlant-queries'
+export {
+  batchInsert,
+  createParlantQueries,
+  ParlantAgentQueries,
+  ParlantEventQueries,
+  ParlantSessionQueries,
+  withErrorHandling,
+  withWorkspaceScope,
+} from './parlant-queries'
+export type {
+  ValidatedAgentFilters,
+  ValidatedCreateAgent,
+  ValidatedCreateEvent,
+  ValidatedCreateSession,
+  ValidatedPagination,
+  ValidatedSessionFilters,
+} from './parlant-validation'
+export {
+  agentFilterSchema,
+  agentResponseSchema,
+  agentStatusSchema,
+  apiResponseSchema,
+  bulkCreateAgentSchema,
+  bulkCreateSessionSchema,
+  compositionModeSchema,
+  createAgentSchema,
+  createEventSchema,
+  createGuidelineSchema,
+  createJourneySchema,
+  createJourneyStateSchema,
+  createSessionSchema,
+  createToolSchema,
+  createVariableSchema,
+  eventResponseSchema,
+  eventTypeSchema,
+  formatValidationErrors,
+  guidelineResponseSchema,
+  journeyResponseSchema,
+  journeyStateResponseSchema,
+  journeyStateTypeSchema,
+  jsonArraySchema,
+  jsonObjectSchema,
+  jsonSchema,
+  paginatedResponseSchema,
+  paginationSchema,
+  parlantSchemas,
+  safeValidate,
+  sessionFilterSchema,
+  sessionModeSchema,
+  sessionResponseSchema,
+  sessionStatusSchema,
+  timestampSchema,
+  toolResponseSchema,
+  updateAgentSchema,
+  updateGuidelineSchema,
+  updateJourneySchema,
+  updateSessionSchema,
+  uuidSchema,
+  validateAgentFilters,
+  validateCreateAgent,
+  validateCreateEvent,
+  validateCreateSession,
+  validatePagination,
+  validateSessionFilters,
+  variableResponseSchema,
+} from './parlant-validation'
 /**
  * Common imports collection for easier consumption
  */
@@ -207,31 +424,31 @@ export { agentFilterSchema, agentResponseSchema, agentStatusSchema, apiResponseS
 /**
  * Parlant database types package metadata
  */
-export declare const PARLANT_TYPES_VERSION = "1.0.0";
-export declare const PARLANT_TYPES_BUILD: string;
+export declare const PARLANT_TYPES_VERSION = '1.0.0'
+export declare const PARLANT_TYPES_BUILD: string
 /**
  * Feature flags and capabilities
  */
 export declare const PARLANT_FEATURES: {
-    readonly UNION_TYPES: true;
-    readonly TYPE_GUARDS: true;
-    readonly VALIDATION_SCHEMAS: true;
-    readonly QUERY_HELPERS: true;
-    readonly POLYMORPHIC_RELATIONSHIPS: true;
-    readonly WORKSPACE_SCOPING: true;
-    readonly BATCH_OPERATIONS: true;
-    readonly ERROR_HANDLING: true;
-    readonly ANALYTICS_SUPPORT: true;
-    readonly INTEGRATION_SUPPORT: true;
-};
+  readonly UNION_TYPES: true
+  readonly TYPE_GUARDS: true
+  readonly VALIDATION_SCHEMAS: true
+  readonly QUERY_HELPERS: true
+  readonly POLYMORPHIC_RELATIONSHIPS: true
+  readonly WORKSPACE_SCOPING: true
+  readonly BATCH_OPERATIONS: true
+  readonly ERROR_HANDLING: true
+  readonly ANALYTICS_SUPPORT: true
+  readonly INTEGRATION_SUPPORT: true
+}
 /**
  * Supported integrations and extensions
  */
 export declare const PARLANT_INTEGRATIONS: {
-    readonly SIM_WORKFLOWS: true;
-    readonly SIM_KNOWLEDGE_BASES: true;
-    readonly SIM_API_KEYS: true;
-    readonly SIM_CUSTOM_TOOLS: true;
-    readonly MCP_SERVERS: true;
-    readonly EXTERNAL_APIS: true;
-};
+  readonly SIM_WORKFLOWS: true
+  readonly SIM_KNOWLEDGE_BASES: true
+  readonly SIM_API_KEYS: true
+  readonly SIM_CUSTOM_TOOLS: true
+  readonly MCP_SERVERS: true
+  readonly EXTERNAL_APIS: true
+}

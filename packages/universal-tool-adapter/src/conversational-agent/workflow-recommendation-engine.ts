@@ -537,7 +537,9 @@ export class WorkflowRecommendationEngine {
         error,
         requestId: request.requestId,
       })
-      throw new Error(`Workflow recommendation generation failed: ${error instanceof Error ? error.message : String(error)}`)
+      throw new Error(
+        `Workflow recommendation generation failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 

@@ -28,39 +28,45 @@ import {
 
 const mockUsageContext: UsageContext = {
   userProfile: {
-    skillLevel: 'intermediate',
     role: 'developer',
-    experience: 'moderate',
+    experience: 'intermediate',
     preferences: {
-      verbosity: 'detailed',
-      examples: true,
-      stepByStep: true,
+      communication: 'detailed',
+      automation: 'guided',
+      explanation: 'comprehensive',
     },
+    domains: ['workflow', 'automation'],
+    frequentTools: ['build_workflow', 'run_workflow'],
   },
-  sessionContext: {
-    currentTask: 'workflow_development',
-    timeAvailable: 'moderate',
-    urgency: 'medium',
-  },
-  workflowContext: {
-    currentWorkflow: 'data_processing',
-    workflowComplexity: 'moderate',
-    lastActions: ['get_user_workflow'],
-  },
+  userId: 'test-user',
+  workspaceId: 'test-workspace',
+  workflowId: 'data_processing',
+  currentStep: 'workflow_development',
+  timeOfDay: 'afternoon',
+  dayOfWeek: 'weekday',
+  previousTools: ['get_user_workflow'],
+}
+
+interface TestResult {
+  testName: string
+  status: 'passed' | 'failed'
+  score: number
+  duration: number
+  details: any
 }
 
 const mockConversationHistory: ConversationMessage[] = [
   {
+    id: 'msg_001',
     role: 'user',
-    content: 'I want to create a new workflow',
+    content: 'I need to create a new workflow for processing customer data',
     timestamp: new Date(),
-    context: mockUsageContext,
   },
   {
+    id: 'msg_002',
     role: 'assistant',
     content: 'I can help you create a new workflow. Let me get some information first.',
     timestamp: new Date(),
-    context: mockUsageContext,
   },
 ]
 
@@ -354,7 +360,7 @@ export class IntelligenceTestingFramework {
       const hasQualityContent = this.validateDescriptionQuality(description)
       const hasAppropriateLength = this.validateDescriptionLength(description)
 
-      const score = ((hasRequiredFields + hasQualityContent + hasAppropriateLength) / 3) * 100
+      const score = (((hasRequiredFields ? 1 : 0) + (hasQualityContent ? 1 : 0) + (hasAppropriateLength ? 1 : 0)) / 3) * 100
 
       return {
         testName: `Description Quality - ${toolId}`,
@@ -441,9 +447,19 @@ export class IntelligenceTestingFramework {
       for (const level of skillLevels) {
         const context = {
           ...mockUsageContext,
-          userProfile: { ...mockUsageContext.userProfile, skillLevel: level },
+          userProfile: {
+            role: 'developer',
+            experience: level === 'expert' ? 'advanced' : (level as 'beginner' | 'intermediate' | 'advanced'),
+            domains: ['workflow', 'automation'],
+            frequentTools: ['build_workflow', 'run_workflow'],
+            preferences: {
+              communication: 'detailed',
+              automation: 'guided',
+              explanation: 'comprehensive',
+            },
+          },
         }
-        const description = await this.engine.getEnhancedToolDescription(toolId, context)
+        const description = await this.engine.getEnhancedToolDescription(toolId, context as UsageContext)
 
         if (description) {
           const guidance = description.skillLevelGuidance[level]
@@ -720,7 +736,17 @@ export class IntelligenceTestingFramework {
           userMessage: 'I need help with workflow automation',
           currentContext: {
             ...mockUsageContext,
-            userProfile: { ...mockUsageContext.userProfile, skillLevel: contextConfig.skillLevel },
+            userProfile: {
+              role: 'developer',
+              experience: contextConfig.skillLevel === 'expert' ? 'advanced' : (contextConfig.skillLevel as 'beginner' | 'intermediate' | 'advanced'),
+              domains: ['workflow', 'automation'],
+              frequentTools: ['build_workflow', 'run_workflow'],
+              preferences: {
+                communication: 'detailed',
+                automation: 'guided',
+                explanation: 'comprehensive',
+              },
+            },
           },
           conversationHistory: mockConversationHistory,
           userSkillLevel: contextConfig.skillLevel,
@@ -781,7 +807,17 @@ export class IntelligenceTestingFramework {
           userMessage: 'I want to create a complex workflow with multiple integrations',
           currentContext: {
             ...mockUsageContext,
-            userProfile: { ...mockUsageContext.userProfile, skillLevel: level },
+            userProfile: {
+              role: 'developer',
+              experience: level === 'expert' ? 'advanced' : (level as 'beginner' | 'intermediate' | 'advanced'),
+              domains: ['workflow', 'automation'],
+              frequentTools: ['build_workflow', 'run_workflow'],
+              preferences: {
+                communication: 'detailed',
+                automation: 'guided',
+                explanation: 'comprehensive',
+              },
+            },
           },
           conversationHistory: mockConversationHistory,
           userSkillLevel: level,
@@ -1547,4 +1583,3 @@ describe('Enhanced Tool Intelligence Testing Framework', () => {
 // =============================================================================
 // Export Framework for Standalone Use
 // =============================================================================
-

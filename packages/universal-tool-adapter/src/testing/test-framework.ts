@@ -428,7 +428,7 @@ export class AdapterTestFramework extends EventEmitter {
 
             return { passed: true, result, assertions: assertions.getResults() }
           } catch (error: any) {
-            return { passed: false, error: error.message }
+            return { passed: false, error: error instanceof Error ? error.message : String(error) }
           }
         },
       })
@@ -470,7 +470,7 @@ export class AdapterTestFramework extends EventEmitter {
             return { passed, result }
           } catch (error: any) {
             // Exception is expected for missing required parameter
-            return { passed: true, expectedError: error.message }
+            return { passed: true, expectedError: error instanceof Error ? error.message : String(error) }
           }
         },
       })
@@ -500,7 +500,7 @@ export class AdapterTestFramework extends EventEmitter {
             return { passed: true, result, assertions: assertions.getResults() }
           } catch (error: any) {
             // Type validation errors are acceptable
-            return { passed: true, expectedError: error.message }
+            return { passed: true, expectedError: error instanceof Error ? error.message : String(error) }
           }
         },
       })
@@ -537,7 +537,7 @@ export class AdapterTestFramework extends EventEmitter {
 
           return { passed: true, result, assertions: assertions.getResults() }
         } catch (error: any) {
-          return { passed: true, expectedError: error.message }
+          return { passed: true, expectedError: error instanceof Error ? error.message : String(error) }
         }
       },
     })
@@ -559,7 +559,7 @@ export class AdapterTestFramework extends EventEmitter {
 
           return { passed: true, result, assertions: assertions.getResults() }
         } catch (error: any) {
-          return { passed: true, expectedError: error.message }
+          return { passed: true, expectedError: error instanceof Error ? error.message : String(error) }
         }
       },
     })
@@ -604,7 +604,7 @@ export class AdapterTestFramework extends EventEmitter {
           }
         } catch (error: any) {
           const duration = Date.now() - startTime
-          return { passed: false, duration, error: error.message }
+          return { passed: false, duration, error: error instanceof Error ? error.message : String(error) }
         }
       },
     })
@@ -637,7 +637,7 @@ export class AdapterTestFramework extends EventEmitter {
 
           return { passed: true, metadata, config, assertions: assertions.getResults() }
         } catch (error: any) {
-          return { passed: false, error: error.message }
+          return { passed: false, error: error instanceof Error ? error.message : String(error) }
         }
       },
     })
@@ -668,7 +668,7 @@ export class AdapterTestFramework extends EventEmitter {
 
           return { passed: true, result, assertions: assertions.getResults() }
         } catch (error: any) {
-          return { passed: true, expectedError: error.message }
+          return { passed: true, expectedError: error instanceof Error ? error.message : String(error) }
         }
       },
     })

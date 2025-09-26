@@ -194,7 +194,9 @@ export class ParlantAgentQueries {
   /**
    * Get agent tools with configurations
    */
-  private async getAgentTools(agentId: string): Promise<(ParlantAgentTool & { tool: ParlantTool })[]> {
+  private async getAgentTools(
+    agentId: string
+  ): Promise<(ParlantAgentTool & { tool: ParlantTool })[]> {
     return this.db
       .select({
         id: parlantAgentTool.id,
@@ -273,7 +275,9 @@ export class ParlantAgentQueries {
   /**
    * Get agent knowledge bases
    */
-  private async getAgentKnowledgeBases(agentId: string): Promise<(ParlantAgentKnowledgeBase & { knowledgeBase: { id: string; name: string } })[]> {
+  private async getAgentKnowledgeBases(
+    agentId: string
+  ): Promise<(ParlantAgentKnowledgeBase & { knowledgeBase: { id: string; name: string } })[]> {
     return this.db
       .select({
         id: parlantAgentKnowledgeBase.id,
@@ -435,8 +439,12 @@ export class ParlantSessionQueries {
     const [agent, events, currentJourney, currentState, variables] = await Promise.all([
       this.getSessionAgent(session.agentId),
       this.getSessionEvents(id),
-      session.currentJourneyId ? this.getJourneyById(session.currentJourneyId).then(result => result || undefined) : Promise.resolve(undefined),
-      session.currentStateId ? this.getJourneyStateById(session.currentStateId).then(result => result || undefined) : Promise.resolve(undefined),
+      session.currentJourneyId
+        ? this.getJourneyById(session.currentJourneyId).then((result) => result || undefined)
+        : Promise.resolve(undefined),
+      session.currentStateId
+        ? this.getJourneyStateById(session.currentStateId).then((result) => result || undefined)
+        : Promise.resolve(undefined),
       this.getSessionVariables(id),
     ])
 
@@ -868,7 +876,7 @@ export async function batchInsert<T extends Record<string, any>>(
       // If batch fails, try individual inserts to identify specific failures
       for (const item of batch) {
         try {
-          const [inserted] = await db.insert(table).values(item).returning() as T[]
+          const [inserted] = (await db.insert(table).values(item).returning()) as T[]
           result.successful.push(inserted)
           result.totalSuccessful++
         } catch (itemError) {

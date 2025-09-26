@@ -5,7 +5,7 @@
 
 import { z } from 'zod'
 import { BaseAdapter } from '../core/base-adapter'
-import type { ParameterDefinition, ParameterType } from '../types/parlant-interfaces'
+import type { ParameterDefinition } from '../types/parlant-interfaces'
 
 export class ConcreteAdapter extends BaseAdapter {
   protected buildParameterDefinitions(): ParameterDefinition[] {

@@ -1657,4 +1657,3 @@ describe('Performance Benchmark Suite', () => {
     expect(results.benchmarks.length).toBeGreaterThan(0)
   })
 })
-

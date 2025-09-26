@@ -667,7 +667,7 @@ export class DescriptionManagementSystem {
       logger.error(`Failed to save description ${session.descriptionId}:`, error)
       return {
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         timestamp: new Date(),
       }
     }
@@ -761,7 +761,7 @@ export class DescriptionManagementSystem {
       logger.error(`Failed to publish description ${descriptionId}:`, error)
       return {
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }

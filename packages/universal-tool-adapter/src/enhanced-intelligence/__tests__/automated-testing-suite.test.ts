@@ -1143,7 +1143,7 @@ export class AutomatedTestingSuite {
         maxResponseTime: 0,
         minResponseTime: 0,
         status: 'failed',
-        details: { error: error.toString() },
+        details: { error: error instanceof Error ? error.toString() : String(error) },
       }
     }
   }
@@ -1316,25 +1316,23 @@ export class AutomatedTestingSuite {
   private createMockContext(): UsageContext {
     return {
       userProfile: {
-        skillLevel: 'intermediate',
         role: 'developer',
-        experience: 'moderate',
+        experience: 'intermediate',
         preferences: {
-          verbosity: 'detailed',
-          examples: true,
-          stepByStep: true,
+          communication: 'detailed',
+          automation: 'guided',
+          explanation: 'comprehensive',
         },
+        domains: ['development', 'testing'],
+        frequentTools: ['testing-framework', 'analytics'],
       },
-      sessionContext: {
-        currentTask: 'testing',
-        timeAvailable: 'moderate',
-        urgency: 'medium',
-      },
-      workflowContext: {
-        currentWorkflow: 'test_workflow',
-        workflowComplexity: 'simple',
-        lastActions: [],
-      },
+      userId: 'test-user',
+      workspaceId: 'test-workspace',
+      workflowId: 'test_workflow',
+      currentStep: 'testing',
+      timeOfDay: 'afternoon',
+      dayOfWeek: 'weekday',
+      businessDomain: 'software-development',
     }
   }
 
@@ -1891,4 +1889,3 @@ describe('Automated Testing Suite for Enhanced Tool Intelligence', () => {
     expect(results.productionReadiness).toBeDefined()
   })
 })
-

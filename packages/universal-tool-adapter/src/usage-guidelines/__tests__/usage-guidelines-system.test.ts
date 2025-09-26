@@ -698,7 +698,7 @@ describe('Interactive Tutorial Engine', () => {
         expect(result).toBeDefined()
       } catch (error) {
         // Expected since we don't have actual interactions set up
-        expect(error.message).toContain('Interaction not found')
+        expect(error instanceof Error ? error.message : String(error)).toContain('Interaction not found')
       }
     })
   })

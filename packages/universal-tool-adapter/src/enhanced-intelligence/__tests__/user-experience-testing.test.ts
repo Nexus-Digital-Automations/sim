@@ -31,7 +31,7 @@ export class UserExperienceTestingFramework {
     this.engine = createEnhancedToolIntelligenceEngine()
     this.abTestingManager = new ABTestingManager()
     this.userSimulator = new UserSimulator(this.engine)
-    this.discoverabilityTester = new DiscoverabilityTester(this.engine)
+    this.discoverabilityTester = new DiscoverabilityTester()
     this.satisfactionAnalyzer = new SatisfactionAnalyzer()
   }
 
@@ -321,7 +321,7 @@ export class UserExperienceTestingFramework {
         .filter((e) => e.winningVariation)
         .map((e) => ({
           experimentName: e.experimentName,
-          winningVariation: e.winningVariation,
+          winningVariation: e.winningVariation!,
           improvementPercent: e.improvementPercent,
         })),
       insights: this.analyzeABTestInsights(experiments),
@@ -1573,4 +1573,3 @@ describe('User Experience Testing Framework', () => {
     expect(results.insights).toBeInstanceOf(Array)
   })
 })
-

@@ -64,13 +64,10 @@ export {
 // Re-export Constants
 // =============================================================================
 
+export type { TagSlot } from './consts'
 export {
   DEFAULT_FREE_CREDITS,
   TAG_SLOTS,
-} from './consts'
-
-export type {
-  TagSlot,
 } from './consts'
 
 // =============================================================================
