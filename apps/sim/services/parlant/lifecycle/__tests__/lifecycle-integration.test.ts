@@ -596,7 +596,7 @@ describe('Agent Lifecycle Management - Integration Tests', () => {
       const expectedEvents = ['lifecycle:session_created']
 
       // Listen for lifecycle events
-      expectedEvents.forEach((eventName) => {
+      for (const eventName of expectedEvents) {
         agentLifecycleOrchestrator.once(eventName, (data) => {
           expect(data).toBeDefined()
           eventCount++
@@ -610,9 +610,8 @@ describe('Agent Lifecycle Management - Integration Tests', () => {
       // Create a session to trigger events
       agentLifecycleOrchestrator
         .createAgentSession(mockAgentId, mockAuth)
-        .then((result) => {
-          testSessionId = result.data?.session.sessionId || ''
-        })
+        .then((result) => 
+          testSessionId = result.data?.session.sessionId || '')
         .catch(done)
     })
   })
@@ -649,11 +648,11 @@ describe('Agent Lifecycle Management - Load Testing', () => {
     const results = await Promise.all(sessionPromises)
 
     // Verify all sessions were created successfully
-    results.forEach((result, index) => {
+    for (const [index, result] of results.entries()) {
       expect(result.success).toBe(true)
       expect(result.data).toBeDefined()
       sessionIds.push(result.data!.session.sessionId)
-    })
+    }
 
     expect(sessionIds).toHaveLength(numberOfSessions)
 
@@ -663,9 +662,9 @@ describe('Agent Lifecycle Management - Load Testing', () => {
     )
 
     const cleanupResults = await Promise.all(cleanupPromises)
-    cleanupResults.forEach((result) => {
+    for (const result of cleanupResults) {
       expect(result.success).toBe(true)
-    })
+    }
   }, 30000) // 30 second timeout for load test
 
   it('should maintain performance under load', async () => {
@@ -697,8 +696,8 @@ describe('Agent Lifecycle Management - Load Testing', () => {
     expect(totalTime).toBeLessThan(5000) // Total time should be less than 5 seconds
 
     // Verify all operations completed successfully
-    results.forEach((result) => {
+    for (const result of results) {
       expect(result).toBeDefined()
-    })
+    }
   })
 })

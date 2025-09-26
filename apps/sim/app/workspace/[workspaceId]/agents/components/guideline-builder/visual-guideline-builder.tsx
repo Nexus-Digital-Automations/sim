@@ -155,6 +155,12 @@ export function VisualGuidelineBuilder({
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
+  // Generate unique IDs for form elements
+  const prioritySelectId = useId()
+  const categorySelectId = useId()
+  const conditionTextareaId = useId()
+  const actionTextareaId = useId()
+
   const nextId = useRef(
     Math.max(0, ...guidelines.map((g) => Number.parseInt(g.id.split('-')[1] || '0', 10))) + 1
   )
@@ -668,7 +674,7 @@ function GuidelineEditDialog({
                   })
                 }
               >
-                <SelectTrigger id='priority-select'>
+                <SelectTrigger id={prioritySelectId}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -694,7 +700,7 @@ function GuidelineEditDialog({
                   })
                 }
               >
-                <SelectTrigger id='category-select'>
+                <SelectTrigger id={categorySelectId}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -710,11 +716,11 @@ function GuidelineEditDialog({
 
           {/* Condition */}
           <div>
-            <label htmlFor='condition-textarea' className='mb-2 block font-medium text-sm'>
+            <label htmlFor={conditionTextareaId} className='mb-2 block font-medium text-sm'>
               When (Condition) *
             </label>
             <Textarea
-              id='condition-textarea'
+              id={conditionTextareaId}
               placeholder='Describe the situation that triggers this guideline...'
               value={editedGuideline.condition}
               onChange={(e) =>
@@ -729,11 +735,11 @@ function GuidelineEditDialog({
 
           {/* Action */}
           <div>
-            <label htmlFor='action-textarea' className='mb-2 block font-medium text-sm'>
+            <label htmlFor={actionTextareaId} className='mb-2 block font-medium text-sm'>
               Then (Action) *
             </label>
             <Textarea
-              id='action-textarea'
+              id={actionTextareaId}
               placeholder='Describe what the agent should do...'
               value={editedGuideline.action}
               onChange={(e) =>

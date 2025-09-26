@@ -954,7 +954,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       )
 
       keysToDelete.forEach((key) => {
-        this.executionCache.delete(key)
+        void this.executionCache.delete(key)
       })
     }
 
@@ -966,7 +966,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       )
 
       keysToDelete.forEach((key) => {
-        this.discoveryCache.delete(key)
+        void this.discoveryCache.delete(key)
       })
     }
   }

@@ -7,7 +7,7 @@
 
 'use client'
 
-import { memo, useState } from 'react'
+import { memo, useId, useState } from 'react'
 import { Handle, type NodeProps, Position } from '@xyflow/react'
 import {
   AlertCircle,
@@ -75,6 +75,11 @@ export const JourneyStateNode = memo<JourneyStateNodeProps>(
   ({ id, data, selected, onStateUpdate, onStateDelete }) => {
     const [isEditing, setIsEditing] = useState(false)
     const [editData, setEditData] = useState<JourneyStateData>(data)
+
+    // Generate unique IDs for form elements
+    const stateNameId = useId()
+    const stateContentId = useId()
+    const stateDescriptionId = useId()
 
     const getStateIcon = () => {
       switch (data.type) {
@@ -206,9 +211,9 @@ export const JourneyStateNode = memo<JourneyStateNodeProps>(
 
                         <div className='grid grid-cols-2 gap-4'>
                           <div className='space-y-2'>
-                            <Label htmlFor='stateName'>State Name</Label>
+                            <Label htmlFor={stateNameId}>State Name</Label>
                             <Input
-                              id='stateName'
+                              id={stateNameId}
                               value={editData.name}
                               onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                               placeholder='Enter state name'
@@ -241,9 +246,9 @@ export const JourneyStateNode = memo<JourneyStateNodeProps>(
                         </div>
 
                         <div className='space-y-2'>
-                          <Label htmlFor='stateContent'>Content</Label>
+                          <Label htmlFor={stateContentId}>Content</Label>
                           <Textarea
-                            id='stateContent'
+                            id={stateContentId}
                             value={editData.content || ''}
                             onChange={(e) => setEditData({ ...editData, content: e.target.value })}
                             placeholder='Enter state content or message template'

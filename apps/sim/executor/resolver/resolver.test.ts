@@ -144,15 +144,15 @@ describe('InputResolver', () => {
     const testBlockIds = ['test-block', 'test-block-2', 'generic-block']
     const allIds = [...allBlockIds, ...testBlockIds]
 
-    sampleWorkflow.blocks.forEach((block) => {
+    for (const block of sampleWorkflow.blocks) {
       const accessibleBlocks = new Set(allIds)
       accessibleBlocksMap.set(block.id, accessibleBlocks)
-    })
+    }
 
-    testBlockIds.forEach((testId) => {
+    for (const testId of testBlockIds) {
       const accessibleBlocks = new Set(allIds)
       accessibleBlocksMap.set(testId, accessibleBlocks)
-    })
+    }
 
     resolver = new InputResolver(
       sampleWorkflow,
@@ -1823,7 +1823,9 @@ describe('InputResolver', () => {
           loop.nodes.includes(block.id)
         )
         if (blockLoop) {
-          blockLoop.nodes.forEach((nodeId) => accessibleBlocks.add(nodeId))
+          for (const nodeId of blockLoop.nodes) {
+            accessibleBlocks.add(nodeId)
+          }
         }
         loopAccessibilityMap.set(block.id, accessibleBlocks)
       })

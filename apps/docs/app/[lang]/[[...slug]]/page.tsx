@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { findNeighbour } from 'fumadocs-core/server'
 import defaultMdxComponents from 'fumadocs-ui/mdx'
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page'
@@ -11,8 +12,8 @@ export const dynamic = 'force-dynamic'
 
 interface CustomFooterProps {
   neighbours: {
-    previous?: { url: string; name: string }
-    next?: { url: string; name: string }
+    previous?: { url: string; name: ReactNode }
+    next?: { url: string; name: ReactNode }
   } | null
 }
 
