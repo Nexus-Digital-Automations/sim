@@ -149,4 +149,7 @@ export interface BlockConfig {
   version?: string
   author?: string
   tags?: string[]
+  // Additional properties that might be referenced in test framework
+  type?: string // Block type identifier (fallback to id if not provided)
+  name?: string // Human-readable name (fallback to title if not provided)
 }

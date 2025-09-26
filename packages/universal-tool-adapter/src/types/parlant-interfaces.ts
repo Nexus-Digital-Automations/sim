@@ -235,6 +235,7 @@ export interface ParlantExecutionContext {
 
   // Timing and constraints
   startTime: Date
+  timestamp: Date // Legacy timestamp property for backward compatibility
   maxExecutionTime?: number
   timeoutMs?: number
 

@@ -264,7 +264,7 @@ export class ContextAnalysisEngine {
     const skillGaps = this.identifySkillGaps(context)
     opportunities.push(
       ...skillGaps.map((gap) => ({
-        type: 'skill-development',
+        type: 'skill-development' as const,
         title: `Improve ${gap} skills`,
         description: `Enhance your proficiency with ${gap}`,
         priority: this.assessLearningPriority(gap, context),
@@ -667,7 +667,14 @@ export class ContextualGuidelinesEngine {
 
     // Apply expertise-based adaptations
     const expertiseLevel = analysis.userProfile.expertiseLevel
-    let contentVariation = guideline.adaptations.experienceLevel[expertiseLevel]
+    // Map expertise levels to available adaptation keys
+    const adaptationKey =
+      expertiseLevel === 'novice'
+        ? 'beginner'
+        : expertiseLevel === 'expert'
+          ? 'advanced'
+          : (expertiseLevel as 'beginner' | 'intermediate' | 'advanced')
+    let contentVariation = guideline.adaptations.experienceLevel[adaptationKey]
     if (contentVariation) {
       appliedVariations.push(`expertise-${expertiseLevel}`)
       adaptationReasons.push(`Adapted for ${expertiseLevel} user`)

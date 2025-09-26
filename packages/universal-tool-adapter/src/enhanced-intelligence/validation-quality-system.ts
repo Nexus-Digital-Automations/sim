@@ -775,7 +775,7 @@ export class ValidationQualitySystem {
           issueId: `error_${Date.now()}`,
           issueType: 'system_error',
           severity: 'critical',
-          message: `Validation failed: ${error.message}`,
+          message: `Validation failed: ${error instanceof Error ? error.message : String(error)}`,
           description: 'System error during validation',
           location: { sectionPath: 'system', context: 'validation_engine' },
         },

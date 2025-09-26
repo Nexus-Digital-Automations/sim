@@ -426,10 +426,10 @@ export class ErrorAnalyticsSystem extends EventEmitter {
         id: eventId,
         timestamp,
         error: {
-          message: error.message,
-          stack: error.stack,
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
           code: (error as any).code,
-          type: error.constructor.name,
+          type: error instanceof Error ? error.constructor.name : 'unknown',
         },
         context,
         classification,
@@ -451,7 +451,7 @@ export class ErrorAnalyticsSystem extends EventEmitter {
       // Check for alerts
       await this.checkAlertConditions(errorEvent)
 
-      console.log(`Recorded error event: ${eventId} - ${error.message}`)
+      console.log(`Recorded error event: ${eventId} - ${error instanceof Error ? error.message : String(error)}`)
       return eventId
     } catch (analyticsError) {
       console.error('Failed to record error event:', analyticsError)

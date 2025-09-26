@@ -578,7 +578,7 @@ export class RecommendationAPI {
 
       yield {
         type: 'error',
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         timestamp: new Date(),
       }
     }
@@ -819,7 +819,7 @@ export class RecommendationAPI {
             code: 'INTERNAL_ERROR',
             message: this.config.security.hideInternalErrors
               ? 'Internal error occurred'
-              : error.message,
+              : (error instanceof Error ? error.message : String(error)),
             severity: 'high',
           },
         ],

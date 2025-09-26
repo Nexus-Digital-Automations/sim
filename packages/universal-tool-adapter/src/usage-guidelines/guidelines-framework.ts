@@ -1015,7 +1015,11 @@ export const STANDARD_TEMPLATES = {
     'Basic Usage Guide',
     'Standard template for basic tool usage guidance',
     ['basic-usage'],
-    PartialGuidelineDefinitionSchema as z.ZodType<Partial<GuidelineDefinition>, z.ZodTypeDef, Partial<GuidelineDefinition>>
+    PartialGuidelineDefinitionSchema as z.ZodType<
+      Partial<GuidelineDefinition>,
+      z.ZodTypeDef,
+      Partial<GuidelineDefinition>
+    >
   ),
 
   // Setup and configuration template
@@ -1024,7 +1028,11 @@ export const STANDARD_TEMPLATES = {
     'Setup & Configuration Guide',
     'Template for tool setup and configuration guidance',
     ['setup', 'configuration'],
-    PartialGuidelineDefinitionSchema as z.ZodType<Partial<GuidelineDefinition>, z.ZodTypeDef, Partial<GuidelineDefinition>>
+    PartialGuidelineDefinitionSchema as z.ZodType<
+      Partial<GuidelineDefinition>,
+      z.ZodTypeDef,
+      Partial<GuidelineDefinition>
+    >
   ),
 
   // Advanced usage template for complex scenarios
@@ -1033,7 +1041,11 @@ export const STANDARD_TEMPLATES = {
     'Advanced Usage Guide',
     'Template for advanced tool usage patterns and techniques',
     ['advanced-usage', 'optimization'],
-    PartialGuidelineDefinitionSchema as z.ZodType<Partial<GuidelineDefinition>, z.ZodTypeDef, Partial<GuidelineDefinition>>
+    PartialGuidelineDefinitionSchema as z.ZodType<
+      Partial<GuidelineDefinition>,
+      z.ZodTypeDef,
+      Partial<GuidelineDefinition>
+    >
   ),
 
   // Troubleshooting template
@@ -1042,7 +1054,11 @@ export const STANDARD_TEMPLATES = {
     'Troubleshooting Guide',
     'Template for troubleshooting and problem resolution',
     ['troubleshooting'],
-    PartialGuidelineDefinitionSchema as z.ZodType<Partial<GuidelineDefinition>, z.ZodTypeDef, Partial<GuidelineDefinition>>
+    PartialGuidelineDefinitionSchema as z.ZodType<
+      Partial<GuidelineDefinition>,
+      z.ZodTypeDef,
+      Partial<GuidelineDefinition>
+    >
   ),
 
   // Integration patterns template
@@ -1051,7 +1067,11 @@ export const STANDARD_TEMPLATES = {
     'Integration Patterns Guide',
     'Template for tool integration patterns and workflows',
     ['integration'],
-    PartialGuidelineDefinitionSchema as z.ZodType<Partial<GuidelineDefinition>, z.ZodTypeDef, Partial<GuidelineDefinition>>
+    PartialGuidelineDefinitionSchema as z.ZodType<
+      Partial<GuidelineDefinition>,
+      z.ZodTypeDef,
+      Partial<GuidelineDefinition>
+    >
   ),
 }
 

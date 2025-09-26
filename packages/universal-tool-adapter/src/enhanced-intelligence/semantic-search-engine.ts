@@ -315,8 +315,8 @@ export class SemanticSearchEngine {
       return explainedResults
     } catch (error) {
       logger.error('Semantic search failed', {
-        error: error.message,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       })
       throw error
     }
@@ -626,7 +626,7 @@ export class SemanticSearchEngine {
           lastIndexed: new Date(),
         })
       } catch (error) {
-        logger.warn(`Failed to index tool: ${tool.id}`, { error: error.message })
+        logger.warn(`Failed to index tool: ${tool.id}`, { error: error instanceof Error ? error.message : String(error) })
       }
     }
 

@@ -182,7 +182,8 @@ export class ParameterTransformations {
       try {
         return schema.parse(value)
       } catch (error) {
-        throw new ValidationError(`Schema validation failed: ${error.message}`)
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        throw new ValidationError(`Schema validation failed: ${errorMessage}`)
       }
     },
   }
@@ -290,7 +291,7 @@ export class ParameterMapper {
           this.setNestedValue(simArgs, mapping.simParameter, value)
         }
       } catch (error) {
-        const errorMsg = error.message || 'Unknown mapping error'
+        const errorMsg = error instanceof Error ? error.message : 'Unknown mapping error'
         logger.warn(`Parameter mapping failed`, {
           parlantParameter: parlantParam,
           simParameter: mapping.simParameter,
@@ -399,7 +400,8 @@ export class ParameterMapper {
 
       return result
     } catch (error) {
-      throw new Error(`Transformation '${transformation.type}' failed: ${error.message}`)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      throw new Error(`Transformation '${transformation.type}' failed: ${errorMessage}`)
     }
   }
 
@@ -433,8 +435,9 @@ export class ParameterMapper {
       try {
         return validation.schema.parse(value)
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
         throw new ValidationError(
-          `Parameter '${parameterName}' schema validation failed: ${error.message}`
+          `Parameter '${parameterName}' schema validation failed: ${errorMessage}`
         )
       }
     }
@@ -448,8 +451,9 @@ export class ParameterMapper {
         }
         return value
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
         throw new ValidationError(
-          `Parameter '${parameterName}' custom validation failed: ${error.message}`
+          `Parameter '${parameterName}' custom validation failed: ${errorMessage}`
         )
       }
     }
@@ -604,7 +608,8 @@ export class ParameterMapper {
 
       return { success: true, result }
     } catch (error) {
-      return { success: false, error: error.message }
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      return { success: false, error: errorMessage }
     }
   }
 
