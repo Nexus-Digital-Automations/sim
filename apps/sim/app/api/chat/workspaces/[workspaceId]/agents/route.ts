@@ -39,7 +39,6 @@ export async function GET(
     const page = Number.parseInt(searchParams.get('page') || '1')
     const limit = Math.min(Number.parseInt(searchParams.get('limit') || '50'), 100)
     const search = searchParams.get('search') || undefined
-    const status = searchParams.get('status') || undefined
 
     // Get agents from Parlant service
     const agents = await getUserAccessibleAgents(session.user.id, workspaceId)
@@ -54,10 +53,6 @@ export async function GET(
           agent.name.toLowerCase().includes(searchLower) ||
           agent.description?.toLowerCase().includes(searchLower)
       )
-    }
-
-    if (status && status !== 'all') {
-      filteredAgents = filteredAgents.filter((agent) => agent.status === status)
     }
 
     // Apply pagination

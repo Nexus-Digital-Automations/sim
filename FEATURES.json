@@ -507,7 +507,7 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 62,
-      "total_reinitializations": 165,
+      "total_reinitializations": 166,
       "current_day": "2025-09-26",
       "time_buckets": {
         "10:00-14:59": {
@@ -524,7 +524,7 @@
         },
         "01:00-05:59": {
           "init": 0,
-          "reinit": 21
+          "reinit": 22
         },
         "06:00-10:59": {
           "init": 0,
@@ -588,7 +588,7 @@
         }
       ],
       "last_reset": "2025-09-26T07:07:58.790Z",
-      "last_updated": "2025-09-26T09:00:07.737Z"
+      "last_updated": "2025-09-26T09:27:14.343Z"
     },
     "approval_history": [
       {
@@ -679,46 +679,18 @@
     "updated": "2025-09-24T04:24:12.431Z"
   },
   "agents": {
-    "LINTER_COMPLETION_AGENT": {
-      "lastHeartbeat": "2025-09-26T08:15:11.661Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T08:15:11.661Z",
-      "sessionId": "9ec7eb76b54cc02a",
-      "previousSessions": []
-    },
-    "recovery-validation-agent": {
-      "lastHeartbeat": "2025-09-26T08:38:53.533Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T08:38:53.533Z",
-      "sessionId": "6b7a55a373c65e86",
-      "previousSessions": []
-    },
-    "agent-build-fix": {
-      "lastHeartbeat": "2025-09-26T08:45:25.423Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T08:45:25.423Z",
-      "sessionId": "f535ad36b1a52129",
-      "previousSessions": []
-    },
-    "PageHeaderAgent": {
-      "lastHeartbeat": "2025-09-26T08:45:29.900Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T08:45:29.900Z",
-      "sessionId": "2d9142e8bc4e596a",
-      "previousSessions": []
-    },
-    "BUILD_START_VALIDATOR": {
-      "lastHeartbeat": "2025-09-26T08:51:35.854Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T08:51:35.854Z",
-      "sessionId": "6641c3c6c2c3318a",
-      "previousSessions": []
-    },
     "claude-code-agent": {
       "lastHeartbeat": "2025-09-26T09:00:07.734Z",
       "status": "active",
       "reinitialized": "2025-09-26T09:00:07.734Z",
       "sessionId": "d743b26b16227ed8",
+      "previousSessions": []
+    },
+    "CLAUDE_AGENT": {
+      "lastHeartbeat": "2025-09-26T09:27:14.338Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T09:27:14.338Z",
+      "sessionId": "c659eef7c93d023e",
       "previousSessions": []
     }
   },

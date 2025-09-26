@@ -19,8 +19,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
+  const { conversationId } = await params
+
   try {
-    const { conversationId } = await params
     const session = await getSession()
 
     if (!session?.user) {
@@ -99,8 +100,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
+  const { conversationId } = await params
+
   try {
-    const { conversationId } = await params
     const session = await getSession()
 
     if (!session?.user) {
@@ -195,8 +197,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
+  const { conversationId } = await params
+
   try {
-    const { conversationId } = await params
     const session = await getSession()
 
     if (!session?.user) {
