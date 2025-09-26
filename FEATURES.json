@@ -711,13 +711,6 @@
         "b5903027c193705c"
       ]
     },
-    "DATABASE_CONFIG_FIX_AGENT": {
-      "lastHeartbeat": "2025-09-26T18:30:34.432Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T18:30:34.432Z",
-      "sessionId": "cca6b970e5a518fb",
-      "previousSessions": ["94d6b585f61e0441", "d75027cabda45230"]
-    },
     "DATABASE_CONNECTION_FIX_AGENT": {
       "lastHeartbeat": "2025-09-26T18:53:23.784Z",
       "status": "active",
