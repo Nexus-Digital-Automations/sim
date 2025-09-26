@@ -215,7 +215,7 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
     logger.debug(`Applying role-based adaptation for: ${userRole}`)
 
     const adaptedSchema = await this.applyRoleStrategy(schema, strategy, context)
-    const adaptationSummary = this.generateAdaptationSummary(userRole, strategy)
+    const adaptationSummary = this.generateAdaptationSummary(userRole as UserRole, strategy)
 
     return {
       type: 'role-based',
@@ -1038,7 +1038,7 @@ export class ContextualAdapterRegistry {
         const adaptation = await adapter.adapt(schema, context)
         adaptations.push(adaptation)
       } catch (error) {
-        logger.warn(`Adapter ${adapter.adapterId} failed:`, error)
+        logger.warn(`Adapter ${adapter.adapterId} failed:`, error instanceof Error ? { error } : { error: String(error) })
       }
     }
 

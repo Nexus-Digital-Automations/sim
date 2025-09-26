@@ -979,6 +979,4 @@ export type AdapterAdvancedTypes =
 /**
  * All testing and performance types
  */
-export type AdapterTestingPerformanceTypes =
-  | PerformanceThresholds
-  | TestConfiguration
+export type AdapterTestingPerformanceTypes = PerformanceThresholds | TestConfiguration

@@ -29,7 +29,7 @@ import type {
   SubBlockConfig,
   SubBlockType,
 } from '../types/blocks-types'
-import type { ParameterDefinition } from '../types/parlant-interfaces'
+import type { ParameterDefinition, ParameterType } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
 import { ValidationEngine } from '../validation/validation-engine'
 import { BaseAdapter } from './base-adapter'
@@ -182,7 +182,7 @@ export class EnhancedAdapterFramework {
 
       // Performance configuration
       caching: {
-        enabled: this.config.enableCaching,
+        enabled: this.config.enableCaching ?? false,
         ttlMs: this.config.cacheTtlMs,
         maxSize: Math.floor(this.config.maxCacheSize / 10), // Per-adapter cache size
         keyStrategy: 'parameters',
@@ -191,8 +191,8 @@ export class EnhancedAdapterFramework {
 
       // Monitoring configuration
       monitoring: {
-        metrics: { enabled: this.config.enableMonitoring },
-        performance: { enabled: this.config.enablePerformanceOptimization },
+        metrics: { enabled: this.config.enableMonitoring ?? false },
+        performance: { enabled: this.config.enablePerformanceOptimization ?? false },
         errorTracking: { enabled: true },
         analytics: { enabled: true },
         ...customConfig.monitoring,
@@ -642,7 +642,7 @@ export class EnhancedAdapterFramework {
         registeredAt: new Date(),
         version: '2.0.0',
         source: 'blockconfig',
-        category: blockConfig.category,
+        category: blockConfig.category || 'utility',
         tags: this.generateTags(blockConfig),
       },
       statistics: {
@@ -851,10 +851,10 @@ export class EnhancedAdapterFramework {
   }
 
   private generateTags(blockConfig: BlockConfig): string[] {
-    const tags = ['sim-block', blockConfig.category]
+    const tags = ['sim-block', blockConfig.category || 'utility']
 
     // Add name-based tags
-    const nameParts = blockConfig.name.toLowerCase().split(/[\s_-]+/)
+    const nameParts = (blockConfig.name || '').toLowerCase().split(/[\s_-]+/)
     tags.push(...nameParts)
 
     // Add capability tags
@@ -909,14 +909,14 @@ export class EnhancedAdapterFramework {
 
   private generateKeywords(blockConfig: BlockConfig): string[] {
     const keywords = [
-      blockConfig.name.toLowerCase(),
-      ...blockConfig.name.toLowerCase().split(/[\s_-]+/),
+      (blockConfig.name || '').toLowerCase(),
+      ...(blockConfig.name || '').toLowerCase().split(/[\s_-]+/),
       blockConfig.type,
-      blockConfig.category,
-    ]
+      blockConfig.category || 'utility',
+    ].filter(Boolean)
 
     // Add description keywords
-    const descWords = blockConfig.description
+    const descWords = (blockConfig.description || '')
       .toLowerCase()
       .split(/\s+/)
       .filter((word) => word.length > 3)
@@ -948,7 +948,7 @@ export class EnhancedAdapterFramework {
       name: blockConfig.type,
       metadata: {
         displayNames: {},
-        description: blockConfig.description,
+        description: blockConfig.description || '',
       },
       hasInterrupt: false, // BlockConfigs don't typically have interrupts
       execute: async (ctx, args) => {
@@ -1120,7 +1120,7 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
 
   // Helper methods for BlockConfig-specific processing
 
-  private mapSubBlockTypeToParameterType(type: SubBlockType): string {
+  private mapSubBlockTypeToParameterType(type: SubBlockType): ParameterType {
     switch (type) {
       case 'short-input':
       case 'long-input':
@@ -1129,27 +1129,27 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
       case 'project-selector':
       case 'channel-selector':
       case 'folder-selector':
-        return 'string'
+        return { baseType: 'string' }
 
       case 'slider':
-        return 'number'
+        return { baseType: 'number' }
 
       case 'switch':
-        return 'boolean'
+        return { baseType: 'boolean' }
 
       case 'dropdown':
       case 'combobox':
-        return 'string' // with enum
+        return { baseType: 'string' } // with enum
 
       case 'checkbox-list':
-        return 'array'
+        return { baseType: 'array' }
 
       case 'code':
       case 'table':
-        return 'object'
+        return { baseType: 'object' }
 
       default:
-        return 'string'
+        return { baseType: 'string' }
     }
   }
 

@@ -483,11 +483,15 @@ export class ContextAnalysisEngine {
     return [] // Placeholder
   }
 
-  private identifyAutomationOpportunities(context: EnhancedUsageContext): ContextualLearningOpportunity[] {
+  private identifyAutomationOpportunities(
+    context: EnhancedUsageContext
+  ): ContextualLearningOpportunity[] {
     return [] // Placeholder
   }
 
-  private identifyEfficiencyOpportunities(context: EnhancedUsageContext): ContextualLearningOpportunity[] {
+  private identifyEfficiencyOpportunities(
+    context: EnhancedUsageContext
+  ): ContextualLearningOpportunity[] {
     return [] // Placeholder
   }
 

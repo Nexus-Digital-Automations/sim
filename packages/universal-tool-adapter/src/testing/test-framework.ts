@@ -12,7 +12,7 @@
 import { EventEmitter } from 'events'
 import type { BaseAdapter } from '../core/base-adapter'
 import type { EnhancedAdapterFramework } from '../core/enhanced-adapter-framework'
-import type { AdapterExecutionResult, PerformanceThresholds, TestConfiguration } from '../types/adapter-interfaces'
+import type { AdapterExecutionResult, PerformanceThresholds } from '../types/adapter-interfaces'
 import type { BlockConfig, SubBlockConfig } from '../types/blocks-types'
 import type { ParlantExecutionContext } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
@@ -124,8 +124,8 @@ export class AdapterTestFramework extends EventEmitter {
         await this.teardownTestEnvironment(adapter)
       },
       config: {
-        timeout: this.config.timeout,
-        retries: this.config.retries,
+        timeout: this.config.timeout || 30000,
+        retries: this.config.retries || 2,
         parallel: false,
       },
     }
@@ -214,7 +214,7 @@ export class AdapterTestFramework extends EventEmitter {
       } catch (error) {
         logger.error('Test suite execution failed', {
           suiteId,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         })
 
         // Create error result
@@ -228,7 +228,7 @@ export class AdapterTestFramework extends EventEmitter {
           skipped: 0,
           tests: [],
           coverage: { percentage: 0, lines: 0, coveredLines: 0 },
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         })
       }
     }
@@ -288,7 +288,7 @@ export class AdapterTestFramework extends EventEmitter {
     } catch (error) {
       logger.error('BlockConfig testing failed', {
         type: configType,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
 
       throw error

@@ -28,11 +28,32 @@ import { RealtimeRecommendationService } from '../realtime-recommendation-servic
 import type { WorkflowRecommendationRequest } from '../workflow-recommendation-engine'
 import { WorkflowRecommendationEngine } from '../workflow-recommendation-engine'
 
-import type { PerformanceThresholds } from '../../types/adapter-interfaces'
+import type { PerformanceThresholds, TestConfiguration } from '../../types/adapter-interfaces'
 
 // =============================================================================
 // Test Configuration and Setup
 // =============================================================================
+
+// Additional types needed for testing
+type IntentCategory = string
+type ConversationPhase = string
+
+// Local UserIntent interface with secondaryIntents
+interface UserIntent {
+  primaryCategory: IntentCategory
+  subCategory: string
+  confidence: number
+  secondaryIntents: string[]
+  desiredAction: string
+  targetObject: string
+  contextualGoal: string
+  requiredCapabilities: string[]
+  preferredToolTypes: string[]
+  excludedToolTypes: string[]
+  taskComplexity: 'simple' | 'moderate' | 'complex' | 'multi_step'
+  estimatedSteps: number
+  skillLevelRequired: 'beginner' | 'intermediate' | 'advanced' | 'expert'
+}
 
 interface TestDataset {
   name: string
@@ -184,7 +205,8 @@ class AgentRecommendationTestingFramework {
 
       return results
     } catch (error) {
-      console.error('❌ Test suite execution failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      console.error('❌ Test suite execution failed:', errorMessage)
       throw error
     }
   }
@@ -236,6 +258,7 @@ class AgentRecommendationTestingFramework {
         error: validationResults.error,
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'context_analysis',
@@ -244,7 +267,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message,
+        error: errorMessage,
       }
     }
   }
@@ -260,7 +283,7 @@ class AgentRecommendationTestingFramework {
     const intentMatch = scenario.expectedIntents.some(
       (intent) =>
         context.extractedIntent.primaryCategory.includes(intent) ||
-        context.extractedIntent.secondaryIntents.includes(intent)
+        (context.extractedIntent as any).secondaryIntents?.includes(intent)
     )
     validations.push({
       metric: 'intent_recognition',
@@ -272,7 +295,7 @@ class AgentRecommendationTestingFramework {
     // Validate confidence level
     const confidenceValid =
       context.extractedIntent.confidence >=
-      this.configuration.performanceThresholds.minConfidenceScore
+      (this.configuration.performanceThresholds.minConfidenceScore || 0.7)
     validations.push({
       metric: 'confidence_level',
       passed: confidenceValid,
@@ -282,8 +305,8 @@ class AgentRecommendationTestingFramework {
 
     // Validate conversation flow analysis
     const flowAnalysisValid =
-      context.conversationFlow.currentPhase !== undefined &&
-      context.conversationFlow.flowDirection !== undefined
+      context.conversationFlow?.currentPhase !== undefined &&
+      context.conversationFlow?.flowDirection !== undefined
     validations.push({
       metric: 'flow_analysis',
       passed: flowAnalysisValid,
@@ -292,25 +315,25 @@ class AgentRecommendationTestingFramework {
     score += flowAnalysisValid ? 0.2 : 0
 
     // Validate contextual cues
-    const cuesValid = context.contextualCues.length > 0
+    const cuesValid = (context.contextualCues?.length || 0) > 0
     validations.push({
       metric: 'contextual_cues',
       passed: cuesValid,
-      score: context.contextualCues.length / 10,
+      score: (context.contextualCues?.length || 0) / 10,
     })
     score += cuesValid ? 0.15 : 0
 
     // Validate recommendation timing
-    const timingValid = context.recommendationTiming.timingScore > 0.5
+    const timingValid = (context.recommendationTiming?.timingScore || 0) > 0.5
     validations.push({
       metric: 'recommendation_timing',
       passed: timingValid,
-      score: context.recommendationTiming.timingScore,
+      score: context.recommendationTiming?.timingScore || 0,
     })
     score += timingValid ? 0.15 : 0
 
     return {
-      passed: score >= this.configuration.performanceThresholds.minAccuracyScore,
+      passed: score >= (this.configuration.performanceThresholds.minAccuracyScore || 0.8),
       score: Math.min(score, 1),
       details: { validations, context_summary: this.summarizeContext(context) },
       error: undefined,
@@ -378,6 +401,7 @@ class AgentRecommendationTestingFramework {
         error: validationResults.error,
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'recommendation_quality',
@@ -386,7 +410,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message,
+        error: errorMessage,
       }
     }
   }
@@ -401,7 +425,7 @@ class AgentRecommendationTestingFramework {
     // Validate response time
     const timeValid =
       response.processingTimeMs <=
-      this.configuration.performanceThresholds.recommendationGenerationMaxTime
+      (this.configuration.performanceThresholds.recommendationGenerationMaxTime || 2000)
     validations.push({ metric: 'response_time', passed: timeValid, score: timeValid ? 1 : 0 })
     score += timeValid ? 0.2 : 0
 
@@ -419,7 +443,7 @@ class AgentRecommendationTestingFramework {
       response.recommendations.reduce((sum, rec) => sum + rec.confidence, 0) /
       response.recommendations.length
     const confidenceValid =
-      avgConfidence >= this.configuration.performanceThresholds.minConfidenceScore
+      avgConfidence >= (this.configuration.performanceThresholds.minConfidenceScore || 0.7)
     validations.push({
       metric: 'average_confidence',
       passed: confidenceValid,
@@ -452,7 +476,7 @@ class AgentRecommendationTestingFramework {
     score += explanationsValid ? 0.2 : 0
 
     return {
-      passed: score >= this.configuration.performanceThresholds.minAccuracyScore,
+      passed: score >= (this.configuration.performanceThresholds.minAccuracyScore || 0.8),
       score: Math.min(score, 1),
       details: {
         validations,
@@ -476,8 +500,8 @@ class AgentRecommendationTestingFramework {
 
     // Test scenarios with workflow context
     const workflowScenarios = this.configuration.testDatasets
-      .flatMap((dataset) => dataset.scenarios)
-      .filter((scenario) => scenario.workflowContext)
+      .flatMap((dataset: TestDataset) => dataset.scenarios)
+      .filter((scenario: TestScenario) => scenario.workflowContext)
 
     for (const scenario of workflowScenarios) {
       const result = await this.testWorkflowIntegration(scenario)
@@ -530,7 +554,7 @@ class AgentRecommendationTestingFramework {
           avoidedTools: [],
           qualityVsSpeed: 'balanced',
           parallelizationPreference: true,
-          feedbackFrequency: 'moderate',
+          feedbackFrequency: 'always',
         },
         includeSequences: true,
         optimizeForSpeed: false,
@@ -555,6 +579,7 @@ class AgentRecommendationTestingFramework {
         error: validationResults.error,
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'workflow_integration',
@@ -563,8 +588,66 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message,
+        error: errorMessage,
       }
+    }
+  }
+
+  private validateWorkflowIntegration(
+    response: any,
+    scenario: TestScenario
+  ): ValidationResult {
+    const validations = []
+    let score = 0
+
+    // Validate response structure
+    const hasRecommendations = response.immediateRecommendations && Array.isArray(response.immediateRecommendations)
+    validations.push({
+      metric: 'response_structure',
+      passed: hasRecommendations,
+      score: hasRecommendations ? 1 : 0,
+    })
+    score += hasRecommendations ? 0.3 : 0
+
+    // Validate workflow analysis
+    const hasWorkflowAnalysis = response.workflowAnalysis !== undefined
+    validations.push({
+      metric: 'workflow_analysis',
+      passed: hasWorkflowAnalysis,
+      score: hasWorkflowAnalysis ? 1 : 0,
+    })
+    score += hasWorkflowAnalysis ? 0.2 : 0
+
+    // Validate confidence score
+    const hasConfidence = typeof response.confidenceScore === 'number' && response.confidenceScore >= 0
+    validations.push({
+      metric: 'confidence_score',
+      passed: hasConfidence,
+      score: response.confidenceScore || 0,
+    })
+    score += hasConfidence ? 0.2 : 0
+
+    // Validate recommendations are relevant to workflow
+    const workflowRelevant = hasRecommendations && response.immediateRecommendations.length > 0
+    validations.push({
+      metric: 'workflow_relevance',
+      passed: workflowRelevant,
+      score: workflowRelevant ? 1 : 0,
+    })
+    score += workflowRelevant ? 0.3 : 0
+
+    return {
+      passed: score >= (this.configuration.performanceThresholds.minAccuracyScore || 0.8),
+      score: Math.min(score, 1),
+      details: {
+        validations,
+        workflow_summary: {
+          recommendationCount: hasRecommendations ? response.immediateRecommendations.length : 0,
+          confidenceScore: response.confidenceScore || 0,
+          hasWorkflowAnalysis: hasWorkflowAnalysis,
+        },
+      },
+      error: undefined,
     }
   }
 
@@ -646,6 +729,7 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'websocket_connection',
@@ -654,7 +738,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message,
+        error: errorMessage,
       }
     }
   }
@@ -677,6 +761,7 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'realtime_recommendations',
@@ -685,7 +770,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message,
+        error: errorMessage,
       }
     }
   }
@@ -722,6 +807,7 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'concurrent_users',
@@ -730,7 +816,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message,
+        error: errorMessage,
       }
     }
   }
@@ -751,6 +837,7 @@ class AgentRecommendationTestingFramework {
         error: undefined,
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
       return {
         testId: this.generateTestId(),
         testType: 'connection_failover',
@@ -759,7 +846,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message,
+        error: errorMessage,
       }
     }
   }
@@ -949,7 +1036,10 @@ class AgentRecommendationTestingFramework {
         networkBandwidth: 0.85,
         externalApiLimits: {},
       },
-      timeConstraints: {},
+      timeConstraints: {
+        stageDeadlines: {},
+        maintenanceWindows: [],
+      },
       qualityRequirements: {
         minimumQuality: 0.8,
         qualityMetrics: ['accuracy', 'completeness'],
@@ -1004,7 +1094,7 @@ class AgentRecommendationTestingFramework {
 
     const slowTests = results.testResults.filter(
       (r) =>
-        r.executionTime > this.configuration.performanceThresholds.recommendationGenerationMaxTime
+        r.executionTime > (this.configuration.performanceThresholds.recommendationGenerationMaxTime || 2000)
     )
     if (slowTests.length > 0) {
       recommendations.push('Performance optimization needed for slow-running tests')
@@ -1235,7 +1325,10 @@ describe('Agent Tool Recommendation System', () => {
             networkBandwidth: 0.85,
             externalApiLimits: {},
           },
-          timeConstraints: {},
+          timeConstraints: {
+        stageDeadlines: {},
+        maintenanceWindows: [],
+      },
           qualityRequirements: {
             minimumQuality: 0.8,
             qualityMetrics: ['accuracy', 'completeness'],
@@ -1251,7 +1344,7 @@ describe('Agent Tool Recommendation System', () => {
           avoidedTools: [],
           qualityVsSpeed: 'balanced',
           parallelizationPreference: true,
-          feedbackFrequency: 'moderate',
+          feedbackFrequency: 'always',
         },
         includeSequences: true,
         optimizeForSpeed: false,
