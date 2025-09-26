@@ -57,6 +57,9 @@ export interface AdaptationContext {
 }
 
 export interface ExtendedUserProfile extends UserProfile {
+  // User identification
+  userId: string
+
   // Enhanced profile data
   cognitiveStyle: CognitiveStyle
   learningPreferences: LearningPreference[]

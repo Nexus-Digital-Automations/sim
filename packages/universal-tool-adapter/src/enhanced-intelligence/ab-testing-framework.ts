@@ -243,7 +243,7 @@ export interface StatisticalConfig {
 
 export interface TestResults {
   // Overall results
-  status: 'running' | 'completed' | 'stopped' | 'invalid'
+  status: TestStatus
   startDate: Date
   endDate?: Date
   totalUsers: number
