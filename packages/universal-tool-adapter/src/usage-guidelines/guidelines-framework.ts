@@ -620,6 +620,387 @@ export class GuidelineTemplate {
 }
 
 // =============================================================================
+// Zod Schema Definitions
+// =============================================================================
+
+// Supporting schemas for nested objects
+const UsageContextMatcherSchema = z.object({
+  type: z.enum(['user', 'workflow', 'environment', 'tool', 'custom']),
+  field: z.string(),
+  operator: z.enum(['equals', 'contains', 'matches', 'in', 'range', 'exists']),
+  value: z.any(),
+  weight: z.number(),
+  description: z.string().optional(),
+})
+
+const ScenarioDefinitionSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  context: z.record(z.any()),
+  preconditions: z.array(z.string()),
+  expectedOutcome: z.string(),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
+})
+
+const ContextConditionSchema = z.object({
+  description: z.string(),
+  condition: z.string(),
+  examples: z.array(z.string()),
+})
+
+const QuickStartGuideSchema = z.object({
+  summary: z.string(),
+  essentialSteps: z.array(z.string()),
+  minimumRequiredFields: z.array(z.string()),
+  estimatedTime: z.string(),
+  successCriteria: z.array(z.string()),
+})
+
+const GuideStepSchema = z.object({
+  stepNumber: z.number(),
+  title: z.string(),
+  description: z.string(),
+  action: z.string(),
+  expectedResult: z.string().optional(),
+  screenshots: z.array(z.string()).optional(),
+  codeExamples: z.array(z.any()).optional(),
+  tips: z.array(z.string()).optional(),
+  warnings: z.array(z.string()).optional(),
+})
+
+const VerificationStepSchema = z.object({
+  description: z.string(),
+  method: z.enum(['visual', 'programmatic', 'behavioral', 'output']),
+  criteria: z.string(),
+  troubleshooting: z.array(z.string()).optional(),
+})
+
+const StepByStepGuideSchema = z.object({
+  title: z.string(),
+  overview: z.string(),
+  prerequisites: z.array(z.string()),
+  steps: z.array(GuideStepSchema),
+  verification: z.array(VerificationStepSchema),
+  troubleshooting: z.array(z.string()),
+})
+
+const ConditionalParameterGuidanceSchema = z.object({
+  condition: z.string(),
+  guidance: z.string(),
+  examples: z.array(z.any()),
+})
+
+const ParameterGuidanceSchema = z.object({
+  description: z.string(),
+  importance: z.enum(['required', 'recommended', 'optional']),
+  dataType: z.string(),
+  format: z.string().optional(),
+  examples: z.array(z.any()),
+  defaultValue: z.any().optional(),
+  validationRules: z.array(z.string()),
+  commonValues: z.array(z.any()),
+  tips: z.array(z.string()),
+  relatedParameters: z.array(z.string()),
+  conditionalGuidance: z.array(ConditionalParameterGuidanceSchema).optional(),
+})
+
+const BestPracticeSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  category: z.enum(['performance', 'security', 'usability', 'maintenance', 'integration']),
+  importance: z.enum(['low', 'medium', 'high', 'critical']),
+  implementation: z.array(z.string()),
+  benefits: z.array(z.string()),
+  evidence: z.string().optional(),
+})
+
+const CommonMistakeSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  consequence: z.string(),
+  howToAvoid: z.array(z.string()),
+  howToFix: z.array(z.string()),
+  severity: z.enum(['low', 'medium', 'high', 'critical']),
+  frequency: z.enum(['rare', 'uncommon', 'common', 'very-common']),
+})
+
+const ExampleUsageSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  input: z.record(z.any()),
+  context: z.record(z.any()).optional(),
+  expectedOutput: z.any(),
+  explanation: z.string(),
+  difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
+  tags: z.array(z.string()),
+})
+
+const RealWorldExampleSchema = z.object({
+  title: z.string(),
+  scenario: z.string(),
+  businessContext: z.string(),
+  implementation: z.object({
+    approach: z.string(),
+    parameters: z.record(z.any()),
+    workflow: z.array(z.string()),
+  }),
+  results: z.object({
+    outcome: z.string(),
+    metrics: z.record(z.number()).optional(),
+    learnings: z.array(z.string()),
+  }),
+  applicability: z.array(z.string()),
+})
+
+const ConversationTurnSchema = z.object({
+  speaker: z.enum(['user', 'assistant']),
+  message: z.string(),
+  context: z.record(z.any()).optional(),
+  toolInvocation: z
+    .object({
+      tool: z.string(),
+      parameters: z.record(z.any()),
+      result: z.any(),
+    })
+    .optional(),
+  explanation: z.string().optional(),
+})
+
+const ConversationVariationSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  modifiedTurns: z.array(z.number()),
+  newConversation: z.array(ConversationTurnSchema),
+})
+
+const ConversationFlowSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  userIntent: z.string(),
+  conversation: z.array(ConversationTurnSchema),
+  keyPoints: z.array(z.string()),
+  variations: z.array(ConversationVariationSchema),
+})
+
+const DiagnosticStepSchema = z.object({
+  step: z.string(),
+  command: z.string().optional(),
+  expectedResult: z.string(),
+  interpretation: z.record(z.string()),
+  nextSteps: z.array(z.string()),
+})
+
+const SolutionSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  steps: z.array(z.string()),
+  complexity: z.enum(['simple', 'moderate', 'complex']),
+  estimatedTime: z.string(),
+  riskLevel: z.enum(['low', 'medium', 'high']),
+  successCriteria: z.array(z.string()),
+})
+
+const TroubleshootingGuideSchema = z.object({
+  issue: z.string(),
+  symptoms: z.array(z.string()),
+  possibleCauses: z.array(z.string()),
+  diagnosticSteps: z.array(DiagnosticStepSchema),
+  solutions: z.array(SolutionSchema),
+  prevention: z.array(z.string()),
+  escalation: z
+    .object({
+      when: z.string(),
+      how: z.string(),
+      contacts: z.array(z.string()),
+    })
+    .optional(),
+})
+
+const ErrorCodeMapSchema = z.record(
+  z.object({
+    description: z.string(),
+    commonCauses: z.array(z.string()),
+    quickFixes: z.array(z.string()),
+    detailedSolution: z.string(),
+    relatedIssues: z.array(z.string()),
+  })
+)
+
+const RecoveryProcedureSchema = z.object({
+  scenario: z.string(),
+  description: z.string(),
+  urgency: z.enum(['low', 'medium', 'high', 'critical']),
+  steps: z.array(z.string()),
+  rollbackOptions: z.array(z.string()),
+  verification: z.array(z.string()),
+})
+
+const AlternativeToolSchema = z.object({
+  toolId: z.string(),
+  toolName: z.string(),
+  whenToUse: z.string(),
+  advantages: z.array(z.string()),
+  disadvantages: z.array(z.string()),
+  migrationGuide: z.string().optional(),
+})
+
+const ComplementaryToolSchema = z.object({
+  toolId: z.string(),
+  toolName: z.string(),
+  relationship: z.enum(['prerequisite', 'enhancement', 'post-processing', 'validation']),
+  description: z.string(),
+  integrationPattern: z.string(),
+})
+
+const PrerequisiteSchema = z.object({
+  type: z.enum(['permission', 'configuration', 'data', 'dependency', 'knowledge']),
+  title: z.string(),
+  description: z.string(),
+  howToFulfill: z.array(z.string()),
+  validationMethod: z.string().optional(),
+})
+
+const FollowUpActionSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  when: z.string(),
+  steps: z.array(z.string()),
+  tools: z.array(z.string()).optional(),
+  expectedBenefit: z.string(),
+})
+
+const ContentVariationSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  emphasisPoints: z.array(z.string()),
+  additionalContent: z.array(z.string()).optional(),
+  omittedContent: z.array(z.string()).optional(),
+  modifiedExamples: z.array(ExampleUsageSchema).optional(),
+  customInstructions: z.array(z.string()).optional(),
+})
+
+const LocalizedContentSchema = z.object({
+  language: z.string(),
+  region: z.string().optional(),
+  translatedContent: z.object({}).optional(), // Partial<GuidelineContent>
+  culturalAdaptations: z.array(z.string()),
+  localExamples: z.array(ExampleUsageSchema),
+})
+
+// Main content schemas
+const GuidelineContentSchema = z.object({
+  whenToUse: z.object({
+    primary: z.string(),
+    scenarios: z.array(ScenarioDefinitionSchema),
+    conditions: z.array(ContextConditionSchema),
+    antipatterns: z.array(z.string()),
+  }),
+  howToUse: z.object({
+    quickStart: QuickStartGuideSchema,
+    stepByStep: StepByStepGuideSchema,
+    parameterGuidance: z.record(ParameterGuidanceSchema),
+    bestPractices: z.array(BestPracticeSchema),
+    commonMistakes: z.array(CommonMistakeSchema),
+  }),
+  examples: z.object({
+    basic: z.array(ExampleUsageSchema),
+    advanced: z.array(ExampleUsageSchema),
+    realWorld: z.array(RealWorldExampleSchema),
+    conversational: z.array(ConversationFlowSchema),
+  }),
+  troubleshooting: z.object({
+    commonIssues: z.array(TroubleshootingGuideSchema),
+    errorCodes: ErrorCodeMapSchema,
+    diagnostics: z.array(DiagnosticStepSchema),
+    recovery: z.array(RecoveryProcedureSchema),
+  }),
+  relatedResources: z.object({
+    alternativeTools: z.array(AlternativeToolSchema),
+    complementaryTools: z.array(ComplementaryToolSchema),
+    prerequisites: z.array(PrerequisiteSchema),
+    followUpActions: z.array(FollowUpActionSchema),
+  }),
+})
+
+const GuidelineAdaptationsSchema = z.object({
+  experienceLevel: z.object({
+    beginner: ContentVariationSchema,
+    intermediate: ContentVariationSchema,
+    advanced: ContentVariationSchema,
+  }),
+  userRole: z.record(ContentVariationSchema),
+  contextual: z.object({
+    urgent: ContentVariationSchema,
+    collaborative: ContentVariationSchema,
+    automated: ContentVariationSchema,
+  }),
+  domainSpecific: z.record(ContentVariationSchema),
+  localization: z.record(LocalizedContentSchema),
+})
+
+const GuidelineMetadataSchema = z.object({
+  author: z.string(),
+  contributors: z.array(z.string()),
+  reviewedBy: z.array(z.string()),
+  approvedBy: z.string().optional(),
+  usageStats: z.object({
+    viewCount: z.number(),
+    helpfulVotes: z.number(),
+    unhelpfulVotes: z.number(),
+    feedbackCount: z.number(),
+    lastAccessed: z.date(),
+  }),
+  quality: z.object({
+    completeness: z.number(),
+    accuracy: z.number(),
+    clarity: z.number(),
+    usefulness: z.number(),
+  }),
+  relationships: z.object({
+    dependsOn: z.array(z.string()),
+    supersedes: z.array(z.string()),
+    relatedTo: z.array(z.string()),
+    conflictsWith: z.array(z.string()),
+  }),
+  lifecycle: z.object({
+    status: z.enum(['draft', 'review', 'approved', 'published', 'deprecated']),
+    reviewDate: z.date().optional(),
+    deprecationDate: z.date().optional(),
+    migrationPath: z.string().optional(),
+  }),
+})
+
+// Complete GuidelineDefinition schema
+const GuidelineDefinitionSchema = z.object({
+  id: z.string(),
+  toolId: z.string(),
+  title: z.string(),
+  description: z.string(),
+  version: z.string(),
+  lastUpdated: z.date(),
+  category: z.enum([
+    'setup',
+    'configuration',
+    'basic-usage',
+    'advanced-usage',
+    'integration',
+    'troubleshooting',
+    'optimization',
+    'security',
+    'best-practices',
+  ]),
+  complexity: z.enum(['beginner', 'intermediate', 'advanced']),
+  priority: z.enum(['low', 'medium', 'high', 'critical']),
+  applicableContexts: z.array(UsageContextMatcherSchema),
+  content: GuidelineContentSchema,
+  adaptations: GuidelineAdaptationsSchema,
+  metadata: GuidelineMetadataSchema,
+})
+
+// Partial schema for templates
+const PartialGuidelineDefinitionSchema = GuidelineDefinitionSchema.partial()
+
+// =============================================================================
 // Standard Template Definitions
 // =============================================================================
 
@@ -630,32 +1011,7 @@ export const STANDARD_TEMPLATES = {
     'Basic Usage Guide',
     'Standard template for basic tool usage guidance',
     ['basic-usage'],
-    z.object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      category: z.enum(['basic-usage']).optional(),
-      complexity: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
-      content: z
-        .object({
-          whenToUse: z
-            .object({
-              primary: z.string(),
-              scenarios: z.array(z.any()).optional(),
-            })
-            .optional(),
-          howToUse: z
-            .object({
-              quickStart: z
-                .object({
-                  summary: z.string(),
-                  essentialSteps: z.array(z.string()),
-                })
-                .optional(),
-            })
-            .optional(),
-        })
-        .optional(),
-    })
+    PartialGuidelineDefinitionSchema
   ),
 
   // Setup and configuration template
@@ -664,20 +1020,7 @@ export const STANDARD_TEMPLATES = {
     'Setup & Configuration Guide',
     'Template for tool setup and configuration guidance',
     ['setup', 'configuration'],
-    z.object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      category: z.enum(['setup', 'configuration']).optional(),
-      content: z
-        .object({
-          relatedResources: z
-            .object({
-              prerequisites: z.array(z.any()).optional(),
-            })
-            .optional(),
-        })
-        .optional(),
-    })
+    PartialGuidelineDefinitionSchema
   ),
 
   // Advanced usage template for complex scenarios
@@ -686,12 +1029,7 @@ export const STANDARD_TEMPLATES = {
     'Advanced Usage Guide',
     'Template for advanced tool usage patterns and techniques',
     ['advanced-usage', 'optimization'],
-    z.object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      category: z.enum(['advanced-usage', 'optimization']).optional(),
-      complexity: z.enum(['intermediate', 'advanced']).default('advanced'),
-    })
+    PartialGuidelineDefinitionSchema
   ),
 
   // Troubleshooting template
@@ -700,21 +1038,7 @@ export const STANDARD_TEMPLATES = {
     'Troubleshooting Guide',
     'Template for troubleshooting and problem resolution',
     ['troubleshooting'],
-    z.object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      category: z.enum(['troubleshooting']).optional(),
-      content: z
-        .object({
-          troubleshooting: z
-            .object({
-              commonIssues: z.array(z.any()).optional(),
-              errorCodes: z.record(z.any()).optional(),
-            })
-            .optional(),
-        })
-        .optional(),
-    })
+    PartialGuidelineDefinitionSchema
   ),
 
   // Integration patterns template
@@ -723,20 +1047,7 @@ export const STANDARD_TEMPLATES = {
     'Integration Patterns Guide',
     'Template for tool integration patterns and workflows',
     ['integration'],
-    z.object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      category: z.enum(['integration']).optional(),
-      content: z
-        .object({
-          relatedResources: z
-            .object({
-              complementaryTools: z.array(z.any()).optional(),
-            })
-            .optional(),
-        })
-        .optional(),
-    })
+    PartialGuidelineDefinitionSchema
   ),
 }
 
