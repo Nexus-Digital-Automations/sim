@@ -8,7 +8,8 @@
  * @version 1.0.0
  */
 
-import type { ConversationExample } from './help-system'
+import type { ConversationExample as HelpConversationExample } from './help-system'
+import type { ConversationExample as RecommendationConversationExample } from './recommendation-engine'
 import type { UsageContext, UserIntent } from './usage-guidelines'
 
 // =============================================================================
@@ -68,6 +69,9 @@ export interface ScenarioContext {
   constraints?: string[]
   availableData?: Record<string, any>
   previousActions?: string[]
+  // Required for UsageContext compatibility
+  userId: string
+  workspaceId: string
 }
 
 export interface ConversationTurn {
@@ -243,8 +247,8 @@ export class ScenarioExamplesEngine {
     intent: UserIntent,
     tools: string[],
     context: UsageContext
-  ): Promise<ConversationExample[]> {
-    const examples: ConversationExample[] = []
+  ): Promise<RecommendationConversationExample[]> {
+    const examples: RecommendationConversationExample[] = []
 
     for (const toolId of tools) {
       const scenarios = await this.generateToolExamples(toolId, context, 2)
@@ -345,6 +349,8 @@ export class ScenarioExamplesEngine {
           project_name: 'Website Redesign',
           current_status: '75% complete',
         },
+        userId: 'demo-user',
+        workspaceId: 'demo-workspace',
       },
       primaryTool: 'gmail_send',
       conversation: [
@@ -421,6 +427,8 @@ export class ScenarioExamplesEngine {
         userRole: 'team_lead',
         timeContext: 'Friday afternoon planning for next week',
         environmentalFactors: ['team_calendar', 'recurring_meeting'],
+        userId: 'demo-user',
+        workspaceId: 'demo-workspace',
       },
       primaryTool: 'google_calendar_create',
       conversation: [
@@ -490,6 +498,8 @@ export class ScenarioExamplesEngine {
           database: 'customers',
           customer_query: 'john@example.com',
         },
+        userId: 'demo-user',
+        workspaceId: 'demo-workspace',
       },
       primaryTool: 'postgresql_query',
       conversation: [
@@ -574,6 +584,8 @@ export class ScenarioExamplesEngine {
           key_decisions: ['Launch date confirmed for March 1', 'Budget approved'],
           action_items: ['Alice: Finalize designs by Jan 20', 'Bob: Set up production environment'],
         },
+        userId: 'demo-user',
+        workspaceId: 'demo-workspace',
       },
       primaryTool: 'notion_create',
       conversation: [
@@ -656,6 +668,8 @@ export class ScenarioExamplesEngine {
           report_recipients: ['manager@company.com', 'sales-team@company.com'],
           reporting_period: 'January 2024',
         },
+        userId: 'demo-user',
+        workspaceId: 'demo-workspace',
       },
       primaryTool: 'postgresql_query',
       supportingTools: ['google_sheets_write', 'gmail_send'],
@@ -1034,6 +1048,8 @@ class ContextGenerator {
       userRole: userRole || 'user',
       timeContext: 'during business hours',
       environmentalFactors: ['standard_permissions', 'network_access'],
+      userId: 'demo-user',
+      workspaceId: 'demo-workspace',
     }
   }
 }

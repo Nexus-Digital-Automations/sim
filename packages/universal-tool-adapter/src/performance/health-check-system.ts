@@ -1110,7 +1110,7 @@ class RecoveryManager {
     } catch (error) {
       action.status = 'failed'
       action.completedAt = new Date()
-      action.result = error.message
+      action.result = error instanceof Error ? error.message : String(error)
 
       logger.error('Recovery action failed', {
         actionId,

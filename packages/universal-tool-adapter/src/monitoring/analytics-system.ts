@@ -131,7 +131,7 @@ export class AnalyticsSystem extends EventEmitter {
         ? {
             type: result.error.type,
             message: result.error.message,
-            recoverable: result.error.recoverable,
+            recoverable: result.error.recoverable ?? false,
           }
         : undefined,
       metadata: {
@@ -435,7 +435,7 @@ export class AnalyticsSystem extends EventEmitter {
       logger.info('Analytics System shutdown complete')
     } catch (error) {
       logger.error('Error during analytics system shutdown', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -473,7 +473,7 @@ export class AnalyticsSystem extends EventEmitter {
       'cleanup',
       setInterval(() => {
         this.cleanup().catch((error) => {
-          logger.error('Scheduled cleanup failed', { error: error.message })
+          logger.error('Scheduled cleanup failed', { error: error instanceof Error ? error.message : String(error) })
         })
       }, 86400000)
     ) // Daily cleanup
@@ -484,7 +484,7 @@ export class AnalyticsSystem extends EventEmitter {
         'persistence',
         setInterval(() => {
           this.persistData().catch((error) => {
-            logger.error('Data persistence failed', { error: error.message })
+            logger.error('Data persistence failed', { error: error instanceof Error ? error.message : String(error) })
           })
         }, this.config.persistenceInterval || 300000)
       )
@@ -520,7 +520,7 @@ export class AnalyticsSystem extends EventEmitter {
       timestamp: executionRecord.timestamp,
       errorType: executionRecord.error!.type,
       errorMessage: executionRecord.error!.message,
-      recoverable: executionRecord.error!.recoverable || false,
+      recoverable: executionRecord.error!.recoverable ?? false,
       context: executionRecord.context,
       executionDuration: executionRecord.duration,
       stackTrace: undefined, // Would include if available
