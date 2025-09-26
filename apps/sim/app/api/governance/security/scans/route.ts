@@ -15,12 +15,9 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { securityScanningService, quickSecurityScan, safeFilterContent } from '@/services/parlant/security-scanning-service'
 import { logAudit } from '@/services/parlant/compliance-reporting-service'
-import {
-  SecurityScanRequest,
-  ScanType
-} from '@/services/parlant/governance-compliance-types'
+import type { SecurityScanRequest } from '@/services/parlant/governance-compliance-types'
+import { securityScanningService } from '@/services/parlant/security-scanning-service'
 
 const logger = createLogger('SecurityScanningAPI')
 
@@ -34,7 +31,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     // Parse request body
-    const body = await request.json() as SecurityScanRequest & {
+    const body = (await request.json()) as SecurityScanRequest & {
       workspace_id: string
       context?: Record<string, any>
     }
@@ -44,14 +41,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           error: 'Missing required fields',
-          required: ['content', 'workspace_id']
+          required: ['content', 'workspace_id'],
         },
         { status: 400 }
       )
     }
 
     // Validate content length
-    if (body.content.length > 100000) { // 100KB limit
+    if (body.content.length > 100000) {
+      // 100KB limit
       return NextResponse.json(
         { error: 'Content too large. Maximum size is 100KB' },
         { status: 413 }
@@ -68,7 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       agent_id: body.agent_id,
       session_id: body.session_id,
       user_id: userId,
-      risk_factors: body.context?.risk_factors || []
+      risk_factors: body.context?.risk_factors || [],
     }
 
     // Perform security scan
@@ -78,13 +76,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         scan_type: body.scan_type || 'real_time',
         agent_id: body.agent_id,
         session_id: body.session_id,
-        priority: body.priority
+        priority: body.priority,
       },
       scanContext,
       {
         user_id: userId,
         workspace_id: body.workspace_id,
-        key_type: 'workspace'
+        key_type: 'workspace',
       }
     )
 
@@ -102,7 +100,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         violations_found: scanResult.violations.length,
         risk_score: scanResult.risk_score,
         scan_duration_ms: scanResult.scan_duration_ms,
-        user_agent: userAgent
+        user_agent: userAgent,
       }
     )
 
@@ -115,7 +113,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       violationsFound: scanResult.violations.length,
       riskScore: scanResult.risk_score,
       scanDuration: scanResult.scan_duration_ms,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json(
@@ -126,16 +124,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           summary: {
             safe: scanResult.risk_score < 50,
             violations_count: scanResult.violations.length,
-            risk_level: scanResult.risk_score >= 80 ? 'high' :
-                       scanResult.risk_score >= 50 ? 'medium' : 'low',
-            confidence: scanResult.confidence_level
-          }
+            risk_level:
+              scanResult.risk_score >= 80 ? 'high' : scanResult.risk_score >= 50 ? 'medium' : 'low',
+            confidence: scanResult.confidence_level,
+          },
         },
         metadata: {
           responseTime: Math.round(responseTime),
           timestamp: new Date().toISOString(),
-          scan_engine_version: '1.0.0'
-        }
+          scan_engine_version: '1.0.0',
+        },
       },
       { status: 200 }
     )
@@ -145,7 +143,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     logger.error('Security scan failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -153,7 +151,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Security scan failed',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )
@@ -176,15 +174,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const startDate = url.searchParams.get('start_date')
     const endDate = url.searchParams.get('end_date')
     const riskThreshold = url.searchParams.get('risk_threshold')
-    const limit = parseInt(url.searchParams.get('limit') || '50')
-    const offset = parseInt(url.searchParams.get('offset') || '0')
+    const limit = Number.parseInt(url.searchParams.get('limit') || '50')
+    const offset = Number.parseInt(url.searchParams.get('offset') || '0')
 
     // Validate required parameters
     if (!workspaceId) {
-      return NextResponse.json(
-        { error: 'workspace_id is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'workspace_id is required' }, { status: 400 })
     }
 
     // Get authentication context
@@ -197,7 +192,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       result = {
         scan_id: scanId,
         message: 'Specific scan retrieval not implemented in this demo',
-        note: 'This would return detailed scan results for the specified scan ID'
+        note: 'This would return detailed scan results for the specified scan ID',
       }
     } else {
       // Get scanning health and recent activity
@@ -212,40 +207,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           scan_performance: {
             average_duration_ms: health.average_scan_time_ms,
             success_rate: 0.98,
-            cache_hit_rate: health.cache_hit_rate
-          }
+            cache_hit_rate: health.cache_hit_rate,
+          },
         },
         filters_applied: {
           workspace_id: workspaceId,
           start_date: startDate,
           end_date: endDate,
-          risk_threshold: riskThreshold ? parseInt(riskThreshold) : null,
+          risk_threshold: riskThreshold ? Number.parseInt(riskThreshold) : null,
           limit,
-          offset
-        }
+          offset,
+        },
       }
     }
 
     // Log audit event
-    await logAudit(
-      'data_access',
-      'security_scan',
-      scanId || 'bulk',
-      'read',
-      workspaceId,
-      userId,
-      {
-        query_type: scanId ? 'single_scan' : 'scan_history',
-        filters: { startDate, endDate, riskThreshold, limit, offset }
-      }
-    )
+    await logAudit('data_access', 'security_scan', scanId || 'bulk', 'read', workspaceId, userId, {
+      query_type: scanId ? 'single_scan' : 'scan_history',
+      filters: { startDate, endDate, riskThreshold, limit, offset },
+    })
 
     const responseTime = performance.now() - startTime
 
     logger.info('Scan data retrieved', {
       workspaceId,
       queryType: scanId ? 'single' : 'history',
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json({
@@ -254,8 +241,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       metadata: {
         responseTime: Math.round(responseTime),
         timestamp: new Date().toISOString(),
-        query_type: scanId ? 'single_scan' : 'scan_history'
-      }
+        query_type: scanId ? 'single_scan' : 'scan_history',
+      },
     })
   } catch (error) {
     const responseTime = performance.now() - startTime
@@ -263,7 +250,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     logger.error('Failed to retrieve scan data', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -271,7 +258,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Failed to retrieve scan data',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )
@@ -288,7 +275,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
   try {
     // Parse request body
-    const body = await request.json() as {
+    const body = (await request.json()) as {
       content: string
       workspace_id: string
       options?: {
@@ -304,14 +291,15 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           error: 'Missing required fields',
-          required: ['content', 'workspace_id']
+          required: ['content', 'workspace_id'],
         },
         { status: 400 }
       )
     }
 
     // Validate content length
-    if (body.content.length > 100000) { // 100KB limit
+    if (body.content.length > 100000) {
+      // 100KB limit
       return NextResponse.json(
         { error: 'Content too large. Maximum size is 100KB' },
         { status: 413 }
@@ -342,7 +330,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         modifications_count: filterResult.modifications_made.length,
         violations_found: filterResult.violations_found.length,
         safety_score: filterResult.safety_score,
-        strictness: body.options?.strictness || 'medium'
+        strictness: body.options?.strictness || 'medium',
       }
     )
 
@@ -354,7 +342,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       filteredLength: filterResult.filtered_content.length,
       modificationsCount: filterResult.modifications_made.length,
       safetyScore: filterResult.safety_score,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json({
@@ -366,24 +354,28 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         safety_score: filterResult.safety_score,
         summary: {
           content_modified: filterResult.modifications_made.length > 0,
-          safety_level: filterResult.safety_score >= 90 ? 'high' :
-                       filterResult.safety_score >= 70 ? 'medium' : 'low',
-          violations_detected: filterResult.violations_found.length
+          safety_level:
+            filterResult.safety_score >= 90
+              ? 'high'
+              : filterResult.safety_score >= 70
+                ? 'medium'
+                : 'low',
+          violations_detected: filterResult.violations_found.length,
         },
         details: {
           modifications: filterResult.modifications_made,
-          violations: filterResult.violations_found.map(v => ({
+          violations: filterResult.violations_found.map((v) => ({
             type: v.type,
             severity: v.severity,
-            description: v.description
-          }))
-        }
+            description: v.description,
+          })),
+        },
       },
       metadata: {
         responseTime: Math.round(responseTime),
         timestamp: new Date().toISOString(),
-        filter_version: '1.0.0'
-      }
+        filter_version: '1.0.0',
+      },
     })
   } catch (error) {
     const responseTime = performance.now() - startTime
@@ -391,7 +383,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     logger.error('Content filtering failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -399,7 +391,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Content filtering failed',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )
@@ -424,7 +416,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       status: health.status,
       activeScans: health.active_scans,
       queueSize: health.queue_size,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json({
@@ -435,17 +427,17 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
           active_scans: health.active_scans,
           queue_size: health.queue_size,
           average_scan_time_ms: health.average_scan_time_ms,
-          cache_hit_rate: health.cache_hit_rate
+          cache_hit_rate: health.cache_hit_rate,
         },
         performance_metrics: health.performance_metrics,
         violation_trends: health.violation_trends,
-        recommendations: this.generateHealthRecommendations(health)
+        recommendations: this.generateHealthRecommendations(health),
       },
       metadata: {
         responseTime: Math.round(responseTime),
         timestamp: new Date().toISOString(),
-        health_check_version: '1.0.0'
-      }
+        health_check_version: '1.0.0',
+      },
     })
   } catch (error) {
     const responseTime = performance.now() - startTime
@@ -453,7 +445,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     logger.error('Health check failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -461,7 +453,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Health check failed',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )

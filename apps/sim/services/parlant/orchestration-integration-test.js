@@ -24,7 +24,7 @@ console.log('\n1. Checking service files...')
 const serviceFiles = [
   'multi-agent-orchestration-service.ts',
   'orchestration-collaboration-hub.ts',
-  'orchestration-api-service.ts'
+  'orchestration-api-service.ts',
 ]
 
 const servicesPath = path.join(__dirname)
@@ -51,7 +51,7 @@ const expectedRoutes = [
   'processes/[processId]/route.ts',
   'processes/[processId]/interventions/route.ts',
   'interventions/[interventionId]/route.ts',
-  'collaboration/rooms/route.ts'
+  'collaboration/rooms/route.ts',
 ]
 
 let routesExist = true
@@ -79,7 +79,7 @@ if (fs.existsSync(indexPath)) {
     'OrchestrationAPIService',
     'orchestrationAPIService',
     'OrchestrationCollaborationHub',
-    'orchestrationCollaborationHub'
+    'orchestrationCollaborationHub',
   ]
 
   let exportsExist = true
@@ -107,7 +107,7 @@ const typeFiles = [
   'types.ts',
   'multi-agent-orchestration-service.ts',
   'orchestration-api-service.ts',
-  'orchestration-collaboration-hub.ts'
+  'orchestration-collaboration-hub.ts',
 ]
 
 let typesExist = true
@@ -162,10 +162,7 @@ if (fs.existsSync(testFile)) {
 // Test 6: Verify documentation
 console.log('\n6. Checking documentation...')
 
-const docFiles = [
-  'MULTI_AGENT_ORCHESTRATION_ARCHITECTURE.md',
-  'ORCHESTRATION_DEPLOYMENT_GUIDE.md'
-]
+const docFiles = ['MULTI_AGENT_ORCHESTRATION_ARCHITECTURE.md', 'ORCHESTRATION_DEPLOYMENT_GUIDE.md']
 
 let docsExist = true
 
@@ -182,7 +179,7 @@ for (const docFile of docFiles) {
 }
 
 // Test Results Summary
-console.log('\n' + '='.repeat(54))
+console.log(`\n${'='.repeat(54)}`)
 console.log('🏁 Integration Test Results Summary')
 console.log('='.repeat(54))
 

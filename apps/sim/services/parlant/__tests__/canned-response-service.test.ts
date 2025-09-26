@@ -7,21 +7,18 @@
  * workflows, and multi-language support.
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
 import {
   cannedResponseService,
+  getPersonalizedResponse,
   suggestResponse,
-  getPersonalizedResponse
 } from '../canned-response-service'
-import {
+import type {
   CreateCannedResponseRequest,
-  UpdateCannedResponseRequest,
   ResponseCategory,
-  BrandingConfig,
-  PersonalizationField,
-  ContextRequirement
+  UpdateCannedResponseRequest,
 } from '../governance-compliance-types'
-import { AuthContext } from '../types'
+import type { AuthContext } from '../types'
 
 describe('CannedResponseService', () => {
   let testWorkspaceId: string
@@ -32,7 +29,7 @@ describe('CannedResponseService', () => {
     testAuth = {
       user_id: 'test_user',
       workspace_id: testWorkspaceId,
-      key_type: 'workspace'
+      key_type: 'workspace',
     }
   })
 
@@ -52,8 +49,8 @@ describe('CannedResponseService', () => {
           {
             field: 'customer_name',
             required: false,
-            default_value: 'there'
-          }
+            default_value: 'there',
+          },
         ],
         personalization_fields: [
           {
@@ -61,14 +58,14 @@ describe('CannedResponseService', () => {
             placeholder: '{{customer_name}}',
             data_source: 'user_profile',
             required: false,
-            fallback_value: 'there'
-          }
+            fallback_value: 'there',
+          },
         ],
         branding: {
           tone: 'professional',
           brand_voice_keywords: ['assist', 'help', 'support'],
-          avoid_terms: ['problem', 'issue']
-        }
+          avoid_terms: ['problem', 'issue'],
+        },
       }
 
       const response = await cannedResponseService.createResponse(
@@ -95,7 +92,7 @@ describe('CannedResponseService', () => {
         title: 'Original Title',
         content: 'Original content',
         category: 'support',
-        tags: ['original']
+        tags: ['original'],
       }
 
       const createdResponse = await cannedResponseService.createResponse(
@@ -115,9 +112,9 @@ describe('CannedResponseService', () => {
             placeholder: '{{customer_name}}',
             data_source: 'user_profile',
             required: false,
-            fallback_value: 'valued customer'
-          }
-        ]
+            fallback_value: 'valued customer',
+          },
+        ],
       }
 
       const updatedResponse = await cannedResponseService.updateResponse(
@@ -142,8 +139,8 @@ describe('CannedResponseService', () => {
         branding: {
           tone: 'professional',
           brand_voice_keywords: ['help', 'support'],
-          avoid_terms: ['problem', 'issue']
-        }
+          avoid_terms: ['problem', 'issue'],
+        },
       }
 
       await expect(
@@ -162,9 +159,9 @@ describe('CannedResponseService', () => {
             field_name: 'customer_name',
             placeholder: '{{customer_name}}',
             data_source: 'user_profile',
-            required: true // Required but not in content
-          }
-        ]
+            required: true, // Required but not in content
+          },
+        ],
       }
 
       await expect(
@@ -183,35 +180,31 @@ describe('CannedResponseService', () => {
           title: 'Password Reset Help',
           content: 'I can help you reset your password. Please visit our password reset page.',
           category: 'support' as ResponseCategory,
-          tags: ['password', 'reset', 'login', 'help']
+          tags: ['password', 'reset', 'login', 'help'],
         },
         {
           title: 'Account Login Issues',
           content: 'If you are having trouble logging in, please check your credentials.',
           category: 'support' as ResponseCategory,
-          tags: ['login', 'credentials', 'account', 'trouble']
+          tags: ['login', 'credentials', 'account', 'trouble'],
         },
         {
           title: 'Welcome Greeting',
           content: 'Welcome! How can I assist you today?',
           category: 'greeting' as ResponseCategory,
-          tags: ['welcome', 'greeting', 'hello']
+          tags: ['welcome', 'greeting', 'hello'],
         },
         {
           title: 'Billing Question Response',
           content: 'For billing questions, please contact our billing department.',
           category: 'support' as ResponseCategory,
-          tags: ['billing', 'payment', 'invoice']
-        }
+          tags: ['billing', 'payment', 'invoice'],
+        },
       ]
 
       testResponses = []
       for (const data of responseData) {
-        const response = await cannedResponseService.createResponse(
-          data,
-          testWorkspaceId,
-          testAuth
-        )
+        const response = await cannedResponseService.createResponse(data, testWorkspaceId, testAuth)
         testResponses.push(response)
       }
     })
@@ -232,7 +225,7 @@ describe('CannedResponseService', () => {
       expect(matches.length).toBeGreaterThan(0)
 
       // The password reset response should be highly ranked
-      const passwordMatch = matches.find(m => m.response.title.includes('Password Reset'))
+      const passwordMatch = matches.find((m) => m.response.title.includes('Password Reset'))
       expect(passwordMatch).toBeDefined()
       expect(passwordMatch!.relevance_score).toBeGreaterThan(0.5)
     })
@@ -249,7 +242,7 @@ describe('CannedResponseService', () => {
       )
 
       expect(matches).toBeDefined()
-      matches.forEach(match => {
+      matches.forEach((match) => {
         expect(match.response.category).toBe('greeting')
       })
     })
@@ -268,15 +261,15 @@ describe('CannedResponseService', () => {
               placeholder: '{{customer_name}}',
               data_source: 'user_profile',
               required: false,
-              fallback_value: 'valued customer'
+              fallback_value: 'valued customer',
             },
             {
               field_name: 'company_name',
               placeholder: '{{company_name}}',
               data_source: 'custom',
-              required: true
-            }
-          ]
+              required: true,
+            },
+          ],
         },
         testWorkspaceId,
         testAuth
@@ -284,7 +277,7 @@ describe('CannedResponseService', () => {
 
       const personalizationData = {
         customer_name: 'John Doe',
-        company_name: 'Acme Corp'
+        company_name: 'Acme Corp',
       }
 
       const personalizedResult = await cannedResponseService.getPersonalizedResponse(
@@ -312,22 +305,22 @@ describe('CannedResponseService', () => {
               placeholder: '{{customer_name}}',
               data_source: 'user_profile',
               required: false,
-              fallback_value: 'valued customer'
+              fallback_value: 'valued customer',
             },
             {
               field_name: 'order_id',
               placeholder: '{{order_id}}',
               data_source: 'session_data',
-              required: true
-            }
-          ]
+              required: true,
+            },
+          ],
         },
         testWorkspaceId,
         testAuth
       )
 
       const partialPersonalizationData = {
-        customer_name: 'Jane Smith'
+        customer_name: 'Jane Smith',
         // Missing order_id (required)
       }
 
@@ -379,7 +372,7 @@ describe('CannedResponseService', () => {
           title: 'Test Analytics Response',
           content: 'This is for testing analytics',
           category: 'support',
-          tags: ['test', 'analytics']
+          tags: ['test', 'analytics'],
         },
         testWorkspaceId,
         testAuth
@@ -390,11 +383,7 @@ describe('CannedResponseService', () => {
       // Use the response multiple times
       const usageCount = 3
       for (let i = 0; i < usageCount; i++) {
-        await cannedResponseService.getPersonalizedResponse(
-          testResponse.id,
-          {},
-          testAuth
-        )
+        await cannedResponseService.getPersonalizedResponse(testResponse.id, {}, testAuth)
       }
 
       // Get analytics
@@ -406,7 +395,7 @@ describe('CannedResponseService', () => {
 
       // Find our test response in usage stats
       const testResponseStats = analytics.usage_stats.find(
-        stats => stats.response_id === testResponse.id
+        (stats) => stats.response_id === testResponse.id
       )
       expect(testResponseStats).toBeDefined()
       expect(testResponseStats!.usage_count).toBe(usageCount)
@@ -419,7 +408,7 @@ describe('CannedResponseService', () => {
           title: 'Greeting Response',
           content: 'Hello!',
           category: 'greeting',
-          tags: ['hello']
+          tags: ['hello'],
         },
         testWorkspaceId,
         testAuth
@@ -430,7 +419,7 @@ describe('CannedResponseService', () => {
           title: 'Closing Response',
           content: 'Goodbye!',
           category: 'closing',
-          tags: ['goodbye']
+          tags: ['goodbye'],
         },
         testWorkspaceId,
         testAuth
@@ -452,7 +441,7 @@ describe('CannedResponseService', () => {
             title: `Support Response ${i}`,
             content: `Support content ${i}`,
             category: 'support',
-            tags: [`support${i}`]
+            tags: [`support${i}`],
           },
           testWorkspaceId,
           testAuth
@@ -469,7 +458,7 @@ describe('CannedResponseService', () => {
       expect(Array.isArray(supportResponses)).toBe(true)
       expect(supportResponses.length).toBeGreaterThan(3) // Including the beforeEach response
 
-      supportResponses.forEach(response => {
+      supportResponses.forEach((response) => {
         expect(response.category).toBe('support')
         expect(response.workspace_id).toBe(testWorkspaceId)
       })
@@ -483,7 +472,7 @@ describe('CannedResponseService', () => {
         content: 'This response contains sensitive information.',
         category: 'compliance',
         tags: ['sensitive', 'approval'],
-        approval_required: true
+        approval_required: true,
       }
 
       const response = await cannedResponseService.createResponse(
@@ -505,7 +494,7 @@ describe('CannedResponseService', () => {
           content: 'This needs approval',
           category: 'legal',
           tags: ['legal'],
-          approval_required: true
+          approval_required: true,
         },
         testWorkspaceId,
         testAuth
@@ -517,7 +506,7 @@ describe('CannedResponseService', () => {
         {
           approved_by: 'manager_user',
           compliance_notes: 'Legal review completed',
-          effectiveness_prediction: 85
+          effectiveness_prediction: 85,
         },
         testAuth
       )
@@ -536,7 +525,7 @@ describe('CannedResponseService', () => {
           title: 'Active Response',
           content: 'This is already active',
           category: 'support',
-          tags: ['active']
+          tags: ['active'],
         },
         testWorkspaceId,
         testAuth
@@ -546,7 +535,7 @@ describe('CannedResponseService', () => {
         cannedResponseService.approveResponse(
           response.id,
           {
-            approved_by: 'manager_user'
+            approved_by: 'manager_user',
           },
           testAuth
         )
@@ -562,7 +551,7 @@ describe('CannedResponseService', () => {
           title: 'Helpful Support Response',
           content: 'I can help you with that issue.',
           category: 'support',
-          tags: ['help', 'support', 'assistance']
+          tags: ['help', 'support', 'assistance'],
         },
         testWorkspaceId,
         testAuth
@@ -573,7 +562,7 @@ describe('CannedResponseService', () => {
       const query = 'I need help with my account'
       const context = {
         user_id: 'test_user',
-        workspace_id: testWorkspaceId
+        workspace_id: testWorkspaceId,
       }
 
       const suggestion = await suggestResponse(query, testWorkspaceId, context)
@@ -608,9 +597,9 @@ describe('CannedResponseService', () => {
               placeholder: '{{name}}',
               data_source: 'user_profile',
               required: false,
-              fallback_value: 'there'
-            }
-          ]
+              fallback_value: 'there',
+            },
+          ],
         },
         testWorkspaceId,
         testAuth
@@ -673,7 +662,7 @@ describe('CannedResponseService', () => {
             title: '', // Empty title
             content: 'Some content',
             category: 'support',
-            tags: []
+            tags: [],
           },
           testWorkspaceId,
           testAuth
@@ -686,7 +675,7 @@ describe('CannedResponseService', () => {
             title: 'Valid Title',
             content: '', // Empty content
             category: 'support',
-            tags: []
+            tags: [],
           },
           testWorkspaceId,
           testAuth
@@ -696,18 +685,20 @@ describe('CannedResponseService', () => {
 
     it('should handle concurrent operations safely', async () => {
       // Create multiple responses concurrently
-      const createPromises = Array(5).fill(null).map((_, index) =>
-        cannedResponseService.createResponse(
-          {
-            title: `Concurrent Response ${index}`,
-            content: `Content ${index}`,
-            category: 'support',
-            tags: [`concurrent${index}`]
-          },
-          testWorkspaceId,
-          testAuth
+      const createPromises = Array(5)
+        .fill(null)
+        .map((_, index) =>
+          cannedResponseService.createResponse(
+            {
+              title: `Concurrent Response ${index}`,
+              content: `Content ${index}`,
+              category: 'support',
+              tags: [`concurrent${index}`],
+            },
+            testWorkspaceId,
+            testAuth
+          )
         )
-      )
 
       const responses = await Promise.all(createPromises)
 

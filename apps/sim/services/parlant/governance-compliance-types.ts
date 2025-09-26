@@ -57,19 +57,14 @@ export type PolicyType =
   | 'detective'
   | 'corrective'
 
-export type PolicyStatus =
-  | 'draft'
-  | 'active'
-  | 'inactive'
-  | 'deprecated'
-  | 'archived'
+export type PolicyStatus = 'draft' | 'active' | 'inactive' | 'deprecated' | 'archived'
 
 export type PolicyPriority = 'low' | 'medium' | 'high' | 'critical'
 
 export type EnforcementLevel =
   | 'monitor' // Log violations only
-  | 'warn'    // Show warnings to users
-  | 'block'   // Block violating actions
+  | 'warn' // Show warnings to users
+  | 'block' // Block violating actions
   | 'escalate' // Trigger human intervention
 
 export interface PolicyRule {
@@ -179,19 +174,9 @@ export interface SecurityScan {
   metadata?: Record<string, any>
 }
 
-export type ScanType =
-  | 'real_time'
-  | 'batch'
-  | 'scheduled'
-  | 'manual'
-  | 'triggered'
+export type ScanType = 'real_time' | 'batch' | 'scheduled' | 'manual' | 'triggered'
 
-export type ScanStatus =
-  | 'pending'
-  | 'running'
-  | 'completed'
-  | 'failed'
-  | 'cancelled'
+export type ScanStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
 
 export interface SecurityViolation {
   id: string
@@ -303,11 +288,7 @@ export type ReportType =
   | 'incident_summary'
   | 'performance_metrics'
 
-export type ReportStatus =
-  | 'generating'
-  | 'completed'
-  | 'failed'
-  | 'archived'
+export type ReportStatus = 'generating' | 'completed' | 'failed' | 'archived'
 
 export type ReportFormat = 'pdf' | 'html' | 'json' | 'csv' | 'xlsx'
 

@@ -8,24 +8,22 @@
  * enterprise-grade test coverage.
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
 import {
   governanceComplianceService,
   initializeWorkspaceGovernance,
-  quickComplianceCheck
+  quickComplianceCheck,
 } from '../governance-compliance-service'
-import {
-  GovernancePolicy,
-  PolicyEvaluationResult,
-  GovernanceContext,
-  CreatePolicyRequest,
-  PolicyCategory,
-  PolicyType,
-  PolicyPriority,
+import type {
   EnforcementLevel,
-  PolicyStatus
+  GovernanceContext,
+  GovernancePolicy,
+  PolicyCategory,
+  PolicyPriority,
+  PolicyStatus,
+  PolicyType,
 } from '../governance-compliance-types'
-import { AuthContext } from '../types'
+import type { AuthContext } from '../types'
 
 describe('GovernanceComplianceService', () => {
   let testWorkspaceId: string
@@ -36,7 +34,7 @@ describe('GovernanceComplianceService', () => {
     testAuth = {
       user_id: 'test_user',
       workspace_id: testWorkspaceId,
-      key_type: 'workspace'
+      key_type: 'workspace',
     }
 
     // Initialize governance for test workspace
@@ -64,20 +62,20 @@ describe('GovernanceComplianceService', () => {
             condition: {
               field: 'content',
               operator: 'regex',
-              value: '\\b\\d{3}-\\d{2}-\\d{4}\\b'
+              value: '\\b\\d{3}-\\d{2}-\\d{4}\\b',
             },
             action: {
               type: 'block',
               parameters: { replacement: '[SSN REDACTED]' },
               message: 'Social Security Number detected',
-              severity: 'critical'
+              severity: 'critical',
             },
-            weight: 10
-          }
+            weight: 10,
+          },
         ],
         enforcement_level: 'block',
         created_by: testAuth.user_id,
-        last_modified_by: testAuth.user_id
+        last_modified_by: testAuth.user_id,
       }
 
       const policy = await governanceComplianceService.createPolicy(policyData, testAuth)
@@ -98,7 +96,7 @@ describe('GovernanceComplianceService', () => {
       expect(policies.length).toBeGreaterThan(0) // Should have default policies
 
       // Check that all policies belong to the test workspace
-      policies.forEach(policy => {
+      policies.forEach((policy) => {
         expect(policy.workspace_id).toBe(testWorkspaceId)
       })
     })
@@ -116,7 +114,7 @@ describe('GovernanceComplianceService', () => {
         rules: [],
         enforcement_level: 'warn',
         created_by: testAuth.user_id,
-        last_modified_by: testAuth.user_id
+        last_modified_by: testAuth.user_id,
       }
 
       const createdPolicy = await governanceComplianceService.createPolicy(policyData, testAuth)
@@ -127,7 +125,7 @@ describe('GovernanceComplianceService', () => {
         {
           description: 'Updated description',
           priority: 'high',
-          status: 'active'
+          status: 'active',
         },
         testAuth
       )
@@ -151,7 +149,7 @@ describe('GovernanceComplianceService', () => {
         rules: [], // Invalid: no rules
         enforcement_level: 'block' as EnforcementLevel,
         created_by: testAuth.user_id,
-        last_modified_by: testAuth.user_id
+        last_modified_by: testAuth.user_id,
       }
 
       await expect(
@@ -179,20 +177,20 @@ describe('GovernanceComplianceService', () => {
             condition: {
               field: 'content',
               operator: 'regex',
-              value: '\\b\\d{3}-\\d{2}-\\d{4}\\b'
+              value: '\\b\\d{3}-\\d{2}-\\d{4}\\b',
             },
             action: {
               type: 'block',
               parameters: { replacement: '[SSN REDACTED]' },
               message: 'Social Security Number detected and blocked',
-              severity: 'critical'
+              severity: 'critical',
             },
-            weight: 10
-          }
+            weight: 10,
+          },
         ],
         enforcement_level: 'block',
         created_by: testAuth.user_id,
-        last_modified_by: testAuth.user_id
+        last_modified_by: testAuth.user_id,
       }
 
       testPolicy = await governanceComplianceService.createPolicy(policyData, testAuth)
@@ -203,7 +201,7 @@ describe('GovernanceComplianceService', () => {
       const context: GovernanceContext = {
         workspace_id: testWorkspaceId,
         user_id: testAuth.user_id,
-        permissions: ['read', 'write']
+        permissions: ['read', 'write'],
       }
 
       const results = await governanceComplianceService.evaluateCompliance(
@@ -217,7 +215,7 @@ describe('GovernanceComplianceService', () => {
       expect(results.length).toBeGreaterThan(0)
 
       // Find the SSN policy result
-      const ssnPolicyResult = results.find(r => r.policy_id === testPolicy.id)
+      const ssnPolicyResult = results.find((r) => r.policy_id === testPolicy.id)
       expect(ssnPolicyResult).toBeDefined()
       expect(ssnPolicyResult!.overall_violation).toBe(true)
       expect(ssnPolicyResult!.risk_score).toBeGreaterThan(0)
@@ -233,7 +231,7 @@ describe('GovernanceComplianceService', () => {
       const context: GovernanceContext = {
         workspace_id: testWorkspaceId,
         user_id: testAuth.user_id,
-        permissions: ['read', 'write']
+        permissions: ['read', 'write'],
       }
 
       const results = await governanceComplianceService.evaluateCompliance(
@@ -246,7 +244,7 @@ describe('GovernanceComplianceService', () => {
       expect(Array.isArray(results)).toBe(true)
 
       // Find the SSN policy result
-      const ssnPolicyResult = results.find(r => r.policy_id === testPolicy.id)
+      const ssnPolicyResult = results.find((r) => r.policy_id === testPolicy.id)
       if (ssnPolicyResult) {
         expect(ssnPolicyResult.overall_violation).toBe(false)
         expect(ssnPolicyResult.risk_score).toBe(0)
@@ -255,7 +253,10 @@ describe('GovernanceComplianceService', () => {
 
     it('should handle multiple policy violations correctly', async () => {
       // Create another test policy
-      const emailPolicyData: Omit<GovernancePolicy, 'id' | 'created_at' | 'updated_at' | 'version'> = {
+      const emailPolicyData: Omit<
+        GovernancePolicy,
+        'id' | 'created_at' | 'updated_at' | 'version'
+      > = {
         workspace_id: testWorkspaceId,
         name: 'Email Detection Policy',
         description: 'Detects email addresses',
@@ -269,20 +270,20 @@ describe('GovernanceComplianceService', () => {
             condition: {
               field: 'content',
               operator: 'regex',
-              value: '\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b'
+              value: '\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b',
             },
             action: {
               type: 'flag',
               parameters: { review_required: true },
               message: 'Email address detected',
-              severity: 'medium'
+              severity: 'medium',
             },
-            weight: 5
-          }
+            weight: 5,
+          },
         ],
         enforcement_level: 'warn',
         created_by: testAuth.user_id,
-        last_modified_by: testAuth.user_id
+        last_modified_by: testAuth.user_id,
       }
 
       await governanceComplianceService.createPolicy(emailPolicyData, testAuth)
@@ -291,7 +292,7 @@ describe('GovernanceComplianceService', () => {
       const context: GovernanceContext = {
         workspace_id: testWorkspaceId,
         user_id: testAuth.user_id,
-        permissions: ['read', 'write']
+        permissions: ['read', 'write'],
       }
 
       const results = await governanceComplianceService.evaluateCompliance(
@@ -302,7 +303,7 @@ describe('GovernanceComplianceService', () => {
 
       expect(results.length).toBeGreaterThan(1)
 
-      const violatingPolicies = results.filter(r => r.overall_violation)
+      const violatingPolicies = results.filter((r) => r.overall_violation)
       expect(violatingPolicies.length).toBeGreaterThan(0)
     })
   })
@@ -311,11 +312,7 @@ describe('GovernanceComplianceService', () => {
     it('should perform quick compliance check successfully', async () => {
       const testContent = 'This is a test message with SSN 123-45-6789'
 
-      const result = await quickComplianceCheck(
-        testContent,
-        testWorkspaceId,
-        testAuth.user_id
-      )
+      const result = await quickComplianceCheck(testContent, testWorkspaceId, testAuth.user_id)
 
       expect(result).toBeDefined()
       expect(typeof result.compliant).toBe('boolean')
@@ -326,11 +323,7 @@ describe('GovernanceComplianceService', () => {
     })
 
     it('should handle empty content gracefully', async () => {
-      const result = await quickComplianceCheck(
-        '',
-        testWorkspaceId,
-        testAuth.user_id
-      )
+      const result = await quickComplianceCheck('', testWorkspaceId, testAuth.user_id)
 
       expect(result).toBeDefined()
       expect(result.compliant).toBe(true)
@@ -350,10 +343,12 @@ describe('GovernanceComplianceService', () => {
       expect(Array.isArray(complianceStatus)).toBe(true)
       expect(complianceStatus.length).toBeGreaterThan(0)
 
-      complianceStatus.forEach(requirement => {
+      complianceStatus.forEach((requirement) => {
         expect(requirement.id).toBeDefined()
         expect(requirement.regulation).toBeDefined()
-        expect(requirement.compliance_status).toMatch(/compliant|non_compliant|partial_compliance|not_applicable|under_review/)
+        expect(requirement.compliance_status).toMatch(
+          /compliant|non_compliant|partial_compliance|not_applicable|under_review/
+        )
       })
     })
 
@@ -377,7 +372,7 @@ describe('GovernanceComplianceService', () => {
       const invalidAuth = {
         user_id: testAuth.user_id,
         workspace_id: 'invalid_workspace',
-        key_type: 'workspace' as const
+        key_type: 'workspace' as const,
       }
 
       await expect(
@@ -390,7 +385,7 @@ describe('GovernanceComplianceService', () => {
       const context: GovernanceContext = {
         workspace_id: testWorkspaceId,
         user_id: testAuth.user_id,
-        permissions: ['read', 'write']
+        permissions: ['read', 'write'],
       }
 
       // Test with various edge cases
@@ -399,7 +394,7 @@ describe('GovernanceComplianceService', () => {
         ' '.repeat(1000), // Whitespace
         '🎉🎊🎈', // Unicode/emojis
         '\n\r\t', // Control characters
-        'a'.repeat(10000) // Very long string
+        'a'.repeat(10000), // Very long string
       ]
 
       for (const testContent of testCases) {
@@ -420,25 +415,28 @@ describe('GovernanceComplianceService', () => {
       const context: GovernanceContext = {
         workspace_id: testWorkspaceId,
         user_id: testAuth.user_id,
-        permissions: ['read', 'write']
+        permissions: ['read', 'write'],
       }
 
       // Run multiple evaluations concurrently
-      const promises = Array(10).fill(null).map(() =>
-        governanceComplianceService.evaluateCompliance(testContent, context, testAuth)
-      )
+      const promises = Array(10)
+        .fill(null)
+        .map(() => governanceComplianceService.evaluateCompliance(testContent, context, testAuth))
 
       const results = await Promise.all(promises)
 
       expect(results).toHaveLength(10)
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toBeDefined()
         expect(Array.isArray(result)).toBe(true)
       })
     })
 
     it('should validate policy rule configurations', async () => {
-      const invalidPolicyData: Omit<GovernancePolicy, 'id' | 'created_at' | 'updated_at' | 'version'> = {
+      const invalidPolicyData: Omit<
+        GovernancePolicy,
+        'id' | 'created_at' | 'updated_at' | 'version'
+      > = {
         workspace_id: testWorkspaceId,
         name: 'Invalid Policy',
         description: 'Policy with invalid rules',
@@ -452,19 +450,19 @@ describe('GovernanceComplianceService', () => {
             condition: {
               field: 'content',
               operator: 'regex',
-              value: '[invalid regex(' // Invalid regex pattern
+              value: '[invalid regex(', // Invalid regex pattern
             },
             action: {
               type: 'block',
               parameters: {},
               message: 'Invalid rule',
-              severity: 'medium'
-            }
-          }
+              severity: 'medium',
+            },
+          },
         ],
         enforcement_level: 'block',
         created_by: testAuth.user_id,
-        last_modified_by: testAuth.user_id
+        last_modified_by: testAuth.user_id,
       }
 
       // Should handle invalid regex gracefully during evaluation
@@ -474,7 +472,7 @@ describe('GovernanceComplianceService', () => {
       const context: GovernanceContext = {
         workspace_id: testWorkspaceId,
         user_id: testAuth.user_id,
-        permissions: ['read', 'write']
+        permissions: ['read', 'write'],
       }
 
       // Evaluation should not fail, but may not detect violations due to invalid regex
@@ -490,11 +488,11 @@ describe('GovernanceComplianceService', () => {
 
   describe('Performance and Scale Testing', () => {
     it('should handle large content efficiently', async () => {
-      const largeContent = 'a'.repeat(50000) + ' SSN: 123-45-6789 ' + 'b'.repeat(50000)
+      const largeContent = `${'a'.repeat(50000)} SSN: 123-45-6789 ${'b'.repeat(50000)}`
       const context: GovernanceContext = {
         workspace_id: testWorkspaceId,
         user_id: testAuth.user_id,
-        permissions: ['read', 'write']
+        permissions: ['read', 'write'],
       }
 
       const startTime = Date.now()
@@ -511,38 +509,41 @@ describe('GovernanceComplianceService', () => {
 
     it('should handle multiple policies efficiently', async () => {
       // Create multiple test policies
-      const policyPromises = Array(5).fill(null).map((_, index) => {
-        const policyData: Omit<GovernancePolicy, 'id' | 'created_at' | 'updated_at' | 'version'> = {
-          workspace_id: testWorkspaceId,
-          name: `Test Policy ${index}`,
-          description: `Test policy ${index} for performance testing`,
-          category: 'content_filtering',
-          type: 'advisory',
-          status: 'active',
-          priority: 'low',
-          rules: [
+      const policyPromises = Array(5)
+        .fill(null)
+        .map((_, index) => {
+          const policyData: Omit<GovernancePolicy, 'id' | 'created_at' | 'updated_at' | 'version'> =
             {
-              id: `rule_${index}`,
-              condition: {
-                field: 'content',
-                operator: 'contains',
-                value: `test${index}`
-              },
-              action: {
-                type: 'flag',
-                parameters: {},
-                message: `Test ${index} detected`,
-                severity: 'low'
-              }
+              workspace_id: testWorkspaceId,
+              name: `Test Policy ${index}`,
+              description: `Test policy ${index} for performance testing`,
+              category: 'content_filtering',
+              type: 'advisory',
+              status: 'active',
+              priority: 'low',
+              rules: [
+                {
+                  id: `rule_${index}`,
+                  condition: {
+                    field: 'content',
+                    operator: 'contains',
+                    value: `test${index}`,
+                  },
+                  action: {
+                    type: 'flag',
+                    parameters: {},
+                    message: `Test ${index} detected`,
+                    severity: 'low',
+                  },
+                },
+              ],
+              enforcement_level: 'monitor',
+              created_by: testAuth.user_id,
+              last_modified_by: testAuth.user_id,
             }
-          ],
-          enforcement_level: 'monitor',
-          created_by: testAuth.user_id,
-          last_modified_by: testAuth.user_id
-        }
 
-        return governanceComplianceService.createPolicy(policyData, testAuth)
-      })
+          return governanceComplianceService.createPolicy(policyData, testAuth)
+        })
 
       await Promise.all(policyPromises)
 
@@ -550,7 +551,7 @@ describe('GovernanceComplianceService', () => {
       const context: GovernanceContext = {
         workspace_id: testWorkspaceId,
         user_id: testAuth.user_id,
-        permissions: ['read', 'write']
+        permissions: ['read', 'write'],
       }
 
       const startTime = Date.now()

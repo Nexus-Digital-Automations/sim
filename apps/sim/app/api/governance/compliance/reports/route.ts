@@ -15,11 +15,14 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { complianceReportingService, generateComplianceSummary } from '@/services/parlant/compliance-reporting-service'
 import {
+  complianceReportingService,
+  generateComplianceSummary,
+} from '@/services/parlant/compliance-reporting-service'
+import type {
   ComplianceReportRequest,
+  ReportFormat,
   ReportType,
-  ReportFormat
 } from '@/services/parlant/governance-compliance-types'
 
 const logger = createLogger('ComplianceReportsAPI')
@@ -34,14 +37,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     // Parse request body
-    const body = await request.json() as ComplianceReportRequest & { workspace_id: string }
+    const body = (await request.json()) as ComplianceReportRequest & { workspace_id: string }
 
     // Validate required fields
     if (!body.workspace_id || !body.report_type || !body.title) {
       return NextResponse.json(
         {
           error: 'Missing required fields',
-          required: ['workspace_id', 'report_type', 'title']
+          required: ['workspace_id', 'report_type', 'title'],
         },
         { status: 400 }
       )
@@ -52,7 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           error: 'Missing required fields',
-          required: ['period_start', 'period_end']
+          required: ['period_start', 'period_end'],
         },
         { status: 400 }
       )
@@ -62,19 +65,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const endDate = new Date(body.period_end)
 
     if (startDate >= endDate) {
-      return NextResponse.json(
-        { error: 'period_start must be before period_end' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'period_start must be before period_end' }, { status: 400 })
     }
 
     // Limit report period to prevent excessive data processing
     const daysDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
     if (daysDiff > 365) {
-      return NextResponse.json(
-        { error: 'Report period cannot exceed 365 days' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Report period cannot exceed 365 days' }, { status: 400 })
     }
 
     // Get authentication context
@@ -82,7 +79,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const auth = {
       user_id: userId,
       workspace_id: body.workspace_id,
-      key_type: 'workspace' as const
+      key_type: 'workspace' as const,
     }
 
     // Generate compliance report
@@ -96,7 +93,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         format: body.format || 'json',
         include_recommendations: body.include_recommendations !== false,
         include_raw_data: body.include_raw_data === true,
-        filters: body.filters
+        filters: body.filters,
       },
       body.workspace_id,
       auth
@@ -111,7 +108,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       format: report.format,
       violationsFound: report.metrics.violations_detected,
       complianceScore: report.metrics.compliance_score,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json(
@@ -124,14 +121,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             violations_detected: report.metrics.violations_detected,
             findings_count: report.findings.length,
             recommendations_count: report.recommendations.length,
-            data_points_analyzed: report.metadata?.data_points_analyzed || 0
-          }
+            data_points_analyzed: report.metadata?.data_points_analyzed || 0,
+          },
         },
         metadata: {
           responseTime: Math.round(responseTime),
           timestamp: new Date().toISOString(),
-          report_generation_time: report.metadata?.generation_duration_ms || 0
-        }
+          report_generation_time: report.metadata?.generation_duration_ms || 0,
+        },
       },
       { status: 201 }
     )
@@ -141,7 +138,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     logger.error('Failed to generate compliance report', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -149,7 +146,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Failed to generate compliance report',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )
@@ -171,15 +168,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const reportId = url.searchParams.get('report_id')
     const reportType = url.searchParams.get('report_type') as ReportType | null
     const status = url.searchParams.get('status')
-    const limit = parseInt(url.searchParams.get('limit') || '20')
-    const offset = parseInt(url.searchParams.get('offset') || '0')
+    const limit = Number.parseInt(url.searchParams.get('limit') || '20')
+    const offset = Number.parseInt(url.searchParams.get('offset') || '0')
 
     // Validate required parameters
     if (!workspaceId) {
-      return NextResponse.json(
-        { error: 'workspace_id is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'workspace_id is required' }, { status: 400 })
     }
 
     // Get authentication context
@@ -187,7 +181,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const auth = {
       user_id: userId,
       workspace_id: workspaceId,
-      key_type: 'workspace' as const
+      key_type: 'workspace' as const,
     }
 
     let result: any
@@ -197,7 +191,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       result = {
         report_id: reportId,
         message: 'Specific report retrieval not fully implemented in this demo',
-        note: 'This would return the complete report data including file paths and download links'
+        note: 'This would return the complete report data including file paths and download links',
       }
     } else {
       // List reports with filtering
@@ -212,7 +206,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             generated_at: new Date().toISOString(),
             format: 'pdf',
             file_size: 2048576,
-            compliance_score: 87
+            compliance_score: 87,
           },
           {
             id: 'report_002',
@@ -223,20 +217,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             generated_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
             format: 'json',
             file_size: 1024000,
-            compliance_score: 92
-          }
-        ].filter(report => {
-          if (reportType && report.report_type !== reportType) return false
-          if (status && report.status !== status) return false
-          return true
-        }).slice(offset, offset + limit),
+            compliance_score: 92,
+          },
+        ]
+          .filter((report) => {
+            if (reportType && report.report_type !== reportType) return false
+            if (status && report.status !== status) return false
+            return true
+          })
+          .slice(offset, offset + limit),
         filters_applied: {
           report_type: reportType,
           status,
           limit,
-          offset
+          offset,
         },
-        total_reports: 15 // Would be calculated from database
+        total_reports: 15, // Would be calculated from database
       }
     }
 
@@ -246,7 +242,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       workspaceId,
       queryType: reportId ? 'single' : 'list',
       count: Array.isArray(result.reports) ? result.reports.length : 1,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json({
@@ -255,8 +251,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       metadata: {
         responseTime: Math.round(responseTime),
         timestamp: new Date().toISOString(),
-        query_type: reportId ? 'single_report' : 'report_list'
-      }
+        query_type: reportId ? 'single_report' : 'report_list',
+      },
     })
   } catch (error) {
     const responseTime = performance.now() - startTime
@@ -264,7 +260,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     logger.error('Failed to retrieve compliance reports', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -272,7 +268,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Failed to retrieve compliance reports',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )
@@ -297,10 +293,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
     // Validate required parameters
     if (!workspaceId) {
-      return NextResponse.json(
-        { error: 'workspace_id is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'workspace_id is required' }, { status: 400 })
     }
 
     // Get authentication context
@@ -308,7 +301,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const auth = {
       user_id: userId,
       workspace_id: workspaceId,
-      key_type: 'workspace' as const
+      key_type: 'workspace' as const,
     }
 
     // Get dashboard data
@@ -332,7 +325,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       complianceScore: dashboard.overview.compliance_score,
       totalPolicies: dashboard.overview.total_policies,
       recentViolations: dashboard.overview.recent_violations,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json({
@@ -342,23 +335,27 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         metrics,
         summary,
         insights: {
-          compliance_trend: dashboard.overview.compliance_score >= 80 ? 'good' :
-                           dashboard.overview.compliance_score >= 60 ? 'fair' : 'needs_attention',
-          top_risk_areas: dashboard.top_violations.slice(0, 3).map(v => v.type),
+          compliance_trend:
+            dashboard.overview.compliance_score >= 80
+              ? 'good'
+              : dashboard.overview.compliance_score >= 60
+                ? 'fair'
+                : 'needs_attention',
+          top_risk_areas: dashboard.top_violations.slice(0, 3).map((v) => v.type),
           improvement_opportunities: summary.recommendations.slice(0, 3),
           performance_indicators: {
             policies_active: dashboard.overview.active_policies,
             violations_this_period: dashboard.overview.recent_violations,
-            compliance_score_change: '+2%' // Would be calculated from historical data
-          }
-        }
+            compliance_score_change: '+2%', // Would be calculated from historical data
+          },
+        },
       },
       metadata: {
         responseTime: Math.round(responseTime),
         timestamp: new Date().toISOString(),
         timeframe,
-        dashboard_version: '1.0.0'
-      }
+        dashboard_version: '1.0.0',
+      },
     })
   } catch (error) {
     const responseTime = performance.now() - startTime
@@ -366,7 +363,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     logger.error('Failed to generate compliance dashboard', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -374,7 +371,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Failed to generate compliance dashboard',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )
@@ -391,7 +388,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
   try {
     // Parse request body
-    const body = await request.json() as {
+    const body = (await request.json()) as {
       workspace_id: string
       start_date: string
       end_date: string
@@ -404,7 +401,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           error: 'Missing required fields',
-          required: ['workspace_id', 'start_date', 'end_date', 'format']
+          required: ['workspace_id', 'start_date', 'end_date', 'format'],
         },
         { status: 400 }
       )
@@ -415,19 +412,13 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     const endDate = new Date(body.end_date)
 
     if (startDate >= endDate) {
-      return NextResponse.json(
-        { error: 'start_date must be before end_date' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'start_date must be before end_date' }, { status: 400 })
     }
 
     // Limit export period to prevent excessive data processing
     const daysDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
     if (daysDiff > 90) {
-      return NextResponse.json(
-        { error: 'Export period cannot exceed 90 days' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Export period cannot exceed 90 days' }, { status: 400 })
     }
 
     // Validate format
@@ -436,7 +427,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           error: 'Unsupported format',
-          supported: supportedFormats
+          supported: supportedFormats,
         },
         { status: 400 }
       )
@@ -447,7 +438,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     const auth = {
       user_id: userId,
       workspace_id: body.workspace_id,
-      key_type: 'workspace' as const
+      key_type: 'workspace' as const,
     }
 
     // Export audit trail
@@ -467,7 +458,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       eventsExported: exportResult.events_exported,
       fileSize: exportResult.file_size,
       exportDuration: exportResult.export_duration_ms,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json({
@@ -476,27 +467,27 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         export_result: exportResult,
         download_info: {
           file_name: exportResult.file_path.split('/').pop(),
-          file_size_mb: Math.round(exportResult.file_size / 1024 / 1024 * 100) / 100,
-          estimated_download_time: Math.round(exportResult.file_size / 1024 / 128) // Assume 128KB/s connection
+          file_size_mb: Math.round((exportResult.file_size / 1024 / 1024) * 100) / 100,
+          estimated_download_time: Math.round(exportResult.file_size / 1024 / 128), // Assume 128KB/s connection
         },
         export_summary: {
           period: {
             start: body.start_date,
             end: body.end_date,
-            days_covered: daysDiff
+            days_covered: daysDiff,
           },
           data_exported: {
             total_events: exportResult.events_exported,
             format: body.format,
-            includes_sensitive: body.include_sensitive || false
-          }
-        }
+            includes_sensitive: body.include_sensitive || false,
+          },
+        },
       },
       metadata: {
         responseTime: Math.round(responseTime),
         timestamp: new Date().toISOString(),
-        export_version: '1.0.0'
-      }
+        export_version: '1.0.0',
+      },
     })
   } catch (error) {
     const responseTime = performance.now() - startTime
@@ -504,7 +495,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     logger.error('Failed to export audit trail', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -512,7 +503,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Failed to export audit trail',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )

@@ -44,9 +44,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": [
-        "parlant-server-setup"
-      ],
+      "dependencies": ["parlant-server-setup"],
       "components": [
         "Create apps/sim/services/parlant/ integration layer",
         "Bridge authentication between Sim users and Parlant agents",
@@ -85,9 +83,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": [
-        "parlant-server-setup"
-      ],
+      "dependencies": ["parlant-server-setup"],
       "components": [
         "Add Parlant agent tables (agents, guidelines, journeys, sessions)",
         "Link agents to Sim workspaces and users",
@@ -126,9 +122,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "sim-parlant-bridge"
-      ],
+      "dependencies": ["sim-parlant-bridge"],
       "components": [
         "Create adapter pattern for Sim tools → Parlant format",
         "Wrap existing tools with Parlant-compatible interfaces",
@@ -166,9 +160,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["universal-tool-adapter"],
       "components": [
         "Map ReactFlow nodes to Parlant journey states",
         "Enable dynamic journey creation from workflow templates",
@@ -207,9 +199,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["universal-tool-adapter"],
       "components": [
         "Add natural language descriptions to all tools",
         "Create usage guidelines for each integration",
@@ -249,9 +239,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "sim-parlant-bridge"
-      ],
+      "dependencies": ["sim-parlant-bridge"],
       "components": [
         "Install and configure parlant-chat-react widget",
         "Create new /chat routes with agent selection",
@@ -292,10 +280,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "parlant-chat-interface",
-        "workflow-journey-mapping"
-      ],
+      "dependencies": ["parlant-chat-interface", "workflow-journey-mapping"],
       "components": [
         "Add 'Chat with Workflow' buttons to workflow cards",
         "Enable switching between visual editor and chat mode",
@@ -334,9 +319,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "parlant-chat-interface"
-      ],
+      "dependencies": ["parlant-chat-interface"],
       "components": [
         "Create agent configuration panels in workspace settings",
         "Build visual guideline builder integrated with tool registry",
@@ -374,9 +357,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "agent-management-ui"
-      ],
+      "dependencies": ["agent-management-ui"],
       "components": [
         "Connect existing knowledge bases to Parlant retrievers",
         "Implement RAG for workflow documentation and help",
@@ -413,9 +394,7 @@
       "priority": "low",
       "status": "approved",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "knowledge-integration"
-      ],
+      "dependencies": ["knowledge-integration"],
       "components": [
         "Create agent teams for complex workflows",
         "Implement handoff between specialized agents",
@@ -441,9 +420,7 @@
       "priority": "low",
       "status": "approved",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "multi-agent-orchestration"
-      ],
+      "dependencies": ["multi-agent-orchestration"],
       "components": [
         "Implement canned responses for compliance and branding",
         "Add advanced security scanning for conversations",
@@ -469,10 +446,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "parlant-chat-interface",
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["parlant-chat-interface", "universal-tool-adapter"],
       "components": [
         "Create local copilot store system using Parlant agents",
         "Build API endpoints for local copilot communication",
@@ -690,27 +664,6 @@
     "updated": "2025-09-24T04:24:12.431Z"
   },
   "agents": {
-    "claude-recovery-agent": {
-      "lastHeartbeat": "2025-09-26T10:23:40.815Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T10:23:40.815Z",
-      "sessionId": "8b1c014a54688935",
-      "previousSessions": []
-    },
-    "claude-agent": {
-      "lastHeartbeat": "2025-09-26T10:35:38.589Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T10:35:38.589Z",
-      "sessionId": "020ea926af0b8728",
-      "previousSessions": []
-    },
-    "orchestration-agent": {
-      "lastHeartbeat": "2025-09-26T10:38:25.429Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T10:38:25.429Z",
-      "sessionId": "9c674fcfdfab41ed",
-      "previousSessions": []
-    },
     "GOVERNANCE_COMPLIANCE_AGENT": {
       "lastHeartbeat": "2025-09-26T10:46:08.170Z",
       "status": "active",

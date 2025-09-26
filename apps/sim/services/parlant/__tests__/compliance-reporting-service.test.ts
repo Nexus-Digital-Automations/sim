@@ -8,20 +8,18 @@
  * and export functionality.
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
 import {
   complianceReportingService,
+  generateComplianceSummary,
   logAudit,
-  generateComplianceSummary
 } from '../compliance-reporting-service'
-import {
-  ComplianceReportRequest,
-  ReportType,
-  ReportFormat,
+import type {
   AuditEventType,
-  ViolationSeverity
+  ComplianceReportRequest,
+  ReportFormat,
 } from '../governance-compliance-types'
-import { AuthContext } from '../types'
+import type { AuthContext } from '../types'
 
 describe('ComplianceReportingService', () => {
   let testWorkspaceId: string
@@ -32,7 +30,7 @@ describe('ComplianceReportingService', () => {
     testAuth = {
       user_id: 'test_user',
       workspace_id: testWorkspaceId,
-      key_type: 'workspace'
+      key_type: 'workspace',
     }
   })
 
@@ -53,8 +51,8 @@ describe('ComplianceReportingService', () => {
         metadata: {
           violation_type: 'pii_exposure',
           severity: 'high',
-          content_length: 150
-        }
+          content_length: 150,
+        },
       })
 
       expect(auditEvent).toBeDefined()
@@ -77,7 +75,7 @@ describe('ComplianceReportingService', () => {
           entity_id: `policy_${i}`,
           action: 'create',
           actor_id: testAuth.user_id,
-          actor_type: 'user'
+          actor_type: 'user',
         })
 
         expect(eventIds.has(auditEvent.id)).toBe(false)
@@ -93,7 +91,7 @@ describe('ComplianceReportingService', () => {
         enforcement_level: 'block',
         risk_score: 85,
         user_agent: 'Test Browser',
-        ip_address: '192.168.1.100'
+        ip_address: '192.168.1.100',
       }
 
       const auditEvent = await complianceReportingService.logAuditEvent({
@@ -106,7 +104,7 @@ describe('ComplianceReportingService', () => {
         actor_type: 'user',
         metadata,
         ip_address: '192.168.1.100',
-        risk_score: 85
+        risk_score: 85,
       })
 
       expect(auditEvent.metadata).toEqual(metadata)
@@ -124,22 +122,22 @@ describe('ComplianceReportingService', () => {
           entity_type: 'content',
           entity_id: 'content_001',
           action: 'scan' as const,
-          metadata: { severity: 'high', violation_type: 'pii_exposure' }
+          metadata: { severity: 'high', violation_type: 'pii_exposure' },
         },
         {
           event_type: 'security_scan' as AuditEventType,
           entity_type: 'message',
           entity_id: 'message_001',
           action: 'scan' as const,
-          metadata: { scan_duration: 150, violations_found: 2 }
+          metadata: { scan_duration: 150, violations_found: 2 },
         },
         {
           event_type: 'configuration_change' as AuditEventType,
           entity_type: 'policy',
           entity_id: 'policy_001',
           action: 'update' as const,
-          metadata: { version: 2, changes: ['enforcement_level'] }
-        }
+          metadata: { version: 2, changes: ['enforcement_level'] },
+        },
       ]
 
       for (const event of sampleEvents) {
@@ -147,7 +145,7 @@ describe('ComplianceReportingService', () => {
           workspace_id: testWorkspaceId,
           ...event,
           actor_id: testAuth.user_id,
-          actor_type: 'user'
+          actor_type: 'user',
         })
       }
     })
@@ -163,7 +161,7 @@ describe('ComplianceReportingService', () => {
       expect(result.total_count).toBeGreaterThan(0)
       expect(typeof result.query_duration_ms).toBe('number')
 
-      result.events.forEach(event => {
+      result.events.forEach((event) => {
         expect(event.workspace_id).toBe(testWorkspaceId)
       })
     })
@@ -172,13 +170,13 @@ describe('ComplianceReportingService', () => {
       const result = await complianceReportingService.queryAuditEvents(
         {
           workspace_id: testWorkspaceId,
-          event_types: ['policy_violation']
+          event_types: ['policy_violation'],
         },
         testAuth
       )
 
       expect(result.events.length).toBeGreaterThan(0)
-      result.events.forEach(event => {
+      result.events.forEach((event) => {
         expect(event.event_type).toBe('policy_violation')
       })
     })
@@ -187,13 +185,13 @@ describe('ComplianceReportingService', () => {
       const result = await complianceReportingService.queryAuditEvents(
         {
           workspace_id: testWorkspaceId,
-          entity_types: ['policy']
+          entity_types: ['policy'],
         },
         testAuth
       )
 
       expect(result.events.length).toBeGreaterThan(0)
-      result.events.forEach(event => {
+      result.events.forEach((event) => {
         expect(event.entity_type).toBe('policy')
       })
     })
@@ -204,7 +202,7 @@ describe('ComplianceReportingService', () => {
         {
           workspace_id: testWorkspaceId,
           limit,
-          offset: 0
+          offset: 0,
         },
         testAuth
       )
@@ -225,12 +223,12 @@ describe('ComplianceReportingService', () => {
         {
           workspace_id: testWorkspaceId,
           start_date: startDate.toISOString(),
-          end_date: endDate.toISOString()
+          end_date: endDate.toISOString(),
         },
         testAuth
       )
 
-      result.events.forEach(event => {
+      result.events.forEach((event) => {
         const eventDate = new Date(event.timestamp)
         expect(eventDate).toBeInstanceOf(Date)
         expect(eventDate.getTime()).toBeGreaterThanOrEqual(startDate.getTime())
@@ -248,18 +246,18 @@ describe('ComplianceReportingService', () => {
         action: 'scan',
         actor_id: testAuth.user_id,
         actor_type: 'user',
-        risk_score: 90
+        risk_score: 90,
       })
 
       const result = await complianceReportingService.queryAuditEvents(
         {
           workspace_id: testWorkspaceId,
-          risk_threshold: 80
+          risk_threshold: 80,
         },
         testAuth
       )
 
-      result.events.forEach(event => {
+      result.events.forEach((event) => {
         if (event.risk_score !== undefined) {
           expect(event.risk_score).toBeGreaterThanOrEqual(80)
         }
@@ -273,24 +271,24 @@ describe('ComplianceReportingService', () => {
       const auditData = [
         {
           event_type: 'policy_violation' as AuditEventType,
-          metadata: { severity: 'critical', violation_type: 'pii_exposure' }
+          metadata: { severity: 'critical', violation_type: 'pii_exposure' },
         },
         {
           event_type: 'policy_violation' as AuditEventType,
-          metadata: { severity: 'medium', violation_type: 'inappropriate_content' }
+          metadata: { severity: 'medium', violation_type: 'inappropriate_content' },
         },
         {
           event_type: 'security_scan' as AuditEventType,
-          metadata: { status: 'completed', violations_found: 1 }
+          metadata: { status: 'completed', violations_found: 1 },
         },
         {
           event_type: 'security_scan' as AuditEventType,
-          metadata: { status: 'failed', error: 'timeout' }
+          metadata: { status: 'failed', error: 'timeout' },
         },
         {
           event_type: 'compliance_check' as AuditEventType,
-          metadata: { policy_id: 'policy_001', result: 'violation' }
-        }
+          metadata: { policy_id: 'policy_001', result: 'violation' },
+        },
       ]
 
       for (const data of auditData) {
@@ -301,7 +299,7 @@ describe('ComplianceReportingService', () => {
           action: 'test',
           actor_id: testAuth.user_id,
           actor_type: 'user',
-          ...data
+          ...data,
         })
       }
     })
@@ -313,7 +311,7 @@ describe('ComplianceReportingService', () => {
         description: 'Test policy compliance report',
         period_start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         period_end: new Date().toISOString(),
-        format: 'json'
+        format: 'json',
       }
 
       const report = await complianceReportingService.generateComplianceReport(
@@ -344,7 +342,7 @@ describe('ComplianceReportingService', () => {
         title: 'Security Assessment Report',
         period_start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         period_end: new Date().toISOString(),
-        format: 'json'
+        format: 'json',
       }
 
       const report = await complianceReportingService.generateComplianceReport(
@@ -382,7 +380,7 @@ describe('ComplianceReportingService', () => {
         title: 'Findings Test Report',
         period_start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         period_end: new Date().toISOString(),
-        format: 'json'
+        format: 'json',
       }
 
       const report = await complianceReportingService.generateComplianceReport(
@@ -393,9 +391,11 @@ describe('ComplianceReportingService', () => {
 
       expect(report.findings.length).toBeGreaterThan(0)
 
-      report.findings.forEach(finding => {
+      report.findings.forEach((finding) => {
         expect(finding.id).toMatch(/^finding_/)
-        expect(finding.type).toMatch(/policy_violation|security_weakness|compliance_gap|data_exposure|process_deficiency/)
+        expect(finding.type).toMatch(
+          /policy_violation|security_weakness|compliance_gap|data_exposure|process_deficiency/
+        )
         expect(finding.severity).toMatch(/low|medium|high|critical/)
         expect(finding.title).toBeDefined()
         expect(finding.description).toBeDefined()
@@ -412,7 +412,7 @@ describe('ComplianceReportingService', () => {
         title: 'Recommendations Test Report',
         period_start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         period_end: new Date().toISOString(),
-        format: 'json'
+        format: 'json',
       }
 
       const report = await complianceReportingService.generateComplianceReport(
@@ -423,7 +423,7 @@ describe('ComplianceReportingService', () => {
 
       expect(report.recommendations.length).toBeGreaterThan(0)
 
-      report.recommendations.forEach(recommendation => {
+      report.recommendations.forEach((recommendation) => {
         expect(recommendation.id).toMatch(/^recommendation_/)
         expect(recommendation.priority).toMatch(/low|medium|high|critical/)
         expect(recommendation.title).toBeDefined()
@@ -442,7 +442,7 @@ describe('ComplianceReportingService', () => {
         { event_type: 'policy_violation' as AuditEventType, severity: 'high' },
         { event_type: 'policy_violation' as AuditEventType, severity: 'medium' },
         { event_type: 'security_scan' as AuditEventType, status: 'completed' },
-        { event_type: 'compliance_check' as AuditEventType, result: 'passed' }
+        { event_type: 'compliance_check' as AuditEventType, result: 'passed' },
       ]
 
       for (const data of sampleData) {
@@ -453,7 +453,7 @@ describe('ComplianceReportingService', () => {
           action: 'test',
           actor_id: testAuth.user_id,
           actor_type: 'user',
-          metadata: data.event_type === 'policy_violation' ? { severity: data.severity } : data
+          metadata: data.event_type === 'policy_violation' ? { severity: data.severity } : data,
         })
       }
     })
@@ -487,7 +487,7 @@ describe('ComplianceReportingService', () => {
 
       expect(dashboard.violation_trends.length).toBeGreaterThan(0)
 
-      dashboard.violation_trends.forEach(trend => {
+      dashboard.violation_trends.forEach((trend) => {
         expect(trend.date).toBeDefined()
         expect(typeof trend.total_violations).toBe('number')
         expect(trend.by_severity).toBeDefined()
@@ -505,7 +505,7 @@ describe('ComplianceReportingService', () => {
         testAuth
       )
 
-      dashboard.top_violations.forEach(violation => {
+      dashboard.top_violations.forEach((violation) => {
         expect(violation.type).toBeDefined()
         expect(typeof violation.count).toBe('number')
         expect(violation.trend).toMatch(/up|down|stable/)
@@ -525,7 +525,7 @@ describe('ComplianceReportingService', () => {
           action: 'read',
           actor_id: testAuth.user_id,
           actor_type: 'user',
-          metadata: { export_test: true, index: i }
+          metadata: { export_test: true, index: i },
         })
       }
     })
@@ -615,13 +615,13 @@ describe('ComplianceReportingService', () => {
         {
           workspace_id: testWorkspaceId,
           event_types: ['configuration_change'],
-          entity_types: ['policy']
+          entity_types: ['policy'],
         },
         testAuth
       )
 
       expect(result.events.length).toBeGreaterThan(0)
-      const policyEvent = result.events.find(e => e.entity_id === 'policy_test')
+      const policyEvent = result.events.find((e) => e.entity_id === 'policy_test')
       expect(policyEvent).toBeDefined()
     })
 
@@ -656,7 +656,7 @@ describe('ComplianceReportingService', () => {
         description: '',
         period_start: 'invalid-date',
         period_end: 'invalid-date',
-        format: 'invalid-format' as ReportFormat
+        format: 'invalid-format' as ReportFormat,
       }
 
       await expect(
@@ -705,7 +705,7 @@ describe('ComplianceReportingService', () => {
         entity_id: 'test',
         action: 'test',
         actor_id: testAuth.user_id,
-        actor_type: 'user'
+        actor_type: 'user',
       })
 
       expect(minimalEvent).toBeDefined()
@@ -719,17 +719,19 @@ describe('ComplianceReportingService', () => {
         title: 'Concurrent Test Report',
         period_start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         period_end: new Date().toISOString(),
-        format: 'json'
+        format: 'json',
       }
 
       // Generate multiple reports concurrently
-      const promises = Array(3).fill(null).map((_, index) =>
-        complianceReportingService.generateComplianceReport(
-          { ...reportRequest, title: `${reportRequest.title} ${index}` },
-          testWorkspaceId,
-          testAuth
+      const promises = Array(3)
+        .fill(null)
+        .map((_, index) =>
+          complianceReportingService.generateComplianceReport(
+            { ...reportRequest, title: `${reportRequest.title} ${index}` },
+            testWorkspaceId,
+            testAuth
+          )
         )
-      )
 
       const reports = await Promise.all(promises)
 
@@ -754,18 +756,18 @@ describe('ComplianceReportingService', () => {
           action: 'read',
           actor_id: testAuth.user_id,
           actor_type: 'user',
-          metadata: { sequence: i }
+          metadata: { sequence: i },
         })
         events.push(event.id)
 
         // Small delay to ensure different timestamps
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise((resolve) => setTimeout(resolve, 10))
       }
 
       const result = await complianceReportingService.queryAuditEvents(
         {
           workspace_id: testWorkspaceId,
-          entity_types: ['ordering_test']
+          entity_types: ['ordering_test'],
         },
         testAuth
       )

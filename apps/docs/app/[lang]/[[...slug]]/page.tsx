@@ -129,7 +129,7 @@ export async function generateMetadata(props: {
       siteName: 'Sim Documentation',
       type: 'article',
       locale: params.lang,
-      alternateLocale: ['en', 'fr', 'zh'].filter((lang) => lang !== params.lang),
+      alternateLocale: ['en', 'fr'].filter((lang) => lang !== params.lang),
     },
     twitter: {
       card: 'summary',
@@ -154,7 +154,6 @@ export async function generateMetadata(props: {
       languages: {
         en: `${baseUrl}/en${page.url.replace(`/${params.lang}`, '')}`,
         fr: `${baseUrl}/fr${page.url.replace(`/${params.lang}`, '')}`,
-        zh: `${baseUrl}/zh${page.url.replace(`/${params.lang}`, '')}`,
       },
     },
   }

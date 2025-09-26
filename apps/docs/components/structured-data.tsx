@@ -88,7 +88,7 @@ export function StructuredData({
       },
       'query-input': 'required name=search_term_string',
     },
-    inLanguage: ['en', 'fr', 'zh'],
+    inLanguage: ['en', 'fr'],
   }
 
   const faqStructuredData = title.toLowerCase().includes('faq') && {

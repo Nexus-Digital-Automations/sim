@@ -17,7 +17,7 @@
  * - Data retention and archival management
  */
 
-import {
+import type {
   AuditEvent,
   AuditEventType,
   ComplianceFinding,
@@ -27,14 +27,12 @@ import {
   ComplianceReportRequest,
   GovernanceDashboardData,
   RegulatoryRequirement,
-  RegulationType,
   ReportFormat,
-  ReportStatus,
   ReportType,
   SecurityViolation,
   ViolationSeverity,
 } from './governance-compliance-types'
-import { AuthContext } from './types'
+import type { AuthContext } from './types'
 
 /**
  * Report generation context
@@ -75,17 +73,19 @@ export class ComplianceReportingService {
     byWorkspace: new Map<string, string[]>(),
     byEventType: new Map<AuditEventType, string[]>(),
     byEntityType: new Map<string, string[]>(),
-    byDate: new Map<string, string[]>()
+    byDate: new Map<string, string[]>(),
   }
 
-  constructor(private readonly config: {
-    enableAutomatedReporting?: boolean
-    retentionDays?: number
-    enableRealTimeMetrics?: boolean
-    maxReportsPerWorkspace?: number
-    enableTamperProtection?: boolean
-    exportFormats?: ReportFormat[]
-  } = {}) {
+  constructor(
+    private readonly config: {
+      enableAutomatedReporting?: boolean
+      retentionDays?: number
+      enableRealTimeMetrics?: boolean
+      maxReportsPerWorkspace?: number
+      enableTamperProtection?: boolean
+      exportFormats?: ReportFormat[]
+    } = {}
+  ) {
     this.initializeAuditSystem()
     this.startMetricsCollection()
   }
@@ -93,18 +93,20 @@ export class ComplianceReportingService {
   /**
    * Log an audit event with comprehensive metadata
    */
-  async logAuditEvent(event: Omit<AuditEvent, 'id' | 'timestamp' | 'retention_date'>): Promise<AuditEvent> {
+  async logAuditEvent(
+    event: Omit<AuditEvent, 'id' | 'timestamp' | 'retention_date'>
+  ): Promise<AuditEvent> {
     try {
       const auditEvent: AuditEvent = {
         ...event,
         id: this.generateId('audit'),
         timestamp: new Date().toISOString(),
-        retention_date: this.calculateRetentionDate()
+        retention_date: this.calculateRetentionDate(),
       }
 
       // Add tamper protection if enabled
       if (this.config.enableTamperProtection) {
-        (auditEvent as any).integrity_hash = this.generateIntegrityHash(auditEvent)
+        ;(auditEvent as any).integrity_hash = this.generateIntegrityHash(auditEvent)
       }
 
       // Store event
@@ -118,7 +120,9 @@ export class ComplianceReportingService {
         await this.updateComplianceMetrics(auditEvent)
       }
 
-      console.log(`[ComplianceReporting] Audit event logged: ${auditEvent.event_type} for ${auditEvent.entity_type}:${auditEvent.entity_id}`)
+      console.log(
+        `[ComplianceReporting] Audit event logged: ${auditEvent.event_type} for ${auditEvent.entity_type}:${auditEvent.entity_id}`
+      )
       return auditEvent
     } catch (error) {
       console.error('[ComplianceReporting] Failed to log audit event:', error)
@@ -137,7 +141,9 @@ export class ComplianceReportingService {
     const startTime = Date.now()
 
     try {
-      console.log(`[ComplianceReporting] Generating ${request.report_type} report for workspace ${workspaceId}`)
+      console.log(
+        `[ComplianceReporting] Generating ${request.report_type} report for workspace ${workspaceId}`
+      )
 
       const report: ComplianceReport = {
         id: this.generateId('report'),
@@ -157,8 +163,8 @@ export class ComplianceReportingService {
         metadata: {
           generation_started: startTime,
           filters_applied: request.filters,
-          include_raw_data: request.include_raw_data
-        }
+          include_raw_data: request.include_raw_data,
+        },
       }
 
       // Store initial report
@@ -180,8 +186,8 @@ export class ComplianceReportingService {
           ...report.metadata,
           generation_completed: Date.now(),
           generation_duration_ms: Date.now() - startTime,
-          data_points_analyzed: reportData.dataPointsAnalyzed
-        }
+          data_points_analyzed: reportData.dataPointsAnalyzed,
+        },
       }
 
       // Generate and save report file
@@ -207,7 +213,7 @@ export class ComplianceReportingService {
         failedReport.metadata = {
           ...failedReport.metadata,
           error: error instanceof Error ? error.message : 'Unknown error',
-          generation_failed: Date.now()
+          generation_failed: Date.now(),
         }
       }
 
@@ -244,23 +250,23 @@ export class ComplianceReportingService {
         const eventTypeIds = new Set<string>()
         for (const eventType of query.event_types) {
           const typeIds = this.auditIndexes.byEventType.get(eventType) || []
-          typeIds.forEach(id => eventTypeIds.add(id))
+          typeIds.forEach((id) => eventTypeIds.add(id))
         }
-        candidateIds = candidateIds.filter(id => eventTypeIds.has(id))
+        candidateIds = candidateIds.filter((id) => eventTypeIds.has(id))
       }
 
       if (query.entity_types && query.entity_types.length > 0) {
         const entityTypeIds = new Set<string>()
         for (const entityType of query.entity_types) {
           const typeIds = this.auditIndexes.byEntityType.get(entityType) || []
-          typeIds.forEach(id => entityTypeIds.add(id))
+          typeIds.forEach((id) => entityTypeIds.add(id))
         }
-        candidateIds = candidateIds.filter(id => entityTypeIds.has(id))
+        candidateIds = candidateIds.filter((id) => entityTypeIds.has(id))
       }
 
       // Filter by date range
       if (query.start_date || query.end_date) {
-        candidateIds = candidateIds.filter(id => {
+        candidateIds = candidateIds.filter((id) => {
           const event = this.auditStore.get(id)
           if (!event) return false
 
@@ -274,7 +280,7 @@ export class ComplianceReportingService {
 
       // Filter by actor IDs
       if (query.actor_ids && query.actor_ids.length > 0) {
-        candidateIds = candidateIds.filter(id => {
+        candidateIds = candidateIds.filter((id) => {
           const event = this.auditStore.get(id)
           return event && query.actor_ids!.includes(event.actor_id)
         })
@@ -282,7 +288,7 @@ export class ComplianceReportingService {
 
       // Filter by risk threshold
       if (query.risk_threshold !== undefined) {
-        candidateIds = candidateIds.filter(id => {
+        candidateIds = candidateIds.filter((id) => {
           const event = this.auditStore.get(id)
           return event && (event.risk_score || 0) >= query.risk_threshold!
         })
@@ -290,7 +296,7 @@ export class ComplianceReportingService {
 
       // Get actual events and apply pagination
       const allEvents = candidateIds
-        .map(id => this.auditStore.get(id))
+        .map((id) => this.auditStore.get(id))
         .filter((event): event is AuditEvent => event !== undefined)
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
@@ -300,13 +306,15 @@ export class ComplianceReportingService {
 
       const queryDuration = Date.now() - startTime
 
-      console.log(`[ComplianceReporting] Audit query returned ${paginatedEvents.length} events in ${queryDuration}ms`)
+      console.log(
+        `[ComplianceReporting] Audit query returned ${paginatedEvents.length} events in ${queryDuration}ms`
+      )
 
       return {
         events: paginatedEvents,
         total_count: allEvents.length,
         has_more: offset + limit < allEvents.length,
-        query_duration_ms: queryDuration
+        query_duration_ms: queryDuration,
       }
     } catch (error) {
       console.error('[ComplianceReporting] Audit query failed:', error)
@@ -319,7 +327,7 @@ export class ComplianceReportingService {
    */
   async getComplianceDashboard(
     workspaceId: string,
-    timeframe: 'day' | 'week' | 'month' | 'year' = 'month',
+    timeframe: 'day' | 'week' | 'month' | 'year',
     auth: AuthContext
   ): Promise<GovernanceDashboardData> {
     try {
@@ -347,7 +355,7 @@ export class ComplianceReportingService {
         workspace_id: workspaceId,
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
-        limit: 10000
+        limit: 10000,
       }
 
       const auditResult = await this.queryAuditEvents(auditQuery, auth)
@@ -365,7 +373,7 @@ export class ComplianceReportingService {
         policy_effectiveness: policyEffectiveness,
         violation_trends: violationTrends,
         top_violations: topViolations,
-        agent_compliance: agentCompliance
+        agent_compliance: agentCompliance,
       }
     } catch (error) {
       console.error('[ComplianceReporting] Dashboard generation failed:', error)
@@ -386,10 +394,13 @@ export class ComplianceReportingService {
       // Calculate metrics from audit events
       const auditQuery: AuditQuery = {
         workspace_id: workspaceId,
-        limit: 10000
+        limit: 10000,
       }
 
-      const result = await this.queryAuditEvents(auditQuery, { user_id: 'system', key_type: 'workspace' })
+      const result = await this.queryAuditEvents(auditQuery, {
+        user_id: 'system',
+        key_type: 'workspace',
+      })
       const metrics = this.calculateComplianceMetrics(result.events)
 
       // Cache metrics
@@ -425,7 +436,7 @@ export class ComplianceReportingService {
         workspace_id: workspaceId,
         start_date: startDate,
         end_date: endDate,
-        limit: 50000 // Large limit for export
+        limit: 50000, // Large limit for export
       }
 
       const result = await this.queryAuditEvents(query, auth)
@@ -436,7 +447,6 @@ export class ComplianceReportingService {
 
       // Create export content based on format
       let exportContent: string
-      let fileSize: number
 
       switch (format) {
         case 'json':
@@ -449,7 +459,7 @@ export class ComplianceReportingService {
           throw new Error(`Unsupported export format: ${format}`)
       }
 
-      fileSize = Buffer.byteLength(exportContent, 'utf8')
+      const fileSize = Buffer.byteLength(exportContent, 'utf8')
 
       // In production, write to actual file system
       console.log(`[ComplianceReporting] Generated audit export: ${fileName} (${fileSize} bytes)`)
@@ -460,7 +470,7 @@ export class ComplianceReportingService {
         file_path: filePath,
         file_size: fileSize,
         events_exported: result.events.length,
-        export_duration_ms: duration
+        export_duration_ms: duration,
       }
     } catch (error) {
       console.error('[ComplianceReporting] Audit export failed:', error)
@@ -486,7 +496,7 @@ export class ComplianceReportingService {
       workspace_id: workspaceId,
       start_date: request.period_start,
       end_date: request.period_end,
-      limit: 10000
+      limit: 10000,
     }
 
     const auditResult = await this.queryAuditEvents(auditQuery, auth)
@@ -512,19 +522,22 @@ export class ComplianceReportingService {
       findings,
       recommendations,
       regulatory_requirements,
-      dataPointsAnalyzed: events.length
+      dataPointsAnalyzed: events.length,
     }
   }
 
   private calculateComplianceMetrics(events: AuditEvent[]): ComplianceMetrics {
-    const violations = events.filter(e => e.event_type === 'policy_violation')
-    const scannedMessages = events.filter(e => e.event_type === 'security_scan').length
+    const violations = events.filter((e) => e.event_type === 'policy_violation')
+    const scannedMessages = events.filter((e) => e.event_type === 'security_scan').length
 
-    const violationsBySeverity = violations.reduce((acc, event) => {
-      const severity = (event.metadata?.severity as ViolationSeverity) || 'medium'
-      acc[severity] = (acc[severity] || 0) + 1
-      return acc
-    }, {} as Record<ViolationSeverity, number>)
+    const violationsBySeverity = violations.reduce(
+      (acc, event) => {
+        const severity = (event.metadata?.severity as ViolationSeverity) || 'medium'
+        acc[severity] = (acc[severity] || 0) + 1
+        return acc
+      },
+      {} as Record<ViolationSeverity, number>
+    )
 
     // Calculate compliance score (inverse of violation rate)
     const totalMessages = Math.max(scannedMessages, 1)
@@ -532,50 +545,55 @@ export class ComplianceReportingService {
     const complianceScore = Math.max(0, Math.round((1 - violationRate) * 100))
 
     // Calculate response times
-    const responseEvents = events.filter(e => e.metadata?.response_time_ms)
-    const avgResponseTime = responseEvents.length > 0
-      ? responseEvents.reduce((sum, e) => sum + (e.metadata?.response_time_ms || 0), 0) / responseEvents.length
-      : 0
+    const responseEvents = events.filter((e) => e.metadata?.response_time_ms)
+    const avgResponseTime =
+      responseEvents.length > 0
+        ? responseEvents.reduce((sum, e) => sum + (e.metadata?.response_time_ms || 0), 0) /
+          responseEvents.length
+        : 0
 
     return {
-      total_conversations: events.filter(e => e.event_type === 'session_started').length,
+      total_conversations: events.filter((e) => e.event_type === 'session_started').length,
       scanned_messages: scannedMessages,
       violations_detected: violations.length,
       violations_by_severity: {
         low: violationsBySeverity.low || 0,
         medium: violationsBySeverity.medium || 0,
         high: violationsBySeverity.high || 0,
-        critical: violationsBySeverity.critical || 0
+        critical: violationsBySeverity.critical || 0,
       },
-      policies_evaluated: events.filter(e => e.event_type === 'compliance_check').length,
+      policies_evaluated: events.filter((e) => e.event_type === 'compliance_check').length,
       compliance_score: complianceScore,
-      response_time_avg_ms: Math.round(avgResponseTime)
+      response_time_avg_ms: Math.round(avgResponseTime),
     }
   }
 
-  private generateComplianceFindings(events: AuditEvent[], reportType: ReportType): ComplianceFinding[] {
+  private generateComplianceFindings(
+    events: AuditEvent[],
+    reportType: ReportType
+  ): ComplianceFinding[] {
     const findings: ComplianceFinding[] = []
 
     // Generate findings based on audit events
-    const violations = events.filter(e => e.event_type === 'policy_violation')
+    const violations = events.filter((e) => e.event_type === 'policy_violation')
 
     if (violations.length > 0) {
       findings.push({
         id: this.generateId('finding'),
         type: 'policy_violation',
-        severity: violations.some(v => v.risk_score && v.risk_score > 80) ? 'high' : 'medium',
+        severity: violations.some((v) => v.risk_score && v.risk_score > 80) ? 'high' : 'medium',
         title: `${violations.length} Policy Violations Detected`,
         description: `Analysis found ${violations.length} policy violations during the reporting period`,
-        evidence: violations.map(v => v.entity_id),
-        affected_entities: [...new Set(violations.map(v => v.entity_id))],
-        risk_level: Math.max(...violations.map(v => v.risk_score || 0)),
-        remediation_status: 'open'
+        evidence: violations.map((v) => v.entity_id),
+        affected_entities: [...new Set(violations.map((v) => v.entity_id))],
+        risk_level: Math.max(...violations.map((v) => v.risk_score || 0)),
+        remediation_status: 'open',
       })
     }
 
     // Check for security scan failures
-    const failedScans = events.filter(e =>
-      e.event_type === 'security_scan' && e.metadata?.status === 'failed'
+    const failedScans = events.filter(
+      (e) => e.event_type === 'security_scan' && e.metadata?.status === 'failed'
     )
 
     if (failedScans.length > 0) {
@@ -585,10 +603,10 @@ export class ComplianceReportingService {
         severity: 'medium',
         title: 'Security Scanning Failures',
         description: `${failedScans.length} security scans failed to complete`,
-        evidence: failedScans.map(s => s.id),
-        affected_entities: [...new Set(failedScans.map(s => s.entity_id))],
+        evidence: failedScans.map((s) => s.id),
+        affected_entities: [...new Set(failedScans.map((s) => s.entity_id))],
         risk_level: 60,
-        remediation_status: 'open'
+        remediation_status: 'open',
       })
     }
 
@@ -610,7 +628,7 @@ export class ComplianceReportingService {
         description: `Current compliance score is ${metrics.compliance_score}%. Implement additional governance controls to achieve target of 95%+`,
         category: 'governance',
         effort_level: 'medium',
-        estimated_impact: 'Reduce compliance violations by 50%'
+        estimated_impact: 'Reduce compliance violations by 50%',
       })
     }
 
@@ -623,7 +641,7 @@ export class ComplianceReportingService {
         description: 'Increase user training and awareness programs to reduce policy violations',
         category: 'training',
         effort_level: 'low',
-        estimated_impact: 'Reduce user-driven violations by 30%'
+        estimated_impact: 'Reduce user-driven violations by 30%',
       })
     }
 
@@ -636,7 +654,7 @@ export class ComplianceReportingService {
         description: 'Improve system performance to reduce average response times',
         category: 'performance',
         effort_level: 'medium',
-        estimated_impact: 'Reduce response times by 40%'
+        estimated_impact: 'Reduce response times by 40%',
       })
     }
 
@@ -656,12 +674,15 @@ export class ComplianceReportingService {
         last_assessed: new Date().toISOString(),
         next_review_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
         evidence_required: ['consent records'],
-        responsible_party: 'Data Protection Officer'
-      }
+        responsible_party: 'Data Protection Officer',
+      },
     ]
   }
 
-  private async generateReportFile(report: ComplianceReport, format: ReportFormat): Promise<string> {
+  private async generateReportFile(
+    report: ComplianceReport,
+    format: ReportFormat
+  ): Promise<string> {
     // Generate file path
     const timestamp = new Date().toISOString().split('T')[0]
     const fileName = `${report.report_type}_${report.workspace_id}_${timestamp}.${format}`
@@ -683,11 +704,19 @@ export class ComplianceReportingService {
     if (events.length === 0) return 'No events found'
 
     const headers = [
-      'ID', 'Timestamp', 'Event Type', 'Entity Type', 'Entity ID',
-      'Action', 'Actor ID', 'Actor Type', 'Risk Score', 'IP Address'
+      'ID',
+      'Timestamp',
+      'Event Type',
+      'Entity Type',
+      'Entity ID',
+      'Action',
+      'Actor ID',
+      'Actor Type',
+      'Risk Score',
+      'IP Address',
     ]
 
-    const rows = events.map(event => [
+    const rows = events.map((event) => [
       event.id,
       event.timestamp,
       event.event_type,
@@ -697,24 +726,22 @@ export class ComplianceReportingService {
       event.actor_id,
       event.actor_type,
       event.risk_score || '',
-      event.ip_address || ''
+      event.ip_address || '',
     ])
 
-    return [headers, ...rows]
-      .map(row => row.map(cell => `"${cell}"`).join(','))
-      .join('\n')
+    return [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n')
   }
 
   private calculateOverviewMetrics(events: AuditEvent[], workspaceId: string) {
-    const violations = events.filter(e => e.event_type === 'policy_violation')
+    const violations = events.filter((e) => e.event_type === 'policy_violation')
 
     return {
       total_policies: 5, // Would be calculated from policy store
       active_policies: 4,
-      recent_violations: violations.filter(v =>
-        new Date(v.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+      recent_violations: violations.filter(
+        (v) => new Date(v.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000)
       ).length,
-      compliance_score: this.calculateComplianceScore(events)
+      compliance_score: this.calculateComplianceScore(events),
     }
   }
 
@@ -726,14 +753,14 @@ export class ComplianceReportingService {
         name: 'PII Protection',
         violations_prevented: 25,
         false_positives: 2,
-        effectiveness_score: 92
-      }
+        effectiveness_score: 92,
+      },
     ]
   }
 
   private calculateViolationTrends(events: AuditEvent[], timeframe: string) {
     // Group events by date and calculate trends
-    const violations = events.filter(e => e.event_type === 'policy_violation')
+    const violations = events.filter((e) => e.event_type === 'policy_violation')
     const violationsByDate = new Map<string, SecurityViolation[]>()
 
     // Simplified trend calculation
@@ -742,22 +769,27 @@ export class ComplianceReportingService {
         date: new Date().toISOString().split('T')[0],
         total_violations: violations.length,
         by_severity: {
-          low: violations.filter(v => (v.metadata?.severity as ViolationSeverity) === 'low').length,
-          medium: violations.filter(v => (v.metadata?.severity as ViolationSeverity) === 'medium').length,
-          high: violations.filter(v => (v.metadata?.severity as ViolationSeverity) === 'high').length,
-          critical: violations.filter(v => (v.metadata?.severity as ViolationSeverity) === 'critical').length
-        }
-      }
+          low: violations.filter((v) => (v.metadata?.severity as ViolationSeverity) === 'low')
+            .length,
+          medium: violations.filter((v) => (v.metadata?.severity as ViolationSeverity) === 'medium')
+            .length,
+          high: violations.filter((v) => (v.metadata?.severity as ViolationSeverity) === 'high')
+            .length,
+          critical: violations.filter(
+            (v) => (v.metadata?.severity as ViolationSeverity) === 'critical'
+          ).length,
+        },
+      },
     ]
   }
 
   private calculateTopViolations(events: AuditEvent[]) {
     // Count violation types
-    const violations = events.filter(e => e.event_type === 'policy_violation')
+    const violations = events.filter((e) => e.event_type === 'policy_violation')
     const typeCounts = new Map<string, number>()
 
     for (const violation of violations) {
-      const type = violation.metadata?.violation_type as string || 'unknown'
+      const type = (violation.metadata?.violation_type as string) || 'unknown'
       typeCounts.set(type, (typeCounts.get(type) || 0) + 1)
     }
 
@@ -765,7 +797,7 @@ export class ComplianceReportingService {
       .map(([type, count]) => ({
         type: type as any,
         count,
-        trend: 'stable' as const
+        trend: 'stable' as const,
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
@@ -773,7 +805,7 @@ export class ComplianceReportingService {
 
   private calculateAgentCompliance(events: AuditEvent[], workspaceId: string) {
     // Group by agent and calculate compliance
-    const agentEvents = events.filter(e => e.entity_type === 'agent')
+    const agentEvents = events.filter((e) => e.entity_type === 'agent')
     const agentGroups = new Map<string, AuditEvent[]>()
 
     for (const event of agentEvents) {
@@ -784,22 +816,25 @@ export class ComplianceReportingService {
     }
 
     return Array.from(agentGroups.entries()).map(([agentId, events]) => {
-      const violations = events.filter(e => e.event_type === 'policy_violation')
-      const complianceScore = Math.max(0, Math.round((1 - violations.length / Math.max(events.length, 1)) * 100))
+      const violations = events.filter((e) => e.event_type === 'policy_violation')
+      const complianceScore = Math.max(
+        0,
+        Math.round((1 - violations.length / Math.max(events.length, 1)) * 100)
+      )
 
       return {
         agent_id: agentId,
         agent_name: `Agent ${agentId.substring(0, 8)}`,
         compliance_score: complianceScore,
-        recent_violations: violations.filter(v =>
-          new Date(v.timestamp) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        ).length
+        recent_violations: violations.filter(
+          (v) => new Date(v.timestamp) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        ).length,
       }
     })
   }
 
   private calculateComplianceScore(events: AuditEvent[]): number {
-    const violations = events.filter(e => e.event_type === 'policy_violation')
+    const violations = events.filter((e) => e.event_type === 'policy_violation')
     const total = Math.max(events.length, 1)
     return Math.max(0, Math.round((1 - violations.length / total) * 100))
   }
@@ -853,7 +888,7 @@ export class ComplianceReportingService {
       violations_by_severity: { low: 0, medium: 0, high: 0, critical: 0 },
       policies_evaluated: 0,
       compliance_score: 100,
-      response_time_avg_ms: 0
+      response_time_avg_ms: 0,
     }
   }
 
@@ -872,14 +907,17 @@ export class ComplianceReportingService {
 
   private async calculatePeriodicMetrics(): Promise<void> {
     // Recalculate metrics for all workspaces periodically
-    const workspaces = new Set(Array.from(this.auditStore.values()).map(e => e.workspace_id))
+    const workspaces = new Set(Array.from(this.auditStore.values()).map((e) => e.workspace_id))
 
     for (const workspaceId of workspaces) {
       try {
         const metrics = await this.getComplianceMetrics(workspaceId)
         this.complianceMetrics.set(workspaceId, metrics)
       } catch (error) {
-        console.error(`[ComplianceReporting] Failed to update metrics for workspace ${workspaceId}:`, error)
+        console.error(
+          `[ComplianceReporting] Failed to update metrics for workspace ${workspaceId}:`,
+          error
+        )
       }
     }
   }
@@ -897,7 +935,7 @@ export class ComplianceReportingService {
     let hash = 0
     for (let i = 0; i < content.length; i++) {
       const char = content.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash
     }
     return Math.abs(hash).toString(16)
@@ -918,7 +956,7 @@ export const complianceReportingService = new ComplianceReportingService({
   enableRealTimeMetrics: true,
   maxReportsPerWorkspace: 100,
   enableTamperProtection: true,
-  exportFormats: ['json', 'csv', 'pdf']
+  exportFormats: ['json', 'csv', 'pdf'],
 })
 
 // ==================== UTILITY FUNCTIONS ====================
@@ -944,7 +982,7 @@ export async function logAudit(
       action: action as any,
       actor_id: userId,
       actor_type: 'user',
-      metadata
+      metadata,
     })
   } catch (error) {
     console.error('[ComplianceReporting] Quick audit logging failed:', error)
@@ -956,7 +994,7 @@ export async function logAudit(
  */
 export async function generateComplianceSummary(
   workspaceId: string,
-  days: number = 30
+  days = 30
 ): Promise<{
   complianceScore: number
   violations: number
@@ -971,26 +1009,25 @@ export async function generateComplianceSummary(
       title: 'Compliance Summary',
       period_start: startDate.toISOString(),
       period_end: endDate.toISOString(),
-      format: 'json'
+      format: 'json',
     }
 
-    const report = await complianceReportingService.generateComplianceReport(
-      request,
-      workspaceId,
-      { user_id: 'system', key_type: 'workspace' }
-    )
+    const report = await complianceReportingService.generateComplianceReport(request, workspaceId, {
+      user_id: 'system',
+      key_type: 'workspace',
+    })
 
     return {
       complianceScore: report.metrics.compliance_score,
       violations: report.metrics.violations_detected,
-      recommendations: report.recommendations.map(r => r.title)
+      recommendations: report.recommendations.map((r) => r.title),
     }
   } catch (error) {
     console.error('[ComplianceReporting] Summary generation failed:', error)
     return {
       complianceScore: 0,
       violations: 0,
-      recommendations: ['Manual review required']
+      recommendations: ['Manual review required'],
     }
   }
 }

@@ -15,10 +15,8 @@
  * - Performance-optimized for enterprise scale
  */
 
-import {
+import type {
   AuditEvent,
-  AuditEventType,
-  ComplianceStatus,
   GovernanceContext,
   GovernanceError,
   GovernanceErrorCode,
@@ -26,13 +24,11 @@ import {
   GovernancePolicy,
   PolicyEvaluationResult,
   PolicyStatus,
-  RegulatoryRequirement,
   RegulationType,
+  RegulatoryRequirement,
   SecurityViolation,
-  ViolationSeverity,
 } from './governance-compliance-types'
-import { ParlantError, errorHandler } from './error-handler'
-import { AuthContext } from './types'
+import type { AuthContext } from './types'
 
 /**
  * Core Governance and Compliance Service
@@ -45,13 +41,15 @@ export class GovernanceComplianceService {
   private readonly maxAuditBufferSize = 1000
   private isInitialized = false
 
-  constructor(private readonly config: {
-    enableRealTimeCompliance?: boolean
-    auditRetentionDays?: number
-    batchAuditFlushInterval?: number
-    maxConcurrentScans?: number
-    enableRegulatory?: RegulationType[]
-  } = {}) {
+  constructor(
+    private readonly config: {
+      enableRealTimeCompliance?: boolean
+      auditRetentionDays?: number
+      batchAuditFlushInterval?: number
+      maxConcurrentScans?: number
+      enableRegulatory?: RegulationType[]
+    } = {}
+  ) {
     this.initializeRegulatoryRequirements()
   }
 
@@ -75,7 +73,11 @@ export class GovernanceComplianceService {
       console.log(`[Governance] Service initialized successfully for workspace: ${workspaceId}`)
     } catch (error) {
       console.error(`[Governance] Initialization failed for workspace ${workspaceId}:`, error)
-      throw this.createGovernanceError('SERVICE_UNAVAILABLE', 'Failed to initialize governance service', error)
+      throw this.createGovernanceError(
+        'SERVICE_UNAVAILABLE',
+        'Failed to initialize governance service',
+        error
+      )
     }
   }
 
@@ -98,7 +100,9 @@ export class GovernanceComplianceService {
       // Get applicable policies for the workspace and context
       const applicablePolicies = await this.getApplicablePolicies(context, auth)
 
-      console.log(`[Governance] Evaluating ${applicablePolicies.length} policies for workspace ${context.workspace_id}`)
+      console.log(
+        `[Governance] Evaluating ${applicablePolicies.length} policies for workspace ${context.workspace_id}`
+      )
 
       // Evaluate each policy against the content
       for (const policy of applicablePolicies) {
@@ -117,13 +121,15 @@ export class GovernanceComplianceService {
           metadata: {
             policy_name: policy.name,
             violation_detected: result.overall_violation,
-            risk_score: result.risk_score
-          }
+            risk_score: result.risk_score,
+          },
         })
       }
 
       const duration = Date.now() - startTime
-      console.log(`[Governance] Policy evaluation completed in ${duration}ms. Found ${results.filter(r => r.overall_violation).length} violations`)
+      console.log(
+        `[Governance] Policy evaluation completed in ${duration}ms. Found ${results.filter((r) => r.overall_violation).length} violations`
+      )
 
       return results
     } catch (error) {
@@ -146,7 +152,7 @@ export class GovernanceComplianceService {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         version: 1,
-        status: 'draft' as PolicyStatus
+        status: 'draft' as PolicyStatus,
       }
 
       // Validate policy configuration
@@ -168,8 +174,8 @@ export class GovernanceComplianceService {
         metadata: {
           policy_name: policy.name,
           category: policy.category,
-          enforcement_level: policy.enforcement_level
-        }
+          enforcement_level: policy.enforcement_level,
+        },
       })
 
       console.log(`[Governance] Policy created: ${policy.name} (${policy.id})`)
@@ -199,7 +205,7 @@ export class GovernanceComplianceService {
         ...updates,
         updated_at: new Date().toISOString(),
         version: existingPolicy.version + 1,
-        last_modified_by: auth.user_id
+        last_modified_by: auth.user_id,
       }
 
       // Validate updated policy
@@ -221,8 +227,8 @@ export class GovernanceComplianceService {
         after_state: updatedPolicy,
         metadata: {
           policy_name: updatedPolicy.name,
-          version_increment: true
-        }
+          version_increment: true,
+        },
       })
 
       console.log(`[Governance] Policy updated: ${updatedPolicy.name} (v${updatedPolicy.version})`)
@@ -239,7 +245,7 @@ export class GovernanceComplianceService {
   async getPolicies(workspaceId: string, auth: AuthContext): Promise<GovernancePolicy[]> {
     try {
       const policies = Array.from(this.policyCache.values())
-        .filter(policy => policy.workspace_id === workspaceId)
+        .filter((policy) => policy.workspace_id === workspaceId)
         .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
 
       console.log(`[Governance] Retrieved ${policies.length} policies for workspace ${workspaceId}`)
@@ -271,19 +277,25 @@ export class GovernanceComplianceService {
       }
 
       // Enhance with compliance gap analysis
-      const enhancedRequirements = requirements.map(req => {
+      const enhancedRequirements = requirements.map((req) => {
         const gaps = this.analyzeComplianceGaps(req, workspaceId)
         return {
           ...req,
-          compliance_gaps: gaps.length > 0 ? gaps : undefined
+          compliance_gaps: gaps.length > 0 ? gaps : undefined,
         }
       })
 
-      console.log(`[Governance] Compliance status retrieved for ${requirements.length} requirements`)
+      console.log(
+        `[Governance] Compliance status retrieved for ${requirements.length} requirements`
+      )
       return enhancedRequirements
     } catch (error) {
       console.error('[Governance] Failed to get compliance status:', error)
-      throw this.createGovernanceError('COMPLIANCE_ERROR', 'Failed to retrieve compliance status', error)
+      throw this.createGovernanceError(
+        'COMPLIANCE_ERROR',
+        'Failed to retrieve compliance status',
+        error
+      )
     }
   }
 
@@ -297,23 +309,23 @@ export class GovernanceComplianceService {
         policy_engine: {
           status: 'active',
           policies_loaded: this.policyCache.size,
-          last_policy_sync: new Date().toISOString()
+          last_policy_sync: new Date().toISOString(),
         },
         content_scanner: {
           status: 'active',
           scan_queue_size: 0,
-          average_scan_time_ms: 150
+          average_scan_time_ms: 150,
         },
         audit_system: {
           status: 'active',
           events_pending: this.auditBuffer.length,
-          retention_compliance: true
+          retention_compliance: true,
         },
         compliance_reports: {
           status: 'active',
           last_report_generated: new Date().toISOString(),
-          pending_reports: 0
-        }
+          pending_reports: 0,
+        },
       }
 
       // Check for any critical issues
@@ -330,7 +342,7 @@ export class GovernanceComplianceService {
         policy_engine: { status: 'offline', policies_loaded: 0, last_policy_sync: '' },
         content_scanner: { status: 'offline', scan_queue_size: 0, average_scan_time_ms: 0 },
         audit_system: { status: 'offline', events_pending: 0, retention_compliance: false },
-        compliance_reports: { status: 'offline', last_report_generated: '', pending_reports: 0 }
+        compliance_reports: { status: 'offline', last_report_generated: '', pending_reports: 0 },
       }
     }
   }
@@ -346,10 +358,15 @@ export class GovernanceComplianceService {
       this.policyCache.set(policy.id, policy)
     }
 
-    console.log(`[Governance] Loaded ${defaultPolicies.length} default policies for workspace ${workspaceId}`)
+    console.log(
+      `[Governance] Loaded ${defaultPolicies.length} default policies for workspace ${workspaceId}`
+    )
   }
 
-  private async initializeWorkspaceCompliance(workspaceId: string, auth: AuthContext): Promise<void> {
+  private async initializeWorkspaceCompliance(
+    workspaceId: string,
+    auth: AuthContext
+  ): Promise<void> {
     // Initialize regulatory requirements based on workspace configuration
     const enabledRegulations = this.config.enableRegulatory || ['GDPR', 'CCPA']
 
@@ -380,12 +397,16 @@ export class GovernanceComplianceService {
     }
   }
 
-  private async getApplicablePolicies(context: GovernanceContext, auth: AuthContext): Promise<GovernancePolicy[]> {
+  private async getApplicablePolicies(
+    context: GovernanceContext,
+    auth: AuthContext
+  ): Promise<GovernancePolicy[]> {
     const workspacePolicies = Array.from(this.policyCache.values())
-      .filter(policy =>
-        policy.workspace_id === context.workspace_id &&
-        policy.status === 'active' &&
-        this.isPolicyApplicable(policy, context)
+      .filter(
+        (policy) =>
+          policy.workspace_id === context.workspace_id &&
+          policy.status === 'active' &&
+          this.isPolicyApplicable(policy, context)
       )
       .sort((a, b) => {
         // Sort by priority: critical > high > medium > low
@@ -449,11 +470,15 @@ export class GovernanceComplianceService {
       rule_results: ruleResults,
       overall_violation: overallViolation,
       risk_score: normalizedRiskScore,
-      recommended_actions: overallViolation ? policy.rules.map(r => r.action) : []
+      recommended_actions: overallViolation ? policy.rules.map((r) => r.action) : [],
     }
   }
 
-  private async evaluateRule(rule: any, content: string, context: GovernanceContext): Promise<{
+  private async evaluateRule(
+    rule: any,
+    content: string,
+    context: GovernanceContext
+  ): Promise<{
     rule_id: string
     matched: boolean
     confidence: number
@@ -463,7 +488,7 @@ export class GovernanceComplianceService {
     const condition = rule.condition
     let matched = false
     let confidence = 0
-    let evidence: any = undefined
+    let evidence: any
 
     try {
       switch (condition.operator) {
@@ -475,7 +500,7 @@ export class GovernanceComplianceService {
           }
           break
 
-        case 'regex':
+        case 'regex': {
           const regex = new RegExp(condition.value, condition.case_sensitive ? 'g' : 'gi')
           const matches = content.match(regex)
           matched = matches !== null
@@ -484,6 +509,7 @@ export class GovernanceComplianceService {
             evidence = { matched_patterns: matches, regex: condition.value }
           }
           break
+        }
 
         case 'equals':
           matched = condition.case_sensitive
@@ -505,7 +531,7 @@ export class GovernanceComplianceService {
       rule_id: rule.id,
       matched,
       confidence,
-      evidence
+      evidence,
     }
   }
 
@@ -530,7 +556,7 @@ export class GovernanceComplianceService {
       id: this.generateId('audit'),
       timestamp: new Date().toISOString(),
       retention_date: this.calculateRetentionDate(),
-      ...eventData
+      ...eventData,
     } as AuditEvent
 
     this.auditBuffer.push(auditEvent)
@@ -561,7 +587,7 @@ export class GovernanceComplianceService {
         last_assessed: new Date().toISOString(),
         next_review_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
         evidence_required: ['consent records', 'legitimate interest assessment'],
-        responsible_party: 'Data Protection Officer'
+        responsible_party: 'Data Protection Officer',
       },
       {
         id: 'gdpr-002',
@@ -573,8 +599,8 @@ export class GovernanceComplianceService {
         last_assessed: new Date().toISOString(),
         next_review_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         evidence_required: ['deletion procedures', 'retention policies'],
-        responsible_party: 'System Administrator'
-      }
+        responsible_party: 'System Administrator',
+      },
     ])
 
     // Initialize CCPA requirements
@@ -589,8 +615,8 @@ export class GovernanceComplianceService {
         last_assessed: new Date().toISOString(),
         next_review_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
         evidence_required: ['privacy policy', 'data collection notices'],
-        responsible_party: 'Privacy Officer'
-      }
+        responsible_party: 'Privacy Officer',
+      },
     ])
 
     console.log('[Governance] Initialized regulatory requirements for GDPR and CCPA')
@@ -636,22 +662,22 @@ export class GovernanceComplianceService {
               field: 'content',
               operator: 'regex',
               value: '\\b\\d{3}-\\d{2}-\\d{4}\\b', // SSN pattern
-              case_sensitive: false
+              case_sensitive: false,
             },
             action: {
               type: 'block',
               parameters: { replacement: '[SSN REDACTED]' },
               message: 'Social Security Number detected and blocked',
-              severity: 'critical'
+              severity: 'critical',
             },
-            weight: 10
-          }
+            weight: 10,
+          },
         ],
         created_at: now,
         updated_at: now,
         created_by: createdBy,
         last_modified_by: createdBy,
-        version: 1
+        version: 1,
       },
       {
         id: this.generateId('policy'),
@@ -670,23 +696,23 @@ export class GovernanceComplianceService {
               field: 'content',
               operator: 'contains',
               value: 'competitor brand names',
-              case_sensitive: false
+              case_sensitive: false,
             },
             action: {
               type: 'flag',
               parameters: { review_required: true },
               message: 'Competitor brand mention detected',
-              severity: 'warning'
+              severity: 'warning',
             },
-            weight: 3
-          }
+            weight: 3,
+          },
         ],
         created_at: now,
         updated_at: now,
         created_by: createdBy,
         last_modified_by: createdBy,
-        version: 1
-      }
+        version: 1,
+      },
     ]
   }
 
@@ -720,7 +746,7 @@ export const governanceComplianceService = new GovernanceComplianceService({
   auditRetentionDays: 2555, // 7 years
   batchAuditFlushInterval: 30000, // 30 seconds
   maxConcurrentScans: 10,
-  enableRegulatory: ['GDPR', 'CCPA', 'SOX']
+  enableRegulatory: ['GDPR', 'CCPA', 'SOX'],
 })
 
 // ==================== UTILITY FUNCTIONS ====================
@@ -758,32 +784,32 @@ export async function quickComplianceCheck(
     workspace_id: workspaceId,
     user_id: userId,
     agent_id: agentId,
-    permissions: ['read', 'write']
+    permissions: ['read', 'write'],
   }
 
   const auth: AuthContext = {
     user_id: userId,
     workspace_id: workspaceId,
-    key_type: 'workspace'
+    key_type: 'workspace',
   }
 
   try {
     const results = await governanceComplianceService.evaluateCompliance(content, context, auth)
 
-    const violations = results.filter(r => r.overall_violation)
-    const maxRiskScore = Math.max(...results.map(r => r.risk_score), 0)
+    const violations = results.filter((r) => r.overall_violation)
+    const maxRiskScore = Math.max(...results.map((r) => r.risk_score), 0)
 
     return {
       compliant: violations.length === 0,
       violations: [], // Would extract actual violations from results
-      riskScore: maxRiskScore
+      riskScore: maxRiskScore,
     }
   } catch (error) {
     console.error('[Governance] Quick compliance check failed:', error)
     return {
       compliant: false,
       violations: [],
-      riskScore: 100
+      riskScore: 100,
     }
   }
 }

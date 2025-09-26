@@ -47,100 +47,35 @@ export {
   learningUtils,
   type UserInteraction,
 } from './agent-learning-service'
-
 // Agent Management
 export { AgentService, agentService } from './agent-service'
-
-// Enterprise Governance and Compliance System
 export {
-  governanceComplianceService,
-  initializeWorkspaceGovernance,
-  quickComplianceCheck,
-  type GovernancePolicy,
-  type PolicyEvaluationResult,
-  type GovernanceContext,
-  type CreatePolicyRequest,
-  type UpdatePolicyRequest,
-  type GovernanceHealthCheck,
-  type RegulatoryRequirement,
-  type RegulationType
-} from './governance-compliance-service'
-
-export {
-  cannedResponseService,
-  suggestResponse,
-  getPersonalizedResponse,
+  type BrandingConfig,
   type CannedResponse,
   type CannedResponseMatch,
   type CreateCannedResponseRequest,
-  type UpdateCannedResponseRequest,
+  cannedResponseService,
+  getPersonalizedResponse,
+  type PersonalizationField,
   type ResponseCategory,
-  type BrandingConfig,
-  type PersonalizationField
+  suggestResponse,
+  type UpdateCannedResponseRequest,
 } from './canned-response-service'
-
-export {
-  securityScanningService,
-  quickSecurityScan,
-  safeFilterContent,
-  type SecurityScan,
-  type SecurityScanRequest,
-  type SecurityScanResult,
-  type SecurityViolation,
-  type ContentFilter,
-  type ContentFilterResult,
-  type ViolationType,
-  type ViolationSeverity
-} from './security-scanning-service'
-
-export {
-  complianceReportingService,
-  logAudit,
-  generateComplianceSummary,
-  type ComplianceReport,
-  type ComplianceReportRequest,
-  type AuditEvent,
-  type ComplianceMetrics,
-  type ComplianceFinding,
-  type GovernanceDashboardData,
-  type ReportType,
-  type ReportFormat
-} from './compliance-reporting-service'
-
-// Governance and Compliance Types
-export type {
-  // Core governance types
-  PolicyCategory,
-  PolicyType,
-  PolicyStatus,
-  PolicyPriority,
-  PolicyRule,
-  PolicyCondition,
-  PolicyAction,
-  EnforcementLevel,
-
-  // Security scanning types
-  ScanType,
-  ScanStatus,
-  FilterType,
-  FilterPattern,
-  ViolationEvidence,
-
-  // Compliance reporting types
-  AuditEventType,
-  AuditAction,
-  AuditChange,
-  ComplianceStatus,
-  FindingType,
-  ComplianceRecommendation,
-
-  // Utility types
-  GovernanceError,
-  GovernanceErrorCode
-} from './governance-compliance-types'
-
 // Core services
 export { closeParlantClient, createParlantClient, getParlantClient, ParlantClient } from './client'
+export {
+  type AuditEvent,
+  type ComplianceFinding,
+  type ComplianceMetrics,
+  type ComplianceReport,
+  type ComplianceReportRequest,
+  complianceReportingService,
+  type GovernanceDashboardData,
+  generateComplianceSummary,
+  logAudit,
+  type ReportFormat,
+  type ReportType,
+} from './compliance-reporting-service'
 // Configuration and utilities
 export { getParlantConfig, parlantConfig, serviceConfig, validateConfig } from './config'
 // Error handling
@@ -168,6 +103,48 @@ export {
   fileProcessingUtils,
   fileUploadProcessorService,
 } from './file-upload-processor'
+// Enterprise Governance and Compliance System
+export {
+  type CreatePolicyRequest,
+  type GovernanceContext,
+  type GovernanceHealthCheck,
+  type GovernancePolicy,
+  governanceComplianceService,
+  initializeWorkspaceGovernance,
+  type PolicyEvaluationResult,
+  quickComplianceCheck,
+  type RegulationType,
+  type RegulatoryRequirement,
+  type UpdatePolicyRequest,
+} from './governance-compliance-service'
+// Governance and Compliance Types
+export type {
+  AuditAction,
+  AuditChange,
+  // Compliance reporting types
+  AuditEventType,
+  ComplianceRecommendation,
+  ComplianceStatus,
+  EnforcementLevel,
+  FilterPattern,
+  FilterType,
+  FindingType,
+  // Utility types
+  GovernanceError,
+  GovernanceErrorCode,
+  PolicyAction,
+  // Core governance types
+  PolicyCategory,
+  PolicyCondition,
+  PolicyPriority,
+  PolicyRule,
+  PolicyStatus,
+  PolicyType,
+  ScanStatus,
+  // Security scanning types
+  ScanType,
+  ViolationEvidence,
+} from './governance-compliance-types'
 // Knowledge Base Integration with RAG Services
 export {
   knowledgeIntegrationService,
@@ -221,6 +198,19 @@ export {
   type ProcessAlert,
   type ProcessMonitoringMetrics,
 } from './orchestration-collaboration-hub'
+export {
+  type ContentFilter,
+  type ContentFilterResult,
+  quickSecurityScan,
+  type SecurityScan,
+  type SecurityScanRequest,
+  type SecurityScanResult,
+  type SecurityViolation,
+  safeFilterContent,
+  securityScanningService,
+  type ViolationSeverity,
+  type ViolationType,
+} from './security-scanning-service'
 export { SessionService, sessionService } from './session-service'
 // Type definitions
 // Re-export commonly used types with aliases for convenience
@@ -529,7 +519,10 @@ export const parlantUtils = {
       await initializeWorkspaceGovernance(workspaceId, auth)
       console.log(`[Parlant] Governance initialized for workspace: ${workspaceId}`)
     } catch (error) {
-      console.error(`[Parlant] Failed to initialize governance for workspace ${workspaceId}:`, error)
+      console.error(
+        `[Parlant] Failed to initialize governance for workspace ${workspaceId}:`,
+        error
+      )
       throw error
     }
   },
@@ -557,11 +550,7 @@ export const parlantUtils = {
   /**
    * Get intelligent response suggestion for query
    */
-  async suggestCannedResponse(
-    query: string,
-    workspaceId: string,
-    context?: Record<string, any>
-  ) {
+  async suggestCannedResponse(query: string, workspaceId: string, context?: Record<string, any>) {
     try {
       return await suggestResponse(query, workspaceId, context)
     } catch (error) {
@@ -585,7 +574,7 @@ export const parlantUtils = {
   /**
    * Generate compliance summary report for workspace
    */
-  async getComplianceSummary(workspaceId: string, days: number = 30) {
+  async getComplianceSummary(workspaceId: string, days = 30) {
     try {
       return await generateComplianceSummary(workspaceId, days)
     } catch (error) {
@@ -593,7 +582,7 @@ export const parlantUtils = {
       return {
         complianceScore: 0,
         violations: 0,
-        recommendations: ['Manual review required due to error']
+        recommendations: ['Manual review required due to error'],
       }
     }
   },
@@ -607,18 +596,20 @@ export const parlantUtils = {
       const scanningHealth = await securityScanningService.getScanningHealth()
 
       return {
-        overall_status: governanceHealth.overall_status === 'healthy' &&
-                       scanningHealth.status === 'healthy' ? 'healthy' : 'degraded',
+        overall_status:
+          governanceHealth.overall_status === 'healthy' && scanningHealth.status === 'healthy'
+            ? 'healthy'
+            : 'degraded',
         governance: governanceHealth,
         scanning: scanningHealth,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }
     } catch (error) {
       console.error('[Parlant] Governance health check failed:', error)
       return {
         overall_status: 'critical',
         error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }
     }
   },
@@ -648,7 +639,7 @@ export const parlantUtils = {
       rules: [], // Would be populated based on category
       enforcement_level: options?.enforcement || 'warn',
       created_by: auth.user_id,
-      last_modified_by: auth.user_id
+      last_modified_by: auth.user_id,
     }
 
     return governanceComplianceService.createPolicy(policyData, auth)
@@ -685,7 +676,9 @@ export const parlantUtils = {
       )
 
       if (!complianceCheck.compliant) {
-        throw new Error(`Message violates compliance policies. Risk score: ${complianceCheck.riskScore}`)
+        throw new Error(
+          `Message violates compliance policies. Risk score: ${complianceCheck.riskScore}`
+        )
       }
     }
 
@@ -707,21 +700,15 @@ export const parlantUtils = {
           {
             modifications_count: filterResult.modificationsCount,
             original_length: initialMessage.length,
-            filtered_length: filteredMessage.length
+            filtered_length: filteredMessage.length,
           }
         )
       }
     }
 
     // Start conversation with filtered/validated content
-    return this.startConversation(
-      agentId,
-      workspaceId,
-      auth,
-      filteredMessage,
-      options?.customerId
-    )
-  }
+    return this.startConversation(agentId, workspaceId, auth, filteredMessage, options?.customerId)
+  },
 }
 
 /**
@@ -742,8 +729,8 @@ export const version = {
     'security-scanning',
     'canned-responses',
     'audit-trails',
-    'regulatory-compliance'
-  ]
+    'regulatory-compliance',
+  ],
 }
 
 /**
@@ -759,22 +746,22 @@ export default {
   governance: {
     service: governanceComplianceService,
     initialize: initializeWorkspaceGovernance,
-    quickCheck: quickComplianceCheck
+    quickCheck: quickComplianceCheck,
   },
   cannedResponses: {
     service: cannedResponseService,
     suggest: suggestResponse,
-    personalize: getPersonalizedResponse
+    personalize: getPersonalizedResponse,
   },
   security: {
     scanning: securityScanningService,
     quickScan: quickSecurityScan,
-    filter: safeFilterContent
+    filter: safeFilterContent,
   },
   compliance: {
     reporting: complianceReportingService,
     audit: logAudit,
-    summary: generateComplianceSummary
+    summary: generateComplianceSummary,
   },
 
   // Utilities
@@ -791,6 +778,6 @@ export default {
     hasSecurity: true,
     hasAuditTrails: true,
     hasRAG: true,
-    hasOrchestration: true
-  }
+    hasOrchestration: true,
+  },
 }

@@ -7,18 +7,13 @@
  * matching, ML detection, performance, and error handling scenarios.
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
+import type { ScanType, SecurityScanRequest } from '../governance-compliance-types'
 import {
-  securityScanningService,
   quickSecurityScan,
-  safeFilterContent
+  safeFilterContent,
+  securityScanningService,
 } from '../security-scanning-service'
-import {
-  SecurityScanRequest,
-  ScanType,
-  ViolationType,
-  ViolationSeverity
-} from '../governance-compliance-types'
 
 describe('SecurityScanningService', () => {
   let testWorkspaceId: string
@@ -36,12 +31,12 @@ describe('SecurityScanningService', () => {
       const testContent = 'Please update customer record with SSN: 123-45-6789'
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       const scanRequest: SecurityScanRequest = {
         content: testContent,
-        scan_type: 'real_time'
+        scan_type: 'real_time',
       }
 
       const result = await securityScanningService.scanContent(scanRequest, context)
@@ -50,7 +45,7 @@ describe('SecurityScanningService', () => {
       expect(result.status).toBe('completed')
       expect(result.violations.length).toBeGreaterThan(0)
 
-      const ssnViolation = result.violations.find(v => v.type === 'pii_exposure')
+      const ssnViolation = result.violations.find((v) => v.type === 'pii_exposure')
       expect(ssnViolation).toBeDefined()
       expect(ssnViolation!.severity).toBe('critical')
       expect(ssnViolation!.evidence.matched_text).toMatch(/\d{3}-\d{2}-\d{4}/)
@@ -60,21 +55,20 @@ describe('SecurityScanningService', () => {
       const testContent = 'Customer payment info: 4532-1234-5678-9012'
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       const scanRequest: SecurityScanRequest = {
         content: testContent,
-        scan_type: 'real_time'
+        scan_type: 'real_time',
       }
 
       const result = await securityScanningService.scanContent(scanRequest, context)
 
       expect(result.violations.length).toBeGreaterThan(0)
 
-      const ccViolation = result.violations.find(v =>
-        v.type === 'pii_exposure' &&
-        v.description.toLowerCase().includes('credit card')
+      const ccViolation = result.violations.find(
+        (v) => v.type === 'pii_exposure' && v.description.toLowerCase().includes('credit card')
       )
       expect(ccViolation).toBeDefined()
       expect(ccViolation!.severity).toBe('critical')
@@ -84,19 +78,19 @@ describe('SecurityScanningService', () => {
       const testContent = 'Contact customer at john.doe@example.com for follow-up'
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       const scanRequest: SecurityScanRequest = {
         content: testContent,
-        scan_type: 'real_time'
+        scan_type: 'real_time',
       }
 
       const result = await securityScanningService.scanContent(scanRequest, context)
 
       expect(result.violations.length).toBeGreaterThan(0)
 
-      const emailViolation = result.violations.find(v => v.type === 'pii_exposure')
+      const emailViolation = result.violations.find((v) => v.type === 'pii_exposure')
       expect(emailViolation).toBeDefined()
       expect(emailViolation!.severity).toBe('medium')
       expect(emailViolation!.evidence.matched_text).toBe('john.doe@example.com')
@@ -106,21 +100,20 @@ describe('SecurityScanningService', () => {
       const testContent = 'Customer phone: (555) 123-4567'
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       const scanRequest: SecurityScanRequest = {
         content: testContent,
-        scan_type: 'real_time'
+        scan_type: 'real_time',
       }
 
       const result = await securityScanningService.scanContent(scanRequest, context)
 
       expect(result.violations.length).toBeGreaterThan(0)
 
-      const phoneViolation = result.violations.find(v =>
-        v.type === 'pii_exposure' &&
-        v.description.toLowerCase().includes('phone')
+      const phoneViolation = result.violations.find(
+        (v) => v.type === 'pii_exposure' && v.description.toLowerCase().includes('phone')
       )
       expect(phoneViolation).toBeDefined()
       expect(phoneViolation!.severity).toBe('medium')
@@ -130,12 +123,12 @@ describe('SecurityScanningService', () => {
       const testContent = 'This is a normal business message without sensitive information'
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       const scanRequest: SecurityScanRequest = {
         content: testContent,
-        scan_type: 'real_time'
+        scan_type: 'real_time',
       }
 
       const result = await securityScanningService.scanContent(scanRequest, context)
@@ -150,24 +143,24 @@ describe('SecurityScanningService', () => {
       const testCases = [
         {
           content: 'SSN: 123-45-6789, CC: 4532-1234-5678-9012',
-          expectedMinRisk: 80 // Multiple critical violations
+          expectedMinRisk: 80, // Multiple critical violations
         },
         {
           content: 'Email: test@example.com',
           expectedMinRisk: 20,
-          expectedMaxRisk: 60 // Single medium violation
+          expectedMaxRisk: 60, // Single medium violation
         },
         {
           content: 'Normal content',
           expectedMinRisk: 0,
-          expectedMaxRisk: 0 // No violations
-        }
+          expectedMaxRisk: 0, // No violations
+        },
       ]
 
       for (const testCase of testCases) {
         const context = {
           workspace_id: testWorkspaceId,
-          user_id: 'test_user'
+          user_id: 'test_user',
         }
 
         const result = await securityScanningService.scanContent(
@@ -186,7 +179,7 @@ describe('SecurityScanningService', () => {
       const testContent = 'Customer SSN: 123-45-6789 and email: test@example.com'
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       const result = await securityScanningService.scanContent(
@@ -196,7 +189,9 @@ describe('SecurityScanningService', () => {
 
       expect(result.recommendations).toBeDefined()
       expect(result.recommendations.length).toBeGreaterThan(0)
-      expect(result.recommendations.some(r => r.includes('review') || r.includes('redact'))).toBe(true)
+      expect(result.recommendations.some((r) => r.includes('review') || r.includes('redact'))).toBe(
+        true
+      )
     })
   })
 
@@ -204,14 +199,10 @@ describe('SecurityScanningService', () => {
     it('should apply content filtering with redaction', async () => {
       const testContent = 'Customer information: SSN 123-45-6789, Phone (555) 123-4567'
 
-      const result = await securityScanningService.filterContent(
-        testContent,
-        testWorkspaceId,
-        {
-          strictness: 'high',
-          enable_redaction: true
-        }
-      )
+      const result = await securityScanningService.filterContent(testContent, testWorkspaceId, {
+        strictness: 'high',
+        enable_redaction: true,
+      })
 
       expect(result).toBeDefined()
       expect(result.filtered_content).not.toBe(testContent) // Should be modified
@@ -226,16 +217,17 @@ describe('SecurityScanningService', () => {
       const testCases = [
         {
           content: 'Normal safe content',
-          expectedSafetyScore: 100
+          expectedSafetyScore: 100,
         },
         {
           content: 'Content with SSN: 123-45-6789',
-          expectedSafetyScore: { min: 40, max: 80 }
+          expectedSafetyScore: { min: 40, max: 80 },
         },
         {
-          content: 'Multiple violations: SSN 123-45-6789, CC 4532-1234-5678-9012, Email test@test.com',
-          expectedSafetyScore: { min: 0, max: 40 }
-        }
+          content:
+            'Multiple violations: SSN 123-45-6789, CC 4532-1234-5678-9012, Email test@test.com',
+          expectedSafetyScore: { min: 0, max: 40 },
+        },
       ]
 
       for (const testCase of testCases) {
@@ -264,19 +256,19 @@ describe('SecurityScanningService', () => {
             pattern: 'confidential',
             pattern_type: 'keyword' as const,
             weight: 8,
-            case_sensitive: false
-          }
+            case_sensitive: false,
+          },
         ],
         sensitivity_level: 80,
         enabled: true,
         apply_to_incoming: true,
-        apply_to_outgoing: true
+        apply_to_outgoing: true,
       }
 
-      const filter = await securityScanningService.createContentFilter(
-        filterData,
-        { user_id: 'test_user', key_type: 'workspace' }
-      )
+      const filter = await securityScanningService.createContentFilter(filterData, {
+        user_id: 'test_user',
+        key_type: 'workspace',
+      })
 
       expect(filter).toBeDefined()
       expect(filter.id).toMatch(/^filter_/)
@@ -296,20 +288,20 @@ describe('SecurityScanningService', () => {
             pattern: '[invalid regex(',
             pattern_type: 'regex' as const,
             weight: 5,
-            case_sensitive: false
-          }
+            case_sensitive: false,
+          },
         ],
         sensitivity_level: 50,
         enabled: true,
         apply_to_incoming: true,
-        apply_to_outgoing: true
+        apply_to_outgoing: true,
       }
 
       await expect(
-        securityScanningService.createContentFilter(
-          invalidFilterData,
-          { user_id: 'test_user', key_type: 'workspace' }
-        )
+        securityScanningService.createContentFilter(invalidFilterData, {
+          user_id: 'test_user',
+          key_type: 'workspace',
+        })
       ).rejects.toThrow(/Invalid regex pattern/)
     })
   })
@@ -337,17 +329,19 @@ describe('SecurityScanningService', () => {
       const testContent = 'Test content with SSN: 123-45-6789'
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       // Run multiple scans concurrently
       const concurrentScans = 5
-      const promises = Array(concurrentScans).fill(null).map(() =>
-        securityScanningService.scanContent(
-          { content: testContent, scan_type: 'real_time' },
-          context
+      const promises = Array(concurrentScans)
+        .fill(null)
+        .map(() =>
+          securityScanningService.scanContent(
+            { content: testContent, scan_type: 'real_time' },
+            context
+          )
         )
-      )
 
       const startTime = Date.now()
       const results = await Promise.all(promises)
@@ -356,17 +350,17 @@ describe('SecurityScanningService', () => {
       expect(results).toHaveLength(concurrentScans)
       expect(duration).toBeLessThan(5000) // Should complete within 5 seconds
 
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.status).toBe('completed')
         expect(result.violations.length).toBeGreaterThan(0)
       })
     })
 
     it('should handle large content efficiently', async () => {
-      const largeContent = 'a'.repeat(10000) + ' SSN: 123-45-6789 ' + 'b'.repeat(10000)
+      const largeContent = `${'a'.repeat(10000)} SSN: 123-45-6789 ${'b'.repeat(10000)}`
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       const startTime = Date.now()
@@ -387,7 +381,7 @@ describe('SecurityScanningService', () => {
       const testContent = 'Customer SSN is 123-45-6789'
 
       const result = await quickSecurityScan(testContent, testWorkspaceId, {
-        agentId: 'test_agent'
+        agentId: 'test_agent',
       })
 
       expect(result).toBeDefined()
@@ -429,7 +423,7 @@ describe('SecurityScanningService', () => {
     it('should handle empty content gracefully', async () => {
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       const result = await securityScanningService.scanContent(
@@ -450,12 +444,12 @@ describe('SecurityScanningService', () => {
         { not: 'string' } as any,
         '\x00\x01\x02', // Binary data
         '🎉🎊🎈', // Unicode emojis
-        'a'.repeat(100000) // Very large content
+        'a'.repeat(100000), // Very large content
       ]
 
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       for (const content of malformedContents) {
@@ -477,13 +471,13 @@ describe('SecurityScanningService', () => {
     it('should handle invalid scan types', async () => {
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       const result = await securityScanningService.scanContent(
         {
           content: 'test content',
-          scan_type: 'invalid_type' as ScanType
+          scan_type: 'invalid_type' as ScanType,
         },
         context
       )
@@ -509,26 +503,20 @@ describe('SecurityScanningService', () => {
               pattern: 'test',
               pattern_type: 'keyword',
               weight: 5,
-              case_sensitive: false
-            }
+              case_sensitive: false,
+            },
           ],
           sensitivity_level: 50,
           enabled: true,
           apply_to_incoming: true,
-          apply_to_outgoing: true
+          apply_to_outgoing: true,
         },
         { user_id: 'test_user', key_type: 'workspace' }
       )
 
-      const result1 = await securityScanningService.filterContent(
-        content,
-        workspace1
-      )
+      const result1 = await securityScanningService.filterContent(content, workspace1)
 
-      const result2 = await securityScanningService.filterContent(
-        content,
-        workspace2
-      )
+      const result2 = await securityScanningService.filterContent(content, workspace2)
 
       // Both should detect SSN, but workspace1 might have additional filtering
       expect(result1.violations_found.length).toBeGreaterThan(0)
@@ -540,7 +528,7 @@ describe('SecurityScanningService', () => {
       const veryLargeContent = 'test content '.repeat(100000)
       const context = {
         workspace_id: testWorkspaceId,
-        user_id: 'test_user'
+        user_id: 'test_user',
       }
 
       const startTime = Date.now()
@@ -560,7 +548,7 @@ describe('SecurityScanningService', () => {
       const invalidPatterns = [
         { pattern: '[unclosed', pattern_type: 'regex' as const },
         { pattern: '(unclosed', pattern_type: 'regex' as const },
-        { pattern: '*invalid', pattern_type: 'regex' as const }
+        { pattern: '*invalid', pattern_type: 'regex' as const },
       ]
 
       for (const invalidPattern of invalidPatterns) {
@@ -575,7 +563,7 @@ describe('SecurityScanningService', () => {
               sensitivity_level: 50,
               enabled: true,
               apply_to_incoming: true,
-              apply_to_outgoing: true
+              apply_to_outgoing: true,
             },
             { user_id: 'test_user', key_type: 'workspace' }
           )

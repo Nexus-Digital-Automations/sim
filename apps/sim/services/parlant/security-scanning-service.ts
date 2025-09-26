@@ -17,7 +17,7 @@
  * - Integration with governance policies
  */
 
-import {
+import type {
   ContentFilter,
   ContentFilterResult,
   FilterPattern,
@@ -26,13 +26,11 @@ import {
   SecurityScanRequest,
   SecurityScanResult,
   SecurityViolation,
-  ScanStatus,
-  ScanType,
   ViolationEvidence,
   ViolationSeverity,
   ViolationType,
 } from './governance-compliance-types'
-import { AuthContext } from './types'
+import type { AuthContext } from './types'
 
 /**
  * Security scanning patterns and detection rules
@@ -73,14 +71,16 @@ export class SecurityScanningService {
   private readonly activeScanIds = new Set<string>()
   private scanningActive = false
 
-  constructor(private readonly config: {
-    enableRealTimeScanning?: boolean
-    enableMLDetection?: boolean
-    cacheResults?: boolean
-    maxConcurrentScans?: number
-    scanTimeoutMs?: number
-    enableThreatIntelligence?: boolean
-  } = {}) {
+  constructor(
+    private readonly config: {
+      enableRealTimeScanning?: boolean
+      enableMLDetection?: boolean
+      cacheResults?: boolean
+      maxConcurrentScans?: number
+      scanTimeoutMs?: number
+      enableThreatIntelligence?: boolean
+    } = {}
+  ) {
     this.initializeSecurityPatterns()
     this.initializeDefaultFilters()
     this.startScanProcessor()
@@ -98,7 +98,9 @@ export class SecurityScanningService {
     const scanId = this.generateScanId()
 
     try {
-      console.log(`[SecurityScan] Starting scan ${scanId} for content length: ${request.content.length}`)
+      console.log(
+        `[SecurityScan] Starting scan ${scanId} for content length: ${request.content.length}`
+      )
 
       // Check cache first
       const contentHash = this.generateContentHash(request.content)
@@ -123,7 +125,7 @@ export class SecurityScanningService {
         violations: [],
         risk_score: 0,
         confidence_level: 0,
-        scan_engine_version: '1.0.0'
+        scan_engine_version: '1.0.0',
       }
 
       this.activeScanIds.add(scanId)
@@ -144,7 +146,7 @@ export class SecurityScanningService {
         risk_score: riskScore,
         confidence_level: confidenceLevel,
         recommendations,
-        scan_duration_ms: Date.now() - startTime
+        scan_duration_ms: Date.now() - startTime,
       }
 
       // Update scan record
@@ -162,7 +164,9 @@ export class SecurityScanningService {
 
       this.activeScanIds.delete(scanId)
 
-      console.log(`[SecurityScan] Completed scan ${scanId} in ${result.scan_duration_ms}ms. Found ${violations.length} violations with risk score ${riskScore}`)
+      console.log(
+        `[SecurityScan] Completed scan ${scanId} in ${result.scan_duration_ms}ms. Found ${violations.length} violations with risk score ${riskScore}`
+      )
 
       return result
     } catch (error) {
@@ -176,7 +180,7 @@ export class SecurityScanningService {
         risk_score: 100, // Maximum risk for failed scans
         confidence_level: 0,
         recommendations: ['Manual review required due to scan failure'],
-        scan_duration_ms: Date.now() - startTime
+        scan_duration_ms: Date.now() - startTime,
       }
     }
   }
@@ -230,13 +234,15 @@ export class SecurityScanningService {
       const safetyScore = this.calculateSafetyScore(violations, content.length)
 
       const duration = Date.now() - startTime
-      console.log(`[ContentFilter] Filtering completed in ${duration}ms. Applied ${modifications.length} modifications`)
+      console.log(
+        `[ContentFilter] Filtering completed in ${duration}ms. Applied ${modifications.length} modifications`
+      )
 
       return {
         filtered_content: filteredContent,
         violations_found: violations,
         modifications_made: modifications,
-        safety_score: safetyScore
+        safety_score: safetyScore,
       }
     } catch (error) {
       console.error('[ContentFilter] Filtering failed:', error)
@@ -244,7 +250,7 @@ export class SecurityScanningService {
         filtered_content: content, // Return original on failure
         violations_found: [],
         modifications_made: [],
-        safety_score: 0 // Lowest safety score
+        safety_score: 0, // Lowest safety score
       }
     }
   }
@@ -261,7 +267,7 @@ export class SecurityScanningService {
         ...filterData,
         id: this.generateId('filter'),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       // Validate filter patterns
@@ -328,13 +334,13 @@ export class SecurityScanningService {
         violation_trends: [
           { type: 'pii_exposure', count: 15, trend: 'down' },
           { type: 'inappropriate_content', count: 8, trend: 'stable' },
-          { type: 'security_threat', count: 3, trend: 'up' }
+          { type: 'security_threat', count: 3, trend: 'up' },
         ],
         performance_metrics: {
           scans_per_minute: scansPerMinute,
           errors_per_hour: errorsPerHour,
-          false_positive_rate: falsePositiveRate
-        }
+          false_positive_rate: falsePositiveRate,
+        },
       }
     } catch (error) {
       console.error('[SecurityScan] Health check failed:', error)
@@ -348,15 +354,18 @@ export class SecurityScanningService {
         performance_metrics: {
           scans_per_minute: 0,
           errors_per_hour: 0,
-          false_positive_rate: 0
-        }
+          false_positive_rate: 0,
+        },
       }
     }
   }
 
   // ==================== PRIVATE METHODS ====================
 
-  private async performSecurityScan(content: string, context: ScanContext): Promise<SecurityViolation[]> {
+  private async performSecurityScan(
+    content: string,
+    context: ScanContext
+  ): Promise<SecurityViolation[]> {
     const violations: SecurityViolation[] = []
 
     // Apply security patterns
@@ -401,10 +410,10 @@ export class SecurityScanningService {
             location: {
               start_pos: match.index,
               end_pos: match.index + match[0].length,
-              line_number: this.getLineNumber(content, match.index)
+              line_number: this.getLineNumber(content, match.index),
             },
             context: this.getContextAround(content, match.index, 50),
-            confidence: pattern.confidence
+            confidence: pattern.confidence,
           }
 
           const violation: SecurityViolation = {
@@ -415,7 +424,7 @@ export class SecurityScanningService {
             evidence,
             recommendation: pattern.recommendation,
             risk_score: this.calculatePatternRiskScore(pattern, context),
-            false_positive_likelihood: this.calculateFalsePositiveLikelihood(pattern, match[0])
+            false_positive_likelihood: this.calculateFalsePositiveLikelihood(pattern, match[0]),
           }
 
           violations.push(violation)
@@ -428,7 +437,10 @@ export class SecurityScanningService {
     return violations
   }
 
-  private async performMLDetection(content: string, context: ScanContext): Promise<SecurityViolation[]> {
+  private async performMLDetection(
+    content: string,
+    context: ScanContext
+  ): Promise<SecurityViolation[]> {
     // Placeholder for ML-based detection
     // In production, this would integrate with ML models for:
     // - Sentiment analysis
@@ -447,20 +459,29 @@ export class SecurityScanningService {
         description: 'ML model detected potential sensitive data leak',
         evidence: {
           matched_text: 'confidential',
-          location: { start_pos: content.indexOf('confidential'), end_pos: content.indexOf('confidential') + 12 },
-          context: content.substring(Math.max(0, content.indexOf('confidential') - 25), content.indexOf('confidential') + 37),
-          confidence: 0.75
+          location: {
+            start_pos: content.indexOf('confidential'),
+            end_pos: content.indexOf('confidential') + 12,
+          },
+          context: content.substring(
+            Math.max(0, content.indexOf('confidential') - 25),
+            content.indexOf('confidential') + 37
+          ),
+          confidence: 0.75,
         },
         recommendation: 'Review content for sensitive information before sharing',
         risk_score: 60,
-        false_positive_likelihood: 0.25
+        false_positive_likelihood: 0.25,
       })
     }
 
     return violations
   }
 
-  private async performThreatIntelligenceCheck(content: string, context: ScanContext): Promise<SecurityViolation[]> {
+  private async performThreatIntelligenceCheck(
+    content: string,
+    context: ScanContext
+  ): Promise<SecurityViolation[]> {
     // Placeholder for threat intelligence integration
     // In production, this would check against:
     // - Known malicious URLs
@@ -474,7 +495,7 @@ export class SecurityScanningService {
     const suspiciousPatterns = [
       /https?:\/\/[^\s]+\.tk\b/gi, // Suspicious TLD
       /click here to claim|urgent action required/gi, // Phishing language
-      /wire transfer|send money|crypto/gi // Financial fraud indicators
+      /wire transfer|send money|crypto/gi, // Financial fraud indicators
     ]
 
     for (const pattern of suspiciousPatterns) {
@@ -490,11 +511,11 @@ export class SecurityScanningService {
               matched_text: match[0],
               location: { start_pos: match.index, end_pos: match.index + match[0].length },
               context: this.getContextAround(content, match.index, 30),
-              confidence: 0.8
+              confidence: 0.8,
             },
             recommendation: 'Block content and investigate source',
             risk_score: 85,
-            false_positive_likelihood: 0.1
+            false_positive_likelihood: 0.1,
           })
         }
       }
@@ -527,7 +548,7 @@ export class SecurityScanningService {
 
     return {
       riskScore: averageRisk,
-      confidenceLevel: averageConfidence
+      confidenceLevel: averageConfidence,
     }
   }
 
@@ -555,13 +576,14 @@ export class SecurityScanningService {
   }
 
   private getApplicableFilters(workspaceId: string, customFilters?: string[]): ContentFilter[] {
-    const filters = Array.from(this.filterCache.values())
-      .filter(filter => filter.workspace_id === workspaceId && filter.enabled)
+    const filters = Array.from(this.filterCache.values()).filter(
+      (filter) => filter.workspace_id === workspaceId && filter.enabled
+    )
 
     // Add custom filters if specified
     if (customFilters) {
       const customFilterObjects = customFilters
-        .map(id => this.filterCache.get(id))
+        .map((id) => this.filterCache.get(id))
         .filter((filter): filter is ContentFilter => filter !== undefined)
 
       filters.push(...customFilterObjects)
@@ -644,7 +666,8 @@ export class SecurityScanningService {
 
       const matches = [...content.matchAll(regex)]
 
-      for (const match of matches.reverse()) { // Reverse to maintain indices during replacement
+      for (const match of matches.reverse()) {
+        // Reverse to maintain indices during replacement
         if (match.index !== undefined) {
           const original = match[0]
           let replacement = '[FILTERED]'
@@ -660,7 +683,8 @@ export class SecurityScanningService {
 
           // Apply filtering based on options
           if (options.enable_redaction !== false) {
-            filteredContent = filteredContent.substring(0, match.index) +
+            filteredContent =
+              filteredContent.substring(0, match.index) +
               replacement +
               filteredContent.substring(match.index + original.length)
 
@@ -668,7 +692,7 @@ export class SecurityScanningService {
               type: 'redacted',
               original,
               replacement,
-              reason: `${filter.name} filter applied`
+              reason: `${filter.name} filter applied`,
             })
           }
 
@@ -683,14 +707,14 @@ export class SecurityScanningService {
               pattern: pattern.pattern,
               location: {
                 start_pos: match.index,
-                end_pos: match.index + original.length
+                end_pos: match.index + original.length,
               },
               context: this.getContextAround(content, match.index, 30),
-              confidence: pattern.weight / 10 // Convert weight to confidence
+              confidence: pattern.weight / 10, // Convert weight to confidence
             },
             recommendation: `Remove or modify content to comply with ${filter.name}`,
             risk_score: Math.min(100, pattern.weight * 10),
-            false_positive_likelihood: this.estimateFalsePositive(pattern, original)
+            false_positive_likelihood: this.estimateFalsePositive(pattern, original),
           })
         }
       }
@@ -752,7 +776,7 @@ export class SecurityScanningService {
         description: 'Social Security Number detected',
         recommendation: 'Remove or redact SSN immediately',
         confidence: 0.95,
-        enabled: true
+        enabled: true,
       },
       // Credit Card Numbers
       {
@@ -764,7 +788,7 @@ export class SecurityScanningService {
         description: 'Credit card number detected',
         recommendation: 'Remove or tokenize credit card information',
         confidence: 0.9,
-        enabled: true
+        enabled: true,
       },
       // Email Addresses
       {
@@ -776,7 +800,7 @@ export class SecurityScanningService {
         description: 'Email address detected',
         recommendation: 'Consider if email address sharing is appropriate',
         confidence: 0.85,
-        enabled: true
+        enabled: true,
       },
       // Phone Numbers
       {
@@ -788,7 +812,7 @@ export class SecurityScanningService {
         description: 'Phone number detected',
         recommendation: 'Verify if phone number sharing is necessary',
         confidence: 0.8,
-        enabled: true
+        enabled: true,
       },
       // Profanity Detection (simplified)
       {
@@ -800,7 +824,7 @@ export class SecurityScanningService {
         description: 'Potentially inappropriate language detected',
         recommendation: 'Consider using more professional language',
         confidence: 0.7,
-        enabled: true
+        enabled: true,
       }
     )
 
@@ -820,16 +844,16 @@ export class SecurityScanningService {
             pattern: '\\b\\d{3}-\\d{2}-\\d{4}\\b',
             pattern_type: 'regex',
             weight: 10,
-            case_sensitive: false
-          }
+            case_sensitive: false,
+          },
         ],
         sensitivity_level: 90,
         enabled: true,
         apply_to_incoming: true,
         apply_to_outgoing: true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ]
 
     for (const filter of defaultFilters) {
@@ -853,7 +877,7 @@ export class SecurityScanningService {
       const batch = this.scanQueue.splice(0, Math.min(maxConcurrent, this.scanQueue.length))
 
       try {
-        await Promise.all(batch.map(item => this.scanContent(item.scan, item.context)))
+        await Promise.all(batch.map((item) => this.scanContent(item.scan, item.context)))
       } catch (error) {
         console.error('[SecurityScan] Batch processing failed:', error)
       } finally {
@@ -872,7 +896,7 @@ export class SecurityScanningService {
     let hash = 0
     for (let i = 0; i < content.length; i++) {
       const char = content.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     return Math.abs(hash).toString(16)
@@ -899,7 +923,7 @@ export class SecurityScanningService {
 
     // Adjust based on context
     if (context.risk_factors) {
-      riskScore *= (1 + context.risk_factors.length * 0.1)
+      riskScore *= 1 + context.risk_factors.length * 0.1
     }
 
     return Math.min(100, riskScore)
@@ -933,7 +957,7 @@ export class SecurityScanningService {
       medical: 'sensitive_data',
       legal: 'sensitive_data',
       brand_safety: 'brand_violation',
-      custom: 'policy_violation'
+      custom: 'policy_violation',
     }
     return mapping[filterType] || 'policy_violation'
   }
@@ -967,7 +991,7 @@ export const securityScanningService = new SecurityScanningService({
   cacheResults: true,
   maxConcurrentScans: 10,
   scanTimeoutMs: 30000,
-  enableThreatIntelligence: true
+  enableThreatIntelligence: true,
 })
 
 // ==================== UTILITY FUNCTIONS ====================
@@ -984,7 +1008,7 @@ export async function quickSecurityScan(
     const context: ScanContext = {
       workspace_id: workspaceId,
       agent_id: options.agentId,
-      session_id: options.sessionId
+      session_id: options.sessionId,
     }
 
     const result = await securityScanningService.scanContent(
@@ -995,7 +1019,7 @@ export async function quickSecurityScan(
     return {
       safe: result.risk_score < 50,
       riskScore: result.risk_score,
-      violations: result.violations.length
+      violations: result.violations.length,
     }
   } catch (error) {
     console.error('[SecurityScan] Quick scan failed:', error)
@@ -1014,12 +1038,12 @@ export async function safeFilterContent(
     const result = await securityScanningService.filterContent(content, workspaceId, {
       strictness: 'medium',
       enable_redaction: true,
-      enable_replacement: true
+      enable_replacement: true,
     })
 
     return {
       filteredContent: result.filtered_content,
-      modificationsCount: result.modifications_made.length
+      modificationsCount: result.modifications_made.length,
     }
   } catch (error) {
     console.error('[ContentFilter] Safe filtering failed:', error)

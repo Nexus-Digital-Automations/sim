@@ -10,10 +10,7 @@
  */
 
 import { describe, expect, it, jest } from '@jest/globals'
-import {
-  multiAgentOrchestrationService,
-  orchestrationCollaborationHub,
-} from '../index'
+import { multiAgentOrchestrationService, orchestrationCollaborationHub } from '../index'
 
 // Mock the dependencies
 jest.mock('../client')
@@ -29,7 +26,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       'orchestration:processes:create',
       'orchestration:handoffs:create',
       'orchestration:interventions:create',
-    ]
+    ],
   }
 
   describe('AC1: Multiple agents can work on same workflow', () => {

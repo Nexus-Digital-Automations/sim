@@ -27,9 +27,6 @@ const { provider } = defineI18nUI(i18n, {
     fr: {
       displayName: 'Français',
     },
-    zh: {
-      displayName: '简体中文',
-    },
   },
 })
 

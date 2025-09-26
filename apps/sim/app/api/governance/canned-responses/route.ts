@@ -15,12 +15,12 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { cannedResponseService, suggestResponse, getPersonalizedResponse } from '@/services/parlant/canned-response-service'
+import { cannedResponseService } from '@/services/parlant/canned-response-service'
 import { logAudit } from '@/services/parlant/compliance-reporting-service'
-import {
+import type {
   CreateCannedResponseRequest,
+  ResponseCategory,
   UpdateCannedResponseRequest,
-  ResponseCategory
 } from '@/services/parlant/governance-compliance-types'
 
 const logger = createLogger('CannedResponsesAPI')
@@ -41,16 +41,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const category = url.searchParams.get('category') as ResponseCategory | null
     const language = url.searchParams.get('language')
     const status = url.searchParams.get('status')
-    const limit = parseInt(url.searchParams.get('limit') || '20')
+    const limit = Number.parseInt(url.searchParams.get('limit') || '20')
     const includePersonalization = url.searchParams.get('include_personalization') === 'true'
     const requireCompliance = url.searchParams.get('require_compliance') === 'true'
 
     // Validate required parameters
     if (!workspaceId) {
-      return NextResponse.json(
-        { error: 'workspace_id is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'workspace_id is required' }, { status: 400 })
     }
 
     // Get authentication context
@@ -63,7 +60,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       const context = {
         user_id: userId,
         workspace_id: workspaceId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }
 
       const matches = await cannedResponseService.findMatchingResponses(
@@ -75,63 +72,43 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           limit,
           language: language || undefined,
           includePersonalization,
-          requireCompliance
+          requireCompliance,
         }
       )
 
       result = {
         matches,
         search_query: query,
-        total_matches: matches.length
+        total_matches: matches.length,
       }
 
       // Log search audit event
-      await logAudit(
-        'data_access',
-        'canned_response',
-        'search',
-        'read',
-        workspaceId,
-        userId,
-        {
-          query,
-          matches_found: matches.length,
-          category,
-          language
-        }
-      )
+      await logAudit('data_access', 'canned_response', 'search', 'read', workspaceId, userId, {
+        query,
+        matches_found: matches.length,
+        category,
+        language,
+      })
     } else if (category) {
       // Get responses by category
-      const responses = await cannedResponseService.getResponsesByCategory(
-        category,
-        workspaceId,
-        {
-          language: language || undefined,
-          includeInactive: status === 'inactive',
-          limit
-        }
-      )
+      const responses = await cannedResponseService.getResponsesByCategory(category, workspaceId, {
+        language: language || undefined,
+        includeInactive: status === 'inactive',
+        limit,
+      })
 
       result = {
         responses,
         category,
-        total_responses: responses.length
+        total_responses: responses.length,
       }
 
       // Log category access audit event
-      await logAudit(
-        'data_access',
-        'canned_response',
-        'category',
-        'read',
-        workspaceId,
-        userId,
-        {
-          category,
-          responses_count: responses.length,
-          language
-        }
-      )
+      await logAudit('data_access', 'canned_response', 'category', 'read', workspaceId, userId, {
+        category,
+        responses_count: responses.length,
+        language,
+      })
     } else {
       return NextResponse.json(
         { error: 'Either query or category parameter is required' },
@@ -145,7 +122,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       workspaceId,
       type: query ? 'search' : 'category',
       count: result.matches?.length || result.responses?.length,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json({
@@ -154,8 +131,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       metadata: {
         responseTime: Math.round(responseTime),
         timestamp: new Date().toISOString(),
-        search_type: query ? 'intelligent_matching' : 'category_filter'
-      }
+        search_type: query ? 'intelligent_matching' : 'category_filter',
+      },
     })
   } catch (error) {
     const responseTime = performance.now() - startTime
@@ -163,7 +140,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     logger.error('Failed to retrieve canned responses', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -171,7 +148,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Failed to retrieve canned responses',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )
@@ -188,21 +165,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     // Parse request body
-    const body = await request.json() as CreateCannedResponseRequest & { workspace_id: string }
+    const body = (await request.json()) as CreateCannedResponseRequest & { workspace_id: string }
 
     // Validate required fields
     if (!body.workspace_id) {
-      return NextResponse.json(
-        { error: 'workspace_id is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'workspace_id is required' }, { status: 400 })
     }
 
     if (!body.title || !body.content || !body.category) {
       return NextResponse.json(
         {
           error: 'Missing required fields',
-          required: ['title', 'content', 'category']
+          required: ['title', 'content', 'category'],
         },
         { status: 400 }
       )
@@ -213,7 +187,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const auth = {
       user_id: userId,
       workspace_id: body.workspace_id,
-      key_type: 'workspace' as const
+      key_type: 'workspace' as const,
     }
 
     // Create response
@@ -231,7 +205,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         response_title: response.title,
         category: response.category,
         language: response.language,
-        approval_required: response.approval_required
+        approval_required: response.approval_required,
       }
     )
 
@@ -242,7 +216,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       workspaceId: body.workspace_id,
       title: response.title,
       category: response.category,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json(
@@ -252,8 +226,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         metadata: {
           responseTime: Math.round(responseTime),
           timestamp: new Date().toISOString(),
-          needs_approval: response.approval_required
-        }
+          needs_approval: response.approval_required,
+        },
       },
       { status: 201 }
     )
@@ -263,7 +237,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     logger.error('Failed to create canned response', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -271,7 +245,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Failed to create canned response',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )
@@ -288,7 +262,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
   try {
     // Parse request body
-    const body = await request.json() as UpdateCannedResponseRequest & {
+    const body = (await request.json()) as UpdateCannedResponseRequest & {
       response_id: string
       workspace_id: string
     }
@@ -306,15 +280,11 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const auth = {
       user_id: userId,
       workspace_id: body.workspace_id,
-      key_type: 'workspace' as const
+      key_type: 'workspace' as const,
     }
 
     // Update response
-    const updatedResponse = await cannedResponseService.updateResponse(
-      body.response_id,
-      body,
-      auth
-    )
+    const updatedResponse = await cannedResponseService.updateResponse(body.response_id, body, auth)
 
     // Log audit event
     await logAudit(
@@ -327,7 +297,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       {
         response_title: updatedResponse.title,
         version: updatedResponse.version,
-        changes: Object.keys(body).filter(key => !['response_id', 'workspace_id'].includes(key))
+        changes: Object.keys(body).filter((key) => !['response_id', 'workspace_id'].includes(key)),
       }
     )
 
@@ -337,7 +307,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       responseId: body.response_id,
       workspaceId: body.workspace_id,
       version: updatedResponse.version,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json({
@@ -346,8 +316,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       metadata: {
         responseTime: Math.round(responseTime),
         timestamp: new Date().toISOString(),
-        version_updated: true
-      }
+        version_updated: true,
+      },
     })
   } catch (error) {
     const responseTime = performance.now() - startTime
@@ -355,7 +325,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     logger.error('Failed to update canned response', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -363,7 +333,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Failed to update canned response',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )
@@ -397,7 +367,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     const auth = {
       user_id: userId,
       workspace_id: workspaceId,
-      key_type: 'workspace' as const
+      key_type: 'workspace' as const,
     }
 
     // Soft delete by updating status to archived
@@ -418,7 +388,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       {
         response_title: updatedResponse.title,
         deletion_type: 'soft_delete',
-        archived_at: new Date().toISOString()
+        archived_at: new Date().toISOString(),
       }
     )
 
@@ -428,7 +398,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       responseId,
       workspaceId,
       title: updatedResponse.title,
-      responseTime
+      responseTime,
     })
 
     return NextResponse.json({
@@ -437,12 +407,12 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       data: {
         response_id: responseId,
         status: updatedResponse.status,
-        archived_at: updatedResponse.updated_at
+        archived_at: updatedResponse.updated_at,
       },
       metadata: {
         responseTime: Math.round(responseTime),
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     })
   } catch (error) {
     const responseTime = performance.now() - startTime
@@ -450,7 +420,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     logger.error('Failed to archive canned response', {
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     })
 
     return NextResponse.json(
@@ -458,7 +428,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
         success: false,
         error: 'Failed to archive canned response',
         details: error instanceof Error ? error.message : 'Unknown error',
-        responseTime: Math.round(responseTime)
+        responseTime: Math.round(responseTime),
       },
       { status: 500 }
     )

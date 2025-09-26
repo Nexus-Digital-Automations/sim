@@ -16,18 +16,16 @@
  * - Integration with governance policies
  */
 
-import {
+import type {
   BrandingConfig,
   CannedResponse,
   CannedResponseMatch,
-  ContextRequirement,
   CreateCannedResponseRequest,
-  GovernanceContext,
   PersonalizationField,
   ResponseCategory,
   UpdateCannedResponseRequest,
 } from './governance-compliance-types'
-import { AuthContext } from './types'
+import type { AuthContext } from './types'
 
 /**
  * Canned Response Management Service
@@ -40,13 +38,15 @@ export class CannedResponseService {
   private readonly languageIndex = new Map<string, string[]>()
   private readonly usageStats = new Map<string, { count: number; lastUsed: Date }>()
 
-  constructor(private readonly config: {
-    enablePersonalization?: boolean
-    enableBrandingValidation?: boolean
-    defaultLanguage?: string
-    maxResponsesPerCategory?: number
-    enableUsageTracking?: boolean
-  } = {}) {
+  constructor(
+    private readonly config: {
+      enablePersonalization?: boolean
+      enableBrandingValidation?: boolean
+      defaultLanguage?: string
+      maxResponsesPerCategory?: number
+      enableUsageTracking?: boolean
+    } = {}
+  ) {
     this.initializeDefaultResponses()
   }
 
@@ -77,7 +77,7 @@ export class CannedResponseService {
         version: 1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        created_by: auth.user_id
+        created_by: auth.user_id,
       }
 
       // Validate response content and branding
@@ -117,7 +117,10 @@ export class CannedResponseService {
         updated_at: new Date().toISOString(),
         version: existingResponse.version + 1,
         // Reset compliance validation if content changed
-        compliance_validated: updates.content !== existingResponse.content ? false : existingResponse.compliance_validated
+        compliance_validated:
+          updates.content !== existingResponse.content
+            ? false
+            : existingResponse.compliance_validated,
       }
 
       // Validate updated content
@@ -127,7 +130,9 @@ export class CannedResponseService {
       this.responseCache.set(responseId, updatedResponse)
       this.updateIndexes(updatedResponse)
 
-      console.log(`[CannedResponse] Updated response: ${updatedResponse.title} (v${updatedResponse.version})`)
+      console.log(
+        `[CannedResponse] Updated response: ${updatedResponse.title} (v${updatedResponse.version})`
+      )
       return updatedResponse
     } catch (error) {
       console.error('[CannedResponse] Failed to update response:', error)
@@ -159,30 +164,31 @@ export class CannedResponseService {
 
       // Filter by workspace
       if (workspaceId) {
-        candidates = candidates.filter(r => r.workspace_id === workspaceId)
+        candidates = candidates.filter((r) => r.workspace_id === workspaceId)
       }
 
       // Filter by category
       if (category) {
-        candidates = candidates.filter(r => r.category === category)
+        candidates = candidates.filter((r) => r.category === category)
       }
 
       // Filter by language
       const language = options.language || this.config.defaultLanguage || 'en'
-      candidates = candidates.filter(r => r.language === language)
+      candidates = candidates.filter((r) => r.language === language)
 
       // Filter by status
-      candidates = candidates.filter(r => r.status === 'active')
+      candidates = candidates.filter((r) => r.status === 'active')
 
       // Filter by compliance if required
       if (options.requireCompliance) {
-        candidates = candidates.filter(r => r.compliance_validated)
+        candidates = candidates.filter((r) => r.compliance_validated)
       }
 
       // Score and match candidates
       for (const response of candidates) {
         const match = await this.calculateResponseMatch(response, query, context)
-        if (match.relevance_score > 0.3) { // Minimum relevance threshold
+        if (match.relevance_score > 0.3) {
+          // Minimum relevance threshold
           matches.push(match)
         }
       }
@@ -195,7 +201,9 @@ export class CannedResponseService {
       const limitedMatches = matches.slice(0, limit)
 
       const duration = Date.now() - startTime
-      console.log(`[CannedResponse] Found ${limitedMatches.length} matches in ${duration}ms for query: "${query.substring(0, 50)}..."`)
+      console.log(
+        `[CannedResponse] Found ${limitedMatches.length} matches in ${duration}ms for query: "${query.substring(0, 50)}..."`
+      )
 
       return limitedMatches
     } catch (error) {
@@ -233,7 +241,7 @@ export class CannedResponseService {
       return {
         content: response.content,
         missing_fields: [],
-        personalization_applied: false
+        personalization_applied: false,
       }
     } catch (error) {
       console.error('[CannedResponse] Failed to get personalized response:', error)
@@ -256,7 +264,7 @@ export class CannedResponseService {
     try {
       const responseIds = this.categoryIndex.get(category) || []
       const responses = responseIds
-        .map(id => this.responseCache.get(id))
+        .map((id) => this.responseCache.get(id))
         .filter((response): response is CannedResponse => {
           if (!response || response.workspace_id !== workspaceId) return false
 
@@ -304,20 +312,21 @@ export class CannedResponseService {
     }>
   }> {
     try {
-      const workspaceResponses = Array.from(this.responseCache.values())
-        .filter(r => r.workspace_id === workspaceId)
+      const workspaceResponses = Array.from(this.responseCache.values()).filter(
+        (r) => r.workspace_id === workspaceId
+      )
 
-      const activeResponses = workspaceResponses.filter(r => r.status === 'active')
+      const activeResponses = workspaceResponses.filter((r) => r.status === 'active')
 
       // Generate usage statistics
-      const usageStats = workspaceResponses.map(response => {
+      const usageStats = workspaceResponses.map((response) => {
         const usage = this.usageStats.get(response.id)
         return {
           response_id: response.id,
           title: response.title,
           usage_count: response.usage_count,
           last_used: usage?.lastUsed.toISOString(),
-          effectiveness_score: response.effectiveness_score
+          effectiveness_score: response.effectiveness_score,
         }
       })
 
@@ -329,13 +338,13 @@ export class CannedResponseService {
 
       // Top performing responses
       const topPerforming = workspaceResponses
-        .filter(r => r.effectiveness_score !== undefined)
+        .filter((r) => r.effectiveness_score !== undefined)
         .sort((a, b) => (b.effectiveness_score || 0) - (a.effectiveness_score || 0))
         .slice(0, 10)
-        .map(r => ({
+        .map((r) => ({
           response_id: r.id,
           title: r.title,
-          score: r.effectiveness_score || 0
+          score: r.effectiveness_score || 0,
         }))
 
       return {
@@ -343,7 +352,7 @@ export class CannedResponseService {
         active_responses: activeResponses.length,
         usage_stats: usageStats,
         category_breakdown: categoryBreakdown,
-        top_performing: topPerforming
+        top_performing: topPerforming,
       }
     } catch (error) {
       console.error('[CannedResponse] Failed to get analytics:', error)
@@ -380,13 +389,15 @@ export class CannedResponseService {
         approved_at: new Date().toISOString(),
         compliance_validated: true,
         effectiveness_score: approvalData.effectiveness_prediction,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       this.responseCache.set(responseId, approvedResponse)
       this.updateIndexes(approvedResponse)
 
-      console.log(`[CannedResponse] Response approved: ${approvedResponse.title} by ${approvalData.approved_by}`)
+      console.log(
+        `[CannedResponse] Response approved: ${approvedResponse.title} by ${approvalData.approved_by}`
+      )
       return approvedResponse
     } catch (error) {
       console.error('[CannedResponse] Failed to approve response:', error)
@@ -429,7 +440,7 @@ export class CannedResponseService {
 
     // Validate brand voice keywords are present (at least one)
     if (branding.brand_voice_keywords && branding.brand_voice_keywords.length > 0) {
-      const hasKeyword = branding.brand_voice_keywords.some(keyword =>
+      const hasKeyword = branding.brand_voice_keywords.some((keyword) =>
         content.toLowerCase().includes(keyword.toLowerCase())
       )
       if (!hasKeyword) {
@@ -457,11 +468,11 @@ export class CannedResponseService {
 
     // Basic text similarity (simplified - in production would use NLP)
     const queryWords = query.toLowerCase().split(/\s+/)
-    const responseWords = (response.title + ' ' + response.content).toLowerCase().split(/\s+/)
+    const responseWords = `${response.title} ${response.content}`.toLowerCase().split(/\s+/)
 
     let matchingWords = 0
     for (const word of queryWords) {
-      if (responseWords.some(rWord => rWord.includes(word) || word.includes(rWord))) {
+      if (responseWords.some((rWord) => rWord.includes(word) || word.includes(rWord))) {
         matchingWords++
       }
     }
@@ -472,8 +483,8 @@ export class CannedResponseService {
     // Tag matching
     if (response.tags && response.tags.length > 0) {
       const queryLower = query.toLowerCase()
-      const tagMatches = response.tags.filter(tag =>
-        queryLower.includes(tag.toLowerCase()) || tag.toLowerCase().includes(queryLower)
+      const tagMatches = response.tags.filter(
+        (tag) => queryLower.includes(tag.toLowerCase()) || tag.toLowerCase().includes(queryLower)
       ).length
 
       if (tagMatches > 0) {
@@ -517,7 +528,7 @@ export class CannedResponseService {
       relevance_score: Math.min(1.0, relevanceScore),
       personalized_content: personalizedContent,
       missing_context: missingContext,
-      compliance_validated: response.compliance_validated
+      compliance_validated: response.compliance_validated,
     }
   }
 
@@ -573,7 +584,7 @@ export class CannedResponseService {
     return {
       content,
       missing_fields: missingFields,
-      personalization_applied: personalizationApplied
+      personalization_applied: personalizationApplied,
     }
   }
 
@@ -585,7 +596,7 @@ export class CannedResponseService {
       response.usage_count++
       this.usageStats.set(responseId, {
         count: response.usage_count,
-        lastUsed: new Date()
+        lastUsed: new Date(),
       })
     }
   }
@@ -641,21 +652,26 @@ export class CannedResponseService {
         id: this.generateId('response'),
         workspace_id: 'default',
         title: 'Professional Greeting',
-        content: 'Hello {{customer_name}}, thank you for contacting us. How may I assist you today?',
+        content:
+          'Hello {{customer_name}}, thank you for contacting us. How may I assist you today?',
         category: 'greeting',
         tags: ['greeting', 'professional', 'standard'],
         language: 'en',
-        context_requirements: [
-          { field: 'customer_name', required: false, default_value: 'there' }
-        ],
+        context_requirements: [{ field: 'customer_name', required: false, default_value: 'there' }],
         personalization_fields: [
-          { field_name: 'customer_name', placeholder: '{{customer_name}}', data_source: 'user_profile', required: false, fallback_value: 'there' }
+          {
+            field_name: 'customer_name',
+            placeholder: '{{customer_name}}',
+            data_source: 'user_profile',
+            required: false,
+            fallback_value: 'there',
+          },
         ],
         branding: {
           tone: 'professional',
           brand_voice_keywords: ['assist', 'help', 'support'],
           avoid_terms: ['problem', 'issue'],
-          required_disclaimers: []
+          required_disclaimers: [],
         },
         approval_required: false,
         usage_count: 0,
@@ -665,13 +681,14 @@ export class CannedResponseService {
         version: 1,
         created_at: now,
         updated_at: now,
-        created_by: 'system'
+        created_by: 'system',
       },
       {
         id: this.generateId('response'),
         workspace_id: 'default',
         title: 'Escalation to Human Agent',
-        content: 'I understand this requires additional attention. Let me connect you with one of our specialized team members who can better assist you. Please hold for just a moment.',
+        content:
+          'I understand this requires additional attention. Let me connect you with one of our specialized team members who can better assist you. Please hold for just a moment.',
         category: 'escalation',
         tags: ['escalation', 'human', 'handoff'],
         language: 'en',
@@ -680,8 +697,8 @@ export class CannedResponseService {
         branding: {
           tone: 'professional',
           brand_voice_keywords: ['specialized', 'assist', 'team'],
-          avoid_terms: ['can\'t help', 'unable'],
-          required_disclaimers: []
+          avoid_terms: ["can't help", 'unable'],
+          required_disclaimers: [],
         },
         approval_required: false,
         usage_count: 0,
@@ -691,27 +708,31 @@ export class CannedResponseService {
         version: 1,
         created_at: now,
         updated_at: now,
-        created_by: 'system'
+        created_by: 'system',
       },
       {
         id: this.generateId('response'),
         workspace_id: 'default',
         title: 'Privacy Information Request',
-        content: 'For privacy and security reasons, I cannot access or modify personal account information through this channel. Please log into your account directly or contact our secure support line at {{support_phone}} for account-related inquiries.',
+        content:
+          'For privacy and security reasons, I cannot access or modify personal account information through this channel. Please log into your account directly or contact our secure support line at {{support_phone}} for account-related inquiries.',
         category: 'compliance',
         tags: ['privacy', 'security', 'account', 'compliance'],
         language: 'en',
-        context_requirements: [
-          { field: 'support_phone', required: true }
-        ],
+        context_requirements: [{ field: 'support_phone', required: true }],
         personalization_fields: [
-          { field_name: 'support_phone', placeholder: '{{support_phone}}', data_source: 'custom', required: true }
+          {
+            field_name: 'support_phone',
+            placeholder: '{{support_phone}}',
+            data_source: 'custom',
+            required: true,
+          },
         ],
         branding: {
           tone: 'professional',
           brand_voice_keywords: ['privacy', 'security', 'secure'],
           avoid_terms: [],
-          required_disclaimers: ['For privacy and security reasons']
+          required_disclaimers: ['For privacy and security reasons'],
         },
         approval_required: true,
         usage_count: 0,
@@ -720,8 +741,8 @@ export class CannedResponseService {
         version: 1,
         created_at: now,
         updated_at: now,
-        created_by: 'system'
-      }
+        created_by: 'system',
+      },
     ]
   }
 
@@ -739,7 +760,7 @@ export const cannedResponseService = new CannedResponseService({
   enableBrandingValidation: true,
   defaultLanguage: 'en',
   maxResponsesPerCategory: 100,
-  enableUsageTracking: true
+  enableUsageTracking: true,
 })
 
 // ==================== UTILITY FUNCTIONS ====================
@@ -784,7 +805,9 @@ export async function getPersonalizedResponse(
     )
 
     if (result.missing_fields.length > 0) {
-      console.warn(`[CannedResponse] Missing personalization fields: ${result.missing_fields.join(', ')}`)
+      console.warn(
+        `[CannedResponse] Missing personalization fields: ${result.missing_fields.join(', ')}`
+      )
     }
 
     return result.content
