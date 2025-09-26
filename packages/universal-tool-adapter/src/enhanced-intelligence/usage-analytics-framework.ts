@@ -788,8 +788,8 @@ export class UsageAnalyticsFramework {
         skillLevel: request.currentContext.userSkillLevel,
         preferences: request.currentContext.userPreferences || {},
         workflowStage: request.workflowState?.currentWorkflowId || 'unknown',
-        intent: request.currentContext.currentIntent,
-        deviceContext: request.currentContext.deviceContext?.deviceType || 'unknown',
+        intent: request.currentContext.currentIntent?.primary || 'unknown',
+        deviceType: request.currentContext.deviceContext?.deviceType || 'unknown',
         timeZone: request.currentContext.timeContext?.timeZone || 'unknown',
       },
     })
@@ -818,8 +818,8 @@ export class UsageAnalyticsFramework {
       userContext: {
         skillLevel: context.userSkillLevel,
         preferences: context.userPreferences || {},
-        workflowStage: context.currentWorkflow || 'unknown',
-        intent: context.currentIntent,
+        workflowStage: context.workflowId || 'unknown',
+        intent: context.currentIntent?.primary || 'unknown',
         deviceType: context.deviceContext?.deviceType || 'unknown',
         timeZone: context.timeContext?.timeZone || 'unknown',
       },
@@ -1123,19 +1123,29 @@ export class UsageAnalyticsFramework {
 // =============================================================================
 
 class EventStorage {
+  constructor(private config: StorageConfig) {}
+
   async storeEvents(events: UsageEvent[]): Promise<void> {}
   async exportData(format: string, timeRange: any, filters?: any): Promise<ExportedData> {
     return {} as ExportedData
   }
 }
 
-class AnalyticsProcessor {}
+class AnalyticsProcessor {
+  constructor(private config: ProcessingConfig) {}
+}
 
-class InsightGenerator {}
+class InsightGenerator {
+  constructor() {}
+}
 
-class PredictiveEngine {}
+class PredictiveEngine {
+  constructor(private config: MLPipelineConfig) {}
+}
 
 class RealTimeMonitor {
+  constructor(private config: MonitoringConfig) {}
+
   processEvent(event: UsageEvent): void {}
   getDashboardData(): RealTimeDashboard {
     return {} as RealTimeDashboard
