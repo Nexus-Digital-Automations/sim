@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, ExternalLink, RefreshCw, X } from 'lucide-react'
+import Image from 'next/image'
 import { JiraIcon } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import {
@@ -520,9 +521,11 @@ export function JiraProjectSelector({
                         >
                           <div className='flex items-center gap-2 overflow-hidden'>
                             {project.avatarUrl ? (
-                              <img
+                              <Image
                                 src={project.avatarUrl}
                                 alt={project.name}
+                                width={16}
+                                height={16}
                                 className='h-4 w-4 rounded'
                               />
                             ) : (
@@ -571,9 +574,11 @@ export function JiraProjectSelector({
             <div className='flex items-center gap-3 pr-4'>
               <div className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded bg-muted/20'>
                 {selectedProject.avatarUrl ? (
-                  <img
+                  <Image
                     src={selectedProject.avatarUrl}
                     alt={selectedProject.name}
+                    width={16}
+                    height={16}
                     className='h-4 w-4 rounded'
                   />
                 ) : (

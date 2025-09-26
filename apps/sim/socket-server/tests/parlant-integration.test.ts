@@ -74,9 +74,10 @@ describe('Parlant Socket.io Integration', () => {
     clientSockets = []
   })
 
-  beforeEach(() => {
-    clientSockets = []
-  })
+  // NOTE: Removed duplicate beforeEach - clientSockets already cleared in afterEach
+  // beforeEach(() => {
+  //   clientSockets = []
+  // })
 
   const createAuthenticatedClient = (): Promise<ClientSocket> => {
     return new Promise((resolve, reject) => {
@@ -450,7 +451,9 @@ describe('Parlant Socket.io Integration', () => {
 })
 
 // Helper functions for more complex integration tests
-export const ParlantTestHelpers = {
+// NOTE: If these test helpers need to be shared, move them to a separate non-test file
+// export const ParlantTestHelpers = {
+const ParlantTestHelpers = {
   /**
    * Create multiple authenticated clients for testing multi-user scenarios
    */

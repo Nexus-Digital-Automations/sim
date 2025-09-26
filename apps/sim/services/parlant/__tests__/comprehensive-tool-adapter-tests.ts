@@ -1269,5 +1269,6 @@ describe('Comprehensive Universal Tool Adapter System Integration Tests', () => 
   })
 })
 
-// Export for use in other test files
-export { ComprehensiveToolAdapterTestFramework, COMPREHENSIVE_TEST_CONFIG, IMPLEMENTED_ADAPTERS }
+// NOTE: If this test framework needs to be shared with other tests, move it to a separate
+// non-test file like __tests__/utils/comprehensive-tool-adapter-utils.ts
+// export { ComprehensiveToolAdapterTestFramework, COMPREHENSIVE_TEST_CONFIG, IMPLEMENTED_ADAPTERS }

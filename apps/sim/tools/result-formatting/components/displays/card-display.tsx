@@ -9,6 +9,7 @@
 
 import { useState } from 'react'
 import { Columns, ExternalLink, Eye, Grid, List, Mail, MoreVertical } from 'lucide-react'
+import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -140,14 +141,15 @@ export function CardDisplay({ content, onAction, compact = false, className }: C
             {card.image && (
               <div
                 className={cn(
-                  'overflow-hidden',
+                  'relative overflow-hidden',
                   layout === 'list' ? 'h-24 w-32 flex-shrink-0' : 'h-48 w-full'
                 )}
               >
-                <img
+                <Image
                   src={card.image.url || `data:${card.image.mimeType};base64,${card.image.base64}`}
                   alt={card.image.alt}
-                  className='h-full w-full object-cover'
+                  fill
+                  className='object-cover'
                   loading='lazy'
                 />
               </div>

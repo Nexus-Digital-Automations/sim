@@ -1,15 +1,15 @@
 {
   "metadata": {
-    "generatedAt": "2025-09-26T09:07:45.000Z",
+    "generatedAt": "2025-09-26T16:39:12.492Z",
     "reportVersion": "2.0.0",
     "framework": "workflow-journey-testing",
-    "reportId": "report_realtime-communication_1758877665000"
+    "reportId": "report_realtime-communication_1758904752492"
   },
   "suite": {
     "id": "realtime-communication",
     "name": "WebSocket Real-time Communication Testing",
     "description": "Comprehensive validation of Socket.io messaging, connection handling, and network resilience",
-    "startTime": "2025-09-26T09:07:17.308Z",
+    "startTime": "2025-09-26T16:38:45.897Z",
     "totalTests": 7,
     "passed": 6,
     "failed": 1,
@@ -17,13 +17,13 @@
     "errors": 0,
     "results": [
       {
-        "testId": "test_websocket-connection-establish_1758877637378",
+        "testId": "test_websocket-connection-establish_1758904725921",
         "scenarioId": "websocket-connection-establish",
         "scenarioName": "WebSocket Connection Establishment",
         "status": "passed",
-        "duration": 66,
-        "startTime": "2025-09-26T09:07:17.312Z",
-        "endTime": "2025-09-26T09:07:17.378Z",
+        "duration": 22,
+        "startTime": "2025-09-26T16:38:45.899Z",
+        "endTime": "2025-09-26T16:38:45.921Z",
         "errors": [],
         "warnings": [],
         "metrics": {
@@ -35,9 +35,9 @@
             "final": null
           },
           "processingTime": {
-            "conversion": 46.199999999999996,
-            "validation": 13.200000000000001,
-            "total": 66
+            "conversion": 15.399999999999999,
+            "validation": 4.4,
+            "total": 22
           },
           "qualityMetrics": {
             "stateCount": 0,
@@ -49,9 +49,9 @@
         "artifacts": {
           "screenshots": [],
           "logs": [
-            "test-reports/realtime-communication/artifacts/test_websocket-connection-establish_1758877637378.log"
+            "test-reports/realtime-communication/artifacts/test_websocket-connection-establish_1758904725922.log"
           ],
-          "conversionOutput": "{\n  \"success\": true,\n  \"connectionTime\": 66\n}",
+          "conversionOutput": "{\n  \"success\": true,\n  \"connectionTime\": 22\n}",
           "errorTraces": [],
           "performanceProfiles": [],
           "visualizations": []
@@ -62,13 +62,13 @@
         }
       },
       {
-        "testId": "test_websocket-concurrent-connections_1758877637979",
+        "testId": "test_websocket-concurrent-connections_1758904726031",
         "scenarioId": "websocket-concurrent-connections",
         "scenarioName": "WebSocket Concurrent Connections",
         "status": "passed",
-        "duration": 579,
-        "startTime": "2025-09-26T09:07:17.400Z",
-        "endTime": "2025-09-26T09:07:17.979Z",
+        "duration": 107,
+        "startTime": "2025-09-26T16:38:45.924Z",
+        "endTime": "2025-09-26T16:38:46.031Z",
         "errors": [],
         "warnings": [],
         "metrics": {
@@ -80,9 +80,9 @@
             "final": null
           },
           "processingTime": {
-            "conversion": 405.29999999999995,
-            "validation": 115.80000000000001,
-            "total": 579
+            "conversion": 74.89999999999999,
+            "validation": 21.400000000000002,
+            "total": 107
           },
           "qualityMetrics": {
             "stateCount": 0,
@@ -94,9 +94,9 @@
         "artifacts": {
           "screenshots": [],
           "logs": [
-            "test-reports/realtime-communication/artifacts/test_websocket-concurrent-connections_1758877637980.log"
+            "test-reports/realtime-communication/artifacts/test_websocket-concurrent-connections_1758904726031.log"
           ],
-          "conversionOutput": "{\n  \"success\": true,\n  \"connectionCount\": 50,\n  \"connectionTime\": 579\n}",
+          "conversionOutput": "{\n  \"success\": true,\n  \"connectionCount\": 50,\n  \"connectionTime\": 107\n}",
           "errorTraces": [],
           "performanceProfiles": [],
           "visualizations": []
@@ -107,13 +107,13 @@
         }
       },
       {
-        "testId": "test_websocket-authentication_1758877638034",
+        "testId": "test_websocket-authentication_1758904726073",
         "scenarioId": "websocket-authentication",
         "scenarioName": "WebSocket Connection Authentication",
         "status": "passed",
-        "duration": 21,
-        "startTime": "2025-09-26T09:07:18.013Z",
-        "endTime": "2025-09-26T09:07:18.034Z",
+        "duration": 35,
+        "startTime": "2025-09-26T16:38:46.038Z",
+        "endTime": "2025-09-26T16:38:46.073Z",
         "errors": [],
         "warnings": [],
         "metrics": {
@@ -125,9 +125,9 @@
             "final": null
           },
           "processingTime": {
-            "conversion": 14.7,
-            "validation": 4.2,
-            "total": 21
+            "conversion": 24.5,
+            "validation": 7,
+            "total": 35
           },
           "qualityMetrics": {
             "stateCount": 0,
@@ -139,7 +139,7 @@
         "artifacts": {
           "screenshots": [],
           "logs": [
-            "test-reports/realtime-communication/artifacts/test_websocket-authentication_1758877638034.log"
+            "test-reports/realtime-communication/artifacts/test_websocket-authentication_1758904726073.log"
           ],
           "conversionOutput": "{\n  \"success\": true,\n  \"validAuth\": true,\n  \"invalidAuthBlocked\": true\n}",
           "errorTraces": [],
@@ -152,13 +152,13 @@
         }
       },
       {
-        "testId": "test_message-queuing_1758877648567",
+        "testId": "test_message-queuing_1758904736545",
         "scenarioId": "message-queuing",
         "scenarioName": "Message Queuing During Disconnection",
         "status": "failed",
-        "duration": 283,
-        "startTime": "2025-09-26T09:07:28.283Z",
-        "endTime": "2025-09-26T09:07:28.566Z",
+        "duration": 238,
+        "startTime": "2025-09-26T16:38:56.307Z",
+        "endTime": "2025-09-26T16:38:56.545Z",
         "errors": [],
         "warnings": [],
         "metrics": {
@@ -170,9 +170,9 @@
             "final": null
           },
           "processingTime": {
-            "conversion": 198.1,
-            "validation": 56.6,
-            "total": 283
+            "conversion": 166.6,
+            "validation": 47.6,
+            "total": 238
           },
           "qualityMetrics": {
             "stateCount": 0,
@@ -184,7 +184,7 @@
         "artifacts": {
           "screenshots": [],
           "logs": [
-            "test-reports/realtime-communication/artifacts/test_message-queuing_1758877648567.log"
+            "test-reports/realtime-communication/artifacts/test_message-queuing_1758904736545.log"
           ],
           "conversionOutput": "{\n  \"success\": false,\n  \"messageQueued\": true,\n  \"messageDeliveredOnReconnect\": false\n}",
           "errorTraces": [],
@@ -197,27 +197,27 @@
         }
       },
       {
-        "testId": "test_network-interruption-handling_1758877650762",
+        "testId": "test_network-interruption-handling_1758904738661",
         "scenarioId": "network-interruption-handling",
         "scenarioName": "Network Interruption Handling",
         "status": "passed",
-        "duration": 2183,
-        "startTime": "2025-09-26T09:07:28.579Z",
-        "endTime": "2025-09-26T09:07:30.762Z",
+        "duration": 2113,
+        "startTime": "2025-09-26T16:38:56.548Z",
+        "endTime": "2025-09-26T16:38:58.661Z",
         "errors": [],
         "warnings": [],
         "metrics": {
           "conversionAccuracy": null,
-          "performanceScore": 91.61704076958314,
+          "performanceScore": 94.65215333648841,
           "memoryUsage": {
             "peak": null,
             "average": null,
             "final": null
           },
           "processingTime": {
-            "conversion": 1528.1,
-            "validation": 436.6,
-            "total": 2183
+            "conversion": 1479.1,
+            "validation": 422.6,
+            "total": 2113
           },
           "qualityMetrics": {
             "stateCount": 0,
@@ -229,7 +229,7 @@
         "artifacts": {
           "screenshots": [],
           "logs": [
-            "test-reports/realtime-communication/artifacts/test_network-interruption-handling_1758877650762.log"
+            "test-reports/realtime-communication/artifacts/test_network-interruption-handling_1758904738661.log"
           ],
           "conversionOutput": "{\n  \"success\": true,\n  \"disconnectDetected\": true,\n  \"reconnectionAttempted\": true\n}",
           "errorTraces": [],
@@ -242,27 +242,27 @@
         }
       },
       {
-        "testId": "test_exponential-backoff-reconnection_1758877653772",
+        "testId": "test_exponential-backoff-reconnection_1758904741680",
         "scenarioId": "exponential-backoff-reconnection",
         "scenarioName": "Exponential Backoff Reconnection",
         "status": "passed",
-        "duration": 3008,
-        "startTime": "2025-09-26T09:07:30.764Z",
-        "endTime": "2025-09-26T09:07:33.772Z",
+        "duration": 3017,
+        "startTime": "2025-09-26T16:38:58.663Z",
+        "endTime": "2025-09-26T16:39:01.680Z",
         "errors": [],
         "warnings": [],
         "metrics": {
           "conversionAccuracy": null,
-          "performanceScore": 66.48936170212765,
+          "performanceScore": 66.29101756711965,
           "memoryUsage": {
             "peak": null,
             "average": null,
             "final": null
           },
           "processingTime": {
-            "conversion": 2105.6,
-            "validation": 601.6,
-            "total": 3008
+            "conversion": 2111.9,
+            "validation": 603.4,
+            "total": 3017
           },
           "qualityMetrics": {
             "stateCount": 0,
@@ -274,7 +274,7 @@
         "artifacts": {
           "screenshots": [],
           "logs": [
-            "test-reports/realtime-communication/artifacts/test_exponential-backoff-reconnection_1758877653773.log"
+            "test-reports/realtime-communication/artifacts/test_exponential-backoff-reconnection_1758904741680.log"
           ],
           "conversionOutput": "{\n  \"success\": true,\n  \"reconnectionAttempts\": 0,\n  \"backoffImplemented\": false\n}",
           "errorTraces": [],
@@ -287,13 +287,13 @@
         }
       },
       {
-        "testId": "test_server-overload-handling_1758877654700",
+        "testId": "test_server-overload-handling_1758904742233",
         "scenarioId": "server-overload-handling",
         "scenarioName": "Server Overload Handling",
         "status": "passed",
-        "duration": 926,
-        "startTime": "2025-09-26T09:07:33.774Z",
-        "endTime": "2025-09-26T09:07:34.700Z",
+        "duration": 552,
+        "startTime": "2025-09-26T16:39:01.681Z",
+        "endTime": "2025-09-26T16:39:02.233Z",
         "errors": [],
         "warnings": [],
         "metrics": {
@@ -305,9 +305,9 @@
             "final": null
           },
           "processingTime": {
-            "conversion": 648.1999999999999,
-            "validation": 185.20000000000002,
-            "total": 926
+            "conversion": 386.4,
+            "validation": 110.4,
+            "total": 552
           },
           "qualityMetrics": {
             "stateCount": 0,
@@ -319,7 +319,7 @@
         "artifacts": {
           "screenshots": [],
           "logs": [
-            "test-reports/realtime-communication/artifacts/test_server-overload-handling_1758877654700.log"
+            "test-reports/realtime-communication/artifacts/test_server-overload-handling_1758904742233.log"
           ],
           "conversionOutput": "{\n  \"success\": true,\n  \"connectionSuccessRate\": 1,\n  \"overloadHandled\": true\n}",
           "errorTraces": [],
@@ -335,11 +335,11 @@
     "summary": {
       "overallStatus": "failed",
       "successRate": 85.71428571428571,
-      "averageDuration": 1009.4285714285714,
-      "totalDuration": 27671,
+      "averageDuration": 869.1428571428571,
+      "totalDuration": 26583,
       "criticalIssues": 0,
       "warningsCount": 0,
-      "performanceAverage": 94.01520035310155,
+      "performanceAverage": 94.42045298622973,
       "coveragePercentage": 0,
       "trends": {
         "improvement": false,
@@ -347,8 +347,8 @@
         "newIssues": []
       }
     },
-    "endTime": "2025-09-26T09:07:44.979Z",
-    "duration": 27671
+    "endTime": "2025-09-26T16:39:12.480Z",
+    "duration": 26583
   },
   "analytics": {
     "distribution": {

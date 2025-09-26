@@ -1243,5 +1243,5 @@ describe('End-to-End Workflow to Conversation Integration', () => {
   })
 })
 
-// Export utilities for use in other test files
-export { MockParlantServer, IntegrationTestClient, E2ETestWorkflowGenerator, E2E_TEST_CONFIG }
+// Test utilities are available within this file only
+// If needed by other tests, move to a separate utility file outside __tests__

@@ -1054,11 +1054,5 @@ describe('Workflow to Journey Performance Tests', () => {
   })
 })
 
-// Export utilities for use in other test files
-export {
-  PerformanceTestDataGenerator,
-  PerformanceMonitor,
-  LoadTestManager,
-  PERFORMANCE_TARGETS,
-  PERFORMANCE_TEST_CONFIG,
-}
+// Test utilities are available within this file only
+// If needed by other tests, move to a separate utility file outside __tests__

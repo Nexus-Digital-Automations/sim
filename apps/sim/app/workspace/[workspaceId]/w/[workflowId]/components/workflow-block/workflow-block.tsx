@@ -141,9 +141,13 @@ export function WorkflowBlock({ id, data }: NodeProps<WorkflowBlockProps>) {
     isShowingDiff,
     id,
   ])
+  // Always call the hook, but use the value conditionally
+  const storeHorizontalHandles = useWorkflowStore(
+    (state) => state.blocks[id]?.horizontalHandles ?? true
+  )
   const horizontalHandles = data.isPreview
     ? (data.blockState?.horizontalHandles ?? true) // In preview mode, use blockState and default to horizontal
-    : useWorkflowStore((state) => state.blocks[id]?.horizontalHandles ?? true) // Changed default to true for consistency
+    : storeHorizontalHandles // Use store value in normal mode
   const isWide = useWorkflowStore((state) => state.blocks[id]?.isWide ?? false)
   const blockHeight = useWorkflowStore((state) => state.blocks[id]?.height ?? 0)
   // Get per-block webhook status by checking if webhook is configured

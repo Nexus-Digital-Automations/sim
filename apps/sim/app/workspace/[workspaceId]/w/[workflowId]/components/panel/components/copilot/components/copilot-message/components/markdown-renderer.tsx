@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { Check, Copy } from 'lucide-react'
+import Image from 'next/image'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -368,12 +369,17 @@ export default function CopilotMarkdownRenderer({ content }: CopilotMarkdownRend
 
       // Images
       img: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-        <img
-          src={src}
-          alt={alt || 'Image'}
-          className='my-3 h-auto max-w-full rounded-md'
-          {...props}
-        />
+        <div className='relative my-3 max-w-full'>
+          <Image
+            src={src || ''}
+            alt={alt || 'Image'}
+            width={800}
+            height={600}
+            className='h-auto max-w-full rounded-md'
+            style={{ width: 'auto', height: 'auto' }}
+            {...props}
+          />
+        </div>
       ),
     }),
     [copiedCodeBlocks]

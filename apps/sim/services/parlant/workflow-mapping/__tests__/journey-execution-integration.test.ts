@@ -938,8 +938,10 @@ class PerformanceTestRunner {
 
 /**
  * Test data generators
+ * NOTE: If this test data generator needs to be shared, move it to a separate non-test file
  */
-export const TestDataGenerator = {
+// export const TestDataGenerator = {
+const TestDataGenerator = {
   createWorkflow: (id: string): WorkflowData => ({
     ...SAMPLE_WORKFLOW,
     id,

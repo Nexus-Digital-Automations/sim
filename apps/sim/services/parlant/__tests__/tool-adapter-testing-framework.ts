@@ -992,6 +992,7 @@ describe('Universal Tool Adapter System - Integration Testing', () => {
   })
 })
 
-// Export the testing framework for use in other tests
-export { ToolAdapterTestingFramework, TEST_CONFIG, ALL_SIM_TOOLS }
-export type { ToolAdapterTestResult, TestAgent }
+// NOTE: If this testing framework needs to be shared with other tests, move it to a separate
+// non-test file like __tests__/utils/tool-adapter-testing-framework-utils.ts
+// export { ToolAdapterTestingFramework, TEST_CONFIG, ALL_SIM_TOOLS }
+// export type { ToolAdapterTestResult, TestAgent }

@@ -34,6 +34,7 @@ import {
   X,
   Zap,
 } from 'lucide-react'
+import NextImage from 'next/image'
 import { useParams } from 'next/navigation'
 import {
   Button,
@@ -2017,17 +2018,19 @@ const UserInput = forwardRef<UserInputRef, UserInputProps>(
                 >
                   {isImageFile(file.type) && file.previewUrl ? (
                     // For images, show actual thumbnail
-                    <img
+                    <NextImage
                       src={file.previewUrl}
                       alt={file.name}
-                      className='h-full w-full object-cover'
+                      fill
+                      className='object-cover'
                     />
                   ) : isImageFile(file.type) && file.key ? (
                     // For uploaded images without preview URL, use storage URL
-                    <img
+                    <NextImage
                       src={file.previewUrl || file.path}
                       alt={file.name}
-                      className='h-full w-full object-cover'
+                      fill
+                      className='object-cover'
                     />
                   ) : (
                     // For other files, show icon centered

@@ -9,13 +9,13 @@
  * - Complex processes complete successfully
  */
 
-import { describe, expect, it, jest } from '@jest/globals'
+import { describe, expect, it, vi } from 'vitest'
 import { multiAgentOrchestrationService, orchestrationCollaborationHub } from '../index'
 
 // Mock the dependencies
-jest.mock('../client')
-jest.mock('../agent-service')
-jest.mock('../session-service')
+vi.mock('../client')
+vi.mock('../agent-service')
+vi.mock('../session-service')
 
 describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
   const mockAuth = {

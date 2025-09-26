@@ -713,7 +713,9 @@ describe('Tool Recommendation System', () => {
 })
 
 // Utility test helpers
-export const testHelpers = {
+// NOTE: If these test helpers need to be shared, move them to a separate non-test file
+// export const testHelpers = {
+const testHelpers = {
   createMockRecommendation: (toolId: string, score = 0.8): ToolRecommendation => ({
     toolId,
     tool: { id: toolId, name: toolId, description: 'Mock tool', version: '1.0.0' } as any,

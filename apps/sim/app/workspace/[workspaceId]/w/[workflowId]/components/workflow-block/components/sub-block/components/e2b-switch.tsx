@@ -24,9 +24,9 @@ export function E2BSwitch({
   disabled = false,
 }: E2BSwitchProps) {
   const e2bEnabled = isTruthy(getEnv('NEXT_PUBLIC_E2B_ENABLED'))
-  if (!e2bEnabled) return null
-
   const [storeValue, setStoreValue] = useSubBlockValue<boolean>(blockId, subBlockId)
+
+  if (!e2bEnabled) return null
   const value = isPreview ? previewValue : propValue !== undefined ? propValue : storeValue
 
   const handleChange = (checked: boolean) => {

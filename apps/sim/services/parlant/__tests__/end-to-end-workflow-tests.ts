@@ -896,6 +896,7 @@ describe('End-to-End Workflow Integration Tests', () => {
   })
 })
 
-// Export for use in other tests
-export { EndToEndWorkflowTester, WORKFLOW_SCENARIOS, E2E_TEST_CONFIG }
-export type { WorkflowDefinition, WorkflowExecutionResult, WorkflowStep }
+// NOTE: If these utilities need to be shared with other tests, move them to a separate
+// non-test file like __tests__/utils/end-to-end-workflow-utils.ts
+// export { EndToEndWorkflowTester, WORKFLOW_SCENARIOS, E2E_TEST_CONFIG }
+// export type { WorkflowDefinition, WorkflowExecutionResult, WorkflowStep }

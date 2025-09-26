@@ -1088,5 +1088,5 @@ describe('Workflow Block Validation Tests', () => {
   })
 })
 
-// Export utilities for use in other test files
-export { BlockTestDataGenerator, BlockValidationUtils, BLOCK_TEST_CONFIG }
+// Test utilities are available within this file only
+// If needed by other tests, move to a separate utility file outside __tests__

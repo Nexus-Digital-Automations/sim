@@ -9,33 +9,61 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 2,
-      "current_day": "2025-09-25",
+      "total_reinitializations": 6,
+      "current_day": "2025-09-26",
       "time_buckets": {
-        "09:00-13:59": {
+        "10:00-14:59": {
           "init": 0,
-          "reinit": 2
+          "reinit": 4
         },
-        "14:00-18:59": {
-          "init": 0,
-          "reinit": 0
-        },
-        "19:00-23:59": {
+        "15:00-19:59": {
           "init": 0,
           "reinit": 0
         },
-        "00:00-04:59": {
+        "20:00-00:59": {
           "init": 0,
           "reinit": 0
         },
-        "05:00-09:59": {
+        "01:00-05:59": {
+          "init": 0,
+          "reinit": 0
+        },
+        "06:00-10:59": {
           "init": 0,
           "reinit": 0
         }
       },
-      "daily_history": [],
-      "last_reset": "2025-09-25T17:18:26.246Z",
-      "last_updated": "2025-09-25T17:24:00.470Z"
+      "daily_history": [
+        {
+          "date": "2025-09-25",
+          "total_init": 0,
+          "total_reinit": 2,
+          "buckets": {
+            "09:00-13:59": {
+              "init": 0,
+              "reinit": 2
+            },
+            "14:00-18:59": {
+              "init": 0,
+              "reinit": 0
+            },
+            "19:00-23:59": {
+              "init": 0,
+              "reinit": 0
+            },
+            "00:00-04:59": {
+              "init": 0,
+              "reinit": 0
+            },
+            "05:00-09:59": {
+              "init": 0,
+              "reinit": 0
+            }
+          }
+        }
+      ],
+      "last_reset": "2025-09-26T16:34:37.530Z",
+      "last_updated": "2025-09-26T17:02:15.410Z"
     }
   },
   "workflow_config": {
@@ -51,6 +79,13 @@
       "reinitialized": "2025-09-25T17:24:00.465Z",
       "sessionId": "7f358aa90a2ea970",
       "previousSessions": ["8db6c8dea1ebb16a"]
+    },
+    "BUILD_FIX_AGENT": {
+      "lastHeartbeat": "2025-09-26T17:02:15.408Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T17:02:15.408Z",
+      "sessionId": "4b6b5880fb7c0637",
+      "previousSessions": ["febc0bf51dcc283c", "c991163b5d845399", "3d8aa45d59e4f8ed"]
     }
   }
 }

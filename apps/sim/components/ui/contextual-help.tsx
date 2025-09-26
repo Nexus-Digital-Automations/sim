@@ -10,6 +10,7 @@
 import type React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, HelpCircle, Volume2, VolumeX, X } from 'lucide-react'
+import Image from 'next/image'
 import { createPortal } from 'react-dom'
 import { cn } from '@/lib/utils'
 import type {
@@ -793,11 +794,14 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
           </div>
 
           {currentStep.content.multimedia?.screenshot && (
-            <div className='rounded-lg border p-2'>
-              <img
+            <div className='relative rounded-lg border p-2'>
+              <Image
                 src={currentStep.content.multimedia.screenshot}
                 alt={`Screenshot for ${currentStep.title}`}
+                width={800}
+                height={600}
                 className='h-auto w-full rounded'
+                style={{ width: 'auto', height: 'auto' }}
               />
             </div>
           )}

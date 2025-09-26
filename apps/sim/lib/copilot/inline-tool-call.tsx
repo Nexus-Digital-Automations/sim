@@ -241,6 +241,15 @@ export function InlineToolCall({
   )
   const toolCall = liveToolCall || toolCallProp
 
+  // All hooks must be called before any early returns
+  const isExpandablePending =
+    toolCall?.state === 'pending' &&
+    (toolCall?.name === 'make_api_request' ||
+      toolCall?.name === 'set_environment_variables' ||
+      toolCall?.name === 'set_global_workflow_variables')
+
+  const [expanded, setExpanded] = useState(isExpandablePending)
+
   // Guard: nothing to render without a toolCall
   if (!toolCall) return null
 
@@ -252,14 +261,6 @@ export function InlineToolCall({
   } catch {
     return null
   }
-
-  const isExpandablePending =
-    toolCall.state === 'pending' &&
-    (toolCall.name === 'make_api_request' ||
-      toolCall.name === 'set_environment_variables' ||
-      toolCall.name === 'set_global_workflow_variables')
-
-  const [expanded, setExpanded] = useState(isExpandablePending)
   const isExpandableTool =
     toolCall.name === 'make_api_request' ||
     toolCall.name === 'set_environment_variables' ||

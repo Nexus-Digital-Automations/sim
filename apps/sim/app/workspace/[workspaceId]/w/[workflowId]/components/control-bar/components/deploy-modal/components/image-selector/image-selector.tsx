@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { Image, Loader2, Upload, X } from 'lucide-react'
+import NextImage from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { createLogger } from '@/lib/logs/console/logger'
@@ -193,10 +194,13 @@ export function ImageSelector({
         // Show uploaded image
         <div className='space-y-2'>
           <div className='relative inline-block'>
-            <img
+            <NextImage
               src={value}
               alt='Uploaded logo'
+              width={80}
+              height={80}
               className='h-20 w-20 rounded-lg border object-cover'
+              style={{ width: '80px', height: '80px' }}
             />
             <Button
               type='button'

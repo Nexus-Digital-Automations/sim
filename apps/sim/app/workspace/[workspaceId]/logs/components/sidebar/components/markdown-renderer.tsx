@@ -1,4 +1,5 @@
 import React, { type HTMLAttributes, type ReactNode } from 'react'
+import Image from 'next/image'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -187,7 +188,17 @@ export default function LogMarkdownRenderer({ content }: { content: string }) {
 
     // Images
     img: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-      <img src={src} alt={alt || 'Image'} className='my-3 h-auto max-w-full rounded' {...props} />
+      <div className='relative my-3 max-w-full'>
+        <Image
+          src={src || ''}
+          alt={alt || 'Image'}
+          width={800}
+          height={600}
+          className='h-auto max-w-full rounded'
+          style={{ width: 'auto', height: 'auto' }}
+          {...props}
+        />
+      </div>
     ),
   }
 

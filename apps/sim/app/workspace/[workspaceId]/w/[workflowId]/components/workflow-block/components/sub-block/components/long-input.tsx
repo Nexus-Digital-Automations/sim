@@ -54,25 +54,23 @@ export function LongInput({
   // Local state for immediate UI updates during streaming
   const [localContent, setLocalContent] = useState<string>('')
 
-  // Wand functionality (only if wandConfig is enabled) - define early to get streaming state
-  const wandHook = config.wandConfig?.enabled
-    ? useWand({
-        wandConfig: config.wandConfig,
-        currentValue: localContent,
-        onStreamStart: () => {
-          // Clear the content when streaming starts
-          setLocalContent('')
-        },
-        onStreamChunk: (chunk) => {
-          // Update local content with each chunk as it arrives
-          setLocalContent((current) => current + chunk)
-        },
-        onGeneratedContent: (content) => {
-          // Final content update (fallback)
-          setLocalContent(content)
-        },
-      })
-    : null
+  // Wand functionality - always call hook but pass enabled state
+  const wandHook = useWand({
+    wandConfig: config.wandConfig?.enabled ? config.wandConfig : null,
+    currentValue: localContent,
+    onStreamStart: () => {
+      // Clear the content when streaming starts
+      setLocalContent('')
+    },
+    onStreamChunk: (chunk) => {
+      // Update local content with each chunk as it arrives
+      setLocalContent((current) => current + chunk)
+    },
+    onGeneratedContent: (content) => {
+      // Final content update (fallback)
+      setLocalContent(content)
+    },
+  })
 
   // State management - useSubBlockValue with explicit streaming control
   const [storeValue, setStoreValue] = useSubBlockValue(blockId, subBlockId, false, {

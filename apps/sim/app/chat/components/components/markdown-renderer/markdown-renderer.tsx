@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import ReactMarkdown from 'react-markdown'
 
 export default function MarkdownRenderer({ content }: { content: string }) {
@@ -129,14 +130,18 @@ export default function MarkdownRenderer({ content }: { content: string }) {
     ),
 
     // Images
-    img: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-      <img
-        src={src}
-        alt={alt || 'Image'}
-        className='my-2 h-auto max-w-full rounded-md'
-        {...props}
-      />
-    ),
+    img: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) =>
+      src ? (
+        <Image
+          src={src}
+          alt={alt || 'Image'}
+          width={800}
+          height={600}
+          className='my-2 h-auto max-w-full rounded-md'
+          style={{ width: 'auto', height: 'auto' }}
+          {...(props as any)}
+        />
+      ) : null,
   }
 
   // Process text to clean up unnecessary whitespace and formatting issues

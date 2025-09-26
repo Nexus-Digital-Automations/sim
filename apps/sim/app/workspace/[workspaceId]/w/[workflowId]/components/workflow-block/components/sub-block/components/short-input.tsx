@@ -50,25 +50,23 @@ export function ShortInput({
   const [showEnvVars, setShowEnvVars] = useState(false)
   const [showTags, setShowTags] = useState(false)
 
-  // Wand functionality (only if wandConfig is enabled)
-  const wandHook = config.wandConfig?.enabled
-    ? useWand({
-        wandConfig: config.wandConfig,
-        currentValue: localContent,
-        onStreamStart: () => {
-          // Clear the content when streaming starts
-          setLocalContent('')
-        },
-        onStreamChunk: (chunk) => {
-          // Update local content with each chunk as it arrives
-          setLocalContent((current) => current + chunk)
-        },
-        onGeneratedContent: (content) => {
-          // Final content update
-          setLocalContent(content)
-        },
-      })
-    : null
+  // Wand functionality - always call hook but pass enabled state
+  const wandHook = useWand({
+    wandConfig: config.wandConfig?.enabled ? config.wandConfig : null,
+    currentValue: localContent,
+    onStreamStart: () => {
+      // Clear the content when streaming starts
+      setLocalContent('')
+    },
+    onStreamChunk: (chunk) => {
+      // Update local content with each chunk as it arrives
+      setLocalContent((current) => current + chunk)
+    },
+    onGeneratedContent: (content) => {
+      // Final content update
+      setLocalContent(content)
+    },
+  })
   // State management - useSubBlockValue with explicit streaming control
   const [storeValue, setStoreValue] = useSubBlockValue(blockId, subBlockId, false, {
     isStreaming: wandHook?.isStreaming || false,

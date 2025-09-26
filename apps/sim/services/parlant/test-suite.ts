@@ -712,8 +712,15 @@ describe('Sim-Parlant Integration Bridge', () => {
   })
 })
 
+// NOTE: If this test suite needs to be exported, move it to a separate non-test file
 // Helper function to run tests programmatically
-export async function runParlantIntegrationTests(): Promise<{
+// export async function runParlantIntegrationTests(): Promise<{
+//   passed: number
+//   failed: number
+//   skipped: number
+//   results: any[]
+// }> {
+async function runParlantIntegrationTests(): Promise<{
   passed: number
   failed: number
   skipped: number
@@ -732,7 +739,8 @@ export async function runParlantIntegrationTests(): Promise<{
 }
 
 // Manual test execution function for development
-export async function runManualTests(): Promise<void> {
+// export async function runManualTests(): Promise<void> {
+async function runManualTests(): Promise<void> {
   console.log('🛠️  Running manual Parlant integration tests')
 
   const testConfig = {
@@ -781,4 +789,4 @@ export async function runManualTests(): Promise<void> {
   }
 }
 
-export default runParlantIntegrationTests
+// export default runParlantIntegrationTests

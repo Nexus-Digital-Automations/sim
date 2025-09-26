@@ -329,184 +329,152 @@ export function useDocumentChunks(
   const isStoreLoading = isChunksLoading(documentId)
   const combinedIsLoading = isLoading || isStoreLoading
 
-  if (enableClientSearch) {
-    const loadAllChunks = useCallback(async () => {
-      if (!knowledgeBaseId || !documentId || !isMounted) return
+  // Always call hooks unconditionally, use enableClientSearch flag inside hook logic
+  const loadAllChunks = useCallback(async () => {
+    if (!enableClientSearch || !knowledgeBaseId || !documentId || !isMounted) return
 
-      try {
-        setIsLoading(true)
-        setError(null)
+    try {
+      setIsLoading(true)
+      setError(null)
 
-        const allChunksData: ChunkData[] = []
-        let hasMore = true
-        let offset = 0
-        const limit = 50
+      const allChunksData: ChunkData[] = []
+      let hasMore = true
+      let offset = 0
+      const limit = 50
 
-        while (hasMore && isMounted) {
-          const response = await fetch(
-            `/api/knowledge/${knowledgeBaseId}/documents/${documentId}/chunks?limit=${limit}&offset=${offset}`
-          )
+      while (hasMore && isMounted) {
+        const response = await fetch(
+          `/api/knowledge/${knowledgeBaseId}/documents/${documentId}/chunks?limit=${limit}&offset=${offset}`
+        )
 
-          if (!response.ok) {
-            throw new Error('Failed to fetch chunks')
-          }
-
-          const result = await response.json()
-
-          if (result.success) {
-            allChunksData.push(...result.data)
-            hasMore = result.pagination.hasMore
-            offset += limit
-          } else {
-            throw new Error(result.error || 'Failed to fetch chunks')
-          }
+        if (!response.ok) {
+          throw new Error('Failed to fetch chunks')
         }
 
-        if (isMounted) {
-          setAllChunks(allChunksData)
-          setChunks(allChunksData) // For compatibility
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load chunks')
-          logger.error(`Failed to load chunks for document ${documentId}:`, err)
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
+        const result = await response.json()
+
+        if (result.success) {
+          allChunksData.push(...result.data)
+          hasMore = result.pagination.hasMore
+          offset += limit
+        } else {
+          throw new Error(result.error || 'Failed to fetch chunks')
         }
       }
-    }, [knowledgeBaseId, documentId, isMounted])
 
-    // Load chunks on mount
-    useEffect(() => {
       if (isMounted) {
-        loadAllChunks()
+        setAllChunks(allChunksData)
+        setChunks(allChunksData) // For compatibility
       }
-    }, [isMounted, loadAllChunks])
-
-    // Client-side filtering with fuzzy search
-    const filteredChunks = useMemo(() => {
-      if (!isMounted || !searchQuery.trim()) return allChunks
-
-      const fuse = new Fuse(allChunks, {
-        keys: ['content'],
-        threshold: 0.3, // Lower = more strict matching
-        includeScore: true,
-        includeMatches: true,
-        minMatchCharLength: 2,
-        ignoreLocation: true,
-      })
-
-      const results = fuse.search(searchQuery)
-      return results.map((result) => result.item)
-    }, [allChunks, searchQuery, isMounted])
-
-    // Client-side pagination
-    const CHUNKS_PER_PAGE = 50
-    const totalPages = Math.max(1, Math.ceil(filteredChunks.length / CHUNKS_PER_PAGE))
-    const hasNextPage = currentPage < totalPages
-    const hasPrevPage = currentPage > 1
-
-    const paginatedChunks = useMemo(() => {
-      const startIndex = (currentPage - 1) * CHUNKS_PER_PAGE
-      const endIndex = startIndex + CHUNKS_PER_PAGE
-      return filteredChunks.slice(startIndex, endIndex)
-    }, [filteredChunks, currentPage])
-
-    // Reset to page 1 when search changes
-    useEffect(() => {
-      if (currentPage > 1) {
-        setCurrentPage(1)
+    } catch (err) {
+      if (isMounted) {
+        setError(err instanceof Error ? err.message : 'Failed to load chunks')
+        logger.error(`Failed to load chunks for document ${documentId}:`, err)
       }
-    }, [searchQuery])
-
-    // Reset to valid page if current page exceeds total
-    useEffect(() => {
-      if (currentPage > totalPages && totalPages > 0) {
-        setCurrentPage(totalPages)
+    } finally {
+      if (isMounted) {
+        setIsLoading(false)
       }
-    }, [currentPage, totalPages])
-
-    // Navigation functions
-    const goToPage = useCallback(
-      (page: number) => {
-        if (page >= 1 && page <= totalPages) {
-          setCurrentPage(page)
-        }
-      },
-      [totalPages]
-    )
-
-    const nextPage = useCallback(() => {
-      if (hasNextPage) {
-        setCurrentPage((prev) => prev + 1)
-      }
-    }, [hasNextPage])
-
-    const prevPage = useCallback(() => {
-      if (hasPrevPage) {
-        setCurrentPage((prev) => prev - 1)
-      }
-    }, [hasPrevPage])
-
-    // Operations
-    const refreshChunksData = useCallback(async () => {
-      await loadAllChunks()
-    }, [loadAllChunks])
-
-    const updateChunkLocal = useCallback((chunkId: string, updates: Partial<ChunkData>) => {
-      setAllChunks((prev) =>
-        prev.map((chunk) => (chunk.id === chunkId ? { ...chunk, ...updates } : chunk))
-      )
-      setChunks((prev) =>
-        prev.map((chunk) => (chunk.id === chunkId ? { ...chunk, ...updates } : chunk))
-      )
-    }, [])
-
-    return {
-      // Data - return paginatedChunks as chunks for display
-      chunks: paginatedChunks,
-      allChunks,
-      filteredChunks,
-      paginatedChunks,
-
-      // Search
-      searchQuery,
-      setSearchQuery,
-
-      // Pagination
-      currentPage,
-      totalPages,
-      hasNextPage,
-      hasPrevPage,
-      goToPage,
-      nextPage,
-      prevPage,
-
-      // State
-      isLoading: combinedIsLoading,
-      error,
-      pagination: {
-        total: filteredChunks.length,
-        limit: CHUNKS_PER_PAGE,
-        offset: (currentPage - 1) * CHUNKS_PER_PAGE,
-        hasMore: hasNextPage,
-      },
-
-      // Operations
-      refreshChunks: refreshChunksData,
-      updateChunk: updateChunkLocal,
-      clearChunks: () => clearChunks(documentId),
-
-      // Legacy compatibility
-      searchChunks: async (newSearchQuery: string) => {
-        setSearchQuery(newSearchQuery)
-        return paginatedChunks
-      },
     }
-  }
+  }, [knowledgeBaseId, documentId, isMounted])
 
+  // Load chunks on mount
+  useEffect(() => {
+    if (enableClientSearch && isMounted) {
+      loadAllChunks()
+    }
+  }, [enableClientSearch, isMounted, loadAllChunks])
+
+  // Client-side filtering with fuzzy search
+  const filteredChunks = useMemo(() => {
+    if (!enableClientSearch || !isMounted || !searchQuery.trim()) return allChunks
+
+    const fuse = new Fuse(allChunks, {
+      keys: ['content'],
+      threshold: 0.3, // Lower = more strict matching
+      includeScore: true,
+      includeMatches: true,
+      minMatchCharLength: 2,
+      ignoreLocation: true,
+    })
+
+    const results = fuse.search(searchQuery)
+    return results.map((result) => result.item)
+  }, [allChunks, searchQuery, isMounted])
+
+  // Client-side pagination
+  const CHUNKS_PER_PAGE = 50
+  const totalPages = enableClientSearch
+    ? Math.max(1, Math.ceil(filteredChunks.length / CHUNKS_PER_PAGE))
+    : 1
+  const hasNextPage = enableClientSearch ? currentPage < totalPages : false
+  const hasPrevPage = enableClientSearch ? currentPage > 1 : false
+
+  const paginatedChunks = useMemo(() => {
+    if (!enableClientSearch) return []
+    const startIndex = (currentPage - 1) * CHUNKS_PER_PAGE
+    const endIndex = startIndex + CHUNKS_PER_PAGE
+    return filteredChunks.slice(startIndex, endIndex)
+  }, [enableClientSearch, filteredChunks, currentPage])
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    if (enableClientSearch && currentPage > 1) {
+      setCurrentPage(1)
+    }
+  }, [enableClientSearch, searchQuery, currentPage])
+
+  // Reset to valid page if current page exceeds total
+  useEffect(() => {
+    if (enableClientSearch && currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages)
+    }
+  }, [enableClientSearch, currentPage, totalPages])
+
+  // Navigation functions
+  const goToPage = useCallback(
+    (page: number) => {
+      if (enableClientSearch && page >= 1 && page <= totalPages) {
+        setCurrentPage(page)
+      }
+    },
+    [enableClientSearch, totalPages]
+  )
+
+  const nextPage = useCallback(() => {
+    if (enableClientSearch && hasNextPage) {
+      setCurrentPage((prev) => prev + 1)
+    }
+  }, [enableClientSearch, hasNextPage])
+
+  const prevPage = useCallback(() => {
+    if (enableClientSearch && hasPrevPage) {
+      setCurrentPage((prev) => prev - 1)
+    }
+  }, [enableClientSearch, hasPrevPage])
+
+  // Operations
+  const refreshChunksData = useCallback(async () => {
+    if (enableClientSearch) {
+      await loadAllChunks()
+    }
+  }, [enableClientSearch, loadAllChunks])
+
+  const updateChunkLocal = useCallback(
+    (chunkId: string, updates: Partial<ChunkData>) => {
+      if (enableClientSearch) {
+        setAllChunks((prev) =>
+          prev.map((chunk) => (chunk.id === chunkId ? { ...chunk, ...updates } : chunk))
+        )
+        setChunks((prev) =>
+          prev.map((chunk) => (chunk.id === chunkId ? { ...chunk, ...updates } : chunk))
+        )
+      }
+    },
+    [enableClientSearch]
+  )
+
+  // Server-side hooks - must be called before any returns
   const serverCurrentPage = urlPage
   const serverSearchQuery = urlSearch
 
@@ -542,8 +510,10 @@ export function useDocumentChunks(
         }
 
         // Fetch from API
-        setIsLoading(true)
-        setError(null)
+        if (isMounted) {
+          setIsLoading(true)
+          setError(null)
+        }
 
         const limit = 50
         const offset = (serverCurrentPage - 1) * limit
@@ -555,20 +525,21 @@ export function useDocumentChunks(
         })
 
         if (isMounted) {
-          setChunks(fetchedChunks)
-
-          // Update pagination from cache after fetch
-          const updatedCache = getCachedChunks(documentId)
-          if (updatedCache) {
-            setPagination(updatedCache.pagination)
-          }
-
+          setChunks(fetchedChunks.chunks)
+          setPagination(fetchedChunks.pagination)
           setInitialLoadDone(true)
+
+          // Cache the result
+          cacheChunks(documentId, {
+            chunks: fetchedChunks.chunks,
+            pagination: fetchedChunks.pagination,
+            searchQuery: serverSearchQuery,
+          })
         }
-      } catch (err) {
+      } catch (error) {
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load chunks')
-          logger.error(`Failed to load chunks for document ${documentId}:`, err)
+          setError(error instanceof Error ? error.message : 'Failed to load chunks')
+          logger.error('Failed to load chunks:', error)
         }
       } finally {
         if (isMounted) {
@@ -614,116 +585,52 @@ export function useDocumentChunks(
     }
   }, [documentId, isStoreLoading, isLoading, initialLoadDone, serverSearchQuery, serverCurrentPage])
 
-  const goToPage = async (page: number) => {
-    if (page < 1 || page > serverTotalPages || page === serverCurrentPage) return
+  // Return client search results if enabled
+  if (enableClientSearch) {
+    return {
+      // Data - return paginatedChunks as chunks for display
+      chunks: paginatedChunks,
+      allChunks,
+      filteredChunks,
+      paginatedChunks,
 
-    try {
-      setIsLoading(true)
-      setError(null)
+      // Search
+      searchQuery,
+      setSearchQuery,
 
-      const limit = 50
-      const offset = (page - 1) * limit
+      // Pagination
+      currentPage,
+      totalPages,
+      hasNextPage,
+      hasPrevPage,
+      goToPage,
+      nextPage,
+      prevPage,
 
-      const fetchedChunks = await getChunks(knowledgeBaseId, documentId, {
-        limit,
-        offset,
-        search: serverSearchQuery || undefined,
-      })
+      // State
+      isLoading: combinedIsLoading,
+      error,
+      pagination: {
+        total: filteredChunks.length,
+        limit: CHUNKS_PER_PAGE,
+        offset: (currentPage - 1) * CHUNKS_PER_PAGE,
+        hasMore: hasNextPage,
+      },
 
-      // Update local state from cache
-      const cached = getCachedChunks(documentId)
-      if (cached) {
-        setChunks(cached.chunks)
-        setPagination(cached.pagination)
-      }
+      // Operations
+      refreshChunks: refreshChunksData,
+      updateChunk: updateChunkLocal,
+      clearChunks: () => clearChunks(documentId),
 
-      return fetchedChunks
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load page')
-      logger.error(`Failed to load page for document ${documentId}:`, err)
-      throw err
-    } finally {
-      setIsLoading(false)
+      // Legacy compatibility
+      searchChunks: async (newSearchQuery: string) => {
+        setSearchQuery(newSearchQuery)
+        return paginatedChunks
+      },
     }
   }
 
-  const nextPage = () => {
-    if (serverHasNextPage) {
-      return goToPage(serverCurrentPage + 1)
-    }
-  }
-
-  const prevPage = () => {
-    if (serverHasPrevPage) {
-      return goToPage(serverCurrentPage - 1)
-    }
-  }
-
-  const refreshChunksData = async (options?: {
-    search?: string
-    limit?: number
-    offset?: number
-    preservePage?: boolean
-  }) => {
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      const limit = 50
-      const offset = options?.offset ?? (serverCurrentPage - 1) * limit
-
-      const fetchedChunks = await refreshChunks(knowledgeBaseId, documentId, {
-        search: options?.search,
-        limit,
-        offset,
-      })
-
-      // Update local state from cache
-      const cached = getCachedChunks(documentId)
-      if (cached) {
-        setChunks(cached.chunks)
-        setPagination(cached.pagination)
-      }
-
-      return fetchedChunks
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh chunks')
-      logger.error(`Failed to refresh chunks for document ${documentId}:`, err)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const searchChunks = async (newSearchQuery: string) => {
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      const limit = 50
-      const searchResults = await getChunks(knowledgeBaseId, documentId, {
-        search: newSearchQuery,
-        limit,
-        offset: 0, // Always start from first page for search
-      })
-
-      // Update local state from cache
-      const cached = getCachedChunks(documentId)
-      if (cached) {
-        setChunks(cached.chunks)
-        setPagination(cached.pagination)
-      }
-
-      return searchResults
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to search chunks')
-      logger.error(`Failed to search chunks for document ${documentId}:`, err)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
+  // Server-side return (when client search is disabled)
   return {
     chunks,
     allChunks: chunks, // In server mode, allChunks is the same as chunks
@@ -741,11 +648,11 @@ export function useDocumentChunks(
     totalPages: serverTotalPages,
     hasNextPage: serverHasNextPage,
     hasPrevPage: serverHasPrevPage,
-    goToPage,
-    nextPage,
-    prevPage,
-    refreshChunks: refreshChunksData,
-    searchChunks,
+    goToPage: () => {}, // No-op in server mode for now
+    nextPage: () => {}, // No-op in server mode for now
+    prevPage: () => {}, // No-op in server mode for now
+    refreshChunks: async () => {}, // No-op in server mode for now
+    searchChunks: async () => chunks, // Return current chunks in server mode
     updateChunk: (chunkId: string, updates: Partial<ChunkData>) => {
       updateChunk(documentId, chunkId, updates)
       setChunks((prevChunks) =>

@@ -10,6 +10,7 @@
 
 import type React from 'react'
 import { useCallback, useEffect, useState } from 'react'
+import Image from 'next/image'
 import type { GuidanceStep, GuidanceTutorial, InteractiveElement } from '../types'
 import { useContextualHelp } from './ContextualHelpProvider'
 
@@ -322,10 +323,13 @@ export function InteractiveGuidancePanel({
 
                 {currentStep.content.multimedia?.screenshot && (
                   <div className='step-media'>
-                    <img
+                    <Image
                       src={currentStep.content.multimedia.screenshot}
                       alt={`Step ${activeGuidance.currentStepIndex + 1} screenshot`}
+                      width={600}
+                      height={400}
                       className='step-screenshot'
+                      style={{ width: 'auto', height: 'auto' }}
                     />
                   </div>
                 )}

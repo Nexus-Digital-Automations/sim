@@ -9,6 +9,7 @@
 
 import { useRef, useState } from 'react'
 import { Copy, Download, Info, Maximize, RotateCw, ZoomIn, ZoomOut } from 'lucide-react'
+import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -233,10 +234,13 @@ export function ImageDisplay({ content, onAction, compact = false, className }: 
                     <DialogTitle>{content.alt}</DialogTitle>
                   </DialogHeader>
                   <div className='flex items-center justify-center'>
-                    <img
+                    <Image
                       src={imageUrl}
                       alt={content.alt}
+                      width={800}
+                      height={600}
                       className='max-h-[70vh] max-w-full object-contain'
+                      style={{ width: 'auto', height: 'auto' }}
                     />
                   </div>
                 </DialogContent>
@@ -267,21 +271,27 @@ export function ImageDisplay({ content, onAction, compact = false, className }: 
                   )}
                 </div>
               ) : (
-                <img
+                <div
                   ref={imageRef}
-                  src={imageUrl}
-                  alt={content.alt}
                   className={cn(
-                    'max-h-full max-w-full object-contain transition-transform duration-200',
+                    'max-h-full max-w-full transition-transform duration-200',
                     isLoading && 'opacity-0'
                   )}
                   style={{
                     transform: `scale(${zoom}) rotate(${rotation}deg)`,
                   }}
-                  onLoad={handleImageLoad}
-                  onError={handleImageError}
-                  draggable={false}
-                />
+                >
+                  <Image
+                    src={imageUrl}
+                    alt={content.alt}
+                    fill
+                    className='object-contain'
+                    onLoad={handleImageLoad}
+                    onError={handleImageError}
+                    draggable={false}
+                    style={{ width: 'auto', height: 'auto' }}
+                  />
+                </div>
               )}
             </div>
           </div>

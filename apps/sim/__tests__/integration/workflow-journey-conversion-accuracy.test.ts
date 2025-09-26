@@ -916,12 +916,5 @@ describe('Workflow to Journey Conversion Accuracy', () => {
   })
 })
 
-// Export test utilities for use in other test files
-export {
-  ConversionAccuracyValidator,
-  TestDataGenerator,
-  TEST_CONFIG,
-  SIMPLE_LINEAR_WORKFLOW,
-  COMPLEX_WORKFLOW_WITH_CONDITIONS,
-  TEST_PARAMETERS,
-}
+// Test utilities are available within this file only
+// If needed by other tests, move to a separate utility file outside __tests__
