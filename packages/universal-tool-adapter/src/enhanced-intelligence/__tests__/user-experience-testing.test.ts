@@ -20,7 +20,7 @@ import {
 // User Experience Testing Framework
 // =============================================================================
 
-class UserExperienceTestingFramework {
+export class UserExperienceTestingFramework {
   private engine: EnhancedToolIntelligenceEngine
   private abTestingManager: ABTestingManager
   private userSimulator: UserSimulator

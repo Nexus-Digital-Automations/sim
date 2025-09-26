@@ -741,12 +741,13 @@ export class ContextAnalysisEngine {
 
     // Workflow-based actions
     if (workflow.nextExpectedActions.length > 0) {
+      const nextAction = workflow.nextExpectedActions[0]!
       actions.push({
-        action: `Continue workflow with: ${workflow.nextExpectedActions[0]}`,
+        action: `Continue workflow with: ${nextAction}`,
         reasoning: 'Natural next step in current workflow',
         priority: 'high',
         estimatedTime: 300, // 5 minutes
-        requiredTools: [workflow.nextExpectedActions[0]],
+        requiredTools: [nextAction],
         preconditions: [],
         expectedOutcome: 'Workflow progression',
         confidence: 0.8,

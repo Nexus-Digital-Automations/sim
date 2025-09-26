@@ -1272,6 +1272,8 @@ export class NaturalLanguageDescriptionFramework {
 // =============================================================================
 
 class QualityValidator {
+  constructor(private _config?: any) {}
+
   async validateSchema(
     schema: EnhancedDescriptionSchema,
     criteria: ValidationCriteria

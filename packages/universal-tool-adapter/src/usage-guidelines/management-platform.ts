@@ -1057,7 +1057,7 @@ export class GuidelinesManagementPlatform {
       timestamp: new Date(),
       content: comment.content,
       type: comment.type || 'general',
-      location: comment.location,
+      ...(comment.location ? { location: comment.location } : {}),
       resolved: false,
       replies: [],
     }
@@ -1230,9 +1230,9 @@ export class GuidelinesManagementPlatform {
             type: check.type,
             severity: check.severity,
             description: checkResult.message,
-            location: checkResult.location,
+            ...(checkResult.location ? { location: checkResult.location } : {}),
             autoFixable: check.autoFixable,
-            suggestion: checkResult.suggestion,
+            ...(checkResult.suggestion ? { suggestion: checkResult.suggestion } : {}),
           })
         }
 
@@ -1240,7 +1240,7 @@ export class GuidelinesManagementPlatform {
         if (!report.categoryScores[check.type]) {
           report.categoryScores[check.type] = []
         }
-        report.categoryScores[check.type].push(checkResult.score)
+        report.categoryScores[check.type]!.push(checkResult.score)
       }
     }
 
@@ -1581,6 +1581,10 @@ export class GuidelinesManagementPlatform {
     const workflow = project.settings.workflow
     const currentStageIndex = workflow.stages.findIndex((s) => s.id === review.stage)
 
+    if (currentStageIndex === -1) {
+      throw new Error(`Review stage ${review.stage} not found in workflow`)
+    }
+
     switch (decision.outcome) {
       case 'approved': {
         // Check if all required reviews for this stage are complete
@@ -1588,12 +1592,12 @@ export class GuidelinesManagementPlatform {
         const completedReviews = stageReviews.filter(
           (r) => r.status === 'completed' && r.decision.outcome === 'approved'
         )
-        const requiredReviews = workflow.stages[currentStageIndex].requiredReviews
+        const requiredReviews = workflow.stages[currentStageIndex]!.requiredReviews
 
         if (completedReviews.length >= requiredReviews) {
           // Move to next stage or mark as approved
           if (currentStageIndex < workflow.stages.length - 1) {
-            const nextStage = workflow.stages[currentStageIndex + 1]
+            const nextStage = workflow.stages[currentStageIndex + 1]!
             await this.createReviewAssignments(
               workspace,
               project,
@@ -1629,9 +1633,9 @@ export class GuidelinesManagementPlatform {
           type: check.type,
           severity: check.severity,
           description: checkResult.message,
-          location: checkResult.location,
+          ...(checkResult.location ? { location: checkResult.location } : {}),
           autoFixable: check.autoFixable,
-          suggestion: checkResult.suggestion,
+          ...(checkResult.suggestion ? { suggestion: checkResult.suggestion } : {}),
         })
 
         if (check.severity === 'error' || check.severity === 'critical') {
@@ -1657,8 +1661,6 @@ export class GuidelinesManagementPlatform {
       passed: true,
       score: 1.0,
       message: 'Check passed',
-      location: undefined,
-      suggestion: undefined,
     }
   }
 
@@ -1706,7 +1708,7 @@ export class GuidelinesManagementPlatform {
         if (!groups[issue.type]) {
           groups[issue.type] = []
         }
-        groups[issue.type].push(issue)
+        groups[issue.type]!.push(issue)
         return groups
       },
       {} as Record<string, QualityIssue[]>

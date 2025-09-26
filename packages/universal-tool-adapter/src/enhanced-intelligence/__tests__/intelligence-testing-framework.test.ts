@@ -82,7 +82,7 @@ const mockError = {
 // Intelligence Testing Framework Core
 // =============================================================================
 
-class IntelligenceTestingFramework {
+export class IntelligenceTestingFramework {
   private engine: EnhancedToolIntelligenceEngine
   private testMetrics: TestMetrics
   private testResults: TestResult[]
@@ -1468,7 +1468,7 @@ class IntelligenceTestingFramework {
 // Test Types and Interfaces
 // =============================================================================
 
-export interface TestMetrics {
+interface TestMetrics {
   totalTests: number
   passedTests: number
   failedTests: number
@@ -1477,7 +1477,7 @@ export interface TestMetrics {
   categories: Record<string, any>
 }
 
-export interface TestCase {
+interface TestCase {
   testName: string
   status: 'passed' | 'failed' | 'skipped'
   score: number
@@ -1486,7 +1486,7 @@ export interface TestCase {
   metrics: Record<string, any>
 }
 
-export interface TestSuiteResult {
+interface TestSuiteResult {
   suiteName: string
   duration: number
   totalTests: number
@@ -1497,7 +1497,7 @@ export interface TestSuiteResult {
   metrics: any
 }
 
-export interface ComprehensiveTestReport {
+interface ComprehensiveTestReport {
   timestamp: Date
   totalDuration: number
   overallScore: number

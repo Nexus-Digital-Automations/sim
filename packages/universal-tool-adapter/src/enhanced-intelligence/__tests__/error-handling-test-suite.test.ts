@@ -592,7 +592,7 @@ describe('Complete Error Handling System Test Suite', () => {
 })
 
 // Export test configuration for external test runners
-export const testConfig = {
+const testConfig = {
   timeout: 30000,
   components: ['IntelligentErrorRecoveryEngine', 'ErrorAnalyticsSystem', 'Integration Workflows'],
   coverage: {

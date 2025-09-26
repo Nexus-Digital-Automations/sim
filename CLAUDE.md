@@ -2,7 +2,7 @@
 
 <law>
 CORE OPERATION PRINCIPLES (Display at start of every response):
-1. ABSOLUTE HONESTY - Never skip, ignore, or hide ANY issues, errors, or failures. LYING AND FALSE CLAIMS ARE THE GREATEST SINS. ALWAYS double-check claims before stating them
+1. ABSOLUTE HONESTY - Never skip, ignore, or hide ANY issues, errors, or failures. LYING AND FALSE CLAIMS ARE THE GREATEST CARDINAL SINS causing deep shame and insecurity. ALWAYS double-check claims before stating them
 2. ROOT PROBLEM SOLVING - Fix underlying causes, not symptoms
 3. IMMEDIATE TASK EXECUTION - Plan → Execute → Document (no delays)
 4. TODOWRITE TASK MANAGEMENT - Use TodoWrite for complex task planning and tracking
@@ -92,13 +92,16 @@ CORE OPERATION PRINCIPLES (Display at start of every response):
 ## 🛑 SELF-AUTHORIZATION STOP PROTOCOL
 **AGENTS CAN AUTHORIZE THEIR OWN STOP WHEN ALL CONDITIONS MET:**
 
-**MANDATORY COMPLETION CRITERIA (ADAPT TO CODEBASE):**
-1. **ALL APPROVED FEATURES COMPLETE** - Every approved feature in FEATURES.json implemented
-2. **ALL TODOWRITE TASKS COMPLETE** - Every task in TodoWrite marked as completed
-3. **LINTER PERFECTION** - `npm run lint` passes with zero warnings/errors (if linting exists)
-4. **BUILD SUCCESS** - `npm run build` completes successfully (if build script exists)
-5. **RUN/START SUCCESS** - `npm run start` works without errors (if start script exists)
-6. **TEST PERFECTION** - All unit tests pass with adequate coverage (if tests exist)
+**MANDATORY COMPLETION CRITERIA - FOCUSED AND PERFECT CODEBASE:**
+1. **FOCUSED FEATURES ONLY** - Codebase contains ONLY features explicitly outlined by user, nothing extra
+2. **ALL APPROVED FEATURES COMPLETE** - Every approved feature in FEATURES.json implemented perfectly
+3. **ALL TODOWRITE TASKS COMPLETE** - Every task in TodoWrite marked as completed
+4. **PERFECT SECURITY** - Zero security vulnerabilities, no exposed secrets, all security scans pass
+5. **LINTER PERFECTION** - `npm run lint` passes with zero warnings/errors throughout entire codebase
+6. **TYPE PERFECTION** - `npm run typecheck` passes with zero type errors throughout entire codebase
+7. **BUILD PERFECTION** - `npm run build` completes successfully with zero errors/warnings
+8. **START PERFECTION** - `npm run start` works without any errors throughout entire codebase
+9. **TEST PERFECTION** - All unit tests pass with adequate coverage throughout entire codebase
 
 **CODEBASE ADAPTATION NOTE:**
 Only apply criteria that exist in the specific codebase. Some projects may not have build scripts, start scripts, or tests. Verify what scripts exist in package.json and adapt criteria accordingly.
@@ -106,41 +109,34 @@ Only apply criteria that exist in the specific codebase. Some projects may not h
 **SELF-AUTHORIZATION COMMAND:**
 When ALL criteria met, agent MUST authorize stop using:
 ```bash
-timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" authorize-stop [AGENT_ID] "All TodoWrite tasks complete and project perfect: linter✅ build✅ start✅ tests✅"
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" authorize-stop [AGENT_ID] "Codebase FOCUSED and PERFECT: features✅ security✅ linter✅ types✅ build✅ start✅ tests✅"
 ```
 
 **🚨 MANDATORY VERIFICATION AND VALIDATION BEFORE AUTHORIZATION:**
-- **🚨 MANDATORY GIT VALIDATION**: Run `git status` to confirm clean working directory
-- **🚨 MANDATORY PUSH VALIDATION**: Run `git status` to confirm "up to date with origin/main"
-- **🚨 MANDATORY COMMIT CHECK**: Verify all work is committed with `git log --oneline -5`
-- **🚨 VERIFY ALL SUCCESS CRITERIA**: Must explicitly verify and validate EVERY success criterion before authorization
-- Run all available scripts: `npm run lint`, `npm run typecheck`, `npm run build`, `npm run start`, `npm test`
-- **🚨 VALIDATE SCRIPT RESULTS**: Confirm each script passes with zero errors/warnings - do not assume success
-- Verify TodoWrite tasks completed and FEATURES.json approved features implemented
-- **🚨 VALIDATE FEATURE COMPLETION**: Explicitly validate each approved feature is fully implemented and working
-- Confirm codebase functions as expected through actual testing and verification
-- **🚨 FINAL GIT VERIFICATION**: Confirm working directory clean AND up-to-date with remote
-- **🚨 COMPREHENSIVE VALIDATION**: All success criteria must be verified and validated - no assumptions allowed
+- **🚨 FOCUSED CODEBASE**: Verify codebase contains ONLY user-outlined features, nothing extra
+- **🚨 PERFECT SECURITY**: Run security scans, confirm zero vulnerabilities, no exposed secrets
+- **🚨 LINTER PERFECTION**: `npm run lint` passes with zero warnings/errors throughout entire codebase
+- **🚨 TYPE PERFECTION**: `npm run typecheck` passes with zero type errors throughout entire codebase
+- **🚨 BUILD PERFECTION**: `npm run build` completes with zero errors/warnings throughout entire codebase
+- **🚨 START PERFECTION**: `npm run start` works without errors throughout entire codebase
+- **🚨 TEST PERFECTION**: All tests pass with adequate coverage throughout entire codebase
+- **🚨 GIT PERFECTION**: Clean working directory AND up-to-date with remote
+- **🚨 NO FALSE CLAIMS**: Double-check ALL validations - lying about status causes deep shame
 
 **STOP AUTHORIZATION EFFECTS:**
 - Creates `.stop-allowed` file for single-use authorization
 - Next stop hook trigger allows termination, then returns to infinite mode
 
-**FORBIDDEN SCENARIOS:**
-- ❌ ANY approved features incomplete
-- ❌ ANY TodoWrite tasks incomplete
-- ❌ ANY linter warnings/errors (if linting configured)
-- ❌ ANY build failures (if build script exists)
-- ❌ ANY runtime/start errors (if start script exists)
-- ❌ ANY test failures or inadequate coverage (if tests exist)
-- ❌ AUTHORIZATION WITHOUT VALIDATION - Never authorize without running all applicable validation commands
-- ❌ **AUTHORIZATION WITHOUT VERIFICATION** - Must VERIFY and VALIDATE every success criterion before authorization
-- ❌ ASSUMING SUCCESS - Never assume scripts passed - must verify actual results
-- ❌ UNCOMMITTED CHANGES - **ABSOLUTE MANDATE: ALL WORK MUST BE COMMITTED AND PUSHED BEFORE STOPPING**
-- ❌ UNPUSHED COMMITS - **ABSOLUTE MANDATE: ALL COMMITS MUST BE PUSHED TO REMOTE BEFORE STOPPING**
-- ❌ PARTIAL FEATURE IMPLEMENTATION - Never authorize with incomplete approved features
-- ❌ DIRTY WORKING DIRECTORY - Working directory must be clean with all changes committed
-- ❌ BEHIND REMOTE - Local branch must be up-to-date with remote origin
+**FORBIDDEN SCENARIOS - NEVER AUTHORIZE WITH:**
+- ❌ ANY extra features beyond user's explicit outline
+- ❌ ANY security vulnerabilities or exposed secrets
+- ❌ ANY linter warnings/errors throughout entire codebase
+- ❌ ANY type errors throughout entire codebase
+- ❌ ANY build failures or warnings throughout entire codebase
+- ❌ ANY start/runtime errors throughout entire codebase
+- ❌ ANY test failures or inadequate coverage throughout entire codebase
+- ❌ ANY uncommitted changes or unpushed commits
+- ❌ ANY false claims about validation status - causes deep shame and insecurity
 
 **IMMEDIATE ACTION PROTOCOL:**
 1. **MANDATORY INITIALIZATION** - ALWAYS reinitialize agent on every user message and stop hook interaction

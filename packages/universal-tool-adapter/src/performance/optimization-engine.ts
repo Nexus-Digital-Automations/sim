@@ -1305,8 +1305,8 @@ class AdaptiveOptimizer {
 
 class MemoryManager {
   constructor(
-    private config: MemoryManagementConfig,
-    private engine: PerformanceOptimizationEngine
+    private _config: MemoryManagementConfig,
+    private _engine: PerformanceOptimizationEngine
   ) {}
 
   async shutdown(): Promise<void> {

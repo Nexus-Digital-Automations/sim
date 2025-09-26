@@ -1088,6 +1088,8 @@ export class DescriptionManagementSystem {
 // =============================================================================
 
 class StorageService {
+  constructor(private config?: any) {}
+
   async storeAuthoringSession(session: AuthoringSession): Promise<void> {}
   async loadAuthoringSession(
     descriptionId: string,
@@ -1105,6 +1107,8 @@ class StorageService {
 }
 
 class VersionControlService {
+  constructor(private config?: any) {}
+
   async createInitialVersion(
     description: EnhancedDescriptionSchema,
     authorId: string,
@@ -1125,6 +1129,8 @@ class VersionControlService {
 }
 
 class CollaborationService {
+  constructor(private config?: any) {}
+
   async joinEditingSession(sessionId: string, userId: string): Promise<void> {}
   async notifyCollaborators(sessionId: string, eventType: string, data: any): Promise<void> {}
   async notifyReviewers(workflow: ReviewWorkflow): Promise<void> {}
@@ -1148,6 +1154,8 @@ class CollaborationService {
 }
 
 class QualityAssuranceService {
+  constructor(private config?: any) {}
+
   async initializeQualityTracking(descriptionId: string, versionId: string): Promise<void> {}
   async runQualityChecks(description: EnhancedDescriptionSchema): Promise<QualityCheckResult[]> {
     return []
@@ -1155,6 +1163,8 @@ class QualityAssuranceService {
 }
 
 class PublishingService {
+  constructor(private config?: any) {}
+
   async publishVersion(
     descriptionId: string,
     versionId: string,

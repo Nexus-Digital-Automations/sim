@@ -998,6 +998,8 @@ class TextGenerationService {
 }
 
 class SemanticAnalysisService {
+  constructor(private config?: any) {}
+
   async extractConcepts(text: string): Promise<Concept[]> {
     // Extract semantic concepts from text
     return []
@@ -1020,6 +1022,8 @@ class SemanticAnalysisService {
 }
 
 class QualityAssessmentService {
+  constructor(private config?: any) {}
+
   async assessOverallQuality(
     text: string,
     description: EnhancedDescriptionSchema
@@ -1037,12 +1041,16 @@ class QualityAssessmentService {
 }
 
 class KnowledgeBaseService {
+  constructor(private config?: any) {}
+
   async queryKnowledge(query: string): Promise<KnowledgeResult[]> {
     return []
   }
 }
 
 class CacheService {
+  constructor(private config?: any) {}
+
   async get(key: string): Promise<any> {
     return null
   }

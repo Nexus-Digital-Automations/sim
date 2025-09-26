@@ -2426,7 +2426,7 @@ export function findBestToolForUseCase(
     ...userContext,
   })
 
-  return recommendations.length > 0 ? recommendations[0] : null
+  return recommendations.length > 0 ? recommendations[0]! : null
 }
 
 /**

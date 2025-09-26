@@ -398,7 +398,7 @@ export class ContextManager {
   /**
    * Replace variable references in object recursively
    */
-  private replaceVariableReferences(obj: any, oldName: string, newName: string): void {
+  private replaceVariableReferences(obj: any, oldName: string, newName: string): any {
     if (typeof obj === 'string') {
       // Replace variable reference patterns like ${variable} or {{variable}}
       return obj.replace(
@@ -411,11 +411,18 @@ export class ContextManager {
       obj.forEach((item, index) => {
         obj[index] = this.replaceVariableReferences(item, oldName, newName)
       })
-    } else if (typeof obj === 'object' && obj !== null) {
+      return obj
+    }
+
+    if (typeof obj === 'object' && obj !== null) {
       Object.keys(obj).forEach((key) => {
         obj[key] = this.replaceVariableReferences(obj[key], oldName, newName)
       })
+      return obj
     }
+
+    // For primitive types other than string, return as-is
+    return obj
   }
 }
 

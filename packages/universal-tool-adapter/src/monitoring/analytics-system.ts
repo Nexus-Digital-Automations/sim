@@ -1015,8 +1015,8 @@ class HealthChecker {
 
 class TrendAnalyzer {
   constructor(
-    private config: AnalyticsConfig,
-    private analytics: AnalyticsSystem
+    private _config: AnalyticsConfig,
+    private _analytics: AnalyticsSystem
   ) {}
 
   analyze(adapterId?: string): TrendAnalysis {
@@ -1034,8 +1034,8 @@ class TrendAnalyzer {
 
 class AggregationEngine {
   constructor(
-    private config: AnalyticsConfig,
-    private analytics: AnalyticsSystem
+    private _config: AnalyticsConfig,
+    private _analytics: AnalyticsSystem
   ) {}
 
   async aggregateData(options: AggregationOptions): Promise<any> {

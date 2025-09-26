@@ -235,14 +235,28 @@ describe('ErrorAnalyticsSystem', () => {
     it('should record selected recovery actions', async () => {
       const selectedAction: RecoveryAction = {
         id: 'action_123',
-        type: 'retry',
+        title: 'Retry Operation',
         description: 'Retry the operation',
-        instructions: ['Wait 2 seconds', 'Retry'],
-        estimatedTime: 2000,
+        category: 'immediate',
+        complexity: 'simple',
+        estimatedTime: '2 seconds',
         successProbability: 0.8,
-        requirements: [],
-        risks: [],
-        parameters: { delay: 2000 },
+        requiredSkills: [],
+        risksAndMitigation: { risks: [], mitigations: [], overallRiskLevel: 'low' },
+        instructions: [
+          {
+            step: 'Wait 2 seconds',
+            details: 'Wait for 2 seconds before retrying',
+            tips: [],
+            commonMistakes: [],
+          },
+          {
+            step: 'Retry',
+            details: 'Retry the failed operation',
+            tips: [],
+            commonMistakes: [],
+          },
+        ],
       }
 
       await expect(
@@ -405,7 +419,7 @@ describe('ErrorAnalyticsSystem', () => {
             success: true,
             resolutionTimeMs: 3000,
             attemptCount: 2,
-            resolutionMethod: 'alternative_tool' as const,
+            resolutionMethod: 'user_guided',
             alternativeToolUsed: true,
             successfulTool: 'backup_tool',
           },

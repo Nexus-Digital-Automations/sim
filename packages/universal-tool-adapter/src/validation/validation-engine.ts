@@ -52,7 +52,9 @@ export class ValidationSchemas {
 
   // Array schemas
   static readonly nonEmptyArray = z.array(z.any()).min(1)
-  static readonly uniqueStringArray = z.array(z.string()).transform((arr) => [...new Set(arr)])
+  static readonly uniqueStringArray = z
+    .array(z.string())
+    .transform((arr) => Array.from(new Set(arr)))
 
   // Object schemas
   static readonly record = z.record(z.any())
@@ -447,7 +449,7 @@ export class ValidationEngine {
   ): Promise<ValidationErrorType[]> {
     const errors: ValidationErrorType[] = []
 
-    for (const [name, validator] of this.customValidators) {
+    for (const [name, validator] of Array.from(this.customValidators.entries())) {
       try {
         const isValid = await validator(data, context)
         if (!isValid) {

@@ -259,9 +259,9 @@ class PerformanceBenchmarkSuite {
       recoveryTime: this.calculateRecoveryTime(benchmarks),
       errorRateUnderLoad: this.calculateErrorRateUnderLoad(benchmarks),
       loadTestTargets: {
-        sustainedLoad: { target: 100, achieved: sustainedLoadBenchmark.maxSuccessfulLoad },
-        spikeHandling: { target: 200, achieved: spikeLoadBenchmark.maxSpikeHandled },
-        stressTolerance: { target: 300, achieved: stressBenchmark.breakingPointLoad },
+        sustainedLoad: { target: 100, achieved: sustainedLoadBenchmark.maxSuccessfulLoad ?? 0 },
+        spikeHandling: { target: 200, achieved: spikeLoadBenchmark.maxSpikeHandled ?? 0 },
+        stressTolerance: { target: 300, achieved: stressBenchmark.breakingPointLoad ?? 0 },
       },
     }
   }
@@ -1051,11 +1051,11 @@ class PerformanceBenchmarkSuite {
       userProfile: {
         skillLevel: 'intermediate',
         role: 'developer',
-        experience: 'moderate',
+        experience: 'intermediate',
         preferences: {
-          verbosity: 'detailed',
-          examples: true,
-          stepByStep: true,
+          communication: 'detailed',
+          automation: 'guided',
+          explanation: 'comprehensive',
         },
       },
       sessionContext: {

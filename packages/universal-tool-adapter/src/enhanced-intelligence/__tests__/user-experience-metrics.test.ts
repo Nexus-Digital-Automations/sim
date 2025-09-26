@@ -810,8 +810,5 @@ function generateUXRecommendations(metrics: Partial<UserExperienceMetrics>): str
   return recommendations
 }
 
-export {
-  type UserExperienceMetrics,
-  type UserExperienceTestSession,
-  UserExperienceMetricsCollector,
-}
+// Types and classes available within this test file only
+// UserExperienceMetrics, UserExperienceTestSession, UserExperienceMetricsCollector defined above

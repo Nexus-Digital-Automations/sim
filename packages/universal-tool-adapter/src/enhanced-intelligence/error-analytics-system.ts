@@ -1266,7 +1266,7 @@ export class ErrorAnalyticsSystem extends EventEmitter {
     const dailyGroups = new Map<string, number[]>()
 
     events.forEach((event) => {
-      if (event.userFeedback) {
+      if (event.userFeedback && event.userFeedback.satisfactionRating !== undefined) {
         const date = event.timestamp.toISOString().split('T')[0]
         const ratings = dailyGroups.get(date) || []
         ratings.push(event.userFeedback.satisfactionRating)

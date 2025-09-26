@@ -88,7 +88,7 @@ export class ParameterTransformations {
     join: (array: any[], separator = ',') => array.join(separator),
     first: (array: any[]) => array[0],
     last: (array: any[]) => array[array.length - 1],
-    unique: (array: any[]) => [...new Set(array)],
+    unique: (array: any[]) => Array.from(new Set(array)),
     filter: (array: any[], predicate: (item: any) => boolean) => array.filter(predicate),
   }
 
@@ -282,7 +282,7 @@ export class ParameterMapper {
     const errors: Array<{ parameter: string; error: string }> = []
 
     // Process each mapping rule
-    for (const [parlantParam, mapping] of allMappings) {
+    for (const [parlantParam, mapping] of Array.from(allMappings.entries())) {
       try {
         const value = await this.applyParameterMapping(
           parlantParam as string,
@@ -296,12 +296,7 @@ export class ParameterMapper {
           this.setNestedValue(simArgs, mapping.simParameter, value)
         }
       } catch (error) {
-        const errorMsg =
-          error instanceof Error
-            ? error instanceof Error
-              ? error.message
-              : String(error)
-            : 'Unknown mapping error'
+        const errorMsg = error instanceof Error ? error.message : String(error)
         logger.warn(`Parameter mapping failed`, {
           parlantParameter: parlantParam,
           simParameter: mapping.simParameter,

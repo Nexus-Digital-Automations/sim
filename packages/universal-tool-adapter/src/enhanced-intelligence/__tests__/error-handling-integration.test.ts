@@ -33,31 +33,14 @@ class MockErrorIntelligenceService extends EventEmitter {
     let severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'
 
     // Simple error classification based on error properties
-    if (
-      error instanceof Error
-        ? error.message
-        : String(error).includes('network') || error instanceof Error
-          ? error.message
-          : String(error).includes('timeout')
-    ) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
       category = 'network'
       severity = 'high'
-    } else if (
-      error instanceof Error
-        ? error.message
-        : String(error).includes('validation') || error instanceof Error
-          ? error.message
-          : String(error).includes('invalid')
-    ) {
+    } else if (errorMessage.includes('validation') || errorMessage.includes('invalid')) {
       category = 'validation'
       severity = 'low'
-    } else if (
-      error instanceof Error
-        ? error.message
-        : String(error).includes('system') || error instanceof Error
-          ? error.message
-          : String(error).includes('memory')
-    ) {
+    } else if (errorMessage.includes('system') || errorMessage.includes('memory')) {
       category = 'system'
       severity = 'critical'
     }

@@ -459,8 +459,12 @@ export class Logger {
   child(context: Record<string, any>): Logger {
     const childLogger = new Logger(this.name, this.config)
     childLogger.setContext({ ...this.context, ...context })
-    childLogger.correlationId = this.correlationId
-    childLogger.executionId = this.executionId
+    if (this.correlationId) {
+      childLogger.correlationId = this.correlationId
+    }
+    if (this.executionId) {
+      childLogger.executionId = this.executionId
+    }
     return childLogger
   }
 
@@ -485,10 +489,10 @@ export class Logger {
       logger: this.name,
       message,
       context: { ...this.context, ...context },
-      error,
-      duration,
-      correlationId: this.correlationId,
-      executionId: this.executionId,
+      ...(error ? { error } : {}),
+      ...(duration !== undefined ? { duration } : {}),
+      ...(this.correlationId ? { correlationId: this.correlationId } : {}),
+      ...(this.executionId ? { executionId: this.executionId } : {}),
     }
 
     // Apply formatters and transports

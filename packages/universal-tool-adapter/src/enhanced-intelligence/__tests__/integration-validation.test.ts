@@ -25,7 +25,7 @@ import { UserExperienceTestingFramework } from './user-experience-testing.test'
 // Integration Validation Test Suite
 // =============================================================================
 
-class IntegrationValidationSuite {
+export class IntegrationValidationSuite {
   private engine: EnhancedToolIntelligenceEngine
   private intelligenceFramework: IntelligenceTestingFramework
   private automatedSuite: AutomatedTestingSuite

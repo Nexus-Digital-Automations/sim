@@ -326,7 +326,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
         })
         .optional(),
       metadata: z.record(z.any()).optional(),
-    })
+    }) as z.ZodType<ParlantToolResult>
   }
 
   /**

@@ -2450,7 +2450,7 @@ class ContextAnalysisEngine {
     if (message.intentSignals.length === 0) return 'action' // Default
 
     // Return the first detected intent signal
-    return message.intentSignals[0]
+    return message.intentSignals[0]!
   }
 
   private inferStageFromIntent(primaryIntent: string): string {

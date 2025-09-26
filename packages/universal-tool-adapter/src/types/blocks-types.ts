@@ -6,6 +6,8 @@
  * to keep the universal-tool-adapter package self-contained.
  */
 
+import type * as React from 'react'
+
 export type SubBlockLayout = 'full' | 'half'
 
 export type SubBlockType =

@@ -72,8 +72,7 @@ export class ErrorAwareParameterMapper {
     } catch (error) {
       logger.error('Parameter mapping failed', {
         executionId: context.executionId,
-        error:
-          error instanceof Error ? (error instanceof Error ? error.message : String(error)) : error,
+        error: error instanceof Error ? error.message : String(error),
       })
 
       // Handle mapping error through comprehensive error manager
@@ -268,8 +267,7 @@ export class ErrorAwareResultFormatter {
     } catch (error) {
       logger.error('Result formatting failed', {
         executionId: context.executionId,
-        error:
-          error instanceof Error ? (error instanceof Error ? error.message : String(error)) : error,
+        error: error instanceof Error ? error.message : String(error),
       })
 
       // Handle formatting error
@@ -506,8 +504,7 @@ export class ErrorAwareExecutionWrapper {
 
       logger.error('Execution failed', {
         executionId,
-        error:
-          error instanceof Error ? (error instanceof Error ? error.message : String(error)) : error,
+        error: error instanceof Error ? error.message : String(error),
         durationMs: completedAt.getTime() - startTime.getTime(),
       })
 

@@ -54,7 +54,7 @@ class EnhancedToolValidationRunner {
 
       // Generate recommendations
       console.log('\n🎯 Final Recommendations:')
-      validationReport.recommendations.forEach((rec, index) => {
+      validationReport.recommendations.forEach((rec: string, index: number) => {
         console.log(`${index + 1}. ${rec}`)
       })
 
