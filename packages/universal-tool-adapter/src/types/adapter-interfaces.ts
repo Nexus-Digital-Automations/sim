@@ -119,6 +119,9 @@ export interface AdapterConfiguration {
 
   // Monitoring and logging
   monitoring?: MonitoringConfig
+
+  // Security configuration
+  security?: SecurityConfig
 }
 
 /**
