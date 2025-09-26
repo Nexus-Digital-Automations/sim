@@ -509,7 +509,7 @@ export class RecommendationExplanationEngine {
 
       // Create expertise adaptation
       const expertiseAdaptation = this.createExpertiseAdaptation(
-        request.userSkillLevel || 'intermediate',
+        request.currentContext.userSkillLevel || 'intermediate',
         userPrefs
       )
 
@@ -654,7 +654,10 @@ export class RecommendationExplanationEngine {
     }
 
     // Technical level (if user is advanced)
-    if (request.userSkillLevel === 'advanced' || request.userSkillLevel === 'expert') {
+    if (
+      request.currentContext.userSkillLevel === 'advanced' ||
+      request.currentContext.userSkillLevel === 'expert'
+    ) {
       levels.push({
         level: 'technical',
         content: this.generateTechnicalExplanation(recommendation, context),
@@ -859,11 +862,24 @@ export class RecommendationExplanationEngine {
   }
 
   private predictExpectedOutcome(recommendation: ContextualRecommendation): string {
-    return recommendation.expectedOutcome || 'Successful task completion with improved efficiency'
+    // Since expectedOutcome doesn't exist on ContextualRecommendation, generate based on tool functionality
+    return `Successful completion of ${recommendation.tool.name} task with improved efficiency`
   }
 
   private estimateTimeToComplete(recommendation: ContextualRecommendation): string {
-    return recommendation.estimatedTime || '2-5 minutes'
+    // Since estimatedTime doesn't exist on ContextualRecommendation, provide default based on tool complexity
+    const complexityScore = recommendation.adaptiveComplexity?.toolComplexity || 0.5
+
+    if (complexityScore < 0.3) {
+      return '1-3 minutes'
+    }
+    if (complexityScore < 0.6) {
+      return '2-5 minutes'
+    }
+    if (complexityScore < 0.8) {
+      return '5-10 minutes'
+    }
+    return '10+ minutes'
   }
 
   private assessRiskLevel(recommendation: ContextualRecommendation): 'low' | 'medium' | 'high' {
