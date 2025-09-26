@@ -435,8 +435,8 @@ export class ErrorAnalyticsSystem extends EventEmitter {
         classification,
         session: {
           sessionId: context.sessionId || this.generateSessionId(),
-          userAgent: context.userAgent,
-          platform: context.platform,
+          userAgent: sessionInfo?.userAgent,
+          platform: sessionInfo?.platform,
           ...sessionInfo,
         },
         geographic: await this.getGeographicInfo(context),
@@ -1204,7 +1204,7 @@ export class ErrorAnalyticsSystem extends EventEmitter {
 
     events.forEach((event) => {
       if (event.selectedAction && event.outcome) {
-        const actionKey = event.selectedAction.type
+        const actionKey = event.selectedAction.id
         const stats = actionStats.get(actionKey) || { total: 0, successful: 0 }
         stats.total++
         if (event.outcome.success) {
@@ -1549,7 +1549,7 @@ export class ErrorAnalyticsSystem extends EventEmitter {
       event.id,
       event.timestamp.toISOString(),
       event.error.type,
-      event.error instanceof Error ? error.message : String(error).replace(/"/g, '""'), // Escape quotes
+      event.error.message.replace(/"/g, '""'), // Escape quotes
       event.outcome?.success ? 'Yes' : 'No',
       event.outcome?.resolutionTimeMs || '',
       event.userFeedback?.satisfactionRating || '',
