@@ -1,4 +1,4 @@
-import { type SQL, sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import {
   boolean,
   check,
@@ -7,16 +7,10 @@ import {
   index,
   integer,
   json,
-  jsonb,
-  pgEnum,
   pgTable,
   text,
   timestamp,
-  uniqueIndex,
-  uuid,
-  vector,
 } from 'drizzle-orm/pg-core'
-import { DEFAULT_FREE_CREDITS, TAG_SLOTS } from './consts'
 
 // Custom tsvector type for full-text search
 export const tsvector = customType<{

@@ -3,6 +3,7 @@ import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import {
   type ChatBrowserSession,
   type ChatConversation,
+  type ChatExportRequest,
   type ChatMessage,
   chatBrowserSession,
   chatConversation,
@@ -33,7 +34,7 @@ export type Database = PostgresJsDatabase<Record<string, unknown>>
  * Message Storage Operations
  * High-performance message persistence with metadata and threading
  */
-export class ChatMessageStorage {
+class ChatMessageStorage {
   constructor(private db: Database) {}
 
   /**
@@ -217,7 +218,7 @@ export class ChatMessageStorage {
  * Chat History Retrieval
  * Optimized queries for chat history with pagination and filtering
  */
-export class ChatHistoryRetrieval {
+class ChatHistoryRetrieval {
   constructor(private db: Database) {}
 
   /**
@@ -471,7 +472,7 @@ export class ChatHistoryRetrieval {
  * Conversation Management
  * Handle conversation threading and session grouping
  */
-export class ConversationManager {
+class ConversationManager {
   constructor(private db: Database) {}
 
   /**
@@ -592,7 +593,7 @@ export class ConversationManager {
  * Browser Session Persistence
  * Handle cross-browser session restoration
  */
-export class BrowserSessionManager {
+class BrowserSessionManager {
   constructor(private db: Database) {}
 
   /**
@@ -695,7 +696,7 @@ export class BrowserSessionManager {
  * Data Export and Compliance
  * Handle data portability and export requests
  */
-export class ChatDataExporter {
+class ChatDataExporter {
   constructor(private db: Database) {}
 
   /**

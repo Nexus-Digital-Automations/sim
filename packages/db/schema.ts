@@ -2,7 +2,6 @@ import { type SQL, sql } from 'drizzle-orm'
 import {
   boolean,
   check,
-  customType,
   decimal,
   index,
   integer,
@@ -16,9 +15,9 @@ import {
   uuid,
   vector,
 } from 'drizzle-orm/pg-core'
-import { DEFAULT_FREE_CREDITS, TAG_SLOTS } from './consts'
 // Import base tables to avoid circular dependencies
-import { user, workspace, organization, apiKey, knowledgeBase, tsvector } from './base-schema'
+import { apiKey, knowledgeBase, organization, tsvector, user, workspace } from './base-schema'
+import { DEFAULT_FREE_CREDITS, TAG_SLOTS } from './consts'
 
 // Re-export tsvector from base-schema for backwards compatibility
 export { tsvector }
@@ -1603,48 +1602,47 @@ export const mcpServers = pgTable(
 
 // Export all chat persistence and Parlant tables and enums
 export {
-  chatMessage,
-  chatConversation,
   chatBrowserSession,
-  chatSearchIndex,
+  chatConversation,
   chatExportRequest,
-  chatPersistenceTables,
-  messageStatusEnum,
-  conversationTypeEnum,
-  messageTypeEnum,
+  chatMessage,
   chatPersistenceEnums,
+  chatPersistenceTables,
+  chatSearchIndex,
+  conversationTypeEnum,
+  messageStatusEnum,
+  messageTypeEnum,
 } from './chat-persistence-schema'
-
 export {
+  agentStatusEnum,
+  compositionModeEnum,
+  eventTypeEnum,
+  journeyStateTypeEnum,
   parlantAgent,
-  parlantSession,
+  parlantAgentApiKey,
+  parlantAgentKnowledgeBase,
+  parlantAgentTool,
+  parlantAgentWorkflow,
+  parlantCannedResponse,
+  parlantConversionCache,
+  parlantConversionHistory,
+  parlantEnums,
   parlantEvent,
   parlantGuideline,
   parlantJourney,
+  parlantJourneyGenerationHistory,
+  parlantJourneyGuideline,
   parlantJourneyState,
   parlantJourneyTransition,
-  parlantVariable,
-  parlantTool,
-  parlantTerm,
-  parlantCannedResponse,
-  parlantAgentWorkflow,
-  parlantAgentApiKey,
+  parlantSession,
   parlantSessionWorkflow,
-  parlantAgentTool,
-  parlantJourneyGuideline,
-  parlantAgentKnowledgeBase,
-  parlantToolIntegration,
-  parlantWorkflowTemplate,
-  parlantTemplateParameter,
-  parlantConversionCache,
-  parlantConversionHistory,
-  parlantJourneyGenerationHistory,
   parlantTables,
-  agentStatusEnum,
+  parlantTemplateParameter,
+  parlantTerm,
+  parlantTool,
+  parlantToolIntegration,
+  parlantVariable,
+  parlantWorkflowTemplate,
   sessionModeEnum,
   sessionStatusEnum,
-  eventTypeEnum,
-  journeyStateTypeEnum,
-  compositionModeEnum,
-  parlantEnums,
 } from './parlant-schema'

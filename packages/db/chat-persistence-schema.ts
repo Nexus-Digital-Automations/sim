@@ -10,8 +10,8 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
-import { parlantEvent, parlantSession } from './parlant-schema'
 import { user, workspace } from './base-schema'
+import { parlantEvent, parlantSession } from './parlant-schema'
 
 /**
  * Chat Persistence Schema Extension
