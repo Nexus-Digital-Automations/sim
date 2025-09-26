@@ -20,6 +20,7 @@ import { createServer } from 'http'
 import { beforeEach, describe, expect, test } from '@jest/globals'
 import { Server as SocketIOServer } from 'socket.io'
 import { io as SocketIOClient } from 'socket.io-client'
+import type { TestConfiguration } from '../../types/adapter-interfaces'
 import type { ToolRecommendationRequest, ToolRecommendationResponse } from '../agent-tool-api'
 import { AgentToolAPI } from '../agent-tool-api'
 import type { ConversationalContext } from '../context-analyzer'
@@ -27,8 +28,6 @@ import { ConversationalContextAnalyzer } from '../context-analyzer'
 import { RealtimeRecommendationService } from '../realtime-recommendation-service'
 import type { WorkflowRecommendationRequest } from '../workflow-recommendation-engine'
 import { WorkflowRecommendationEngine } from '../workflow-recommendation-engine'
-
-import type { PerformanceThresholds, TestConfiguration } from '../../types/adapter-interfaces'
 
 // =============================================================================
 // Test Configuration and Setup
@@ -219,8 +218,8 @@ class AgentRecommendationTestingFramework {
     console.log('🧠 Running conversational context analysis tests...')
     const results: TestResult[] = []
 
-    for (const dataset of this.configuration.testDatasets) {
-      for (const scenario of dataset.scenarios) {
+    for (const dataset of this.configuration.testDatasets || []) {
+      for (const scenario of dataset.scenarios || []) {
         const result = await this.testContextAnalysis(scenario)
         results.push(result)
       }
@@ -295,7 +294,7 @@ class AgentRecommendationTestingFramework {
     // Validate confidence level
     const confidenceValid =
       context.extractedIntent.confidence >=
-      (this.configuration.performanceThresholds.minConfidenceScore || 0.7)
+      (this.configuration.performanceThresholds?.minConfidenceScore ?? 0.7)
     validations.push({
       metric: 'confidence_level',
       passed: confidenceValid,
@@ -333,7 +332,7 @@ class AgentRecommendationTestingFramework {
     score += timingValid ? 0.15 : 0
 
     return {
-      passed: score >= (this.configuration.performanceThresholds.minAccuracyScore || 0.8),
+      passed: score >= (this.configuration.performanceThresholds?.minAccuracyScore ?? 0.8),
       score: Math.min(score, 1),
       details: { validations, context_summary: this.summarizeContext(context) },
       error: undefined,
@@ -348,8 +347,8 @@ class AgentRecommendationTestingFramework {
     console.log('🎯 Running recommendation quality tests...')
     const results: TestResult[] = []
 
-    for (const dataset of this.configuration.testDatasets) {
-      for (const scenario of dataset.scenarios) {
+    for (const dataset of this.configuration.testDatasets || []) {
+      for (const scenario of dataset.scenarios || []) {
         const result = await this.testRecommendationQuality(scenario)
         results.push(result)
       }
@@ -425,7 +424,7 @@ class AgentRecommendationTestingFramework {
     // Validate response time
     const timeValid =
       response.processingTimeMs <=
-      (this.configuration.performanceThresholds.recommendationGenerationMaxTime || 2000)
+      (this.configuration.performanceThresholds?.recommendationGenerationMaxTime ?? 2000)
     validations.push({ metric: 'response_time', passed: timeValid, score: timeValid ? 1 : 0 })
     score += timeValid ? 0.2 : 0
 
@@ -443,7 +442,7 @@ class AgentRecommendationTestingFramework {
       response.recommendations.reduce((sum, rec) => sum + rec.confidence, 0) /
       response.recommendations.length
     const confidenceValid =
-      avgConfidence >= (this.configuration.performanceThresholds.minConfidenceScore || 0.7)
+      avgConfidence >= (this.configuration.performanceThresholds?.minConfidenceScore ?? 0.7)
     validations.push({
       metric: 'average_confidence',
       passed: confidenceValid,
@@ -476,7 +475,7 @@ class AgentRecommendationTestingFramework {
     score += explanationsValid ? 0.2 : 0
 
     return {
-      passed: score >= (this.configuration.performanceThresholds.minAccuracyScore || 0.8),
+      passed: score >= (this.configuration.performanceThresholds?.minAccuracyScore ?? 0.8),
       score: Math.min(score, 1),
       details: {
         validations,
@@ -499,8 +498,8 @@ class AgentRecommendationTestingFramework {
     const results: TestResult[] = []
 
     // Test scenarios with workflow context
-    const workflowScenarios = this.configuration.testDatasets
-      .flatMap((dataset: TestDataset) => dataset.scenarios)
+    const workflowScenarios = (this.configuration.testDatasets || [])
+      .flatMap((dataset: TestDataset) => dataset.scenarios || [])
       .filter((scenario: TestScenario) => scenario.workflowContext)
 
     for (const scenario of workflowScenarios) {
@@ -554,7 +553,7 @@ class AgentRecommendationTestingFramework {
           avoidedTools: [],
           qualityVsSpeed: 'balanced',
           parallelizationPreference: true,
-          feedbackFrequency: 'always',
+          feedbackFrequency: 'moderate',
         },
         includeSequences: true,
         optimizeForSpeed: false,
@@ -593,15 +592,13 @@ class AgentRecommendationTestingFramework {
     }
   }
 
-  private validateWorkflowIntegration(
-    response: any,
-    scenario: TestScenario
-  ): ValidationResult {
+  private validateWorkflowIntegration(response: any, scenario: TestScenario): ValidationResult {
     const validations = []
     let score = 0
 
     // Validate response structure
-    const hasRecommendations = response.immediateRecommendations && Array.isArray(response.immediateRecommendations)
+    const hasRecommendations =
+      response.immediateRecommendations && Array.isArray(response.immediateRecommendations)
     validations.push({
       metric: 'response_structure',
       passed: hasRecommendations,
@@ -619,7 +616,8 @@ class AgentRecommendationTestingFramework {
     score += hasWorkflowAnalysis ? 0.2 : 0
 
     // Validate confidence score
-    const hasConfidence = typeof response.confidenceScore === 'number' && response.confidenceScore >= 0
+    const hasConfidence =
+      typeof response.confidenceScore === 'number' && response.confidenceScore >= 0
     validations.push({
       metric: 'confidence_score',
       passed: hasConfidence,
@@ -637,7 +635,7 @@ class AgentRecommendationTestingFramework {
     score += workflowRelevant ? 0.3 : 0
 
     return {
-      passed: score >= (this.configuration.performanceThresholds.minAccuracyScore || 0.8),
+      passed: score >= (this.configuration.performanceThresholds?.minAccuracyScore ?? 0.8),
       score: Math.min(score, 1),
       details: {
         validations,
@@ -1046,6 +1044,11 @@ class AgentRecommendationTestingFramework {
         validationRequired: true,
         auditTrail: true,
       },
+      dataCompatibility: {
+        dataFormats: ['json', 'csv', 'xml'],
+        supportedTypes: ['string', 'number', 'boolean'],
+        requiredTransformations: ['normalize', 'validate', 'convert'],
+      },
     }
   }
 
@@ -1094,7 +1097,8 @@ class AgentRecommendationTestingFramework {
 
     const slowTests = results.testResults.filter(
       (r) =>
-        r.executionTime > (this.configuration.performanceThresholds.recommendationGenerationMaxTime || 2000)
+        r.executionTime >
+        (this.configuration.performanceThresholds?.recommendationGenerationMaxTime || 2000)
     )
     if (slowTests.length > 0) {
       recommendations.push('Performance optimization needed for slow-running tests')
@@ -1261,7 +1265,7 @@ describe('Agent Tool Recommendation System', () => {
             defaultToolCategories: [],
             excludedTools: [],
             preferredComplexityLevel: 'moderate',
-            feedbackFrequency: 'moderate',
+            feedbackFrequency: 'always',
             learningModeEnabled: true,
           },
         },
@@ -1326,14 +1330,19 @@ describe('Agent Tool Recommendation System', () => {
             externalApiLimits: {},
           },
           timeConstraints: {
-        stageDeadlines: {},
-        maintenanceWindows: [],
-      },
+            stageDeadlines: {},
+            maintenanceWindows: [],
+          },
           qualityRequirements: {
             minimumQuality: 0.8,
             qualityMetrics: ['accuracy', 'completeness'],
             validationRequired: true,
             auditTrail: true,
+          },
+          dataCompatibility: {
+            'json': 0.9,
+            'csv': 0.8,
+            'xml': 0.7,
           },
         },
         availableTools: [],
@@ -1344,7 +1353,7 @@ describe('Agent Tool Recommendation System', () => {
           avoidedTools: [],
           qualityVsSpeed: 'balanced',
           parallelizationPreference: true,
-          feedbackFrequency: 'always',
+          feedbackFrequency: 'moderate',
         },
         includeSequences: true,
         optimizeForSpeed: false,
@@ -1389,7 +1398,7 @@ describe('Agent Tool Recommendation System', () => {
               defaultToolCategories: [],
               excludedTools: [],
               preferredComplexityLevel: 'moderate',
-              feedbackFrequency: 'moderate',
+              feedbackFrequency: 'always',
               learningModeEnabled: true,
             },
           },
