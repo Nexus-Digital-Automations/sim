@@ -1175,6 +1175,8 @@ class PublishingService {
 }
 
 class AnalyticsService {
+  constructor(private _config?: any) {}
+
   async trackPublication(publication: Publication): Promise<void> {}
   async getDescriptionAnalytics(descriptionId: string): Promise<DescriptionAnalytics> {
     return {} as any
