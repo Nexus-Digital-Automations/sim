@@ -295,7 +295,7 @@ export class AutoDiscoverySystem extends EventEmitter {
           if (
             this.matchesIncludePatterns(fullPath) &&
             !this.shouldExcludePath(fullPath) &&
-            stats.size <= (this.config.maxFileSize ?? Infinity)
+            stats.size <= (this.config.maxFileSize ?? Number.POSITIVE_INFINITY)
           ) {
             files.push(fullPath)
           }
@@ -731,7 +731,9 @@ export class AutoDiscoverySystem extends EventEmitter {
    * Check if file matches include patterns
    */
   private matchesIncludePatterns(filePath: string): boolean {
-    return (this.config.includePatterns ?? []).some((pattern) => this.matchesGlob(filePath, pattern))
+    return (this.config.includePatterns ?? []).some((pattern) =>
+      this.matchesGlob(filePath, pattern)
+    )
   }
 
   /**

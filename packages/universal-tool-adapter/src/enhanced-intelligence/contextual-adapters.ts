@@ -1038,7 +1038,10 @@ export class ContextualAdapterRegistry {
         const adaptation = await adapter.adapt(schema, context)
         adaptations.push(adaptation)
       } catch (error) {
-        logger.warn(`Adapter ${adapter.adapterId} failed:`, error instanceof Error ? { error } : { error: String(error) })
+        logger.warn(
+          `Adapter ${adapter.adapterId} failed:`,
+          error instanceof Error ? { error } : { error: String(error) }
+        )
       }
     }
 

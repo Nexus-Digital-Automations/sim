@@ -626,7 +626,9 @@ export class SemanticSearchEngine {
           lastIndexed: new Date(),
         })
       } catch (error) {
-        logger.warn(`Failed to index tool: ${tool.id}`, { error: error instanceof Error ? error.message : String(error) })
+        logger.warn(`Failed to index tool: ${tool.id}`, {
+          error: error instanceof Error ? error.message : String(error),
+        })
       }
     }
 

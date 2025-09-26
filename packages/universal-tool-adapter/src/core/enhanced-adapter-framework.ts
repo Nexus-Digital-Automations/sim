@@ -103,7 +103,7 @@ export class EnhancedAdapterFramework {
    * Transform a Sim BlockConfig into a Parlant-compatible tool adapter
    */
   async createAdapterFromBlockConfig<T = any>(
-    blockConfig: BlockConfig<T>,
+    blockConfig: BlockConfig,
     customConfig: Partial<AdapterConfiguration> = {}
   ): Promise<BlockConfigAdapter<T>> {
     const startTime = Date.now()
@@ -114,7 +114,7 @@ export class EnhancedAdapterFramework {
       const adapterConfig = await this.buildAdapterConfiguration(blockConfig, customConfig)
 
       // Create parameter mappings from subBlocks
-      const parameterMappings = await this.buildParameterMappings(blockConfig.subBlocks)
+      const parameterMappings = await this.buildParameterMappings(blockConfig.subBlocks || [])
 
       // Build validation configuration
       const validationConfig = await this.buildValidationConfiguration(blockConfig)
@@ -145,7 +145,7 @@ export class EnhancedAdapterFramework {
 
       // Update metrics
       this.metrics.set('adapters_created', (this.metrics.get('adapters_created') || 0) + 1)
-      this.analytics.recordAdapterCreation(blockConfig.type, duration)
+      this.analytics.recordAdapterCreation(blockConfig.type || 'unknown', duration)
 
       return adapter
     } catch (error) {
@@ -184,7 +184,7 @@ export class EnhancedAdapterFramework {
       caching: {
         enabled: this.config.enableCaching ?? false,
         ttlMs: this.config.cacheTtlMs,
-        maxSize: Math.floor(this.config.maxCacheSize / 10), // Per-adapter cache size
+        maxSize: Math.floor((this.config.maxCacheSize ?? 1000) / 10), // Per-adapter cache size
         keyStrategy: 'parameters',
         ...customConfig.caching,
       },
@@ -253,6 +253,21 @@ export class EnhancedAdapterFramework {
     }
 
     return mappings
+  }
+
+  /**
+   * Build validation configuration from BlockConfig
+   */
+  private async buildValidationConfiguration(blockConfig: BlockConfig): Promise<ValidationConfig> {
+    return {
+      enableStrictValidation: true,
+      enableBusinessRules: false,
+      // customValidators: [], // Removed as it doesn't exist on ValidationConfig
+      // schemaValidation: { // Removed as it doesn't exist on ValidationConfig
+      //   enabled: true,
+      //   strictMode: false
+      // }
+    }
   }
 
   /**
@@ -553,14 +568,15 @@ export class EnhancedAdapterFramework {
     const actionWords = this.extractActionWords(blockConfig)
     const capabilities = this.extractCapabilities(blockConfig)
 
-    let description = `Use this tool to ${blockConfig.description.toLowerCase()}`
+    let description = `Use this tool to ${blockConfig.description?.toLowerCase() || 'perform operations'}`
 
     if (capabilities.length > 0) {
       description += `. Capabilities include: ${capabilities.join(', ')}`
     }
 
-    if (blockConfig.longDescription) {
-      description += `. ${blockConfig.longDescription}`
+    // BlockConfig doesn't have longDescription, using description length as alternative
+    if (blockConfig.description && blockConfig.description.length > 50) {
+      description += `. Additional details available.`
     }
 
     return description
@@ -911,9 +927,9 @@ export class EnhancedAdapterFramework {
     const keywords = [
       (blockConfig.name || '').toLowerCase(),
       ...(blockConfig.name || '').toLowerCase().split(/[\s_-]+/),
-      blockConfig.type,
+      blockConfig.type || '',
       blockConfig.category || 'utility',
-    ].filter(Boolean)
+    ].filter(Boolean) as string[]
 
     // Add description keywords
     const descWords = (blockConfig.description || '')
@@ -945,7 +961,7 @@ export class EnhancedAdapterFramework {
 
   private createSimToolDefinition(blockConfig: BlockConfig): SimToolDefinition {
     return {
-      name: blockConfig.type,
+      name: blockConfig.type || blockConfig.id || 'unknown',
       metadata: {
         displayNames: {},
         description: blockConfig.description || '',
@@ -1034,12 +1050,12 @@ export class EnhancedAdapterFramework {
  * Specialized adapter for BlockConfig-based tools
  */
 export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
-  private readonly blockConfig: BlockConfig<T>
+  private readonly blockConfig: BlockConfig
 
-  constructor(blockConfig: BlockConfig<T>, config: AdapterConfiguration) {
+  constructor(blockConfig: BlockConfig, config: AdapterConfiguration) {
     // Create a SimToolDefinition from BlockConfig
     const simTool: SimToolDefinition = {
-      name: blockConfig.type,
+      name: blockConfig.type || blockConfig.id || 'unknown',
       metadata: {
         displayNames: {},
         description: blockConfig.description,
@@ -1114,7 +1130,7 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
   /**
    * Get BlockConfig for inspection
    */
-  getBlockConfig(): BlockConfig<T> {
+  getBlockConfig(): BlockConfig {
     return this.blockConfig
   }
 
@@ -1232,6 +1248,8 @@ class PerformanceOptimizer {
 }
 
 class ConnectionPool {
+  constructor(private config: any) {}
+
   async close(): Promise<void> {
     // Close any open connections
   }

@@ -19,6 +19,7 @@ import type {
   ToolExecutionContext as SimExecutionContext,
   SimToolDefinition,
   ToolRunResult as SimToolResult,
+  ValidationResult,
 } from '../types/adapter-interfaces'
 import type {
   ParameterDefinition,
@@ -26,7 +27,6 @@ import type {
   ParlantTool,
   ToolMetadata as ParlantToolMetadata,
   ParlantToolResult,
-  ValidationResult,
 } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
 import { ValidationEngine } from '../validation/validation-engine'
@@ -162,7 +162,10 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       if (error instanceof ExecutionError) {
         return this.handleExecutionError(error, context)
       }
-      return this.handleUnknownError(error instanceof Error ? error : new Error(String(error)), context)
+      return this.handleUnknownError(
+        error instanceof Error ? error : new Error(String(error)),
+        context
+      )
     }
   }
 
@@ -265,7 +268,10 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       return result
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
-      throw new ExecutionError(`Sim tool execution failed: ${errorMessage}`, error instanceof Error ? error : new Error(String(error)))
+      throw new ExecutionError(
+        `Sim tool execution failed: ${errorMessage}`,
+        error instanceof Error ? error : new Error(String(error))
+      )
     }
   }
 

@@ -451,7 +451,9 @@ export class ErrorAnalyticsSystem extends EventEmitter {
       // Check for alerts
       await this.checkAlertConditions(errorEvent)
 
-      console.log(`Recorded error event: ${eventId} - ${error instanceof Error ? error.message : String(error)}`)
+      console.log(
+        `Recorded error event: ${eventId} - ${error instanceof Error ? error.message : String(error)}`
+      )
       return eventId
     } catch (analyticsError) {
       console.error('Failed to record error event:', analyticsError)

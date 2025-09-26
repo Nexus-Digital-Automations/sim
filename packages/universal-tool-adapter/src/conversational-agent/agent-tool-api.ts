@@ -350,7 +350,9 @@ export class AgentToolAPI {
         error,
         requestId: request.requestId,
       })
-      throw new Error(`Tool recommendation failed: ${error.message}`)
+      throw new Error(
+        `Tool recommendation failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -375,7 +377,9 @@ export class AgentToolAPI {
       await this.adjustRecommendationStrategy(selectionEvent)
     } catch (error) {
       logger.error('Failed to record tool selection', { error, eventId: selectionEvent.eventId })
-      throw new Error(`Tool selection recording failed: ${error.message}`)
+      throw new Error(
+        `Tool selection recording failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -405,7 +409,9 @@ export class AgentToolAPI {
       }
     } catch (error) {
       logger.error('Failed to process usage feedback', { error, feedbackId: feedback.feedbackId })
-      throw new Error(`Feedback processing failed: ${error.message}`)
+      throw new Error(
+        `Feedback processing failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -504,7 +510,7 @@ export class AgentToolAPI {
       quickActions: [],
       clarifyingQuestions: [],
       followUpSuggestions: rec.followUpSuggestions,
-      displayPriority: rec.priority,
+      displayPriority: rec.relevanceScore || 0.5,
     }
   }
 

@@ -104,7 +104,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     logger.info('Enhanced Adapter Registry initialized', {
       maxAdapters: this.config.maxAdapters,
       healthCheckInterval: this.config.healthCheckIntervalMs,
-      caching: this.config.discoveryCache.enabled,
+      caching: this.config.discoveryCache?.enabled,
     })
   }
 
@@ -115,8 +115,8 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     adapter: BaseAdapter,
     metadata: Partial<AdapterRegistryEntry['metadata']> = {}
   ): Promise<void> {
-    if (this.adapters.size >= this.config.maxAdapters) {
-      throw new Error(`Registry capacity exceeded: ${this.config.maxAdapters}`)
+    if (this.adapters.size >= (this.config.maxAdapters || 1000)) {
+      throw new Error(`Registry capacity exceeded: ${this.config.maxAdapters || 1000}`)
     }
 
     const adapterId = adapter.id
@@ -234,7 +234,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     } catch (error) {
       logger.error('Error during adapter unregistration', {
         adapterId,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -298,7 +298,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
 
       // Check execution cache
       const cacheKey = this.generateCacheKey(adapterId, args)
-      if (this.config.executionCache.enabled) {
+      if (this.config.executionCache?.enabled) {
         const cachedResult = this.executionCache.get(cacheKey)
         if (cachedResult) {
           logger.debug('Returning cached execution result', { executionId, adapterId })
@@ -314,7 +314,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
         toolId: adapterId,
         adapterVersion: entry.metadata.version || '1.0.0',
         startedAt: new Date(),
-        requestSource: 'enhanced_registry'
+        requestSource: 'enhanced_registry',
       }
       await this.pluginExecutor.onBeforeExecution(entry, adapterContext, args)
 
@@ -334,9 +334,9 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       this.updateExecutionStatistics(entry, duration, true)
 
       // Cache result if successful
-      if (this.config.executionCache.enabled && result.success) {
+      if (this.config.executionCache?.enabled && result.success) {
         this.executionCache.set(cacheKey, result)
-        setTimeout(() => this.executionCache.delete(cacheKey), this.config.executionCache.ttlMs)
+        setTimeout(() => this.executionCache.delete(cacheKey), this.config.executionCache?.ttlMs || 300000)
       }
 
       // Update performance tracking
@@ -365,7 +365,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
           toolId: adapterId,
           adapterVersion: entry.metadata.version || '1.0.0',
           startedAt: new Date(),
-          requestSource: 'enhanced_registry'
+          requestSource: 'enhanced_registry',
         }
         await this.pluginExecutor.onError(entry, adapterContext, errorObj)
       }
@@ -406,7 +406,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
   async discover(query: ToolDiscoveryQuery): Promise<DiscoveredTool[]> {
     // Check discovery cache
     const cacheKey = this.generateDiscoveryCacheKey(query)
-    if (this.config.discoveryCache.enabled) {
+    if (this.config.discoveryCache?.enabled) {
       const cached = this.discoveryCache.get(cacheKey)
       if (cached) {
         logger.debug('Returning cached discovery results', { query: query.query })
@@ -460,9 +460,9 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     const paginatedResults = this.applyPagination(results, query)
 
     // Cache results
-    if (this.config.discoveryCache.enabled) {
+    if (this.config.discoveryCache?.enabled) {
       this.discoveryCache.set(cacheKey, paginatedResults)
-      setTimeout(() => this.discoveryCache.delete(cacheKey), this.config.discoveryCache.ttlMs)
+      setTimeout(() => this.discoveryCache.delete(cacheKey), this.config.discoveryCache?.ttlMs || 60000)
     }
 
     logger.debug('Discovery completed', {
@@ -569,7 +569,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
    * Get adapters by health status
    */
   getAdaptersByHealth(status: 'healthy' | 'degraded' | 'unhealthy'): AdapterRegistryEntry[] {
-    return Array.from(this.adapters.values()).filter((entry) => entry.health.status === status)
+    return Array.from(this.adapters.values()).filter((entry) => entry.health?.status === status)
   }
 
   /**
@@ -618,7 +618,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
 
       logger.info('Registry shutdown completed')
     } catch (error) {
-      logger.error('Error during shutdown', { error: error.message })
+      logger.error('Error during shutdown', { error: error instanceof Error ? error.message : String(error) })
       throw error
     }
   }
@@ -718,7 +718,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     const candidates = Array.from(this.adapters.values()).filter(
       (candidate) =>
         candidate.id !== entry.id &&
-        candidate.health.status === 'healthy' &&
+        candidate.health?.status === 'healthy' &&
         candidate.metadata.category === entry.metadata.category
     )
 
@@ -727,9 +727,11 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     }
 
     // Return the one with best performance
-    return candidates.reduce((best, current) =>
-      current.statistics.successRate > best.statistics.successRate ? current : best
-    )
+    return candidates.reduce((best, current) => {
+      const currentSuccessRate = current.statistics?.successRate || 0
+      const bestSuccessRate = best.statistics?.successRate || 0
+      return currentSuccessRate > bestSuccessRate ? current : best
+    })
   }
 
   private updateExecutionStatistics(
@@ -737,6 +739,11 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     duration: number,
     success: boolean
   ): void {
+    if (!entry.statistics) {
+      logger.warn('Entry statistics is undefined', { entryId: entry.id })
+      return
+    }
+
     const stats = entry.statistics
 
     // Update execution count
@@ -791,12 +798,12 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     }
 
     // Performance scoring
-    score += entry.statistics.successRate * 10
-    score += Math.max(0, 10 - entry.statistics.averageExecutionTimeMs / 1000) // Faster = better
+    score += (entry.statistics?.successRate || 0) * 10
+    score += Math.max(0, 10 - (entry.statistics?.averageExecutionTimeMs || 0) / 1000) // Faster = better
 
     // Health status penalty
-    if (entry.health.status === 'degraded') score *= 0.8
-    if (entry.health.status === 'unhealthy') score *= 0.3
+    if (entry.health?.status === 'degraded') score *= 0.8
+    if (entry.health?.status === 'unhealthy') score *= 0.3
 
     // Popularity boost
     const popularity = this.analytics.getPopularityScore(entry.id)
@@ -937,7 +944,10 @@ export class EnhancedAdapterRegistry extends EventEmitter {
 
   private calculateAverageExecutionTime(entries: AdapterRegistryEntry[]): number {
     if (entries.length === 0) return 0
-    return entries.reduce((sum, e) => sum + (e.statistics?.averageExecutionTimeMs || 0), 0) / entries.length
+    return (
+      entries.reduce((sum, e) => sum + (e.statistics?.averageExecutionTimeMs || 0), 0) /
+      entries.length
+    )
   }
 
   private getCategoryDistribution(): Record<string, number> {
@@ -1072,7 +1082,7 @@ class HealthMonitor {
       entry.health = {
         status: 'unhealthy',
         lastCheckAt: new Date(),
-        issues: ['Health check failed: ' + error.message],
+        issues: ['Health check failed: ' + (error instanceof Error ? error.message : String(error))],
       }
 
       logger.warn('Health check error', {
@@ -1243,11 +1253,7 @@ class PluginExecutor {
     // Could add plugin cleanup hooks here
   }
 
-  async onBeforeExecution(
-    entry: AdapterRegistryEntry,
-    context: any,
-    args: any
-  ): Promise<void> {
+  async onBeforeExecution(entry: AdapterRegistryEntry, context: any, args: any): Promise<void> {
     for (const plugin of Array.from(this.plugins.values())) {
       if (plugin.onBeforeExecution) {
         try {
@@ -1283,11 +1289,7 @@ class PluginExecutor {
     }
   }
 
-  async onError(
-    entry: AdapterRegistryEntry,
-    context: any,
-    error: Error
-  ): Promise<void> {
+  async onError(entry: AdapterRegistryEntry, context: any, error: Error): Promise<void> {
     for (const plugin of Array.from(this.plugins.values())) {
       if (plugin.onError) {
         try {

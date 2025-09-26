@@ -819,7 +819,9 @@ export class RecommendationAPI {
             code: 'INTERNAL_ERROR',
             message: this.config.security.hideInternalErrors
               ? 'Internal error occurred'
-              : (error instanceof Error ? error.message : String(error)),
+              : error instanceof Error
+                ? error.message
+                : String(error),
             severity: 'high',
           },
         ],

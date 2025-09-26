@@ -9,7 +9,9 @@
  */
 
 import { BaseAdapter } from '../core/base-adapter'
+import { ConcreteAdapter } from './concrete-adapter'
 import { AdapterError, ConfigurationError, RegistryError } from '../errors/adapter-errors'
+import { z } from 'zod'
 import type {
   AdapterConfiguration,
   AdapterMigration,
@@ -18,6 +20,7 @@ import type {
   ExtensionPoint,
   SimToolDefinition,
   VersionCompatibility,
+  ValidationResult,
 } from '../types/adapter-interfaces'
 import type {
   ParlantTool,
@@ -26,6 +29,9 @@ import type {
   ToolRecommendation,
   ToolSearchQuery,
   ToolSearchResult,
+  ParameterDefinition,
+  ParlantExecutionContext,
+  ParlantToolResult,
 } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
 
@@ -107,7 +113,9 @@ export class PluginManager {
       const missingDeps = plugin.dependencies.filter((dep) => !this.plugins.has(dep))
       if (missingDeps.length > 0) {
         throw new RegistryError(
-          `Plugin ${plugin.name} has missing dependencies: ${missingDeps.join(', ')}`
+          `Plugin ${plugin.name} has missing dependencies: ${missingDeps.join(', ')}`,
+          'register',
+          { plugin: plugin.name, missingDeps }
         )
       }
     }
@@ -141,7 +149,9 @@ export class PluginManager {
 
     if (dependents.length > 0) {
       throw new RegistryError(
-        `Cannot unregister plugin ${pluginName}: dependencies exist (${dependents.join(', ')})`
+        `Cannot unregister plugin ${pluginName}: dependencies exist (${dependents.join(', ')})`,
+        'unregister',
+        { plugin: pluginName, dependents }
       )
     }
 
@@ -209,7 +219,7 @@ export class PluginManager {
     }
 
     const methodName = hookMap[extensionPoint]
-    return methodName ? plugin[methodName as keyof AdapterPlugin] : undefined
+    return methodName ? (plugin[methodName as keyof AdapterPlugin] as ((...args: any[]) => any) | undefined) : undefined
   }
 
   /**
@@ -221,7 +231,11 @@ export class PluginManager {
     }
 
     if (this.plugins.has(plugin.name)) {
-      throw new RegistryError(`Plugin already registered: ${plugin.name}`)
+      throw new RegistryError(
+        `Plugin already registered: ${plugin.name}`,
+        'register',
+        { plugin: plugin.name }
+      )
     }
 
     // Additional validation could be added here
@@ -241,7 +255,7 @@ export class PluginManager {
       try {
         await this.discoverPluginsInDirectory(directory)
       } catch (error) {
-        logger.warn(`Plugin discovery failed for directory: ${directory}`, { error: error.message })
+        logger.warn(`Plugin discovery failed for directory: ${directory}`, { error: error instanceof Error ? error.message : String(error) })
       }
     }
   }
@@ -310,7 +324,7 @@ export class HealthMonitor {
       this.recordHealthCheck(adapterId, healthy)
       return healthy
     } catch (error) {
-      logger.warn(`Health check failed for adapter: ${adapterId}`, { error: error.message })
+      logger.warn(`Health check failed for adapter: ${adapterId}`, { error: error instanceof Error ? error.message : String(error) })
       this.recordHealthCheck(adapterId, false)
       return false
     }
@@ -385,7 +399,7 @@ export class HealthMonitor {
       try {
         await this.checkAllHealth()
       } catch (error) {
-        logger.error('Health monitoring cycle failed', { error: error.message })
+        logger.error('Health monitoring cycle failed', { error: error instanceof Error ? error.message : String(error) })
       }
     }, intervalMs)
 
@@ -464,7 +478,9 @@ export class MigrationManager {
       const nextMigration = migrations.find((m) => m.fromVersion === currentVersion)
       if (!nextMigration) {
         throw new RegistryError(
-          `No migration path found from ${fromVersion} to ${toVersion} for adapter ${adapterId}`
+          `No migration path found from ${fromVersion} to ${toVersion} for adapter ${adapterId}`,
+          'lookup',
+          { adapterId, fromVersion, toVersion }
         )
       }
 
@@ -511,7 +527,7 @@ export class MigrationManager {
         logger.error(
           `Migration failed: ${adapterId} ${migration.fromVersion} -> ${migration.toVersion}`,
           {
-            error: error.message,
+            error: error instanceof Error ? error.message : String(error),
           }
         )
 
@@ -521,7 +537,7 @@ export class MigrationManager {
             migratedData = migration.rollback(migratedData)
             logger.info(`Migration rolled back successfully`)
           } catch (rollbackError) {
-            logger.error(`Migration rollback failed`, { error: rollbackError.message })
+            logger.error(`Migration rollback failed`, { error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError) })
           }
         }
 
@@ -547,7 +563,7 @@ export class MigrationManager {
     try {
       this.findMigrationPath(adapterId, currentVersion, targetVersion)
     } catch (error) {
-      issues.push(error.message)
+      issues.push(error instanceof Error ? error.message : String(error))
     }
 
     // Version compatibility logic would go here
@@ -606,7 +622,11 @@ export class AdapterRegistry implements ToolDiscovery {
 
     // Check if adapter already exists
     if (this.adapters.has(adapterId)) {
-      throw new RegistryError(`Adapter already registered: ${adapterId}`)
+      throw new RegistryError(
+        `Adapter already registered: ${adapterId}`,
+        'register',
+        { adapterId }
+      )
     }
 
     // Create registry entry
@@ -707,12 +727,12 @@ export class AdapterRegistry implements ToolDiscovery {
 
     // Create new adapter instance
     try {
-      entry.adapter = new BaseAdapter(entry.simTool, entry.config)
+      entry.adapter = new ConcreteAdapter(entry.simTool, entry.config)
       logger.debug(`Adapter instance created: ${adapterId}`)
       return entry.adapter
     } catch (error) {
-      logger.error(`Failed to create adapter instance: ${adapterId}`, { error: error.message })
-      throw new AdapterError(`Failed to create adapter: ${error.message}`)
+      logger.error(`Failed to create adapter instance: ${adapterId}`, { error: error instanceof Error ? error.message : String(error) })
+      throw new AdapterError(`Failed to create adapter: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -1067,7 +1087,9 @@ export class AdapterRegistry implements ToolDiscovery {
     if (this.cache.size >= maxSize) {
       // Remove oldest entry
       const oldestKey = this.cache.keys().next().value
-      this.cache.delete(oldestKey)
+      if (oldestKey) {
+        this.cache.delete(oldestKey)
+      }
     }
 
     this.cache.set(key, {

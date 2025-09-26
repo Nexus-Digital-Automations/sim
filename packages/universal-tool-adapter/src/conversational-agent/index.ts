@@ -61,7 +61,6 @@ export type {
   ToolMention,
   ToolUsageContext,
   UserIntent,
-  WorkflowState,
 } from './context-analyzer'
 // Context Analysis System
 export {
@@ -166,7 +165,9 @@ export class AgentToolRecommendationSystem {
       logger.info('Agent Tool Recommendation System fully initialized')
     } catch (error) {
       logger.error('Failed to initialize Agent Tool Recommendation System', { error })
-      throw new Error(`System initialization failed: ${error.message}`)
+      throw new Error(
+        `System initialization failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -239,7 +240,9 @@ export class AgentToolRecommendationSystem {
       logger.info('Agent Tool Recommendation System shutdown completed')
     } catch (error) {
       logger.error('Error during system shutdown', { error })
-      throw new Error(`System shutdown failed: ${error.message}`)
+      throw new Error(
+        `System shutdown failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 }

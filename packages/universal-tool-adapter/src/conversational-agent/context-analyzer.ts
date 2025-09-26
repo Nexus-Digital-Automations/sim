@@ -286,7 +286,9 @@ export class ConversationalContextAnalyzer {
       return context
     } catch (error) {
       logger.error('Failed to analyze conversational message', { error, conversationId })
-      throw new Error(`Context analysis failed: ${error.message}`)
+      throw new Error(
+        `Context analysis failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 

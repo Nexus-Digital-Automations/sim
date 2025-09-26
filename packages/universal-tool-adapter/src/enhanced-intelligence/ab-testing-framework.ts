@@ -896,6 +896,8 @@ export class ABTestingFramework {
 // =============================================================================
 
 class StatisticalEngine {
+  constructor(private config?: any) {}
+
   async performTests(variants: any, metrics: any, config: any): Promise<StatisticalTest[]> {
     // Perform statistical tests
     return []
@@ -903,6 +905,8 @@ class StatisticalEngine {
 }
 
 class PowerAnalysisEngine {
+  constructor(private config?: any) {}
+
   async analyze(testDefinition: any): Promise<PowerAnalysis> {
     // Perform power analysis
     return {
@@ -920,10 +924,13 @@ class PowerAnalysisEngine {
 }
 
 class SegmentationEngine {
+  constructor(private config?: any) {}
   // Implementation for user segmentation
 }
 
 class TestMonitor {
+  constructor(private config?: any) {}
+
   startMonitoring(test: ABTest): void {
     // Start monitoring test
   }
@@ -934,12 +941,16 @@ class TestMonitor {
 }
 
 class SafetyChecker {
+  constructor(private config?: any) {}
+
   async checkEvent(event: TestEvent, test: ABTest): Promise<void> {
     // Check for safety violations
   }
 }
 
 class TestMetricsCollector {
+  constructor(private test?: any) {}
+
   async recordEvent(event: TestEvent): Promise<void> {
     // Record test event
   }
