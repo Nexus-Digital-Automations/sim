@@ -57,7 +57,7 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ['pdf-parse', 'parlant-server', 'fs', 'fs/promises', 'path'],
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false,
     turbopackSourceMaps: false,
   },
   webpack: (config, { isServer }) => {
@@ -72,7 +72,18 @@ const nextConfig: NextConfig = {
 
       // Mark file parser modules as external for client-side
       config.externals = config.externals || []
-      config.externals.push(/^@\/lib\/file-parsers/, 'fs', 'fs/promises', 'path', 'pdf-parse')
+      config.externals.push(
+        'fs',
+        'fs/promises',
+        'path',
+        'pdf-parse',
+        (context, request, callback) => {
+          if (request.includes('@/lib/file-parsers')) {
+            return callback(null, `commonjs ${request}`)
+          }
+          callback()
+        }
+      )
     }
     return config
   },
