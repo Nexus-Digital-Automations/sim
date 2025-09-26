@@ -44,9 +44,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": [
-        "parlant-server-setup"
-      ],
+      "dependencies": ["parlant-server-setup"],
       "components": [
         "Create apps/sim/services/parlant/ integration layer",
         "Bridge authentication between Sim users and Parlant agents",
@@ -85,9 +83,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": [
-        "parlant-server-setup"
-      ],
+      "dependencies": ["parlant-server-setup"],
       "components": [
         "Add Parlant agent tables (agents, guidelines, journeys, sessions)",
         "Link agents to Sim workspaces and users",
@@ -126,9 +122,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "sim-parlant-bridge"
-      ],
+      "dependencies": ["sim-parlant-bridge"],
       "components": [
         "Create adapter pattern for Sim tools → Parlant format",
         "Wrap existing tools with Parlant-compatible interfaces",
@@ -166,9 +160,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["universal-tool-adapter"],
       "components": [
         "Map ReactFlow nodes to Parlant journey states",
         "Enable dynamic journey creation from workflow templates",
@@ -207,9 +199,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["universal-tool-adapter"],
       "components": [
         "Add natural language descriptions to all tools",
         "Create usage guidelines for each integration",
@@ -249,9 +239,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "sim-parlant-bridge"
-      ],
+      "dependencies": ["sim-parlant-bridge"],
       "components": [
         "Install and configure parlant-chat-react widget",
         "Create new /chat routes with agent selection",
@@ -292,10 +280,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "parlant-chat-interface",
-        "workflow-journey-mapping"
-      ],
+      "dependencies": ["parlant-chat-interface", "workflow-journey-mapping"],
       "components": [
         "Add 'Chat with Workflow' buttons to workflow cards",
         "Enable switching between visual editor and chat mode",
@@ -334,9 +319,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "parlant-chat-interface"
-      ],
+      "dependencies": ["parlant-chat-interface"],
       "components": [
         "Create agent configuration panels in workspace settings",
         "Build visual guideline builder integrated with tool registry",
@@ -374,9 +357,7 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "agent-management-ui"
-      ],
+      "dependencies": ["agent-management-ui"],
       "components": [
         "Connect existing knowledge bases to Parlant retrievers",
         "Implement RAG for workflow documentation and help",
@@ -402,9 +383,7 @@
       "priority": "low",
       "status": "approved",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "knowledge-integration"
-      ],
+      "dependencies": ["knowledge-integration"],
       "components": [
         "Create agent teams for complex workflows",
         "Implement handoff between specialized agents",
@@ -430,9 +409,7 @@
       "priority": "low",
       "status": "approved",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "multi-agent-orchestration"
-      ],
+      "dependencies": ["multi-agent-orchestration"],
       "components": [
         "Implement canned responses for compliance and branding",
         "Add advanced security scanning for conversations",
@@ -458,10 +435,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "parlant-chat-interface",
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["parlant-chat-interface", "universal-tool-adapter"],
       "components": [
         "Create local copilot store system using Parlant agents",
         "Build API endpoints for local copilot communication",
@@ -507,26 +481,26 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 62,
-      "total_reinitializations": 144,
+      "total_reinitializations": 153,
       "current_day": "2025-09-26",
       "time_buckets": {
-        "09:00-13:59": {
+        "10:00-14:59": {
           "init": 0,
           "reinit": 0
         },
-        "14:00-18:59": {
+        "15:00-19:59": {
           "init": 0,
           "reinit": 0
         },
-        "19:00-23:59": {
-          "init": 0,
-          "reinit": 15
-        },
-        "00:00-04:59": {
+        "20:00-00:59": {
           "init": 0,
           "reinit": 0
         },
-        "05:00-09:59": {
+        "01:00-05:59": {
+          "init": 0,
+          "reinit": 9
+        },
+        "06:00-10:59": {
           "init": 0,
           "reinit": 0
         }
@@ -587,8 +561,8 @@
           }
         }
       ],
-      "last_reset": "2025-09-26T00:00:00.136Z",
-      "last_updated": "2025-09-26T04:02:36.841Z"
+      "last_reset": "2025-09-26T07:07:58.790Z",
+      "last_updated": "2025-09-26T07:11:01.226Z"
     },
     "approval_history": [
       {
@@ -679,62 +653,74 @@
     "updated": "2025-09-24T04:24:12.431Z"
   },
   "agents": {
-    "universal-tool-adapter-fix": {
-      "lastHeartbeat": "2025-09-26T00:49:15.427Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T00:49:15.427Z",
-      "sessionId": "2eefe15b9572a7b8",
-      "previousSessions": [
-        "3e89933f9fbf1518"
-      ]
-    },
-    "TYPESCRIPT_CLEANUP_AGENT": {
-      "lastHeartbeat": "2025-09-26T01:01:28.128Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T01:01:28.128Z",
-      "sessionId": "61cff510bfcfb002",
-      "previousSessions": []
-    },
-    "claude-agent": {
-      "lastHeartbeat": "2025-09-26T01:11:08.303Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T01:11:08.303Z",
-      "sessionId": "64f5168b9b168072",
-      "previousSessions": []
-    },
-    "CORE_FRAMEWORK_FIXES": {
-      "lastHeartbeat": "2025-09-26T01:24:24.552Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T01:24:24.552Z",
-      "sessionId": "6f9b3caa0dcf3e9f",
-      "previousSessions": []
-    },
-    "TypeScript-Fix-Agent": {
-      "lastHeartbeat": "2025-09-26T01:29:17.666Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T01:29:17.666Z",
-      "sessionId": "40cea2d6e52592c1",
-      "previousSessions": []
-    },
-    "PROPERTY_ACCESS_FIX_AGENT": {
-      "lastHeartbeat": "2025-09-26T01:29:20.665Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T01:29:20.665Z",
-      "sessionId": "ac73e23fcd98e532",
-      "previousSessions": []
-    },
-    "claude_agent": {
-      "lastHeartbeat": "2025-09-26T01:37:20.053Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T01:37:20.053Z",
-      "sessionId": "ed4850640ea77b2b",
-      "previousSessions": []
-    },
     "typescript-error-fix-agent": {
       "lastHeartbeat": "2025-09-26T04:02:36.838Z",
       "status": "active",
       "reinitialized": "2025-09-26T04:02:36.838Z",
       "sessionId": "f4608b403c9f1219",
+      "previousSessions": []
+    },
+    "recovery-validation-agent": {
+      "lastHeartbeat": "2025-09-26T07:07:58.787Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T07:07:58.787Z",
+      "sessionId": "bfa3ac3a225470cd",
+      "previousSessions": []
+    },
+    "AGENT_001": {
+      "lastHeartbeat": "2025-09-26T07:09:28.633Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T07:09:28.633Z",
+      "sessionId": "44a361ba11f95fbb",
+      "previousSessions": []
+    },
+    "universal-tool-adapter-agent": {
+      "lastHeartbeat": "2025-09-26T07:09:29.538Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T07:09:29.538Z",
+      "sessionId": "28bb20f3b614504b",
+      "previousSessions": []
+    },
+    "PROPERTY_FIXER": {
+      "lastHeartbeat": "2025-09-26T07:09:29.606Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T07:09:29.606Z",
+      "sessionId": "40f0b90c870e7e3a",
+      "previousSessions": []
+    },
+    "EDGE_CASE_FIXER": {
+      "lastHeartbeat": "2025-09-26T07:09:30.949Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T07:09:30.949Z",
+      "sessionId": "3a346383299ac145",
+      "previousSessions": []
+    },
+    "INTERFACE_FIXER_AGENT": {
+      "lastHeartbeat": "2025-09-26T07:09:31.948Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T07:09:31.948Z",
+      "sessionId": "369435473e5404a2",
+      "previousSessions": []
+    },
+    "final-validation-agent": {
+      "lastHeartbeat": "2025-09-26T07:09:33.156Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T07:09:33.156Z",
+      "sessionId": "2e8aa78f66e1c033",
+      "previousSessions": []
+    },
+    "universal-tool-adapter-error-fixes": {
+      "lastHeartbeat": "2025-09-26T07:09:37.267Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T07:09:37.267Z",
+      "sessionId": "068323e371375848",
+      "previousSessions": []
+    },
+    "claude_agent": {
+      "lastHeartbeat": "2025-09-26T07:11:01.189Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T07:11:01.189Z",
+      "sessionId": "b27bf5452c2637e0",
       "previousSessions": []
     }
   },

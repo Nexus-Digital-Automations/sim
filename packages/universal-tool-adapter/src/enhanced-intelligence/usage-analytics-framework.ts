@@ -1123,29 +1123,19 @@ export class UsageAnalyticsFramework {
 // =============================================================================
 
 class EventStorage {
-  constructor(private config: any) {}
-
   async storeEvents(events: UsageEvent[]): Promise<void> {}
   async exportData(format: string, timeRange: any, filters?: any): Promise<ExportedData> {
     return {} as ExportedData
   }
 }
 
-class AnalyticsProcessor {
-  constructor(private config: any) {}
-}
+class AnalyticsProcessor {}
 
-class InsightGenerator {
-  constructor() {}
-}
+class InsightGenerator {}
 
-class PredictiveEngine {
-  constructor(private config: any) {}
-}
+class PredictiveEngine {}
 
 class RealTimeMonitor {
-  constructor(private config: any) {}
-
   processEvent(event: UsageEvent): void {}
   getDashboardData(): RealTimeDashboard {
     return {} as RealTimeDashboard

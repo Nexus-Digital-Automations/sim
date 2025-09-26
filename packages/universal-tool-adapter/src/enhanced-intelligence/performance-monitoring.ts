@@ -1092,7 +1092,7 @@ interface PerformanceAnalysis {
   opportunities: string[]
 }
 
-interface PerformanceDashboardData {
+export interface PerformanceDashboardData {
   kpis: {
     avgResponseTime: number
     operationsPerSecond: number

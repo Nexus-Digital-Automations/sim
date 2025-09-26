@@ -21,7 +21,7 @@ import {
 // Performance Benchmark Suite
 // =============================================================================
 
-export class PerformanceBenchmarkSuite {
+class PerformanceBenchmarkSuite {
   private engine: EnhancedToolIntelligenceEngine
   private benchmarkResults: BenchmarkResults
   private metricsCollector: MetricsCollector

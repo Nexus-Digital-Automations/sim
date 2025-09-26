@@ -19,7 +19,7 @@ import {
 // Quality Monitoring System
 // =============================================================================
 
-export class QualityMonitoringSystem {
+class QualityMonitoringSystem {
   private engine: EnhancedToolIntelligenceEngine
   private metricsCollector: MetricsCollector
   private qualityAnalyzer: QualityAnalyzer

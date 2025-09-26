@@ -82,7 +82,7 @@ const mockError = {
 // Intelligence Testing Framework Core
 // =============================================================================
 
-export class IntelligenceTestingFramework {
+class IntelligenceTestingFramework {
   private engine: EnhancedToolIntelligenceEngine
   private testMetrics: TestMetrics
   private testResults: TestResult[]

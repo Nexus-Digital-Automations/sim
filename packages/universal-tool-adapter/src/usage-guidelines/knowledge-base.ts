@@ -618,7 +618,7 @@ export class KnowledgeBase {
 
     const query: KnowledgeSearchQuery = {
       types: ['optimization-tip', 'performance-tip'],
-      toolIds: toolId ? [toolId] : undefined,
+      ...(toolId ? { toolIds: [toolId] } : {}),
       tags,
     }
 
@@ -631,7 +631,7 @@ export class KnowledgeBase {
   getIntegrationPatterns(toolId?: string): KnowledgeEntry[] {
     const query: KnowledgeSearchQuery = {
       types: ['integration-pattern', 'workflow-pattern'],
-      toolIds: toolId ? [toolId] : undefined,
+      ...(toolId ? { toolIds: [toolId] } : {}),
     }
 
     return this.search(query).map((result) => result.entry)

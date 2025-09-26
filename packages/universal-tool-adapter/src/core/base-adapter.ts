@@ -314,7 +314,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
    */
   protected buildOutputSchema(): z.ZodSchema<ParlantToolResult> {
     return z.object({
-      type: z.enum(['success', 'error', 'partial']),
+      type: z.enum(['success', 'error', 'partial', 'timeout', 'cancelled']),
       message: z.string().optional(),
       data: z.any().optional(),
       conversational: z

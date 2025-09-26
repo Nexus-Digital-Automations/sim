@@ -23,7 +23,7 @@ import { IntelligenceTestingFramework } from './intelligence-testing-framework.t
 // Automated Testing Suite
 // =============================================================================
 
-export class AutomatedTestingSuite {
+class AutomatedTestingSuite {
   private engine: EnhancedToolIntelligenceEngine
   private testingFramework: IntelligenceTestingFramework
   private performanceMetrics: PerformanceMetrics

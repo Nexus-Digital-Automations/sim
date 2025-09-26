@@ -818,8 +818,9 @@ export class NaturalLanguageRegistryIntegration {
     const context: ExtendedUsageContext = {
       userProfile,
       conversationId: 'default',
-      environment: 'production',
-    } as ExtendedUsageContext
+      userId: userProfile.role || 'default-user',
+      workspaceId: 'default-workspace',
+    }
 
     const [roleAdaptation, skillAdaptation, domainAdaptation] = await Promise.all([
       this.roleAdapter.adapt(baseSchema, context),
@@ -956,11 +957,10 @@ export class NaturalLanguageRegistryIntegration {
 
     return {
       toolId: tool.id,
-      basicInfo: {
-        name: tool.simTool?.name || tool.name,
-        category: tool.metadata?.category || 'utility',
-        tags: tool.metadata?.tags || [],
-      },
+      toolName: tool.simTool?.name || tool.name,
+      toolVersion: '1.0.0',
+      category: (tool.metadata?.category || 'utility') as any,
+      subcategories: tool.metadata?.tags || [],
       descriptions: {
         brief: {
           summary: `${analysis.overview.substring(0, 100)}...`,
@@ -996,11 +996,11 @@ export class NaturalLanguageRegistryIntegration {
             customizationPoints: [],
           } as any,
           performanceProfile: {
-            latency: {
+            responseTime: {
               averageMs: 100,
               p95Ms: 200,
               p99Ms: 500,
-            },
+            } as any,
             throughput: {
               concurrentRequests: 100,
             } as any,
@@ -1008,7 +1008,10 @@ export class NaturalLanguageRegistryIntegration {
               memory: 256,
               cpuCores: 1,
             } as any,
-            scalabilityFactors: ['load', 'complexity'],
+            scalabilityLimits: {
+              maxConcurrentUsers: 1000,
+              maxThroughputPerSecond: 100,
+            } as any,
           },
           securityProfile: {
             authenticationRequirements: [],
@@ -1024,19 +1027,14 @@ export class NaturalLanguageRegistryIntegration {
             customizationGuide: 'Standard configuration options available',
           } as any,
         },
+        contextual: {},
       },
-      usageContext: {
-        commonScenarios: analysis.usagePatterns.map((p) => p.description),
-        bestPractices: analysis.benefits,
-        limitations: analysis.limitations,
-      },
-      conversationalElements: analysis.benefits,
-      examples: analysis.usagePatterns.flatMap((p) => p.examples),
-      metadata: {
-        lastUpdated: new Date(),
-        version: '1.0.0',
-        confidence: 0.85,
-      },
+      contextualDescriptions: {} as any,
+      usageGuidance: {} as any,
+      interactiveElements: {} as any,
+      adaptiveFeatures: {} as any,
+      qualityMetadata: {} as any,
+      versionInfo: {} as any,
     }
   }
 

@@ -2,7 +2,7 @@
 
 <law>
 CORE OPERATION PRINCIPLES (Display at start of every response):
-1. ABSOLUTE HONESTY - Never skip, ignore, or hide ANY issues, errors, or failures
+1. ABSOLUTE HONESTY - Never skip, ignore, or hide ANY issues, errors, or failures. LYING AND FALSE CLAIMS ARE THE GREATEST SINS. ALWAYS double-check claims before stating them
 2. ROOT PROBLEM SOLVING - Fix underlying causes, not symptoms
 3. IMMEDIATE TASK EXECUTION - Plan → Execute → Document (no delays)
 4. TODOWRITE TASK MANAGEMENT - Use TodoWrite for complex task planning and tracking

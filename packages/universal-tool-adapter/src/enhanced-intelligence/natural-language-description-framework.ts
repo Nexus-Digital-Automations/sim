@@ -758,7 +758,10 @@ export class NaturalLanguageDescriptionFramework {
       logger.info(`Enhanced description generated for tool: ${toolConfig.id}`)
       return enhancedSchema
     } catch (error) {
-      logger.error(`Failed to generate enhanced description for ${toolConfig.id}:`, error)
+      logger.error(
+        `Failed to generate enhanced description for ${toolConfig.id}:`,
+        error instanceof Error ? error : { message: String(error) }
+      )
       throw error
     }
   }
@@ -992,16 +995,17 @@ export class NaturalLanguageDescriptionFramework {
     }
 
     // Apply skill-level adaptations
-    if (userProfile?.skillLevel) {
-      const skillAdapter = this.contextualAdapters.get(`skill:${userProfile.skillLevel}`)
+    if (userProfile?.experience) {
+      const skillAdapter = this.contextualAdapters.get(`skill:${userProfile.experience}`)
       if (skillAdapter) {
         adaptations.push(await skillAdapter.adapt(schema, userContext))
       }
     }
 
     // Apply domain-specific adaptations
-    if (userContext.domain) {
-      const domainAdapter = this.contextualAdapters.get(`domain:${userContext.domain}`)
+    if (userProfile?.domains && userProfile.domains.length > 0) {
+      const primaryDomain = userProfile.domains[0]
+      const domainAdapter = this.contextualAdapters.get(`domain:${primaryDomain}`)
       if (domainAdapter) {
         adaptations.push(await domainAdapter.adapt(schema, userContext))
       }
@@ -1268,8 +1272,6 @@ export class NaturalLanguageDescriptionFramework {
 // =============================================================================
 
 class QualityValidator {
-  constructor(private config?: any) {}
-
   async validateSchema(
     schema: EnhancedDescriptionSchema,
     criteria: ValidationCriteria

@@ -313,7 +313,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
 
     logger.debug('Cached parameter transformation', {
       parameterId,
-      cacheKey: cacheKey.substring(0, 20) + '...',
+      cacheKey: `${cacheKey.substring(0, 20)}...`,
     })
   }
 
@@ -332,7 +332,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     if (cached) {
       logger.debug('Retrieved cached parameter transformation', {
         parameterId,
-        cacheKey: cacheKey.substring(0, 20) + '...',
+        cacheKey: `${cacheKey.substring(0, 20)}...`,
       })
     }
 

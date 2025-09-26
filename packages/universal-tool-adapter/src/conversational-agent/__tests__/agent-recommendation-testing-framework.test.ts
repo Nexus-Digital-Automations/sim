@@ -1468,5 +1468,5 @@ describe('Agent Tool Recommendation System', () => {
   })
 })
 
-// Export the testing framework for external use
-export { AgentRecommendationTestingFramework }
+// Testing framework is available within this test file only
+// AgentRecommendationTestingFramework is defined above for internal use

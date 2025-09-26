@@ -20,7 +20,7 @@ import { UserExperienceTestingFramework } from './user-experience-testing.test'
 // Master Test Runner
 // =============================================================================
 
-export class MasterTestRunner {
+class MasterTestRunner {
   private intelligenceFramework: IntelligenceTestingFramework
   private automatedSuite: AutomatedTestingSuite
   private uxFramework: UserExperienceTestingFramework

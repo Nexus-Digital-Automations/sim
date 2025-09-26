@@ -19,7 +19,7 @@ import {
 // Analytics and Feedback Collection System
 // =============================================================================
 
-export class AnalyticsFeedbackSystem {
+class AnalyticsFeedbackSystem {
   private engine: EnhancedToolIntelligenceEngine
   private feedbackCollector: FeedbackCollector
   private usageAnalyzer: UsageAnalyzer

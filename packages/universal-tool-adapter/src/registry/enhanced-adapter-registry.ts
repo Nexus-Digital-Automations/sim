@@ -1073,7 +1073,7 @@ class HealthMonitor {
 
       // Check success rate
       if (entry.statistics && entry.statistics.successRate < 0.5) {
-        issues.push('Low success rate: ' + entry.statistics.successRate.toFixed(2))
+        issues.push(`Low success rate: ${entry.statistics.successRate.toFixed(2)}`)
       }
 
       // Check if adapter is being used
@@ -1111,9 +1111,7 @@ class HealthMonitor {
       entry.health = {
         status: 'unhealthy',
         lastCheckAt: new Date(),
-        issues: [
-          'Health check failed: ' + (error instanceof Error ? error.message : String(error)),
-        ],
+        issues: [`Health check failed: ${error instanceof Error ? error.message : String(error)}`],
       }
 
       logger.warn('Health check error', {

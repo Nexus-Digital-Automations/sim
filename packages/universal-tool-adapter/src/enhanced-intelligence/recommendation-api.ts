@@ -877,8 +877,6 @@ export class RecommendationAPI {
 // =============================================================================
 
 class MultiLevelCache {
-  constructor(private config: any) {}
-
   async get(key: string): Promise<any> {
     return null
   }
@@ -907,24 +905,18 @@ class MultiLevelCache {
 }
 
 class PerformanceMonitor {
-  constructor(private config: any) {}
-
   getAnalytics(timeRange?: { start: Date; end: Date }): APIAnalytics {
     return {} as APIAnalytics
   }
 }
 
 class RateLimiter {
-  constructor(private config: any) {}
-
   async checkLimit(userId: string, ipAddress: string): Promise<void> {
     // Implementation would check and enforce rate limits
   }
 }
 
 class CircuitBreaker {
-  constructor(private config: any) {}
-
   canExecute(): boolean {
     return true
   }
@@ -938,24 +930,18 @@ class CircuitBreaker {
 }
 
 class ABTestingManager {
-  constructor(private config: any) {}
-
   async getVariant(userId: string): Promise<ABTestVariant | undefined> {
     return undefined
   }
 }
 
 class BatchProcessor {
-  constructor(private config: any) {}
-
   async processBatch(requests: RecommendationAPIRequest[]): Promise<RecommendationAPIResponse[]> {
     return []
   }
 }
 
-class AlertManager {
-  constructor(private config: any) {}
-}
+class AlertManager {}
 
 // =============================================================================
 // Additional Supporting Types

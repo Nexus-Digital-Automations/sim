@@ -970,4 +970,5 @@ function generateNextSteps(status: string, failedResults: ValidationResult[]): s
   return steps
 }
 
-export type { AcceptanceCriteria, ValidationResult, ComprehensiveValidationReport }
+// Type definitions available within this test file only
+// AcceptanceCriteria, ValidationResult, ComprehensiveValidationReport defined above

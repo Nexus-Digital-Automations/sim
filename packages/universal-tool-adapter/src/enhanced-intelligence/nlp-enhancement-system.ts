@@ -389,7 +389,10 @@ export class NLPEnhancementEngine {
       logger.info(`Enhanced description generated for tool: ${toolConfig.id}`)
       return result
     } catch (error) {
-      logger.error(`Failed to generate enhanced description for ${toolConfig.id}:`, error)
+      logger.error(
+        `Failed to generate enhanced description for ${toolConfig.id}:`,
+        error instanceof Error ? error : { message: String(error) }
+      )
       throw error
     }
   }
@@ -434,7 +437,10 @@ export class NLPEnhancementEngine {
         currentAnalysis
       )
     } catch (error) {
-      logger.error(`Failed to enhance description for ${description.toolId}:`, error)
+      logger.error(
+        `Failed to enhance description for ${description.toolId}:`,
+        error instanceof Error ? error : { message: String(error) }
+      )
       throw error
     }
   }
@@ -624,7 +630,10 @@ export class NLPEnhancementEngine {
           enhancedDescription = result.enhancedDescription
         }
       } catch (error) {
-        logger.error(`Enhancement failed for ${enhancement.enhancementId}:`, error)
+        logger.error(
+          `Enhancement failed for ${enhancement.enhancementId}:`,
+          error instanceof Error ? error : { message: String(error) }
+        )
       }
     }
 
@@ -914,7 +923,7 @@ export class NLPEnhancementEngine {
     return {} as any
   }
   private determineOptimalReadingLevel(description: EnhancedDescriptionSchema): ReadingLevel {
-    return 'intermediate'
+    return 'middle-school'
   }
   private async generateReadabilityImprovements(
     description: EnhancedDescriptionSchema,
@@ -989,8 +998,6 @@ class TextGenerationService {
 }
 
 class SemanticAnalysisService {
-  constructor(private config: ModelConfig) {}
-
   async extractConcepts(text: string): Promise<Concept[]> {
     // Extract semantic concepts from text
     return []
@@ -1013,8 +1020,6 @@ class SemanticAnalysisService {
 }
 
 class QualityAssessmentService {
-  constructor(private config: ModelConfig) {}
-
   async assessOverallQuality(
     text: string,
     description: EnhancedDescriptionSchema
@@ -1032,16 +1037,12 @@ class QualityAssessmentService {
 }
 
 class KnowledgeBaseService {
-  constructor(private config: any) {}
-
   async queryKnowledge(query: string): Promise<KnowledgeResult[]> {
     return []
   }
 }
 
 class CacheService {
-  constructor(private config: any) {}
-
   async get(key: string): Promise<any> {
     return null
   }

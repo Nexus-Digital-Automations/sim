@@ -1,7 +1,0 @@
-{
-  "stop_allowed": true,
-  "authorized_by": "CORE_FRAMEWORK_FIXES",
-  "reason": "All TodoWrite tasks complete and core framework property access and null safety issues resolved: TypeScript errors fixed, all changes committed and pushed",
-  "timestamp": "2025-09-26T01:27:40.729Z",
-  "session_type": "self_authorized"
-}
