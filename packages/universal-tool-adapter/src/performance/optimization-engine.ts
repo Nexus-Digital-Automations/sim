@@ -33,6 +33,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
   // Performance monitoring
   private readonly performanceMonitor: PerformanceMonitor
   private readonly adaptiveOptimizer: AdaptiveOptimizer
+  private readonly memoryManager: MemoryManager
 
   // Configuration
   private readonly config: PerformanceEngineConfig
