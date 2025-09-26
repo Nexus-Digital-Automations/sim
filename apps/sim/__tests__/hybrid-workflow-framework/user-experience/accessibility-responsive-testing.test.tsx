@@ -5,87 +5,92 @@
  * and interaction patterns across all hybrid workflow modes.
  */
 
+import { useId } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import '@testing-library/jest-dom'
 
 // Mock React components for testing
-const MockWorkflowEditor = vi.fn(({ mode, onModeSwitch, accessibility, responsive }) => (
-  <div
-    data-testid='workflow-editor'
-    data-mode={mode}
-    role={accessibility?.role || 'application'}
-    aria-label={accessibility?.label || 'Workflow Editor'}
-    className={responsive?.className || 'responsive-container'}
-  >
-    <button
-      onClick={() => onModeSwitch?.(mode === 'visual' ? 'chat' : 'visual')}
-      data-testid='mode-switch-button'
-      aria-label='Switch between visual and chat modes'
-      tabIndex={0}
+const MockWorkflowEditor = vi.fn(({ mode, onModeSwitch, accessibility, responsive }) => {
+  const chatInputHelpId = useId()
+
+  return (
+    <div
+      data-testid='workflow-editor'
+      data-mode={mode}
+      role={accessibility?.role || 'application'}
+      aria-label={accessibility?.label || 'Workflow Editor'}
+      className={responsive?.className || 'responsive-container'}
     >
-      Switch to {mode === 'visual' ? 'Chat' : 'Visual'} Mode
-    </button>
+      <button
+        onClick={() => onModeSwitch?.(mode === 'visual' ? 'chat' : 'visual')}
+        data-testid='mode-switch-button'
+        aria-label='Switch between visual and chat modes'
+        tabIndex={0}
+      >
+        Switch to {mode === 'visual' ? 'Chat' : 'Visual'} Mode
+      </button>
 
-    {mode === 'visual' && (
-      <div data-testid='visual-mode-content' role='region' aria-label='Visual workflow editor'>
-        <div data-testid='workflow-canvas' role='img' aria-label='Workflow diagram'>
-          {/* Visual mode content */}
-          <div data-testid='block-1' role='button' tabIndex={0} aria-label='Start block'>
-            Start Block
+      {mode === 'visual' && (
+        <div data-testid='visual-mode-content' role='region' aria-label='Visual workflow editor'>
+          <div data-testid='workflow-canvas' role='img' aria-label='Workflow diagram'>
+            {/* Visual mode content */}
+            <div data-testid='block-1' role='button' tabIndex={0} aria-label='Start block'>
+              Start Block
+            </div>
+            <div data-testid='block-2' role='button' tabIndex={0} aria-label='Condition block'>
+              Condition Block
+            </div>
           </div>
-          <div data-testid='block-2' role='button' tabIndex={0} aria-label='Condition block'>
-            Condition Block
+          <div data-testid='visual-controls' role='toolbar' aria-label='Visual mode controls'>
+            <button data-testid='add-block-btn' aria-label='Add new block'>
+              Add Block
+            </button>
+            <button data-testid='delete-block-btn' aria-label='Delete selected block'>
+              Delete
+            </button>
+            <button data-testid='zoom-in-btn' aria-label='Zoom in'>
+              Zoom In
+            </button>
+            <button data-testid='zoom-out-btn' aria-label='Zoom out'>
+              Zoom Out
+            </button>
           </div>
         </div>
-        <div data-testid='visual-controls' role='toolbar' aria-label='Visual mode controls'>
-          <button data-testid='add-block-btn' aria-label='Add new block'>
-            Add Block
-          </button>
-          <button data-testid='delete-block-btn' aria-label='Delete selected block'>
-            Delete
-          </button>
-          <button data-testid='zoom-in-btn' aria-label='Zoom in'>
-            Zoom In
-          </button>
-          <button data-testid='zoom-out-btn' aria-label='Zoom out'>
-            Zoom Out
-          </button>
-        </div>
-      </div>
-    )}
+      )}
 
-    {mode === 'chat' && (
-      <div data-testid='chat-mode-content' role='region' aria-label='Chat workflow interface'>
-        <div
-          data-testid='chat-messages'
-          role='log'
-          aria-label='Chat conversation'
-          aria-live='polite'
-          aria-atomic='false'
-        >
-          {/* Chat messages */}
-        </div>
-        <div data-testid='chat-input-container' role='region' aria-label='Message input'>
-          <input
-            data-testid='chat-input'
-            type='text'
-            placeholder='Type your message...'
-            aria-label='Chat message input'
-            aria-describedby='chat-input-help'
-          />
-          <div id='chat-input-help' className='sr-only'>
-            Type commands or ask questions about your workflow
+      {mode === 'chat' && (
+        <div data-testid='chat-mode-content' role='region' aria-label='Chat workflow interface'>
+          <div
+            data-testid='chat-messages'
+            role='log'
+            aria-label='Chat conversation'
+            aria-live='polite'
+            aria-atomic='false'
+          >
+            {/* Chat messages */}
           </div>
-          <button data-testid='send-btn' aria-label='Send message'>
-            Send
-          </button>
+          <div data-testid='chat-input-container' role='region' aria-label='Message input'>
+            <input
+              data-testid='chat-input'
+              type='text'
+              placeholder='Type your message...'
+              aria-label='Chat message input'
+              aria-describedby={chatInputHelpId}
+            />
+            <div id={chatInputHelpId} className='sr-only'>
+              Type commands or ask questions about your workflow
+            </div>
+            <button data-testid='send-btn' aria-label='Send message'>
+              Send
+            </button>
+          </div>
         </div>
-      </div>
-    )}
-  </div>
-))
+      )}
+    </div>
+  )
+})
 
 const MockHybridInterface = vi.fn(({ initialMode = 'visual', ...props }) => {
   const [currentMode, setCurrentMode] = React.useState(initialMode)
@@ -243,9 +248,10 @@ describe('Hybrid Workflow User Experience Testing', () => {
       expect(chatMessages).toHaveAttribute('aria-atomic', 'false')
 
       const chatInput = screen.getByTestId('chat-input')
-      expect(chatInput).toHaveAttribute('aria-describedby', 'chat-input-help')
+      const ariaDescribedBy = chatInput.getAttribute('aria-describedby')
+      expect(ariaDescribedBy).toBeTruthy()
 
-      const helpText = document.getElementById('chat-input-help')
+      const helpText = document.getElementById(ariaDescribedBy!)
       expect(helpText).toHaveClass('sr-only')
     })
 
