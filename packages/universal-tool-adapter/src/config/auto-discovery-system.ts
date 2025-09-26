@@ -12,10 +12,10 @@ import EventEmitter from 'events'
 import { type FSWatcher, watch } from 'fs'
 import { readdir, readFile, stat } from 'fs/promises'
 import { basename, extname, join } from 'path'
-import type { BlockCategory, BlockConfig } from '../types/blocks-types'
 import type { EnhancedAdapterFramework } from '../core/enhanced-adapter-framework'
 import type { EnhancedAdapterRegistry } from '../registry/enhanced-adapter-registry'
 import type { AdapterConfiguration } from '../types/adapter-interfaces'
+import type { BlockCategory, BlockConfig } from '../types/blocks-types'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('AutoDiscoverySystem')
@@ -495,7 +495,8 @@ export class AutoDiscoverySystem extends EventEmitter {
         }
       } catch (importError) {
         // If dynamic import fails, use static analysis
-        const errorMessage = importError instanceof Error ? importError.message : String(importError)
+        const errorMessage =
+          importError instanceof Error ? importError.message : String(importError)
         logger.debug('Dynamic import failed, using static analysis', {
           path: filePath,
           error: errorMessage,

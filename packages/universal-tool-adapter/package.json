@@ -24,7 +24,11 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "@sim/db": "workspace:*",
+    "@sim/ts-sdk": "workspace:*",
+    "@sim/cli": "workspace:*",
+    "@sim/template-system": "workspace:*"
   },
   "devDependencies": {
     "@jest/globals": "^29.0.0",

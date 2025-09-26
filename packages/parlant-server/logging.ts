@@ -56,6 +56,13 @@ export interface ParlantLogContext {
     | 'performance'
     | 'system'
 
+  // Tool context
+  toolName?: string
+
+  // Tracing context
+  correlationId?: string
+  traceId?: string
+
   // Additional metadata
   metadata?: Record<string, any>
 }

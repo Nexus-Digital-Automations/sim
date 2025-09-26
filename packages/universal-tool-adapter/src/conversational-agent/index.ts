@@ -365,19 +365,19 @@ export function mergeWithDefaults(userConfig: Partial<SystemConfiguration>): Sys
     ...userConfig,
     contextAnalysis: {
       ...DEFAULT_SYSTEM_CONFIG.contextAnalysis,
-      ...userConfig.contextAnalysis,
+      ...(userConfig.contextAnalysis || {}),
     },
     agentAPI: {
       ...DEFAULT_SYSTEM_CONFIG.agentAPI,
-      ...userConfig.agentAPI,
+      ...(userConfig.agentAPI || {}),
     },
     workflowEngine: {
       ...DEFAULT_SYSTEM_CONFIG.workflowEngine,
-      ...userConfig.workflowEngine,
+      ...(userConfig.workflowEngine || {}),
     },
     realtime: {
       ...DEFAULT_SYSTEM_CONFIG.realtime,
-      ...userConfig.realtime,
+      ...(userConfig.realtime || {}),
     },
   }
 }

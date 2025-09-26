@@ -85,11 +85,11 @@ jest.mock('@hello-pangea/dnd', () => ({
 // Mock ReactFlow
 jest.mock('@xyflow/react', () => ({
   ReactFlow: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="react-flow">{children}</div>
+    <div data-testid='react-flow'>{children}</div>
   ),
-  Controls: () => <div data-testid="react-flow-controls" />,
-  Background: () => <div data-testid="react-flow-background" />,
-  MiniMap: () => <div data-testid="react-flow-minimap" />,
+  Controls: () => <div data-testid='react-flow-controls' />,
+  Background: () => <div data-testid='react-flow-background' />,
+  MiniMap: () => <div data-testid='react-flow-minimap' />,
   useNodesState: jest.fn(() => [[], jest.fn(), jest.fn()]),
   useEdgesState: jest.fn(() => [[], jest.fn(), jest.fn()]),
   addEdge: jest.fn(),
@@ -109,36 +109,36 @@ jest.mock('@xyflow/react', () => ({
 // Mock Recharts
 jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="chart-container">{children}</div>
+    <div data-testid='chart-container'>{children}</div>
   ),
   LineChart: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="line-chart">{children}</div>
+    <div data-testid='line-chart'>{children}</div>
   ),
   AreaChart: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="area-chart">{children}</div>
+    <div data-testid='area-chart'>{children}</div>
   ),
   BarChart: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="bar-chart">{children}</div>
+    <div data-testid='bar-chart'>{children}</div>
   ),
   PieChart: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="pie-chart">{children}</div>
+    <div data-testid='pie-chart'>{children}</div>
   ),
-  Line: () => <div data-testid="chart-line" />,
-  Area: () => <div data-testid="chart-area" />,
-  Bar: () => <div data-testid="chart-bar" />,
-  Pie: () => <div data-testid="chart-pie" />,
-  Cell: () => <div data-testid="chart-cell" />,
-  XAxis: () => <div data-testid="chart-x-axis" />,
-  YAxis: () => <div data-testid="chart-y-axis" />,
-  CartesianGrid: () => <div data-testid="chart-grid" />,
-  Tooltip: () => <div data-testid="chart-tooltip" />,
-  Legend: () => <div data-testid="chart-legend" />,
+  Line: () => <div data-testid='chart-line' />,
+  Area: () => <div data-testid='chart-area' />,
+  Bar: () => <div data-testid='chart-bar' />,
+  Pie: () => <div data-testid='chart-pie' />,
+  Cell: () => <div data-testid='chart-cell' />,
+  XAxis: () => <div data-testid='chart-x-axis' />,
+  YAxis: () => <div data-testid='chart-y-axis' />,
+  CartesianGrid: () => <div data-testid='chart-grid' />,
+  Tooltip: () => <div data-testid='chart-tooltip' />,
+  Legend: () => <div data-testid='chart-legend' />,
 }))
 
 // Mock Web APIs
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -218,6 +218,7 @@ beforeEach(() => {
   localStorageMock.clear()
 
   // Reset fetch mock
+
   ;(global.fetch as jest.Mock).mockClear()
 })
 

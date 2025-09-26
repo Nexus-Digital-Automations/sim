@@ -7,13 +7,13 @@
  */
 
 import { ContextAnalysisSystem } from './context-analysis-system'
-import { ContextualRecommendationEngine } from './contextual-recommendation-engine'
 import type {
   ContextAnalysisRequest,
   ContextualRecommendationRequest,
   ToolUsageEvent,
   UserProfile,
-} from './types'
+} from './contextual-recommendation-engine'
+import { ContextualRecommendationEngine } from './contextual-recommendation-engine'
 import { UsageAnalyticsFramework } from './usage-analytics-framework'
 
 /**

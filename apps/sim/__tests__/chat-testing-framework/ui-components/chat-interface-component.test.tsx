@@ -6,17 +6,11 @@
  * accessibility validation, responsive design, and component behavior.
  */
 
-import { fireEvent, render, screen, waitFor, } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe, toHaveNoViolations } from 'jest-axe'
-import type { ChatInterface } from '../../../app/chat/[subdomain]/chat'
-import type { AgentSelector } from '../../../components/chat/agent-selector'
-import type { ChatInput } from '../../../components/chat/chat-input'
-import type { ConversationHistory } from '../../../components/chat/conversation-history'
-import type { MessageBubble } from '../../../components/chat/message-bubble'
 import type { ChatMessage, ChatSession, ParlantAgent } from '../../../types/parlant'
 import { ComprehensiveTestReporter } from '../../utils/test-reporter'
-import type { MockParlantProvider } from '../__mocks__/parlant-provider'
 
 // Extend Jest matchers
 expect.extend(toHaveNoViolations)
@@ -32,7 +26,7 @@ describe('Chat Interface Component Testing Suite', () => {
       outputDir: './test-reports/chat-ui-components',
       includeScreenshots: true,
       generateVisualizations: true,
-      reportFormats: ['html', 'json', 'junit']
+      reportFormats: ['html', 'json', 'junit'],
     })
 
     await reporter.startTestSuite(
@@ -54,15 +48,15 @@ describe('Chat Interface Component Testing Suite', () => {
         name: 'Support Agent',
         description: 'Customer support specialist',
         status: 'active',
-        capabilities: ['general-support', 'troubleshooting']
+        capabilities: ['general-support', 'troubleshooting'],
       },
       {
         id: 'agent-2',
         name: 'Sales Agent',
         description: 'Sales and product specialist',
         status: 'active',
-        capabilities: ['sales', 'product-info']
-      }
+        capabilities: ['sales', 'product-info'],
+      },
     ]
 
     mockMessages = [
@@ -71,15 +65,15 @@ describe('Chat Interface Component Testing Suite', () => {
         content: 'Hello! How can I help you today?',
         sender: { type: 'agent', id: 'agent-1', name: 'Support Agent' },
         timestamp: new Date('2024-01-01T10:00:00Z'),
-        type: 'text'
+        type: 'text',
       },
       {
         id: 'msg-2',
         content: 'I need help with my account settings.',
         sender: { type: 'user', id: 'user-1', name: 'John Doe' },
         timestamp: new Date('2024-01-01T10:01:00Z'),
-        type: 'text'
-      }
+        type: 'text',
+      },
     ]
 
     mockSession = {
@@ -89,7 +83,7 @@ describe('Chat Interface Component Testing Suite', () => {
       workspaceId: 'workspace-1',
       status: 'active',
       startTime: new Date('2024-01-01T10:00:00Z'),
-      messages: mockMessages
+      messages: mockMessages,
     }
   })
 
@@ -108,18 +102,20 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(screen.getByTestId('chat-container')).toBeInTheDocument()
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'chat-interface-render',
-          name: 'Chat Interface Rendering',
-          complexity: 'simple',
-          metadata: { component: 'ChatInterface' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'chat-interface-render',
+            name: 'Chat Interface Rendering',
+            complexity: 'simple',
+            metadata: { component: 'ChatInterface' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should pass accessibility audit', async () => {
@@ -135,21 +131,23 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(results).toHaveNoViolations()
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'chat-interface-accessibility',
-          name: 'Chat Interface Accessibility',
-          complexity: 'medium',
-          metadata: {
-            component: 'ChatInterface',
-            accessibilityViolations: results.violations.length
-          }
-        } as any,
-        { success: true, accessibilityScore: 100 },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'chat-interface-accessibility',
+            name: 'Chat Interface Accessibility',
+            complexity: 'medium',
+            metadata: {
+              component: 'ChatInterface',
+              accessibilityViolations: results.violations.length,
+            },
+          } as any,
+          { success: true, accessibilityScore: 100 },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should be responsive across different viewport sizes', async () => {
@@ -157,7 +155,7 @@ describe('Chat Interface Component Testing Suite', () => {
       const viewports = [
         { width: 320, height: 568, name: 'mobile' },
         { width: 768, height: 1024, name: 'tablet' },
-        { width: 1920, height: 1080, name: 'desktop' }
+        { width: 1920, height: 1080, name: 'desktop' },
       ]
 
       for (const viewport of viewports) {
@@ -165,12 +163,12 @@ describe('Chat Interface Component Testing Suite', () => {
         Object.defineProperty(window, 'innerWidth', {
           writable: true,
           configurable: true,
-          value: viewport.width
+          value: viewport.width,
         })
         Object.defineProperty(window, 'innerHeight', {
           writable: true,
           configurable: true,
-          value: viewport.height
+          value: viewport.height,
         })
 
         window.dispatchEvent(new Event('resize'))
@@ -198,21 +196,23 @@ describe('Chat Interface Component Testing Suite', () => {
       }
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'chat-interface-responsive',
-          name: 'Chat Interface Responsive Design',
-          complexity: 'complex',
-          metadata: {
-            component: 'ChatInterface',
-            viewportsTested: viewports.length
-          }
-        } as any,
-        { success: true, responsiveScore: 95 },
-        { isValid: true, score: 95 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'chat-interface-responsive',
+            name: 'Chat Interface Responsive Design',
+            complexity: 'complex',
+            metadata: {
+              component: 'ChatInterface',
+              viewportsTested: viewports.length,
+            },
+          } as any,
+          { success: true, responsiveScore: 95 },
+          { isValid: true, score: 95 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle loading states gracefully', async () => {
@@ -240,18 +240,20 @@ describe('Chat Interface Component Testing Suite', () => {
       })
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'chat-interface-loading',
-          name: 'Chat Interface Loading States',
-          complexity: 'medium',
-          metadata: { component: 'ChatInterface' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'chat-interface-loading',
+            name: 'Chat Interface Loading States',
+            complexity: 'medium',
+            metadata: { component: 'ChatInterface' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -276,18 +278,20 @@ describe('Chat Interface Component Testing Suite', () => {
       }
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'agent-selector-display',
-          name: 'Agent Selector Display',
-          complexity: 'simple',
-          metadata: { component: 'AgentSelector', agentCount: mockAgents.length }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'agent-selector-display',
+            name: 'Agent Selector Display',
+            complexity: 'simple',
+            metadata: { component: 'AgentSelector', agentCount: mockAgents.length },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should call onAgentSelect when agent is chosen', async () => {
@@ -308,18 +312,20 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(mockOnSelect).toHaveBeenCalledWith(mockAgents[0])
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'agent-selector-interaction',
-          name: 'Agent Selector Interaction',
-          complexity: 'medium',
-          metadata: { component: 'AgentSelector' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'agent-selector-interaction',
+            name: 'Agent Selector Interaction',
+            complexity: 'medium',
+            metadata: { component: 'AgentSelector' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle keyboard navigation', async () => {
@@ -341,18 +347,20 @@ describe('Chat Interface Component Testing Suite', () => {
       await user.keyboard('{Enter}')
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'agent-selector-keyboard',
-          name: 'Agent Selector Keyboard Navigation',
-          complexity: 'medium',
-          metadata: { component: 'AgentSelector' }
-        } as any,
-        { success: true, accessibilityFeatures: ['keyboard-navigation'] },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'agent-selector-keyboard',
+            name: 'Agent Selector Keyboard Navigation',
+            complexity: 'medium',
+            metadata: { component: 'AgentSelector' },
+          } as any,
+          { success: true, accessibilityFeatures: ['keyboard-navigation'] },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -368,18 +376,20 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(screen.getByText('John Doe')).toBeInTheDocument()
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'message-bubble-user',
-          name: 'Message Bubble User Message',
-          complexity: 'simple',
-          metadata: { component: 'MessageBubble', messageType: 'user' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'message-bubble-user',
+            name: 'Message Bubble User Message',
+            complexity: 'simple',
+            metadata: { component: 'MessageBubble', messageType: 'user' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should render agent messages correctly', async () => {
@@ -393,18 +403,20 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(screen.getByText('Support Agent')).toBeInTheDocument()
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'message-bubble-agent',
-          name: 'Message Bubble Agent Message',
-          complexity: 'simple',
-          metadata: { component: 'MessageBubble', messageType: 'agent' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'message-bubble-agent',
+            name: 'Message Bubble Agent Message',
+            complexity: 'simple',
+            metadata: { component: 'MessageBubble', messageType: 'agent' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should format timestamps correctly', async () => {
@@ -418,18 +430,20 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(timestamp.textContent).toMatch(/10:00/)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'message-bubble-timestamp',
-          name: 'Message Bubble Timestamp',
-          complexity: 'simple',
-          metadata: { component: 'MessageBubble' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'message-bubble-timestamp',
+            name: 'Message Bubble Timestamp',
+            complexity: 'simple',
+            metadata: { component: 'MessageBubble' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle different message types', async () => {
@@ -438,7 +452,7 @@ describe('Chat Interface Component Testing Suite', () => {
         { ...mockMessages[0], type: 'text' as const },
         { ...mockMessages[0], type: 'image' as const, content: 'https://example.com/image.jpg' },
         { ...mockMessages[0], type: 'file' as const, content: 'document.pdf' },
-        { ...mockMessages[0], type: 'system' as const, content: 'Agent joined the conversation' }
+        { ...mockMessages[0], type: 'system' as const, content: 'Agent joined the conversation' },
       ]
 
       for (const message of messageTypes) {
@@ -458,21 +472,23 @@ describe('Chat Interface Component Testing Suite', () => {
       }
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'message-bubble-types',
-          name: 'Message Bubble Message Types',
-          complexity: 'complex',
-          metadata: {
-            component: 'MessageBubble',
-            messageTypes: messageTypes.length
-          }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'message-bubble-types',
+            name: 'Message Bubble Message Types',
+            complexity: 'complex',
+            metadata: {
+              component: 'MessageBubble',
+              messageTypes: messageTypes.length,
+            },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -490,18 +506,20 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(input).toHaveValue('Hello, test message!')
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'chat-input-typing',
-          name: 'Chat Input Text Typing',
-          complexity: 'simple',
-          metadata: { component: 'ChatInput' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'chat-input-typing',
+            name: 'Chat Input Text Typing',
+            complexity: 'simple',
+            metadata: { component: 'ChatInput' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should send message on Enter key', async () => {
@@ -518,18 +536,20 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(input).toHaveValue('')
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'chat-input-send',
-          name: 'Chat Input Send Message',
-          complexity: 'medium',
-          metadata: { component: 'ChatInput' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'chat-input-send',
+            name: 'Chat Input Send Message',
+            complexity: 'medium',
+            metadata: { component: 'ChatInput' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle file uploads', async () => {
@@ -547,18 +567,20 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(mockOnFileUpload).toHaveBeenCalledWith(file)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'chat-input-file-upload',
-          name: 'Chat Input File Upload',
-          complexity: 'complex',
-          metadata: { component: 'ChatInput' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'chat-input-file-upload',
+            name: 'Chat Input File Upload',
+            complexity: 'complex',
+            metadata: { component: 'ChatInput' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should show typing indicator', async () => {
@@ -573,18 +595,20 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(screen.getByTestId('typing-indicator')).toBeInTheDocument()
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'chat-input-typing-indicator',
-          name: 'Chat Input Typing Indicator',
-          complexity: 'medium',
-          metadata: { component: 'ChatInput' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'chat-input-typing-indicator',
+            name: 'Chat Input Typing Indicator',
+            complexity: 'medium',
+            metadata: { component: 'ChatInput' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -592,33 +616,30 @@ describe('Chat Interface Component Testing Suite', () => {
     it('should render message history correctly', async () => {
       const startTime = new Date()
 
-      render(
-        <ConversationHistory
-          messages={mockMessages}
-          agents={mockAgents}
-        />
-      )
+      render(<ConversationHistory messages={mockMessages} agents={mockAgents} />)
 
       for (const message of mockMessages) {
         expect(screen.getByText(message.content)).toBeInTheDocument()
       }
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'conversation-history-render',
-          name: 'Conversation History Rendering',
-          complexity: 'medium',
-          metadata: {
-            component: 'ConversationHistory',
-            messageCount: mockMessages.length
-          }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'conversation-history-render',
+            name: 'Conversation History Rendering',
+            complexity: 'medium',
+            metadata: {
+              component: 'ConversationHistory',
+              messageCount: mockMessages.length,
+            },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should auto-scroll to latest message', async () => {
@@ -627,39 +648,37 @@ describe('Chat Interface Component Testing Suite', () => {
         ...mockMessages[0],
         id: `msg-${i}`,
         content: `Message ${i}`,
-        timestamp: new Date(Date.now() + i * 1000)
+        timestamp: new Date(Date.now() + i * 1000),
       }))
 
-      render(
-        <ConversationHistory
-          messages={manyMessages}
-          agents={mockAgents}
-          autoScroll={true}
-        />
-      )
+      render(<ConversationHistory messages={manyMessages} agents={mockAgents} autoScroll={true} />)
 
       const historyContainer = screen.getByTestId('conversation-history')
 
       // Check if scrolled to bottom
-      expect(historyContainer.scrollTop + historyContainer.clientHeight)
-        .toBeCloseTo(historyContainer.scrollHeight, 5)
+      expect(historyContainer.scrollTop + historyContainer.clientHeight).toBeCloseTo(
+        historyContainer.scrollHeight,
+        5
+      )
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'conversation-history-autoscroll',
-          name: 'Conversation History Auto-scroll',
-          complexity: 'medium',
-          metadata: {
-            component: 'ConversationHistory',
-            messageCount: manyMessages.length
-          }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'conversation-history-autoscroll',
+            name: 'Conversation History Auto-scroll',
+            complexity: 'medium',
+            metadata: {
+              component: 'ConversationHistory',
+              messageCount: manyMessages.length,
+            },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should group messages by date', async () => {
@@ -667,7 +686,7 @@ describe('Chat Interface Component Testing Suite', () => {
       const messagesWithDifferentDates = [
         { ...mockMessages[0], timestamp: new Date('2024-01-01T10:00:00Z') },
         { ...mockMessages[1], timestamp: new Date('2024-01-01T10:01:00Z') },
-        { ...mockMessages[0], id: 'msg-3', timestamp: new Date('2024-01-02T10:00:00Z') }
+        { ...mockMessages[0], id: 'msg-3', timestamp: new Date('2024-01-02T10:00:00Z') },
       ]
 
       render(
@@ -682,46 +701,45 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(screen.getByText(/January 2, 2024/)).toBeInTheDocument()
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'conversation-history-grouping',
-          name: 'Conversation History Date Grouping',
-          complexity: 'complex',
-          metadata: { component: 'ConversationHistory' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'conversation-history-grouping',
+            name: 'Conversation History Date Grouping',
+            complexity: 'complex',
+            metadata: { component: 'ConversationHistory' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle empty conversation state', async () => {
       const startTime = new Date()
 
-      render(
-        <ConversationHistory
-          messages={[]}
-          agents={mockAgents}
-        />
-      )
+      render(<ConversationHistory messages={[]} agents={mockAgents} />)
 
       expect(screen.getByText(/no messages yet/i)).toBeInTheDocument()
       expect(screen.getByTestId('empty-conversation-state')).toBeInTheDocument()
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'conversation-history-empty',
-          name: 'Conversation History Empty State',
-          complexity: 'simple',
-          metadata: { component: 'ConversationHistory' }
-        } as any,
-        { success: true },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'conversation-history-empty',
+            name: 'Conversation History Empty State',
+            complexity: 'simple',
+            metadata: { component: 'ConversationHistory' },
+          } as any,
+          { success: true },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -741,21 +759,23 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(visualSnapshot).toMatchSnapshot('chat-interface-visual-snapshot')
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'visual-regression-consistency',
-          name: 'Visual Regression Consistency',
-          complexity: 'complex',
-          metadata: {
-            component: 'ChatInterface',
-            visualRegressionTesting: true
-          }
-        } as any,
-        { success: true, visualConsistency: 100 },
-        { isValid: true, score: 100 },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'visual-regression-consistency',
+            name: 'Visual Regression Consistency',
+            complexity: 'complex',
+            metadata: {
+              component: 'ChatInterface',
+              visualRegressionTesting: true,
+            },
+          } as any,
+          { success: true, visualConsistency: 100 },
+          { isValid: true, score: 100 },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 
@@ -766,17 +786,13 @@ describe('Chat Interface Component Testing Suite', () => {
         ...mockMessages[0],
         id: `msg-${i}`,
         content: `Performance test message ${i}`,
-        timestamp: new Date(Date.now() + i * 1000)
+        timestamp: new Date(Date.now() + i * 1000),
       }))
 
       const renderStart = performance.now()
 
       render(
-        <ConversationHistory
-          messages={largeMessageSet}
-          agents={mockAgents}
-          virtualized={true}
-        />
+        <ConversationHistory messages={largeMessageSet} agents={mockAgents} virtualized={true} />
       )
 
       const renderEnd = performance.now()
@@ -786,22 +802,24 @@ describe('Chat Interface Component Testing Suite', () => {
       expect(renderTime).toBeLessThan(100)
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'performance-large-history',
-          name: 'Performance Large History Rendering',
-          complexity: 'extreme',
-          metadata: {
-            component: 'ConversationHistory',
-            messageCount: largeMessageSet.length,
-            renderTime: renderTime
-          }
-        } as any,
-        { success: true, performanceScore: 100 - renderTime },
-        { isValid: renderTime < 100, score: 100 - renderTime },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'performance-large-history',
+            name: 'Performance Large History Rendering',
+            complexity: 'extreme',
+            metadata: {
+              component: 'ConversationHistory',
+              messageCount: largeMessageSet.length,
+              renderTime: renderTime,
+            },
+          } as any,
+          { success: true, performanceScore: 100 - renderTime },
+          { isValid: renderTime < 100, score: 100 - renderTime },
+          startTime,
+          endTime
+        )
+      )
     })
 
     it('should handle rapid message updates', async () => {
@@ -828,22 +846,24 @@ describe('Chat Interface Component Testing Suite', () => {
       const updateTime = rapidUpdateEnd - rapidUpdateStart
 
       const endTime = new Date()
-      reporter.recordTestResult(reporter.createTestResult(
-        {
-          id: 'performance-rapid-updates',
-          name: 'Performance Rapid Message Updates',
-          complexity: 'complex',
-          metadata: {
-            component: 'ChatInterface',
-            messageUpdates: 10,
-            updateTime: updateTime
-          }
-        } as any,
-        { success: true, performanceScore: Math.max(0, 100 - updateTime / 10) },
-        { isValid: updateTime < 1000, score: Math.max(0, 100 - updateTime / 10) },
-        startTime,
-        endTime
-      ))
+      reporter.recordTestResult(
+        reporter.createTestResult(
+          {
+            id: 'performance-rapid-updates',
+            name: 'Performance Rapid Message Updates',
+            complexity: 'complex',
+            metadata: {
+              component: 'ChatInterface',
+              messageUpdates: 10,
+              updateTime: updateTime,
+            },
+          } as any,
+          { success: true, performanceScore: Math.max(0, 100 - updateTime / 10) },
+          { isValid: updateTime < 1000, score: Math.max(0, 100 - updateTime / 10) },
+          startTime,
+          endTime
+        )
+      )
     })
   })
 })

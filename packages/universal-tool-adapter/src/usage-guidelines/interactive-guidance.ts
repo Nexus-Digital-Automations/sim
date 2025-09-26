@@ -1317,9 +1317,27 @@ export class InteractiveTutorialEngine {
   }
 
   private extractUserProfile(context: EnhancedUsageContext): UserProfile {
+    // Map enhanced context learning styles to user profile learning styles
+    const mapLearningStyle = (
+      style: 'visual' | 'textual' | 'interactive' | 'example-driven'
+    ): 'visual' | 'auditory' | 'kinesthetic' | 'reading' => {
+      switch (style) {
+        case 'visual':
+          return 'visual'
+        case 'textual':
+          return 'reading'
+        case 'interactive':
+          return 'kinesthetic'
+        case 'example-driven':
+          return 'visual'
+        default:
+          return 'visual'
+      }
+    }
+
     return {
       experienceLevel: context.expertise.overallLevel,
-      learningStyle: context.expertise.learningStyle,
+      learningStyle: mapLearningStyle(context.expertise.learningStyle),
       pace:
         context.expertise.preferredPace === 'quick'
           ? 'fast'
@@ -1334,9 +1352,16 @@ export class InteractiveTutorialEngine {
   }
 
   private extractUserPreferences(context: EnhancedUsageContext): UserPreferences {
+    // Map text size preference, handling 'extra-large' by mapping to 'large'
+    const mapFontSize = (
+      size: 'small' | 'medium' | 'large' | 'extra-large'
+    ): 'small' | 'medium' | 'large' => {
+      return size === 'extra-large' ? 'large' : size
+    }
+
     return {
       language: context.accessibility.languagePreference,
-      fontSize: context.accessibility.textSizePreference,
+      fontSize: mapFontSize(context.accessibility.textSizePreference),
       theme: context.accessibility.highContrast ? 'high-contrast' : 'light',
       audioEnabled: !context.accessibility.reducedMotion,
       animationsEnabled: !context.accessibility.reducedMotion,

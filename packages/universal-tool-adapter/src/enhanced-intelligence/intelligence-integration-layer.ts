@@ -17,7 +17,6 @@
  * @version 1.0.0
  */
 
-import type { ToolConfig } from '../../types/tools-types'
 import type { BaseAdapter } from '../core/base-adapter'
 import {
   ComprehensiveToolErrorManager,
@@ -33,6 +32,7 @@ import type {
   ToolDiscoveryQuery,
 } from '../types/adapter-interfaces'
 import type { ParlantExecutionContext } from '../types/parlant-interfaces'
+import type { ToolConfig } from '../types/tools-types'
 import { createLogger } from '../utils/logger'
 import {
   type ContextualRecommendation,

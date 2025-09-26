@@ -173,7 +173,7 @@ export interface UsageContextMatcher {
   type: 'user' | 'workflow' | 'environment' | 'tool' | 'custom'
   field: string
   operator: 'equals' | 'contains' | 'matches' | 'in' | 'range' | 'exists'
-  value: any
+  value?: any
   weight: number
   description?: string
 }
@@ -271,7 +271,7 @@ export interface ExampleUsage {
   description: string
   input: Record<string, any>
   context?: Record<string, any>
-  expectedOutput: any
+  expectedOutput?: any
   explanation: string
   difficulty: 'beginner' | 'intermediate' | 'advanced'
   tags: string[]
@@ -310,7 +310,7 @@ export interface ConversationTurn {
   toolInvocation?: {
     tool: string
     parameters: Record<string, any>
-    result: any
+    result?: any
   }
   explanation?: string
 }
@@ -452,14 +452,18 @@ export class GuidelineTemplate {
   public readonly name: string
   public readonly description: string
   public readonly applicableCategories: GuidelineCategory[]
-  public readonly schema: z.ZodSchema<Partial<GuidelineDefinition>>
+  public readonly schema: z.ZodType<
+    Partial<GuidelineDefinition>,
+    z.ZodTypeDef,
+    Partial<GuidelineDefinition>
+  >
 
   constructor(
     id: string,
     name: string,
     description: string,
     applicableCategories: GuidelineCategory[],
-    schema: z.ZodSchema<Partial<GuidelineDefinition>>
+    schema: z.ZodType<Partial<GuidelineDefinition>, z.ZodTypeDef, Partial<GuidelineDefinition>>
   ) {
     this.id = id
     this.name = name
@@ -628,7 +632,7 @@ const UsageContextMatcherSchema = z.object({
   type: z.enum(['user', 'workflow', 'environment', 'tool', 'custom']),
   field: z.string(),
   operator: z.enum(['equals', 'contains', 'matches', 'in', 'range', 'exists']),
-  value: z.any(),
+  value: z.any().optional(),
   weight: z.number(),
   description: z.string().optional(),
 })
@@ -729,7 +733,7 @@ const ExampleUsageSchema = z.object({
   description: z.string(),
   input: z.record(z.any()),
   context: z.record(z.any()).optional(),
-  expectedOutput: z.any(),
+  expectedOutput: z.any().optional(),
   explanation: z.string(),
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
   tags: z.array(z.string()),
@@ -760,7 +764,7 @@ const ConversationTurnSchema = z.object({
     .object({
       tool: z.string(),
       parameters: z.record(z.any()),
-      result: z.any(),
+      result: z.any().optional(),
     })
     .optional(),
   explanation: z.string().optional(),

@@ -117,7 +117,7 @@ export function AgentForm({ workspaceId, agentId, duplicateFromId, templateId }:
             action: g.action,
             priority: g.priority || 5,
           })) || [],
-        tools: duplicateAgent.tools?.map(t => t.toolId) || [],
+        tools: duplicateAgent.tools?.map((t) => t.toolId) || [],
         allowProactiveMessages: false,
         conversationStyle: 'professional',
       })

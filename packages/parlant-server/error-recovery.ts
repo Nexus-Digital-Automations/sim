@@ -7,7 +7,7 @@
  */
 
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import type { BaseToolError } from './error-handler'
+import { BaseToolError } from './error-handler'
 import { ErrorCategory, ErrorSeverity, RecoveryStrategy } from './error-taxonomy'
 import type { ParlantLogContext } from './logging'
 

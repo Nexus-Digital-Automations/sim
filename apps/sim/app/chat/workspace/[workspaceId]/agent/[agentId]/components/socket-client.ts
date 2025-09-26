@@ -273,7 +273,7 @@ export class ParlantSocketClient {
     isConnecting: false,
     reconnectAttempts: 0,
   }
-  private eventHandlers: Map<string, Function[]> = new Map()
+  private eventHandlers: Map<string, ((data: any) => void)[]> = new Map()
 
   constructor(config: ParlantSocketConfig) {
     this.config = {

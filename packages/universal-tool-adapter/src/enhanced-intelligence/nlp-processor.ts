@@ -9,7 +9,7 @@
  * @version 2.0.0
  */
 
-import type { ToolConfig } from '../../types/tools-types'
+import type { ToolConfig } from '../types/tools-types'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('NLPProcessor')

@@ -575,7 +575,7 @@ export class KnowledgeBase {
     return this.search({
       types: [pattern.type],
       tags: pattern.tags,
-      difficulty: pattern.difficulty,
+      difficulty: pattern.difficulty ? [pattern.difficulty] : undefined,
       limit: 50,
     }).map((result) => result.entry)
   }

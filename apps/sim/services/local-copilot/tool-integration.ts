@@ -66,7 +66,7 @@ export class LocalCopilotToolIntegration {
 
     // If agent has specific tool restrictions, filter accordingly
     if (agent.tools && agent.tools.length > 0) {
-      return allTools.filter(tool => agent.tools?.includes(tool.id))
+      return allTools.filter((tool) => agent.tools?.includes(tool.id))
     }
 
     // Return all available tools if no restrictions
@@ -78,7 +78,7 @@ export class LocalCopilotToolIntegration {
    */
   async getToolRecommendations(
     agent: Agent,
-    conversationHistory: Array<{ role: 'user' | 'assistant', content: string, timestamp: Date }>,
+    conversationHistory: Array<{ role: 'user' | 'assistant'; content: string; timestamp: Date }>,
     userIntents: string[] = [],
     limit = 5
   ): Promise<ToolRecommendation[]> {
@@ -100,9 +100,9 @@ export class LocalCopilotToolIntegration {
 
     // Filter recommendations based on agent capabilities
     const agentTools = this.getAgentTools(agent)
-    const agentToolIds = new Set(agentTools.map(t => t.id))
+    const agentToolIds = new Set(agentTools.map((t) => t.id))
 
-    return recommendations.filter(rec => agentToolIds.has(rec.tool.id))
+    return recommendations.filter((rec) => agentToolIds.has(rec.tool.id))
   }
 
   /**
@@ -179,7 +179,10 @@ export class LocalCopilotToolIntegration {
   /**
    * Format tool execution results for conversational display
    */
-  formatToolResult(agent: Agent, toolCall: LocalCopilotToolCall): {
+  formatToolResult(
+    agent: Agent,
+    toolCall: LocalCopilotToolCall
+  ): {
     summary: string
     details?: string
     suggestedNextSteps?: string[]
@@ -195,7 +198,7 @@ export class LocalCopilotToolIntegration {
     // Use intelligence engine to format results
     const execution = {
       toolId: toolCall.name,
-      status: toolCall.state === 'success' ? 'completed' as const : 'failed' as const,
+      status: toolCall.state === 'success' ? ('completed' as const) : ('failed' as const),
       result: toolCall.result,
       error: toolCall.error,
       duration: toolCall.duration,
@@ -229,11 +232,11 @@ export class LocalCopilotToolIntegration {
 
     // Get tools available to agent
     const agentTools = this.getAgentTools(agent)
-    const agentToolIds = new Set(agentTools.map(t => t.id))
+    const agentToolIds = new Set(agentTools.map((t) => t.id))
 
     // Search all tools, then filter by agent capabilities
     const searchResults = toolRegistry.searchTools(query, options)
-    const filteredResults = searchResults.filter(tool => agentToolIds.has(tool.id))
+    const filteredResults = searchResults.filter((tool) => agentToolIds.has(tool.id))
 
     // Apply limit if specified
     const limit = options?.limit || 10
@@ -254,9 +257,9 @@ export class LocalCopilotToolIntegration {
     const toolsByCategory: Record<string, number> = {}
     const toolsByDifficulty: Record<string, number> = {}
 
-    agentTools.forEach(tool => {
+    agentTools.forEach((tool) => {
       // Count by category (using tags as categories)
-      tool.tags.forEach(tag => {
+      tool.tags.forEach((tag) => {
         toolsByCategory[tag] = (toolsByCategory[tag] || 0) + 1
       })
 
@@ -275,7 +278,10 @@ export class LocalCopilotToolIntegration {
   /**
    * Validate tool arguments before execution
    */
-  validateToolArguments(toolId: string, arguments: Record<string, any>): {
+  validateToolArguments(
+    toolId: string,
+    args: Record<string, any>
+  ): {
     valid: boolean
     errors: string[]
     warnings: string[]
@@ -295,15 +301,15 @@ export class LocalCopilotToolIntegration {
     const warnings: string[] = []
 
     // Validate required parameters
-    blockConfig.subBlocks.forEach(subBlock => {
-      if (subBlock.required && !arguments[subBlock.id]) {
+    blockConfig.subBlocks.forEach((subBlock) => {
+      if (subBlock.required && !args[subBlock.id]) {
         errors.push(`Required parameter missing: ${subBlock.id}`)
       }
     })
 
     // Validate parameter types
     Object.entries(blockConfig.inputs).forEach(([key, config]) => {
-      const value = arguments[key]
+      const value = args[key]
       if (value !== undefined) {
         const expectedType = config.type
         const actualType = typeof value
@@ -334,7 +340,7 @@ export class LocalCopilotToolIntegration {
     // Register the pre-defined enhanced tool descriptions
     const builtInTools = ['function', 'api', 'slack', 'gmail'] // From ENHANCED_TOOL_DESCRIPTIONS
 
-    builtInTools.forEach(toolId => {
+    builtInTools.forEach((toolId) => {
       // Create a basic block config for built-in tools
       const blockConfig: BlockConfig = {
         type: toolId,
@@ -366,10 +372,10 @@ export class LocalCopilotToolIntegration {
    */
   private async simulateToolExecution(
     tool: EnhancedToolDescription,
-    arguments: Record<string, any>
+    args: Record<string, any>
   ): Promise<any> {
     // Simulate execution delay
-    await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1500))
+    await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 1500))
 
     // Return simulated results based on tool type
     switch (tool.id) {
@@ -390,18 +396,18 @@ export class LocalCopilotToolIntegration {
       case 'slack':
         return {
           ok: true,
-          channel: arguments.channel || '#general',
+          channel: args.channel || '#general',
           ts: Date.now().toString(),
-          message: { text: arguments.text || 'Message sent' },
+          message: { text: args.text || 'Message sent' },
         }
 
       case 'gmail':
         return {
           id: `msg_${Date.now()}`,
           labelIds: ['SENT'],
-          snippet: arguments.body?.substring(0, 50) || 'Email sent successfully',
-          to: arguments.to,
-          subject: arguments.subject,
+          snippet: args.body?.substring(0, 50) || 'Email sent successfully',
+          to: args.to,
+          subject: args.subject,
         }
 
       default:
@@ -436,7 +442,7 @@ export function getAgentToolDescriptions(agent: Agent): EnhancedToolDescription[
  */
 export async function getContextualToolRecommendations(
   agent: Agent,
-  conversationHistory: Array<{ role: 'user' | 'assistant', content: string, timestamp: Date }>,
+  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string; timestamp: Date }>,
   userMessage?: string,
   limit = 3
 ): Promise<ToolRecommendation[]> {
@@ -471,10 +477,7 @@ export async function executeAgentTool(
     contexts
   )
 
-  const formattedResult = localCopilotToolIntegration.formatToolResult(
-    agent,
-    executedToolCall
-  )
+  const formattedResult = localCopilotToolIntegration.formatToolResult(agent, executedToolCall)
 
   return {
     toolCall: executedToolCall,

@@ -11,10 +11,11 @@ import { createLogger } from '../../apps/sim/lib/logs/console/logger'
 import {
   type ErrorExplanation,
   errorExplanationService,
-  type UserSkillLevel,
+  UserSkillLevel,
+  ExplanationFormat,
 } from './error-explanations'
 import type { BaseToolError } from './error-handler'
-import type { ErrorCategory } from './error-taxonomy'
+import { ErrorCategory } from './error-taxonomy'
 
 const logger = createLogger('ErrorIntelligence')
 
@@ -151,7 +152,7 @@ export interface SimilarCase {
   timestamp: string
   similarity: number
   resolution: string
-  outcome: 'success' | 'failure'
+  outcome: 'success' | 'failure' | 'partial' | 'escalated'
   lessonsLearned: string[]
 }
 
@@ -553,8 +554,11 @@ export class ErrorIntelligenceService extends EventEmitter {
     for (const language of languagesToTranslate) {
       try {
         messages[language] = await this.translateErrorMessage(error, language, context)
-      } catch (error) {
-        logger.warn('Failed to generate localized message', { language, error: error.message })
+      } catch (translationError) {
+        logger.warn('Failed to generate localized message', {
+          language,
+          error: translationError instanceof Error ? translationError.message : String(translationError),
+        })
       }
     }
 
@@ -984,12 +988,19 @@ export class ErrorIntelligenceService extends EventEmitter {
   }
 
   private selectVoiceForLanguage(language: SupportedLanguage): string {
-    const voiceMap = {
+    const voiceMap: Partial<Record<SupportedLanguage, string>> = {
       [SupportedLanguage.ENGLISH]: 'en-US-AriaNeural',
       [SupportedLanguage.SPANISH]: 'es-ES-ElviraNeural',
       [SupportedLanguage.FRENCH]: 'fr-FR-DeniseNeural',
+      [SupportedLanguage.GERMAN]: 'de-DE-KatjaNeural',
+      [SupportedLanguage.JAPANESE]: 'ja-JP-NanamiNeural',
+      [SupportedLanguage.CHINESE_SIMPLIFIED]: 'zh-CN-XiaoxiaoNeural',
+      [SupportedLanguage.PORTUGUESE]: 'pt-BR-FranciscaNeural',
+      [SupportedLanguage.RUSSIAN]: 'ru-RU-SvetlanaNeural',
+      [SupportedLanguage.ITALIAN]: 'it-IT-ElsaNeural',
+      [SupportedLanguage.DUTCH]: 'nl-NL-ColetteNeural',
     }
-    return voiceMap[language] || voiceMap[SupportedLanguage.ENGLISH]
+    return voiceMap[language] || voiceMap[SupportedLanguage.ENGLISH]!
   }
 }
 

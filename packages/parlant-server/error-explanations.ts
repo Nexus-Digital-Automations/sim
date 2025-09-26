@@ -351,26 +351,26 @@ export class ErrorExplanationService {
           estimatedTime: stepTemplate.estimatedTime,
           difficulty: stepTemplate.difficulty,
           instructions: {
-            [UserSkillLevel.BEGINNER]: stepTemplate.instructions.beginner.map((inst) =>
+            [UserSkillLevel.BEGINNER]: stepTemplate.instructions.beginner.map((inst: string) =>
               this.interpolateTemplate(inst, error)
             ),
-            [UserSkillLevel.INTERMEDIATE]: stepTemplate.instructions.intermediate.map((inst) =>
+            [UserSkillLevel.INTERMEDIATE]: stepTemplate.instructions.intermediate.map((inst: string) =>
               this.interpolateTemplate(inst, error)
             ),
-            [UserSkillLevel.ADVANCED]: stepTemplate.instructions.advanced.map((inst) =>
+            [UserSkillLevel.ADVANCED]: stepTemplate.instructions.advanced.map((inst: string) =>
               this.interpolateTemplate(inst, error)
             ),
-            [UserSkillLevel.DEVELOPER]: stepTemplate.instructions.developer.map((inst) =>
+            [UserSkillLevel.DEVELOPER]: stepTemplate.instructions.developer.map((inst: string) =>
               this.interpolateTemplate(inst, error)
             ),
           },
           successCriteria: this.interpolateTemplate(stepTemplate.successCriteria, error),
-          commonMistakes: stepTemplate.commonMistakes.map((mistake) =>
+          commonMistakes: stepTemplate.commonMistakes.map((mistake: string) =>
             this.interpolateTemplate(mistake, error)
           ),
           prerequisites: stepTemplate.prerequisites,
           dependsOn: stepTemplate.dependsOn,
-          codeExamples: stepTemplate.codeExamples?.map((example) => ({
+          codeExamples: stepTemplate.codeExamples?.map((example: any) => ({
             ...example,
             code: this.interpolateTemplate(example.code, error),
             explanation: this.interpolateTemplate(example.explanation, error),
@@ -449,7 +449,7 @@ export class ErrorExplanationService {
       description: this.interpolateTemplate(tipTemplate.description, error),
       category: tipTemplate.category,
       applicability: tipTemplate.applicability,
-      implementationSteps: tipTemplate.implementationSteps.map((step) =>
+      implementationSteps: tipTemplate.implementationSteps.map((step: string) =>
         this.interpolateTemplate(step, error)
       ),
       tools: tipTemplate.tools,

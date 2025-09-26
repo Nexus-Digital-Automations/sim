@@ -13,7 +13,15 @@
     "baseUrl": ".",
     "paths": {
       "@sim/universal-tool-adapter": ["./src/index.ts"],
-      "@sim/universal-tool-adapter/*": ["./src/*"]
+      "@sim/universal-tool-adapter/*": ["./src/*"],
+      "@sim/db": ["../db/index.ts"],
+      "@sim/db/*": ["../db/*"],
+      "@sim/ts-sdk": ["../ts-sdk/src/index.ts"],
+      "@sim/ts-sdk/*": ["../ts-sdk/src/*"],
+      "@sim/cli": ["../cli/src/index.ts"],
+      "@sim/cli/*": ["../cli/src/*"],
+      "@sim/template-system": ["../template-system/src/index.ts"],
+      "@sim/template-system/*": ["../template-system/src/*"]
     },
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,

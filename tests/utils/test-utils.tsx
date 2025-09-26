@@ -6,10 +6,10 @@
  */
 
 import React from 'react'
-import { render, RenderOptions, RenderResult } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import userEvent from '@testing-library/user-event'
 import { DragDropContext } from '@hello-pangea/dnd'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { type RenderOptions, type RenderResult, render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 // Mock Zustand store
 interface MockStoreState {
@@ -48,22 +48,22 @@ interface TestProvidersProps {
 }
 
 export function TestProviders({ children, queryClient }: TestProvidersProps) {
-  const client = queryClient || new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
+  const client =
+    queryClient ||
+    new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+        mutations: {
+          retry: false,
+        },
       },
-      mutations: {
-        retry: false,
-      },
-    },
-  })
+    })
 
   return (
     <QueryClientProvider client={client}>
-      <DragDropContext onDragEnd={() => {}}>
-        {children}
-      </DragDropContext>
+      <DragDropContext onDragEnd={() => {}}>{children}</DragDropContext>
     </QueryClientProvider>
   )
 }
@@ -81,9 +81,7 @@ export function renderWithProviders(
   })
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <TestProviders queryClient={queryClient}>
-      {children}
-    </TestProviders>
+    <TestProviders queryClient={queryClient}>{children}</TestProviders>
   )
 
   return render(ui, { wrapper: Wrapper, ...options })
@@ -179,12 +177,9 @@ export const mockApiCall = (
   const mockResponse = createMockApiResponse(response, options)
 
   ;(global.fetch as jest.Mock).mockImplementation((requestUrl: string, requestOptions?: any) => {
-    const urlMatches = typeof url === 'string'
-      ? requestUrl.includes(url)
-      : url.test(requestUrl)
+    const urlMatches = typeof url === 'string' ? requestUrl.includes(url) : url.test(requestUrl)
 
-    const methodMatches = !options?.method ||
-      (requestOptions?.method || 'GET') === options.method
+    const methodMatches = !options?.method || (requestOptions?.method || 'GET') === options.method
 
     if (urlMatches && methodMatches) {
       return Promise.resolve(mockResponse)
@@ -196,12 +191,11 @@ export const mockApiCall = (
 }
 
 // Form testing helpers
-export const fillFormField = async (
-  labelText: string | RegExp,
-  value: string
-) => {
+export const fillFormField = async (labelText: string | RegExp, value: string) => {
   const user = userEvent.setup()
-  const field = document.querySelector(`[aria-label*="${labelText}"], [data-testid*="${labelText}"]`) as HTMLInputElement
+  const field = document.querySelector(
+    `[aria-label*="${labelText}"], [data-testid*="${labelText}"]`
+  ) as HTMLInputElement
 
   if (!field) {
     throw new Error(`Could not find form field with label: ${labelText}`)
@@ -211,25 +205,24 @@ export const fillFormField = async (
   await user.type(field, value)
 }
 
-export const selectOption = async (
-  selectLabel: string | RegExp,
-  optionText: string
-) => {
+export const selectOption = async (selectLabel: string | RegExp, optionText: string) => {
   const user = userEvent.setup()
-  const select = document.querySelector(`[aria-label*="${selectLabel}"], [data-testid*="${selectLabel}"]`) as HTMLSelectElement
+  const select = document.querySelector(
+    `[aria-label*="${selectLabel}"], [data-testid*="${selectLabel}"]`
+  ) as HTMLSelectElement
 
   if (!select) {
     throw new Error(`Could not find select with label: ${selectLabel}`)
   }
 
   await user.click(select)
-  await user.click(document.querySelector(`[role="option"]:has-text("${optionText}")`) as HTMLElement)
+  await user.click(
+    document.querySelector(`[role="option"]:has-text("${optionText}")`) as HTMLElement
+  )
 }
 
 // Navigation helpers
-export const navigateFormSteps = async (
-  steps: Array<() => Promise<void>>
-) => {
+export const navigateFormSteps = async (steps: Array<() => Promise<void>>) => {
   const user = userEvent.setup()
 
   for (let i = 0; i < steps.length; i++) {
@@ -237,7 +230,9 @@ export const navigateFormSteps = async (
 
     // Click Next button if not on last step
     if (i < steps.length - 1) {
-      const nextButton = document.querySelector('[data-testid="next-step"], button:has-text("Next")') as HTMLButtonElement
+      const nextButton = document.querySelector(
+        '[data-testid="next-step"], button:has-text("Next")'
+      ) as HTMLButtonElement
       if (nextButton) {
         await user.click(nextButton)
       }
@@ -246,26 +241,17 @@ export const navigateFormSteps = async (
 }
 
 // Drag and drop helpers
-export const simulateDragAndDrop = async (
-  dragElement: HTMLElement,
-  dropElement: HTMLElement
-) => {
+export const simulateDragAndDrop = async (dragElement: HTMLElement, dropElement: HTMLElement) => {
   const user = userEvent.setup()
 
   // Simulate drag start
-  await user.pointer([
-    { keys: '[MouseLeft>]', target: dragElement },
-    { coords: { x: 0, y: 0 } },
-  ])
+  await user.pointer([{ keys: '[MouseLeft>]', target: dragElement }, { coords: { x: 0, y: 0 } }])
 
   // Simulate drag over
   await user.pointer({ coords: { x: 100, y: 100 } })
 
   // Simulate drop
-  await user.pointer([
-    { target: dropElement },
-    { keys: '[/MouseLeft]' },
-  ])
+  await user.pointer([{ target: dropElement }, { keys: '[/MouseLeft]' }])
 }
 
 // Accessibility testing helpers
@@ -279,16 +265,13 @@ export const testKeyboardNavigation = async (elements: HTMLElement[]) => {
 }
 
 export const testAriaLabels = (container: HTMLElement, expectedLabels: string[]) => {
-  expectedLabels.forEach(label => {
+  expectedLabels.forEach((label) => {
     expect(container.querySelector(`[aria-label="${label}"]`)).toBeInTheDocument()
   })
 }
 
 // Wait helpers
-export const waitForApiCall = async (
-  url: string | RegExp,
-  options?: { timeout?: number }
-) => {
+export const waitForApiCall = async (url: string | RegExp, options?: { timeout?: number }) => {
   return new Promise((resolve, reject) => {
     const timeout = options?.timeout ?? 5000
     const startTime = Date.now()
@@ -327,13 +310,8 @@ export const measureRenderTime = async (renderFunction: () => RenderResult) => {
 }
 
 // Snapshot testing helpers
-export const createComponentSnapshot = (
-  component: React.ReactElement,
-  props?: any
-) => {
-  const { container } = renderWithProviders(
-    React.cloneElement(component, props)
-  )
+export const createComponentSnapshot = (component: React.ReactElement, props?: any) => {
+  const { container } = renderWithProviders(React.cloneElement(component, props))
 
   return container.firstChild
 }
@@ -342,7 +320,7 @@ export const createComponentSnapshot = (
 expect.extend({
   toHaveValidationError(received: HTMLElement, message: string) {
     const errorElement = received.querySelector('[role="alert"], .error-message')
-    const hasError = errorElement && errorElement.textContent?.includes(message)
+    const hasError = errorElement?.textContent?.includes(message)
 
     return {
       message: () =>
@@ -355,8 +333,8 @@ expect.extend({
 
   toBeAccessible(received: HTMLElement) {
     // Basic accessibility checks
-    const hasAriaLabel = received.hasAttribute('aria-label') ||
-                        received.hasAttribute('aria-labelledby')
+    const hasAriaLabel =
+      received.hasAttribute('aria-label') || received.hasAttribute('aria-labelledby')
     const hasRole = received.hasAttribute('role')
     const isInteractive = ['button', 'input', 'select', 'textarea', 'a'].includes(
       received.tagName.toLowerCase()

@@ -172,7 +172,7 @@ describe('Workflow Integration Testing Framework', () => {
 
       // Mock execution progress tracking
       const progressUpdates: any[] = []
-      mockSocket.on.mockImplementation((event: string, callback: Function) => {
+      mockSocket.on.mockImplementation((event: string, callback: (data: any) => void) => {
         if (event === 'workflow-progress') {
           progressUpdates.push = callback
         }
@@ -198,7 +198,7 @@ describe('Workflow Integration Testing Framework', () => {
       const executionSteps: any[] = []
 
       // Mock real-time execution updates
-      mockSocket.on.mockImplementation((event: string, callback: Function) => {
+      mockSocket.on.mockImplementation((event: string, callback: (data: any) => void) => {
         if (event === 'block-execution-update') {
           executionSteps.push({
             blockId: 'exec-block-1',
@@ -545,7 +545,7 @@ describe('Workflow Integration Testing Framework', () => {
       const progressUpdates: any[] = []
 
       // Mock real-time progress streaming
-      mockSocket.on.mockImplementation((event: string, callback: Function) => {
+      mockSocket.on.mockImplementation((event: string, callback: (data: any) => void) => {
         if (event === 'execution-progress') {
           // Simulate progress updates
           setTimeout(() => callback({ blockId: 'exec-block-1', progress: 0.25 }), 100)
@@ -576,7 +576,7 @@ describe('Workflow Integration Testing Framework', () => {
 
       const executionLogs: any[] = []
 
-      mockSocket.on.mockImplementation((event: string, callback: Function) => {
+      mockSocket.on.mockImplementation((event: string, callback: (data: any) => void) => {
         if (event === 'execution-log') {
           const logs = [
             {
@@ -632,7 +632,7 @@ describe('Workflow Integration Testing Framework', () => {
 
       const blockOutputs: any[] = []
 
-      mockSocket.on.mockImplementation((event: string, callback: Function) => {
+      mockSocket.on.mockImplementation((event: string, callback: (data: any) => void) => {
         if (event === 'block-output') {
           const outputs = [
             {
@@ -722,7 +722,7 @@ describe('Workflow Integration Testing Framework', () => {
 
       const executionMetrics: any[] = []
 
-      mockSocket.on.mockImplementation((event: string, callback: Function) => {
+      mockSocket.on.mockImplementation((event: string, callback: (data: any) => void) => {
         if (event === 'execution-metrics') {
           const metrics = [
             { metric: 'blocks_executed', value: 1, timestamp: new Date() },
@@ -788,7 +788,7 @@ describe('Workflow Integration Testing Framework', () => {
       const streamEvents: any[] = []
 
       // Simulate high-frequency streaming (100 events)
-      mockSocket.on.mockImplementation((event: string, callback: Function) => {
+      mockSocket.on.mockImplementation((event: string, callback: (data: any) => void) => {
         if (event === 'high-frequency-stream') {
           for (let i = 0; i < 100; i++) {
             setTimeout(() => {

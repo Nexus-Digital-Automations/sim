@@ -9,7 +9,6 @@
  * @version 1.0.0
  */
 
-import { createLogger } from '../../../apps/sim/lib/logs/console/logger'
 import type {
   AdapterConfiguration,
   AdapterExecutionContext,
@@ -17,6 +16,7 @@ import type {
   ErrorHandlingConfig,
   ValidationResult,
 } from '../types/adapter-interfaces'
+import { createLogger } from '../utils/logger'
 import { handleToolError, validateBeforeExecution } from './comprehensive-error-manager'
 
 const logger = createLogger('AdapterErrorIntegration')

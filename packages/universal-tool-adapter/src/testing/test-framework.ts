@@ -10,10 +10,10 @@
  */
 
 import EventEmitter from 'events'
-import type { BlockConfig, SubBlockConfig } from '../types/blocks-types'
 import type { BaseAdapter } from '../core/base-adapter'
 import type { EnhancedAdapterFramework } from '../core/enhanced-adapter-framework'
 import type { AdapterExecutionResult } from '../types/adapter-interfaces'
+import type { BlockConfig, SubBlockConfig } from '../types/blocks-types'
 import type { ParlantExecutionContext } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
 
@@ -977,7 +977,10 @@ class TestRunner {
 
           results.push(test)
         } catch (error) {
-          test.result = { passed: false, error: error instanceof Error ? error.message : String(error) }
+          test.result = {
+            passed: false,
+            error: error instanceof Error ? error.message : String(error),
+          }
           failed++
           results.push(test)
         }

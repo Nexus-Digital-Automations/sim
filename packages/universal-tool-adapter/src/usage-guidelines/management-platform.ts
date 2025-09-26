@@ -9,7 +9,11 @@
  */
 
 import { Logger } from '../utils/logger'
-import { type GuidelineDefinition, GuidelineTemplateRegistry } from './guidelines-framework'
+import {
+  type GuidelineCategory,
+  type GuidelineDefinition,
+  GuidelineTemplateRegistry,
+} from './guidelines-framework'
 import { type InteractiveTutorial, InteractiveTutorialEngine } from './interactive-guidance'
 import { KnowledgeBase, type KnowledgeEntry } from './knowledge-base'
 
@@ -574,7 +578,7 @@ export class GuidelinesManagementPlatform {
           status: 'active',
         },
       ],
-      settings: config.settings || this.getDefaultWorkspaceSettings(),
+      settings: { ...this.getDefaultWorkspaceSettings(), ...(config.settings || {}) },
       projects: [],
       templates: [],
       metadata: {
@@ -1818,7 +1822,7 @@ export interface CreateGuidelineConfig {
   title?: string
   description?: string
   templateId?: string
-  category?: string
+  category?: GuidelineCategory
   complexity?: 'beginner' | 'intermediate' | 'advanced'
   priority?: 'low' | 'medium' | 'high' | 'critical'
   content?: any

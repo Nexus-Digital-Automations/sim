@@ -8,8 +8,8 @@
  * @version 1.0.0
  */
 
-import type { ToolConfig } from '../types/tools-types'
 import type { DiscoveredTool, ToolDiscoveryQuery } from '../types/adapter-interfaces'
+import type { ToolConfig } from '../types/tools-types'
 import type { ConversationMessage, ToolRecommendation, UsageContext } from './usage-guidelines'
 
 // =============================================================================

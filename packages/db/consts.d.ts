@@ -1,0 +1,16 @@
+/**
+ * Database-only constants used in schema definitions and migrations.
+ * These constants are independent of application logic to keep migrations container lightweight.
+ */
+/**
+ * Default free credits (in dollars) for new users
+ */
+export declare const DEFAULT_FREE_CREDITS = 10;
+/**
+ * Tag slots available for knowledge base documents and embeddings
+ */
+export declare const TAG_SLOTS: readonly ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7"];
+/**
+ * Type for tag slot names
+ */
+export type TagSlot = (typeof TAG_SLOTS)[number];

@@ -9,12 +9,6 @@
  */
 
 import { z } from 'zod'
-import type {
-  // Sim BlockConfig types
-  BlockConfig,
-  SubBlockConfig,
-  SubBlockType,
-} from '../types/blocks-types'
 import { ResultFormatter } from '../formatting/result-formatter'
 import { ParameterMapper } from '../mapping/parameter-mapper'
 import type {
@@ -29,6 +23,12 @@ import type {
   ToolDiscoveryQuery,
   ValidationConfig,
 } from '../types/adapter-interfaces'
+import type {
+  // Sim BlockConfig types
+  BlockConfig,
+  SubBlockConfig,
+  SubBlockType,
+} from '../types/blocks-types'
 import type { ParameterDefinition } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
 import { ValidationEngine } from '../validation/validation-engine'

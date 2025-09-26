@@ -9,8 +9,8 @@
 
 import { useParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AgentForm } from '../components/agent-form/agent-form'
 import { AgentAnalytics } from '../components/agent-analytics/agent-analytics'
+import { AgentForm } from '../components/agent-form/agent-form'
 import { VisualGuidelineBuilder } from '../components/guideline-builder/visual-guideline-builder'
 import { JourneyCreator } from '../components/journey-creator/journey-creator'
 

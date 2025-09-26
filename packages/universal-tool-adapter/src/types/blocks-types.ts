@@ -127,3 +127,26 @@ export interface SubBlockConfig {
   // Example: dependsOn: ['credential'] means this field should be cleared when credential changes
   dependsOn?: string[]
 }
+
+export type BlockCategory =
+  | 'data'
+  | 'ai'
+  | 'logic'
+  | 'integration'
+  | 'communication'
+  | 'storage'
+  | 'analysis'
+  | 'workflow'
+  | 'custom'
+
+export interface BlockConfig {
+  id: string
+  title: string
+  description?: string
+  category?: BlockCategory
+  icon?: string
+  subBlocks?: SubBlockConfig[]
+  version?: string
+  author?: string
+  tags?: string[]
+}

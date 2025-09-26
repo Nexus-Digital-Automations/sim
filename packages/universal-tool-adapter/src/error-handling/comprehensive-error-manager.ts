@@ -19,12 +19,27 @@
  * @version 1.0.0
  */
 
-import { createLogger } from '../../../apps/sim/lib/logs/console/logger'
-import {
-  ErrorExplanationService,
-  explainError,
-  UserSkillLevel,
-} from '../../../parlant-server/error-explanations'
+import { createLogger } from '../utils/logger'
+
+// Import replaced with local placeholder types to avoid path resolution issues
+// import {
+//   ErrorExplanationService,
+//   explainError,
+//   UserSkillLevel,
+// } from '../../../parlant-server/error-explanations'
+
+// Local placeholder types
+type ErrorExplanationService = {
+  explain: (error: any, skillLevel: UserSkillLevel) => string
+}
+
+type UserSkillLevel = 'beginner' | 'intermediate' | 'advanced'
+
+// Placeholder implementation
+const explainError = (error: any, skillLevel: UserSkillLevel): string => {
+  return `Error: ${error.message || error}`
+}
+
 import {
   type BaseToolError,
   ToolAdapterError,

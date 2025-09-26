@@ -10,7 +10,6 @@
  */
 
 import { z } from 'zod'
-import type { SubBlockConfig } from '../types/blocks-types'
 import type {
   BusinessRule,
   ContextualValue,
@@ -18,6 +17,7 @@ import type {
   ValidationError,
   ValidationResult,
 } from '../types/adapter-interfaces'
+import type { SubBlockConfig } from '../types/blocks-types'
 import type { ParlantExecutionContext } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
 

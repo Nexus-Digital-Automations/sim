@@ -656,7 +656,9 @@ function GuidelineEditDialog({
           {/* Basic Settings */}
           <div className='grid grid-cols-2 gap-4'>
             <div>
-              <label htmlFor='priority-select' className='font-medium text-sm'>Priority</label>
+              <label htmlFor='priority-select' className='font-medium text-sm'>
+                Priority
+              </label>
               <Select
                 value={editedGuideline.priority.toString()}
                 onValueChange={(value) =>
@@ -680,7 +682,9 @@ function GuidelineEditDialog({
             </div>
 
             <div>
-              <label htmlFor='category-select' className='font-medium text-sm'>Category</label>
+              <label htmlFor='category-select' className='font-medium text-sm'>
+                Category
+              </label>
               <Select
                 value={editedGuideline.category || 'general'}
                 onValueChange={(value) =>
@@ -706,7 +710,9 @@ function GuidelineEditDialog({
 
           {/* Condition */}
           <div>
-            <label htmlFor='condition-textarea' className='mb-2 block font-medium text-sm'>When (Condition) *</label>
+            <label htmlFor='condition-textarea' className='mb-2 block font-medium text-sm'>
+              When (Condition) *
+            </label>
             <Textarea
               id='condition-textarea'
               placeholder='Describe the situation that triggers this guideline...'
@@ -723,7 +729,9 @@ function GuidelineEditDialog({
 
           {/* Action */}
           <div>
-            <label htmlFor='action-textarea' className='mb-2 block font-medium text-sm'>Then (Action) *</label>
+            <label htmlFor='action-textarea' className='mb-2 block font-medium text-sm'>
+              Then (Action) *
+            </label>
             <Textarea
               id='action-textarea'
               placeholder='Describe what the agent should do...'

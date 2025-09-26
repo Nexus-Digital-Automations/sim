@@ -310,7 +310,7 @@ executeWorkflowWithInput('{"customerData": {"name": "John Doe", "email": "john@e
               message: 'Always use handleAccept() for user-initiated execution',
             },
           ],
-          dependencies: ['@/lib/copilot/tools/client/workflow/run-workflow'],
+          dependencies: ['// @/lib/copilot/tools/client/workflow/run-workflow (example path)'],
         },
         supportingCode: [
           {
@@ -444,7 +444,7 @@ async function validateWorkflowExecution(
             language: 'javascript',
             code: `
 // JavaScript (non-TypeScript) version
-const { RunWorkflowClientTool } = require('@/lib/copilot/tools/client/workflow/run-workflow')
+// const { RunWorkflowClientTool } = require('@/lib/copilot/tools/client/workflow/run-workflow')
 
 async function executeWorkflow(workflowInput) {
   const runTool = new RunWorkflowClientTool(\`workflow-\${Date.now()}\`)
@@ -588,7 +588,9 @@ async function executeWorkflow(workflowInput) {
           step: 1,
           title: 'Install Dependencies',
           instruction: 'Ensure all required packages are installed',
-          commands: ['npm install @/lib/copilot/tools/client/workflow/run-workflow'],
+          commands: [
+            '// npm install @/lib/copilot/tools/client/workflow/run-workflow (example command)',
+          ],
           verification: 'Import statement resolves without errors',
         },
         {
@@ -799,8 +801,14 @@ async function asyncWorkflowExecution(input: string): Promise<string> {
           language: 'typescript',
           framework: 'react',
           code: `
-import { buildWorkflowServerTool } from '@/lib/copilot/tools/server/workflow/build-workflow'
-import { BuildWorkflowInput, BuildWorkflowResult } from '@/lib/copilot/tools/shared/schemas'
+// Example imports - commented out to avoid path resolution issues
+// import { buildWorkflowServerTool } from '@/lib/copilot/tools/server/workflow/build-workflow'
+// import { BuildWorkflowInput, BuildWorkflowResult } from '@/lib/copilot/tools/shared/schemas'
+
+// Placeholder types for example purposes
+type buildWorkflowServerTool = (params: any) => Promise<any>
+type BuildWorkflowInput = Record<string, any>
+type BuildWorkflowResult = Record<string, any>
 
 interface WorkflowBuildRequest {
   description: string
@@ -881,8 +889,8 @@ buildComplexWorkflow(workflowRequest)
             { line: 27, type: 'tip', message: 'Parse result to ensure type safety' },
           ],
           dependencies: [
-            '@/lib/copilot/tools/server/workflow/build-workflow',
-            '@/lib/copilot/tools/shared/schemas',
+            '// @/lib/copilot/tools/server/workflow/build-workflow (example path)',
+            '// @/lib/copilot/tools/shared/schemas (example path)',
           ],
         },
 
@@ -1380,7 +1388,9 @@ async def main():
           step: 1,
           title: 'Install Workflow Builder',
           instruction: 'Install the workflow building dependencies',
-          commands: ['npm install @/lib/copilot/tools/server/workflow/build-workflow'],
+          commands: [
+            '// npm install @/lib/copilot/tools/server/workflow/build-workflow (example command)',
+          ],
           verification: 'buildWorkflowServerTool can be imported',
         },
       ],

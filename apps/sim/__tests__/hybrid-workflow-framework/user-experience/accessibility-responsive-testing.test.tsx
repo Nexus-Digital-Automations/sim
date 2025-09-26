@@ -5,68 +5,82 @@
  * and interaction patterns across all hybrid workflow modes.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import '@testing-library/jest-dom'
 
 // Mock React components for testing
 const MockWorkflowEditor = vi.fn(({ mode, onModeSwitch, accessibility, responsive }) => (
   <div
-    data-testid="workflow-editor"
+    data-testid='workflow-editor'
     data-mode={mode}
-    role={accessibility?.role || "application"}
-    aria-label={accessibility?.label || "Workflow Editor"}
-    className={responsive?.className || "responsive-container"}
+    role={accessibility?.role || 'application'}
+    aria-label={accessibility?.label || 'Workflow Editor'}
+    className={responsive?.className || 'responsive-container'}
   >
     <button
       onClick={() => onModeSwitch?.(mode === 'visual' ? 'chat' : 'visual')}
-      data-testid="mode-switch-button"
-      aria-label="Switch between visual and chat modes"
+      data-testid='mode-switch-button'
+      aria-label='Switch between visual and chat modes'
       tabIndex={0}
     >
       Switch to {mode === 'visual' ? 'Chat' : 'Visual'} Mode
     </button>
 
     {mode === 'visual' && (
-      <div data-testid="visual-mode-content" role="region" aria-label="Visual workflow editor">
-        <div data-testid="workflow-canvas" role="img" aria-label="Workflow diagram">
+      <div data-testid='visual-mode-content' role='region' aria-label='Visual workflow editor'>
+        <div data-testid='workflow-canvas' role='img' aria-label='Workflow diagram'>
           {/* Visual mode content */}
-          <div data-testid="block-1" role="button" tabIndex={0} aria-label="Start block">Start Block</div>
-          <div data-testid="block-2" role="button" tabIndex={0} aria-label="Condition block">Condition Block</div>
+          <div data-testid='block-1' role='button' tabIndex={0} aria-label='Start block'>
+            Start Block
+          </div>
+          <div data-testid='block-2' role='button' tabIndex={0} aria-label='Condition block'>
+            Condition Block
+          </div>
         </div>
-        <div data-testid="visual-controls" role="toolbar" aria-label="Visual mode controls">
-          <button data-testid="add-block-btn" aria-label="Add new block">Add Block</button>
-          <button data-testid="delete-block-btn" aria-label="Delete selected block">Delete</button>
-          <button data-testid="zoom-in-btn" aria-label="Zoom in">Zoom In</button>
-          <button data-testid="zoom-out-btn" aria-label="Zoom out">Zoom Out</button>
+        <div data-testid='visual-controls' role='toolbar' aria-label='Visual mode controls'>
+          <button data-testid='add-block-btn' aria-label='Add new block'>
+            Add Block
+          </button>
+          <button data-testid='delete-block-btn' aria-label='Delete selected block'>
+            Delete
+          </button>
+          <button data-testid='zoom-in-btn' aria-label='Zoom in'>
+            Zoom In
+          </button>
+          <button data-testid='zoom-out-btn' aria-label='Zoom out'>
+            Zoom Out
+          </button>
         </div>
       </div>
     )}
 
     {mode === 'chat' && (
-      <div data-testid="chat-mode-content" role="region" aria-label="Chat workflow interface">
+      <div data-testid='chat-mode-content' role='region' aria-label='Chat workflow interface'>
         <div
-          data-testid="chat-messages"
-          role="log"
-          aria-label="Chat conversation"
-          aria-live="polite"
-          aria-atomic="false"
+          data-testid='chat-messages'
+          role='log'
+          aria-label='Chat conversation'
+          aria-live='polite'
+          aria-atomic='false'
         >
           {/* Chat messages */}
         </div>
-        <div data-testid="chat-input-container" role="region" aria-label="Message input">
+        <div data-testid='chat-input-container' role='region' aria-label='Message input'>
           <input
-            data-testid="chat-input"
-            type="text"
-            placeholder="Type your message..."
-            aria-label="Chat message input"
-            aria-describedby="chat-input-help"
+            data-testid='chat-input'
+            type='text'
+            placeholder='Type your message...'
+            aria-label='Chat message input'
+            aria-describedby='chat-input-help'
           />
-          <div id="chat-input-help" className="sr-only">
+          <div id='chat-input-help' className='sr-only'>
             Type commands or ask questions about your workflow
           </div>
-          <button data-testid="send-btn" aria-label="Send message">Send</button>
+          <button data-testid='send-btn' aria-label='Send message'>
+            Send
+          </button>
         </div>
       </div>
     )}
@@ -76,30 +90,26 @@ const MockWorkflowEditor = vi.fn(({ mode, onModeSwitch, accessibility, responsiv
 const MockHybridInterface = vi.fn(({ initialMode = 'visual', ...props }) => {
   const [currentMode, setCurrentMode] = React.useState(initialMode)
 
-  return (
-    <MockWorkflowEditor
-      mode={currentMode}
-      onModeSwitch={setCurrentMode}
-      {...props}
-    />
-  )
+  return <MockWorkflowEditor mode={currentMode} onModeSwitch={setCurrentMode} {...props} />
 })
 
 // Mock React for state management
 const React = {
   useState: vi.fn((initial) => {
     let value = initial
-    const setValue = (newValue: any) => { value = newValue }
+    const setValue = (newValue: any) => {
+      value = newValue
+    }
     return [value, setValue]
   }),
   useEffect: vi.fn(),
   useCallback: vi.fn((fn) => fn),
-  useMemo: vi.fn((fn) => fn())
+  useMemo: vi.fn((fn) => fn()),
 }
 
 // Mock window and DOM APIs
 const mockMatchMedia = vi.fn((query) => ({
-  matches: query.includes('max-width: 768px') ? false : true,
+  matches: !query.includes('max-width: 768px'),
   media: query,
   onchange: null,
   addListener: vi.fn(),
@@ -143,16 +153,16 @@ describe('Hybrid Workflow User Experience Testing', () => {
         role: 'application',
         label: 'Hybrid Workflow Editor',
         announcements: true,
-        keyboardNav: true
+        keyboardNav: true,
       },
       responsive: {
         className: 'hybrid-responsive',
         breakpoints: {
           mobile: '768px',
           tablet: '1024px',
-          desktop: '1200px'
-        }
-      }
+          desktop: '1200px',
+        },
+      },
     }
   })
 
@@ -210,7 +220,7 @@ describe('Hybrid Workflow User Experience Testing', () => {
     })
 
     it('should support keyboard navigation in chat mode', async () => {
-      render(<MockHybridInterface {...mockProps} initialMode="chat" />)
+      render(<MockHybridInterface {...mockProps} initialMode='chat' />)
 
       const chatInput = screen.getByTestId('chat-input')
       const sendBtn = screen.getByTestId('send-btn')
@@ -225,7 +235,7 @@ describe('Hybrid Workflow User Experience Testing', () => {
     })
 
     it('should provide proper ARIA live regions for chat', () => {
-      render(<MockHybridInterface {...mockProps} initialMode="chat" />)
+      render(<MockHybridInterface {...mockProps} initialMode='chat' />)
 
       const chatMessages = screen.getByTestId('chat-messages')
       expect(chatMessages).toHaveAttribute('role', 'log')
@@ -242,23 +252,22 @@ describe('Hybrid Workflow User Experience Testing', () => {
     it('should support screen reader announcements for mode switches', async () => {
       const mockAnnounce = vi.fn()
 
-      render(<MockHybridInterface
-        {...mockProps}
-        accessibility={{
-          ...mockProps.accessibility,
-          announce: mockAnnounce
-        }}
-      />)
+      render(
+        <MockHybridInterface
+          {...mockProps}
+          accessibility={{
+            ...mockProps.accessibility,
+            announce: mockAnnounce,
+          }}
+        />
+      )
 
       const modeSwitchBtn = screen.getByTestId('mode-switch-button')
 
       await user.click(modeSwitchBtn)
 
       // Should announce mode change
-      expect(mockAnnounce).toHaveBeenCalledWith(
-        'Switched to chat mode',
-        'polite'
-      )
+      expect(mockAnnounce).toHaveBeenCalledWith('Switched to chat mode', 'polite')
     })
 
     it('should maintain focus during mode switches', async () => {
@@ -326,8 +335,8 @@ describe('Hybrid Workflow User Experience Testing', () => {
         ...mockProps,
         error: {
           message: 'Failed to save workflow',
-          code: 'SAVE_ERROR'
-        }
+          code: 'SAVE_ERROR',
+        },
       }
 
       render(<MockHybridInterface {...errorProps} />)
@@ -344,8 +353,8 @@ describe('Hybrid Workflow User Experience Testing', () => {
         shortcuts: {
           'Ctrl+M': 'Switch mode',
           'Ctrl+S': 'Save workflow',
-          'Escape': 'Cancel action'
-        }
+          Escape: 'Cancel action',
+        },
       }
 
       render(<MockHybridInterface {...shortcutProps} />)
@@ -379,10 +388,13 @@ describe('Hybrid Workflow User Experience Testing', () => {
       expect(editor).toHaveClass('hybrid-responsive')
 
       // Mobile layout adjustments would be applied
-      fireEvent(window, new MediaQueryListEvent('change', {
-        matches: true,
-        media: '(max-width: 768px)'
-      }))
+      fireEvent(
+        window,
+        new MediaQueryListEvent('change', {
+          matches: true,
+          media: '(max-width: 768px)',
+        })
+      )
     })
 
     it('should optimize touch interactions for mobile', async () => {
@@ -523,7 +535,7 @@ describe('Hybrid Workflow User Experience Testing', () => {
     })
 
     it('should support chat-specific shortcuts', async () => {
-      render(<MockHybridInterface {...mockProps} initialMode="chat" />)
+      render(<MockHybridInterface {...mockProps} initialMode='chat' />)
 
       const chatInput = screen.getByTestId('chat-input')
       const sendBtn = screen.getByTestId('send-btn')
@@ -598,8 +610,8 @@ describe('Hybrid Workflow User Experience Testing', () => {
         showModal: true,
         modalContent: {
           title: 'Block Settings',
-          fields: ['name', 'type', 'config']
-        }
+          fields: ['name', 'type', 'config'],
+        },
       }
 
       render(<MockHybridInterface {...modalProps} />)
@@ -620,8 +632,8 @@ describe('Hybrid Workflow User Experience Testing', () => {
           'Alt+V': 'switch-to-visual',
           'Alt+C': 'switch-to-chat',
           'Ctrl+Shift+S': 'save-as',
-          'F11': 'toggle-fullscreen'
-        }
+          F11: 'toggle-fullscreen',
+        },
       }
 
       render(<MockHybridInterface {...customShortcuts} />)
@@ -678,10 +690,10 @@ describe('Hybrid Workflow User Experience Testing', () => {
 
       // Test touch interactions
       fireEvent.touchStart(workflowCanvas, {
-        touches: [{ clientX: 100, clientY: 100 }]
+        touches: [{ clientX: 100, clientY: 100 }],
       })
       fireEvent.touchMove(workflowCanvas, {
-        touches: [{ clientX: 120, clientY: 120 }]
+        touches: [{ clientX: 120, clientY: 120 }],
       })
       fireEvent.touchEnd(workflowCanvas)
 
@@ -727,7 +739,7 @@ describe('Hybrid Workflow User Experience Testing', () => {
       const rtlProps = {
         ...mockProps,
         locale: 'ar',
-        direction: 'rtl'
+        direction: 'rtl',
       }
 
       render(<MockHybridInterface {...rtlProps} />)

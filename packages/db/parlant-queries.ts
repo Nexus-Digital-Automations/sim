@@ -23,13 +23,16 @@ import type {
   PaginatedResponse,
   PaginationParams,
   ParlantAgent,
+  ParlantAgentKnowledgeBase,
+  ParlantAgentTool,
   ParlantError,
   ParlantEvent,
   ParlantSession,
+  ParlantTool,
   SessionFilters,
   SessionWithRelations,
 } from './parlant-types'
-import type * as schema from './schema'
+import * as schema from './schema'
 
 /**
  * Parlant Query Helpers
@@ -191,9 +194,48 @@ export class ParlantAgentQueries {
   /**
    * Get agent tools with configurations
    */
-  private async getAgentTools(agentId: string) {
+  private async getAgentTools(agentId: string): Promise<(ParlantAgentTool & { tool: ParlantTool })[]> {
     return this.db
-      .select()
+      .select({
+        id: parlantAgentTool.id,
+        agentId: parlantAgentTool.agentId,
+        toolId: parlantAgentTool.toolId,
+        configuration: parlantAgentTool.configuration,
+        enabled: parlantAgentTool.enabled,
+        priority: parlantAgentTool.priority,
+        useCount: parlantAgentTool.useCount,
+        lastUsedAt: parlantAgentTool.lastUsedAt,
+        createdAt: parlantAgentTool.createdAt,
+        updatedAt: parlantAgentTool.updatedAt,
+        tool: {
+          id: parlantTool.id,
+          workspaceId: parlantTool.workspaceId,
+          name: parlantTool.name,
+          displayName: parlantTool.displayName,
+          description: parlantTool.description,
+          simToolId: parlantTool.simToolId,
+          toolType: parlantTool.toolType,
+          parameters: parlantTool.parameters,
+          returnSchema: parlantTool.returnSchema,
+          usageGuidelines: parlantTool.usageGuidelines,
+          errorHandling: parlantTool.errorHandling,
+          executionTimeout: parlantTool.executionTimeout,
+          retryPolicy: parlantTool.retryPolicy,
+          rateLimitPerMinute: parlantTool.rateLimitPerMinute,
+          rateLimitPerHour: parlantTool.rateLimitPerHour,
+          requiresAuth: parlantTool.requiresAuth,
+          authType: parlantTool.authType,
+          authConfig: parlantTool.authConfig,
+          enabled: parlantTool.enabled,
+          isPublic: parlantTool.isPublic,
+          isDeprecated: parlantTool.isDeprecated,
+          useCount: parlantTool.useCount,
+          successRate: parlantTool.successRate,
+          lastUsedAt: parlantTool.lastUsedAt,
+          createdAt: parlantTool.createdAt,
+          updatedAt: parlantTool.updatedAt,
+        },
+      })
       .from(parlantAgentTool)
       .innerJoin(parlantTool, eq(parlantAgentTool.toolId, parlantTool.id))
       .where(
@@ -231,7 +273,7 @@ export class ParlantAgentQueries {
   /**
    * Get agent knowledge bases
    */
-  private async getAgentKnowledgeBases(agentId: string) {
+  private async getAgentKnowledgeBases(agentId: string): Promise<(ParlantAgentKnowledgeBase & { knowledgeBase: { id: string; name: string } })[]> {
     return this.db
       .select({
         id: parlantAgentKnowledgeBase.id,
@@ -241,6 +283,10 @@ export class ParlantAgentQueries {
         searchThreshold: parlantAgentKnowledgeBase.searchThreshold,
         maxResults: parlantAgentKnowledgeBase.maxResults,
         priority: parlantAgentKnowledgeBase.priority,
+        searchCount: parlantAgentKnowledgeBase.searchCount,
+        lastSearchedAt: parlantAgentKnowledgeBase.lastSearchedAt,
+        createdAt: parlantAgentKnowledgeBase.createdAt,
+        updatedAt: parlantAgentKnowledgeBase.updatedAt,
         knowledgeBase: {
           id: schema.knowledgeBase.id,
           name: schema.knowledgeBase.name,
@@ -340,7 +386,7 @@ export class ParlantAgentQueries {
       )
     }
 
-    return and(...conditions)
+    return conditions.length > 0 ? and(...conditions) : undefined
   }
 
   /**

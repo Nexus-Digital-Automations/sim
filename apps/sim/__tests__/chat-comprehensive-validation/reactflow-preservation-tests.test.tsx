@@ -39,7 +39,7 @@ const TEST_CONFIG = {
     nodeAddition: 1000,
     edgeCreation: 500,
     layoutCalculation: 2000,
-  }
+  },
 }
 
 describe('ReactFlow Preservation Test Suite', () => {
@@ -78,7 +78,7 @@ describe('ReactFlow Preservation Test Suite', () => {
 
       const { container } = render(
         <ReactFlowProvider>
-          <div data-testid="reactflow-container" style={{ width: '100%', height: '400px' }}>
+          <div data-testid='reactflow-container' style={{ width: '100%', height: '400px' }}>
             {/* ReactFlow component would be rendered here */}
           </div>
         </ReactFlowProvider>
@@ -92,7 +92,10 @@ describe('ReactFlow Preservation Test Suite', () => {
       expect(reactflowContainer).toBeInTheDocument()
 
       // Validate preservation state
-      const validation = await WorkflowPreservationAPI.validatePreservation(workflowId, mockWorkflow)
+      const validation = await WorkflowPreservationAPI.validatePreservation(
+        workflowId,
+        mockWorkflow
+      )
       expect(validation.success).toBe(true)
     })
 
@@ -149,7 +152,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         id: 'test-node-1',
         type: 'agent',
         position: { x: 100, y: 100 },
-        data: { type: 'agent', config: {}, name: 'Test Agent' }
+        data: { type: 'agent', config: {}, name: 'Test Agent' },
       }
 
       const startTime = performance.now()
@@ -177,9 +180,9 @@ describe('ReactFlow Preservation Test Suite', () => {
             subBlocks: {},
             outputs: {},
             enabled: true,
-            data: {}
-          }
-        }
+            data: {},
+          },
+        },
       })
 
       expect(validation.success).toBe(true)
@@ -190,7 +193,7 @@ describe('ReactFlow Preservation Test Suite', () => {
       const nodeToDelete = {
         id: 'node-to-delete',
         type: 'condition',
-        position: { x: 200, y: 200 }
+        position: { x: 200, y: 200 },
       }
 
       await simulateNodeAddition(nodeToDelete)
@@ -213,7 +216,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         workflowId,
         checkpointId,
         deleteResult,
-        rollbackResult
+        rollbackResult,
       })
     })
 
@@ -252,8 +255,8 @@ describe('ReactFlow Preservation Test Suite', () => {
           height: 300,
           kind: 'loop',
           loopType: 'for',
-          iterations: 5
-        }
+          iterations: 5,
+        },
       }
 
       const addLoopResult = await simulateContainerAddition(loopContainer)
@@ -264,7 +267,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         id: 'child-node-1',
         type: 'api',
         position: { x: 50, y: 50 }, // Relative to container
-        parentId: loopContainer.id
+        parentId: loopContainer.id,
       }
 
       const addChildResult = await simulateNodeAddition(childNode)
@@ -281,13 +284,13 @@ describe('ReactFlow Preservation Test Suite', () => {
       await simulateNodeAddition({
         id: 'source-node',
         type: 'starter',
-        position: { x: 100, y: 100 }
+        position: { x: 100, y: 100 },
       })
 
       await simulateNodeAddition({
         id: 'target-node',
         type: 'agent',
-        position: { x: 300, y: 100 }
+        position: { x: 300, y: 100 },
       })
 
       // Create edge
@@ -297,7 +300,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         target: 'target-node',
         sourceHandle: 'source',
         targetHandle: 'target',
-        type: 'workflowEdge'
+        type: 'workflowEdge',
       }
 
       const startTime = performance.now()
@@ -318,9 +321,9 @@ describe('ReactFlow Preservation Test Suite', () => {
         data: {
           conditions: [
             { condition: 'value > 10', label: 'Greater than 10' },
-            { condition: 'value <= 10', label: 'Less or equal to 10' }
-          ]
-        }
+            { condition: 'value <= 10', label: 'Less or equal to 10' },
+          ],
+        },
       }
 
       await simulateNodeAddition(conditionNode)
@@ -329,13 +332,13 @@ describe('ReactFlow Preservation Test Suite', () => {
       await simulateNodeAddition({
         id: 'true-path',
         type: 'response',
-        position: { x: 400, y: 150 }
+        position: { x: 400, y: 150 },
       })
 
       await simulateNodeAddition({
         id: 'false-path',
         type: 'response',
-        position: { x: 400, y: 250 }
+        position: { x: 400, y: 250 },
       })
 
       // Create conditional edges
@@ -344,7 +347,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         source: 'condition-node-1',
         target: 'true-path',
         sourceHandle: 'condition-0',
-        targetHandle: 'target'
+        targetHandle: 'target',
       }
 
       const falseEdge = {
@@ -352,7 +355,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         source: 'condition-node-1',
         target: 'false-path',
         sourceHandle: 'condition-1',
-        targetHandle: 'target'
+        targetHandle: 'target',
       }
 
       const trueResult = await simulateEdgeCreation(trueEdge)
@@ -376,7 +379,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         source: 'n1',
         target: 'n2',
         sourceHandle: 'source',
-        targetHandle: 'target'
+        targetHandle: 'target',
       }
 
       await simulateEdgeCreation(edge)
@@ -401,7 +404,7 @@ describe('ReactFlow Preservation Test Suite', () => {
       await simulateNodeAddition({
         id: nodeId,
         type: 'agent',
-        position: { x: 100, y: 100 }
+        position: { x: 100, y: 100 },
       })
 
       const selectResult = await simulateNodeSelection(nodeId)
@@ -433,7 +436,7 @@ describe('ReactFlow Preservation Test Suite', () => {
       await simulateNodeAddition({
         id: nodeId,
         type: 'condition',
-        position: { x: 150, y: 150 }
+        position: { x: 150, y: 150 },
       })
 
       // Simulate right-click context menu
@@ -455,8 +458,8 @@ describe('ReactFlow Preservation Test Suite', () => {
         data: {
           id: 'collab-node-1',
           type: 'api',
-          position: { x: 250, y: 250 }
-        }
+          position: { x: 250, y: 250 },
+        },
       }
 
       const collabResult = await simulateCollaborativeOperation(collaborativeEdit)
@@ -475,7 +478,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         operation: 'node-move',
         nodeId: 'shared-node',
         position: { x: 100, y: 100 },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       const operation2 = {
@@ -484,7 +487,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         operation: 'node-move',
         nodeId: 'shared-node',
         position: { x: 200, y: 200 },
-        timestamp: Date.now() + 1 // 1ms later
+        timestamp: Date.now() + 1, // 1ms later
       }
 
       const conflictResult = await simulateCollaborativeConflict([operation1, operation2])
@@ -520,7 +523,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         await simulateNodeAddition({
           id: `memory-test-${i}`,
           type: 'agent',
-          position: { x: i * 50, y: i * 50 }
+          position: { x: i * 50, y: i * 50 },
         })
       }
 
@@ -533,7 +536,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         initialMemory,
         finalMemory,
         memoryIncrease,
-        threshold: TEST_CONFIG.performanceThresholds.memoryUsage
+        threshold: TEST_CONFIG.performanceThresholds.memoryUsage,
       })
     })
   })
@@ -544,15 +547,22 @@ describe('ReactFlow Preservation Test Suite', () => {
 
       // Perform multiple operations
       await simulateNodeAddition({ id: 'integrity-1', type: 'api', position: { x: 0, y: 0 } })
-      await simulateNodeAddition({ id: 'integrity-2', type: 'condition', position: { x: 200, y: 0 } })
+      await simulateNodeAddition({
+        id: 'integrity-2',
+        type: 'condition',
+        position: { x: 200, y: 0 },
+      })
       await simulateEdgeCreation({
         id: 'integrity-edge',
         source: 'integrity-1',
-        target: 'integrity-2'
+        target: 'integrity-2',
       })
 
       // Validate data integrity
-      const validation = await WorkflowPreservationAPI.validatePreservation(workflowId, mockWorkflow)
+      const validation = await WorkflowPreservationAPI.validatePreservation(
+        workflowId,
+        mockWorkflow
+      )
       expect(validation.success).toBe(true)
 
       // Verify no corruption occurred
@@ -593,7 +603,10 @@ describe('ReactFlow Preservation Test Suite', () => {
       expect(backToVisualResult.success).toBe(true)
 
       // Final validation
-      const finalValidation = await WorkflowPreservationAPI.validatePreservation(workflowId, mockWorkflow)
+      const finalValidation = await WorkflowPreservationAPI.validatePreservation(
+        workflowId,
+        mockWorkflow
+      )
       expect(finalValidation.success).toBe(true)
     })
 
@@ -618,13 +631,15 @@ describe('ReactFlow Preservation Test Suite', () => {
 
 // Helper functions for test simulations
 
-async function simulateNodeAddition(nodeData: any): Promise<{ success: boolean; nodeId?: string; nodeData?: any }> {
+async function simulateNodeAddition(
+  nodeData: any
+): Promise<{ success: boolean; nodeId?: string; nodeData?: any }> {
   // Simulate actual node addition logic
   logger.info('Simulating node addition', nodeData)
   return {
     success: true,
     nodeId: nodeData.id,
-    nodeData: { ...nodeData, parentId: nodeData.parentId }
+    nodeData: { ...nodeData, parentId: nodeData.parentId },
   }
 }
 
@@ -633,22 +648,32 @@ async function simulateNodeDeletion(nodeId: string): Promise<{ success: boolean 
   return { success: true }
 }
 
-async function simulateNodeDrag(element: HTMLElement, startPos: any, endPos: any): Promise<{ success: boolean; finalPosition: any }> {
+async function simulateNodeDrag(
+  element: HTMLElement,
+  startPos: any,
+  endPos: any
+): Promise<{ success: boolean; finalPosition: any }> {
   logger.info('Simulating node drag', { startPos, endPos })
   return { success: true, finalPosition: endPos }
 }
 
-async function simulateContainerAddition(containerData: any): Promise<{ success: boolean; containerId?: string }> {
+async function simulateContainerAddition(
+  containerData: any
+): Promise<{ success: boolean; containerId?: string }> {
   logger.info('Simulating container addition', containerData)
   return { success: true, containerId: containerData.id }
 }
 
-async function simulateEdgeCreation(edgeData: any): Promise<{ success: boolean; edgeId?: string; edgeData?: any }> {
+async function simulateEdgeCreation(
+  edgeData: any
+): Promise<{ success: boolean; edgeId?: string; edgeData?: any }> {
   logger.info('Simulating edge creation', edgeData)
   return { success: true, edgeId: edgeData.id, edgeData }
 }
 
-async function simulateEdgeSelection(edgeId: string): Promise<{ success: boolean; selectedEdgeId?: string }> {
+async function simulateEdgeSelection(
+  edgeId: string
+): Promise<{ success: boolean; selectedEdgeId?: string }> {
   logger.info('Simulating edge selection', { edgeId })
   return { success: true, selectedEdgeId: edgeId }
 }
@@ -658,12 +683,16 @@ async function simulateEdgeDeletion(edgeId: string): Promise<{ success: boolean 
   return { success: true }
 }
 
-async function simulateNodeSelection(nodeId: string): Promise<{ success: boolean; panelVisible: boolean }> {
+async function simulateNodeSelection(
+  nodeId: string
+): Promise<{ success: boolean; panelVisible: boolean }> {
   logger.info('Simulating node selection', { nodeId })
   return { success: true, panelVisible: true }
 }
 
-async function simulateToolbarBlockAddition(blockType: string): Promise<{ success: boolean; blockType: string }> {
+async function simulateToolbarBlockAddition(
+  blockType: string
+): Promise<{ success: boolean; blockType: string }> {
   logger.info('Simulating toolbar block addition', { blockType })
   return { success: true, blockType }
 }
@@ -673,31 +702,37 @@ async function simulateToolbarAutoLayout(): Promise<{ success: boolean }> {
   return { success: true }
 }
 
-async function simulateContextMenu(nodeId: string): Promise<{ success: boolean; menuVisible: boolean; menuOptions: string[] }> {
+async function simulateContextMenu(
+  nodeId: string
+): Promise<{ success: boolean; menuVisible: boolean; menuOptions: string[] }> {
   logger.info('Simulating context menu', { nodeId })
   return {
     success: true,
     menuVisible: true,
-    menuOptions: ['Delete', 'Duplicate', 'Copy', 'Properties']
+    menuOptions: ['Delete', 'Duplicate', 'Copy', 'Properties'],
   }
 }
 
-async function simulateCollaborativeOperation(operation: any): Promise<{ success: boolean; broadcast: boolean; subscribers: string[] }> {
+async function simulateCollaborativeOperation(
+  operation: any
+): Promise<{ success: boolean; broadcast: boolean; subscribers: string[] }> {
   logger.info('Simulating collaborative operation', operation)
   return {
     success: true,
     broadcast: true,
-    subscribers: ['user-1', 'user-2']
+    subscribers: ['user-1', 'user-2'],
   }
 }
 
-async function simulateCollaborativeConflict(operations: any[]): Promise<{ success: boolean; resolution: string; finalPosition: any }> {
+async function simulateCollaborativeConflict(
+  operations: any[]
+): Promise<{ success: boolean; resolution: string; finalPosition: any }> {
   logger.info('Simulating collaborative conflict', { operationsCount: operations.length })
   const lastOperation = operations[operations.length - 1]
   return {
     success: true,
     resolution: 'timestamp-based',
-    finalPosition: lastOperation.position
+    finalPosition: lastOperation.position,
   }
 }
 
@@ -717,7 +752,7 @@ async function createLargeWorkflow(nodeCount: number, edgeCount: number): Promis
       subBlocks: {},
       outputs: {},
       enabled: true,
-      data: {}
+      data: {},
     }
   }
 
@@ -727,23 +762,25 @@ async function createLargeWorkflow(nodeCount: number, edgeCount: number): Promis
       id: `edge-${i}`,
       source: `node-${i}`,
       target: `node-${i + 1}`,
-      type: 'workflowEdge'
+      type: 'workflowEdge',
     })
   }
 
   return { blocks, edges, loops: {}, parallels: {} } as WorkflowState
 }
 
-async function simulateLargeWorkflowRender(workflow: WorkflowState): Promise<{ success: boolean; nodesRendered: number; edgesRendered: number }> {
+async function simulateLargeWorkflowRender(
+  workflow: WorkflowState
+): Promise<{ success: boolean; nodesRendered: number; edgesRendered: number }> {
   logger.info('Simulating large workflow render', {
     nodeCount: Object.keys(workflow.blocks).length,
-    edgeCount: workflow.edges.length
+    edgeCount: workflow.edges.length,
   })
 
   return {
     success: true,
     nodesRendered: Object.keys(workflow.blocks).length,
-    edgesRendered: workflow.edges.length
+    edgesRendered: workflow.edges.length,
   }
 }
 
@@ -752,34 +789,47 @@ function getMemoryUsage(): number {
   return (performance as any).memory?.usedJSHeapSize || Math.random() * 10 * 1024 * 1024
 }
 
-async function simulateWorkflowExport(workflowId: string): Promise<{ success: boolean; data: any }> {
+async function simulateWorkflowExport(
+  workflowId: string
+): Promise<{ success: boolean; data: any }> {
   logger.info('Simulating workflow export', { workflowId })
   return {
     success: true,
     data: {
       blocks: {},
       edges: [],
-      metadata: { exportedAt: new Date().toISOString() }
-    }
+      metadata: { exportedAt: new Date().toISOString() },
+    },
   }
 }
 
-async function simulateWorkflowImport(data: any): Promise<{ success: boolean; workflowId: string }> {
+async function simulateWorkflowImport(
+  data: any
+): Promise<{ success: boolean; workflowId: string }> {
   logger.info('Simulating workflow import')
   return { success: true, workflowId: `imported-${Date.now()}` }
 }
 
-async function compareWorkflows(workflow1Id: string, workflow2Id: string): Promise<{ identical: boolean; differences?: string[] }> {
+async function compareWorkflows(
+  workflow1Id: string,
+  workflow2Id: string
+): Promise<{ identical: boolean; differences?: string[] }> {
   logger.info('Comparing workflows', { workflow1Id, workflow2Id })
   return { identical: true }
 }
 
-async function validateVisualEditorFunctionality(): Promise<{ success: boolean; interferenceDetected: boolean }> {
+async function validateVisualEditorFunctionality(): Promise<{
+  success: boolean
+  interferenceDetected: boolean
+}> {
   logger.info('Validating visual editor functionality')
   return { success: true, interferenceDetected: false }
 }
 
-async function validateConversationalInterface(): Promise<{ success: boolean; interferenceDetected: boolean }> {
+async function validateConversationalInterface(): Promise<{
+  success: boolean
+  interferenceDetected: boolean
+}> {
   logger.info('Validating conversational interface')
   return { success: true, interferenceDetected: false }
 }
