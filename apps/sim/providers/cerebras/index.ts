@@ -549,7 +549,7 @@ export const cerebrasProvider: ProviderConfig = {
 
       // Create a new error with timing information
       const enhancedError = new Error(error instanceof Error ? error.message : String(error))
-      // @ts-ignore - Adding timing property to the error
+      // @ts-expect-error - Adding timing property to the error
       enhancedError.timing = {
         startTime: providerStartTimeISO,
         endTime: providerEndTimeISO,

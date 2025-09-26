@@ -48,7 +48,6 @@ export class EnhancedAdapterRegistry extends EventEmitter {
   // Caching and optimization
   private readonly discoveryCache = new Map<string, DiscoveredTool[]>()
   private readonly executionCache = new Map<string, any>()
-  private readonly loadBalancer: LoadBalancer
 
   // Lifecycle management
   private isShuttingDown = false
@@ -998,7 +997,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
   }
 
   private getMemoryUsage(): number {
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    if (process?.memoryUsage) {
       return Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
     }
     return 0
@@ -1045,7 +1044,7 @@ class HealthMonitor {
 
   constructor(
     private readonly config: RegistryConfiguration,
-    private readonly registry: EnhancedAdapterRegistry
+    readonly _registry: EnhancedAdapterRegistry
   ) {}
 
   async initializeAdapter(entry: AdapterRegistryEntry): Promise<void> {
@@ -1201,7 +1200,7 @@ class PerformanceTracker {
 class FailoverManager {
   constructor(
     private readonly config: RegistryConfiguration,
-    private readonly registry: EnhancedAdapterRegistry
+    readonly _registry: EnhancedAdapterRegistry
   ) {}
 
   async executeWithFailover(
@@ -1341,7 +1340,7 @@ class RegistryMetrics {
   private cacheHits = 0
   private cacheMisses = 0
 
-  constructor(private readonly config: RegistryConfiguration) {}
+  constructor(readonly _config: RegistryConfiguration) {}
 
   recordCacheHit(adapterId: string): void {
     this.cacheHits++

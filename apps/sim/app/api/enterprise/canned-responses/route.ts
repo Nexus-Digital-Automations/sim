@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
     const language = searchParams.get('language') || undefined
     const tags = searchParams.get('tags')?.split(',') || undefined
     const limit = searchParams.get('limit')
-      ? Number.parseInt(searchParams.get('limit')!)
+      ? Number.parseInt(searchParams.get('limit')!, 10)
       : undefined
 
     // Create auth context

@@ -892,59 +892,6 @@ export class NaturalLanguageRegistryIntegration {
     )
   }
 
-  private async performSemanticMatchingForEntry(
-    entry: AdapterRegistryEntry,
-    searchQuery: string,
-    queryAnalysis: any,
-    userContext?: ExtendedUsageContext
-  ): Promise<SemanticSearchResult> {
-    const toolAnalysis = await this.nlpProcessor.analyzeToolComprehensively({
-      id: entry.id,
-      name: entry.simTool.name,
-      description: entry.config.description || '',
-      version: '1.0.0',
-      params: {},
-      output: {},
-    })
-
-    const conceptMatches = queryAnalysis.quickTags.filter((concept: any) =>
-      toolAnalysis.benefits.concat(toolAnalysis.limitations).includes(concept)
-    )
-
-    const semanticSimilarity = this.calculateSemanticSimilarity(
-      queryAnalysis.quickTags,
-      toolAnalysis.benefits.concat(toolAnalysis.limitations)
-    )
-
-    const contextualRelevance = userContext
-      ? await this.calculateContextualRelevance(entry, userContext)
-      : 0.5
-
-    const relevanceScore =
-      semanticSimilarity * 0.5 +
-      contextualRelevance * 0.3 +
-      (conceptMatches.length / Math.max(queryAnalysis.keyInformation.concepts.length, 1)) * 0.2
-
-    const adaptedContent = userContext?.userProfile
-      ? await this.generateAdaptationData(entry, userContext.userProfile)
-      : {}
-
-    return {
-      toolId: entry.id,
-      title: entry.config.displayName || entry.simTool.name,
-      description: toolAnalysis.overview,
-      relevanceScore,
-      conceptMatches,
-      semanticSimilarity,
-      contextualRelevance,
-      adaptedContent: {
-        roleBasedDescription: adaptedContent.roleSpecificGuidance,
-        skillLevelDescription: adaptedContent.skillLevelAdvice,
-        domainSpecificDescription: adaptedContent.domainContext,
-      },
-    }
-  }
-
   private async createDescriptionSchema(tool: any): Promise<EnhancedDescriptionSchema> {
     const analysis = await this.nlpProcessor.analyzeToolComprehensively({
       id: tool.id,
@@ -1087,54 +1034,6 @@ export class NaturalLanguageRegistryIntegration {
     if (tags.includes(text)) score += 10
 
     return score
-  }
-
-  private async calculateContextualRelevance(
-    entry: AdapterRegistryEntry,
-    context: ExtendedUsageContext
-  ): Promise<number> {
-    let relevance = 0.5 // Base relevance
-
-    // Role-based relevance
-    if (context.userProfile?.role) {
-      const roleRelevance = this.calculateRoleRelevance(entry, context.userProfile.role)
-      relevance += roleRelevance * 0.3
-    }
-
-    // Domain-based relevance
-    if ((context.userProfile as any)?.domain) {
-      const domainRelevance = this.calculateDomainRelevance(
-        entry,
-        (context.userProfile as any).domain
-      )
-      relevance += domainRelevance * 0.2
-    }
-
-    return Math.min(relevance, 1)
-  }
-
-  private calculateRoleRelevance(entry: AdapterRegistryEntry, role: string): number {
-    const roleMappings: Record<string, string[]> = {
-      developer: ['development', 'coding', 'technical', 'api'],
-      business_user: ['business', 'workflow', 'process', 'management'],
-      analyst: ['analysis', 'data', 'reporting', 'insights'],
-      admin: ['configuration', 'settings', 'management', 'system'],
-    }
-
-    const relevantTags = roleMappings[role] || []
-    const matches = entry.metadata.tags.filter((tag) => relevantTags.includes(tag.toLowerCase()))
-
-    return matches.length / Math.max(relevantTags.length, 1)
-  }
-
-  private calculateDomainRelevance(entry: AdapterRegistryEntry, domain: string): number {
-    const domainKeywords = domain.toLowerCase().split(/[^a-z]+/)
-    const entryText = [entry.simTool.name, entry.config.description || '', ...entry.metadata.tags]
-      .join(' ')
-      .toLowerCase()
-
-    const matches = domainKeywords.filter((keyword) => entryText.includes(keyword))
-    return matches.length / Math.max(domainKeywords.length, 1)
   }
 
   private extractCapabilities(entry: AdapterRegistryEntry): string[] {

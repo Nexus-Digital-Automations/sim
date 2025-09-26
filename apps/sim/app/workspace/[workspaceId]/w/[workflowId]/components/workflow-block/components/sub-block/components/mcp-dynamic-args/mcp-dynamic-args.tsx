@@ -214,7 +214,7 @@ export function McpDynamicArgs({
                 if (isNumeric && processedValue !== '') {
                   processedValue =
                     paramSchema.type === 'integer'
-                      ? Number.parseInt(processedValue)
+                      ? Number.parseInt(processedValue, 10)
                       : Number.parseFloat(processedValue)
 
                   if (Number.isNaN(processedValue)) {

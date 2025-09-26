@@ -346,7 +346,6 @@ export const useWorkflowDiffStore = create<WorkflowDiffState & WorkflowDiffActio
             get().clearDiff()
 
             // Fire-and-forget: persist to database and update copilot state in the background
-
             ;(async () => {
               try {
                 logger.info('Persisting accepted diff changes to database')

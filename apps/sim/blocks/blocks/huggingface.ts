@@ -100,7 +100,7 @@ export const HuggingFaceBlock: BlockConfig<HuggingFaceChatResponse> = {
           content: params.content,
           systemPrompt: params.systemPrompt,
           temperature: params.temperature ? Number.parseFloat(params.temperature) : undefined,
-          maxTokens: params.maxTokens ? Number.parseInt(params.maxTokens) : undefined,
+          maxTokens: params.maxTokens ? Number.parseInt(params.maxTokens, 10) : undefined,
           stream: false, // Always false
         }
 

@@ -84,7 +84,7 @@ const validateAndBuildNoteBody = (params: WealthboxWriteParams): Record<string, 
   if (params.contactId?.trim()) {
     body.linked_to = [
       {
-        id: Number.parseInt(params.contactId.trim()),
+        id: Number.parseInt(params.contactId.trim(), 10),
         type: 'Contact',
       },
     ]
@@ -197,7 +197,7 @@ const validateAndBuildTaskBody = (params: WealthboxWriteParams): WealthboxTaskRe
   if (contactId) {
     body.linked_to = [
       {
-        id: Number.parseInt(contactId),
+        id: Number.parseInt(contactId, 10),
         type: 'Contact',
       },
     ]

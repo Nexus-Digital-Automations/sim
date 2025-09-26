@@ -28,7 +28,7 @@ export class InputResolver {
     private workflow: SerializedWorkflow,
     private environmentVariables: Record<string, string>,
     private workflowVariables: Record<string, any> = {},
-    private loopManager?: LoopManager,
+    _loopManager?: LoopManager,
     public accessibleBlocksMap?: Map<string, Set<string>>
   ) {
     // Create maps for efficient lookups
@@ -1282,28 +1282,6 @@ export class InputResolver {
     }
 
     return [...new Set(names)] // Remove duplicates
-  }
-
-  /**
-   * Checks if a block reference could potentially be valid without throwing errors.
-   * Used to filter out non-block patterns like <test> from block reference resolution.
-   *
-   * @param blockRef - The block reference to check
-   * @param currentBlockId - ID of the current block
-   * @returns Whether this could be a valid block reference
-   */
-  private isAccessibleBlockReference(blockRef: string, currentBlockId: string): boolean {
-    // Special cases that are always allowed
-    const specialRefs = ['start', 'loop', 'parallel']
-    if (specialRefs.includes(blockRef.toLowerCase())) {
-      return true
-    }
-
-    // Get all accessible block names for this block
-    const accessibleNames = this.getAccessibleBlockNames(currentBlockId)
-
-    // Check if the reference matches any accessible block name
-    return accessibleNames.includes(blockRef) || accessibleNames.includes(blockRef.toLowerCase())
   }
 
   /**

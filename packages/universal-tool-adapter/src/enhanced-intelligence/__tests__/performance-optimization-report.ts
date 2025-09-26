@@ -1120,7 +1120,7 @@ class ModelOptimizer {
 
   private calculateTotalImplementationTime(): string {
     const totalWeeks = this.recommendations.reduce((sum, rec) => {
-      const weeks = Number.parseInt(rec.implementation.timeline.split(' ')[0])
+      const weeks = Number.parseInt(rec.implementation.timeline.split(' ')[0], 10)
       return sum + weeks
     }, 0)
 

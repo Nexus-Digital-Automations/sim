@@ -377,6 +377,7 @@ export class RecommendationAPI {
   private rateLimiter!: RateLimiter
   private circuitBreaker!: CircuitBreaker
   private abTesting!: ABTestingManager
+  private alertManager!: AlertManager
 
   // Request processing
   private requestQueue: Map<string, Promise<RecommendationAPIResponse>> = new Map()
@@ -384,7 +385,6 @@ export class RecommendationAPI {
 
   // Metrics and monitoring
   private metrics!: PerformanceMetrics
-  private alertManager!: AlertManager
 
   constructor(config: Partial<RecommendationAPIConfig> = {}) {
     this.config = {

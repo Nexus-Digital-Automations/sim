@@ -242,12 +242,6 @@ export class VisualToConversationalTranslationEngine {
   // Element type translators
   private readonly elementTranslators = new Map<VisualElementType, ElementTranslator>()
 
-  // Pattern recognizers
-  private readonly patternRecognizers: PatternRecognizer[] = []
-
-  // Conversation templates
-  private readonly conversationTemplates = new Map<string, ConversationTemplate>()
-
   // Translation cache for performance
   private readonly translationCache = new Map<string, TranslatedVisualElement>()
 

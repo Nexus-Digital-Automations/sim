@@ -164,8 +164,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
     const tags = searchParams.getAll('tags')
-    const limit = Number.parseInt(searchParams.get('limit') || '20')
-    const offset = Number.parseInt(searchParams.get('offset') || '0')
+    const limit = Number.parseInt(searchParams.get('limit') || '20', 10)
+    const offset = Number.parseInt(searchParams.get('offset') || '0', 10)
     const sortBy =
       (searchParams.get('sort_by') as 'name' | 'created_at' | 'updated_at' | 'usage_count') ||
       'created_at'

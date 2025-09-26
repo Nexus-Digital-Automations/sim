@@ -429,8 +429,6 @@ interface PerformanceReport {
 
 // Load testing utilities
 class LoadTestManager extends EventEmitter {
-  private activeTests: Map<string, Promise<any>> = new Map()
-
   async runConcurrentConversions(
     converter: WorkflowToJourneyConverter,
     contexts: ConversionContext[],

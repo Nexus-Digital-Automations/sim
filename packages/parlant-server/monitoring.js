@@ -88,7 +88,7 @@ export class ParlantMonitoringService {
         database: {
           connectionCount:
             connectionResult.status === 'fulfilled'
-              ? Number.parseInt(connectionResult.value[0]?.total_connections || '0')
+              ? Number.parseInt(connectionResult.value[0]?.total_connections || '0', 10)
               : 0,
           queryTime: {
             average:
@@ -100,11 +100,11 @@ export class ParlantMonitoringService {
           },
           activeQueries:
             connectionResult.status === 'fulfilled'
-              ? Number.parseInt(connectionResult.value[0]?.active_connections || '0')
+              ? Number.parseInt(connectionResult.value[0]?.active_connections || '0', 10)
               : 0,
           slowQueries:
             slowQueryResult.status === 'fulfilled'
-              ? Number.parseInt(slowQueryResult.value[0]?.slow_queries || '0')
+              ? Number.parseInt(slowQueryResult.value[0]?.slow_queries || '0', 10)
               : 0,
         },
         memory: {

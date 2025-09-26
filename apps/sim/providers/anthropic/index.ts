@@ -246,7 +246,7 @@ ${fieldDescriptions}
       model: request.model || 'claude-3-7-sonnet-20250219',
       messages,
       system: systemPrompt,
-      max_tokens: Number.parseInt(String(request.maxTokens)) || 1024,
+      max_tokens: Number.parseInt(String(request.maxTokens), 10) || 1024,
       temperature: Number.parseFloat(String(request.temperature ?? 0.7)),
     }
 
@@ -677,7 +677,7 @@ ${fieldDescriptions}
 
         // Create a new error with timing information
         const enhancedError = new Error(error instanceof Error ? error.message : String(error))
-        // @ts-ignore - Adding timing property to the error
+        // @ts-expect-error - Adding timing property to the error
         enhancedError.timing = {
           startTime: providerStartTimeISO,
           endTime: providerEndTimeISO,
@@ -1092,7 +1092,7 @@ ${fieldDescriptions}
 
       // Create a new error with timing information
       const enhancedError = new Error(error instanceof Error ? error.message : String(error))
-      // @ts-ignore - Adding timing property to the error
+      // @ts-expect-error - Adding timing property to the error
       enhancedError.timing = {
         startTime: providerStartTimeISO,
         endTime: providerEndTimeISO,

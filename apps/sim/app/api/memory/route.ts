@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const workflowId = url.searchParams.get('workflowId')
     const searchQuery = url.searchParams.get('query')
     const type = url.searchParams.get('type')
-    const limit = Number.parseInt(url.searchParams.get('limit') || '50')
+    const limit = Number.parseInt(url.searchParams.get('limit') || '50', 10)
 
     // Require workflowId for security
     if (!workflowId) {

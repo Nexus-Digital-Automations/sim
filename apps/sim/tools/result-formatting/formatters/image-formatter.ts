@@ -525,7 +525,7 @@ export class ImageFormatter implements ResultFormatter {
       if (typeof obj[field] === 'string') {
         const match = obj[field].match(/(\d+)x(\d+)/i)
         if (match) {
-          return { width: Number.parseInt(match[1]), height: Number.parseInt(match[2]) }
+          return { width: Number.parseInt(match[1], 10), height: Number.parseInt(match[2], 10) }
         }
       }
     }

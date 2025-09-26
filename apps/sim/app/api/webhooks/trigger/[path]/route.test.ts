@@ -214,7 +214,7 @@ describe('Webhook Trigger API Route', () => {
       },
     ])
 
-    // @ts-ignore - mocking the query chain
+    // @ts-expect-error - mocking the query chain
     db.select.mockReturnValue({
       from: vi.fn().mockReturnValue({
         where: whereMock,
@@ -256,7 +256,7 @@ describe('Webhook Trigger API Route', () => {
     const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock })
     const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock })
 
-    // @ts-ignore - mocking the query chain
+    // @ts-expect-error - mocking the query chain
     db.select.mockReturnValue({ from: fromMock })
 
     // Create a mock request
@@ -307,7 +307,7 @@ describe('Webhook Trigger API Route', () => {
       const subscriptionWhereMock = vi.fn().mockReturnValue({ limit: subscriptionLimitMock })
       const subscriptionFromMock = vi.fn().mockReturnValue({ where: subscriptionWhereMock })
 
-      // @ts-ignore - mocking the query chain
+      // @ts-expect-error - mocking the query chain
       db.select.mockImplementation((columns: any) => {
         if (columns.plan) {
           return { from: subscriptionFromMock }

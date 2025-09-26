@@ -68,7 +68,7 @@ export const searchVectorTool: ToolConfig<QdrantSearchParams, QdrantResponse> = 
     }),
     body: (params) => ({
       query: params.vector,
-      limit: params.limit ? Number.parseInt(params.limit.toString()) : 10,
+      limit: params.limit ? Number.parseInt(params.limit.toString(), 10) : 10,
       filter: params.filter,
       with_payload: params.with_payload,
       with_vector: params.with_vector,

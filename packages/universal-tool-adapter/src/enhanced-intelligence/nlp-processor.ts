@@ -1086,7 +1086,7 @@ class SemanticAnalyzer {
 }
 
 class ContentGenerator {
-  constructor(private settings: NLPSettings) {}
+  constructor(_settings: NLPSettings) {}
 
   async generateOverview(
     toolConfig: ToolConfig,
@@ -1122,7 +1122,7 @@ class ContentGenerator {
 }
 
 class QualityAssessor {
-  constructor(private settings: NLPSettings) {}
+  constructor(_settings: NLPSettings) {}
 
   async assessContentQuality(content: string): Promise<number> {
     // Implementation for content quality assessment

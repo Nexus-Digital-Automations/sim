@@ -137,7 +137,7 @@ export const useVariablesStore = create<VariablesStore>()(
         const existingNumbers = workflowVariables
           .map((v) => {
             const match = v.name.match(/^variable(\d+)$/)
-            return match ? Number.parseInt(match[1]) : 0
+            return match ? Number.parseInt(match[1], 10) : 0
           })
           .filter((n) => !Number.isNaN(n))
 
@@ -233,7 +233,7 @@ export const useVariablesStore = create<VariablesStore>()(
                   ([subBlockId, value]) => {
                     const oldVarName = oldVariableName.replace(/\s+/g, '').toLowerCase()
                     const newVarName = uniqueName.replace(/\s+/g, '').toLowerCase()
-                    const regex = new RegExp(`<variable\.${oldVarName}>`, 'gi')
+                    const regex = new RegExp(`<variable.${oldVarName}>`, 'gi')
 
                     // Use a recursive function to handle all object types
                     updatedWorkflowValues[blockId][subBlockId] = updateReferences(

@@ -27,7 +27,6 @@ export class AdapterTestFramework extends EventEmitter {
   private readonly testRunner: TestRunner
   private readonly mockGenerator: MockGenerator
   private readonly fixtureManager: FixtureManager
-  private readonly assertionEngine: AssertionEngine
   private readonly performanceTester: PerformanceTester
 
   // Test management
@@ -991,10 +990,7 @@ export class AdapterTestFramework extends EventEmitter {
 // Supporting classes (simplified implementations)
 
 class TestRunner {
-  constructor(
-    private config: TestFrameworkConfig,
-    private framework: AdapterTestFramework
-  ) {}
+  constructor(_config: TestFrameworkConfig, _framework: AdapterTestFramework) {}
 
   async runSuite(suite: TestSuite): Promise<TestSuiteResult> {
     const startTime = new Date()
@@ -1057,10 +1053,7 @@ class TestRunner {
 }
 
 class MockGenerator {
-  constructor(
-    private config: TestFrameworkConfig,
-    private framework: AdapterTestFramework
-  ) {}
+  constructor(_config: TestFrameworkConfig, _framework: AdapterTestFramework) {}
 
   async generateMockData(
     adapter: BaseAdapter,
@@ -1083,7 +1076,7 @@ class MockGenerator {
 }
 
 class FixtureManager {
-  constructor(private config: TestFrameworkConfig) {}
+  constructor(_config: TestFrameworkConfig) {}
 
   async createFromExecution(
     adapterId: string,
@@ -1108,7 +1101,7 @@ class FixtureManager {
 class AssertionEngine {
   private assertions: AssertionResult[] = []
 
-  constructor(private config: TestFrameworkConfig) {}
+  constructor(_config: TestFrameworkConfig) {}
 
   assert(condition: boolean, message: string): void {
     this.assertions.push({
@@ -1128,10 +1121,7 @@ class AssertionEngine {
 }
 
 class PerformanceTester {
-  constructor(
-    private config: TestFrameworkConfig,
-    private framework: AdapterTestFramework
-  ) {}
+  constructor(_config: TestFrameworkConfig, _framework: AdapterTestFramework) {}
 
   async benchmark(
     adapter: BaseAdapter,

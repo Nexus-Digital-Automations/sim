@@ -959,14 +959,14 @@ interface CircuitBreakerStatus {
 class CircuitBreaker {
   private state: 'closed' | 'open' | 'half-open' = 'closed'
   private failures = 0
-  private lastFailureTime?: Date
   private nextAttemptTime?: Date
   private halfOpenRequests = 0
+  private lastFailureTime?: Date
 
   constructor(
     private componentId: string,
     private config: HealthCheckConfig['failover']['circuitBreakerConfig'],
-    private healthSystem: AdvancedHealthCheckSystem
+    _healthSystem: AdvancedHealthCheckSystem
   ) {}
 
   onSuccess(): void {

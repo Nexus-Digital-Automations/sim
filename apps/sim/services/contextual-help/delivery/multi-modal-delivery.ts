@@ -978,7 +978,6 @@ class NotificationDeliveryAdapter implements DeliveryAdapter {
 // Supporting engines
 class VoiceEngine {
   private synthesis: SpeechSynthesis | null = null
-  private currentUtterance: SpeechSynthesisUtterance | null = null
 
   async initialize(): Promise<void> {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {

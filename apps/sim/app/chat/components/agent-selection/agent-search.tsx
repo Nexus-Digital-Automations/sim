@@ -427,7 +427,7 @@ export function AgentSearch({ agents, onFilter, onSearch, className = '' }: Agen
               <Select
                 value={filters.minRating.toString()}
                 onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, minRating: Number.parseInt(value) }))
+                  setFilters((prev) => ({ ...prev, minRating: Number.parseInt(value, 10) }))
                 }
               >
                 <SelectTrigger>

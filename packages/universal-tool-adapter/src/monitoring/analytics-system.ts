@@ -942,7 +942,7 @@ class AlertManager {
   private rules: AlertRule[] = []
 
   constructor(
-    private config: AnalyticsConfig,
+    _config: AnalyticsConfig,
     private analytics: AnalyticsSystem
   ) {}
 
@@ -992,10 +992,7 @@ class AlertManager {
 }
 
 class HealthChecker {
-  constructor(
-    private config: AnalyticsConfig,
-    private analytics: AnalyticsSystem
-  ) {}
+  constructor(_config: AnalyticsConfig, _analytics: AnalyticsSystem) {}
 
   performSystemCheck(): void {
     // System health check logic
@@ -1041,10 +1038,7 @@ class AggregationEngine {
 }
 
 class ReportGenerator {
-  constructor(
-    private config: AnalyticsConfig,
-    private analytics: AnalyticsSystem
-  ) {}
+  constructor(_config: AnalyticsConfig, _analytics: AnalyticsSystem) {}
 
   async generate(options: ReportOptions): Promise<AnalyticsReport> {
     // Report generation logic

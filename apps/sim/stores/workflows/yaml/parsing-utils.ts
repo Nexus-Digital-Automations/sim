@@ -157,8 +157,8 @@ export function generateBlockConnections(
   if (!hasElse && elseIfKeys.length > 0) {
     // Find the highest numbered else-if and convert it to else
     const highestElseIf = elseIfKeys.sort((a, b) => {
-      const aNum = a === 'else-if' ? 1 : Number.parseInt(a.replace('else-if-', ''))
-      const bNum = b === 'else-if' ? 1 : Number.parseInt(b.replace('else-if-', ''))
+      const aNum = a === 'else-if' ? 1 : Number.parseInt(a.replace('else-if-', ''), 10)
+      const bNum = b === 'else-if' ? 1 : Number.parseInt(b.replace('else-if-', ''), 10)
       return bNum - aNum
     })[0]
 

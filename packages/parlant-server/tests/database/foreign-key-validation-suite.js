@@ -396,17 +396,17 @@ class ForeignKeyValidationSuite {
           `
 
           const orphanedResult = await client.query(orphanedQuery)
-          const orphanedCount = Number.parseInt(orphanedResult.rows[0].orphaned_count)
+          const orphanedCount = Number.parseInt(orphanedResult.rows[0].orphaned_count, 10)
 
           // Get total child records
           const totalChildQuery = `SELECT COUNT(*) as total FROM "${fk.table_name}" WHERE "${fk.column_name}" IS NOT NULL`
           const totalChildResult = await client.query(totalChildQuery)
-          const totalChildRecords = Number.parseInt(totalChildResult.rows[0].total)
+          const totalChildRecords = Number.parseInt(totalChildResult.rows[0].total, 10)
 
           // Get parent record count
           const parentCountQuery = `SELECT COUNT(*) as total FROM "${fk.referenced_table}"`
           const parentCountResult = await client.query(parentCountQuery)
-          const parentRecords = Number.parseInt(parentCountResult.rows[0].total)
+          const parentRecords = Number.parseInt(parentCountResult.rows[0].total, 10)
 
           const executionTime = Date.now() - startTime
           const integrityValid = orphanedCount === 0
@@ -935,7 +935,10 @@ class ForeignKeyValidationSuite {
         foreignKey: `${fk.table_name}.${fk.column_name} -> ${fk.referenced_table}.${fk.referenced_column}`,
         success: !hasOrphans,
         orphanedRecords,
-        orphanedCount: orphanedRecords.reduce((sum, row) => sum + Number.parseInt(row.count), 0),
+        orphanedCount: orphanedRecords.reduce(
+          (sum, row) => sum + Number.parseInt(row.count, 10),
+          0
+        ),
       }
     } catch (error) {
       return {

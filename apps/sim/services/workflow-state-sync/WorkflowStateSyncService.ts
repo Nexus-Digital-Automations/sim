@@ -18,7 +18,6 @@ import { createLogger } from '@/lib/logs/console/logger'
 import type {
   ConflictResolutionStrategy,
   ModificationContext,
-  PendingChange,
   StateChangeEvent,
   SyncConflict,
   SyncMetrics,
@@ -76,7 +75,6 @@ export class WorkflowStateSyncService {
   private syncState: SyncState = 'idle'
   private subscribers: Map<string, (event: StateChangeEvent) => void> = new Map()
   private eventQueue: StateChangeEvent[] = []
-  private pendingChanges: PendingChange[] = []
   private conflicts: SyncConflict[] = []
   private syncMetrics: SyncMetrics = {
     totalSyncs: 0,

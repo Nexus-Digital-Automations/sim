@@ -232,7 +232,6 @@ export interface ContentModification {
  */
 export class ContextualAdaptationEngine {
   private adaptationStrategies: Map<string, AdaptationStrategy> = new Map()
-  private userProfiles: Map<string, ExtendedUserProfile> = new Map()
   private contextAnalyzer: ContextAnalyzer
   private adaptationLearner: AdaptationLearner
   private qualityMonitor: AdaptationQualityMonitor

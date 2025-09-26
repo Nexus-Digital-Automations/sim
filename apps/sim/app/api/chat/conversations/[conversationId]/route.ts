@@ -52,8 +52,8 @@ export async function GET(
     // Parse query parameters for messages
     const searchParams = request.nextUrl.searchParams
     const includeMessages = searchParams.get('include_messages') !== 'false'
-    const page = Number.parseInt(searchParams.get('page') || '1')
-    const limit = Math.min(Number.parseInt(searchParams.get('limit') || '50'), 100)
+    const page = Number.parseInt(searchParams.get('page') || '1', 10)
+    const limit = Math.min(Number.parseInt(searchParams.get('limit') || '50', 10), 100)
 
     let messages = null
     if (includeMessages) {

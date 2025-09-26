@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { getVideoUrl } from '@/lib/utils'
 
 interface LightboxProps {
@@ -52,12 +53,16 @@ export function Lightbox({ isOpen, onClose, src, alt, type }: LightboxProps) {
     >
       <div className='relative max-h-full max-w-full overflow-hidden rounded-xl shadow-2xl'>
         {type === 'image' ? (
-          <img
-            src={src}
-            alt={alt}
-            className='max-h-[calc(100vh-6rem)] max-w-[calc(100vw-6rem)] rounded-xl object-contain'
-            loading='lazy'
-          />
+          <div className='relative max-h-[calc(100vh-6rem)] max-w-[calc(100vw-6rem)]'>
+            <Image
+              src={src}
+              alt={alt}
+              fill
+              className='rounded-xl object-contain'
+              priority
+              sizes='(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 80vw'
+            />
+          </div>
         ) : (
           <video
             src={getVideoUrl(src)}

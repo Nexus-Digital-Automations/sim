@@ -350,7 +350,6 @@ describe('Agent Management Integration', () => {
       const user = userEvent.setup()
 
       // Mock network error
-
       ;(global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<AgentsPage params={{ workspaceId: 'test-workspace' }} />)

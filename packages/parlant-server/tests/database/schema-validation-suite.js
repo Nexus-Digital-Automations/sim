@@ -446,8 +446,8 @@ class SchemaValidationSuite {
       const childCount = await client.query(`SELECT COUNT(*) as count FROM "${fkConfig.table}"`)
 
       if (
-        Number.parseInt(parentCount.rows[0].count) === 0 ||
-        Number.parseInt(childCount.rows[0].count) === 0
+        Number.parseInt(parentCount.rows[0].count, 10) === 0 ||
+        Number.parseInt(childCount.rows[0].count, 10) === 0
       ) {
         return { success: true, note: 'No data to test referential integrity' }
       }
@@ -460,12 +460,12 @@ class SchemaValidationSuite {
         WHERE c."${fkConfig.column}" IS NOT NULL AND p."${fkConfig.referencedColumn}" IS NULL
       `)
 
-      const orphanedCount = Number.parseInt(orphanedRecords.rows[0].count)
+      const orphanedCount = Number.parseInt(orphanedRecords.rows[0].count, 10)
 
       return {
         success: orphanedCount === 0,
-        parentRecords: Number.parseInt(parentCount.rows[0].count),
-        childRecords: Number.parseInt(childCount.rows[0].count),
+        parentRecords: Number.parseInt(parentCount.rows[0].count, 10),
+        childRecords: Number.parseInt(childCount.rows[0].count, 10),
         orphanedRecords: orphanedCount,
       }
     } catch (error) {
@@ -733,8 +733,8 @@ class SchemaValidationSuite {
         [workspace2Id]
       )
 
-      const ws1Count = Number.parseInt(ws1Agents.rows[0].count)
-      const ws2Count = Number.parseInt(ws2Agents.rows[0].count)
+      const ws1Count = Number.parseInt(ws1Agents.rows[0].count, 10)
+      const ws2Count = Number.parseInt(ws2Agents.rows[0].count, 10)
 
       const success = ws1Count >= 1 && ws2Count >= 1
 
@@ -869,7 +869,7 @@ class SchemaValidationSuite {
     try {
       // Check if the table has data for performance testing
       const rowCount = await client.query(`SELECT COUNT(*) as count FROM "${indexConfig.table}"`)
-      const count = Number.parseInt(rowCount.rows[0].count)
+      const count = Number.parseInt(rowCount.rows[0].count, 10)
 
       if (count === 0) {
         return { success: true, note: 'No data to test index performance' }

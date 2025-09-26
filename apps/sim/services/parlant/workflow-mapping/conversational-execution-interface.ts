@@ -88,7 +88,6 @@ interface ContextualHelp {
  */
 export class ConversationalExecutionInterface {
   private communicationService: AgentCommunicationService
-  private executionEngine: JourneyExecutionEngine
   private activeContexts = new Map<string, ConversationContext>()
   private nlProcessor: NaturalLanguageProcessor
   private helpSystem: ContextualHelpSystem

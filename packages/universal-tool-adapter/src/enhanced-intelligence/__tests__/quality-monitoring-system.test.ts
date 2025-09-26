@@ -10,20 +10,15 @@
  */
 
 import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
-import {
-  createEnhancedToolIntelligenceEngine,
-  type EnhancedToolIntelligenceEngine,
-} from '../tool-intelligence-engine'
+import { createEnhancedToolIntelligenceEngine } from '../tool-intelligence-engine'
 
 // =============================================================================
 // Quality Monitoring System
 // =============================================================================
 
 class QualityMonitoringSystem {
-  private engine: EnhancedToolIntelligenceEngine
   private metricsCollector: MetricsCollector
   private qualityAnalyzer: QualityAnalyzer
-  private alertingSystem: AlertingSystem
   private dashboardGenerator: DashboardGenerator
   private qualityThresholds: QualityThresholds
 

@@ -740,7 +740,7 @@ class HelpQueryClassifier {
 }
 
 class HelpResponseGenerator {
-  constructor(private knowledgeBase: HelpKnowledgeBase) {}
+  constructor(_knowledgeBase: HelpKnowledgeBase) {}
 
   async generateResponse(
     query: HelpQuery,

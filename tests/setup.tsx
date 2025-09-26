@@ -218,7 +218,6 @@ beforeEach(() => {
   localStorageMock.clear()
 
   // Reset fetch mock
-
   ;(global.fetch as jest.Mock).mockClear()
 })
 

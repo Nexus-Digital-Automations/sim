@@ -564,7 +564,7 @@ describe('Parlant Database Integration Tests', () => {
         [testAgentId]
       )
 
-      expect(Number.parseInt(sessionCount.rows[0].count)).toBe(5)
+      expect(Number.parseInt(sessionCount.rows[0].count, 10)).toBe(5)
       console.log('✅ Concurrent session creation verified')
     })
 
@@ -626,7 +626,7 @@ describe('Parlant Database Integration Tests', () => {
         [testUser.id]
       )
 
-      expect(Number.parseInt(workspaceQuery.rows[0].count)).toBeGreaterThanOrEqual(0)
+      expect(Number.parseInt(workspaceQuery.rows[0].count, 10)).toBeGreaterThanOrEqual(0)
 
       // Cleanup
       await dbPool.query('DELETE FROM "user" WHERE id = $1', [testUser.id])
@@ -690,7 +690,7 @@ describe('Parlant Database Integration Tests', () => {
         [workspace1Id, user2Id]
       )
 
-      expect(Number.parseInt(crossAccessQuery.rows[0].count)).toBe(0)
+      expect(Number.parseInt(crossAccessQuery.rows[0].count, 10)).toBe(0)
 
       // Cleanup
       await dbPool.query('DELETE FROM workspace WHERE id IN ($1, $2)', [workspace1Id, workspace2Id])

@@ -86,10 +86,10 @@ export class ParlantIntegrationHealthMonitor {
         workflow: tableChecks[2].status === 'fulfilled',
         subscription:
           tableChecks[3].status === 'fulfilled' &&
-          Number.parseInt((tableChecks[3].value as any)[0]?.count || '0') > 0,
+          Number.parseInt((tableChecks[3].value as any)[0]?.count || '0', 10) > 0,
         session:
           tableChecks[4].status === 'fulfilled' &&
-          Number.parseInt((tableChecks[4].value as any)[0]?.count || '0') > 0,
+          Number.parseInt((tableChecks[4].value as any)[0]?.count || '0', 10) > 0,
       }
 
       // Determine status - core tables must be accessible
@@ -124,15 +124,15 @@ export class ParlantIntegrationHealthMonitor {
           accessValidation: {
             userTableRecords:
               tableChecks[0].status === 'fulfilled'
-                ? Number.parseInt((tableChecks[0].value as any)[0]?.count || '0')
+                ? Number.parseInt((tableChecks[0].value as any)[0]?.count || '0', 10)
                 : 0,
             workspaceTableRecords:
               tableChecks[1].status === 'fulfilled'
-                ? Number.parseInt((tableChecks[1].value as any)[0]?.count || '0')
+                ? Number.parseInt((tableChecks[1].value as any)[0]?.count || '0', 10)
                 : 0,
             workflowTableRecords:
               tableChecks[2].status === 'fulfilled'
-                ? Number.parseInt((tableChecks[2].value as any)[0]?.count || '0')
+                ? Number.parseInt((tableChecks[2].value as any)[0]?.count || '0', 10)
                 : 0,
           },
         },
@@ -214,7 +214,7 @@ export class ParlantIntegrationHealthMonitor {
 
       const foreignKeyCount =
         parlantTableChecks[1].status === 'fulfilled'
-          ? Number.parseInt((parlantTableChecks[1].value as any)[0]?.count || '0')
+          ? Number.parseInt((parlantTableChecks[1].value as any)[0]?.count || '0', 10)
           : 0
 
       // Expected Parlant tables

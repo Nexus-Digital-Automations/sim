@@ -428,7 +428,10 @@ export function CreateAgentModal({
                     type='number'
                     value={config.max_turns}
                     onChange={(e) =>
-                      setConfig((prev) => ({ ...prev, max_turns: Number.parseInt(e.target.value) }))
+                      setConfig((prev) => ({
+                        ...prev,
+                        max_turns: Number.parseInt(e.target.value, 10),
+                      }))
                     }
                     min={1}
                     max={200}

@@ -83,7 +83,7 @@ export function KnowledgeBaseTags({ knowledgeBaseId }: KnowledgeBaseTagsProps) {
   // Get color for a tag based on its slot
   const getTagColor = (slot: string) => {
     const slotMatch = slot.match(/tag(\d+)/)
-    const slotNumber = slotMatch ? Number.parseInt(slotMatch[1]) - 1 : 0
+    const slotNumber = slotMatch ? Number.parseInt(slotMatch[1], 10) - 1 : 0
     return TAG_SLOT_COLORS[slotNumber % TAG_SLOT_COLORS.length]
   }
 

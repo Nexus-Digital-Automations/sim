@@ -200,7 +200,6 @@ export class ErrorAnalyticsService extends EventEmitter {
   private errorPatterns: ErrorPattern[] = []
   private analysisCache = new Map<string, any>()
   private mlModels = new Map<string, MLModel>()
-  private correlationMatrix = new Map<string, Map<string, number>>()
 
   constructor() {
     super()
@@ -953,7 +952,7 @@ interface MLModel {
  * Simple linear regression model
  */
 class LinearRegressionModel implements MLModel {
-  constructor(private metric: string) {}
+  constructor(_metric: string) {}
 
   async predict(lookAheadHours: number): Promise<{ value: number; confidence: number }> {
     // Simplified prediction

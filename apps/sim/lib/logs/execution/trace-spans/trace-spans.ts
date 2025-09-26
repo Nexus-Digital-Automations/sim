@@ -84,7 +84,6 @@ export function buildTraceSpans(result: ExecutionResult): {
 
       // Store provider timing as metadata instead of creating child spans
       // This keeps the UI cleaner while preserving timing information
-
       ;(span as any).providerTiming = {
         duration: providerTiming.duration,
         startTime: providerTiming.startTime,

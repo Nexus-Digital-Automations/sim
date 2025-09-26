@@ -815,7 +815,7 @@ const optimizedConfig = {
 
   private collectSystemMetrics(): void {
     // Collect resource metrics
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    if (process?.memoryUsage) {
       const memUsage = process.memoryUsage()
       const memoryMB = Math.round(memUsage.heapUsed / 1024 / 1024)
 

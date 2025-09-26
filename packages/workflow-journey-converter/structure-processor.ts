@@ -267,8 +267,6 @@ export class GraphAnalyzer {
  * Execution path analyzer for complex workflow patterns
  */
 export class ExecutionPathAnalyzer {
-  private context: ConversionContext
-
   constructor(context: ConversionContext) {
     this.context = context
   }
@@ -567,8 +565,6 @@ export class ExecutionPathAnalyzer {
  * Parallel execution analyzer for handling concurrent workflow sections
  */
 export class ParallelExecutionAnalyzer {
-  private context: ConversionContext
-
   constructor(context: ConversionContext) {
     this.context = context
   }
@@ -936,8 +932,6 @@ export class ParallelExecutionAnalyzer {
  * Loop structure analyzer for handling iterative workflow patterns
  */
 export class LoopStructureAnalyzer {
-  private context: ConversionContext
-
   constructor(context: ConversionContext) {
     this.context = context
   }
@@ -1238,7 +1232,6 @@ export class LoopStructureAnalyzer {
  */
 export class WorkflowStructureProcessor {
   private context: ConversionContext
-  private graphAnalyzer: GraphAnalyzer
   private pathAnalyzer: ExecutionPathAnalyzer
   private parallelAnalyzer: ParallelExecutionAnalyzer
   private loopAnalyzer: LoopStructureAnalyzer

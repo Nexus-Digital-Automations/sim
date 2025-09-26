@@ -451,7 +451,7 @@ export class SystemMetricsCollector {
             database: {
               connections:
                 dbStats.status === 'fulfilled'
-                  ? Number.parseInt((dbStats.value[0] as any)?.total_connections || '0')
+                  ? Number.parseInt((dbStats.value[0] as any)?.total_connections || '0', 10)
                   : 0,
               queryTime: 0, // TODO: Get from monitoring system
             },

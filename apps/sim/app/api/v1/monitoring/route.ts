@@ -23,8 +23,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const url = new URL(request.url)
     const view = url.searchParams.get('view') // 'dashboard', 'system', 'agents', 'usage', 'alerts'
-    const timeWindow = Number.parseInt(url.searchParams.get('timeWindow') || '60') // minutes for agent metrics
-    const period = Number.parseInt(url.searchParams.get('period') || '24') // hours for usage metrics
+    const timeWindow = Number.parseInt(url.searchParams.get('timeWindow') || '60', 10) // minutes for agent metrics
+    const period = Number.parseInt(url.searchParams.get('period') || '24', 10) // hours for usage metrics
     const agentId = url.searchParams.get('agentId')
 
     logger.info('Monitoring request received', {

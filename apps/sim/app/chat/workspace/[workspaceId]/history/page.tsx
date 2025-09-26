@@ -45,7 +45,7 @@ export default async function ChatHistoryPage({ params, searchParams }: ChatHist
         workspaceId={workspaceId}
         userId={session.user.id}
         agentFilter={agentFilter}
-        currentPage={Number.parseInt(page)}
+        currentPage={Number.parseInt(page, 10)}
       />
     </div>
   )

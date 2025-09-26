@@ -53,8 +53,8 @@ export async function GET(
     // Parse query parameters
     const searchParams = req.nextUrl.searchParams
     const includeMessages = searchParams.get('includeMessages') !== 'false'
-    const messageLimit = Number.parseInt(searchParams.get('messageLimit') || '50')
-    const messageOffset = Number.parseInt(searchParams.get('messageOffset') || '0')
+    const messageLimit = Number.parseInt(searchParams.get('messageLimit') || '50', 10)
+    const messageOffset = Number.parseInt(searchParams.get('messageOffset') || '0', 10)
 
     try {
       // Get conversation from Parlant service

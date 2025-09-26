@@ -23,7 +23,6 @@ const logger = createLogger('ConversationalWorkflowTest')
  * Integration test suite
  */
 export class ConversationalWorkflowTestSuite {
-  private service: ConversationalWorkflowService
   private mapper: WorkflowJourneyMapper
   private nlpProcessor: NaturalLanguageProcessor
   private stateManager: RealtimeStateManager

@@ -232,7 +232,7 @@ export const JourneyTransitionEdge = memo<JourneyTransitionEdgeProps>(
                                   onValueChange={(value) =>
                                     setEditData({
                                       ...editData,
-                                      priority: Number.parseInt(value),
+                                      priority: Number.parseInt(value, 10),
                                     })
                                   }
                                 >
@@ -336,7 +336,7 @@ export const JourneyTransitionEdge = memo<JourneyTransitionEdgeProps>(
                                       ...editData,
                                       style: {
                                         ...editData.style,
-                                        strokeWidth: Number.parseInt(value),
+                                        strokeWidth: Number.parseInt(value, 10),
                                       },
                                     })
                                   }

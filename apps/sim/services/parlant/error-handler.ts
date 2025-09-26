@@ -216,10 +216,10 @@ export class ParlantErrorHandler {
     // Rate limit errors
     if (status === 429) {
       const rateLimitInfo: RateLimitInfo = {
-        limit: Number.parseInt(response.headers.get('X-RateLimit-Limit') || '0'),
-        remaining: Number.parseInt(response.headers.get('X-RateLimit-Remaining') || '0'),
+        limit: Number.parseInt(response.headers.get('X-RateLimit-Limit') || '0', 10),
+        remaining: Number.parseInt(response.headers.get('X-RateLimit-Remaining') || '0', 10),
         reset_at: response.headers.get('X-RateLimit-Reset') || new Date().toISOString(),
-        retry_after: Number.parseInt(response.headers.get('Retry-After') || '0'),
+        retry_after: Number.parseInt(response.headers.get('Retry-After') || '0', 10),
       }
 
       return new ParlantRateLimitError(

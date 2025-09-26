@@ -547,9 +547,6 @@ describe('User Experience Metrics Validation', () => {
  * User Experience Metrics Collector Class
  */
 class UserExperienceMetricsCollector {
-  private sessions = new Map<string, UserExperienceTestSession>()
-  private metricsHistory: UserExperienceMetrics[] = []
-
   collectMetrics(session: UserExperienceTestSession): UserExperienceMetrics {
     // Implementation would collect real metrics
     return session.metrics as UserExperienceMetrics

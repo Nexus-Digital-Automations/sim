@@ -437,7 +437,7 @@ export const JourneyStateNode = memo<JourneyStateNodeProps>(
                                   ...editData,
                                   metadata: {
                                     ...editData.metadata,
-                                    priority: Number.parseInt(value),
+                                    priority: Number.parseInt(value, 10),
                                   },
                                 })
                               }

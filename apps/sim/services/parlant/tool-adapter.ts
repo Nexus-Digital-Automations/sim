@@ -361,7 +361,7 @@ export class UniversalToolAdapter {
 export class ToolIntelligenceEngine {
   constructor(
     private registry: SimToolRegistry,
-    private adapter: UniversalToolAdapter
+    _adapter: UniversalToolAdapter
   ) {}
 
   /**

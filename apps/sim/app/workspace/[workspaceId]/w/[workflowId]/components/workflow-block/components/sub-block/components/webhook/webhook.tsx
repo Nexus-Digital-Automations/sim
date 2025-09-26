@@ -489,7 +489,6 @@ export function WebhookConfig({
       // Delete existing webhook AFTER clearing the path to prevent race condition
       // The webhook check useEffect won't restore the path if we clear it first
       // Execute deletion asynchronously but don't block the UI
-
       ;(async () => {
         await deleteExistingWebhook()
       })()

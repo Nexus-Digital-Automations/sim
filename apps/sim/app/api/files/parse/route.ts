@@ -228,7 +228,7 @@ async function handleExternalUrl(url: string, fileType?: string): Promise<ParseR
     }
 
     const contentLength = response.headers.get('content-length')
-    if (contentLength && Number.parseInt(contentLength) > MAX_DOWNLOAD_SIZE_BYTES) {
+    if (contentLength && Number.parseInt(contentLength, 10) > MAX_DOWNLOAD_SIZE_BYTES) {
       throw new Error(`File too large: ${contentLength} bytes (max: ${MAX_DOWNLOAD_SIZE_BYTES})`)
     }
 

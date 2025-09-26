@@ -17,7 +17,7 @@ export class ConditionBlockHandler implements BlockHandler {
    * @param resolver - Utility for resolving inputs
    */
   constructor(
-    private pathTracker: PathTracker,
+    _pathTracker: PathTracker,
     private resolver: InputResolver
   ) {}
 

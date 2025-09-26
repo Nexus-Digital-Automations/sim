@@ -11,7 +11,6 @@ import { tools } from '@/tools/registry'
 import type { ToolConfig } from '@/tools/types'
 import type {
   ConversationContext,
-  FeatureVector,
   MLModelConfig,
   MLModelType,
   ModelPerformance,
@@ -40,10 +39,8 @@ interface SimilarityMatrix {
 
 export class MLRecommendationEngine {
   private models: Map<MLModelType, MLModelConfig>
-  private featureCache: Map<string, FeatureVector>
   private similarityMatrix: SimilarityMatrix
   private modelWeights: ModelWeights
-  private trainingData: TrainingData | null = null
 
   constructor() {
     this.models = new Map()

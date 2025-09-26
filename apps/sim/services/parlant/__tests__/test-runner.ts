@@ -397,7 +397,7 @@ async function main() {
         break
       case '--concurrent-limit':
         if (i + 1 < args.length) {
-          config.concurrentTestLimit = Number.parseInt(args[i + 1])
+          config.concurrentTestLimit = Number.parseInt(args[i + 1], 10)
           i++
         }
         break

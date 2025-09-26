@@ -366,7 +366,6 @@ describe('Hybrid Mode Switching Framework', () => {
       expect(context.journeyState).toBeUndefined()
 
       // Restore original method
-
       ;(dualModeArchitecture as any).initializeJourneyState = originalInitJourney
     })
 

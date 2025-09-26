@@ -866,8 +866,8 @@ class RegressionTestingSuite {
         [userId]
       )
       return {
-        sessionsCount: Number.parseInt(sessions.rows[0].count),
-        accountsCount: Number.parseInt(accounts.rows[0].count),
+        sessionsCount: Number.parseInt(sessions.rows[0].count, 10),
+        accountsCount: Number.parseInt(accounts.rows[0].count, 10),
       }
     } finally {
       client.release()
@@ -996,7 +996,7 @@ class RegressionTestingSuite {
         'SELECT COUNT(*) as count FROM workflow_blocks WHERE "workflowId" = $1',
         [workflowId]
       )
-      return { blocksCount: Number.parseInt(blocks.rows[0].count) }
+      return { blocksCount: Number.parseInt(blocks.rows[0].count, 10) }
     } finally {
       client.release()
     }
@@ -1010,7 +1010,7 @@ class RegressionTestingSuite {
         'SELECT COUNT(*) as count FROM workflow_edges WHERE "workflowId" = $1',
         [workflowId]
       )
-      return { edgesCount: Number.parseInt(edges.rows[0].count) }
+      return { edgesCount: Number.parseInt(edges.rows[0].count, 10) }
     } finally {
       client.release()
     }
@@ -1024,7 +1024,7 @@ class RegressionTestingSuite {
         'SELECT COUNT(*) as count FROM workflow_execution_logs WHERE "workflowId" = $1',
         [workflowId]
       )
-      return { executionLogsCount: Number.parseInt(logs.rows[0].count) }
+      return { executionLogsCount: Number.parseInt(logs.rows[0].count, 10) }
     } finally {
       client.release()
     }
@@ -1041,7 +1041,7 @@ class RegressionTestingSuite {
       `,
         [userId, workspaceId]
       )
-      return { foldersCount: Number.parseInt(folders.rows[0].count) }
+      return { foldersCount: Number.parseInt(folders.rows[0].count, 10) }
     } finally {
       client.release()
     }
@@ -1078,7 +1078,7 @@ class RegressionTestingSuite {
       `,
         [userId, workspaceId]
       )
-      return { documentsCount: Number.parseInt(documents.rows[0].count) }
+      return { documentsCount: Number.parseInt(documents.rows[0].count, 10) }
     } finally {
       client.release()
     }
@@ -1096,7 +1096,7 @@ class RegressionTestingSuite {
       `,
         [userId, workspaceId]
       )
-      return { embeddingsCount: Number.parseInt(embeddings.rows[0].count) }
+      return { embeddingsCount: Number.parseInt(embeddings.rows[0].count, 10) }
     } finally {
       client.release()
     }
@@ -1133,7 +1133,7 @@ class RegressionTestingSuite {
       `,
         [userId, workspaceId]
       )
-      return { permissionsCount: Number.parseInt(permissions.rows[0].count) }
+      return { permissionsCount: Number.parseInt(permissions.rows[0].count, 10) }
     } finally {
       client.release()
     }

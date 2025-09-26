@@ -1010,7 +1010,7 @@ class ABTestingManager {
 }
 
 class UserSimulator {
-  constructor(private engine: EnhancedToolIntelligenceEngine) {}
+  constructor(_engine: EnhancedToolIntelligenceEngine) {}
 
   generateScenariosForSkillLevel(skillLevel: UserSkillLevel): UserScenario[] {
     const baseScenarios = [

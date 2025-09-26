@@ -960,7 +960,6 @@ describe('Executor', () => {
 
       // Test cancellation during the execution loop check
       // Mock the while loop condition by setting cancelled before execution
-
       ;(executor as any).isCancelled = true
 
       const result = await executor.execute('test-workflow-id')
@@ -1028,11 +1027,9 @@ describe('Executor', () => {
           }) // agent2 fails
 
         // Replace the executeBlock method
-
         ;(executor as any).executeBlock = mockExecuteBlock
 
         // Mock other necessary methods
-
         ;(executor as any).createExecutionContext = vi.fn(() => ({
           blockStates: new Map(),
           executedBlocks: new Set(['starter']),

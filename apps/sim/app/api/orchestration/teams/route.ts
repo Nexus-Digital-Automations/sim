@@ -105,8 +105,12 @@ export async function GET(request: NextRequest) {
     const listRequest: ListTeamsRequest = {
       status: (searchParams.get('status') as any) || undefined,
       search: searchParams.get('search') || undefined,
-      limit: searchParams.get('limit') ? Number.parseInt(searchParams.get('limit')!) : undefined,
-      offset: searchParams.get('offset') ? Number.parseInt(searchParams.get('offset')!) : undefined,
+      limit: searchParams.get('limit')
+        ? Number.parseInt(searchParams.get('limit')!, 10)
+        : undefined,
+      offset: searchParams.get('offset')
+        ? Number.parseInt(searchParams.get('offset')!, 10)
+        : undefined,
     }
 
     // Create auth context

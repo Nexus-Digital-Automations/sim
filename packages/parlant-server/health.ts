@@ -163,7 +163,7 @@ export class ParlantHealthChecker {
             : 'unknown',
         activeConnections:
           connectionResult.status === 'fulfilled'
-            ? Number.parseInt((connectionResult.value[0] as any)?.active_connections || '0')
+            ? Number.parseInt((connectionResult.value[0] as any)?.active_connections || '0', 10)
             : undefined,
         lastQuery: new Date().toISOString(),
       }

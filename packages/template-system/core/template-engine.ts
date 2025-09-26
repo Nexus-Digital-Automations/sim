@@ -22,7 +22,6 @@ import type {
 
 export class TemplateEngine {
   private readonly validationCache = new Map<string, ValidationResult>()
-  private readonly computationCache = new Map<string, any>()
 
   /**
    * Process a template with given parameters

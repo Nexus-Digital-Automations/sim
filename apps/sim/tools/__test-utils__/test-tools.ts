@@ -58,7 +58,6 @@ export function createMockFetch(
   })
 
   // Add preconnect property to satisfy TypeScript
-
   ;(mockFn as any).preconnect = vi.fn()
 
   return mockFn as MockFetch
@@ -497,7 +496,6 @@ export function mockOAuthTokenRequest(accessToken = 'mock-access-token') {
   })
 
   // Add preconnect property
-
   ;(mockFn as any).preconnect = vi.fn()
 
   const mockTokenFetch = mockFn as MockFetch

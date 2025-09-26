@@ -201,7 +201,6 @@ export interface ConversationPattern {
  */
 export class AgentToolIntegrationManager {
   private agentCapabilities: Map<string, AgentToolCapabilities> = new Map()
-  private conversationStates: Map<string, AgentConversationState> = new Map()
   private learningEngine = new AgentToolLearningEngine()
 
   /**

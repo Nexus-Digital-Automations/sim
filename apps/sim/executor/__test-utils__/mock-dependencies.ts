@@ -46,7 +46,7 @@ vi.mock('@/providers', () => ({
 vi.mock('@/providers/utils', async (importOriginal) => {
   const actual = await importOriginal()
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...actual,
     getProviderFromModel: vi.fn(),
     transformBlockTool: vi.fn(),

@@ -41,7 +41,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const category = url.searchParams.get('category') as ResponseCategory | null
     const language = url.searchParams.get('language')
     const status = url.searchParams.get('status')
-    const limit = Number.parseInt(url.searchParams.get('limit') || '20')
+    const limit = Number.parseInt(url.searchParams.get('limit') || '20', 10)
     const includePersonalization = url.searchParams.get('include_personalization') === 'true'
     const requireCompliance = url.searchParams.get('require_compliance') === 'true'
 

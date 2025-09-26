@@ -56,8 +56,6 @@ export interface GeneratedHelpContent {
  */
 export class NLFrameworkIntegrationService {
   private descriptionCache = new Map<string, EnhancedDescriptionSchema>()
-  private contentGenerationRules: ContentGenerationRule[] = []
-  private adaptationStrategies = new Map<string, AdaptationStrategy>()
 
   constructor() {
     this.initializeIntegration()

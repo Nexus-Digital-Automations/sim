@@ -389,7 +389,7 @@ export class TransitionBuilder {
     // Weight based on handle priority
     if (edge.sourceHandle?.startsWith('condition-')) {
       const conditionNum = edge.sourceHandle.replace('condition-', '')
-      const num = Number.parseInt(conditionNum)
+      const num = Number.parseInt(conditionNum, 10)
       if (!Number.isNaN(num)) {
         return num
       }

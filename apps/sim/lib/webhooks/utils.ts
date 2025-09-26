@@ -95,7 +95,7 @@ export async function validateSlackSignature(
 
     // Check if the timestamp is too old (> 5 minutes)
     const currentTime = Math.floor(Date.now() / 1000)
-    if (Math.abs(currentTime - Number.parseInt(timestamp)) > 300) {
+    if (Math.abs(currentTime - Number.parseInt(timestamp, 10)) > 300) {
       return false
     }
 

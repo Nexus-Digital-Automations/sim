@@ -8,13 +8,13 @@
 
 /* Target any potential border classes */
 * {
-  --fd-border-sidebar: transparent !important;
+  --fd-border-sidebar: transparent;
 }
 
 /* Override any CSS custom properties for borders */
 :root {
-  --fd-border: transparent !important;
-  --fd-border-sidebar: transparent !important;
+  --fd-border: transparent;
+  --fd-border-sidebar: transparent;
 }
 
 /* Sidebar improvements for cleaner design */
@@ -173,8 +173,8 @@ main article,
 
 /* Remove any unwanted borders/outlines from video elements */
 video {
-  outline: none !important;
-  border-style: solid !important;
+  outline: none;
+  border-style: solid;
 }
 
 /* Tailwind v4 content sources */

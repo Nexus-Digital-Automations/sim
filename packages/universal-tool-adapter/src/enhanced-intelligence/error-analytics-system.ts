@@ -345,7 +345,6 @@ export class ErrorAnalyticsSystem extends EventEmitter {
   private errorEvents: Map<string, ErrorEvent> = new Map()
   private aggregatedData: Map<string, any> = new Map()
   private alerts: Map<string, AnalyticsAlert> = new Map()
-  private performanceMetrics: Array<any> = []
   private isRunning = false
 
   constructor(config?: Partial<AnalyticsConfig>) {

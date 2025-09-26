@@ -413,7 +413,7 @@ export function AgentConfigurationPanel({
                           <Select
                             value={formData.configuration?.maxTokens?.toString()}
                             onValueChange={(value) =>
-                              updateConfiguration({ maxTokens: Number.parseInt(value) })
+                              updateConfiguration({ maxTokens: Number.parseInt(value, 10) })
                             }
                           >
                             <SelectTrigger className='h-9 rounded-[8px]'>

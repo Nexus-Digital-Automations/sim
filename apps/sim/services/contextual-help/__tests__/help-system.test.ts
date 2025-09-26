@@ -50,9 +50,9 @@ const mockWindow = {
   scrollX: 0,
 }
 
-// @ts-ignore
+// @ts-expect-error
 global.document = mockDocument
-// @ts-ignore
+// @ts-expect-error
 global.window = mockWindow
 
 describe('ContextualHelpSystem', () => {
@@ -310,7 +310,7 @@ describe('InteractiveGuidance', () => {
       // Mock tutorial library
       const tutorialLibrary = new Map()
       tutorialLibrary.set('tutorial-1', mockTutorial)
-      // @ts-ignore - accessing private property for testing
+      // @ts-expect-error - accessing private property for testing
       guidance.tutorialLibrary = tutorialLibrary
 
       const result = await guidance.startTutorial('tutorial-1', mockHelpContext)
@@ -331,7 +331,7 @@ describe('InteractiveGuidance', () => {
       // Setup active tutorial first
       const tutorialLibrary = new Map()
       tutorialLibrary.set('tutorial-1', mockTutorial)
-      // @ts-ignore
+      // @ts-expect-error
       guidance.tutorialLibrary = tutorialLibrary
 
       const startResult = await guidance.startTutorial('tutorial-1', mockHelpContext)
@@ -347,7 +347,7 @@ describe('InteractiveGuidance', () => {
     it('should skip tutorial steps when allowed', async () => {
       const tutorialLibrary = new Map()
       tutorialLibrary.set('tutorial-1', mockTutorial)
-      // @ts-ignore
+      // @ts-expect-error
       guidance.tutorialLibrary = tutorialLibrary
 
       const startResult = await guidance.startTutorial('tutorial-1', mockHelpContext)
@@ -360,7 +360,7 @@ describe('InteractiveGuidance', () => {
     it('should pause and resume tutorials', async () => {
       const tutorialLibrary = new Map()
       tutorialLibrary.set('tutorial-1', mockTutorial)
-      // @ts-ignore
+      // @ts-expect-error
       guidance.tutorialLibrary = tutorialLibrary
 
       const startResult = await guidance.startTutorial('tutorial-1', mockHelpContext)

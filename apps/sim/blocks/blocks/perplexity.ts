@@ -79,7 +79,7 @@ export const PerplexityBlock: BlockConfig<PerplexityChatResponse> = {
           model: params.model,
           content: params.content,
           systemPrompt: params.systemPrompt,
-          max_tokens: params.max_tokens ? Number.parseInt(params.max_tokens) : undefined,
+          max_tokens: params.max_tokens ? Number.parseInt(params.max_tokens, 10) : undefined,
           temperature: params.temperature ? Number.parseFloat(params.temperature) : undefined,
         }
 

@@ -22,9 +22,7 @@
 // =============================================================================
 
 class EnhancedToolValidationRunner {
-  // Commented out due to lint rule against exports from test files
-  // private validationSuite: IntegrationValidationSuite
-  private reportGenerator: ValidationReportGenerator
+  private readonly reportGenerator: ValidationReportGenerator
 
   constructor() {
     // Commented out due to lint rule against exports from test files
@@ -137,43 +135,6 @@ class EnhancedToolValidationRunner {
     } catch (error) {
       console.error(`❌ ${category} validation failed:`, error)
       process.exit(1)
-    }
-  }
-
-  /**
-   * Display validation summary
-   */
-  private displaySummary(report: any): void {
-    console.log(`📊 Overall Validation Score: ${report.overallValidationScore.toFixed(2)}%`)
-    console.log(`🏥 Production Readiness: ${report.productionReadiness.overallReadiness}`)
-    console.log(`📈 Readiness Score: ${report.productionReadiness.readinessScore}%`)
-
-    console.log('\n📋 Test Results Summary:')
-    console.log(
-      `- Intelligence Framework: ${report.testResults.intelligence.overallScore.toFixed(1)}%`
-    )
-    console.log(
-      `- Automated Test Suite: ${report.testResults.automated.overallHealthScore.toFixed(1)}%`
-    )
-    console.log(
-      `- User Experience: ${report.testResults.userExperience.overallUXScore.toFixed(1)}%`
-    )
-    console.log(
-      `- Acceptance Criteria: ${report.testResults.acceptanceCriteria.overallScore.toFixed(1)}% (${report.testResults.acceptanceCriteria.complianceLevel})`
-    )
-    console.log(
-      `- System Integration: ${report.testResults.systemIntegration.overallScore.toFixed(1)}% (${report.testResults.systemIntegration.systemHealth})`
-    )
-    console.log(`- Performance: ${report.testResults.performance.overallScore.toFixed(1)}%`)
-    console.log(
-      `- Security: ${report.testResults.security.overallScore.toFixed(1)}% (${report.testResults.security.securityLevel} Level)`
-    )
-
-    if (report.productionReadiness.risks.length > 0) {
-      console.log('\n⚠️  Identified Risks:')
-      report.productionReadiness.risks.forEach((risk: any, index: number) => {
-        console.log(`${index + 1}. ${risk.risk} (${risk.severity}) - ${risk.mitigation}`)
-      })
     }
   }
 }

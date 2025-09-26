@@ -81,8 +81,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const url = new URL(req.url)
     const includeDisabled = url.searchParams.get('includeDisabled') === 'true'
     const search = url.searchParams.get('search') || undefined
-    const limit = Number.parseInt(url.searchParams.get('limit') || '50')
-    const offset = Number.parseInt(url.searchParams.get('offset') || '0')
+    const limit = Number.parseInt(url.searchParams.get('limit') || '50', 10)
+    const offset = Number.parseInt(url.searchParams.get('offset') || '0', 10)
     const sortByParam = url.searchParams.get('sortBy')
     const sortOrderParam = url.searchParams.get('sortOrder')
 

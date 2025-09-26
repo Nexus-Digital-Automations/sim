@@ -315,7 +315,6 @@ export class IntegrationBridge {
   // Integration state
   private parlantIntegrations: Map<string, ParlantIntegration> = new Map()
   private toolRegistry: Map<string, ToolIntegrationConfig> = new Map()
-  private activeConversations: Map<string, ConversationState> = new Map()
 
   // Event handling
   private eventHandlers: Map<RecommendationEventType, EventHandler[]> = new Map()

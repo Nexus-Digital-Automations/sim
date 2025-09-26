@@ -726,7 +726,7 @@ class MigrationTestingFramework {
           const count = await client.query(`SELECT COUNT(*) as count FROM "${tableName}"`)
           existingData.push({
             table_name: tableName,
-            row_count: Number.parseInt(count.rows[0].count),
+            row_count: Number.parseInt(count.rows[0].count, 10),
           })
         } catch (error) {
           // Table might not exist, skip

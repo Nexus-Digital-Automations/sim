@@ -363,7 +363,6 @@ export class MLRecommendationEngine {
   private hybridModel: HybridModel | null = null
 
   private userProfiles: Map<string, UserProfile> = new Map()
-  private toolProfiles: Map<string, ToolProfile> = new Map()
   private interactionHistory: InteractionData[] = []
   private trainingQueue: InteractionData[] = []
 

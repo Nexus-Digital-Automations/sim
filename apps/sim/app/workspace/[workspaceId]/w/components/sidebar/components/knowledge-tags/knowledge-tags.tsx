@@ -339,7 +339,7 @@ export function KnowledgeTags({ knowledgeBaseId, documentId }: KnowledgeTagsProp
   const getTagColor = (slot: string) => {
     // Extract slot number from slot string (e.g., "tag1" -> 1, "tag2" -> 2, etc.)
     const slotMatch = slot.match(/tag(\d+)/)
-    const slotNumber = slotMatch ? Number.parseInt(slotMatch[1]) - 1 : 0
+    const slotNumber = slotMatch ? Number.parseInt(slotMatch[1], 10) - 1 : 0
     return TAG_SLOT_COLORS[slotNumber % TAG_SLOT_COLORS.length]
   }
 

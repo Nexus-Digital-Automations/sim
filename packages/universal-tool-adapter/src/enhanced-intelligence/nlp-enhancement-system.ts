@@ -324,9 +324,9 @@ export class NLPEnhancementEngine {
   private textGenerator: TextGenerationService
   private semanticAnalyzer: SemanticAnalysisService
   private qualityAssessor: QualityAssessmentService
-  private enhancementStrategies: Map<string, EnhancementStrategy> = new Map()
   private knowledgeBase: KnowledgeBaseService
   private cacheService: CacheService
+  private enhancementStrategies: Map<string, EnhancementStrategy> = new Map()
 
   constructor(config: NLPEnhancementConfig) {
     this.config = config
@@ -981,7 +981,7 @@ export class NLPEnhancementEngine {
 // =============================================================================
 
 class TextGenerationService {
-  constructor(private config: ModelConfig) {}
+  constructor(_config: ModelConfig) {}
 
   async generateText(prompt: string, parameters: ModelParameters): Promise<string> {
     // Implementation would integrate with actual text generation models

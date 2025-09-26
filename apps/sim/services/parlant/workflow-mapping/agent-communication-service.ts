@@ -700,7 +700,6 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
  */
 class AgentConversationInterface implements ConversationalInterface {
   private sessionId: string
-  private communicationService: AgentCommunicationService
 
   constructor(sessionId: string, communicationService: AgentCommunicationService) {
     this.sessionId = sessionId

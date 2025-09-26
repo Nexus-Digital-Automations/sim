@@ -335,7 +335,7 @@ class RollbackTestingSuite {
         try {
           // Get row count
           const countResult = await client.query(`SELECT COUNT(*) as count FROM "${tableName}"`)
-          const rowCount = Number.parseInt(countResult.rows[0].count)
+          const rowCount = Number.parseInt(countResult.rows[0].count, 10)
           totalRows += rowCount
 
           // Create data checksum
@@ -501,7 +501,7 @@ class RollbackTestingSuite {
       for (const tableName of criticalSimTables) {
         try {
           const countResult = await client.query(`SELECT COUNT(*) as count FROM "${tableName}"`)
-          const count = Number.parseInt(countResult.rows[0].count)
+          const count = Number.parseInt(countResult.rows[0].count, 10)
 
           await this.recordValidationResult(
             testId,
@@ -708,7 +708,7 @@ class RollbackTestingSuite {
           )
 
           const countResult = await client.query(`SELECT COUNT(*) as count FROM "${tableName}"`)
-          const count = Number.parseInt(countResult.rows[0].count)
+          const count = Number.parseInt(countResult.rows[0].count, 10)
 
           const isValid = exists.rows[0].exists
           if (!isValid) {
@@ -825,7 +825,7 @@ class RollbackTestingSuite {
           const countResult = await client.query(
             `SELECT COUNT(*) as count FROM "${tableBackup.tableName}"`
           )
-          const currentCount = Number.parseInt(countResult.rows[0].count)
+          const currentCount = Number.parseInt(countResult.rows[0].count, 10)
 
           // Check if data counts match (for non-Parlant tables)
           if (!this.isParlantTable(tableBackup.tableName)) {

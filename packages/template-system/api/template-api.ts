@@ -499,7 +499,7 @@ export class TemplateAPIController {
     try {
       const workspaceId = this.extractWorkspaceId(req)
       const templateId = req.params.id
-      const limit = Number.parseInt(req.query.limit as string) || 10
+      const limit = Number.parseInt(req.query.limit as string, 10) || 10
 
       if (!templateId) {
         res.status(400).json({ error: 'Template ID is required' })

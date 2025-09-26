@@ -401,7 +401,7 @@ export function JourneySettings({
                       value={settings.execution.timeoutMs}
                       onChange={(e) =>
                         updateSettings('execution', {
-                          timeoutMs: Number.parseInt(e.target.value) || 30000,
+                          timeoutMs: Number.parseInt(e.target.value, 10) || 30000,
                         })
                       }
                       min='1000'
@@ -416,7 +416,7 @@ export function JourneySettings({
                       value={settings.execution.maxSteps}
                       onChange={(e) =>
                         updateSettings('execution', {
-                          maxSteps: Number.parseInt(e.target.value) || 100,
+                          maxSteps: Number.parseInt(e.target.value, 10) || 100,
                         })
                       }
                       min='1'
@@ -430,7 +430,7 @@ export function JourneySettings({
                       value={settings.execution.retryAttempts}
                       onChange={(e) =>
                         updateSettings('execution', {
-                          retryAttempts: Number.parseInt(e.target.value) || 3,
+                          retryAttempts: Number.parseInt(e.target.value, 10) || 3,
                         })
                       }
                       min='0'
@@ -749,7 +749,7 @@ export function JourneySettings({
                             value={settings.integration.cacheTtl}
                             onChange={(e) =>
                               updateSettings('integration', {
-                                cacheTtl: Number.parseInt(e.target.value) || 300,
+                                cacheTtl: Number.parseInt(e.target.value, 10) || 300,
                               })
                             }
                             min='60'
@@ -809,7 +809,7 @@ export function JourneySettings({
                       value={settings.ai.maxTokens}
                       onChange={(e) =>
                         updateSettings('ai', {
-                          maxTokens: Number.parseInt(e.target.value) || 1000,
+                          maxTokens: Number.parseInt(e.target.value, 10) || 1000,
                         })
                       }
                       min='1'
@@ -925,7 +925,7 @@ export function JourneySettings({
                       value={settings.security.rateLimit}
                       onChange={(e) =>
                         updateSettings('security', {
-                          rateLimit: Number.parseInt(e.target.value) || 100,
+                          rateLimit: Number.parseInt(e.target.value, 10) || 100,
                         })
                       }
                       min='1'

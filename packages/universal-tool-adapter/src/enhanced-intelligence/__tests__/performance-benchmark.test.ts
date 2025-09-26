@@ -23,8 +23,6 @@ import {
 
 class PerformanceBenchmarkSuite {
   private engine: EnhancedToolIntelligenceEngine
-  private benchmarkResults: BenchmarkResults
-  private metricsCollector: MetricsCollector
 
   constructor() {
     this.engine = createEnhancedToolIntelligenceEngine()
@@ -1080,7 +1078,7 @@ class PerformanceBenchmarkSuite {
   }
 
   private getMemoryUsage(): number {
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    if (process?.memoryUsage) {
       return process.memoryUsage().heapUsed / 1024 / 1024 // MB
     }
     // Fallback for environments without process

@@ -191,9 +191,8 @@ export class AdvancedLoadBalancer extends EventEmitter {
   private metricsInterval: NodeJS.Timeout | null = null
   private healthCheckInterval: NodeJS.Timeout | null = null
   private cleanupInterval: NodeJS.Timeout | null = null
-
-  private requestCounter = 0
   private roundRobinIndex = 0
+  private requestCounter = 0
 
   constructor(private config: LoadBalancerConfig) {
     super()

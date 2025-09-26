@@ -748,7 +748,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
       receiver.on('chat:message', (message: ChatMessage) => {
         const receivedTime = Date.now()
-        const sentTime = Number.parseInt(message.content.split('-')[1])
+        const sentTime = Number.parseInt(message.content.split('-')[1], 10)
         const latency = receivedTime - sentTime
         latencies.push(latency)
       })

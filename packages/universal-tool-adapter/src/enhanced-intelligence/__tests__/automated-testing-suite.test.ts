@@ -1364,7 +1364,7 @@ class AutomatedTestingSuite {
 
   private getMemoryUsage(): number {
     // Simulated memory usage in MB
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    if (process?.memoryUsage) {
       return process.memoryUsage().heapUsed / 1024 / 1024
     }
     return Math.random() * 100 // Fallback for browser environments

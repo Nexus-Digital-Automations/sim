@@ -956,7 +956,7 @@ class TelegramIntegrationAdapter extends BaseToolAdapter {
       const result = {
         action: args.action,
         data: {
-          message_id: Number.parseInt(Math.random().toString().substr(2, 8)),
+          message_id: Number.parseInt(Math.random().toString().substr(2, 8), 10),
           chat_id: args.chat_id,
           status: 'sent',
         },

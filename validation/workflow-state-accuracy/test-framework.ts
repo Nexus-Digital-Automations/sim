@@ -28,7 +28,6 @@ export class WorkflowStateAccuracyValidator {
   private mockChatStore: any
   private mockSyncStore: any
   private mockExecutionStore: any
-  private testScenarios: TestScenario[] = []
 
   constructor() {
     this.setupMocks()

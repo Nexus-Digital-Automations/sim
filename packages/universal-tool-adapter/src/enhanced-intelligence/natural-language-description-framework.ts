@@ -676,7 +676,6 @@ export interface ExtensionMechanism {
  */
 export class NaturalLanguageDescriptionFramework {
   private descriptionRegistry: Map<string, EnhancedDescriptionSchema> = new Map()
-  private templateRegistry: Map<string, DescriptionTemplate> = new Map()
   private contextualAdapters: Map<string, ContextualAdapter> = new Map()
   private qualityValidator: QualityValidator
   private nlpProcessor: NLPProcessor
@@ -1287,7 +1286,7 @@ class QualityValidator {
 }
 
 class NLPProcessor {
-  constructor(private settings?: NLPSettings) {}
+  constructor(_settings?: NLPSettings) {}
 
   async extractKeyInformation(toolConfig: ToolConfig): Promise<KeyInformationResult> {
     return {

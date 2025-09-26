@@ -38,7 +38,7 @@ const CONFIG_RULES = {
   ],
   validation: {
     PARLANT_PORT: (value) => {
-      const port = Number.parseInt(value)
+      const port = Number.parseInt(value, 10)
       return port >= 1000 && port <= 65535
     },
     DATABASE_URL: (value) => {
@@ -54,15 +54,15 @@ const CONFIG_RULES = {
       return ['DEBUG', 'INFO', 'WARN', 'ERROR'].includes(value.toUpperCase())
     },
     SESSION_TIMEOUT: (value) => {
-      const timeout = Number.parseInt(value)
+      const timeout = Number.parseInt(value, 10)
       return timeout >= 300 && timeout <= 86400 // 5 minutes to 24 hours
     },
     MAX_CONCURRENT_SESSIONS: (value) => {
-      const sessions = Number.parseInt(value)
+      const sessions = Number.parseInt(value, 10)
       return sessions >= 1 && sessions <= 10000
     },
     CACHE_TTL: (value) => {
-      const ttl = Number.parseInt(value)
+      const ttl = Number.parseInt(value, 10)
       return ttl >= 60 && ttl <= 3600 // 1 minute to 1 hour
     },
   },

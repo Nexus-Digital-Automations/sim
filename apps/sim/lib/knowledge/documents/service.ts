@@ -341,7 +341,7 @@ async function processBatchWithConcurrency(
 
     await new Promise<void>((resolve) => {
       const checkSlot = () => {
-        const availableIndex = semaphore.findIndex((slot) => slot === 0)
+        const availableIndex = semaphore.indexOf(0)
         if (availableIndex !== -1) {
           semaphore[availableIndex] = 1
           resolve()
@@ -392,7 +392,7 @@ async function processBatchWithConcurrency(
         )
       }
     } finally {
-      const slotIndex = semaphore.findIndex((slot) => slot === 1)
+      const slotIndex = semaphore.indexOf(1)
       if (slotIndex !== -1) {
         semaphore[slotIndex] = 0
       }

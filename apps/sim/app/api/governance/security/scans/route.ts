@@ -174,8 +174,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const startDate = url.searchParams.get('start_date')
     const endDate = url.searchParams.get('end_date')
     const riskThreshold = url.searchParams.get('risk_threshold')
-    const limit = Number.parseInt(url.searchParams.get('limit') || '50')
-    const offset = Number.parseInt(url.searchParams.get('offset') || '0')
+    const limit = Number.parseInt(url.searchParams.get('limit') || '50', 10)
+    const offset = Number.parseInt(url.searchParams.get('offset') || '0', 10)
 
     // Validate required parameters
     if (!workspaceId) {
@@ -214,7 +214,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           workspace_id: workspaceId,
           start_date: startDate,
           end_date: endDate,
-          risk_threshold: riskThreshold ? Number.parseInt(riskThreshold) : null,
+          risk_threshold: riskThreshold ? Number.parseInt(riskThreshold, 10) : null,
           limit,
           offset,
         },

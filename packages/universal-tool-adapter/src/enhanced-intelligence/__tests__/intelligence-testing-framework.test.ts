@@ -84,8 +84,6 @@ const mockError = {
 
 class IntelligenceTestingFramework {
   private engine: EnhancedToolIntelligenceEngine
-  private testMetrics: TestMetrics
-  private testResults: TestResult[]
 
   constructor() {
     this.engine = createEnhancedToolIntelligenceEngine()
@@ -1187,11 +1185,11 @@ class IntelligenceTestingFramework {
     if (timeStr.includes('second')) return 1
     if (timeStr.includes('minute')) {
       const match = timeStr.match(/(\d+)/)
-      return match ? Number.parseInt(match[1]) : 5
+      return match ? Number.parseInt(match[1], 10) : 5
     }
     if (timeStr.includes('hour')) {
       const match = timeStr.match(/(\d+)/)
-      return match ? Number.parseInt(match[1]) * 60 : 60
+      return match ? Number.parseInt(match[1], 10) * 60 : 60
     }
     return 5
   }

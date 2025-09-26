@@ -24,15 +24,15 @@
       "!**/public/workbox-*.js",
       "!**/public/worker-*.js",
       "!**/public/fallback-*.js",
-      "!**/apps/docs/.source/**",
+      "!**/apps/docs/.source",
       "!**/*.d.ts",
-      "!**/venv/**",
-      "!**/.venv/**",
-      "!**/__pycache__/**",
+      "!**/venv",
+      "!**/.venv",
+      "!**/__pycache__",
       "!**/*.pyc",
       "!**/*.pyo",
       "!**/*.pyd",
-      "!**/packages/parlant-server/venv/**"
+      "!**/packages/parlant-server/venv"
     ]
   },
   "formatter": {
@@ -102,8 +102,7 @@
     "rules": {
       "recommended": true,
       "nursery": {
-        "useSortedClasses": "warn",
-        "noNestedComponentDefinitions": "off"
+        "useSortedClasses": "warn"
       },
       "a11y": {
         "noSvgWithoutTitle": "off",

@@ -180,7 +180,7 @@ export class PostgreSQLAdapter extends UniversalToolAdapter {
       const connectionUrl = new URL(simParams.connectionString)
       const dbConfig = {
         host: connectionUrl.hostname,
-        port: Number.parseInt(connectionUrl.port) || 5432,
+        port: Number.parseInt(connectionUrl.port, 10) || 5432,
         database: connectionUrl.pathname.slice(1),
         user: connectionUrl.username,
         password: connectionUrl.password,

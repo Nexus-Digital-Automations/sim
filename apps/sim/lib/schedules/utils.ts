@@ -115,11 +115,11 @@ export function getScheduleTimeValues(starterBlock: BlockState): {
 
   // Get minutes interval (default to 15)
   const minutesIntervalStr = getSubBlockValue(starterBlock, 'minutesInterval')
-  const minutesInterval = Number.parseInt(minutesIntervalStr) || 15
+  const minutesInterval = Number.parseInt(minutesIntervalStr, 10) || 15
 
   // Get hourly minute (default to 0)
   const hourlyMinuteStr = getSubBlockValue(starterBlock, 'hourlyMinute')
-  const hourlyMinute = Number.parseInt(hourlyMinuteStr) || 0
+  const hourlyMinute = Number.parseInt(hourlyMinuteStr, 10) || 0
 
   // Get daily time
   const dailyTime = parseTimeString(getSubBlockValue(starterBlock, 'dailyTime'))
@@ -131,7 +131,7 @@ export function getScheduleTimeValues(starterBlock: BlockState): {
 
   // Get monthly config
   const monthlyDayStr = getSubBlockValue(starterBlock, 'monthlyDay')
-  const monthlyDay = Number.parseInt(monthlyDayStr) || 1
+  const monthlyDay = Number.parseInt(monthlyDayStr, 10) || 1
   const monthlyTime = parseTimeString(getSubBlockValue(starterBlock, 'monthlyTime'))
 
   const cronExpression = getSubBlockValue(starterBlock, 'cronExpression') || null

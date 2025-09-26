@@ -107,7 +107,7 @@ async function initializeSentry() {
   try {
     // Skip initialization if Sentry appears to be already configured
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore accessing internal API
+    // @ts-expect-error accessing internal API
     if ((Sentry as any).Hub?.current?.getClient()) {
       logger.debug('Sentry already initialized, skipping duplicate init')
       return

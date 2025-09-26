@@ -524,7 +524,7 @@ export const useWorkflowStore = create<WorkflowStoreWithHistory>()(
         // More efficient name handling
         const match = block.name.match(/(.*?)(\d+)?$/)
         const newName = match?.[2]
-          ? `${match[1]}${Number.parseInt(match[2]) + 1}`
+          ? `${match[1]}${Number.parseInt(match[2], 10) + 1}`
           : `${block.name} 1`
 
         // Get merged state to capture current subblock values

@@ -214,7 +214,6 @@ const testConfig = {
 }
 
 // Make test config globally available
-
 ;(global as any).testConfig = testConfig
 
 // Console mocking for cleaner test output
@@ -356,7 +355,7 @@ export const testUtils = {
     // Update matchMedia mock
     window.matchMedia = vi.fn().mockImplementation((query: string) => ({
       matches: query.includes(`max-width: ${width}px`)
-        ? width <= Number.parseInt(query.match(/\d+/)?.[0] || '0')
+        ? width <= Number.parseInt(query.match(/\d+/)?.[0] || '0', 10)
         : false,
       media: query,
       onchange: null,
@@ -373,7 +372,6 @@ export const testUtils = {
 }
 
 // Make test utilities globally available
-
 ;(global as any).testUtils = testUtils
 
 // Export for direct import if needed

@@ -162,7 +162,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return Number.parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count, 10)
   }
 
   /**
@@ -177,7 +177,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return Number.parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count, 10)
   }
 
   /**
@@ -193,7 +193,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return Number.parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count, 10)
   }
 
   /**
@@ -207,7 +207,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return Number.parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count, 10)
   }
 
   /**
@@ -237,7 +237,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return Number.parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count, 10)
   }
 
   /**
@@ -251,7 +251,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return Number.parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count, 10)
   }
 
   /**
@@ -292,7 +292,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return Number.parseInt(result.rows[0].count) > 0
+    return Number.parseInt(result.rows[0].count, 10) > 0
   }
 
   /**

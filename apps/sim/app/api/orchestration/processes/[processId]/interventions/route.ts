@@ -126,10 +126,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const status = searchParams.get('status')
     const type = searchParams.get('type')
     const limit = searchParams.get('limit')
-      ? Number.parseInt(searchParams.get('limit')!)
+      ? Number.parseInt(searchParams.get('limit')!, 10)
       : undefined
     const offset = searchParams.get('offset')
-      ? Number.parseInt(searchParams.get('offset')!)
+      ? Number.parseInt(searchParams.get('offset')!, 10)
       : undefined
 
     // Filter interventions

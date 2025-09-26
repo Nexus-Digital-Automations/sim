@@ -56,8 +56,8 @@ export function TimeInput({
   // Update the time when any component changes
   const updateTime = (newHour?: string, newMinute?: string, newAmpm?: 'AM' | 'PM') => {
     if (isPreview || disabled) return
-    const h = Number.parseInt(newHour ?? hour) || 12
-    const m = Number.parseInt(newMinute ?? minute) || 0
+    const h = Number.parseInt(newHour ?? hour, 10) || 12
+    const m = Number.parseInt(newMinute ?? minute, 10) || 0
     const p = newAmpm ?? ampm
     setStoreValue(formatStorageTime(h, m, p))
   }
@@ -115,7 +115,7 @@ export function TimeInput({
                 setHour('')
                 return
               }
-              const numVal = Number.parseInt(val)
+              const numVal = Number.parseInt(val, 10)
               if (!Number.isNaN(numVal)) {
                 const newHour = Math.min(12, Math.max(1, numVal)).toString()
                 setHour(newHour)
@@ -123,7 +123,7 @@ export function TimeInput({
               }
             }}
             onBlur={() => {
-              const numVal = Number.parseInt(hour) || 12
+              const numVal = Number.parseInt(hour, 10) || 12
               setHour(numVal.toString())
               updateTime(numVal.toString())
             }}
@@ -139,7 +139,7 @@ export function TimeInput({
                 setMinute('')
                 return
               }
-              const numVal = Number.parseInt(val)
+              const numVal = Number.parseInt(val, 10)
               if (!Number.isNaN(numVal)) {
                 const newMinute = Math.min(59, Math.max(0, numVal)).toString().padStart(2, '0')
                 setMinute(newMinute)
@@ -147,7 +147,7 @@ export function TimeInput({
               }
             }}
             onBlur={() => {
-              const numVal = Number.parseInt(minute) || 0
+              const numVal = Number.parseInt(minute, 10) || 0
               setMinute(numVal.toString().padStart(2, '0'))
               updateTime(undefined, numVal.toString())
             }}

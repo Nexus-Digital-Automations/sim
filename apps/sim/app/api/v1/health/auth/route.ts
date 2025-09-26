@@ -63,22 +63,22 @@ async function checkAuthSystemHealth() {
       details: {
         userTable: {
           accessible: true,
-          recordCount: Number.parseInt((userTableCheck[0] as any)?.user_count || '0'),
+          recordCount: Number.parseInt((userTableCheck[0] as any)?.user_count || '0', 10),
         },
         workspaceTable: {
           accessible: true,
-          recordCount: Number.parseInt((workspaceTableCheck[0] as any)?.workspace_count || '0'),
+          recordCount: Number.parseInt((workspaceTableCheck[0] as any)?.workspace_count || '0', 10),
         },
         authTables: {
           sessionTable:
             sessionChecks[0].status === 'fulfilled' &&
-            Number.parseInt((sessionChecks[0].value as any)[0]?.count || '0') > 0,
+            Number.parseInt((sessionChecks[0].value as any)[0]?.count || '0', 10) > 0,
           accountTable:
             sessionChecks[1].status === 'fulfilled' &&
-            Number.parseInt((sessionChecks[1].value as any)[0]?.count || '0') > 0,
+            Number.parseInt((sessionChecks[1].value as any)[0]?.count || '0', 10) > 0,
           verificationTable:
             sessionChecks[2].status === 'fulfilled' &&
-            Number.parseInt((sessionChecks[2].value as any)[0]?.count || '0') > 0,
+            Number.parseInt((sessionChecks[2].value as any)[0]?.count || '0', 10) > 0,
         },
         connectivity: {
           databaseConnection: true,
@@ -141,7 +141,7 @@ async function checkOAuthIntegrationHealth() {
         tables: {
           oauthTablesFound:
             oauthTableCheck[0].status === 'fulfilled'
-              ? Number.parseInt((oauthTableCheck[0].value as any)[0]?.count || '0')
+              ? Number.parseInt((oauthTableCheck[0].value as any)[0]?.count || '0', 10)
               : 0,
         },
         configuration: {
@@ -362,7 +362,7 @@ export async function GET_VALIDATE(request: NextRequest): Promise<NextResponse> 
         WHERE table_name = 'session'
       `)
       validationResults.sessionSupport =
-        Number.parseInt((sessionTableExists[0] as any)?.count || '0') > 0
+        Number.parseInt((sessionTableExists[0] as any)?.count || '0', 10) > 0
     } catch (error) {
       logger.warn('Session support validation failed', { error })
     }

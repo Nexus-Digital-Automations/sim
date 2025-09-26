@@ -36,8 +36,8 @@ export async function GET(
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
-    const page = Number.parseInt(searchParams.get('page') || '1')
-    const limit = Math.min(Number.parseInt(searchParams.get('limit') || '50'), 100)
+    const page = Number.parseInt(searchParams.get('page') || '1', 10)
+    const limit = Math.min(Number.parseInt(searchParams.get('limit') || '50', 10), 100)
     const search = searchParams.get('search') || undefined
 
     // Get agents from Parlant service

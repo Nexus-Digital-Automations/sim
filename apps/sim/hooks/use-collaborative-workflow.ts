@@ -962,7 +962,7 @@ export function useCollaborativeWorkflow() {
 
       const match = sourceBlock.name.match(/(.*?)(\d+)?$/)
       const newName = match?.[2]
-        ? `${match[1]}${Number.parseInt(match[2]) + 1}`
+        ? `${match[1]}${Number.parseInt(match[2], 10) + 1}`
         : `${sourceBlock.name} 1`
 
       // Get subblock values from the store

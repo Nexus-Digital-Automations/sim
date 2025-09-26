@@ -169,7 +169,7 @@ export const RedditBlock: BlockConfig<RedditResponse> = {
             postId: rest.postId,
             subreddit: rest.subreddit,
             sort: rest.commentSort,
-            limit: rest.commentLimit ? Number.parseInt(rest.commentLimit) : undefined,
+            limit: rest.commentLimit ? Number.parseInt(rest.commentLimit, 10) : undefined,
             credential: credential,
           }
         }
@@ -177,7 +177,7 @@ export const RedditBlock: BlockConfig<RedditResponse> = {
         return {
           subreddit: rest.subreddit,
           sort: rest.sort,
-          limit: rest.limit ? Number.parseInt(rest.limit) : undefined,
+          limit: rest.limit ? Number.parseInt(rest.limit, 10) : undefined,
           time: rest.sort === 'top' ? rest.time : undefined,
           credential: credential,
         }

@@ -2074,9 +2074,6 @@ interface UserContentProfile {
 }
 
 class ContextAnalysisEngine {
-  private contextPatterns: Map<string, ContextPattern> = new Map()
-  private workflowStages: Map<string, WorkflowStageInfo> = new Map()
-
   async analyzeContext(request: ContextualRecommendationRequest): Promise<ContextInsights> {
     const startTime = Date.now()
 

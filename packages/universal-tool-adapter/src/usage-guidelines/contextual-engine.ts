@@ -574,9 +574,7 @@ export class ContextAnalysisEngine {
 // =============================================================================
 
 export class ContextualGuidelinesEngine {
-  private logger: Logger
   private contextAnalyzer: ContextAnalysisEngine
-  private guidelineCache: Map<string, AdaptiveGuideline[]> = new Map()
   private adaptationStrategies: Map<string, AdaptationStrategy> = new Map()
 
   constructor() {

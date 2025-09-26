@@ -1219,7 +1219,7 @@ class ImprovementEngine {
 }
 
 class ReportingService {
-  constructor(private config: ReportingConfig) {}
+  constructor(_config: ReportingConfig) {}
 
   async generateQualityReport(
     description: EnhancedDescriptionSchema,

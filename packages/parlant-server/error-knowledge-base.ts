@@ -432,7 +432,6 @@ export class ErrorKnowledgeBase extends EventEmitter {
   private searchIndex = new Map<string, Set<string>>() // keyword -> article IDs
   private categoryIndex = new Map<ErrorCategory, Set<string>>()
   private tagIndex = new Map<string, Set<string>>()
-  private popularArticles: string[] = []
   private contentGenerator = new AutoContentGenerator()
 
   constructor() {

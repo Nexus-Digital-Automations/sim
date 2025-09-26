@@ -156,7 +156,7 @@ export function VisualGuidelineBuilder({
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const nextId = useRef(
-    Math.max(0, ...guidelines.map((g) => Number.parseInt(g.id.split('-')[1] || '0'))) + 1
+    Math.max(0, ...guidelines.map((g) => Number.parseInt(g.id.split('-')[1] || '0', 10))) + 1
   )
 
   const createGuideline = useCallback(
@@ -664,7 +664,7 @@ function GuidelineEditDialog({
                 onValueChange={(value) =>
                   setEditedGuideline({
                     ...editedGuideline,
-                    priority: Number.parseInt(value),
+                    priority: Number.parseInt(value, 10),
                   })
                 }
               >

@@ -123,7 +123,7 @@ export function IterationBadges({ nodeId, data, iterationType }: IterationBadges
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (isPreview) return
       const sanitizedValue = e.target.value.replace(/[^0-9]/g, '')
-      const numValue = Number.parseInt(sanitizedValue)
+      const numValue = Number.parseInt(sanitizedValue, 10)
 
       if (!Number.isNaN(numValue)) {
         setTempInputValue(Math.min(config.maxIterations, numValue).toString())
@@ -137,7 +137,7 @@ export function IterationBadges({ nodeId, data, iterationType }: IterationBadges
   // Handle iterations save
   const handleIterationsSave = useCallback(() => {
     if (isPreview) return
-    const value = Number.parseInt(inputValue)
+    const value = Number.parseInt(inputValue, 10)
 
     if (!Number.isNaN(value)) {
       const newValue = Math.min(config.maxIterations, Math.max(1, value))

@@ -309,15 +309,6 @@ export class EnhancedConversationExperience {
   private readonly contextManager: ContextManager
   private readonly personalizationEngine: PersonalizationEngine
   private readonly responseGenerator: ResponseGenerator
-  private readonly learningAnalyzer: LearningAnalyzer
-
-  // Pattern libraries
-  private readonly conversationPatterns = new Map<string, ConversationPattern>()
-  private readonly responseTemplates = new Map<string, ResponseTemplate>()
-
-  // Knowledge bases
-  private readonly workflowKnowledgeBase: WorkflowKnowledgeBase
-  private readonly conversationMemory = new Map<string, ConversationMemory>()
 
   constructor() {
     // Initialize intelligence engines

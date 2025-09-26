@@ -25,7 +25,6 @@ export async function getWorkflowById(id: string) {
       isDeployed: workflowTable.isDeployed,
       deployedState: workflowTable.deployedState,
       deployedAt: workflowTable.deployedAt,
-      pinnedApiKey: workflowTable.pinnedApiKey,
       collaborators: workflowTable.collaborators,
       runCount: workflowTable.runCount,
       lastRunAt: workflowTable.lastRunAt,

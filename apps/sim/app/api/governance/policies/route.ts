@@ -43,8 +43,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const workspaceId = url.searchParams.get('workspace_id')
     const status = url.searchParams.get('status') as PolicyStatus | null
     const category = url.searchParams.get('category')
-    const limit = Number.parseInt(url.searchParams.get('limit') || '50')
-    const offset = Number.parseInt(url.searchParams.get('offset') || '0')
+    const limit = Number.parseInt(url.searchParams.get('limit') || '50', 10)
+    const offset = Number.parseInt(url.searchParams.get('offset') || '0', 10)
 
     // Validate required parameters
     if (!workspaceId) {

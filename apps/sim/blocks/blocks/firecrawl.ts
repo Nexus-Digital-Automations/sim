@@ -102,7 +102,7 @@ export const FirecrawlBlock: BlockConfig<FirecrawlResponse> = {
           case 'crawl':
             return {
               ...rest,
-              limit: limit ? Number.parseInt(limit) : undefined,
+              limit: limit ? Number.parseInt(limit, 10) : undefined,
             }
           default:
             return rest

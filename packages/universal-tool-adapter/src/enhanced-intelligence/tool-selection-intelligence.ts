@@ -197,10 +197,10 @@ class SimToolCatalog {
 
 export class ToolSelectionIntelligenceEngine {
   private simToolCatalog: SimToolCatalog
-  private toolClassifier: SimToolClassifier
+  private toolClassifier!: SimToolClassifier
   private contextAnalyzer: ContextAnalyzer
   private userProfiler: UserProfiler
-  private recommendationEngine: RecommendationEngine
+  private recommendationEngine!: RecommendationEngine
   private reasoningEngine: ReasoningEngine
 
   constructor(config?: ToolSelectionConfig) {
@@ -1315,7 +1315,7 @@ export class ToolSelectionIntelligenceEngine {
 // =============================================================================
 
 class ContextAnalyzer {
-  constructor(private settings?: ContextAnalysisSettings) {}
+  constructor(_settings?: ContextAnalysisSettings) {}
 
   async analyzeContext(userContext: UserContext): Promise<ContextualAnalysisResult> {
     return {
@@ -1328,7 +1328,7 @@ class ContextAnalyzer {
 }
 
 class UserProfiler {
-  constructor(private settings?: UserProfilingSettings) {}
+  constructor(_settings?: UserProfilingSettings) {}
 
   async analyzeContext(userContext: UserContext): Promise<ContextualProfile> {
     return {
@@ -1370,7 +1370,7 @@ class UserProfiler {
 class RecommendationEngine {}
 
 class ReasoningEngine {
-  constructor(private settings?: ReasoningSettings) {}
+  constructor(_settings?: ReasoningSettings) {}
 
   async generateSelectionReasoning(
     primary: EnrichedToolRecommendation,

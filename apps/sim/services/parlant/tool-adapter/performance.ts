@@ -200,8 +200,8 @@ class PerformanceTimerImpl implements PerformanceTimer {
 
   constructor(
     private toolName: string,
-    private context: AdapterContext,
-    private monitor: AdapterPerformanceMonitor
+    _context: AdapterContext,
+    _monitor: AdapterPerformanceMonitor
   ) {}
 
   end(): number {
@@ -577,7 +577,7 @@ class Connection {
   private healthy = true
   private lastUsed = Date.now()
 
-  constructor(private serviceName: string) {}
+  constructor(_serviceName: string) {}
 
   isHealthy(): boolean {
     // Consider connection stale after 5 minutes

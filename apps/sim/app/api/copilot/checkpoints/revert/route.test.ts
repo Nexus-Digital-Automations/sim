@@ -251,7 +251,6 @@ describe('Copilot Checkpoints Revert API Route', () => {
         .mockResolvedValueOnce(mockWorkflow) // Workflow found
 
       // Mock successful state API call
-
       ;(global.fetch as any).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ success: true }),
@@ -471,7 +470,6 @@ describe('Copilot Checkpoints Revert API Route', () => {
         .mockResolvedValueOnce(mockWorkflow)
 
       // Mock failed state API call
-
       ;(global.fetch as any).mockResolvedValue({
         ok: false,
         text: () => Promise.resolve('State validation failed'),
@@ -556,7 +554,6 @@ describe('Copilot Checkpoints Revert API Route', () => {
         .mockResolvedValueOnce(mockWorkflow)
 
       // Mock fetch network error
-
       ;(global.fetch as any).mockRejectedValue(new Error('Network error'))
 
       const req = createMockRequest('POST', {

@@ -28,7 +28,6 @@ interface ValidationSuite {
 
 class LocalCopilotValidator {
   private results: ValidationSuite[] = []
-  private baseUrl = 'http://localhost:3000'
 
   /**
    * Run complete validation suite

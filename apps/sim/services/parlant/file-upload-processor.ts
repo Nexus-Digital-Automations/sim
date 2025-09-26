@@ -257,7 +257,7 @@ export class FileUploadProcessorService {
           processingStats: {
             chunkCount: documentResult.chunks.length,
             totalTokens: documentResult.totalTokenCount,
-            processingTime: Date.now() - Number.parseInt(uploadId.split('_')[1]),
+            processingTime: Date.now() - Number.parseInt(uploadId.split('_')[1], 10),
             qualityScore,
           },
           extractedMetadata: enhancedMetadata,
@@ -619,10 +619,7 @@ export class FileUploadProcessorService {
 
       if (executing.length >= maxConcurrency) {
         await Promise.race(executing)
-        executing.splice(
-          executing.findIndex((p) => p === executor),
-          1
-        )
+        executing.splice(executing.indexOf(executor), 1)
       }
     }
 

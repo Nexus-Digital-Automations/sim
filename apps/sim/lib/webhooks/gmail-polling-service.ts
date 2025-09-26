@@ -527,7 +527,7 @@ async function processEmails(
             }
           } else if (email.internalDate) {
             // Use internalDate as fallback (convert from timestamp to ISO string)
-            date = new Date(Number.parseInt(email.internalDate)).toISOString()
+            date = new Date(Number.parseInt(email.internalDate, 10)).toISOString()
           }
 
           // Extract attachment information if present

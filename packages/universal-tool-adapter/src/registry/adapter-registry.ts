@@ -15,7 +15,6 @@ import type {
   AdapterMigration,
   AdapterPlugin,
   AdapterRegistryEntry,
-  ExtensionPoint,
   SimToolDefinition,
   VersionCompatibility,
 } from '../types/adapter-interfaces'
@@ -87,7 +86,6 @@ export interface RegistryConfig {
  */
 export class PluginManager {
   private plugins: Map<string, AdapterPlugin> = new Map()
-  private extensionPoints: Map<string, ExtensionPoint> = new Map()
   private pluginDependencies: Map<string, string[]> = new Map()
 
   constructor(private config: RegistryConfig['plugins']) {
@@ -595,7 +593,6 @@ export class AdapterRegistry implements ToolDiscovery {
   private adapters: Map<string, AdapterRegistryEntry> = new Map()
   private pluginManager: PluginManager
   private healthMonitor: HealthMonitor
-  private migrationManager: MigrationManager
   private cache?: Map<string, { data: any; timestamp: Date }>
 
   constructor(private config: RegistryConfig) {

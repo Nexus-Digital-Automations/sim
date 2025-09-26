@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 // ---------- Minimal env helpers ----------
 function getEnv(name: string): string | undefined {
-  if (typeof process !== 'undefined' && process.env && name in process.env) {
+  if (process?.env && name in process.env) {
     return process.env[name]
   }
   return undefined

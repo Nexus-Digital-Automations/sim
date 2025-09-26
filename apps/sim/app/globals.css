@@ -6,25 +6,25 @@
    WORKFLOW COMPONENT Z-INDEX FIXES
    ========================================================================== */
 .workflow-container .react-flow__edges {
-  z-index: 0 !important;
+  z-index: 0;
 }
 
 .workflow-container .react-flow__node {
-  z-index: 21 !important;
+  z-index: 21;
 }
 
 .workflow-container .react-flow__node-loopNode,
 .workflow-container .react-flow__node-parallelNode,
 .workflow-container .react-flow__node-subflowNode {
-  z-index: -1 !important;
+  z-index: -1;
 }
 
 .workflow-container .react-flow__handle {
-  z-index: 30 !important;
+  z-index: 30;
 }
 
 .workflow-container .react-flow__edge [data-testid="workflow-edge"] {
-  z-index: 0 !important;
+  z-index: 0;
 }
 
 /* ==========================================================================
@@ -48,7 +48,7 @@
 
 /* Ensure React Flow doesn't override our animation */
 .react-flow__node-landingLoop svg rect.landing-loop-animated-dash {
-  animation: dash-animation 1.5s linear infinite !important;
+  animation: dash-animation 1.5s linear infinite;
 }
 
 /* ==========================================================================
@@ -288,9 +288,9 @@
    DARK MODE OVERRIDES
    ========================================================================== */
 .dark .error-badge {
-  background-color: hsl(0, 70%, 20%) !important;
+  background-color: hsl(0, 70%, 20%);
   /* Darker red background for dark mode */
-  color: hsl(0, 0%, 100%) !important;
+  color: hsl(0, 0%, 100%);
   /* Pure white text for better contrast */
 }
 
@@ -428,34 +428,34 @@ input[type="search"]::-ms-clear {
 
   /* Apply fixed default light theme values for auth components */
   .auth-card {
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    border-color: #e5e5e5 !important;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-color: #e5e5e5;
   }
 
   .auth-text-primary {
-    color: #1a1a1a !important;
+    color: #1a1a1a;
   }
 
   .auth-text-secondary {
-    color: #4a4a4a !important;
+    color: #4a4a4a;
   }
 
   .auth-text-muted {
-    color: #737373 !important;
+    color: #737373;
   }
 
   .auth-divider {
-    border-color: #e5e5e5 !important;
+    border-color: #e5e5e5;
   }
 
   .auth-card-shadow {
     box-shadow:
       0 10px 15px -3px rgba(0, 0, 0, 0.05),
-      0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 
   .auth-link {
-    color: #737373 !important;
+    color: #737373;
   }
 
   /* Surface Utilities */
@@ -523,27 +523,27 @@ input[type="search"]::-ms-clear {
 
   /* Auth Button Styles - Default Gradient */
   .auth-button-gradient {
-    background: linear-gradient(to bottom, #8357ff, #6f3dfa) !important;
-    border-color: #6f3dfa !important;
-    box-shadow: inset 0 2px 4px 0 #9b77ff !important;
+    background: linear-gradient(to bottom, #8357ff, #6f3dfa);
+    border-color: #6f3dfa;
+    box-shadow: inset 0 2px 4px 0 #9b77ff;
   }
 
   .auth-button-gradient:hover {
-    background: linear-gradient(to bottom, #8357ff, #6f3dfa) !important;
+    background: linear-gradient(to bottom, #8357ff, #6f3dfa);
     opacity: 0.9;
   }
 
   /* Auth Button Styles - CSS Variable Based */
   .auth-button-custom {
-    background: var(--brand-accent-hex) !important;
-    border-color: var(--brand-accent-hex) !important;
+    background: var(--brand-accent-hex);
+    border-color: var(--brand-accent-hex);
     /* Remove purple shadow when using custom color */
-    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
   }
 
   .auth-button-custom:hover {
-    background: var(--brand-accent-hover-hex, var(--brand-accent-hex)) !important;
-    border-color: var(--brand-accent-hover-hex, var(--brand-accent-hex)) !important;
+    background: var(--brand-accent-hover-hex, var(--brand-accent-hex));
+    border-color: var(--brand-accent-hover-hex, var(--brand-accent-hex));
     opacity: 1;
   }
 

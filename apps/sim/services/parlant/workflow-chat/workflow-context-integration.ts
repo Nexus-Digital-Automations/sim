@@ -143,7 +143,6 @@ export interface PerformanceInsight {
  */
 export class WorkflowContextIntegration {
   private contexts = new Map<string, JourneyContext>()
-  private executionStreamer: WorkflowExecutionStreamer | null = null
   private contextUpdateListeners = new Map<string, Set<ContextUpdateListener>>()
 
   constructor(executionStreamer?: WorkflowExecutionStreamer) {

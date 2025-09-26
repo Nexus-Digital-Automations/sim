@@ -999,7 +999,7 @@ class AnalyticsEngine {
 }
 
 class MetricsCollector {
-  constructor(private config: DashboardConfig['collection']) {}
+  constructor(_config: DashboardConfig['collection']) {}
 
   async collectCurrentMetrics(): Promise<PerformanceMetrics> {
     // This would collect actual metrics from system
@@ -1109,7 +1109,7 @@ class HealthChecker {
 }
 
 class ReportGenerator {
-  constructor(private config: DashboardConfig['analytics']) {}
+  constructor(_config: DashboardConfig['analytics']) {}
 
   async shutdown(): Promise<void> {
     logger.info('Report generator shutdown')

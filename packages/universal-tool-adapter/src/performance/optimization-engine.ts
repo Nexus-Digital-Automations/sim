@@ -33,7 +33,6 @@ export class PerformanceOptimizationEngine extends EventEmitter {
   // Performance monitoring
   private readonly performanceMonitor: PerformanceMonitor
   private readonly adaptiveOptimizer: AdaptiveOptimizer
-  private readonly memoryManager: MemoryManager
 
   // Configuration
   private readonly config: PerformanceEngineConfig
@@ -639,7 +638,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
   }
 
   private getMemoryUsage(): number {
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    if (process?.memoryUsage) {
       return Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
     }
     return 0
@@ -1080,10 +1079,7 @@ class RequestBatcher {
     averageBatchSize: 0,
   }
 
-  constructor(
-    config: BatchingConfig,
-    private engine: PerformanceOptimizationEngine
-  ) {
+  constructor(config: BatchingConfig, _engine: PerformanceOptimizationEngine) {
     this.config = config
   }
 
@@ -1212,7 +1208,7 @@ class RequestBatcher {
 
 class PerformanceMonitor {
   constructor(
-    private config: AdaptationConfig,
+    _config: AdaptationConfig,
     private engine: PerformanceOptimizationEngine
   ) {}
 

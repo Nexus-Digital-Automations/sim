@@ -246,7 +246,6 @@ export class ErrorIntelligenceService extends EventEmitter {
   private learningModels = new Map<string, LearningModel>()
   private translationCache = new Map<string, Map<SupportedLanguage, string>>()
   private culturalAdaptations = new Map<string, CulturalAdaptation[]>()
-  private effectivenessMetrics = new Map<string, EffectivenessMetric[]>()
 
   constructor() {
     super()

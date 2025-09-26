@@ -32,7 +32,6 @@ const logger = createLogger('WorkflowConverter')
  */
 export class WorkflowConversionEngine {
   private readonly nodeAnalyzer: NodeAnalyzer
-  private readonly stateGenerator: StateGenerator
   private readonly transitionBuilder: TransitionBuilder
   private readonly validationEngine: ValidationEngine
   private readonly errorRecovery: ErrorRecovery

@@ -48,7 +48,7 @@ declare global {
  * Tracks telemetry events for workflow execution if telemetry is enabled
  */
 function trackWorkflowTelemetry(eventName: string, data: Record<string, any>) {
-  if (typeof window !== 'undefined' && window.__SIM_TRACK_EVENT) {
+  if (window?.__SIM_TRACK_EVENT) {
     // Add timestamp and sanitize the data to avoid circular references
     const safeData = {
       ...data,
@@ -83,7 +83,7 @@ export class Executor {
   private isChildExecution = false
 
   constructor(
-    private workflowParam:
+    workflowParam:
       | SerializedWorkflow
       | {
           workflow: SerializedWorkflow
@@ -1029,7 +1029,7 @@ export class Executor {
             (conn) => conn.target === block.id
           )
 
-          const iterationIndex = Number.parseInt(virtualBlockId.split('_iteration_')[1])
+          const iterationIndex = Number.parseInt(virtualBlockId.split('_iteration_')[1], 10)
           const allDependenciesMet = this.checkDependencies(
             incomingConnections,
             executedBlocks,

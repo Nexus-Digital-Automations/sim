@@ -115,7 +115,7 @@ export const validateAuthToken = (token: string, subdomainId: string): boolean =
     }
 
     // Check if token is not expired (24 hours)
-    const createdAt = Number.parseInt(timestamp)
+    const createdAt = Number.parseInt(timestamp, 10)
     const now = Date.now()
     const expireTime = 24 * 60 * 60 * 1000 // 24 hours
 

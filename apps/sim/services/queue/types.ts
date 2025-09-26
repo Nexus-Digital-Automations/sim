@@ -22,30 +22,30 @@ export interface RateLimitConfig {
 }
 
 // Rate limit window duration in milliseconds
-export const RATE_LIMIT_WINDOW_MS = Number.parseInt(env.RATE_LIMIT_WINDOW_MS) || 60000
+export const RATE_LIMIT_WINDOW_MS = Number.parseInt(env.RATE_LIMIT_WINDOW_MS, 10) || 60000
 
 // Manual execution bypass value (effectively unlimited)
-export const MANUAL_EXECUTION_LIMIT = Number.parseInt(env.MANUAL_EXECUTION_LIMIT) || 999999
+export const MANUAL_EXECUTION_LIMIT = Number.parseInt(env.MANUAL_EXECUTION_LIMIT, 10) || 999999
 
 export const RATE_LIMITS: Record<SubscriptionPlan, RateLimitConfig> = {
   free: {
-    syncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_FREE_SYNC) || 10,
-    asyncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_FREE_ASYNC) || 50,
+    syncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_FREE_SYNC, 10) || 10,
+    asyncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_FREE_ASYNC, 10) || 50,
     apiEndpointRequestsPerMinute: 10,
   },
   pro: {
-    syncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_PRO_SYNC) || 25,
-    asyncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_PRO_ASYNC) || 200,
+    syncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_PRO_SYNC, 10) || 25,
+    asyncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_PRO_ASYNC, 10) || 200,
     apiEndpointRequestsPerMinute: 30,
   },
   team: {
-    syncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_TEAM_SYNC) || 75,
-    asyncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_TEAM_ASYNC) || 500,
+    syncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_TEAM_SYNC, 10) || 75,
+    asyncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_TEAM_ASYNC, 10) || 500,
     apiEndpointRequestsPerMinute: 60,
   },
   enterprise: {
-    syncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_ENTERPRISE_SYNC) || 150,
-    asyncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_ENTERPRISE_ASYNC) || 1000,
+    syncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_ENTERPRISE_SYNC, 10) || 150,
+    asyncApiExecutionsPerMinute: Number.parseInt(env.RATE_LIMIT_ENTERPRISE_ASYNC, 10) || 1000,
     apiEndpointRequestsPerMinute: 120,
   },
 }

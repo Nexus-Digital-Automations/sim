@@ -715,8 +715,8 @@ class IntegrationTestingSuite {
 
       return {
         test: 'agent_workspace_relationship',
-        success: Number.parseInt(workspaceCheck.rows[0].count) > 0,
-        agentCount: Number.parseInt(workspaceCheck.rows[0].count),
+        success: Number.parseInt(workspaceCheck.rows[0].count, 10) > 0,
+        agentCount: Number.parseInt(workspaceCheck.rows[0].count, 10),
       }
     } catch (error) {
       return {
@@ -965,7 +965,7 @@ class IntegrationTestingSuite {
         'SELECT COUNT(*) as count FROM parlant_agent WHERE workspace_id = $1',
         [testData.workspaceId]
       )
-      counts.agents = Number.parseInt(agentCount.rows[0].count)
+      counts.agents = Number.parseInt(agentCount.rows[0].count, 10)
     } catch (error) {
       // Table might not exist
     }
@@ -975,7 +975,7 @@ class IntegrationTestingSuite {
         'SELECT COUNT(*) as count FROM parlant_session WHERE workspace_id = $1',
         [testData.workspaceId]
       )
-      counts.sessions = Number.parseInt(sessionCount.rows[0].count)
+      counts.sessions = Number.parseInt(sessionCount.rows[0].count, 10)
     } catch (error) {
       // Table might not exist
     }

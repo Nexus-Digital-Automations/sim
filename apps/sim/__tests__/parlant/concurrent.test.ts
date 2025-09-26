@@ -13,10 +13,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 // Test utilities for concurrent operations
 class ConcurrentTestHelper {
-  private static async delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
-
   static async runConcurrentOperations<T>(
     operations: Array<() => Promise<T>>,
     maxConcurrency = 10

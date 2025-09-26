@@ -1057,7 +1057,7 @@ class SystemLoadMonitor {
 class DistributedSync {
   constructor(
     private config: RateLimitConfig['distributed'],
-    private rateLimiter: AdvancedRateLimiter
+    _rateLimiter: AdvancedRateLimiter
   ) {}
 
   start(): void {

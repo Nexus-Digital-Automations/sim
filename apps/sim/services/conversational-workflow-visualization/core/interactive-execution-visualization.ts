@@ -273,12 +273,6 @@ export class InteractiveExecutionVisualizationEngine {
   // Commentary generators for different event types
   private readonly commentaryGenerators = new Map<ExecutionEventType, CommentaryGenerator>()
 
-  // User preferences cache
-  private readonly userPreferences = new Map<string, UserVisualizationPreferences>()
-
-  // Performance tracking
-  private readonly performanceMetrics = new Map<string, ExecutionPerformanceMetrics>()
-
   constructor() {
     this.initializeCommentaryGenerators()
     logger.info('Interactive Execution Visualization Engine initialized')

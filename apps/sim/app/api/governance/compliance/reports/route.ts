@@ -168,8 +168,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const reportId = url.searchParams.get('report_id')
     const reportType = url.searchParams.get('report_type') as ReportType | null
     const status = url.searchParams.get('status')
-    const limit = Number.parseInt(url.searchParams.get('limit') || '20')
-    const offset = Number.parseInt(url.searchParams.get('offset') || '0')
+    const limit = Number.parseInt(url.searchParams.get('limit') || '20', 10)
+    const offset = Number.parseInt(url.searchParams.get('offset') || '0', 10)
 
     // Validate required parameters
     if (!workspaceId) {

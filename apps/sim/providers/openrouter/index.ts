@@ -469,7 +469,7 @@ export const openRouterProvider: ProviderConfig = {
         duration: totalDuration,
       })
       const enhancedError = new Error(error instanceof Error ? error.message : String(error))
-      // @ts-ignore
+      // @ts-expect-error
       enhancedError.timing = {
         startTime: providerStartTimeISO,
         endTime: providerEndTimeISO,

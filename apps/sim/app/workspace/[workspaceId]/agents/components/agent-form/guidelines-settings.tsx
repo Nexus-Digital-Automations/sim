@@ -220,7 +220,9 @@ export function GuidelinesSettings({ form, workspaceId }: GuidelinesSettingsProp
                             render={({ field }) => (
                               <Select
                                 value={field.value.toString()}
-                                onValueChange={(value) => field.onChange(Number.parseInt(value))}
+                                onValueChange={(value) =>
+                                  field.onChange(Number.parseInt(value, 10))
+                                }
                               >
                                 <SelectTrigger className='w-32'>
                                   <SelectValue />

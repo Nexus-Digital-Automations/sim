@@ -67,7 +67,6 @@ class WorkspaceMessagingHandler {
   private io: Server
   private workspaceConnections: Map<string, Map<string, ConnectionContext>> = new Map()
   private userPresence: Map<string, Map<string, PresenceInfo>> = new Map()
-  private messageQueues: Map<string, any[]> = new Map()
   private rateLimiters: Map<string, { count: number; windowStart: Date }> = new Map()
   private encryptionKeys: Map<string, string> = new Map()
 

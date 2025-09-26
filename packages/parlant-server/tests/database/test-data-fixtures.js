@@ -1205,7 +1205,7 @@ class TestDataFixtures {
       `,
         [fixtureName]
       )
-      return Number.parseInt(result.rows[0].count)
+      return Number.parseInt(result.rows[0].count, 10)
     } finally {
       client.release()
     }

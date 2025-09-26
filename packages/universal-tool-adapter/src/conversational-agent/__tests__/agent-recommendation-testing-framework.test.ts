@@ -115,10 +115,8 @@ class AgentRecommendationTestingFramework {
   private contextAnalyzer: ConversationalContextAnalyzer
   private agentToolAPI: AgentToolAPI
   private workflowEngine: WorkflowRecommendationEngine
-  private realtimeService: RealtimeRecommendationService | null = null
 
   private testResults: TestResult[] = []
-  private performanceMetrics: PerformanceMetrics[] = []
   private configuration: TestConfiguration
 
   constructor(config: Partial<TestConfiguration> = {}) {

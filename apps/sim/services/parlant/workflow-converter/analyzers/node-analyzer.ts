@@ -344,7 +344,7 @@ export class NodeAnalyzer {
     // Extract condition from handle
     if (edge.sourceHandle?.startsWith('condition-')) {
       condition = edge.sourceHandle.replace('condition-', '')
-      priority = Number.parseInt(condition) || 0
+      priority = Number.parseInt(condition, 10) || 0
     }
 
     return {

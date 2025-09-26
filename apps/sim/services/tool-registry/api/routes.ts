@@ -103,8 +103,8 @@ export function createToolRegistryRoutes() {
       const query = SearchQuerySchema.parse({
         ...c.req.query(),
         tags: c.req.query('tags')?.split(',').filter(Boolean),
-        limit: Number.parseInt(c.req.query('limit') || '20'),
-        offset: Number.parseInt(c.req.query('offset') || '0'),
+        limit: Number.parseInt(c.req.query('limit') || '20', 10),
+        offset: Number.parseInt(c.req.query('offset') || '0', 10),
       })
 
       // Apply authentication filters
@@ -166,7 +166,7 @@ export function createToolRegistryRoutes() {
     try {
       const user = c.get('user')
       const workspace = c.get('workspace')
-      const limit = Number.parseInt(c.req.query('limit') || '10')
+      const limit = Number.parseInt(c.req.query('limit') || '10', 10)
 
       const popularTools = await discoveryService.getPopularTools(workspace?.id, limit)
 

@@ -215,7 +215,6 @@ export interface DiagnosticQuestion {
  */
 export class ErrorExplanationService {
   private explanationTemplates = new Map<string, ErrorExplanationTemplate>()
-  private contextualModifiers = new Map<string, ContextualModifier>()
 
   constructor() {
     this.initializeExplanationTemplates()

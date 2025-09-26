@@ -37,8 +37,8 @@ export async function GET(request: NextRequest) {
     const query: AgentListQuery = {
       workspace_id: searchParams.get('workspace_id') || undefined,
       status: (searchParams.get('status') as any) || undefined,
-      limit: searchParams.get('limit') ? Number.parseInt(searchParams.get('limit')!) : 50,
-      offset: searchParams.get('offset') ? Number.parseInt(searchParams.get('offset')!) : 0,
+      limit: searchParams.get('limit') ? Number.parseInt(searchParams.get('limit')!, 10) : 50,
+      offset: searchParams.get('offset') ? Number.parseInt(searchParams.get('offset')!, 10) : 0,
       search: searchParams.get('search') || undefined,
     }
 

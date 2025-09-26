@@ -261,13 +261,13 @@
 
 @media (max-width: 768px) {
   .sim-parlant-chatbox .parlant-chatbox {
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: none !important;
-    max-height: none !important;
-    border-radius: 0 !important;
-    bottom: 0 !important;
-    right: 0 !important;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    bottom: 0;
+    right: 0;
   }
 
   .sim-chat-popup-button {
@@ -330,6 +330,6 @@
 @media print {
   .sim-parlant-chatbox,
   .sim-chat-popup-button {
-    display: none !important;
+    display: none;
   }
 }

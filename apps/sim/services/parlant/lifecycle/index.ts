@@ -134,10 +134,7 @@ export interface LifecycleOperationResult<T = any> {
  * Main Agent Lifecycle Orchestrator class
  */
 export class AgentLifecycleOrchestrator extends EventEmitter {
-  private initialized = false
   private systemStatus: LifecycleSystemStatus
-  private operationQueue = new Map<string, any>() // operationId -> operation
-  private healthCheckInterval?: NodeJS.Timeout
   private systemStartTime = Date.now()
 
   constructor() {

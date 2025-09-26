@@ -310,7 +310,7 @@ export function loadConfigurationFromEnvironment(): Partial<AdapterConfiguration
     config.global!.rate_limiting = { ...config.global!.rate_limiting, enabled: false }
   }
 
-  const defaultRpm = Number.parseInt(process.env.ADAPTER_DEFAULT_RATE_LIMIT_RPM || '60')
+  const defaultRpm = Number.parseInt(process.env.ADAPTER_DEFAULT_RATE_LIMIT_RPM || '60', 10)
   if (!Number.isNaN(defaultRpm)) {
     config.global!.rate_limiting = {
       ...config.global!.rate_limiting,

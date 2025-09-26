@@ -122,7 +122,6 @@ export class ReactFlowRollbackSystem {
   private checkpoints: Map<string, RollbackCheckpoint[]> = new Map()
   private strategy: RollbackStrategy
   private isEnabled = true
-  private compressionWorker?: Worker
   private checkpointInterval?: NodeJS.Timeout
 
   constructor(strategy: RollbackStrategy = DEFAULT_ROLLBACK_STRATEGY) {

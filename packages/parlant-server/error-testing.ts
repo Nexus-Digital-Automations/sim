@@ -471,8 +471,6 @@ export class ErrorTestingSystem extends EventEmitter {
   private testSuites = new Map<string, TestSuite>()
   private testResults = new Map<string, TestResult[]>()
   private executionContexts = new Map<string, TestExecutionContext>()
-  private mockFactory = new MockFactory()
-  private validators = new ValidationEngine()
 
   constructor() {
     super()

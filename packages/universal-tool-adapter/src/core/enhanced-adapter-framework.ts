@@ -44,13 +44,13 @@ export class EnhancedAdapterFramework {
   private readonly cache = new Map<string, any>()
   private readonly metrics = new Map<string, number>()
 
-  // Framework configuration
-  private readonly config: FrameworkConfiguration
-
-  // Core subsystems
+  // Core framework components
   private readonly parameterMapper: ParameterMapper
   private readonly validationEngine: ValidationEngine
   private readonly resultFormatter: ResultFormatter
+
+  // Framework configuration
+  private readonly config: FrameworkConfiguration
 
   // Performance optimization
   private readonly performanceOptimizer: PerformanceOptimizer
@@ -1050,7 +1050,7 @@ export class EnhancedAdapterFramework {
   }
 
   private getMemoryUsage(): number {
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    if (process?.memoryUsage) {
       return Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
     }
     return 0
@@ -1252,7 +1252,7 @@ class PerformanceOptimizer {
   private cacheHits = 0
   private cacheRequests = 0
 
-  constructor(private config: FrameworkConfiguration) {}
+  constructor(_config: FrameworkConfiguration) {}
 
   getCacheHitRate(): number {
     return this.cacheRequests > 0 ? this.cacheHits / this.cacheRequests : 0
@@ -1318,7 +1318,7 @@ class FrameworkMonitor {
 class UsageAnalytics {
   private executionTimes: number[] = []
 
-  constructor(private config: FrameworkConfiguration) {}
+  constructor(_config: FrameworkConfiguration) {}
 
   recordAdapterCreation(type: string, duration: number): void {
     // Record metrics

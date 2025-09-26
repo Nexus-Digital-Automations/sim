@@ -436,8 +436,6 @@ export interface UserComparison {
 // =============================================================================
 
 export class RecommendationExplanationEngine {
-  private explanationTemplates: Map<string, ExplanationTemplate> = new Map()
-  private confidenceModels: Map<string, ConfidenceModel> = new Map()
   private userPreferences: Map<string, ExplanationPreferences> = new Map()
   private explanationHistory: Map<string, ExplanationHistory[]> = new Map()
 

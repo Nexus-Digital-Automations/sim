@@ -37,8 +37,8 @@ export async function GET(
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
-    const page = Number.parseInt(searchParams.get('page') || '1')
-    const limit = Math.min(Number.parseInt(searchParams.get('limit') || '20'), 100)
+    const page = Number.parseInt(searchParams.get('page') || '1', 10)
+    const limit = Math.min(Number.parseInt(searchParams.get('limit') || '20', 10), 100)
     const agentId = searchParams.get('agent_id') || undefined
     const search = searchParams.get('search') || undefined
     const includeArchived = searchParams.get('include_archived') === 'true'

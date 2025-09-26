@@ -10,22 +10,16 @@
  */
 
 import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
-import {
-  createEnhancedToolIntelligenceEngine,
-  type EnhancedToolIntelligenceEngine,
-} from '../tool-intelligence-engine'
+import { createEnhancedToolIntelligenceEngine } from '../tool-intelligence-engine'
 
 // =============================================================================
 // Analytics and Feedback Collection System
 // =============================================================================
 
 class AnalyticsFeedbackSystem {
-  private engine: EnhancedToolIntelligenceEngine
   private feedbackCollector: FeedbackCollector
   private usageAnalyzer: UsageAnalyzer
   private insightGenerator: InsightGenerator
-  private reportGenerator: ReportGenerator
-  private dataStore: AnalyticsDataStore
 
   constructor() {
     this.engine = createEnhancedToolIntelligenceEngine()

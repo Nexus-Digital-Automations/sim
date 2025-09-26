@@ -75,7 +75,7 @@ export function TeamSeats({
           <Label htmlFor='seats'>Number of seats</Label>
           <Select
             value={selectedSeats.toString()}
-            onValueChange={(value) => setSelectedSeats(Number.parseInt(value))}
+            onValueChange={(value) => setSelectedSeats(Number.parseInt(value, 10))}
           >
             <SelectTrigger id='seats' className='rounded-[8px]'>
               <SelectValue placeholder='Select number of seats' />

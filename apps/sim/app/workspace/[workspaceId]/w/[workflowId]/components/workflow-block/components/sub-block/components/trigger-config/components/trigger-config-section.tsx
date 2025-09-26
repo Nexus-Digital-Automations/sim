@@ -277,9 +277,9 @@ export function TriggerConfigSection({
                     aria-label={showSecret ? 'Hide secret' : 'Show secret'}
                   >
                     {showSecret ? (
-                      <EyeOff className='h-3.5 w-3.5 ' />
+                      <EyeOff className='h-3.5 w-3.5' />
                     ) : (
-                      <Eye className='h-3.5 w-3.5 ' />
+                      <Eye className='h-3.5 w-3.5' />
                     )}
                     <span className='sr-only'>{showSecret ? 'Hide secret' : 'Show secret'}</span>
                   </Button>
@@ -299,7 +299,7 @@ export function TriggerConfigSection({
                     {copied === fieldId ? (
                       <Check className='h-3.5 w-3.5 text-foreground' />
                     ) : (
-                      <Copy className='h-3.5 w-3.5 ' />
+                      <Copy className='h-3.5 w-3.5' />
                     )}
                   </Button>
                 </div>
@@ -366,7 +366,7 @@ export function TriggerConfigSection({
                 {copied === 'url' ? (
                   <Check className='h-3.5 w-3.5 text-foreground' />
                 ) : (
-                  <Copy className='h-3.5 w-3.5 ' />
+                  <Copy className='h-3.5 w-3.5' />
                 )}
               </Button>
             </div>
