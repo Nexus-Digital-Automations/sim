@@ -141,12 +141,10 @@ export interface IntelligenceFeedback {
 export class IntelligenceIntegrationLayer {
   private readonly config: IntelligenceConfiguration
   private readonly metrics: IntelligenceMetrics
-
-  // Intelligence engines
-  private readonly toolIntelligenceEngine: EnhancedToolIntelligenceEngine
   private readonly recommendationEngine: ContextualRecommendationEngine
   private readonly descriptionFramework: NaturalLanguageDescriptionFramework
   private readonly errorManager: ComprehensiveToolErrorManager
+  private readonly toolIntelligenceEngine: EnhancedToolIntelligenceEngine
 
   // Performance optimization
   private readonly intelligenceCache = new Map<string, any>()
@@ -962,7 +960,7 @@ export class IntelligenceIntegrationLayer {
     let memoryMB = 0
     const cpuPercent = 0
 
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    if (process?.memoryUsage) {
       const memUsage = process.memoryUsage()
       memoryMB = Math.round(memUsage.heapUsed / 1024 / 1024)
     }
