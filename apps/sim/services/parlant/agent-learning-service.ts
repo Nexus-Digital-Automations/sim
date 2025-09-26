@@ -16,11 +16,10 @@
  * - A/B testing for improvements
  */
 
-import type { AuthContext } from './types'
-import type { RAGContext } from './knowledge-integration'
 import { createLogger } from '@/lib/logs/console/logger'
 import { errorHandler } from './error-handler'
-import { knowledgeIntegrationService } from './knowledge-integration'
+import type { RAGContext } from './knowledge-integration'
+import type { AuthContext } from './types'
 
 const logger = createLogger('ParlantAgentLearning')
 
@@ -99,7 +98,11 @@ export interface LearningMetrics {
 
 export interface KnowledgeOptimization {
   knowledgeBaseId: string
-  optimizationType: 'chunk_relevance' | 'search_ranking' | 'content_enhancement' | 'metadata_enrichment'
+  optimizationType:
+    | 'chunk_relevance'
+    | 'search_ranking'
+    | 'content_enhancement'
+    | 'metadata_enrichment'
   description: string
   metrics: {
     queriesAffected: number
@@ -148,7 +151,7 @@ export class AgentLearningService {
         sessionId: interaction.sessionId,
         hasFeedback: !!interaction.feedback,
         responseTime: interaction.interaction.responseTime,
-        ragContextPresent: !!interaction.interaction.ragContext
+        ragContextPresent: !!interaction.interaction.ragContext,
       })
 
       // Add to buffer for batch processing
@@ -167,13 +170,13 @@ export class AgentLearningService {
 
       logger.info('User interaction recorded', {
         learningId,
-        immediateInsightsCount: immediateInsights.length
+        immediateInsightsCount: immediateInsights.length,
       })
 
       return {
         recorded: true,
         learningId,
-        immediateInsights
+        immediateInsights,
       }
     } catch (error) {
       logger.error('Failed to record user interaction', { error, interaction })
@@ -193,7 +196,7 @@ export class AgentLearningService {
       logger.info('Generating learning insights', {
         agentId,
         timeRange,
-        userId: auth.user_id
+        userId: auth.user_id,
       })
 
       // Fetch interactions for analysis
@@ -227,7 +230,7 @@ export class AgentLearningService {
       logger.info('Learning insights generated', {
         agentId,
         totalInsights: insights.length,
-        highConfidenceInsights: insights.filter(i => i.confidence > 0.8).length
+        highConfidenceInsights: insights.filter((i) => i.confidence > 0.8).length,
       })
 
       return insights
@@ -259,26 +262,26 @@ export class AgentLearningService {
           responseTimeP95: this.calculateResponseTimeP95(interactions),
           knowledgeHitRate: this.calculateKnowledgeHitRate(interactions),
           userSatisfaction: this.calculateUserSatisfaction(interactions),
-          improvementTrend: this.calculateImprovementTrend(interactions)
+          improvementTrend: this.calculateImprovementTrend(interactions),
         },
         breakdowns: {
           byFeedbackType: this.breakdownByFeedbackType(interactions),
           byTaskCategory: this.breakdownByTaskCategory(interactions),
-          byUserExperience: this.breakdownByUserExperience(interactions)
+          byUserExperience: this.breakdownByUserExperience(interactions),
         },
         learningProgress: {
           knowledgeGapsIdentified: await this.getKnowledgeGapsIdentified(agentId, period),
           knowledgeGapsResolved: await this.getKnowledgeGapsResolved(agentId, period),
           optimizationsImplemented: await this.getOptimizationsImplemented(agentId, period),
-          performanceGains: await this.getPerformanceGains(agentId, period)
-        }
+          performanceGains: await this.getPerformanceGains(agentId, period),
+        },
       }
 
       logger.info('Learning metrics calculated', {
         agentId,
         totalInteractions: metrics.metrics.totalInteractions,
         averageRating: metrics.metrics.averageRating,
-        userSatisfaction: metrics.metrics.userSatisfaction
+        userSatisfaction: metrics.metrics.userSatisfaction,
       })
 
       return metrics
@@ -299,7 +302,7 @@ export class AgentLearningService {
     try {
       logger.info('Optimizing knowledge base', {
         knowledgeBaseId,
-        insightsCount: insights.length
+        insightsCount: insights.length,
       })
 
       const optimizations: KnowledgeOptimization[] = []
@@ -324,7 +327,7 @@ export class AgentLearningService {
 
       logger.info('Knowledge base optimizations created', {
         knowledgeBaseId,
-        optimizationCount: optimizations.length
+        optimizationCount: optimizations.length,
       })
 
       return optimizations
@@ -361,7 +364,10 @@ export class AgentLearningService {
     }
 
     // Check for low relevance in RAG context
-    if (interaction.interaction.ragContext && interaction.interaction.ragContext.retrievalScore < 0.5) {
+    if (
+      interaction.interaction.ragContext &&
+      interaction.interaction.ragContext.retrievalScore < 0.5
+    ) {
       insights.push('Low knowledge retrieval relevance - review knowledge base content')
     }
 
@@ -376,7 +382,10 @@ export class AgentLearningService {
   /**
    * Persist interaction for long-term storage
    */
-  private async persistInteraction(interaction: UserInteraction, learningId: string): Promise<void> {
+  private async persistInteraction(
+    interaction: UserInteraction,
+    learningId: string
+  ): Promise<void> {
     // In production, this would save to a database
     logger.debug('Persisting interaction', { learningId, agentId: interaction.agentId })
   }
@@ -391,7 +400,7 @@ export class AgentLearningService {
     // In production, this would query the database
     // For now, filter from buffer (limited dataset)
     return this.interactionBuffer.filter(
-      interaction =>
+      (interaction) =>
         interaction.agentId === agentId &&
         interaction.timestamp >= timeRange.start &&
         interaction.timestamp <= timeRange.end
@@ -406,7 +415,7 @@ export class AgentLearningService {
 
     // Find interactions with poor RAG performance
     const poorRetrievals = interactions.filter(
-      i => i.interaction.ragContext && i.interaction.ragContext.retrievalScore < 0.6
+      (i) => i.interaction.ragContext && i.interaction.ragContext.retrievalScore < 0.6
     )
 
     if (poorRetrievals.length > interactions.length * 0.2) {
@@ -420,24 +429,24 @@ export class AgentLearningService {
           interactionCount: poorRetrievals.length,
           feedbackPatterns: this.analyzeFeedbackPatterns(poorRetrievals),
           commonQueries,
-          failurePatterns: commonQueries.slice(0, 5)
+          failurePatterns: commonQueries.slice(0, 5),
         },
         recommendations: [
           {
             action: 'Add more relevant documents to knowledge base',
             priority: 'high',
             effort: 'moderate',
-            expectedImpact: 0.7
+            expectedImpact: 0.7,
           },
           {
             action: 'Improve chunk segmentation strategy',
             priority: 'medium',
             effort: 'moderate',
-            expectedImpact: 0.4
-          }
+            expectedImpact: 0.4,
+          },
         ],
         affectedAgents: [interactions[0]?.agentId].filter(Boolean),
-        createdAt: new Date()
+        createdAt: new Date(),
       })
     }
 
@@ -450,13 +459,12 @@ export class AgentLearningService {
   private analyzeRetrievalPatterns(interactions: UserInteraction[]): LearningInsight[] {
     const insights: LearningInsight[] = []
 
-    const ragInteractions = interactions.filter(i => i.interaction.ragContext)
+    const ragInteractions = interactions.filter((i) => i.interaction.ragContext)
     if (ragInteractions.length === 0) return insights
 
-    const avgRetrievalScore = ragInteractions.reduce(
-      (sum, i) => sum + (i.interaction.ragContext?.retrievalScore || 0),
-      0
-    ) / ragInteractions.length
+    const avgRetrievalScore =
+      ragInteractions.reduce((sum, i) => sum + (i.interaction.ragContext?.retrievalScore || 0), 0) /
+      ragInteractions.length
 
     if (avgRetrievalScore < 0.7) {
       insights.push({
@@ -466,24 +474,24 @@ export class AgentLearningService {
         evidence: {
           interactionCount: ragInteractions.length,
           feedbackPatterns: this.analyzeFeedbackPatterns(ragInteractions),
-          commonQueries: this.extractCommonQueries(ragInteractions)
+          commonQueries: this.extractCommonQueries(ragInteractions),
         },
         recommendations: [
           {
             action: 'Optimize embedding model or search parameters',
             priority: 'medium',
             effort: 'moderate',
-            expectedImpact: 0.5
+            expectedImpact: 0.5,
           },
           {
             action: 'Review and enhance document metadata',
             priority: 'medium',
             effort: 'minimal',
-            expectedImpact: 0.3
-          }
+            expectedImpact: 0.3,
+          },
         ],
         affectedAgents: [interactions[0]?.agentId].filter(Boolean),
-        createdAt: new Date()
+        createdAt: new Date(),
       })
     }
 
@@ -496,13 +504,12 @@ export class AgentLearningService {
   private analyzeResponsePatterns(interactions: UserInteraction[]): LearningInsight[] {
     const insights: LearningInsight[] = []
 
-    const ratedInteractions = interactions.filter(i => i.feedback?.rating)
+    const ratedInteractions = interactions.filter((i) => i.feedback?.rating)
     if (ratedInteractions.length < 10) return insights
 
-    const avgRating = ratedInteractions.reduce(
-      (sum, i) => sum + (i.feedback?.rating || 0),
-      0
-    ) / ratedInteractions.length
+    const avgRating =
+      ratedInteractions.reduce((sum, i) => sum + (i.feedback?.rating || 0), 0) /
+      ratedInteractions.length
 
     if (avgRating < 3.5) {
       insights.push({
@@ -512,24 +519,24 @@ export class AgentLearningService {
         evidence: {
           interactionCount: ratedInteractions.length,
           feedbackPatterns: this.analyzeFeedbackPatterns(ratedInteractions),
-          commonQueries: this.extractCommonQueries(ratedInteractions)
+          commonQueries: this.extractCommonQueries(ratedInteractions),
         },
         recommendations: [
           {
             action: 'Review and improve agent prompts',
             priority: 'high',
             effort: 'minimal',
-            expectedImpact: 0.6
+            expectedImpact: 0.6,
           },
           {
             action: 'Enhance response templates and formatting',
             priority: 'medium',
             effort: 'minimal',
-            expectedImpact: 0.4
-          }
+            expectedImpact: 0.4,
+          },
         ],
         affectedAgents: [interactions[0]?.agentId].filter(Boolean),
-        createdAt: new Date()
+        createdAt: new Date(),
       })
     }
 
@@ -553,18 +560,18 @@ export class AgentLearningService {
         evidence: {
           interactionCount: interactions.length,
           feedbackPatterns: {},
-          commonQueries: queryPatterns.repeatedQueries
+          commonQueries: queryPatterns.repeatedQueries,
         },
         recommendations: [
           {
             action: 'Create FAQ or quick answers for common queries',
             priority: 'medium',
             effort: 'minimal',
-            expectedImpact: 0.5
-          }
+            expectedImpact: 0.5,
+          },
         ],
-        affectedAgents: [...new Set(interactions.map(i => i.agentId))],
-        createdAt: new Date()
+        affectedAgents: [...new Set(interactions.map((i) => i.agentId))],
+        createdAt: new Date(),
       })
     }
 
@@ -586,7 +593,7 @@ export class AgentLearningService {
           interactions: [],
           totalRating: 0,
           ratingCount: 0,
-          responseTimeSum: 0
+          responseTimeSum: 0,
         })
       }
 
@@ -606,7 +613,7 @@ export class AgentLearningService {
       logger.debug('Updating agent metrics', {
         agentId,
         interactionCount: metrics.interactions.length,
-        avgRating: metrics.ratingCount > 0 ? metrics.totalRating / metrics.ratingCount : null
+        avgRating: metrics.ratingCount > 0 ? metrics.totalRating / metrics.ratingCount : null,
       })
     }
   }
@@ -615,7 +622,7 @@ export class AgentLearningService {
   private extractCommonQueries(interactions: UserInteraction[]): string[] {
     const queryFreq = new Map<string, number>()
 
-    interactions.forEach(i => {
+    interactions.forEach((i) => {
       const normalizedQuery = i.interaction.userQuery.toLowerCase().trim()
       queryFreq.set(normalizedQuery, (queryFreq.get(normalizedQuery) || 0) + 1)
     })
@@ -629,7 +636,7 @@ export class AgentLearningService {
   private analyzeFeedbackPatterns(interactions: UserInteraction[]): Record<string, number> {
     const patterns: Record<string, number> = {}
 
-    interactions.forEach(i => {
+    interactions.forEach((i) => {
       if (i.feedback?.type) {
         patterns[i.feedback.type] = (patterns[i.feedback.type] || 0) + 1
       }
@@ -644,7 +651,7 @@ export class AgentLearningService {
   } {
     const queryFreq = new Map<string, number>()
 
-    interactions.forEach(i => {
+    interactions.forEach((i) => {
       const query = i.interaction.userQuery.toLowerCase()
       queryFreq.set(query, (queryFreq.get(query) || 0) + 1)
     })
@@ -657,44 +664,42 @@ export class AgentLearningService {
 
     return {
       repeatedQueries,
-      queryTypes: {}
+      queryTypes: {},
     }
   }
 
   // Metric calculation methods
   private calculateAverageRating(interactions: UserInteraction[]): number {
-    const rated = interactions.filter(i => i.feedback?.rating)
+    const rated = interactions.filter((i) => i.feedback?.rating)
     if (rated.length === 0) return 0
 
     return rated.reduce((sum, i) => sum + (i.feedback?.rating || 0), 0) / rated.length
   }
 
   private calculateResponseTimeP95(interactions: UserInteraction[]): number {
-    const times = interactions
-      .map(i => i.interaction.responseTime)
-      .sort((a, b) => a - b)
+    const times = interactions.map((i) => i.interaction.responseTime).sort((a, b) => a - b)
 
     const p95Index = Math.floor(times.length * 0.95)
     return times[p95Index] || 0
   }
 
   private calculateKnowledgeHitRate(interactions: UserInteraction[]): number {
-    const ragInteractions = interactions.filter(i => i.interaction.ragContext)
+    const ragInteractions = interactions.filter((i) => i.interaction.ragContext)
     if (ragInteractions.length === 0) return 0
 
     const hits = ragInteractions.filter(
-      i => (i.interaction.ragContext?.retrievalScore || 0) > 0.7
+      (i) => (i.interaction.ragContext?.retrievalScore || 0) > 0.7
     )
 
     return hits.length / ragInteractions.length
   }
 
   private calculateUserSatisfaction(interactions: UserInteraction[]): number {
-    const feedbackInteractions = interactions.filter(i => i.feedback)
+    const feedbackInteractions = interactions.filter((i) => i.feedback)
     if (feedbackInteractions.length === 0) return 0
 
-    const positiveCount = feedbackInteractions.filter(
-      i => ['helpful', 'excellent'].includes(i.feedback?.type || '')
+    const positiveCount = feedbackInteractions.filter((i) =>
+      ['helpful', 'excellent'].includes(i.feedback?.type || '')
     ).length
 
     return positiveCount / feedbackInteractions.length
@@ -703,7 +708,7 @@ export class AgentLearningService {
   private calculateImprovementTrend(interactions: UserInteraction[]): number {
     // Simple trend calculation based on ratings over time
     const ratedInteractions = interactions
-      .filter(i => i.feedback?.rating)
+      .filter((i) => i.feedback?.rating)
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
 
     if (ratedInteractions.length < 10) return 0
@@ -712,8 +717,10 @@ export class AgentLearningService {
     const firstHalf = ratedInteractions.slice(0, halfPoint)
     const secondHalf = ratedInteractions.slice(halfPoint)
 
-    const firstAvg = firstHalf.reduce((sum, i) => sum + (i.feedback?.rating || 0), 0) / firstHalf.length
-    const secondAvg = secondHalf.reduce((sum, i) => sum + (i.feedback?.rating || 0), 0) / secondHalf.length
+    const firstAvg =
+      firstHalf.reduce((sum, i) => sum + (i.feedback?.rating || 0), 0) / firstHalf.length
+    const secondAvg =
+      secondHalf.reduce((sum, i) => sum + (i.feedback?.rating || 0), 0) / secondHalf.length
 
     return secondAvg - firstAvg
   }
@@ -721,7 +728,7 @@ export class AgentLearningService {
   private breakdownByFeedbackType(interactions: UserInteraction[]): Record<string, number> {
     const breakdown: Record<string, number> = {}
 
-    interactions.forEach(i => {
+    interactions.forEach((i) => {
       if (i.feedback?.type) {
         breakdown[i.feedback.type] = (breakdown[i.feedback.type] || 0) + 1
       }
@@ -730,10 +737,15 @@ export class AgentLearningService {
     return breakdown
   }
 
-  private breakdownByTaskCategory(interactions: UserInteraction[]): Record<string, { interactions: number; avgRating: number }> {
-    const breakdown: Record<string, { interactions: number; totalRating: number; ratingCount: number }> = {}
+  private breakdownByTaskCategory(
+    interactions: UserInteraction[]
+  ): Record<string, { interactions: number; avgRating: number }> {
+    const breakdown: Record<
+      string,
+      { interactions: number; totalRating: number; ratingCount: number }
+    > = {}
 
-    interactions.forEach(i => {
+    interactions.forEach((i) => {
       const category = i.context.taskCategory || 'unknown'
       if (!breakdown[category]) {
         breakdown[category] = { interactions: 0, totalRating: 0, ratingCount: 0 }
@@ -751,17 +763,22 @@ export class AgentLearningService {
     for (const [category, stats] of Object.entries(breakdown)) {
       result[category] = {
         interactions: stats.interactions,
-        avgRating: stats.ratingCount > 0 ? stats.totalRating / stats.ratingCount : 0
+        avgRating: stats.ratingCount > 0 ? stats.totalRating / stats.ratingCount : 0,
       }
     }
 
     return result
   }
 
-  private breakdownByUserExperience(interactions: UserInteraction[]): Record<string, { interactions: number; avgRating: number }> {
-    const breakdown: Record<string, { interactions: number; totalRating: number; ratingCount: number }> = {}
+  private breakdownByUserExperience(
+    interactions: UserInteraction[]
+  ): Record<string, { interactions: number; avgRating: number }> {
+    const breakdown: Record<
+      string,
+      { interactions: number; totalRating: number; ratingCount: number }
+    > = {}
 
-    interactions.forEach(i => {
+    interactions.forEach((i) => {
       const experience = i.context.userExperience || 'unknown'
       if (!breakdown[experience]) {
         breakdown[experience] = { interactions: 0, totalRating: 0, ratingCount: 0 }
@@ -779,7 +796,7 @@ export class AgentLearningService {
     for (const [experience, stats] of Object.entries(breakdown)) {
       result[experience] = {
         interactions: stats.interactions,
-        avgRating: stats.ratingCount > 0 ? stats.totalRating / stats.ratingCount : 0
+        avgRating: stats.ratingCount > 0 ? stats.totalRating / stats.ratingCount : 0,
       }
     }
 
@@ -787,19 +804,31 @@ export class AgentLearningService {
   }
 
   // Placeholder methods for learning progress metrics
-  private async getKnowledgeGapsIdentified(agentId: string, period: { start: Date; end: Date }): Promise<number> {
+  private async getKnowledgeGapsIdentified(
+    agentId: string,
+    period: { start: Date; end: Date }
+  ): Promise<number> {
     return 0
   }
 
-  private async getKnowledgeGapsResolved(agentId: string, period: { start: Date; end: Date }): Promise<number> {
+  private async getKnowledgeGapsResolved(
+    agentId: string,
+    period: { start: Date; end: Date }
+  ): Promise<number> {
     return 0
   }
 
-  private async getOptimizationsImplemented(agentId: string, period: { start: Date; end: Date }): Promise<number> {
+  private async getOptimizationsImplemented(
+    agentId: string,
+    period: { start: Date; end: Date }
+  ): Promise<number> {
     return 0
   }
 
-  private async getPerformanceGains(agentId: string, period: { start: Date; end: Date }): Promise<Record<string, number>> {
+  private async getPerformanceGains(
+    agentId: string,
+    period: { start: Date; end: Date }
+  ): Promise<Record<string, number>> {
     return {}
   }
 
@@ -815,11 +844,11 @@ export class AgentLearningService {
       metrics: {
         queriesAffected: insight.evidence.interactionCount,
         relevanceImprovement: 0,
-        userSatisfactionDelta: 0
+        userSatisfactionDelta: 0,
       },
       implementation: {
-        status: 'planned'
-      }
+        status: 'planned',
+      },
     }
   }
 
@@ -835,11 +864,11 @@ export class AgentLearningService {
       metrics: {
         queriesAffected: insight.evidence.interactionCount,
         relevanceImprovement: 0,
-        userSatisfactionDelta: 0
+        userSatisfactionDelta: 0,
       },
       implementation: {
-        status: 'planned'
-      }
+        status: 'planned',
+      },
     }
   }
 }
@@ -875,10 +904,10 @@ export const learningUtils = {
         ragContext,
         toolsUsed: [],
         responseTime: 0,
-        conversationTurn: 1
+        conversationTurn: 1,
       },
       feedback,
-      context
+      context,
     }
   },
 
@@ -904,5 +933,5 @@ export const learningUtils = {
 - User Satisfaction: ${(metrics.metrics.userSatisfaction * 100).toFixed(1)}%
 - Improvement Trend: ${metrics.metrics.improvementTrend > 0 ? '+' : ''}${metrics.metrics.improvementTrend.toFixed(2)}
     `
-  }
+  },
 }

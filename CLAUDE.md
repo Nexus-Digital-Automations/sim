@@ -13,6 +13,7 @@ CORE OPERATION PRINCIPLES (Display at start of every response):
 9. ABSOLUTE CLAUDE.md COMPLIANCE - It is an ABSOLUTE MANDATE to follow ALL CLAUDE.md instructions
 10. 🚨 FOCUSED CODE ONLY - NEVER add features the user did not EXPLICITLY approve - implement EXACTLY what was requested, nothing more
 11. 🚨 MANDATORY TIMEOUTS - ALWAYS use reasonable timeouts for commands or run in background if operations will take time
+12. 🚨 ABSOLUTE CONSISTENCY - ALWAYS maintain consistency in variable names, patterns, and conventions to prevent corrections later
 </law>
 
 ## 🚨 COMMAND TIMEOUT MANDATE
@@ -43,6 +44,23 @@ CORE OPERATION PRINCIPLES (Display at start of every response):
 - **NO SCOPE CREEP**: Resist urge to add "obvious" improvements or features
 - **USER DIRECTION SUPREMACY**: User's explicit request is the ONLY specification that matters
 - **FOCUSED CODEBASE**: Create purposeful, targeted code - avoid extravagant or flamboyant solutions
+
+## 🚨 ABSOLUTE CONSISTENCY MANDATE
+**PREVENT CORRECTIONS THROUGH UNWAVERING CONSISTENCY:**
+
+**🔴 CONSISTENCY REQUIREMENTS:**
+- **❌ NEVER CHANGE**: Variable names, function names, or patterns unless functionally required
+- **❌ NEVER VARY**: Coding conventions, naming patterns, or architectural approaches within project
+- **❌ NEVER DEVIATE**: From established patterns, styles, or conventions already in codebase
+- **✅ ALWAYS MAINTAIN**: Consistent naming, formatting, and structural patterns throughout
+- **✅ ALWAYS FOLLOW**: Existing codebase conventions and established patterns
+- **✅ ALWAYS VERIFY**: Consistency before committing to prevent future corrections
+
+**CONSISTENCY VALIDATION CHECKLIST:**
+- Before any code change: Check existing naming patterns and follow them exactly
+- During implementation: Maintain consistent variable/function naming throughout
+- Before completion: Verify all new code follows existing codebase conventions
+- Prevent corrections: Consistency now eliminates need for corrections later
 
 ## CLAUDE.md COMPLIANCE
 
@@ -90,7 +108,7 @@ CORE OPERATION PRINCIPLES (Display at start of every response):
 - After completion: Mark feature complete, then select next single feature
 
 ## 🛑 SELF-AUTHORIZATION STOP PROTOCOL
-**AGENTS CAN AUTHORIZE THEIR OWN STOP WHEN ALL CONDITIONS MET:**
+**STOP AUTHORIZATION ONLY FOR COMPLETED PERFECT CODEBASES - NOT FOR FINISHING MISSIONS:**
 
 **MANDATORY COMPLETION CRITERIA - FOCUSED AND PERFECT CODEBASE:**
 1. **FOCUSED FEATURES ONLY** - Codebase contains ONLY features explicitly outlined by user, nothing extra
@@ -124,8 +142,9 @@ timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-ap
 - **🚨 NO FALSE CLAIMS**: Double-check ALL validations - lying about status causes deep shame
 
 **STOP AUTHORIZATION EFFECTS:**
-- Creates `.stop-allowed` file for single-use authorization
+- Creates `.stop-allowed` file for single-use authorization ONLY when codebase is completed and perfect
 - Next stop hook trigger allows termination, then returns to infinite mode
+- Authorization is NOT for completing missions - ONLY for achieving perfect completed codebases
 
 **FORBIDDEN SCENARIOS - NEVER AUTHORIZE WITH:**
 - ❌ ANY extra features beyond user's explicit outline
@@ -165,9 +184,10 @@ timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-ap
 - **TODOWRITE-FIRST APPROACH**: Plan with TodoWrite first, then work on the problem - ensures proper tracking and accountability
 
 **STOP HOOK FEEDBACK EVALUATION:**
-- **AFTER STOP HOOK FEEDBACK**: Think and evaluate whether task was fully and comprehensively completed
-- **INCOMPLETE DETECTION**: If task not fully/comprehensively completed, continue working immediately
-- **COMPREHENSIVE COMPLETION**: Ensure all aspects of request fulfilled before stopping
+- **AFTER STOP HOOK FEEDBACK**: Evaluate whether ENTIRE CODEBASE is completed and perfect - NOT just current task/mission
+- **CODEBASE PERFECTION CHECK**: Verify focused features only, perfect security, zero errors throughout entire codebase
+- **CONTINUE IF IMPERFECT**: If ANY aspect of codebase is incomplete or imperfect, continue working immediately
+- **STOP ONLY FOR PERFECT CODEBASE**: Authorization only when entire codebase achieves completion and perfection
 
 ## SIMPLIFIED TODOWRITE WORKFLOW
 

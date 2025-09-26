@@ -1,5 +1,5 @@
 import { env } from '@/lib/env'
-import { parseBuffer, parseFile } from '@/lib/file-parsers'
+// File parsers will be imported dynamically to ensure server-only usage
 import { type Chunk, TextChunker } from '@/lib/knowledge/documents/chunker'
 import { retryWithExponentialBackoff } from '@/lib/knowledge/documents/utils'
 import { createLogger } from '@/lib/logs/console/logger'
@@ -415,6 +415,7 @@ async function parseWithFileParser(fileUrl: string, filename: string, mimeType: 
     } else if (fileUrl.startsWith('http')) {
       content = await parseHttpFile(fileUrl, filename)
     } else {
+      const { parseFile } = await import('@/lib/file-parsers')
       const result = await parseFile(fileUrl)
       content = result.content
     }
@@ -444,6 +445,7 @@ async function parseDataURI(fileUrl: string, filename: string, mimeType: string)
 
   const extension = filename.split('.').pop()?.toLowerCase() || 'txt'
   const buffer = Buffer.from(base64Data, 'base64')
+  const { parseBuffer } = await import('@/lib/file-parsers')
   const result = await parseBuffer(buffer, extension)
   return result.content
 }
@@ -456,6 +458,7 @@ async function parseHttpFile(fileUrl: string, filename: string): Promise<string>
     throw new Error(`Could not determine file extension: ${filename}`)
   }
 
-  const result = await parseBuffer(buffer, extension)
+  const { parseBuffer: parseBuffer2 } = await import('@/lib/file-parsers')
+  const result = await parseBuffer2(buffer, extension)
   return result.content
 }

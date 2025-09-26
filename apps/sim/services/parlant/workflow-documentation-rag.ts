@@ -15,10 +15,14 @@
  * - Real-time help during workflow creation and editing
  */
 
-import type { AuthContext } from './types'
-import { knowledgeIntegrationService, type RAGContext, type ParlantRetrieverConfig } from './knowledge-integration'
 import { createLogger } from '@/lib/logs/console/logger'
 import { errorHandler } from './error-handler'
+import {
+  knowledgeIntegrationService,
+  type ParlantRetrieverConfig,
+  type RAGContext,
+} from './knowledge-integration'
+import type { AuthContext } from './types'
 
 const logger = createLogger('WorkflowDocumentationRAG')
 
@@ -83,11 +87,11 @@ export class WorkflowDocumentationRAGService {
   ): Promise<WorkflowHelp[]> {
     try {
       logger.info('Processing workflow help request', {
-        query: query.query.substring(0, 100) + '...',
+        query: `${query.query.substring(0, 100)}...`,
         workflowId: query.workflowContext.workflowId,
         blockTypes: query.workflowContext.blockTypes,
         helpType: query.helpType,
-        userId: auth.user_id
+        userId: auth.user_id,
       })
 
       // Enhance query with workflow context
@@ -102,9 +106,9 @@ export class WorkflowDocumentationRAGService {
           knowledgeBaseId: this.DOCUMENTATION_KB_ID,
           topK: 3,
           similarityThreshold: 0.6,
-          tagFilters: this.generateDocumentationTagFilters(query)
+          tagFilters: this.generateDocumentationTagFilters(query),
         },
-        purpose: 'documentation'
+        purpose: 'documentation',
       })
 
       // Examples retrieval if requested
@@ -114,9 +118,9 @@ export class WorkflowDocumentationRAGService {
             knowledgeBaseId: this.EXAMPLES_KB_ID,
             topK: 2,
             similarityThreshold: 0.7,
-            tagFilters: this.generateExampleTagFilters(query)
+            tagFilters: this.generateExampleTagFilters(query),
           },
-          purpose: 'examples'
+          purpose: 'examples',
         })
       }
 
@@ -164,8 +168,9 @@ export class WorkflowDocumentationRAGService {
 
       logger.info('Workflow help generated', {
         resultCount: helpResults.length,
-        averageConfidence: helpResults.reduce((sum, h) => sum + h.confidence, 0) / helpResults.length,
-        query: query.query
+        averageConfidence:
+          helpResults.reduce((sum, h) => sum + h.confidence, 0) / helpResults.length,
+        query: query.query,
       })
 
       return helpResults.slice(0, query.maxResults || 3)
@@ -196,8 +201,8 @@ export class WorkflowDocumentationRAGService {
         currentBlock: {
           id: 'current',
           type: blockType,
-          config: blockConfig
-        }
+          config: blockConfig,
+        },
       }
 
       const helpQuery: WorkflowDocumentationQuery = {
@@ -205,13 +210,13 @@ export class WorkflowDocumentationRAGService {
         workflowContext,
         helpType: 'block_specific',
         includeExamples: true,
-        maxResults: 1
+        maxResults: 1,
       }
 
       const authContext = auth || {
         user_id: 'system',
         workspace_id: undefined,
-        key_type: 'personal' as const
+        key_type: 'personal' as const,
       }
 
       const helpResults = await this.getWorkflowHelp(helpQuery, authContext)
@@ -239,7 +244,7 @@ export class WorkflowDocumentationRAGService {
       logger.info('Getting optimization suggestions', {
         workflowId: workflowContext.workflowId,
         blockCount: workflowContext.blockTypes.length,
-        metrics: performanceMetrics
+        metrics: performanceMetrics,
       })
 
       const issues: string[] = []
@@ -256,22 +261,23 @@ export class WorkflowDocumentationRAGService {
         issues.push('complex workflow with many blocks')
       }
 
-      const query = issues.length > 0
-        ? `How to optimize workflow with ${issues.join(', ')}?`
-        : `How to optimize workflow with ${workflowContext.blockTypes.join(', ')} blocks?`
+      const query =
+        issues.length > 0
+          ? `How to optimize workflow with ${issues.join(', ')}?`
+          : `How to optimize workflow with ${workflowContext.blockTypes.join(', ')} blocks?`
 
       const helpQuery: WorkflowDocumentationQuery = {
         query,
         workflowContext,
         helpType: 'optimization',
         includeExamples: true,
-        maxResults: 3
+        maxResults: 3,
       }
 
       const authContext = auth || {
         user_id: 'system',
         workspace_id: undefined,
-        key_type: 'personal' as const
+        key_type: 'personal' as const,
       }
 
       return await this.getWorkflowHelp(helpQuery, authContext)
@@ -314,7 +320,7 @@ export class WorkflowDocumentationRAGService {
 
     // Add block type filters
     if (query.workflowContext.blockTypes.length > 0) {
-      query.workflowContext.blockTypes.forEach(blockType => {
+      query.workflowContext.blockTypes.forEach((blockType) => {
         filters.push({ tagName: 'block_type', tagValue: blockType })
       })
     }
@@ -340,7 +346,7 @@ export class WorkflowDocumentationRAGService {
 
     // Add block type filters for examples
     if (query.workflowContext.blockTypes.length > 0) {
-      query.workflowContext.blockTypes.forEach(blockType => {
+      query.workflowContext.blockTypes.forEach((blockType) => {
         filters.push({ tagName: 'example_type', tagValue: blockType })
       })
     }
@@ -370,9 +376,7 @@ export class WorkflowDocumentationRAGService {
     const title = this.generateHelpTitle(query, purpose)
 
     // Combine content from chunks
-    const content = ragContext.retrievedChunks
-      .map(chunk => chunk.content)
-      .join('\n\n')
+    const content = ragContext.retrievedChunks.map((chunk) => chunk.content).join('\n\n')
 
     // Extract related topics
     const relatedTopics = this.extractRelatedTopics(ragContext)
@@ -384,11 +388,11 @@ export class WorkflowDocumentationRAGService {
       examples,
       relatedTopics,
       confidence,
-      sources: ragContext.retrievedChunks.map(chunk => ({
+      sources: ragContext.retrievedChunks.map((chunk) => ({
         documentName: chunk.documentName,
         chunkIndex: chunk.chunkIndex,
-        similarity: chunk.similarity
-      }))
+        similarity: chunk.similarity,
+      })),
     }
   }
 
@@ -398,7 +402,7 @@ export class WorkflowDocumentationRAGService {
   private extractExamples(ragContext: RAGContext) {
     const examples: WorkflowHelp['examples'] = []
 
-    ragContext.retrievedChunks.forEach(chunk => {
+    ragContext.retrievedChunks.forEach((chunk) => {
       // Try to extract code blocks or configuration examples
       const codeBlocks = chunk.content.match(/```[\s\S]*?```/g)
       const jsonBlocks = chunk.content.match(/\{[\s\S]*?\}/g)
@@ -406,9 +410,9 @@ export class WorkflowDocumentationRAGService {
       if (codeBlocks || jsonBlocks) {
         examples.push({
           title: `Example from ${chunk.documentName}`,
-          description: chunk.content.substring(0, 200) + '...',
+          description: `${chunk.content.substring(0, 200)}...`,
           code: codeBlocks?.[0]?.replace(/```/g, ''),
-          configuration: jsonBlocks ? this.tryParseJSON(jsonBlocks[0]) : undefined
+          configuration: jsonBlocks ? this.tryParseJSON(jsonBlocks[0]) : undefined,
         })
       }
     })
@@ -422,7 +426,7 @@ export class WorkflowDocumentationRAGService {
   private extractRelatedTopics(ragContext: RAGContext): string[] {
     const topics = new Set<string>()
 
-    ragContext.retrievedChunks.forEach(chunk => {
+    ragContext.retrievedChunks.forEach((chunk) => {
       // Extract potential topics from metadata
       if (chunk.metadata?.tags) {
         chunk.metadata.tags.forEach((tag: string) => topics.add(tag))
@@ -430,7 +434,7 @@ export class WorkflowDocumentationRAGService {
 
       // Extract topics from content (simple keyword extraction)
       const keywords = chunk.content.match(/\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\b/g) || []
-      keywords.slice(0, 3).forEach(keyword => topics.add(keyword))
+      keywords.slice(0, 3).forEach((keyword) => topics.add(keyword))
     })
 
     return Array.from(topics).slice(0, 5)
@@ -476,7 +480,7 @@ For more specific help, try rephrasing your question or check the workflow docum
       examples: [],
       relatedTopics: ['workflow-basics', 'best-practices', 'troubleshooting'],
       confidence: 0.3,
-      sources: []
+      sources: [],
     }
   }
 
@@ -499,7 +503,7 @@ Consider adding documentation for this block type to your knowledge base for fut
       examples: [],
       relatedTopics: [blockType.toLowerCase(), 'block-configuration', 'troubleshooting'],
       confidence: 0.2,
-      sources: []
+      sources: [],
     }
   }
 
@@ -523,7 +527,7 @@ Consider profiling your workflow to identify specific performance issues.`,
       examples: [],
       relatedTopics: ['performance', 'optimization', 'best-practices', 'monitoring'],
       confidence: 0.4,
-      sources: []
+      sources: [],
     }
   }
 
@@ -559,8 +563,8 @@ export const workflowDocUtils = {
         name: workflowData.name,
         description: workflowData.description,
         category: workflowData.category,
-        tags: workflowData.tags
-      }
+        tags: workflowData.tags,
+      },
     }
   },
 
@@ -591,7 +595,7 @@ export const workflowDocUtils = {
   /**
    * Check if help content is relevant
    */
-  isHelpRelevant(help: WorkflowHelp, minimumConfidence: number = 0.5): boolean {
+  isHelpRelevant(help: WorkflowHelp, minimumConfidence = 0.5): boolean {
     return help.confidence >= minimumConfidence && help.sources.length > 0
-  }
+  },
 }

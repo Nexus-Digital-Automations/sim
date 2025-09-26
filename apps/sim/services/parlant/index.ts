@@ -39,6 +39,13 @@
  * ```
  */
 
+export {
+  agentLearningService,
+  type LearningInsight,
+  type LearningMetrics,
+  learningUtils,
+  type UserInteraction,
+} from './agent-learning-service'
 export { AgentService, agentService } from './agent-service'
 // Core services
 export { closeParlantClient, createParlantClient, getParlantClient, ParlantClient } from './client'
@@ -61,49 +68,68 @@ export {
   ParlantTimeoutError,
   ParlantValidationError,
 } from './error-handler'
-export { SessionService, sessionService } from './session-service'
-
+export {
+  type BatchUploadRequest,
+  type BatchUploadResult,
+  type FileUploadRequest,
+  type FileUploadResult,
+  fileProcessingUtils,
+  fileUploadProcessorService,
+} from './file-upload-processor'
 // Knowledge Base Integration with RAG Services
 export {
   knowledgeIntegrationService,
   type ParlantRetrieverConfig,
   type RAGContext,
-  ragUtils
+  ragUtils,
 } from './knowledge-integration'
-
 export {
-  workflowDocumentationRAGService,
-  type WorkflowContext,
-  type WorkflowDocumentationQuery,
-  type WorkflowHelp,
-  workflowDocUtils
-} from './workflow-documentation-rag'
-
-export {
-  fileUploadProcessorService,
-  type FileUploadRequest,
-  type FileUploadResult,
-  type BatchUploadRequest,
-  type BatchUploadResult,
-  fileProcessingUtils
-} from './file-upload-processor'
-
-export {
-  agentLearningService,
-  type UserInteraction,
-  type LearningInsight,
-  type LearningMetrics,
-  learningUtils
-} from './agent-learning-service'
-
-export {
-  knowledgeRAGIntegrationService,
-  type RAGEnhancedResponse,
   type AgentKnowledgeProfile,
   type KnowledgeRAGConfig,
-  ragOperations
+  knowledgeRAGIntegrationService,
+  type RAGEnhancedResponse,
+  ragOperations,
 } from './knowledge-rag-integration'
-
+// Multi-Agent Orchestration System
+export {
+  type AgentHandoff,
+  type AgentTeam,
+  type AgentTeamMember,
+  type CollaborationRule,
+  type EscalationRule,
+  type HumanIntervention,
+  type HumanInterventionResponse,
+  MultiAgentOrchestrationService,
+  multiAgentOrchestrationService,
+  type OrchestrationProcess,
+  type ProcessMetrics,
+  type ProcessStep,
+  type TeamConfiguration,
+} from './multi-agent-orchestration-service'
+export {
+  type CreateCollaborationRoomRequest,
+  type CreateTeamRequest,
+  type CreateTeamResponse,
+  type InitiateHandoffRequest,
+  OrchestrationAPIService,
+  orchestrationAPIService,
+  type RequestInterventionRequest,
+  type RespondToInterventionRequest,
+  type StartProcessRequest,
+  type StartProcessResponse,
+} from './orchestration-api-service'
+export {
+  type AgentCommunication,
+  type CollaborationEvent,
+  type CollaborationEventType,
+  type CollaborationParticipant,
+  type CollaborationRoom,
+  OrchestrationCollaborationHub,
+  orchestrationCollaborationHub,
+  type ProcessAlert,
+  type ProcessMonitoringMetrics,
+} from './orchestration-collaboration-hub'
+export { SessionService, sessionService } from './session-service'
 // Type definitions
 // Re-export commonly used types with aliases for convenience
 export type {
@@ -150,6 +176,13 @@ export type {
   ValidationError,
   WorkspaceContext,
 } from './types'
+export {
+  type WorkflowContext,
+  type WorkflowDocumentationQuery,
+  type WorkflowHelp,
+  workflowDocUtils,
+  workflowDocumentationRAGService,
+} from './workflow-documentation-rag'
 
 /**
  * Health check utility

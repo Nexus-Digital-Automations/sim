@@ -3,10 +3,10 @@
 
 function safeRequire(modulePath) {
   try {
-    return require(modulePath);
+    return require(modulePath)
   } catch (error) {
     // Return empty object if module doesn't exist
-    return {};
+    return {}
   }
 }
 
@@ -34,4 +34,4 @@ module.exports = {
 
   // Note: The Python server.py is not exported as it's meant to be run separately
   // Use the npm scripts to start the Python server: npm run start or npm run dev
-};
+}

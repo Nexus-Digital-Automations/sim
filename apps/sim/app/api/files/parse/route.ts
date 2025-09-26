@@ -4,7 +4,7 @@ import fsPromises, { readFile } from 'fs/promises'
 import path from 'path'
 import binaryExtensionsList from 'binary-extensions'
 import { type NextRequest, NextResponse } from 'next/server'
-import { isSupportedFileType, parseFile } from '@/lib/file-parsers'
+// File parsers will be imported dynamically to ensure server-only usage
 import { createLogger } from '@/lib/logs/console/logger'
 import { downloadFile, isUsingCloudStorage } from '@/lib/uploads'
 import { UPLOAD_DIR_SERVER } from '@/lib/uploads/setup.server'
@@ -250,6 +250,7 @@ async function handleExternalUrl(url: string, fileType?: string): Promise<ParseR
     if (extension === 'csv') {
       return await handleCsvBuffer(buffer, filename, fileType, url)
     }
+    const { isSupportedFileType } = await import('@/lib/file-parsers')
     if (isSupportedFileType(extension)) {
       return await handleGenericTextBuffer(buffer, filename, extension, fileType, url)
     }
@@ -295,7 +296,8 @@ async function handleCloudFile(filePath: string, fileType?: string): Promise<Par
     if (extension === 'csv') {
       return await handleCsvBuffer(fileBuffer, filename, fileType, filePath)
     }
-    if (isSupportedFileType(extension)) {
+    const { isSupportedFileType: isSupportedFileType2 } = await import('@/lib/file-parsers')
+    if (isSupportedFileType2(extension)) {
       return await handleGenericTextBuffer(fileBuffer, filename, extension, fileType, filePath)
     }
     return handleGenericBuffer(fileBuffer, filename, extension, fileType)
@@ -333,6 +335,7 @@ async function handleLocalFile(filePath: string, fileType?: string): Promise<Par
       throw new Error(`File not found: ${filename}`)
     }
 
+    const { parseFile } = await import('@/lib/file-parsers')
     const result = await parseFile(fullPath)
 
     const stats = await fsPromises.stat(fullPath)

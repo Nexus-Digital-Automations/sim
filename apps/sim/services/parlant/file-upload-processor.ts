@@ -16,13 +16,10 @@
  * - Processing quality assessment
  */
 
-import type { AuthContext } from './types'
+import { processDocument } from '@/lib/knowledge/documents/document-processor'
 import { createLogger } from '@/lib/logs/console/logger'
 import { errorHandler } from './error-handler'
-import { processDocument } from '@/lib/knowledge/documents/document-processor'
-import { createDocument } from '@/lib/knowledge/documents/service'
-import { knowledgeIntegrationService } from './knowledge-integration'
-import { workflowDocumentationRAGService } from './workflow-documentation-rag'
+import type { AuthContext } from './types'
 
 const logger = createLogger('ParlantFileUploadProcessor')
 
@@ -125,7 +122,7 @@ export class FileUploadProcessorService {
       uploadId,
       status: 'uploaded',
       progress: 0,
-      message: 'File upload initiated'
+      message: 'File upload initiated',
     }
 
     this.uploadTracking.set(uploadId, result)
@@ -137,31 +134,43 @@ export class FileUploadProcessorService {
         mimeType: request.file.mimeType,
         size: request.file.size,
         knowledgeBaseId: request.knowledgeBaseId,
-        userId: auth.user_id
+        userId: auth.user_id,
       })
 
       // Stage 1: File validation and preparation
-      result = await this.updateProgress(uploadId, {
-        status: 'processing',
-        progress: 10,
-        message: 'Validating file and preparing for processing'
-      }, onProgress)
+      result = await this.updateProgress(
+        uploadId,
+        {
+          status: 'processing',
+          progress: 10,
+          message: 'Validating file and preparing for processing',
+        },
+        onProgress
+      )
 
       this.validateFileUpload(request)
 
       // Stage 2: Upload file to storage if needed
-      result = await this.updateProgress(uploadId, {
-        progress: 20,
-        message: 'Uploading file to storage'
-      }, onProgress)
+      result = await this.updateProgress(
+        uploadId,
+        {
+          progress: 20,
+          message: 'Uploading file to storage',
+        },
+        onProgress
+      )
 
-      const fileUrl = request.file.url || await this.uploadFileToStorage(request.file, auth)
+      const fileUrl = request.file.url || (await this.uploadFileToStorage(request.file, auth))
 
       // Stage 3: Process document with enhanced options
-      result = await this.updateProgress(uploadId, {
-        progress: 30,
-        message: 'Processing document and extracting content'
-      }, onProgress)
+      result = await this.updateProgress(
+        uploadId,
+        {
+          progress: 30,
+          message: 'Processing document and extracting content',
+        },
+        onProgress
+      )
 
       const processingOptions = request.processingOptions || {}
       const documentResult = await processDocument(
@@ -174,10 +183,14 @@ export class FileUploadProcessorService {
       )
 
       // Stage 4: Create document in knowledge base
-      result = await this.updateProgress(uploadId, {
-        progress: 50,
-        message: 'Creating document in knowledge base'
-      }, onProgress)
+      result = await this.updateProgress(
+        uploadId,
+        {
+          progress: 50,
+          message: 'Creating document in knowledge base',
+        },
+        onProgress
+      )
 
       const enhancedMetadata = await this.enhanceMetadata(
         request.metadata || {},
@@ -195,76 +208,91 @@ export class FileUploadProcessorService {
 
       // Stage 5: RAG optimization if enabled
       if (processingOptions.enableRAGOptimization) {
-        result = await this.updateProgress(uploadId, {
-          progress: 70,
-          message: 'Optimizing for RAG retrieval'
-        }, onProgress)
+        result = await this.updateProgress(
+          uploadId,
+          {
+            progress: 70,
+            message: 'Optimizing for RAG retrieval',
+          },
+          onProgress
+        )
 
         await this.optimizeForRAG(documentId, documentResult.chunks, request, auth)
       }
 
       // Stage 6: Agent integration if specified
       if (request.agentContext?.agentId) {
-        result = await this.updateProgress(uploadId, {
-          progress: 80,
-          message: 'Integrating with agent knowledge'
-        }, onProgress)
-
-        await this.integrateWithAgent(
-          documentId,
-          request.agentContext,
-          documentResult,
-          auth
+        result = await this.updateProgress(
+          uploadId,
+          {
+            progress: 80,
+            message: 'Integrating with agent knowledge',
+          },
+          onProgress
         )
+
+        await this.integrateWithAgent(documentId, request.agentContext, documentResult, auth)
       }
 
       // Stage 7: Quality assessment
-      result = await this.updateProgress(uploadId, {
-        progress: 90,
-        message: 'Assessing processing quality'
-      }, onProgress)
+      result = await this.updateProgress(
+        uploadId,
+        {
+          progress: 90,
+          message: 'Assessing processing quality',
+        },
+        onProgress
+      )
 
       const qualityScore = this.assessProcessingQuality(documentResult, request)
 
       // Stage 8: Complete
-      result = await this.updateProgress(uploadId, {
-        documentId,
-        status: 'completed',
-        progress: 100,
-        message: 'File processing completed successfully',
-        processingStats: {
-          chunkCount: documentResult.chunks.length,
-          totalTokens: documentResult.totalTokenCount,
-          processingTime: Date.now() - parseInt(uploadId.split('_')[1]),
-          qualityScore
+      result = await this.updateProgress(
+        uploadId,
+        {
+          documentId,
+          status: 'completed',
+          progress: 100,
+          message: 'File processing completed successfully',
+          processingStats: {
+            chunkCount: documentResult.chunks.length,
+            totalTokens: documentResult.totalTokenCount,
+            processingTime: Date.now() - Number.parseInt(uploadId.split('_')[1]),
+            qualityScore,
+          },
+          extractedMetadata: enhancedMetadata,
         },
-        extractedMetadata: enhancedMetadata
-      }, onProgress)
+        onProgress
+      )
 
       logger.info('File upload processing completed', {
         uploadId,
         documentId,
         chunkCount: documentResult.chunks.length,
-        qualityScore
+        qualityScore,
       })
 
       return result
     } catch (error) {
       logger.error('File upload processing failed', { error, uploadId, request })
 
-      result = await this.updateProgress(uploadId, {
-        status: 'failed',
-        progress: result.progress,
-        message: `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        errors: [
-          ...(result.errors || []),
-          {
-            stage: 'processing',
-            error: error instanceof Error ? error.message : 'Unknown error',
-            details: error
-          }
-        ]
-      }, onProgress)
+      result = await this.updateProgress(
+        uploadId,
+        {
+          status: 'failed',
+          progress: result.progress,
+          message: `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          errors: [
+            ...(result.errors || []),
+            {
+              stage: 'processing',
+              error: error instanceof Error ? error.message : 'Unknown error',
+              details: error,
+            },
+          ],
+        },
+        onProgress
+      )
 
       throw errorHandler.handleError(error, 'process_file_upload')
     }
@@ -280,13 +308,13 @@ export class FileUploadProcessorService {
   ): Promise<BatchUploadResult> {
     const batchId = `batch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    let batchResult: BatchUploadResult = {
+    const batchResult: BatchUploadResult = {
       batchId,
       totalFiles: request.files.length,
       completed: 0,
       failed: 0,
       results: [],
-      status: 'processing'
+      status: 'processing',
     }
 
     this.batchTracking.set(batchId, batchResult)
@@ -296,22 +324,18 @@ export class FileUploadProcessorService {
         batchId,
         fileCount: request.files.length,
         parallel: request.batchOptions?.parallel,
-        userId: auth.user_id
+        userId: auth.user_id,
       })
 
       const processingPromises = request.files.map(async (fileRequest, index) => {
         try {
-          const result = await this.processFileUpload(
-            fileRequest,
-            auth,
-            (fileResult) => {
-              // Update batch progress when individual file progresses
-              batchResult.results[index] = fileResult
-              if (onProgress) {
-                onProgress({ ...batchResult })
-              }
+          const result = await this.processFileUpload(fileRequest, auth, (fileResult) => {
+            // Update batch progress when individual file progresses
+            batchResult.results[index] = fileResult
+            if (onProgress) {
+              onProgress({ ...batchResult })
             }
-          )
+          })
 
           batchResult.completed++
           batchResult.results[index] = result
@@ -324,11 +348,13 @@ export class FileUploadProcessorService {
             status: 'failed',
             progress: 0,
             message: `Failed to process: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            errors: [{
-              stage: 'batch_processing',
-              error: error instanceof Error ? error.message : 'Unknown error',
-              details: error
-            }]
+            errors: [
+              {
+                stage: 'batch_processing',
+                error: error instanceof Error ? error.message : 'Unknown error',
+                details: error,
+              },
+            ],
           }
           batchResult.results[index] = failedResult
 
@@ -346,13 +372,15 @@ export class FileUploadProcessorService {
         batchResult.results = results
       } else {
         const results = await Promise.allSettled(processingPromises)
-        batchResult.results = results.map(r =>
-          r.status === 'fulfilled' ? r.value : r.reason
-        )
+        batchResult.results = results.map((r) => (r.status === 'fulfilled' ? r.value : r.reason))
       }
 
-      batchResult.status = batchResult.failed === 0 ? 'completed' :
-                          batchResult.completed > 0 ? 'partially_failed' : 'failed'
+      batchResult.status =
+        batchResult.failed === 0
+          ? 'completed'
+          : batchResult.completed > 0
+            ? 'partially_failed'
+            : 'failed'
 
       if (onProgress) {
         onProgress(batchResult)
@@ -362,7 +390,7 @@ export class FileUploadProcessorService {
         batchId,
         completed: batchResult.completed,
         failed: batchResult.failed,
-        status: batchResult.status
+        status: batchResult.status,
       })
 
       return batchResult
@@ -404,7 +432,7 @@ export class FileUploadProcessorService {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'text/markdown',
       'text/html',
-      'application/json'
+      'application/json',
     ]
 
     if (request.file.size > maxSize) {
@@ -508,7 +536,7 @@ export class FileUploadProcessorService {
       // Add document to agent's training corpus
       logger.info('Integrating document with agent training', {
         documentId,
-        agentId: agentContext.agentId
+        agentId: agentContext.agentId,
       })
     }
 
@@ -517,7 +545,7 @@ export class FileUploadProcessorService {
       for (const workflowId of agentContext.relatedWorkflows) {
         logger.info('Linking document to workflow documentation', {
           documentId,
-          workflowId
+          workflowId,
         })
       }
     }
@@ -558,7 +586,7 @@ export class FileUploadProcessorService {
       uploadId,
       status: 'uploaded' as const,
       progress: 0,
-      message: ''
+      message: '',
     }
 
     const updated = { ...current, ...updates }
@@ -574,25 +602,27 @@ export class FileUploadProcessorService {
   /**
    * Process tasks with controlled concurrency
    */
-  private async processConcurrent<T>(
-    promises: Promise<T>[],
-    maxConcurrency: number
-  ): Promise<T[]> {
+  private async processConcurrent<T>(promises: Promise<T>[], maxConcurrency: number): Promise<T[]> {
     const results: T[] = []
     const executing: Promise<void>[] = []
 
     for (const [index, promise] of promises.entries()) {
-      const executor = promise.then(result => {
-        results[index] = result
-      }).catch(error => {
-        results[index] = error
-      })
+      const executor = promise
+        .then((result) => {
+          results[index] = result
+        })
+        .catch((error) => {
+          results[index] = error
+        })
 
       executing.push(executor)
 
       if (executing.length >= maxConcurrency) {
         await Promise.race(executing)
-        executing.splice(executing.findIndex(p => p === executor), 1)
+        executing.splice(
+          executing.findIndex((p) => p === executor),
+          1
+        )
       }
     }
 
@@ -616,16 +646,17 @@ export class FileUploadProcessorService {
    * Extract key topics from document chunks
    */
   private extractKeyTopics(chunks: any[]): string[] {
-    const allText = chunks.map(chunk => chunk.content || '').join(' ')
+    const allText = chunks.map((chunk) => chunk.content || '').join(' ')
 
     // Simple keyword extraction (in production, use NLP libraries)
-    const words = allText.toLowerCase()
+    const words = allText
+      .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter(word => word.length > 4)
+      .filter((word) => word.length > 4)
 
     const frequency: Record<string, number> = {}
-    words.forEach(word => {
+    words.forEach((word) => {
       frequency[word] = (frequency[word] || 0) + 1
     })
 
@@ -691,12 +722,7 @@ export const fileProcessingUtils = {
       recommendations.push('Ensure file contains substantial content for knowledge extraction')
     }
 
-    const supportedTypes = [
-      'application/pdf',
-      'text/plain',
-      'application/msword',
-      'text/markdown'
-    ]
+    const supportedTypes = ['application/pdf', 'text/plain', 'application/msword', 'text/markdown']
 
     if (!supportedTypes.includes(file.mimeType)) {
       issues.push(`Unsupported file type: ${file.mimeType}`)
@@ -706,7 +732,7 @@ export const fileProcessingUtils = {
     return {
       valid: issues.length === 0,
       issues,
-      recommendations
+      recommendations,
     }
-  }
+  },
 }

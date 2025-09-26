@@ -15,12 +15,10 @@
  * - Learning from user interactions and feedback
  */
 
-import type { AuthContext } from './types'
-import { createLogger } from '@/lib/logs/console/logger'
 import { getKnowledgeBases } from '@/lib/knowledge/service'
-import { knowledgeSearchTool } from '@/tools/knowledge/search'
-import { getParlantClient } from './client'
+import { createLogger } from '@/lib/logs/console/logger'
 import { errorHandler } from './error-handler'
+import type { AuthContext } from './types'
 
 const logger = createLogger('ParlantKnowledgeIntegration')
 
@@ -70,14 +68,14 @@ export class KnowledgeIntegrationService {
 
       logger.info('Retrieved knowledge bases', {
         count: knowledgeBases.length,
-        workspaceId
+        workspaceId,
       })
 
-      return knowledgeBases.map(kb => ({
+      return knowledgeBases.map((kb) => ({
         id: kb.id,
         name: kb.name,
         description: kb.description,
-        docCount: kb.docCount
+        docCount: kb.docCount,
       }))
     } catch (error) {
       logger.error('Failed to retrieve knowledge bases', { error, workspaceId })
@@ -100,12 +98,12 @@ export class KnowledgeIntegrationService {
       logger.info('Creating Parlant knowledge retriever', {
         knowledgeBaseId: config.knowledgeBaseId,
         topK: config.topK,
-        userId: auth.user_id
+        userId: auth.user_id,
       })
 
       // Validate knowledge base access
       const knowledgeBases = await getKnowledgeBases(auth.user_id, auth.workspace_id)
-      const knowledgeBase = knowledgeBases.find(kb => kb.id === config.knowledgeBaseId)
+      const knowledgeBase = knowledgeBases.find((kb) => kb.id === config.knowledgeBaseId)
 
       if (!knowledgeBase) {
         throw new Error(`Knowledge base ${config.knowledgeBaseId} not accessible`)
@@ -117,7 +115,7 @@ export class KnowledgeIntegrationService {
 
       logger.info('Created knowledge retriever', {
         retrieverId,
-        knowledgeBaseId: config.knowledgeBaseId
+        knowledgeBaseId: config.knowledgeBaseId,
       })
 
       return {
@@ -128,8 +126,8 @@ export class KnowledgeIntegrationService {
           topK: config.topK || 5,
           similarityThreshold: config.similarityThreshold || 0.7,
           maxContextLength: config.maxContextLength || 4000,
-          includeMetadata: config.includeMetadata !== false
-        }
+          includeMetadata: config.includeMetadata !== false,
+        },
       }
     } catch (error) {
       logger.error('Failed to create knowledge retriever', { error, config })
@@ -147,9 +145,9 @@ export class KnowledgeIntegrationService {
   ): Promise<RAGContext> {
     try {
       logger.info('Performing RAG retrieval', {
-        query: query.substring(0, 100) + '...',
+        query: `${query.substring(0, 100)}...`,
         knowledgeBaseId: config.knowledgeBaseId,
-        topK: config.topK
+        topK: config.topK,
       })
 
       // Use the existing knowledge search tool
@@ -157,7 +155,7 @@ export class KnowledgeIntegrationService {
         knowledgeBaseId: config.knowledgeBaseId,
         query,
         topK: config.topK || 5,
-        tagFilters: config.tagFilters
+        tagFilters: config.tagFilters,
       })
 
       if (!searchResponse.success || !searchResponse.output) {
@@ -167,13 +165,14 @@ export class KnowledgeIntegrationService {
       const results = searchResponse.output.results || []
 
       // Filter results by similarity threshold
-      const filteredResults = results.filter(result =>
-        result.similarity >= (config.similarityThreshold || 0.7)
+      const filteredResults = results.filter(
+        (result) => result.similarity >= (config.similarityThreshold || 0.7)
       )
 
       // Calculate context metrics
-      const contextLength = filteredResults.reduce((total, result) =>
-        total + result.content.length, 0
+      const contextLength = filteredResults.reduce(
+        (total, result) => total + result.content.length,
+        0
       )
 
       // Trim context if it exceeds max length
@@ -197,19 +196,18 @@ export class KnowledgeIntegrationService {
         retrievedChunks: trimmedResults,
         knowledgeBaseIds: [config.knowledgeBaseId],
         totalResults: results.length,
-        retrievalScore: trimmedResults.length > 0
-          ? trimmedResults.reduce((sum, r) => sum + r.similarity, 0) / trimmedResults.length
-          : 0,
-        contextLength: trimmedResults.reduce((total, result) =>
-          total + result.content.length, 0
-        )
+        retrievalScore:
+          trimmedResults.length > 0
+            ? trimmedResults.reduce((sum, r) => sum + r.similarity, 0) / trimmedResults.length
+            : 0,
+        contextLength: trimmedResults.reduce((total, result) => total + result.content.length, 0),
       }
 
       logger.info('RAG retrieval completed', {
         retrievedChunks: trimmedResults.length,
         totalResults: results.length,
         averageScore: ragContext.retrievalScore,
-        contextLength: ragContext.contextLength
+        contextLength: ragContext.contextLength,
       })
 
       return ragContext
@@ -222,19 +220,13 @@ export class KnowledgeIntegrationService {
   /**
    * Generate enhanced prompt with RAG context
    */
-  generateRAGPrompt(
-    originalQuery: string,
-    ragContext: RAGContext,
-    systemPrompt?: string
-  ): string {
+  generateRAGPrompt(originalQuery: string, ragContext: RAGContext, systemPrompt?: string): string {
     if (ragContext.retrievedChunks.length === 0) {
       return originalQuery
     }
 
     const contextSection = ragContext.retrievedChunks
-      .map((chunk, index) =>
-        `[Context ${index + 1}] ${chunk.documentName}:\n${chunk.content}\n`
-      )
+      .map((chunk, index) => `[Context ${index + 1}] ${chunk.documentName}:\n${chunk.content}\n`)
       .join('\n')
 
     const enhancedPrompt = `${systemPrompt || 'You are a helpful assistant.'} Use the following context information to answer the user's question. If the context doesn't contain relevant information, say so and provide a general response.
@@ -249,7 +241,7 @@ Please provide a comprehensive answer based on the context provided above.`
     logger.info('Generated RAG prompt', {
       originalLength: originalQuery.length,
       enhancedLength: enhancedPrompt.length,
-      contextChunks: ragContext.retrievedChunks.length
+      contextChunks: ragContext.retrievedChunks.length,
     })
 
     return enhancedPrompt
@@ -278,7 +270,7 @@ Please provide a comprehensive answer based on the context provided above.`
         fileName: file.name,
         knowledgeBaseId,
         mimeType: file.mimeType,
-        userId: auth.user_id
+        userId: auth.user_id,
       })
 
       // This would integrate with the existing document creation and processing pipeline
@@ -297,13 +289,13 @@ Please provide a comprehensive answer based on the context provided above.`
       logger.info('File upload processed', {
         documentId,
         fileName: file.name,
-        knowledgeBaseId
+        knowledgeBaseId,
       })
 
       return {
         documentId,
         status: 'processing',
-        message: `Document '${file.name}' has been uploaded and is being processed for knowledge base integration.`
+        message: `Document '${file.name}' has been uploaded and is being processed for knowledge base integration.`,
       }
     } catch (error) {
       logger.error('File upload processing failed', { error, fileName: file.name })
@@ -331,7 +323,7 @@ Please provide a comprehensive answer based on the context provided above.`
         queryLength: interaction.query.length,
         hasRAGContext: !!interaction.ragContext,
         userFeedback: interaction.userFeedback,
-        userId: auth.user_id
+        userId: auth.user_id,
       })
 
       // Generate learning record ID
@@ -347,12 +339,12 @@ Please provide a comprehensive answer based on the context provided above.`
       logger.info('User interaction recorded', {
         learningId,
         sessionId,
-        feedback: interaction.userFeedback
+        feedback: interaction.userFeedback,
       })
 
       return {
         recorded: true,
-        learningId
+        learningId,
       }
     } catch (error) {
       logger.error('Failed to record user interaction', { error, sessionId })
@@ -375,11 +367,14 @@ Please provide a comprehensive answer based on the context provided above.`
       query: params.query,
       topK: params.topK || 5,
       ...(params.tagFilters && {
-        filters: params.tagFilters.reduce((acc, filter) => {
-          acc[filter.tagName] = filter.tagValue
-          return acc
-        }, {} as Record<string, string>)
-      })
+        filters: params.tagFilters.reduce(
+          (acc, filter) => {
+            acc[filter.tagName] = filter.tagValue
+            return acc
+          },
+          {} as Record<string, string>
+        ),
+      }),
     }
 
     // In a real implementation, this would make the actual API call
@@ -390,8 +385,8 @@ Please provide a comprehensive answer based on the context provided above.`
         results: [] as KnowledgeSearchResult[],
         query: params.query,
         totalResults: 0,
-        cost: { tokens: 0, cost: 0 }
-      }
+        cost: { tokens: 0, cost: 0 },
+      },
     }
   }
 }
@@ -414,8 +409,9 @@ export const ragUtils = {
     }
 
     return ragContext.retrievedChunks
-      .map((chunk, index) =>
-        `${index + 1}. ${chunk.documentName} (${(chunk.similarity * 100).toFixed(1)}% match):\n   ${chunk.content.substring(0, 200)}...`
+      .map(
+        (chunk, index) =>
+          `${index + 1}. ${chunk.documentName} (${(chunk.similarity * 100).toFixed(1)}% match):\n   ${chunk.content.substring(0, 200)}...`
       )
       .join('\n\n')
   },
@@ -426,14 +422,16 @@ export const ragUtils = {
   calculateRelevanceScore(ragContext: RAGContext): number {
     if (ragContext.retrievedChunks.length === 0) return 0
 
-    return ragContext.retrievedChunks.reduce((sum, chunk) => sum + chunk.similarity, 0) / ragContext.retrievedChunks.length
+    return (
+      ragContext.retrievedChunks.reduce((sum, chunk) => sum + chunk.similarity, 0) /
+      ragContext.retrievedChunks.length
+    )
   },
 
   /**
    * Determine if context is sufficient for answering
    */
-  isContextSufficient(ragContext: RAGContext, minScore: number = 0.7, minChunks: number = 1): boolean {
-    return ragContext.retrievedChunks.length >= minChunks &&
-           ragContext.retrievalScore >= minScore
-  }
+  isContextSufficient(ragContext: RAGContext, minScore = 0.7, minChunks = 1): boolean {
+    return ragContext.retrievedChunks.length >= minChunks && ragContext.retrievalScore >= minScore
+  },
 }

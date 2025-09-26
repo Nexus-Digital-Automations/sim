@@ -14,33 +14,32 @@
  * - Continuous learning and optimization
  */
 
-import type { AuthContext } from './types'
 import { createLogger } from '@/lib/logs/console/logger'
+import {
+  agentLearningService,
+  type LearningInsight,
+  type UserInteraction,
+} from './agent-learning-service'
 import { errorHandler } from './error-handler'
+import {
+  type BatchUploadRequest,
+  type BatchUploadResult,
+  type FileUploadRequest,
+  type FileUploadResult,
+  fileUploadProcessorService,
+} from './file-upload-processor'
 import {
   knowledgeIntegrationService,
   type ParlantRetrieverConfig,
-  type RAGContext
+  type RAGContext,
 } from './knowledge-integration'
+import type { AuthContext } from './types'
 import {
-  workflowDocumentationRAGService,
   type WorkflowContext,
   type WorkflowDocumentationQuery,
-  type WorkflowHelp
+  type WorkflowHelp,
+  workflowDocumentationRAGService,
 } from './workflow-documentation-rag'
-import {
-  fileUploadProcessorService,
-  type FileUploadRequest,
-  type FileUploadResult,
-  type BatchUploadRequest,
-  type BatchUploadResult
-} from './file-upload-processor'
-import {
-  agentLearningService,
-  type UserInteraction,
-  type LearningInsight,
-  type LearningMetrics
-} from './agent-learning-service'
 
 const logger = createLogger('KnowledgeRAGIntegration')
 
@@ -114,10 +113,10 @@ export class KnowledgeRAGIntegrationService {
 
     try {
       logger.info('Processing RAG-enhanced query', {
-        query: query.substring(0, 100) + '...',
+        query: `${query.substring(0, 100)}...`,
         agentId: config.agentId,
         knowledgeBasesCount: config.knowledgeBases.length,
-        userId: auth.user_id
+        userId: auth.user_id,
       })
 
       // 1. Retrieve relevant context from knowledge bases
@@ -129,7 +128,9 @@ export class KnowledgeRAGIntegrationService {
             knowledgeBaseId,
             topK: Math.ceil(config.ragSettings.topK / config.knowledgeBases.length),
             similarityThreshold: config.ragSettings.similarityThreshold,
-            maxContextLength: Math.ceil(config.ragSettings.maxContextLength / config.knowledgeBases.length)
+            maxContextLength: Math.ceil(
+              config.ragSettings.maxContextLength / config.knowledgeBases.length
+            ),
           }
 
           const context = await knowledgeIntegrationService.retrieveRelevantContext(
@@ -154,13 +155,10 @@ export class KnowledgeRAGIntegrationService {
             query,
             workflowContext: config.workflowContext,
             includeExamples: true,
-            maxResults: 2
+            maxResults: 2,
           }
 
-          workflowHelp = await workflowDocumentationRAGService.getWorkflowHelp(
-            workflowQuery,
-            auth
-          )
+          workflowHelp = await workflowDocumentationRAGService.getWorkflowHelp(workflowQuery, auth)
         } catch (error) {
           logger.warn('Failed to get workflow help', { error })
         }
@@ -170,11 +168,7 @@ export class KnowledgeRAGIntegrationService {
       const combinedContext = this.combineRAGContexts(ragContexts, workflowHelp)
 
       // 4. Generate enhanced response
-      const enhancedResponse = this.generateEnhancedResponse(
-        query,
-        combinedContext,
-        workflowHelp
-      )
+      const enhancedResponse = this.generateEnhancedResponse(query, combinedContext, workflowHelp)
 
       // 5. Calculate confidence and extract sources
       const confidence = this.calculateResponseConfidence(combinedContext, workflowHelp)
@@ -189,7 +183,7 @@ export class KnowledgeRAGIntegrationService {
         confidence,
         sources,
         processingTime,
-        learningTriggers: this.identifyLearningTriggers(combinedContext, confidence)
+        learningTriggers: this.identifyLearningTriggers(combinedContext, confidence),
       }
 
       // 6. Record interaction for learning if enabled
@@ -204,13 +198,13 @@ export class KnowledgeRAGIntegrationService {
             ragContext: combinedContext,
             toolsUsed: [],
             responseTime: processingTime,
-            conversationTurn: 1
+            conversationTurn: 1,
           },
           context: {
             workspaceId: config.userContext.workspaceId,
             userId: config.userContext.userId,
-            userExperience: config.userContext.experienceLevel
-          }
+            userExperience: config.userContext.experienceLevel,
+          },
         }
 
         await agentLearningService.recordInteraction(interaction)
@@ -220,7 +214,7 @@ export class KnowledgeRAGIntegrationService {
         processingTime,
         confidence,
         sourcesCount: sources.length,
-        contextChunks: combinedContext.retrievedChunks.length
+        contextChunks: combinedContext.retrievedChunks.length,
       })
 
       return result
@@ -250,40 +244,37 @@ export class KnowledgeRAGIntegrationService {
       // Get learning metrics
       const period = timeRange || {
         start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-        end: new Date()
+        end: new Date(),
       }
 
-      const learningMetrics = await agentLearningService.getLearningMetrics(
-        agentId,
-        period,
-        auth
-      )
+      const learningMetrics = await agentLearningService.getLearningMetrics(agentId, period, auth)
 
       const profile: AgentKnowledgeProfile = {
         agentId,
-        knowledgeBases: knowledgeBases.map(kb => ({
+        knowledgeBases: knowledgeBases.map((kb) => ({
           id: kb.id,
           name: kb.name,
           priority: 1,
-          specializationTags: []
+          specializationTags: [],
         })),
         learningMetrics: {
           totalInteractions: learningMetrics.metrics.totalInteractions,
           averageRelevance: learningMetrics.metrics.knowledgeHitRate,
           userSatisfactionScore: learningMetrics.metrics.userSatisfaction,
-          improvementTrend: learningMetrics.metrics.improvementTrend
+          improvementTrend: learningMetrics.metrics.improvementTrend,
         },
         optimizationStatus: {
           lastOptimized: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-          pendingOptimizations: Object.keys(learningMetrics.learningProgress.performanceGains).length,
-          performanceGains: learningMetrics.learningProgress.performanceGains
-        }
+          pendingOptimizations: Object.keys(learningMetrics.learningProgress.performanceGains)
+            .length,
+          performanceGains: learningMetrics.learningProgress.performanceGains,
+        },
       }
 
       logger.info('Agent knowledge profile retrieved', {
         agentId,
         knowledgeBasesCount: profile.knowledgeBases.length,
-        totalInteractions: profile.learningMetrics.totalInteractions
+        totalInteractions: profile.learningMetrics.totalInteractions,
       })
 
       return profile
@@ -305,7 +296,7 @@ export class KnowledgeRAGIntegrationService {
       logger.info('Processing knowledge file upload', {
         fileName: request.file.name,
         knowledgeBaseId: request.knowledgeBaseId,
-        hasAgentContext: !!request.agentContext
+        hasAgentContext: !!request.agentContext,
       })
 
       // Set RAG optimization by default
@@ -315,8 +306,8 @@ export class KnowledgeRAGIntegrationService {
           ...request.processingOptions,
           enableRAGOptimization: true,
           extractMetadata: true,
-          generateTags: true
-        }
+          generateTags: true,
+        },
       }
 
       const result = await fileUploadProcessorService.processFileUpload(
@@ -328,7 +319,7 @@ export class KnowledgeRAGIntegrationService {
       logger.info('Knowledge file upload completed', {
         uploadId: result.uploadId,
         documentId: result.documentId,
-        status: result.status
+        status: result.status,
       })
 
       return result
@@ -359,11 +350,7 @@ export class KnowledgeRAGIntegrationService {
       logger.info('Generating knowledge optimizations', { agentId, timeRange })
 
       // Get learning insights
-      const insights = await agentLearningService.generateLearningInsights(
-        agentId,
-        timeRange,
-        auth
-      )
+      const insights = await agentLearningService.generateLearningInsights(agentId, timeRange, auth)
 
       // Get available knowledge bases for optimization
       const knowledgeBases = await knowledgeIntegrationService.getAvailableKnowledgeBases(
@@ -388,13 +375,13 @@ export class KnowledgeRAGIntegrationService {
       logger.info('Knowledge optimizations generated', {
         insightsCount: insights.length,
         optimizationsCount: optimizations.length,
-        recommendationsCount: recommendations.length
+        recommendationsCount: recommendations.length,
       })
 
       return {
         insights,
         optimizations,
-        recommendations
+        recommendations,
       }
     } catch (error) {
       logger.error('Failed to generate knowledge optimizations', { error, agentId })
@@ -406,8 +393,10 @@ export class KnowledgeRAGIntegrationService {
    * Combine multiple RAG contexts into a unified context
    */
   private combineRAGContexts(ragContexts: RAGContext[], workflowHelp: WorkflowHelp[]): RAGContext {
-    const allChunks = ragContexts.flatMap(context => context.retrievedChunks)
-    const allKnowledgeBaseIds = [...new Set(ragContexts.flatMap(context => context.knowledgeBaseIds))]
+    const allChunks = ragContexts.flatMap((context) => context.retrievedChunks)
+    const allKnowledgeBaseIds = [
+      ...new Set(ragContexts.flatMap((context) => context.knowledgeBaseIds)),
+    ]
 
     // Sort chunks by similarity score
     allChunks.sort((a, b) => b.similarity - a.similarity)
@@ -433,15 +422,16 @@ export class KnowledgeRAGIntegrationService {
           content: help.content,
           chunkIndex: 0,
           similarity: help.confidence,
-          metadata: { helpType: help.helpType }
+          metadata: { helpType: help.helpType },
         })
         currentLength += help.content.length
       }
     })
 
-    const averageRetrievalScore = selectedChunks.length > 0
-      ? selectedChunks.reduce((sum, chunk) => sum + chunk.similarity, 0) / selectedChunks.length
-      : 0
+    const averageRetrievalScore =
+      selectedChunks.length > 0
+        ? selectedChunks.reduce((sum, chunk) => sum + chunk.similarity, 0) / selectedChunks.length
+        : 0
 
     return {
       query: ragContexts[0]?.query || '',
@@ -449,7 +439,7 @@ export class KnowledgeRAGIntegrationService {
       knowledgeBaseIds: allKnowledgeBaseIds,
       totalResults: allChunks.length,
       retrievalScore: averageRetrievalScore,
-      contextLength: currentLength
+      contextLength: currentLength,
     }
   }
 
@@ -468,13 +458,13 @@ export class KnowledgeRAGIntegrationService {
     let response = `Based on the available knowledge and documentation:\n\n`
 
     // Add workflow-specific help first
-    workflowHelp.forEach(help => {
+    workflowHelp.forEach((help) => {
       if (help.confidence > 0.6) {
         response += `**${help.title}:**\n${help.content}\n\n`
 
         if (help.examples && help.examples.length > 0) {
           response += `**Examples:**\n`
-          help.examples.forEach(example => {
+          help.examples.forEach((example) => {
             response += `- ${example.title}: ${example.description}\n`
           })
           response += '\n'
@@ -487,7 +477,7 @@ export class KnowledgeRAGIntegrationService {
       response += `**Relevant Information:**\n`
 
       ragContext.retrievedChunks
-        .filter(chunk => chunk.similarity > 0.6)
+        .filter((chunk) => chunk.similarity > 0.6)
         .slice(0, 3)
         .forEach((chunk, index) => {
           response += `${index + 1}. From ${chunk.documentName}:\n${chunk.content}\n\n`
@@ -505,7 +495,10 @@ export class KnowledgeRAGIntegrationService {
   /**
    * Calculate response confidence based on context quality
    */
-  private calculateResponseConfidence(ragContext: RAGContext, workflowHelp: WorkflowHelp[]): number {
+  private calculateResponseConfidence(
+    ragContext: RAGContext,
+    workflowHelp: WorkflowHelp[]
+  ): number {
     let confidence = 0
 
     // RAG context contribution
@@ -515,7 +508,8 @@ export class KnowledgeRAGIntegrationService {
 
     // Workflow help contribution
     if (workflowHelp.length > 0) {
-      const workflowConfidence = workflowHelp.reduce((sum, help) => sum + help.confidence, 0) / workflowHelp.length
+      const workflowConfidence =
+        workflowHelp.reduce((sum, help) => sum + help.confidence, 0) / workflowHelp.length
       confidence += Math.min(0.4, workflowConfidence * 0.4)
     }
 
@@ -529,21 +523,21 @@ export class KnowledgeRAGIntegrationService {
     const sources = []
 
     // Add RAG sources
-    ragContext.retrievedChunks.forEach(chunk => {
+    ragContext.retrievedChunks.forEach((chunk) => {
       sources.push({
         documentName: chunk.documentName,
         relevance: chunk.similarity,
-        excerpt: chunk.content.substring(0, 200) + '...'
+        excerpt: `${chunk.content.substring(0, 200)}...`,
       })
     })
 
     // Add workflow help sources
-    workflowHelp.forEach(help => {
-      help.sources?.forEach(source => {
+    workflowHelp.forEach((help) => {
+      help.sources?.forEach((source) => {
         sources.push({
           documentName: source.documentName,
           relevance: source.similarity,
-          excerpt: help.content.substring(0, 200) + '...'
+          excerpt: `${help.content.substring(0, 200)}...`,
         })
       })
     })
@@ -587,13 +581,13 @@ export class KnowledgeRAGIntegrationService {
       expectedImpact: number
     }> = []
 
-    insights.forEach(insight => {
-      insight.recommendations.forEach(rec => {
+    insights.forEach((insight) => {
+      insight.recommendations.forEach((rec) => {
         recommendations.push({
           category: insight.type,
           priority: rec.priority,
           description: rec.action,
-          expectedImpact: rec.expectedImpact
+          expectedImpact: rec.expectedImpact,
         })
       })
     })
@@ -630,15 +624,15 @@ export const ragOperations = {
         topK: 5,
         similarityThreshold: 0.7,
         maxContextLength: 2000,
-        enableLearning: false
-      }
+        enableLearning: false,
+      },
     }
 
     const result = await knowledgeRAGIntegrationService.processRAGQuery(query, config, auth)
 
     return {
       response: result.enhancedResponse,
-      confidence: result.confidence
+      confidence: result.confidence,
     }
   },
 
@@ -654,7 +648,7 @@ export const ragOperations = {
       query,
       workflowContext,
       includeExamples: true,
-      maxResults: 3
+      maxResults: 3,
     }
 
     return await workflowDocumentationRAGService.getWorkflowHelp(workflowQuery, auth)
@@ -668,26 +662,26 @@ export const ragOperations = {
     knowledgeBaseId: string,
     auth: AuthContext
   ): Promise<BatchUploadResult> {
-    const requests: FileUploadRequest[] = files.map(file => ({
+    const requests: FileUploadRequest[] = files.map((file) => ({
       file,
       knowledgeBaseId,
       processingOptions: {
         enableRAGOptimization: true,
         extractMetadata: true,
-        generateTags: true
-      }
+        generateTags: true,
+      },
     }))
 
     const batchRequest: BatchUploadRequest = {
       files: requests,
       batchOptions: {
         parallel: true,
-        maxConcurrency: 3
-      }
+        maxConcurrency: 3,
+      },
     }
 
     return await fileUploadProcessorService.processBatchUpload(batchRequest, auth)
-  }
+  },
 }
 
 /**

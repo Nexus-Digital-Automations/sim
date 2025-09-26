@@ -55,10 +55,26 @@ const nextConfig: NextConfig = {
   turbopack: {
     resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
   },
-  serverExternalPackages: ['pdf-parse', 'parlant-server'],
+  serverExternalPackages: ['pdf-parse', 'parlant-server', 'fs', 'fs/promises', 'path'],
   experimental: {
     optimizeCss: true,
     turbopackSourceMaps: false,
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Exclude file parsers and fs-related modules from client bundle
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        'fs/promises': false,
+        path: false,
+      }
+
+      // Mark file parser modules as external for client-side
+      config.externals = config.externals || []
+      config.externals.push(/^@\/lib\/file-parsers/, 'fs', 'fs/promises', 'path', 'pdf-parse')
+    }
+    return config
   },
   ...(isDev && {
     allowedDevOrigins: [
