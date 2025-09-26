@@ -17,26 +17,14 @@ import {
   vector,
 } from 'drizzle-orm/pg-core'
 import { DEFAULT_FREE_CREDITS, TAG_SLOTS } from './consts'
+// Import base tables to avoid circular dependencies
+import { user, workspace, organization, apiKey, knowledgeBase, tsvector } from './base-schema'
 
-// Custom tsvector type for full-text search
-export const tsvector = customType<{
-  data: string
-}>({
-  dataType() {
-    return `tsvector`
-  },
-})
+// Re-export tsvector from base-schema for backwards compatibility
+export { tsvector }
 
-export const user = pgTable('user', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  email: text('email').notNull().unique(),
-  emailVerified: boolean('email_verified').notNull(),
-  image: text('image'),
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull(),
-  stripeCustomerId: text('stripe_customer_id'),
-})
+// Re-export base tables for backwards compatibility
+export { user, workspace, organization, apiKey, knowledgeBase }
 
 export const session = pgTable(
   'session',
@@ -503,31 +491,7 @@ export const workflowLogWebhookDelivery = pgTable(
   })
 )
 
-export const apiKey = pgTable(
-  'api_key',
-  {
-    id: text('id').primaryKey(),
-    userId: text('user_id')
-      .notNull()
-      .references(() => user.id, { onDelete: 'cascade' }),
-    workspaceId: text('workspace_id').references(() => workspace.id, { onDelete: 'cascade' }), // Only set for workspace keys
-    createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }), // Who created the workspace key
-    name: text('name').notNull(),
-    key: text('key').notNull().unique(),
-    type: text('type').notNull().default('personal'), // 'personal' or 'workspace'
-    lastUsed: timestamp('last_used'),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().defaultNow(),
-    expiresAt: timestamp('expires_at'),
-  },
-  (table) => ({
-    // Ensure workspace keys have a workspace_id and personal keys don't
-    workspaceTypeCheck: check(
-      'workspace_type_check',
-      sql`(type = 'workspace' AND workspace_id IS NOT NULL) OR (type = 'personal' AND workspace_id IS NULL)`
-    ),
-  })
-)
+// apiKey table imported from base-schema
 
 export const marketplace = pgTable('marketplace', {
   id: text('id').primaryKey(),
@@ -945,16 +909,7 @@ export const chat = pgTable(
   }
 )
 
-export const organization = pgTable('organization', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  slug: text('slug').notNull(),
-  logo: text('logo'),
-  metadata: json('metadata'),
-  orgUsageLimit: decimal('org_usage_limit'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
+// organization table imported from base-schema
 
 export const member = pgTable(
   'member',
@@ -997,15 +952,7 @@ export const invitation = pgTable(
   })
 )
 
-export const workspace = pgTable('workspace', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  ownerId: text('owner_id')
-    .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-})
+// workspace table imported from base-schema
 
 export const permissionTypeEnum = pgEnum('permission_type', ['admin', 'write', 'read'])
 
@@ -1112,46 +1059,7 @@ export const memory = pgTable(
   }
 )
 
-export const knowledgeBase = pgTable(
-  'knowledge_base',
-  {
-    id: text('id').primaryKey(),
-    userId: text('user_id')
-      .notNull()
-      .references(() => user.id, { onDelete: 'cascade' }),
-    workspaceId: text('workspace_id').references(() => workspace.id),
-    name: text('name').notNull(),
-    description: text('description'),
-
-    // Token tracking for usage
-    tokenCount: integer('token_count').notNull().default(0),
-
-    // Embedding configuration
-    embeddingModel: text('embedding_model').notNull().default('text-embedding-3-small'),
-    embeddingDimension: integer('embedding_dimension').notNull().default(1536),
-
-    // Chunking configuration stored as JSON for flexibility
-    chunkingConfig: json('chunking_config')
-      .notNull()
-      .default('{"maxSize": 1024, "minSize": 1, "overlap": 200}'),
-
-    // Soft delete support
-    deletedAt: timestamp('deleted_at'),
-
-    // Metadata and timestamps
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().defaultNow(),
-  },
-  (table) => ({
-    // Primary access patterns
-    userIdIdx: index('kb_user_id_idx').on(table.userId),
-    workspaceIdIdx: index('kb_workspace_id_idx').on(table.workspaceId),
-    // Composite index for user's workspaces
-    userWorkspaceIdx: index('kb_user_workspace_idx').on(table.userId, table.workspaceId),
-    // Index for soft delete filtering
-    deletedAtIdx: index('kb_deleted_at_idx').on(table.deletedAt),
-  })
-)
+// knowledgeBase table imported from base-schema
 
 export const document = pgTable(
   'document',

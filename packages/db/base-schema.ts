@@ -126,35 +126,4 @@ export const knowledgeBase = pgTable(
   })
 )
 
-export const workflow = pgTable(
-  'workflow',
-  {
-    id: text('id').primaryKey(),
-    userId: text('user_id')
-      .notNull()
-      .references(() => user.id, { onDelete: 'cascade' }),
-    workspaceId: text('workspace_id').references(() => workspace.id, { onDelete: 'cascade' }),
-    folderId: text('folder_id'), // Will be properly referenced when workflowFolder is defined
-    name: text('name').notNull(),
-    description: text('description'),
-    color: text('color').notNull().default('#3972F6'),
-    lastSynced: timestamp('last_synced').notNull(),
-    createdAt: timestamp('created_at').notNull(),
-    updatedAt: timestamp('updated_at').notNull(),
-    isDeployed: boolean('is_deployed').notNull().default(false),
-    deployedState: json('deployed_state'),
-    deployedAt: timestamp('deployed_at'),
-    pinnedApiKeyId: text('pinned_api_key_id').references(() => apiKey.id, { onDelete: 'set null' }),
-    collaborators: json('collaborators').notNull().default('[]'),
-    runCount: integer('run_count').notNull().default(0),
-    lastRunAt: timestamp('last_run_at'),
-    variables: json('variables').default('{}'),
-    isPublished: boolean('is_published').notNull().default(false),
-    marketplaceData: json('marketplace_data'),
-  },
-  (table) => ({
-    userIdIdx: index('workflow_user_id_idx').on(table.userId),
-    workspaceIdIdx: index('workflow_workspace_id_idx').on(table.workspaceId),
-    userWorkspaceIdx: index('workflow_user_workspace_idx').on(table.userId, table.workspaceId),
-  })
-)
+// Note: workflow table is defined in main schema.ts due to dependency on workflowFolder
