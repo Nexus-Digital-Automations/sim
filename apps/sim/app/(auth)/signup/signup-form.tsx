@@ -291,40 +291,64 @@ function SignupFormContent({
         },
         {
           onError: (ctx) => {
-            logger.error('Signup error:', ctx.error)
+            // Enhanced error logging to understand the error structure
+            logger.error('Signup error - Full context:', {
+              ctx,
+              error: ctx?.error,
+              errorType: typeof ctx?.error,
+              errorKeys: ctx?.error ? Object.keys(ctx.error) : 'no error object',
+            })
+
             const errorMessage: string[] = ['Failed to create account']
 
-            if (ctx.error.code?.includes('USER_ALREADY_EXISTS')) {
+            // Safe error access with null checks
+            const error = ctx?.error
+            const errorCode = error?.code || ''
+            const errorMessage_text = error?.message || ''
+
+            if (errorCode.includes('USER_ALREADY_EXISTS')) {
               errorMessage.push(
                 'An account with this email already exists. Please sign in instead.'
               )
               setEmailError(errorMessage[0])
             } else if (
-              ctx.error.code?.includes('BAD_REQUEST') ||
-              ctx.error.message?.includes('Email and password sign up is not enabled')
+              errorCode.includes('BAD_REQUEST') ||
+              errorMessage_text.includes('Email and password sign up is not enabled')
             ) {
               errorMessage.push('Email signup is currently disabled.')
               setEmailError(errorMessage[0])
-            } else if (ctx.error.code?.includes('INVALID_EMAIL')) {
+            } else if (errorCode.includes('INVALID_EMAIL')) {
               errorMessage.push('Please enter a valid email address.')
               setEmailError(errorMessage[0])
-            } else if (ctx.error.code?.includes('PASSWORD_TOO_SHORT')) {
+            } else if (errorCode.includes('PASSWORD_TOO_SHORT')) {
               errorMessage.push('Password must be at least 8 characters long.')
               setPasswordErrors(errorMessage)
               setShowValidationError(true)
-            } else if (ctx.error.code?.includes('PASSWORD_TOO_LONG')) {
+            } else if (errorCode.includes('PASSWORD_TOO_LONG')) {
               errorMessage.push('Password must be less than 128 characters long.')
               setPasswordErrors(errorMessage)
               setShowValidationError(true)
-            } else if (ctx.error.code?.includes('network')) {
+            } else if (errorCode.includes('network')) {
               errorMessage.push('Network error. Please check your connection and try again.')
               setPasswordErrors(errorMessage)
               setShowValidationError(true)
-            } else if (ctx.error.code?.includes('rate limit')) {
+            } else if (errorCode.includes('rate limit')) {
               errorMessage.push('Too many requests. Please wait a moment before trying again.')
               setPasswordErrors(errorMessage)
               setShowValidationError(true)
+            } else if (error) {
+              // If we have an error but didn't match any specific cases, show more specific info
+              errorMessage.push(`Account creation failed. Please try again.`)
+              logger.error('Unhandled signup error:', {
+                code: errorCode,
+                message: errorMessage_text,
+              })
+              setPasswordErrors(errorMessage)
+              setShowValidationError(true)
             } else {
+              // No error object at all
+              errorMessage.push(`Account creation failed. Please try again.`)
+              logger.error('Signup failed with no error object')
               setPasswordErrors(errorMessage)
               setShowValidationError(true)
             }

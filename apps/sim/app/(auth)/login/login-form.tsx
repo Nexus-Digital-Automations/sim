@@ -225,45 +225,65 @@ export default function LoginPage({
         },
         {
           onError: (ctx) => {
-            console.error('Login error:', ctx.error)
+            // Enhanced error logging to understand the error structure
+            console.error('Login error - Full context:', {
+              ctx,
+              error: ctx?.error,
+              errorType: typeof ctx?.error,
+              errorKeys: ctx?.error ? Object.keys(ctx.error) : 'no error object',
+            })
+
             const errorMessage: string[] = ['Invalid email or password']
 
-            if (ctx.error.code?.includes('EMAIL_NOT_VERIFIED')) {
+            // Safe error access with null checks
+            const error = ctx?.error
+            const errorCode = error?.code || ''
+            const errorMessage_text = error?.message || ''
+
+            if (errorCode.includes('EMAIL_NOT_VERIFIED')) {
               return
             }
+
             if (
-              ctx.error.code?.includes('BAD_REQUEST') ||
-              ctx.error.message?.includes('Email and password sign in is not enabled')
+              errorCode.includes('BAD_REQUEST') ||
+              errorMessage_text.includes('Email and password sign in is not enabled')
             ) {
               errorMessage.push('Email sign in is currently disabled.')
             } else if (
-              ctx.error.code?.includes('INVALID_CREDENTIALS') ||
-              ctx.error.message?.includes('invalid password')
+              errorCode.includes('INVALID_CREDENTIALS') ||
+              errorMessage_text.includes('invalid password')
             ) {
               errorMessage.push('Invalid email or password. Please try again.')
             } else if (
-              ctx.error.code?.includes('USER_NOT_FOUND') ||
-              ctx.error.message?.includes('not found')
+              errorCode.includes('USER_NOT_FOUND') ||
+              errorMessage_text.includes('not found')
             ) {
               errorMessage.push('No account found with this email. Please sign up first.')
-            } else if (ctx.error.code?.includes('MISSING_CREDENTIALS')) {
+            } else if (errorCode.includes('MISSING_CREDENTIALS')) {
               errorMessage.push('Please enter both email and password.')
-            } else if (ctx.error.code?.includes('EMAIL_PASSWORD_DISABLED')) {
+            } else if (errorCode.includes('EMAIL_PASSWORD_DISABLED')) {
               errorMessage.push('Email and password login is disabled.')
-            } else if (ctx.error.code?.includes('FAILED_TO_CREATE_SESSION')) {
+            } else if (errorCode.includes('FAILED_TO_CREATE_SESSION')) {
               errorMessage.push('Failed to create session. Please try again later.')
-            } else if (ctx.error.code?.includes('too many attempts')) {
+            } else if (errorCode.includes('too many attempts')) {
               errorMessage.push(
                 'Too many login attempts. Please try again later or reset your password.'
               )
-            } else if (ctx.error.code?.includes('account locked')) {
+            } else if (errorCode.includes('account locked')) {
               errorMessage.push(
                 'Your account has been locked for security. Please reset your password.'
               )
-            } else if (ctx.error.code?.includes('network')) {
+            } else if (errorCode.includes('network')) {
               errorMessage.push('Network error. Please check your connection and try again.')
-            } else if (ctx.error.message?.includes('rate limit')) {
+            } else if (errorMessage_text.includes('rate limit')) {
               errorMessage.push('Too many requests. Please wait a moment before trying again.')
+            } else if (error) {
+              // If we have an error but didn't match any specific cases, show more specific info
+              errorMessage.push(`Authentication failed. Please try again.`)
+              console.error('Unhandled login error:', {
+                code: errorCode,
+                message: errorMessage_text,
+              })
             }
 
             setPasswordErrors(errorMessage)
