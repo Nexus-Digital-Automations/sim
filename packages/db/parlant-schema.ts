@@ -10,7 +10,7 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
-import { apiKey, knowledgeBase, user, workflow, workspace } from './schema'
+import { apiKey, knowledgeBase, user, workflow, workspace } from './base-schema'
 
 /**
  * Parlant Database Schema Extension

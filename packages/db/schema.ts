@@ -16,11 +16,7 @@ import {
   uuid,
   vector,
 } from 'drizzle-orm/pg-core'
-// Import chat persistence extensions
-import { chatPersistenceEnums, chatPersistenceTables } from './chat-persistence-schema'
 import { DEFAULT_FREE_CREDITS, TAG_SLOTS } from './consts'
-// Import Parlant schema extensions
-import { parlantEnums, parlantTables } from './parlant-schema'
 
 // Custom tsvector type for full-text search
 export const tsvector = customType<{
@@ -1698,17 +1694,20 @@ export const mcpServers = pgTable(
 )
 
 // Export all chat persistence and Parlant tables and enums
-export const {
+export {
   chatMessage,
   chatConversation,
   chatBrowserSession,
   chatSearchIndex,
   chatExportRequest,
-} = chatPersistenceTables
+  chatPersistenceTables,
+  messageStatusEnum,
+  conversationTypeEnum,
+  messageTypeEnum,
+  chatPersistenceEnums,
+} from './chat-persistence-schema'
 
-export const { messageStatusEnum, conversationTypeEnum, messageTypeEnum } = chatPersistenceEnums
-
-export const {
+export {
   parlantAgent,
   parlantSession,
   parlantEvent,
@@ -1732,13 +1731,12 @@ export const {
   parlantConversionCache,
   parlantConversionHistory,
   parlantJourneyGenerationHistory,
-} = parlantTables
-
-export const {
+  parlantTables,
   agentStatusEnum,
   sessionModeEnum,
   sessionStatusEnum,
   eventTypeEnum,
   journeyStateTypeEnum,
   compositionModeEnum,
-} = parlantEnums
+  parlantEnums,
+} from './parlant-schema'
