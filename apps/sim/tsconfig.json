@@ -7,6 +7,7 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
@@ -52,5 +53,12 @@
     "telemetry.config.js",
     "trigger.config.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "node_modules/lucide-react/dynamic.d.ts",
+    "node_modules/lucide-react/dynamicIconImports.d.ts",
+    ".next",
+    "dist",
+    "build"
+  ]
 }
