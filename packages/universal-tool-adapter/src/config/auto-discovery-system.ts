@@ -8,7 +8,7 @@
  * @version 2.0.0
  */
 
-import EventEmitter from 'events'
+import { EventEmitter } from 'events'
 import { type FSWatcher, watch } from 'fs'
 import { readdir, readFile, stat } from 'fs/promises'
 import { basename, extname, join } from 'path'
@@ -82,7 +82,7 @@ export class AutoDiscoverySystem extends EventEmitter {
 
     logger.info('Auto Discovery System initialized', {
       enabled: this.config.enabled,
-      scanPaths: this.config.scanPaths.length,
+      scanPaths: this.config.scanPaths?.length ?? 0,
       autoRegister: this.config.autoRegister,
       watchForChanges: this.config.watchForChanges,
     })
@@ -97,7 +97,7 @@ export class AutoDiscoverySystem extends EventEmitter {
       await this.performFullDiscovery()
 
       // Set up periodic scanning
-      if (this.config.scanInterval > 0) {
+      if (this.config.scanInterval != null && this.config.scanInterval > 0) {
         setInterval(async () => {
           await this.performIncrementalDiscovery()
         }, this.config.scanInterval)
@@ -220,7 +220,7 @@ export class AutoDiscoverySystem extends EventEmitter {
 
     // Discover files in all scan paths
     const allFiles: string[] = []
-    for (const scanPath of this.config.scanPaths) {
+    for (const scanPath of this.config.scanPaths ?? []) {
       try {
         const files = await this.discoverFiles(scanPath)
         allFiles.push(...files)
@@ -295,7 +295,7 @@ export class AutoDiscoverySystem extends EventEmitter {
           if (
             this.matchesIncludePatterns(fullPath) &&
             !this.shouldExcludePath(fullPath) &&
-            stats.size <= this.config.maxFileSize
+            stats.size <= (this.config.maxFileSize ?? Infinity)
           ) {
             files.push(fullPath)
           }
@@ -326,7 +326,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     const startTime = Date.now()
 
     // Process files in batches to control concurrency
-    const batchSize = this.config.maxConcurrentScans
+    const batchSize = this.config.maxConcurrentScans ?? 5
     for (let i = 0; i < filePaths.length; i += batchSize) {
       const batch = filePaths.slice(i, i + batchSize)
 
@@ -406,16 +406,18 @@ export class AutoDiscoverySystem extends EventEmitter {
       }
 
       // Create entry
+      const fileStats = await stat(filePath)
       const entry: BlockConfigEntry = {
         filePath,
         blockConfig,
-        lastModified: (await stat(filePath)).mtime,
+        lastModified: fileStats.mtime,
         discovered: new Date(),
         hash: this.generateHash(content),
       }
 
       // Store in cache
-      this.discoveredBlocks.set(blockConfig.type, entry)
+      const blockType = blockConfig.type ?? blockConfig.id ?? 'unknown'
+      this.discoveredBlocks.set(blockType, entry)
 
       return entry
     } catch (error) {
@@ -454,7 +456,7 @@ export class AutoDiscoverySystem extends EventEmitter {
       const patterns = [
         /export\s+const\s+(\w+)Block\s*:\s*BlockConfig/,
         /export\s+const\s+(\w+)\s*:\s*BlockConfig/,
-        /const\s+(\w+)Block\s*:\s*BlockConfig.*?export.*?\1Block/s,
+        /const\s+(\w+)Block\s*:\s*BlockConfig[\s\S]*?export[\s\S]*?\1Block/,
         /export\s+default.*?BlockConfig/,
       ]
 
@@ -577,16 +579,15 @@ export class AutoDiscoverySystem extends EventEmitter {
     const categoryMatch = content.match(/category:\s*['"`]([^'"`]+)['"`]/)
 
     return {
-      type: typeMatch?.[1] || blockName.toLowerCase().replace('block', ''),
-      name: nameMatch?.[1] || blockName,
-      description: descMatch?.[1] || `${blockName} tool`,
-      category: (categoryMatch?.[1] || 'tools') as BlockCategory,
-      bgColor: '#6366f1', // Default color
-      icon: () => null as any, // Placeholder icon
+      id: typeMatch?.[1] ?? blockName.toLowerCase().replace('block', ''),
+      title: nameMatch?.[1] ?? blockName,
+      type: typeMatch?.[1] ?? blockName.toLowerCase().replace('block', ''),
+      name: nameMatch?.[1] ?? blockName,
+      description: descMatch?.[1] ?? `${blockName} tool`,
+      category: (categoryMatch?.[1] ?? 'custom') as BlockCategory,
+      icon: 'default',
       subBlocks: [],
       tools: { access: [] },
-      inputs: {},
-      outputs: {},
     }
   }
 
@@ -597,15 +598,9 @@ export class AutoDiscoverySystem extends EventEmitter {
     return (
       obj &&
       typeof obj === 'object' &&
-      typeof obj.type === 'string' &&
-      typeof obj.name === 'string' &&
-      typeof obj.description === 'string' &&
-      typeof obj.category === 'string' &&
-      Array.isArray(obj.subBlocks) &&
-      obj.tools &&
-      Array.isArray(obj.tools.access) &&
-      typeof obj.inputs === 'object' &&
-      typeof obj.outputs === 'object'
+      (typeof obj.id === 'string' || typeof obj.type === 'string') &&
+      (typeof obj.title === 'string' || typeof obj.name === 'string') &&
+      (obj.subBlocks === undefined || Array.isArray(obj.subBlocks))
     )
   }
 
@@ -616,26 +611,26 @@ export class AutoDiscoverySystem extends EventEmitter {
     const errors: string[] = []
 
     // Required fields validation
-    if (!blockConfig.type) errors.push('Missing type field')
-    if (!blockConfig.name) errors.push('Missing name field')
-    if (!blockConfig.description) errors.push('Missing description field')
-    if (!blockConfig.category) errors.push('Missing category field')
+    if (!blockConfig.id && !blockConfig.type) {
+      errors.push('Missing id or type field')
+    }
+    if (!blockConfig.title && !(blockConfig as any).name) {
+      errors.push('Missing title or name field')
+    }
 
-    // SubBlocks validation
-    if (!Array.isArray(blockConfig.subBlocks)) {
-      errors.push('subBlocks must be an array')
-    } else {
+    // SubBlocks validation (optional field)
+    if (blockConfig.subBlocks && !Array.isArray(blockConfig.subBlocks)) {
+      errors.push('subBlocks must be an array if provided')
+    } else if (blockConfig.subBlocks) {
       blockConfig.subBlocks.forEach((subBlock, index) => {
         if (!subBlock.id) errors.push(`SubBlock ${index} missing id`)
         if (!subBlock.type) errors.push(`SubBlock ${index} missing type`)
       })
     }
 
-    // Tools validation
-    if (!blockConfig.tools) {
-      errors.push('Missing tools configuration')
-    } else if (!Array.isArray(blockConfig.tools.access)) {
-      errors.push('tools.access must be an array')
+    // Tools validation (optional field)
+    if (blockConfig.tools && !Array.isArray(blockConfig.tools.access)) {
+      errors.push('tools.access must be an array if tools is provided')
     }
 
     if (errors.length > 0) {
@@ -679,19 +674,19 @@ export class AutoDiscoverySystem extends EventEmitter {
     blockConfig: BlockConfig
   ): Promise<Partial<AdapterConfiguration>> {
     return {
-      parlantId: `autodiscovered_${blockConfig.type}`,
-      displayName: blockConfig.name,
-      description: blockConfig.description,
-      category: this.mapBlockCategory(blockConfig.category),
+      parlantId: `autodiscovered_${blockConfig.type ?? blockConfig.id}`,
+      displayName: (blockConfig as any).name ?? blockConfig.title ?? blockConfig.id ?? 'Unknown',
+      description: blockConfig.description ?? 'No description available',
+      category: this.mapBlockCategory(blockConfig.category ?? 'custom'),
       tags: [
         'autodiscovered',
-        blockConfig.category,
-        blockConfig.type,
+        blockConfig.category ?? 'custom',
+        blockConfig.type ?? blockConfig.id,
         ...this.extractTagsFromBlockConfig(blockConfig),
       ],
       caching: {
-        enabled: this.config.enableCaching,
-        ttlMs: this.config.cacheTtl,
+        enabled: this.config.enableCaching ?? false,
+        ttlMs: this.config.cacheTtl ?? 300000,
       },
     }
   }
@@ -700,7 +695,7 @@ export class AutoDiscoverySystem extends EventEmitter {
    * Setup file watching for automatic updates
    */
   private async setupFileWatching(): Promise<void> {
-    for (const scanPath of this.config.scanPaths) {
+    for (const scanPath of this.config.scanPaths ?? []) {
       try {
         const watcher = watch(scanPath, { recursive: true }, (eventType, filename) => {
           if (!filename) return
@@ -736,14 +731,14 @@ export class AutoDiscoverySystem extends EventEmitter {
    * Check if file matches include patterns
    */
   private matchesIncludePatterns(filePath: string): boolean {
-    return this.config.includePatterns.some((pattern) => this.matchesGlob(filePath, pattern))
+    return (this.config.includePatterns ?? []).some((pattern) => this.matchesGlob(filePath, pattern))
   }
 
   /**
    * Check if path should be excluded
    */
   private shouldExcludePath(path: string): boolean {
-    return this.config.excludePatterns.some((pattern) => this.matchesGlob(path, pattern))
+    return (this.config.excludePatterns ?? []).some((pattern) => this.matchesGlob(path, pattern))
   }
 
   /**
@@ -783,7 +778,8 @@ export class AutoDiscoverySystem extends EventEmitter {
     const tags: string[] = []
 
     // Add tags based on subBlocks
-    blockConfig.subBlocks.forEach((subBlock) => {
+    const subBlocks = blockConfig.subBlocks || []
+    subBlocks.forEach((subBlock) => {
       if (subBlock.type === 'oauth-input') tags.push('oauth', 'authentication')
       if (subBlock.type === 'file-selector') tags.push('files')
       if (subBlock.type === 'webhook-config') tags.push('webhooks')
@@ -791,12 +787,15 @@ export class AutoDiscoverySystem extends EventEmitter {
     })
 
     // Add tags from tools
-    blockConfig.tools.access.forEach((tool) => {
-      const parts = tool.split('_')
-      tags.push(...parts)
-    })
+    const tools = (blockConfig as any).tools
+    if (tools?.access && Array.isArray(tools.access)) {
+      tools.access.forEach((tool: string) => {
+        const parts = tool.split('_')
+        tags.push(...parts)
+      })
+    }
 
-    return [...new Set(tags)] // Remove duplicates
+    return Array.from(new Set(tags)) // Remove duplicates
   }
 
   /**
@@ -857,7 +856,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     logger.info('Shutting down auto discovery system')
 
     // Close file watchers
-    for (const [path, watcher] of this.watchedPaths) {
+    for (const [path, watcher] of Array.from(this.watchedPaths)) {
       try {
         watcher.close()
         logger.debug('Closed file watcher', { path })

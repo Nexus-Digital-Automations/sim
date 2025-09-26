@@ -199,7 +199,7 @@ export class UsageGuidelinesEngine {
     const recommendations: ToolRecommendation[] = []
 
     // Analyze all available tools
-    for (const [toolId, guidelines] of this.guidelines.entries()) {
+    for (const [toolId, guidelines] of Array.from(this.guidelines.entries())) {
       const relevantGuidelines = await this.getUsageGuidelines(toolId, context)
 
       if (relevantGuidelines.length > 0) {

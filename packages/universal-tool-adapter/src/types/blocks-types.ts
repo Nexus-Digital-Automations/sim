@@ -152,4 +152,8 @@ export interface BlockConfig {
   // Additional properties that might be referenced in test framework
   type?: string // Block type identifier (fallback to id if not provided)
   name?: string // Human-readable name (fallback to title if not provided)
+  // Tools configuration for block access and permissions
+  tools?: {
+    access: string[] // Array of tool identifiers this block can access
+  }
 }

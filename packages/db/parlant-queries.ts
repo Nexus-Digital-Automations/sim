@@ -377,14 +377,15 @@ export class ParlantAgentQueries {
       conditions.push(gte(parlantAgent.totalSessions, 1))
     }
 
-    if (filters.search) {
+    if (filters.search && filters.search.trim().length > 0) {
       const searchTerm = `%${filters.search}%`
-      conditions.push(
-        or(
-          sql`${parlantAgent.name} ILIKE ${searchTerm}`,
-          sql`${parlantAgent.description} ILIKE ${searchTerm}`
-        )
+      const searchCondition = or(
+        sql`${parlantAgent.name} ILIKE ${searchTerm}`,
+        sql`${parlantAgent.description} ILIKE ${searchTerm}`
       )
+      if (searchCondition) {
+        conditions.push(searchCondition)
+      }
     }
 
     return conditions.length > 0 ? and(...conditions) : undefined

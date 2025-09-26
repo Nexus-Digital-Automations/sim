@@ -177,7 +177,7 @@ export class EnhancedAdapterFramework {
       parlantId: customConfig.parlantId || `sim_${blockConfig.type}`,
       displayName: customConfig.displayName || blockConfig.name,
       description: customConfig.description || blockConfig.description,
-      category: customConfig.category || this.mapBlockCategory(blockConfig.category),
+      category: customConfig.category || this.mapBlockCategory(blockConfig.category || 'utility'),
       tags: customConfig.tags || this.generateTags(blockConfig),
 
       // Performance configuration

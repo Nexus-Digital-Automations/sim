@@ -770,7 +770,7 @@ export class ContextualAdaptationEngine {
   private async identifyLearningOpportunities(
     profile: ExtendedUserProfile,
     description: EnhancedDescriptionSchema
-  ): Promise<LearningOpportunity[]> {
+  ): Promise<AdaptationLearningOpportunity[]> {
     return []
   }
   private async getQuickSituationalStrategies(
@@ -888,7 +888,7 @@ export interface PersonalizedDescription {
   personalizedDescription: EnhancedDescriptionSchema
   personalizationFactors: PersonalizationFactor[]
   recommendations: PersonalizationRecommendation[]
-  learningOpportunities: LearningOpportunity[]
+  learningOpportunities: AdaptationLearningOpportunity[]
 }
 
 export interface SituationalAdaptation {
@@ -946,7 +946,7 @@ export interface PersonalizationRecommendation {
   suggestion: string
   benefit: string
 }
-export interface LearningOpportunity {
+export interface AdaptationLearningOpportunity {
   area: string
   opportunity: string
   difficulty: SkillLevel

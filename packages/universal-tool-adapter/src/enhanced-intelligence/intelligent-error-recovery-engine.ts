@@ -104,7 +104,7 @@ export interface IntelligentRecoveryPlan {
   troubleshootingTree: TroubleshootingNode[]
 
   // Learning and improvement
-  learningOpportunities: LearningOpportunity[]
+  learningOpportunities: ErrorRecoveryLearningOpportunity[]
   followUpActions: FollowUpAction[]
 
   // Metadata
@@ -224,7 +224,7 @@ export interface TroubleshootingAnswer {
   confidence: number
 }
 
-export interface LearningOpportunity {
+export interface ErrorRecoveryLearningOpportunity {
   topic: string
   description: string
   skillLevel: 'beginner' | 'intermediate' | 'advanced'
@@ -1224,8 +1224,8 @@ export class IntelligentErrorRecoveryEngine {
   private async identifyLearningOpportunities(
     analysis: ErrorAnalysisResult,
     context: ErrorRecoveryContext
-  ): Promise<LearningOpportunity[]> {
-    const opportunities: LearningOpportunity[] = []
+  ): Promise<ErrorRecoveryLearningOpportunity[]> {
+    const opportunities: ErrorRecoveryLearningOpportunity[] = []
 
     // Skill-based opportunities
     if (context.userSkillLevel === 'beginner') {

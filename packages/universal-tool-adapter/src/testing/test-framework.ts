@@ -12,7 +12,7 @@
 import { EventEmitter } from 'events'
 import type { BaseAdapter } from '../core/base-adapter'
 import type { EnhancedAdapterFramework } from '../core/enhanced-adapter-framework'
-import type { AdapterExecutionResult } from '../types/adapter-interfaces'
+import type { AdapterExecutionResult, PerformanceThresholds, TestConfiguration } from '../types/adapter-interfaces'
 import type { BlockConfig, SubBlockConfig } from '../types/blocks-types'
 import type { ParlantExecutionContext } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
@@ -207,7 +207,7 @@ export class AdapterTestFramework extends EventEmitter {
 
     const results = new Map<string, TestSuiteResult>()
 
-    for (const [suiteId] of this.testSuites) {
+    for (const [suiteId] of Array.from(this.testSuites.entries())) {
       try {
         const result = await this.runTestSuite(suiteId)
         results.set(suiteId, result)
@@ -393,7 +393,7 @@ export class AdapterTestFramework extends EventEmitter {
       name: 'Basic Adapter Properties',
       description: 'Verify adapter has required properties and methods',
       category: 'functionality',
-      async run() {
+      run: async () => {
         const assertions = new AssertionEngine({})
 
         assertions.assert(!!adapter.id, 'Adapter should have ID')
@@ -415,7 +415,7 @@ export class AdapterTestFramework extends EventEmitter {
         name: 'Valid Parameter Execution',
         description: 'Test adapter execution with valid parameters',
         category: 'functionality',
-        async run() {
+        run: async () => {
           const mockContext = await this.generateMockContext(adapter)
           const mockArgs = await this.generateValidMockArgs(adapter, blockConfig)
 
@@ -427,7 +427,7 @@ export class AdapterTestFramework extends EventEmitter {
             assertions.assert(typeof result.type === 'string', 'Result should have a type')
 
             return { passed: true, result, assertions: assertions.getResults() }
-          } catch (error) {
+          } catch (error: any) {
             return { passed: false, error: error.message }
           }
         },
@@ -455,7 +455,7 @@ export class AdapterTestFramework extends EventEmitter {
         name: `Required Parameter: ${param.id}`,
         description: `Test that ${param.id} parameter is required`,
         category: 'validation',
-        async run() {
+        run: async () => {
           const mockContext = await this.generateMockContext(adapter)
           const mockArgs = await this.generateValidMockArgs(adapter, blockConfig)
 
@@ -468,7 +468,7 @@ export class AdapterTestFramework extends EventEmitter {
             // Execution should fail or return error
             const passed = !result || result.type === 'error'
             return { passed, result }
-          } catch (error) {
+          } catch (error: any) {
             // Exception is expected for missing required parameter
             return { passed: true, expectedError: error.message }
           }
@@ -483,7 +483,7 @@ export class AdapterTestFramework extends EventEmitter {
         name: `Type Validation: ${param.id}`,
         description: `Test type validation for ${param.id} parameter`,
         category: 'validation',
-        async run() {
+        run: async () => {
           const mockContext = await this.generateMockContext(adapter)
           const mockArgs = await this.generateValidMockArgs(adapter, blockConfig)
 
@@ -498,7 +498,7 @@ export class AdapterTestFramework extends EventEmitter {
             assertions.assert(!!result, 'Should return a result even with invalid type')
 
             return { passed: true, result, assertions: assertions.getResults() }
-          } catch (error) {
+          } catch (error: any) {
             // Type validation errors are acceptable
             return { passed: true, expectedError: error.message }
           }
@@ -521,7 +521,7 @@ export class AdapterTestFramework extends EventEmitter {
       name: 'Malformed Parameters',
       description: 'Test adapter handling of malformed parameters',
       category: 'error_handling',
-      async run() {
+      run: async () => {
         const mockContext = await this.generateMockContext(adapter)
         const malformedArgs = { invalid: 'data', malformed: { deeply: { nested: null } } }
 
@@ -536,7 +536,7 @@ export class AdapterTestFramework extends EventEmitter {
           )
 
           return { passed: true, result, assertions: assertions.getResults() }
-        } catch (error) {
+        } catch (error: any) {
           return { passed: true, expectedError: error.message }
         }
       },
@@ -548,7 +548,7 @@ export class AdapterTestFramework extends EventEmitter {
       name: 'Null Parameters',
       description: 'Test adapter handling of null/undefined parameters',
       category: 'error_handling',
-      async run() {
+      run: async () => {
         const mockContext = await this.generateMockContext(adapter)
 
         try {
@@ -558,7 +558,7 @@ export class AdapterTestFramework extends EventEmitter {
           assertions.assert(!!result, 'Should handle null parameters')
 
           return { passed: true, result, assertions: assertions.getResults() }
-        } catch (error) {
+        } catch (error: any) {
           return { passed: true, expectedError: error.message }
         }
       },
@@ -579,7 +579,7 @@ export class AdapterTestFramework extends EventEmitter {
       name: 'Execution Time Performance',
       description: 'Test adapter execution time meets performance thresholds',
       category: 'performance',
-      async run() {
+      run: async () => {
         const mockContext = await this.generateMockContext(adapter)
         const mockArgs = blockConfig ? await this.generateValidMockArgs(adapter, blockConfig) : {}
 
@@ -590,18 +590,19 @@ export class AdapterTestFramework extends EventEmitter {
           const duration = Date.now() - startTime
 
           const assertions = new AssertionEngine({})
+          const thresholdTime = this.config.performanceThresholds?.executionTime || 5000
           assertions.assert(
-            duration < this.config.performanceThresholds.executionTime,
-            `Execution time (${duration}ms) should be under threshold (${this.config.performanceThresholds.executionTime}ms)`
+            duration < thresholdTime,
+            `Execution time (${duration}ms) should be under threshold (${thresholdTime}ms)`
           )
 
           return {
-            passed: duration < this.config.performanceThresholds.executionTime,
+            passed: duration < thresholdTime,
             duration,
             result,
             assertions: assertions.getResults(),
           }
-        } catch (error) {
+        } catch (error: any) {
           const duration = Date.now() - startTime
           return { passed: false, duration, error: error.message }
         }
@@ -623,7 +624,7 @@ export class AdapterTestFramework extends EventEmitter {
       name: 'Framework Integration',
       description: 'Test adapter integration with framework systems',
       category: 'integration',
-      async run() {
+      run: async () => {
         try {
           // Test adapter metadata
           const metadata = adapter.metadata
@@ -635,7 +636,7 @@ export class AdapterTestFramework extends EventEmitter {
           assertions.assert(typeof config === 'object', 'Configuration should be object')
 
           return { passed: true, metadata, config, assertions: assertions.getResults() }
-        } catch (error) {
+        } catch (error: any) {
           return { passed: false, error: error.message }
         }
       },
@@ -656,7 +657,7 @@ export class AdapterTestFramework extends EventEmitter {
       name: 'Empty Parameters',
       description: 'Test adapter with empty parameter object',
       category: 'edge_cases',
-      async run() {
+      run: async () => {
         const mockContext = await this.generateMockContext(adapter)
 
         try {
@@ -666,7 +667,7 @@ export class AdapterTestFramework extends EventEmitter {
           assertions.assert(!!result, 'Should handle empty parameters')
 
           return { passed: true, result, assertions: assertions.getResults() }
-        } catch (error) {
+        } catch (error: any) {
           return { passed: true, expectedError: error.message }
         }
       },
@@ -879,7 +880,7 @@ export class AdapterTestFramework extends EventEmitter {
   ): Promise<NLPValidation> {
     const validation: NLPValidation = {
       hasDescription: !!adapter.description,
-      hasUsageGuidelines: !!adapter.metadata.naturalLanguage,
+      hasUsageGuidelines: !!adapter.metadata?.naturalLanguage,
       hasExamples: !!adapter.metadata.naturalLanguage?.exampleUsage?.length,
       conversationalScore: 0,
       recommendations: [],
@@ -1159,11 +1160,7 @@ interface TestFrameworkConfig {
   verbose?: boolean
   generateHtmlReport?: boolean
   generateCoverageReport?: boolean
-  performanceThresholds?: {
-    executionTime: number
-    memoryUsage: number
-    throughput: number
-  }
+  performanceThresholds?: PerformanceThresholds
 }
 
 interface TestSuite {
@@ -1200,10 +1197,7 @@ interface TestCase {
     skip?: boolean
     parallel?: boolean
   }
-  // Add missing methods that are called in the code
-  generateMockContext?: (adapter: BaseAdapter) => Promise<ParlantExecutionContext>
-  generateValidMockArgs?: (adapter: BaseAdapter, blockConfig: BlockConfig) => Promise<any>
-  generateInvalidTypeValue?: (param: SubBlockConfig) => any
+  // These methods belong to AdapterTestFramework, not individual test cases
 }
 
 interface TestResult {

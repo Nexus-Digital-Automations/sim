@@ -34,6 +34,7 @@ export interface ParlantLogContext {
     | 'tool_execute'
     | 'guideline_apply'
     | 'journey_step'
+    | 'alert_triggered'
 
   // Performance context
   duration?: number

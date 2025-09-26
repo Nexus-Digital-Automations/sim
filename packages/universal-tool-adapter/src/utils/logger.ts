@@ -289,7 +289,7 @@ export class PerformanceTimer {
     const result: Record<string, number> = {}
     const now = performance.now()
 
-    for (const [name, time] of this.marks) {
+    for (const [name, time] of Array.from(this.marks.entries())) {
       result[name] = time - this.startTime
     }
 
@@ -534,7 +534,7 @@ class LoggerRegistry {
     this.globalConfig = { ...this.globalConfig, ...config }
 
     // Update existing loggers
-    for (const logger of this.loggers.values()) {
+    for (const logger of Array.from(this.loggers.values())) {
       logger.setConfig(config)
     }
   }

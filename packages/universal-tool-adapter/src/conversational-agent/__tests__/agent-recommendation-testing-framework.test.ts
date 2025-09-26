@@ -28,27 +28,11 @@ import { RealtimeRecommendationService } from '../realtime-recommendation-servic
 import type { WorkflowRecommendationRequest } from '../workflow-recommendation-engine'
 import { WorkflowRecommendationEngine } from '../workflow-recommendation-engine'
 
+import type { PerformanceThresholds } from '../../types/adapter-interfaces'
+
 // =============================================================================
 // Test Configuration and Setup
 // =============================================================================
-
-interface TestConfiguration {
-  enablePerformanceTesting: boolean
-  enableLoadTesting: boolean
-  enableIntegrationTesting: boolean
-  maxTestDuration: number
-  performanceThresholds: PerformanceThresholds
-  testDatasets: TestDataset[]
-}
-
-interface PerformanceThresholds {
-  contextAnalysisMaxTime: number // ms
-  recommendationGenerationMaxTime: number // ms
-  realtimeResponseMaxTime: number // ms
-  minAccuracyScore: number // 0-1
-  minConfidenceScore: number // 0-1
-  maxErrorRate: number // 0-1
-}
 
 interface TestDataset {
   name: string

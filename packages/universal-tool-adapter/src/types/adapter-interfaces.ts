@@ -931,6 +931,42 @@ export type AdapterExtensionTypes = AdapterPlugin | ExtensionPoint | AdapterMigr
  */
 export type AdapterTestingTypes = AdapterTestConfig | AdapterTestResult
 
+// =============================================================================
+// Testing and Performance Interfaces
+// =============================================================================
+
+/**
+ * Performance thresholds for testing configurations
+ */
+export interface PerformanceThresholds {
+  contextAnalysisMaxTime?: number // ms
+  recommendationGenerationMaxTime?: number // ms
+  realtimeResponseMaxTime?: number // ms
+  executionTime?: number // ms
+  memoryUsage?: number // MB
+  throughput?: number // operations/second
+  minAccuracyScore?: number // 0-1
+  minConfidenceScore?: number // 0-1
+  maxErrorRate?: number // 0-1
+}
+
+/**
+ * Test configuration interface with performance thresholds
+ */
+export interface TestConfiguration {
+  enablePerformanceTesting?: boolean
+  enableLoadTesting?: boolean
+  enableIntegrationTesting?: boolean
+  maxTestDuration?: number
+  performanceThresholds?: PerformanceThresholds
+  testDatasets?: any[]
+  timeout?: number
+  retries?: number
+  parallel?: boolean
+  generateHtmlReport?: boolean
+  generateCoverageReport?: boolean
+}
+
 /**
  * All advanced configuration types
  */
@@ -939,3 +975,10 @@ export type AdapterAdvancedTypes =
   | PerformanceConfig
   | MonitoringConfig
   | ErrorHandlingConfig
+
+/**
+ * All testing and performance types
+ */
+export type AdapterTestingPerformanceTypes =
+  | PerformanceThresholds
+  | TestConfiguration

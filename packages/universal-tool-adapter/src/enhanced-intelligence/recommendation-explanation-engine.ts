@@ -139,7 +139,7 @@ export interface PersonalizedExplanation {
   relevantExamples: PersonalExample[]
 
   // Learning integration
-  learningOpportunities: LearningOpportunity[]
+  learningOpportunities: RecommendationLearningOpportunity[]
   skillDevelopmentTips: string[]
 
   // Preference alignment
@@ -369,7 +369,7 @@ export interface PersonalExample {
   similarity: number
 }
 
-export interface LearningOpportunity {
+export interface RecommendationLearningOpportunity {
   topic: string
   description: string
   resources: LearningResource[]

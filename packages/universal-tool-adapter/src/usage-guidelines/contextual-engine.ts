@@ -257,8 +257,8 @@ export class ContextAnalysisEngine {
 
   private async identifyLearningOpportunities(
     context: EnhancedUsageContext
-  ): Promise<LearningOpportunity[]> {
-    const opportunities: LearningOpportunity[] = []
+  ): Promise<ContextualLearningOpportunity[]> {
+    const opportunities: ContextualLearningOpportunity[] = []
 
     // Identify skill gaps
     const skillGaps = this.identifySkillGaps(context)
@@ -483,11 +483,11 @@ export class ContextAnalysisEngine {
     return [] // Placeholder
   }
 
-  private identifyAutomationOpportunities(context: EnhancedUsageContext): LearningOpportunity[] {
+  private identifyAutomationOpportunities(context: EnhancedUsageContext): ContextualLearningOpportunity[] {
     return [] // Placeholder
   }
 
-  private identifyEfficiencyOpportunities(context: EnhancedUsageContext): LearningOpportunity[] {
+  private identifyEfficiencyOpportunities(context: EnhancedUsageContext): ContextualLearningOpportunity[] {
     return [] // Placeholder
   }
 
@@ -936,7 +936,7 @@ export interface ContextAnalysis {
   userProfile: UserProfileAnalysis
   situationalFactors: SituationalAnalysis
   workflowStage: WorkflowStageAnalysis
-  learningOpportunities: LearningOpportunity[]
+  learningOpportunities: ContextualLearningOpportunity[]
   riskAssessment: RiskAssessment
   optimizationSuggestions: OptimizationSuggestion[]
   patterns: ContextPattern[]
@@ -970,7 +970,7 @@ export interface WorkflowStageAnalysis {
   rollbackOptions: string[]
 }
 
-export interface LearningOpportunity {
+export interface ContextualLearningOpportunity {
   type: 'skill-development' | 'automation' | 'efficiency' | 'best-practice'
   title: string
   description: string

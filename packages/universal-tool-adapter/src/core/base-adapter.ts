@@ -162,7 +162,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       if (error instanceof ExecutionError) {
         return this.handleExecutionError(error, context)
       }
-      return this.handleUnknownError(error, context)
+      return this.handleUnknownError(error instanceof Error ? error : new Error(String(error)), context)
     }
   }
 
@@ -265,7 +265,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       return result
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
-      throw new ExecutionError(`Sim tool execution failed: ${errorMessage}`, error)
+      throw new ExecutionError(`Sim tool execution failed: ${errorMessage}`, error instanceof Error ? error : new Error(String(error)))
     }
   }
 
