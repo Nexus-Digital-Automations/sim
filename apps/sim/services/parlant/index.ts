@@ -62,6 +62,48 @@ export {
   ParlantValidationError,
 } from './error-handler'
 export { SessionService, sessionService } from './session-service'
+
+// Knowledge Base Integration with RAG Services
+export {
+  knowledgeIntegrationService,
+  type ParlantRetrieverConfig,
+  type RAGContext,
+  ragUtils
+} from './knowledge-integration'
+
+export {
+  workflowDocumentationRAGService,
+  type WorkflowContext,
+  type WorkflowDocumentationQuery,
+  type WorkflowHelp,
+  workflowDocUtils
+} from './workflow-documentation-rag'
+
+export {
+  fileUploadProcessorService,
+  type FileUploadRequest,
+  type FileUploadResult,
+  type BatchUploadRequest,
+  type BatchUploadResult,
+  fileProcessingUtils
+} from './file-upload-processor'
+
+export {
+  agentLearningService,
+  type UserInteraction,
+  type LearningInsight,
+  type LearningMetrics,
+  learningUtils
+} from './agent-learning-service'
+
+export {
+  knowledgeRAGIntegrationService,
+  type RAGEnhancedResponse,
+  type AgentKnowledgeProfile,
+  type KnowledgeRAGConfig,
+  ragOperations
+} from './knowledge-rag-integration'
+
 // Type definitions
 // Re-export commonly used types with aliases for convenience
 export type {
@@ -296,6 +338,60 @@ export const parlantUtils = {
       status: 'active',
       limit: 10,
     })
+  },
+
+  /**
+   * Enhanced conversation with RAG support
+   */
+  async startRAGConversation(
+    agentId: string,
+    workspaceId: string,
+    knowledgeBaseIds: string[],
+    auth: AuthContext,
+    initialMessage?: string,
+    customerId?: string
+  ) {
+    // Create session
+    const session = await sessionService.createSession(
+      {
+        agent_id: agentId,
+        workspace_id: workspaceId,
+        customer_id: customerId,
+      },
+      auth
+    )
+
+    // Process initial message with RAG if provided
+    if (initialMessage) {
+      const ragResponse = await ragOperations.quickQuery(
+        initialMessage,
+        agentId,
+        knowledgeBaseIds,
+        auth
+      )
+
+      await sessionService.sendMessage(session.data.id, ragResponse.response, undefined, auth)
+    }
+
+    return session
+  },
+
+  /**
+   * Get agent knowledge profile and insights
+   */
+  async getAgentInsights(agentId: string, auth: AuthContext) {
+    return knowledgeRAGIntegrationService.getAgentKnowledgeProfile(agentId, auth)
+  },
+
+  /**
+   * Upload files to knowledge base with RAG optimization
+   */
+  async uploadKnowledgeFiles(
+    files: Array<{ name: string; content: string | Buffer; mimeType: string; size: number }>,
+    knowledgeBaseId: string,
+    auth: AuthContext
+  ) {
+    return ragOperations.bulkUpload(files, knowledgeBaseId, auth)
   },
 }
 
