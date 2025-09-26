@@ -156,6 +156,7 @@ export class RealtimeSuggester extends EventEmitter {
    * Accept a suggestion
    */
   acceptSuggestion(conversationId: string, suggestionId: string): void {
+    const conversation = this.activeConversations.get(conversationId)
     const suggestions = this.suggestionQueue.get(conversationId) || []
     const suggestion = suggestions.find((s) => s.id === suggestionId)
 
@@ -179,8 +180,6 @@ export class RealtimeSuggester extends EventEmitter {
 
       logger.info(`Suggestion ${suggestionId} accepted`)
     }
-
-    const conversation = this.activeConversations.get(conversationId)
   }
 
   /**
