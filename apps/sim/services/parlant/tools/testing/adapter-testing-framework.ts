@@ -181,7 +181,7 @@ export class AdapterMockEnvironment {
   /**
    * Register mock credentials for authentication testing
    */
-  mockCredentials(service: string, credentials: any): void {
+  setMockCredentials(service: string, credentials: any): void {
     this.mockCredentials.set(service, credentials)
   }
 
