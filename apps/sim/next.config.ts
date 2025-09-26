@@ -59,6 +59,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: false,
     turbopackSourceMaps: false,
+    optimizePackageImports: [],
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

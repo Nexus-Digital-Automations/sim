@@ -5,6 +5,14 @@ const withMDX = createMDX()
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
+  experimental: {
+    optimizeCss: false,
+    turbopackSourceMaps: false,
+    optimizePackageImports: [],
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
   async redirects() {
     return [
       {
