@@ -1,6 +1,14 @@
 'use client'
 
-import React, { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Loader2, RotateCw, X } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import {
@@ -447,6 +455,7 @@ const PermissionsTable = ({
 }
 
 export function InviteModal({ open, onOpenChange, workspaceName }: InviteModalProps) {
+  const emailsId = useId()
   const formRef = useRef<HTMLFormElement>(null)
   const [inputValue, setInputValue] = useState('')
   const [emails, setEmails] = useState<string[]>([])
@@ -1088,7 +1097,7 @@ export function InviteModal({ open, onOpenChange, workspaceName }: InviteModalPr
                   />
                 ))}
                 <Input
-                  id='emails'
+                  id={emailsId}
                   type='text'
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}

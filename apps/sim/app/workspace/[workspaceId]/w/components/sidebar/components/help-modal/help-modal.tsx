@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import imageCompression from 'browser-image-compression'
 import { X } from 'lucide-react'
@@ -61,6 +61,10 @@ interface HelpModalProps {
 }
 
 export function HelpModal({ open, onOpenChange }: HelpModalProps) {
+  const typeId = useId()
+  const subjectId = useId()
+  const messageId = useId()
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const dropZoneRef = useRef<HTMLDivElement>(null)
@@ -377,13 +381,13 @@ export function HelpModal({ open, onOpenChange }: HelpModalProps) {
                 <div className='space-y-4'>
                   {/* Request Type Field */}
                   <div className='space-y-1'>
-                    <Label htmlFor='type'>Request</Label>
+                    <Label htmlFor={typeId}>Request</Label>
                     <Select
                       defaultValue={DEFAULT_REQUEST_TYPE}
                       onValueChange={(value) => setValue('type', value as FormValues['type'])}
                     >
                       <SelectTrigger
-                        id='type'
+                        id={typeId}
                         className={cn('h-9 rounded-[8px]', errors.type && 'border-red-500')}
                       >
                         <SelectValue placeholder='Select a request type' />
@@ -402,9 +406,9 @@ export function HelpModal({ open, onOpenChange }: HelpModalProps) {
 
                   {/* Subject Field */}
                   <div className='space-y-1'>
-                    <Label htmlFor='subject'>Subject</Label>
+                    <Label htmlFor={subjectId}>Subject</Label>
                     <Input
-                      id='subject'
+                      id={subjectId}
                       placeholder='Brief description of your request'
                       {...register('subject')}
                       className={cn('h-9 rounded-[8px]', errors.subject && 'border-red-500')}
@@ -416,9 +420,9 @@ export function HelpModal({ open, onOpenChange }: HelpModalProps) {
 
                   {/* Message Field */}
                   <div className='space-y-1'>
-                    <Label htmlFor='message'>Message</Label>
+                    <Label htmlFor={messageId}>Message</Label>
                     <Textarea
-                      id='message'
+                      id={messageId}
                       placeholder='Please provide details about your request...'
                       rows={6}
                       {...register('message')}

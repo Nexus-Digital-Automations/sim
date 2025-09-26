@@ -1004,13 +1004,13 @@ describe('TagDropdown Search and Filtering', () => {
       { input: 'Hello <var> and <loo', cursorPosition: 20, expected: 'loo' },
     ]
 
-    testCases.forEach(({ input, cursorPosition, expected }) => {
+    for (const { input, cursorPosition, expected } of testCases) {
       const textBeforeCursor = input.slice(0, cursorPosition)
       const match = textBeforeCursor.match(/<([^>]*)$/)
       const searchTerm = match ? match[1].toLowerCase() : ''
 
       expect(searchTerm).toBe(expected)
-    })
+    }
   })
 
   it.concurrent('should filter tags based on search term', () => {

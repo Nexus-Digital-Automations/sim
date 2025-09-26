@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -264,6 +264,9 @@ export function JourneyToolbox({
 }: JourneyToolboxProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeCategory, setActiveCategory] = useState<'states' | 'templates' | 'tools'>('states')
+
+  // Generate unique ID for file input
+  const journeyImportId = useId()
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     basic: true,
     advanced: false,
@@ -577,7 +580,7 @@ export function JourneyToolbox({
                         Import
                       </Button>
                       <input
-                        id='journey-import'
+                        id={journeyImportId}
                         type='file'
                         accept='.json'
                         className='absolute inset-0 h-full w-full cursor-pointer opacity-0'

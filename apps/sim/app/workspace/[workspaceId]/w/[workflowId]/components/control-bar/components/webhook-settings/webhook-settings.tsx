@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import {
   AlertCircle,
   Check,
@@ -69,6 +69,9 @@ interface WebhookSettingsProps {
 }
 
 export function WebhookSettings({ workflowId, open, onOpenChange }: WebhookSettingsProps) {
+  const urlId = useId()
+  const secretId = useId()
+
   const [webhooks, setWebhooks] = useState<WebhookConfig[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
@@ -779,11 +782,11 @@ export function WebhookSettings({ workflowId, open, onOpenChange }: WebhookSetti
 
                   <div className='flex flex-col gap-6'>
                     <div className='space-y-2'>
-                      <Label htmlFor='url' className='font-medium text-sm'>
+                      <Label htmlFor={urlId} className='font-medium text-sm'>
                         Webhook URL
                       </Label>
                       <Input
-                        id='url'
+                        id={urlId}
                         type='url'
                         placeholder='https://your-app.com/webhook'
                         value={newWebhook.url}
@@ -811,12 +814,12 @@ export function WebhookSettings({ workflowId, open, onOpenChange }: WebhookSetti
                     </div>
 
                     <div className='space-y-2'>
-                      <Label htmlFor='secret' className='font-medium text-sm'>
+                      <Label htmlFor={secretId} className='font-medium text-sm'>
                         Secret (optional)
                       </Label>
                       <div className='relative'>
                         <Input
-                          id='secret'
+                          id={secretId}
                           type={showSecret ? 'text' : 'password'}
                           placeholder='Webhook secret for signature verification'
                           value={newWebhook.secret}

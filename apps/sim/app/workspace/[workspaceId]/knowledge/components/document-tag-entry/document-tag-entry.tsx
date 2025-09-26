@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { ChevronDown, Info, Plus, X } from 'lucide-react'
 import {
   Badge,
@@ -65,6 +65,10 @@ export function DocumentTagEntry({
   // Use the document-level hook since we have documentId
   const { saveTagDefinitions } = documentTagHook
   const { tagDefinitions: kbTagDefinitions, fetchTagDefinitions: refreshTagDefinitions } = kbTagHook
+
+  // Generate unique IDs for form elements
+  const tagNameId = useId()
+  const tagValueId = useId()
 
   // Modal state for tag editing
   const [editingTagIndex, setEditingTagIndex] = useState<number | null>(null)
@@ -340,7 +344,7 @@ export function DocumentTagEntry({
             {/* Tag Name */}
             <div className='space-y-2'>
               <div className='flex items-center gap-2'>
-                <Label htmlFor='tag-name'>Tag Name</Label>
+                <Label htmlFor={tagNameId}>Tag Name</Label>
                 {editingTagIndex !== null && (
                   <TooltipProvider>
                     <Tooltip>
@@ -359,7 +363,7 @@ export function DocumentTagEntry({
               </div>
               <div className='flex gap-2'>
                 <Input
-                  id='tag-name'
+                  id={tagNameId}
                   value={editForm.displayName}
                   onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
                   placeholder='Enter tag name'
@@ -412,9 +416,9 @@ export function DocumentTagEntry({
 
             {/* Tag Value */}
             <div className='space-y-2'>
-              <Label htmlFor='tag-value'>Value</Label>
+              <Label htmlFor={tagValueId}>Value</Label>
               <Input
-                id='tag-value'
+                id={tagValueId}
                 value={editForm.value}
                 onChange={(e) => setEditForm({ ...editForm, value: e.target.value })}
                 placeholder='Enter tag value'

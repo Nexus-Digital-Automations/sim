@@ -80,6 +80,7 @@ export const JourneyStateNode = memo<JourneyStateNodeProps>(
     const stateNameId = useId()
     const stateContentId = useId()
     const stateDescriptionId = useId()
+    const stateTagsId = useId()
 
     const getStateIcon = () => {
       switch (data.type) {
@@ -257,9 +258,9 @@ export const JourneyStateNode = memo<JourneyStateNodeProps>(
                         </div>
 
                         <div className='space-y-2'>
-                          <Label htmlFor='stateDescription'>Description</Label>
+                          <Label htmlFor={stateDescriptionId}>Description</Label>
                           <Input
-                            id='stateDescription'
+                            id={stateDescriptionId}
                             value={editData.metadata?.description || ''}
                             onChange={(e) =>
                               setEditData({
@@ -413,9 +414,9 @@ export const JourneyStateNode = memo<JourneyStateNodeProps>(
 
                         <div className='grid grid-cols-2 gap-4'>
                           <div className='space-y-2'>
-                            <Label htmlFor='stateTags'>Tags (comma-separated)</Label>
+                            <Label htmlFor={stateTagsId}>Tags (comma-separated)</Label>
                             <Input
-                              id='stateTags'
+                              id={stateTagsId}
                               value={editData.metadata?.tags?.join(', ') || ''}
                               onChange={(e) =>
                                 setEditData({

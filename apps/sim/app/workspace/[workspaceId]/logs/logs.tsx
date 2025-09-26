@@ -463,7 +463,9 @@ export default function Logs() {
 
     const parsed = parseQuery(debouncedSearchQuery)
     const extra = queryToApiParams(parsed)
-    Object.entries(extra).forEach(([k, v]) => params.set(k, v))
+    for (const [k, v] of Object.entries(extra)) {
+      params.set(k, v)
+    }
 
     const url = `/api/logs/export?${params.toString()}`
     const a = document.createElement('a')

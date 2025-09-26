@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -23,6 +23,7 @@ export function DeployedWorkflowCard({
   deployedWorkflowState,
   className,
 }: DeployedWorkflowCardProps) {
+  const toggleId = useId()
   const [showingDeployed, setShowingDeployed] = useState(true)
   const workflowToShow = showingDeployed ? deployedWorkflowState : currentWorkflowState
   const activeWorkflowId = useWorkflowRegistry((state) => state.activeWorkflowId)
@@ -50,15 +51,15 @@ export function DeployedWorkflowCard({
             {/* Version toggle - only show if there's a current version */}
             {currentWorkflowState && (
               <div className='flex items-center space-x-2'>
-                <Label htmlFor='workflow-version-toggle' className='text-muted-foreground text-sm'>
+                <Label htmlFor={toggleId} className='text-muted-foreground text-sm'>
                   Current
                 </Label>
                 <Switch
-                  id='workflow-version-toggle'
+                  id={toggleId}
                   checked={showingDeployed}
                   onCheckedChange={setShowingDeployed}
                 />
-                <Label htmlFor='workflow-version-toggle' className='text-muted-foreground text-sm'>
+                <Label htmlFor={toggleId} className='text-muted-foreground text-sm'>
                   Deployed
                 </Label>
               </div>

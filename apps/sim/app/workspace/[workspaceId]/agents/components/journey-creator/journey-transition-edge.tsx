@@ -79,6 +79,13 @@ export const JourneyTransitionEdge = memo<JourneyTransitionEdgeProps>(
     const [isEditing, setIsEditing] = useState(false)
     const [editData, setEditData] = useState<JourneyTransitionData>(data)
 
+    // Generate unique IDs for form elements
+    const transitionLabelId = useId()
+    const transitionConditionId = useId()
+    const transitionDelayId = useId()
+    const transitionDescriptionId = useId()
+    const transitionTagsId = useId()
+
     const [edgePath, labelX, labelY] = getBezierPath({
       sourceX,
       sourceY,
@@ -200,9 +207,9 @@ export const JourneyTransitionEdge = memo<JourneyTransitionEdgeProps>(
                             <h3 className='font-medium text-sm'>Basic Properties</h3>
 
                             <div className='space-y-2'>
-                              <Label htmlFor='transitionLabel'>Label</Label>
+                              <Label htmlFor={transitionLabelId}>Label</Label>
                               <Input
-                                id='transitionLabel'
+                                id={transitionLabelId}
                                 value={editData.label || ''}
                                 onChange={(e) =>
                                   setEditData({ ...editData, label: e.target.value })
@@ -212,9 +219,9 @@ export const JourneyTransitionEdge = memo<JourneyTransitionEdgeProps>(
                             </div>
 
                             <div className='space-y-2'>
-                              <Label htmlFor='transitionCondition'>Condition</Label>
+                              <Label htmlFor={transitionConditionId}>Condition</Label>
                               <Textarea
-                                id='transitionCondition'
+                                id={transitionConditionId}
                                 value={editData.condition || ''}
                                 onChange={(e) =>
                                   setEditData({ ...editData, condition: e.target.value })
@@ -250,9 +257,9 @@ export const JourneyTransitionEdge = memo<JourneyTransitionEdgeProps>(
                               </div>
 
                               <div className='space-y-2'>
-                                <Label htmlFor='transitionDelay'>Delay (seconds)</Label>
+                                <Label htmlFor={transitionDelayId}>Delay (seconds)</Label>
                                 <Input
-                                  id='transitionDelay'
+                                  id={transitionDelayId}
                                   type='number'
                                   min='0'
                                   step='0.1'
@@ -384,9 +391,9 @@ export const JourneyTransitionEdge = memo<JourneyTransitionEdgeProps>(
                             <h3 className='font-medium text-sm'>Metadata</h3>
 
                             <div className='space-y-2'>
-                              <Label htmlFor='transitionDescription'>Description</Label>
+                              <Label htmlFor={transitionDescriptionId}>Description</Label>
                               <Input
-                                id='transitionDescription'
+                                id={transitionDescriptionId}
                                 value={editData.metadata?.description || ''}
                                 onChange={(e) =>
                                   setEditData({
@@ -402,9 +409,9 @@ export const JourneyTransitionEdge = memo<JourneyTransitionEdgeProps>(
                             </div>
 
                             <div className='space-y-2'>
-                              <Label htmlFor='transitionTags'>Tags (comma-separated)</Label>
+                              <Label htmlFor={transitionTagsId}>Tags (comma-separated)</Label>
                               <Input
-                                id='transitionTags'
+                                id={transitionTagsId}
                                 value={editData.metadata?.tags?.join(', ') || ''}
                                 onChange={(e) =>
                                   setEditData({

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useId } from 'react'
 import { Input, Label } from '@/components/ui'
 import { getEmailDomain } from '@/lib/urls/utils'
 import { cn } from '@/lib/utils'
@@ -26,6 +26,7 @@ export function SubdomainInput({
   onValidationChange,
   isEditingExisting = false,
 }: SubdomainInputProps) {
+  const subdomainId = useId()
   const { isChecking, error, isValid } = useSubdomainValidation(
     value,
     originalSubdomain,
@@ -44,13 +45,13 @@ export function SubdomainInput({
 
   return (
     <div className='space-y-2'>
-      <Label htmlFor='subdomain' className='font-medium text-sm'>
+      <Label htmlFor={subdomainId} className='font-medium text-sm'>
         Subdomain
       </Label>
       <div className='relative flex items-center rounded-md ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'>
         <div className='relative flex-1'>
           <Input
-            id='subdomain'
+            id={subdomainId}
             placeholder='company-name'
             value={value}
             onChange={(e) => handleChange(e.target.value)}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Check, Loader2, X } from 'lucide-react'
 import { useParams } from 'next/navigation'
@@ -67,6 +67,13 @@ interface SubmitStatus {
 export function CreateModal({ open, onOpenChange, onKnowledgeBaseCreated }: CreateModalProps) {
   const params = useParams()
   const workspaceId = params.workspaceId as string
+
+  // Generate unique IDs for form fields
+  const nameId = useId()
+  const descriptionId = useId()
+  const minChunkSizeId = useId()
+  const maxChunkSizeId = useId()
+  const overlapSizeId = useId()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -316,7 +323,9 @@ export function CreateModal({ open, onOpenChange, onKnowledgeBaseCreated }: Crea
         }
       }
 
-      files.forEach((file) => URL.revokeObjectURL(file.preview))
+      for (const file of files) {
+        URL.revokeObjectURL(file.preview)
+      }
       setFiles([])
 
       onOpenChange(false)
@@ -371,9 +380,9 @@ export function CreateModal({ open, onOpenChange, onKnowledgeBaseCreated }: Crea
                 {/* Form Fields Section - Fixed at top */}
                 <div className='flex-shrink-0 space-y-4'>
                   <div className='space-y-2'>
-                    <Label htmlFor='name'>Name *</Label>
+                    <Label htmlFor={nameId}>Name *</Label>
                     <Input
-                      id='name'
+                      id={nameId}
                       placeholder='Enter knowledge base name'
                       {...register('name')}
                       className={errors.name ? 'border-red-500' : ''}
@@ -384,9 +393,9 @@ export function CreateModal({ open, onOpenChange, onKnowledgeBaseCreated }: Crea
                   </div>
 
                   <div className='space-y-2'>
-                    <Label htmlFor='description'>Description</Label>
+                    <Label htmlFor={descriptionId}>Description</Label>
                     <Textarea
-                      id='description'
+                      id={descriptionId}
                       placeholder='Describe what this knowledge base contains (optional)'
                       rows={3}
                       {...register('description')}
@@ -404,9 +413,9 @@ export function CreateModal({ open, onOpenChange, onKnowledgeBaseCreated }: Crea
                     {/* Min and Max Chunk Size Row */}
                     <div className='grid grid-cols-2 gap-4'>
                       <div className='space-y-2'>
-                        <Label htmlFor='minChunkSize'>Min Chunk Size</Label>
+                        <Label htmlFor={minChunkSizeId}>Min Chunk Size</Label>
                         <Input
-                          id='minChunkSize'
+                          id={minChunkSizeId}
                           type='number'
                           placeholder='1'
                           {...register('minChunkSize', { valueAsNumber: true })}
@@ -421,9 +430,9 @@ export function CreateModal({ open, onOpenChange, onKnowledgeBaseCreated }: Crea
                       </div>
 
                       <div className='space-y-2'>
-                        <Label htmlFor='maxChunkSize'>Max Chunk Size</Label>
+                        <Label htmlFor={maxChunkSizeId}>Max Chunk Size</Label>
                         <Input
-                          id='maxChunkSize'
+                          id={maxChunkSizeId}
                           type='number'
                           placeholder='1024'
                           {...register('maxChunkSize', { valueAsNumber: true })}
@@ -440,9 +449,9 @@ export function CreateModal({ open, onOpenChange, onKnowledgeBaseCreated }: Crea
 
                     {/* Overlap Size */}
                     <div className='space-y-2'>
-                      <Label htmlFor='overlapSize'>Overlap Size</Label>
+                      <Label htmlFor={overlapSizeId}>Overlap Size</Label>
                       <Input
-                        id='overlapSize'
+                        id={overlapSizeId}
                         type='number'
                         placeholder='200'
                         {...register('overlapSize', { valueAsNumber: true })}

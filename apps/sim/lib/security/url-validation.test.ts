@@ -27,10 +27,10 @@ describe('validateProxyUrl', () => {
         'http://httpbin.org/get',
       ]
 
-      validUrls.forEach((url) => {
+      for (const url of validUrls) {
         const result = validateProxyUrl(url)
         expect(result.isValid).toBe(true)
-      })
+      }
     })
   })
 

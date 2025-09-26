@@ -69,7 +69,7 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 11,
+      "total_reinitializations": 18,
       "current_day": "2025-09-26",
       "time_buckets": {
         "10:00-14:59": {
@@ -78,7 +78,7 @@
         },
         "15:00-19:59": {
           "init": 0,
-          "reinit": 11
+          "reinit": 18
         },
         "20:00-00:59": {
           "init": 0,
@@ -95,7 +95,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-26T21:15:59.334Z",
-      "last_updated": "2025-09-26T21:29:42.604Z"
+      "last_updated": "2025-09-26T21:41:43.605Z"
     }
   },
   "agents": {
@@ -153,6 +153,55 @@
       "status": "active",
       "reinitialized": "2025-09-26T21:29:42.602Z",
       "sessionId": "0170a743df45c490",
+      "previousSessions": []
+    },
+    "LINTING_AGENT_11": {
+      "lastHeartbeat": "2025-09-26T21:41:42.080Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T21:41:42.080Z",
+      "sessionId": "bc8555da38622da9",
+      "previousSessions": []
+    },
+    "agent-15": {
+      "lastHeartbeat": "2025-09-26T21:41:42.168Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T21:41:42.168Z",
+      "sessionId": "28ada58f089c76e8",
+      "previousSessions": []
+    },
+    "AGENT_16": {
+      "lastHeartbeat": "2025-09-26T21:41:42.219Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T21:41:42.219Z",
+      "sessionId": "66c752579d8a79b7",
+      "previousSessions": []
+    },
+    "AGENT_LINTING_FINAL_VALIDATION_20": {
+      "lastHeartbeat": "2025-09-26T21:41:42.556Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T21:41:42.556Z",
+      "sessionId": "0e2f407983cd7806",
+      "previousSessions": []
+    },
+    "AGENT_18": {
+      "lastHeartbeat": "2025-09-26T21:41:42.801Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T21:41:42.801Z",
+      "sessionId": "2dd330e2ad6533ed",
+      "previousSessions": []
+    },
+    "AGENT_17": {
+      "lastHeartbeat": "2025-09-26T21:41:43.537Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T21:41:43.537Z",
+      "sessionId": "17f78d939181a53e",
+      "previousSessions": []
+    },
+    "LINTING_AGENT_19": {
+      "lastHeartbeat": "2025-09-26T21:41:43.604Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T21:41:43.604Z",
+      "sessionId": "01a5867b0fac373d",
       "previousSessions": []
     }
   }

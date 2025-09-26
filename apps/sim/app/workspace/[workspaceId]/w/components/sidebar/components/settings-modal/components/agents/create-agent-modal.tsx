@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Bot, Info, Loader2 } from 'lucide-react'
 import {
   AlertDialog,
@@ -92,6 +92,17 @@ const TOOLTIPS = {
 }
 
 export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateAgentModalProps) {
+  const agentNameId = useId()
+  const agentDescriptionId = useId()
+  const modelSelectId = useId()
+  const temperatureSliderId = useId()
+  const maxTokensId = useId()
+  const systemPromptId = useId()
+  const toneSelectId = useId()
+  const verbositySelectId = useId()
+  const styleInputId = useId()
+  const toolsEnabledId = useId()
+
   const { createAgent, isCreatingAgent, error, clearError } = useAgentManagementStore()
 
   // Form state
@@ -198,7 +209,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
                 Agent Name
               </Label>
               <Input
-                id='agent-name'
+                id={agentNameId}
                 value={formData.name}
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 placeholder='e.g., Customer Support Assistant'
@@ -213,7 +224,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
                 Description
               </Label>
               <Textarea
-                id='agent-description'
+                id={agentDescriptionId}
                 value={formData.description}
                 onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 placeholder='Describe what this agent does and how it helps users...'
@@ -241,7 +252,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
                 value={formData.configuration.model}
                 onValueChange={(value) => updateConfiguration({ model: value })}
               >
-                <SelectTrigger id='model-select' className='h-9 rounded-[8px]'>
+                <SelectTrigger id={modelSelectId} className='h-9 rounded-[8px]'>
                   <SelectValue placeholder='Select a model' />
                 </SelectTrigger>
                 <SelectContent>
@@ -274,7 +285,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
                 </Tooltip>
               </div>
               <Slider
-                id='temperature-slider'
+                id={temperatureSliderId}
                 min={0}
                 max={1}
                 step={0.1}
@@ -306,7 +317,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
                   updateConfiguration({ maxTokens: Number.parseInt(value, 10) })
                 }
               >
-                <SelectTrigger id='max-tokens' className='h-9 rounded-[8px]'>
+                <SelectTrigger id={maxTokensId} className='h-9 rounded-[8px]'>
                   <SelectValue placeholder='Select token limit' />
                 </SelectTrigger>
                 <SelectContent>
@@ -340,7 +351,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
                 </Tooltip>
               </div>
               <Textarea
-                id='system-prompt'
+                id={systemPromptId}
                 value={formData.configuration.systemPrompt}
                 onChange={(e) => updateConfiguration({ systemPrompt: e.target.value })}
                 placeholder='Define how your agent should behave, its role, and any specific instructions...'
@@ -366,7 +377,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
                     value={formData.configuration.personality?.tone}
                     onValueChange={(value: any) => updatePersonality({ tone: value })}
                   >
-                    <SelectTrigger id='tone-select' className='h-9 rounded-[8px]'>
+                    <SelectTrigger id={toneSelectId} className='h-9 rounded-[8px]'>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -387,7 +398,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
                     value={formData.configuration.personality?.verbosity}
                     onValueChange={(value: any) => updatePersonality({ verbosity: value })}
                   >
-                    <SelectTrigger id='verbosity-select' className='h-9 rounded-[8px]'>
+                    <SelectTrigger id={verbositySelectId} className='h-9 rounded-[8px]'>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -406,7 +417,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
                   Communication Style
                 </Label>
                 <Input
-                  id='style-input'
+                  id={styleInputId}
                   value={formData.configuration.personality?.style}
                   onChange={(e) => updatePersonality({ style: e.target.value })}
                   placeholder='e.g., Clear and direct communication with helpful examples'
@@ -437,7 +448,7 @@ export function CreateAgentModal({ open, onOpenChange, onAgentCreated }: CreateA
                 </Tooltip>
               </div>
               <Switch
-                id='tools-enabled'
+                id={toolsEnabledId}
                 checked={formData.configuration.toolsEnabled}
                 onCheckedChange={(checked) => updateConfiguration({ toolsEnabled: checked })}
               />

@@ -170,6 +170,13 @@ export function JourneySettings({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [activeTab, setActiveTab] = useState('general')
 
+  // Generate unique IDs for form elements
+  const journeyNameId = useId()
+  const journeyVersionId = useId()
+  const journeyDescriptionId = useId()
+  const journeyTagsId = useId()
+  const webhookUrlId = useId()
+
   useEffect(() => {
     // Load settings for existing journey
     if (journeyId) {
@@ -323,9 +330,9 @@ export function JourneySettings({
 
                 <div className='grid grid-cols-2 gap-4'>
                   <div className='space-y-2'>
-                    <Label htmlFor='journeyName'>Journey Name *</Label>
+                    <Label htmlFor={journeyNameId}>Journey Name *</Label>
                     <Input
-                      id='journeyName'
+                      id={journeyNameId}
                       value={settings.general.name}
                       onChange={(e) => updateSettings('general', { name: e.target.value })}
                       placeholder='Enter journey name'
@@ -333,9 +340,9 @@ export function JourneySettings({
                   </div>
 
                   <div className='space-y-2'>
-                    <Label htmlFor='journeyVersion'>Version</Label>
+                    <Label htmlFor={journeyVersionId}>Version</Label>
                     <Input
-                      id='journeyVersion'
+                      id={journeyVersionId}
                       value={settings.general.version}
                       onChange={(e) => updateSettings('general', { version: e.target.value })}
                       placeholder='e.g., 1.0.0'
@@ -344,9 +351,9 @@ export function JourneySettings({
                 </div>
 
                 <div className='space-y-2'>
-                  <Label htmlFor='journeyDescription'>Description</Label>
+                  <Label htmlFor={journeyDescriptionId}>Description</Label>
                   <Textarea
-                    id='journeyDescription'
+                    id={journeyDescriptionId}
                     value={settings.general.description}
                     onChange={(e) => updateSettings('general', { description: e.target.value })}
                     placeholder='Describe what this journey does...'
@@ -355,9 +362,9 @@ export function JourneySettings({
                 </div>
 
                 <div className='space-y-2'>
-                  <Label htmlFor='journeyTags'>Tags (comma-separated)</Label>
+                  <Label htmlFor={journeyTagsId}>Tags (comma-separated)</Label>
                   <Input
-                    id='journeyTags'
+                    id={journeyTagsId}
                     value={settings.general.tags.join(', ')}
                     onChange={(e) =>
                       updateSettings('general', {
@@ -649,9 +656,9 @@ export function JourneySettings({
 
                       {settings.integration.enableWebhooks && (
                         <div className='space-y-2'>
-                          <Label htmlFor='webhookUrl'>Webhook URL</Label>
+                          <Label htmlFor={webhookUrlId}>Webhook URL</Label>
                           <Input
-                            id='webhookUrl'
+                            id={webhookUrlId}
                             value={settings.integration.webhookUrl}
                             onChange={(e) =>
                               updateSettings('integration', {

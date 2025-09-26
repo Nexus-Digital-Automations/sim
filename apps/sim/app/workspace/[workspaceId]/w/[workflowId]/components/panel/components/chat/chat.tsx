@@ -315,7 +315,9 @@ export function Chat({ chatMessage, setChatMessage }: ChatProps) {
           const { done, value } = await reader.read()
           if (done) {
             // Finalize all streaming messages
-            messageIdMap.forEach((id) => finalizeMessageStream(id))
+            for (const id of messageIdMap) {
+              finalizeMessageStream(id)
+            }
             break
           }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { AlertTriangle, Loader2 } from 'lucide-react'
 import {
   Alert,
@@ -82,6 +82,12 @@ export function ChatDeploy({
   const [internalShowDeleteConfirmation, setInternalShowDeleteConfirmation] = useState(false)
   const [showSuccessView, setShowSuccessView] = useState(false)
 
+  // Generate unique IDs for form elements
+  const formId = useId()
+  const titleId = useId()
+  const descriptionId = useId()
+  const welcomeMessageId = useId()
+
   // Use external state for delete confirmation if provided
   const showDeleteConfirmation =
     externalShowDeleteConfirmation !== undefined
@@ -95,6 +101,12 @@ export function ChatDeploy({
   const { deployedUrl, deployChat } = useChatDeployment()
   const formRef = useRef<HTMLFormElement>(null)
   const [isSubdomainValid, setIsSubdomainValid] = useState(false)
+
+  // Generate unique IDs for form elements
+  const chatDeployFormId = useId()
+  const titleId = useId()
+  const descriptionId = useId()
+  const welcomeMessageId = useId()
   const isFormValid =
     isSubdomainValid &&
     Boolean(formData.title.trim()) &&
@@ -247,7 +259,7 @@ export function ChatDeploy({
   if (deployedUrl && showSuccessView) {
     return (
       <>
-        <div id='chat-deploy-form'>
+        <div id={chatDeployFormId}>
           <SuccessView
             deployedUrl={deployedUrl}
             existingChat={existingChat}
@@ -300,7 +312,7 @@ export function ChatDeploy({
   return (
     <>
       <form
-        id='chat-deploy-form'
+        id={chatDeployFormId}
         ref={formRef}
         onSubmit={handleSubmit}
         className='-mx-1 space-y-4 overflow-y-auto px-1'
@@ -322,11 +334,11 @@ export function ChatDeploy({
             isEditingExisting={!!existingChat}
           />
           <div className='space-y-2'>
-            <Label htmlFor='title' className='font-medium text-sm'>
+            <Label htmlFor={titleId} className='font-medium text-sm'>
               Chat Title
             </Label>
             <Input
-              id='title'
+              id={titleId}
               placeholder='Customer Support Assistant'
               value={formData.title}
               onChange={(e) => updateField('title', e.target.value)}
@@ -337,11 +349,11 @@ export function ChatDeploy({
             {errors.title && <p className='text-destructive text-sm'>{errors.title}</p>}
           </div>
           <div className='space-y-2'>
-            <Label htmlFor='description' className='font-medium text-sm'>
+            <Label htmlFor={descriptionId} className='font-medium text-sm'>
               Description (Optional)
             </Label>
             <Textarea
-              id='description'
+              id={descriptionId}
               placeholder='A brief description of what this chat does'
               value={formData.description}
               onChange={(e) => updateField('description', e.target.value)}
@@ -383,11 +395,11 @@ export function ChatDeploy({
             error={errors.password || errors.emails}
           />
           <div className='space-y-2'>
-            <Label htmlFor='welcomeMessage' className='font-medium text-sm'>
+            <Label htmlFor={welcomeMessageId} className='font-medium text-sm'>
               Welcome Message
             </Label>
             <Textarea
-              id='welcomeMessage'
+              id={welcomeMessageId}
               placeholder='Enter a welcome message for your chat'
               value={formData.welcomeMessage}
               onChange={(e) => updateField('welcomeMessage', e.target.value)}

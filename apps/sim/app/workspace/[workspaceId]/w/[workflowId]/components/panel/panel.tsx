@@ -23,6 +23,24 @@ import { Variables } from './components/variables/variables'
 
 const logger = createLogger('Panel')
 
+// Skeleton loading component for chat history
+const ChatHistorySkeleton = () => (
+  <div className='px-1 py-1'>
+    {/* Group header skeleton */}
+    <div className='border-[#E5E5E5] border-t-0 px-1 pt-1 pb-0.5 dark:border-[#414141]'>
+      <div className='h-3 w-12 animate-pulse rounded bg-muted/40' />
+    </div>
+    {/* Chat item skeletons */}
+    <div className='mt-1 flex flex-col gap-1'>
+      {[1, 2, 3].map((i) => (
+        <div key={i} className='mx-1 flex h-8 items-center rounded-lg px-2 py-1.5'>
+          <div className='h-3 w-full animate-pulse rounded bg-muted/40' />
+        </div>
+      ))}
+    </div>
+  </div>
+)
+
 export function Panel() {
   const [chatMessage, setChatMessage] = useState<string>('')
   const [isHistoryDropdownOpen, setIsHistoryDropdownOpen] = useState(false)
@@ -203,24 +221,6 @@ export function Panel() {
     // Filter out empty groups
     return Object.entries(groups).filter(([, chats]) => chats.length > 0)
   }, [chats, activeWorkflowId, copilotWorkflowId])
-
-  // Skeleton loading component for chat history
-  const ChatHistorySkeleton = () => (
-    <div className='px-1 py-1'>
-      {/* Group header skeleton */}
-      <div className='border-[#E5E5E5] border-t-0 px-1 pt-1 pb-0.5 dark:border-[#414141]'>
-        <div className='h-3 w-12 animate-pulse rounded bg-muted/40' />
-      </div>
-      {/* Chat item skeletons */}
-      <div className='mt-1 flex flex-col gap-1'>
-        {[1, 2, 3].map((i) => (
-          <div key={i} className='mx-1 flex h-8 items-center rounded-lg px-2 py-1.5'>
-            <div className='h-3 w-full animate-pulse rounded bg-muted/40' />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
 
   // Handle tab clicks - no loading, just switch tabs
   const handleTabClick = async (tab: 'chat' | 'console' | 'variables' | 'copilot') => {
