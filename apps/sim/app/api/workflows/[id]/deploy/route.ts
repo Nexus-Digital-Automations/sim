@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         deployedAt: workflow.deployedAt,
         userId: workflow.userId,
         deployedState: workflow.deployedState,
-        pinnedApiKeyId: workflow.pinnedApiKeyId,
+        pinnedApiKey: workflow.pinnedApiKey,
       })
       .from(workflow)
       .where(eq(workflow.id, id))
@@ -60,11 +60,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     let keyInfo: { name: string; type: 'personal' | 'workspace' } | null = null
 
-    if (workflowData.pinnedApiKeyId) {
+    if (workflowData.pinnedApiKey) {
       const pinnedKey = await db
         .select({ key: apiKey.key, name: apiKey.name, type: apiKey.type })
         .from(apiKey)
-        .where(eq(apiKey.id, workflowData.pinnedApiKeyId))
+        .where(eq(apiKey.id, workflowData.pinnedApiKey))
         .limit(1)
 
       if (pinnedKey.length > 0) {
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const workflowData = await db
       .select({
         userId: workflow.userId,
-        pinnedApiKeyId: workflow.pinnedApiKeyId,
+        pinnedApiKey: workflow.pinnedApiKey,
       })
       .from(workflow)
       .where(eq(workflow.id, id))
@@ -402,7 +402,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
     // Only pin when the client explicitly provided a key in this request
     if (providedApiKey && keyInfo && matchedKey) {
-      updateData.pinnedApiKeyId = matchedKey.id
+      updateData.pinnedApiKey = matchedKey.id
     }
 
     await db.update(workflow).set(updateData).where(eq(workflow.id, id))
@@ -463,7 +463,7 @@ export async function DELETE(
         isDeployed: false,
         deployedAt: null,
         deployedState: null,
-        pinnedApiKeyId: null,
+        pinnedApiKey: null,
       })
       .where(eq(workflow.id, id))
 

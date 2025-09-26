@@ -133,7 +133,7 @@ export const workflow = pgTable(
     isDeployed: boolean('is_deployed').notNull().default(false),
     deployedState: json('deployed_state'),
     deployedAt: timestamp('deployed_at'),
-    pinnedApiKeyId: text('pinned_api_key_id').references(() => apiKey.id, { onDelete: 'set null' }),
+    pinnedApiKey: text('pinned_api_key').references(() => apiKey.id, { onDelete: 'set null' }),
     collaborators: json('collaborators').notNull().default('[]'),
     runCount: integer('run_count').notNull().default(0),
     lastRunAt: timestamp('last_run_at'),

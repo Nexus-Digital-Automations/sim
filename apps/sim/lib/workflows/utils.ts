@@ -25,7 +25,7 @@ export async function getWorkflowById(id: string) {
       isDeployed: workflowTable.isDeployed,
       deployedState: workflowTable.deployedState,
       deployedAt: workflowTable.deployedAt,
-      pinnedApiKeyId: workflowTable.pinnedApiKeyId,
+      pinnedApiKey: workflowTable.pinnedApiKey,
       collaborators: workflowTable.collaborators,
       runCount: workflowTable.runCount,
       lastRunAt: workflowTable.lastRunAt,
@@ -41,7 +41,7 @@ export async function getWorkflowById(id: string) {
       },
     })
     .from(workflowTable)
-    .leftJoin(apiKey, eq(workflowTable.pinnedApiKeyId, apiKey.id))
+    .leftJoin(apiKey, eq(workflowTable.pinnedApiKey, apiKey.id))
     .where(eq(workflowTable.id, id))
     .limit(1)
 
