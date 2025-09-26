@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { AlertCircle, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react'
 import {
   AlertDialog,
@@ -51,6 +51,7 @@ export function EditChunkModal({
   onNavigateToChunk,
   onNavigateToPage,
 }: EditChunkModalProps) {
+  const contentId = useId()
   const userPermissions = useUserPermissionsContext()
   const [editedContent, setEditedContent] = useState(chunk?.content || '')
   const [isSaving, setIsSaving] = useState(false)
@@ -280,11 +281,11 @@ export function EditChunkModal({
 
                 {/* Content Input Section - Expands to fill remaining space */}
                 <div className='mt-4 flex flex-1 flex-col'>
-                  <Label htmlFor='content' className='mb-2 font-medium text-sm'>
+                  <Label htmlFor={contentId} className='mb-2 font-medium text-sm'>
                     Chunk Content
                   </Label>
                   <Textarea
-                    id='content'
+                    id={contentId}
                     value={editedContent}
                     onChange={(e) => setEditedContent(e.target.value)}
                     placeholder={

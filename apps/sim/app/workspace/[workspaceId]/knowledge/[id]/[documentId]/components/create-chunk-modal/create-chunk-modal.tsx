@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { AlertCircle, Loader2, X } from 'lucide-react'
 import {
   AlertDialog,
@@ -36,6 +36,7 @@ export function CreateChunkModal({
   knowledgeBaseId,
   onChunkCreated,
 }: CreateChunkModalProps) {
+  const contentId = useId()
   const [content, setContent] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -168,11 +169,11 @@ export function CreateChunkModal({
 
                 {/* Content Input Section - Expands to fill remaining space */}
                 <div className='mt-4 flex flex-1 flex-col'>
-                  <Label htmlFor='content' className='mb-2 font-medium text-sm'>
+                  <Label htmlFor={contentId} className='mb-2 font-medium text-sm'>
                     Chunk Content
                   </Label>
                   <Textarea
-                    id='content'
+                    id={contentId}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder='Enter the content for this chunk...'
