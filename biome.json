@@ -25,7 +25,14 @@
       "!**/public/worker-*.js",
       "!**/public/fallback-*.js",
       "!**/apps/docs/.source/**",
-      "!**/*.d.ts"
+      "!**/*.d.ts",
+      "!**/venv/**",
+      "!**/.venv/**",
+      "!**/__pycache__/**",
+      "!**/*.pyc",
+      "!**/*.pyo",
+      "!**/*.pyd",
+      "!**/packages/parlant-server/venv/**"
     ]
   },
   "formatter": {
@@ -60,7 +67,14 @@
       "!**/public/worker-*.js",
       "!**/public/fallback-*.js",
       "!**/apps/docs/.source/**",
-      "!**/*.d.ts"
+      "!**/*.d.ts",
+      "!**/venv/**",
+      "!**/.venv/**",
+      "!**/__pycache__/**",
+      "!**/*.pyc",
+      "!**/*.pyo",
+      "!**/*.pyd",
+      "!**/packages/parlant-server/venv/**"
     ]
   },
   "assist": {
