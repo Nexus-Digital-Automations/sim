@@ -269,6 +269,53 @@ export async function updateConversation(
 }
 
 /**
+ * Get a specific conversation for a user with access validation
+ */
+export async function getUserConversation(
+  userId: string,
+  conversationId: string,
+  options: { includeMessages?: boolean } = {}
+): Promise<Conversation | null> {
+  try {
+    // Check if user can access this conversation
+    const canAccess = await getUserCanAccessConversation(userId, conversationId)
+    if (!canAccess) {
+      logger.warn('User cannot access conversation', { userId, conversationId })
+      return null
+    }
+
+    const conversation = await getConversationById(conversationId)
+
+    logger.info('Retrieved user conversation', {
+      userId,
+      conversationId,
+      found: !!conversation,
+      includeMessages: options.includeMessages,
+    })
+
+    return conversation
+  } catch (error) {
+    logger.error('Failed to get user conversation', { error, userId, conversationId })
+    return null
+  }
+}
+
+/**
+ * Archive a conversation
+ */
+export async function archiveConversation(
+  conversationId: string,
+  userId: string
+): Promise<boolean> {
+  try {
+    return (await updateConversation(userId, conversationId, { is_archived: true })) !== null
+  } catch (error) {
+    logger.error('Failed to archive conversation', { error, userId, conversationId })
+    return false
+  }
+}
+
+/**
  * Delete a conversation
  */
 export async function deleteConversation(userId: string, conversationId: string): Promise<boolean> {

@@ -5,7 +5,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { getAgentById, getUserCanAccessAgent } from '@/lib/parlant/agents'
 import { getConversationById, getUserCanAccessConversation } from '@/lib/parlant/conversations'
-import { ParlantChatInterface } from '../components/parlant-chat-interface'
+import { ParlantChatInterface } from '../../components/parlant-chat-interface'
 
 interface ConversationPageProps {
   params: Promise<{
