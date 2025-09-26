@@ -9,13 +9,12 @@
 
 import { EventEmitter } from 'events'
 import {
-  createErrorRecoveryEngine,
-  DEVELOPMENT_ERROR_CONFIG,
+  createIntelligentErrorRecoveryEngine,
   type ErrorRecoveryContext,
   IntelligentErrorRecoveryEngine,
-  PRODUCTION_ERROR_CONFIG,
   type RecoveryAction,
   type RecoveryActionType,
+  type IntelligentRecoveryPlan,
 } from '../intelligent-error-recovery-engine'
 
 // Mock dependencies

@@ -385,11 +385,11 @@ export class AdvancedConnectionPool extends EventEmitter {
         return this.availableConnections.shift()!
 
       case 'least-connections':
-        return this.availableConnections.sort((a, b) => a.usageCount - b.usageCount)[0]
+        return this.availableConnections.sort((a, b) => a.usageCount - b.usageCount)[0] || null
 
       case 'random': {
         const randomIndex = Math.floor(Math.random() * this.availableConnections.length)
-        return this.availableConnections.splice(randomIndex, 1)[0]
+        return this.availableConnections.splice(randomIndex, 1)[0] || null
       }
 
       case 'weighted': {
@@ -402,7 +402,7 @@ export class AdvancedConnectionPool extends EventEmitter {
         for (let i = 0; i < this.availableConnections.length; i++) {
           weightSum += weights[i]
           if (random <= weightSum) {
-            return this.availableConnections.splice(i, 1)[0]
+            return this.availableConnections.splice(i, 1)[0] || null
           }
         }
 

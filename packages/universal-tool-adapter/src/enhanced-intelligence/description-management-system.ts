@@ -1129,8 +1129,6 @@ class VersionControlService {
 }
 
 class CollaborationService {
-  constructor(private config?: any) {}
-
   async joinEditingSession(sessionId: string, userId: string): Promise<void> {}
   async notifyCollaborators(sessionId: string, eventType: string, data: any): Promise<void> {}
   async notifyReviewers(workflow: ReviewWorkflow): Promise<void> {}
@@ -1154,8 +1152,6 @@ class CollaborationService {
 }
 
 class QualityAssuranceService {
-  constructor(private config?: any) {}
-
   async initializeQualityTracking(descriptionId: string, versionId: string): Promise<void> {}
   async runQualityChecks(description: EnhancedDescriptionSchema): Promise<QualityCheckResult[]> {
     return []
@@ -1163,8 +1159,6 @@ class QualityAssuranceService {
 }
 
 class PublishingService {
-  constructor(private config?: any) {}
-
   async publishVersion(
     descriptionId: string,
     versionId: string,
@@ -1175,8 +1169,6 @@ class PublishingService {
 }
 
 class AnalyticsService {
-  constructor(private _config?: any) {}
-
   async trackPublication(publication: Publication): Promise<void> {}
   async getDescriptionAnalytics(descriptionId: string): Promise<DescriptionAnalytics> {
     return {} as any

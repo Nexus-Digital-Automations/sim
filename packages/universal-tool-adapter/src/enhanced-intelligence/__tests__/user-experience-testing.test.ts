@@ -1573,3 +1573,20 @@ describe('User Experience Testing Framework', () => {
     expect(results.insights).toBeInstanceOf(Array)
   })
 })
+
+// =============================================================================
+// Additional Exports
+// =============================================================================
+
+export type {
+  UserExperienceTestReport,
+  DiscoverabilityTestResults,
+  DiscoverabilityTest,
+  SatisfactionTestResults,
+  SatisfactionTest,
+  ConversationFlowTestResults,
+  ConversationFlowTest,
+  OnboardingTestResults,
+  OnboardingTest,
+  AccessibilityTestResults,
+}
