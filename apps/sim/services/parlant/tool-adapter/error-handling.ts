@@ -427,14 +427,13 @@ export function withRetry<T>(
 ): Promise<T> {
   const { attempts = 3, backoffMs = 1000 } = options
 
-  return new Promise(async (resolve, reject) => {
+  const executeWithRetry = async (): Promise<T> => {
     let lastError: any
 
     for (let i = 0; i < attempts; i++) {
       try {
         const result = await operation()
-        resolve(result)
-        return
+        return result
       } catch (error) {
         lastError = error
 
@@ -445,8 +444,10 @@ export function withRetry<T>(
       }
     }
 
-    reject(lastError)
-  })
+    throw lastError
+  }
+
+  return executeWithRetry()
 }
 
 export function createSafeWrapper<T extends any[], R>(
