@@ -666,13 +666,13 @@ class PooledConnection implements Connection {
 class CircuitBreaker {
   private state: 'closed' | 'open' | 'half-open' = 'closed'
   private failures = 0
-  private lastFailureTime = 0
   private nextAttemptTime = 0
   private halfOpenRequests = 0
+  private lastFailureTime = 0
 
   constructor(
     private config: ConnectionPoolConfig['circuitBreaker'],
-    private pool: AdvancedConnectionPool
+    _pool: AdvancedConnectionPool
   ) {}
 
   allowRequest(): boolean {
@@ -744,7 +744,7 @@ class CircuitBreaker {
 class HealthChecker {
   constructor(
     private config: ConnectionPoolConfig['healthCheck'],
-    private pool: AdvancedConnectionPool
+    _pool: AdvancedConnectionPool
   ) {}
 
   async checkAllConnections(connections: PooledConnection[]): Promise<void> {

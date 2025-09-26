@@ -256,9 +256,9 @@ export interface ErrorAnalytics {
 export class ComprehensiveToolErrorManager {
   private errorAnalytics: ErrorAnalytics
   private proactiveValidationConfig: ProactiveValidationConfig
-  private errorExplanationService: ErrorExplanationService
   private userSkillProfiles = new Map<string, UserSkillLevel>()
   private errorRecoveryAttempts = new Map<string, number>()
+  private errorExplanationService: ErrorExplanationService
 
   constructor() {
     this.errorAnalytics = {
@@ -996,20 +996,6 @@ export class ComprehensiveToolErrorManager {
         return ToolErrorCategory.TOOL_CONFIGURATION
       default:
         return ToolErrorCategory.TOOL_EXECUTION_TIMEOUT
-    }
-  }
-
-  private mapSkillLevelToDifficulty(
-    skillLevel: UserSkillLevel
-  ): 'beginner' | 'intermediate' | 'advanced' {
-    switch (skillLevel) {
-      case UserSkillLevel.BEGINNER:
-        return 'beginner'
-      case UserSkillLevel.ADVANCED:
-      case UserSkillLevel.DEVELOPER:
-        return 'advanced'
-      default:
-        return 'intermediate'
     }
   }
 
