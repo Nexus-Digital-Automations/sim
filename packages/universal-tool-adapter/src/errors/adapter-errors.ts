@@ -651,11 +651,12 @@ export class ErrorUtils {
     // Default recovery logic for non-adapter errors
     const nonRecoverablePatterns = ['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'MODULE_NOT_FOUND']
 
-    return !nonRecoverablePatterns.some((pattern) =>
-      error instanceof Error
-        ? error.message
-        : String(error).includes(pattern) || error.name.includes(pattern)
-    )
+    return !nonRecoverablePatterns.some((pattern) => {
+      if (error instanceof Error) {
+        return error.message.includes(pattern) || error.name.includes(pattern)
+      }
+      return String(error).includes(pattern)
+    })
   }
 
   /**
@@ -744,32 +745,59 @@ export class ErrorUtils {
     body?: any,
     context: Record<string, any> = {}
   ): AdapterError {
-    let errorClass = AdapterError
-    let message = `HTTP ${status}: ${statusText}`
+    const enhancedContext = { ...context, httpStatus: status, httpBody: body }
+    const suggestedFix = ErrorUtils.getHttpSuggestedFix(status)
 
     if (status === 400) {
-      errorClass = ValidationError
-      message = `Bad request: ${body?.message || statusText}`
+      const message = `Bad request: ${body?.message || statusText}`
+      const validationErrors = body?.errors || []
+      return new ValidationError(message, validationErrors, enhancedContext, suggestedFix)
     } else if (status === 401) {
-      errorClass = AuthenticationError
-      message = `Unauthorized: ${body?.message || statusText}`
+      const message = `Unauthorized: ${body?.message || statusText}`
+      return new AuthenticationError(
+        message,
+        body?.authProvider,
+        body?.userId,
+        enhancedContext
+      )
     } else if (status === 403) {
-      errorClass = AuthenticationError
-      message = `Forbidden: ${body?.message || statusText}`
+      const message = `Forbidden: ${body?.message || statusText}`
+      return new AuthenticationError(
+        message,
+        body?.authProvider,
+        body?.userId,
+        enhancedContext
+      )
     } else if (status === 404) {
-      errorClass = RegistryError
-      message = `Not found: ${body?.message || statusText}`
+      const message = `Not found: ${body?.message || statusText}`
+      return new RegistryError(
+        message,
+        'lookup',
+        enhancedContext,
+        false,
+        suggestedFix
+      )
     } else if (status === 429) {
-      errorClass = RateLimitError
-      message = `Rate limit exceeded: ${body?.message || statusText}`
+      const message = `Rate limit exceeded: ${body?.message || statusText}`
+      const resetTime = body?.resetTime ? new Date(body.resetTime) : undefined
+      const retryAfterMs = body?.retryAfter ? body.retryAfter * 1000 : undefined
+      return new RateLimitError(
+        message,
+        body?.limitType || 'requests',
+        resetTime,
+        retryAfterMs,
+        enhancedContext
+      )
     }
 
-    return new errorClass(
+    // Default case for other HTTP status codes
+    const message = `HTTP ${status}: ${statusText}`
+    return new AdapterError(
       message,
       `HTTP_${status}`,
-      { ...context, httpStatus: status, httpBody: body },
+      enhancedContext,
       status < 500, // Client errors (4xx) are usually recoverable
-      ErrorUtils.getHttpSuggestedFix(status)
+      suggestedFix
     )
   }
 
