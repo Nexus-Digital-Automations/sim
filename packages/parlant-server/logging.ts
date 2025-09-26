@@ -64,6 +64,12 @@ export interface ParlantLogContext {
   correlationId?: string
   traceId?: string
 
+  // Alert context
+  alertId?: string
+  ruleId?: string
+  severity?: 'low' | 'medium' | 'high' | 'critical'
+  errorCount?: number
+
   // Additional metadata
   metadata?: Record<string, any>
 }
