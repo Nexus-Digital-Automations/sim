@@ -164,6 +164,16 @@ export interface SearchFeedback {
 }
 
 /**
+ * User model type for preference tracking
+ */
+type UserModel = {
+  preferredConcepts: Map<string, number>
+  searchHistory: string[]
+  clickedResults: Map<string, number>
+  lastUpdated: Date
+}
+
+/**
  * Semantic index for efficient searching
  */
 interface SemanticIndex {
@@ -191,15 +201,7 @@ interface SemanticIndex {
   >
 
   // User preference models
-  userModels: Map<
-    string,
-    {
-      preferredConcepts: Map<string, number>
-      searchHistory: string[]
-      clickedResults: Map<string, number>
-      lastUpdated: Date
-    }
-  >
+  userModels: Map<string, UserModel>
 
   // Search analytics
   analytics: {
@@ -745,7 +747,10 @@ export class SemanticSearchEngine {
           query.userContext?.userProfile?.domains &&
           query.userContext.userProfile.domains.length > 0
         ) {
-          contextualBoost += this.calculateDomainBoost(result, query.userContext.userProfile.domains[0])
+          contextualBoost += this.calculateDomainBoost(
+            result,
+            query.userContext.userProfile.domains[0]
+          )
         }
 
         // Update scoring
@@ -893,8 +898,12 @@ export class SemanticSearchEngine {
     }
 
     // Domain-based relevance
-    if (query.userContext?.userProfile?.domains && query.userContext.userProfile.domains.length > 0) {
-      relevance += this.calculateDomainRelevance(tool, query.userContext.userProfile.domains[0]) * 0.2
+    if (
+      query.userContext?.userProfile?.domains &&
+      query.userContext.userProfile.domains.length > 0
+    ) {
+      relevance +=
+        this.calculateDomainRelevance(tool, query.userContext.userProfile.domains[0]) * 0.2
     }
 
     return Math.min(relevance, 1)
@@ -1008,20 +1017,17 @@ export class SemanticSearchEngine {
     return [...conceptData.synonyms, ...conceptData.children]
   }
 
-  private getUserModel(
-    userId?: string
-  ): SemanticIndex['userModels'] extends Map<string, infer U> ? U : never | undefined {
+  private getUserModel(userId?: string): UserModel | undefined {
     if (!userId) return undefined
-    const userModel = this.semanticIndex.userModels.get(userId)
-    return userModel || undefined
+    return this.semanticIndex.userModels.get(userId)
   }
 
-  private calculateUserSimilarity(result: EnhancedSemanticSearchResult, userModel: any): number {
+  private calculateUserSimilarity(result: EnhancedSemanticSearchResult, userModel: UserModel): number {
     // Calculate similarity between result and user preferences
     return 0.5 // Simplified implementation
   }
 
-  private calculateHistoricalUsage(result: EnhancedSemanticSearchResult, userModel: any): number {
+  private calculateHistoricalUsage(result: EnhancedSemanticSearchResult, userModel: UserModel): number {
     // Calculate score based on historical usage
     if (!userModel || !userModel.clickedResults) return 0
     return userModel.clickedResults.get(result.toolId) || 0
