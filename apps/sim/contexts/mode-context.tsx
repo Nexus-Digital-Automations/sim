@@ -14,7 +14,7 @@ import { createLogger } from '@/lib/logs/console/logger'
 import type {
   HybridLayout,
   ModeConfig,
-  ModeContext,
+  ModeContext as ModeContextType,
   ModePreferences,
   ModeTransitionEvent,
   UseModeSwitch,
@@ -175,7 +175,7 @@ interface ModeContextValue {
 const ModeContext = createContext<ModeContextValue | null>(null)
 
 // Context storage for different modes
-const modeContextStorage = new Map<ViewMode, ModeContext>()
+const modeContextStorage = new Map<ViewMode, ModeContextType>()
 
 // Mode switching provider
 export function ModeProvider({ children }: { children: React.ReactNode }) {

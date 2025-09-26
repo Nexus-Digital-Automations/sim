@@ -111,7 +111,7 @@ interface ExpectedRecommendation {
 // Test Framework Implementation
 // =============================================================================
 
-export class AgentRecommendationTestingFramework {
+class AgentRecommendationTestingFramework {
   private contextAnalyzer: ConversationalContextAnalyzer
   private agentToolAPI: AgentToolAPI
   private workflowEngine: WorkflowRecommendationEngine
@@ -1428,5 +1428,4 @@ describe('Agent Tool Recommendation System', () => {
   })
 })
 
-// Testing framework is available within this test file only
-// AgentRecommendationTestingFramework is defined above for internal use
+// Removed export to comply with noExportsInTest lint rule

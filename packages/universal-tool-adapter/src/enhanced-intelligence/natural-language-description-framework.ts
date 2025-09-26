@@ -684,7 +684,7 @@ export class NaturalLanguageDescriptionFramework {
 
   constructor(config?: FrameworkConfiguration) {
     this.baseGenerator = new DescriptionGenerator()
-    this.qualityValidator = new QualityValidator(config?.qualitySettings)
+    this.qualityValidator = new QualityValidator()
     this.nlpProcessor = new NLPProcessor(config?.nlpSettings)
 
     this.initializeFramework(config)

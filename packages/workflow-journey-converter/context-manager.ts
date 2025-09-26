@@ -24,7 +24,6 @@
  * ```
  */
 
-import { Logger } from './logger'
 import type {
   ContextInheritance,
   ContextMapping,
@@ -45,7 +44,7 @@ import type {
  * Context Manager for preserving workflow context during journey conversion
  */
 export class ContextManager {
-  private readonly logger: Logger
+  private readonly logger: ContextLogger
   private readonly variableMapper: VariableMapper
   private readonly sessionStateManager: SessionStateManager
   private readonly executionContextManager: ExecutionContextManager
@@ -54,7 +53,7 @@ export class ContextManager {
   private readonly contextInheritanceManager: ContextInheritanceManager
 
   constructor() {
-    this.logger = new Logger('ContextManager')
+    this.logger = new ContextLogger('ContextManager')
     this.variableMapper = new VariableMapper()
     this.sessionStateManager = new SessionStateManager()
     this.executionContextManager = new ExecutionContextManager()
@@ -430,10 +429,10 @@ export class ContextManager {
  * Variable Mapper for converting workflow variables to journey variables
  */
 export class VariableMapper {
-  private readonly logger: Logger
+  private readonly logger: ContextLogger
 
   constructor() {
-    this.logger = new Logger('VariableMapper')
+    this.logger = new ContextLogger('VariableMapper')
   }
 
   /**
@@ -808,10 +807,10 @@ export class VariableMapper {
  * Session State Manager for preserving session context
  */
 export class SessionStateManager {
-  private readonly logger: Logger
+  private readonly logger: ContextLogger
 
   constructor() {
-    this.logger = new Logger('SessionStateManager')
+    this.logger = new ContextLogger('SessionStateManager')
   }
 
   /**
@@ -1041,10 +1040,10 @@ export class SessionStateManager {
  * Execution Context Manager for preserving execution flow context
  */
 export class ExecutionContextManager {
-  private readonly logger: Logger
+  private readonly logger: ContextLogger
 
   constructor() {
-    this.logger = new Logger('ExecutionContextManager')
+    this.logger = new ContextLogger('ExecutionContextManager')
   }
 
   /**
@@ -1320,10 +1319,10 @@ export class ExecutionContextManager {
  * Dynamic Variable Resolver for handling runtime variable resolution
  */
 export class DynamicVariableResolver {
-  private readonly logger: Logger
+  private readonly logger: ContextLogger
 
   constructor() {
-    this.logger = new Logger('DynamicVariableResolver')
+    this.logger = new ContextLogger('DynamicVariableResolver')
   }
 
   /**
@@ -1701,10 +1700,10 @@ export class DynamicVariableResolver {
  * Context Validator for ensuring context mapping consistency
  */
 export class ContextValidator {
-  private readonly logger: Logger
+  private readonly logger: ContextLogger
 
   constructor() {
-    this.logger = new Logger('ContextValidator')
+    this.logger = new ContextLogger('ContextValidator')
   }
 
   /**
@@ -2074,10 +2073,10 @@ export class ContextValidator {
  * Context Inheritance Manager for handling context hierarchies
  */
 export class ContextInheritanceManager {
-  private readonly logger: Logger
+  private readonly logger: ContextLogger
 
   constructor() {
-    this.logger = new Logger('ContextInheritanceManager')
+    this.logger = new ContextLogger('ContextInheritanceManager')
   }
 
   /**
@@ -2245,9 +2244,9 @@ export class ContextInheritanceManager {
 }
 
 /**
- * Logger utility for context management operations
+ * Context Logger utility for context management operations
  */
-class Logger {
+class ContextLogger {
   constructor(private context: string) {}
 
   info(message: string, data?: any): void {

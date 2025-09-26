@@ -82,7 +82,7 @@ const mockError = {
 // Intelligence Testing Framework Core
 // =============================================================================
 
-export class IntelligenceTestingFramework {
+class IntelligenceTestingFramework {
   private engine: EnhancedToolIntelligenceEngine
   private testMetrics: TestMetrics
   private testResults: TestResult[]
@@ -1596,5 +1596,5 @@ describe('Enhanced Tool Intelligence Testing Framework', () => {
 })
 
 // =============================================================================
-// Export Framework for Standalone Use
+// Removed export to comply with noExportsInTest lint rule
 // =============================================================================

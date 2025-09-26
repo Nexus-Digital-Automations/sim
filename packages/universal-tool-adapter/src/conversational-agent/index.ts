@@ -19,8 +19,7 @@
 // Core System Exports
 // =============================================================================
 
-// Testing Framework
-export { AgentRecommendationTestingFramework } from './__tests__/agent-recommendation-testing-framework.test'
+// Testing Framework - removed export due to lint rule against exports from test files
 export type {
   AgentContext,
   AgentLearningData,
@@ -501,7 +500,7 @@ export const MODULE_INFO = {
     'AgentToolAPI',
     'WorkflowRecommendationEngine',
     'RealtimeRecommendationService',
-    'AgentRecommendationTestingFramework',
+    // Removed 'AgentRecommendationTestingFramework' due to lint rule against exports from test files
   ],
 
   integration: {

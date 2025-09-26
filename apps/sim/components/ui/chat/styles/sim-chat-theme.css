@@ -65,12 +65,11 @@
 
 /* Chat Container */
 .parlant-chat-widget .chatbox-wrapper {
-  background: var(--chat-background);
+  background: hsl(var(--background) / 0.95);
   border: 1px solid var(--chat-border);
   border-radius: var(--chat-radius);
   box-shadow: var(--chat-shadow-lg);
   backdrop-filter: blur(8px);
-  background: hsl(var(--background) / 0.95);
 }
 
 /* Chat Header */

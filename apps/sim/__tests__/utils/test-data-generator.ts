@@ -168,7 +168,7 @@ export class ComprehensiveTestDataGenerator {
         {
           url: 'https://api.example.com/user-data',
           method: 'GET',
-          headers: { Authorization: 'Bearer ${token}' },
+          headers: { Authorization: `Bearer ${token}` },
         }
       ),
       this.createEndNode('end-1', 'Workflow Complete', { x: 100, y: 400 }),

@@ -698,6 +698,5 @@ describe('Error Intelligence System Integration', () => {
 })
 
 /**
- * Export the test metrics for external analysis
+ * Removed type export to comply with noExportsInTest lint rule
  */
-export type { ErrorIntelligenceIntegrationMetrics }

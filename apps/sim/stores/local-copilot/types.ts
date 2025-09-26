@@ -195,7 +195,10 @@ export type LocalCopilotActions = {
 
   // Conversation Actions
   loadConversations: (workspaceId: string) => Promise<void>
-  createConversation: (agentId: string, initialMessage?: string) => Promise<LocalCopilotConversation | null>
+  createConversation: (
+    agentId: string,
+    initialMessage?: string
+  ) => Promise<LocalCopilotConversation | null>
   selectConversation: (conversation: LocalCopilotConversation) => void
   archiveConversation: (conversationId: string) => Promise<void>
   deleteConversation: (conversationId: string) => Promise<void>
@@ -212,10 +215,23 @@ export type LocalCopilotActions = {
   initializeToolIntegration: () => Promise<void>
   getToolRecommendations: (userMessage?: string, limit?: number) => Promise<any[]>
   searchTools: (query: string, options?: { limit?: number }) => any[]
-  validateToolArguments: (toolId: string, arguments: Record<string, any>) => { valid: boolean; errors: string[]; warnings: string[] }
-  getAgentToolStats: () => { totalTools: number; toolsByCategory: Record<string, number>; toolsByDifficulty: Record<string, number>; recentlyUsed: string[] }
+  validateToolArguments: (
+    toolId: string,
+    args: Record<string, any>
+  ) => { valid: boolean; errors: string[]; warnings: string[] }
+  getAgentToolStats: () => {
+    totalTools: number
+    toolsByCategory: Record<string, number>
+    toolsByDifficulty: Record<string, number>
+    recentlyUsed: string[]
+  }
   executeToolCall: (toolCall: LocalCopilotToolCall, contexts?: MessageContext[]) => Promise<any>
-  updateToolCallState: (toolCallId: string, state: LocalCopilotToolCall['state'], result?: any, error?: string) => void
+  updateToolCallState: (
+    toolCallId: string,
+    state: LocalCopilotToolCall['state'],
+    result?: any,
+    error?: string
+  ) => void
 
   // UI Actions
   setMode: (mode: 'local' | 'external') => void

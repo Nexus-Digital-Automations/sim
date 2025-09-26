@@ -470,12 +470,12 @@ export class DescriptionManagementSystem {
 
   constructor(config: DescriptionManagementConfig) {
     this.config = config
-    this.storageService = new StorageService(config.storage)
-    this.versionControlService = new VersionControlService(config.versionControl)
-    this.collaborationService = new CollaborationService(config.collaboration)
-    this.qualityAssuranceService = new QualityAssuranceService(config.qualityAssurance)
-    this.publishingService = new PublishingService(config.publishing)
-    this.analyticsService = new AnalyticsService(config.analytics)
+    this.storageService = new StorageService()
+    this.versionControlService = new VersionControlService()
+    this.collaborationService = new CollaborationService()
+    this.qualityAssuranceService = new QualityAssuranceService()
+    this.publishingService = new PublishingService()
+    this.analyticsService = new AnalyticsService()
 
     logger.info('Description Management System initialized')
   }
@@ -1088,8 +1088,6 @@ export class DescriptionManagementSystem {
 // =============================================================================
 
 class StorageService {
-  constructor(private config?: any) {}
-
   async storeAuthoringSession(session: AuthoringSession): Promise<void> {}
   async loadAuthoringSession(
     descriptionId: string,
@@ -1107,8 +1105,6 @@ class StorageService {
 }
 
 class VersionControlService {
-  constructor(private config?: any) {}
-
   async createInitialVersion(
     description: EnhancedDescriptionSchema,
     authorId: string,

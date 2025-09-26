@@ -289,10 +289,14 @@ describe('User Experience Metrics Validation', () => {
   describe('User Satisfaction and Experience Quality', () => {
     it('should collect and validate user satisfaction scores', async () => {
       const satisfactionFeedback = [
-        { category: 'usability', rating: 4.2, comment: 'Easy to use interface' },
-        { category: 'performance', rating: 4.0, comment: 'Fast response times' },
-        { category: 'accessibility', rating: 4.5, comment: 'Great accessibility features' },
-        { category: 'satisfaction', rating: 4.1, comment: 'Overall very satisfied' },
+        { category: 'usability' as const, rating: 4.2, comment: 'Easy to use interface' },
+        { category: 'performance' as const, rating: 4.0, comment: 'Fast response times' },
+        {
+          category: 'accessibility' as const,
+          rating: 4.5,
+          comment: 'Great accessibility features',
+        },
+        { category: 'satisfaction' as const, rating: 4.1, comment: 'Overall very satisfied' },
       ]
 
       const averageSatisfaction =

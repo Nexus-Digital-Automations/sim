@@ -773,7 +773,7 @@ describe('End-to-End Workflow Integration Tests', () => {
               toolId: 'thinking',
               description: 'Process the generated data',
               parameters: {
-                input_data: '${generate-data.generated_data}',
+                input_data: `\${generate-data.generated_data}`,
                 operation: 'validate_and_format',
               },
               expectedOutputs: ['processed_data'],

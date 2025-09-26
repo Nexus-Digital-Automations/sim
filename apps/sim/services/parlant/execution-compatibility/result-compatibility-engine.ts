@@ -308,7 +308,7 @@ export class ResultCompatibilityEngine {
     await this.compareErrorsAndWarnings(workflowResult, journeyResult, differences)
 
     // Compare execution results (blocks vs steps)
-    await this.compareExecutionResults(workflowResult, journeyResult, differences, context)
+    await this.compareExecutionSteps(workflowResult, journeyResult, differences, context)
 
     // Determine overall compatibility
     compatible =
@@ -479,7 +479,7 @@ export class ResultCompatibilityEngine {
     )
   }
 
-  private async compareExecutionResults(
+  private async compareExecutionSteps(
     workflowResult: ExecutionResult,
     journeyResult: ExecutionResult,
     differences: ResultDiff[],

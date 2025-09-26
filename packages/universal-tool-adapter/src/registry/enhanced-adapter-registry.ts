@@ -95,8 +95,8 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     this.failoverManager = new FailoverManager(this.config, this)
     this.pluginExecutor = new PluginExecutor(this.plugins)
     this.metrics = new RegistryMetrics(this.config)
-    this.analytics = new RegistryAnalytics(this.config)
-    this.loadBalancer = new LoadBalancer(this.config, this)
+    this.analytics = new RegistryAnalytics()
+    this.loadBalancer = new LoadBalancer()
 
     // Start monitoring
     this.startPeriodicTasks()
@@ -876,7 +876,6 @@ export class EnhancedAdapterRegistry extends EventEmitter {
 
   private applyDiscoveryOrdering(results: DiscoveredTool[], query: ToolDiscoveryQuery): void {
     switch (query.orderBy) {
-      default:
       case 'relevance':
         results.sort((a, b) => b.relevanceScore - a.relevanceScore)
         break
@@ -888,6 +887,9 @@ export class EnhancedAdapterRegistry extends EventEmitter {
         break
       case 'category':
         results.sort((a, b) => a.category.localeCompare(b.category))
+        break
+      default:
+        results.sort((a, b) => b.relevanceScore - a.relevanceScore)
         break
     }
   }
@@ -1364,8 +1366,6 @@ class RegistryMetrics {
 }
 
 class RegistryAnalytics {
-  constructor(private readonly _config: RegistryConfiguration) {}
-
   async getUserPreferences(userId?: string): Promise<UserPreferences | undefined> {
     if (!userId) return undefined
     // Would fetch from analytics storage
@@ -1398,12 +1398,7 @@ class RegistryAnalytics {
   }
 }
 
-class LoadBalancer {
-  constructor(
-    private readonly _config: RegistryConfiguration,
-    private readonly _registry: EnhancedAdapterRegistry
-  ) {}
-}
+class LoadBalancer {}
 
 // Supporting interfaces and types
 

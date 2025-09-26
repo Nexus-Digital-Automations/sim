@@ -146,7 +146,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     // Initialize monitoring and optimization
     this.performanceMonitor = new PerformanceMonitor(this.config.adaptation || {}, this)
     this.adaptiveOptimizer = new AdaptiveOptimizer(this.config.adaptation || {}, this)
-    this.memoryManager = new MemoryManager(this.config.memoryManagement || {}, this)
+    this.memoryManager = new MemoryManager()
 
     // Start monitoring
     this.startPerformanceMonitoring()
@@ -1304,11 +1304,6 @@ class AdaptiveOptimizer {
 }
 
 class MemoryManager {
-  constructor(
-    private _config: MemoryManagementConfig,
-    private _engine: PerformanceOptimizationEngine
-  ) {}
-
   async shutdown(): Promise<void> {
     // Cleanup memory management resources
   }

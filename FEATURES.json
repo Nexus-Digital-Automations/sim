@@ -481,7 +481,7 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 62,
-      "total_reinitializations": 153,
+      "total_reinitializations": 159,
       "current_day": "2025-09-26",
       "time_buckets": {
         "10:00-14:59": {
@@ -498,7 +498,7 @@
         },
         "01:00-05:59": {
           "init": 0,
-          "reinit": 9
+          "reinit": 15
         },
         "06:00-10:59": {
           "init": 0,
@@ -562,7 +562,7 @@
         }
       ],
       "last_reset": "2025-09-26T07:07:58.790Z",
-      "last_updated": "2025-09-26T07:11:01.226Z"
+      "last_updated": "2025-09-26T08:06:07.019Z"
     },
     "approval_history": [
       {
@@ -653,74 +653,18 @@
     "updated": "2025-09-24T04:24:12.431Z"
   },
   "agents": {
-    "typescript-error-fix-agent": {
-      "lastHeartbeat": "2025-09-26T04:02:36.838Z",
+    "LINTER_FIX_AGENT": {
+      "lastHeartbeat": "2025-09-26T08:06:07.014Z",
       "status": "active",
-      "reinitialized": "2025-09-26T04:02:36.838Z",
-      "sessionId": "f4608b403c9f1219",
-      "previousSessions": []
+      "reinitialized": "2025-09-26T08:06:07.014Z",
+      "sessionId": "c6dc14fdd90375bf",
+      "previousSessions": ["aebbf90e66d7031f"]
     },
-    "recovery-validation-agent": {
-      "lastHeartbeat": "2025-09-26T07:07:58.787Z",
+    "biome-parser-fix": {
+      "lastHeartbeat": "2025-09-26T07:51:10.088Z",
       "status": "active",
-      "reinitialized": "2025-09-26T07:07:58.787Z",
-      "sessionId": "bfa3ac3a225470cd",
-      "previousSessions": []
-    },
-    "AGENT_001": {
-      "lastHeartbeat": "2025-09-26T07:09:28.633Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T07:09:28.633Z",
-      "sessionId": "44a361ba11f95fbb",
-      "previousSessions": []
-    },
-    "universal-tool-adapter-agent": {
-      "lastHeartbeat": "2025-09-26T07:09:29.538Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T07:09:29.538Z",
-      "sessionId": "28bb20f3b614504b",
-      "previousSessions": []
-    },
-    "PROPERTY_FIXER": {
-      "lastHeartbeat": "2025-09-26T07:09:29.606Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T07:09:29.606Z",
-      "sessionId": "40f0b90c870e7e3a",
-      "previousSessions": []
-    },
-    "EDGE_CASE_FIXER": {
-      "lastHeartbeat": "2025-09-26T07:09:30.949Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T07:09:30.949Z",
-      "sessionId": "3a346383299ac145",
-      "previousSessions": []
-    },
-    "INTERFACE_FIXER_AGENT": {
-      "lastHeartbeat": "2025-09-26T07:09:31.948Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T07:09:31.948Z",
-      "sessionId": "369435473e5404a2",
-      "previousSessions": []
-    },
-    "final-validation-agent": {
-      "lastHeartbeat": "2025-09-26T07:09:33.156Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T07:09:33.156Z",
-      "sessionId": "2e8aa78f66e1c033",
-      "previousSessions": []
-    },
-    "universal-tool-adapter-error-fixes": {
-      "lastHeartbeat": "2025-09-26T07:09:37.267Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T07:09:37.267Z",
-      "sessionId": "068323e371375848",
-      "previousSessions": []
-    },
-    "claude_agent": {
-      "lastHeartbeat": "2025-09-26T07:11:01.189Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T07:11:01.189Z",
-      "sessionId": "b27bf5452c2637e0",
+      "reinitialized": "2025-09-26T07:51:10.088Z",
+      "sessionId": "7a7f9ffd64c10a5e",
       "previousSessions": []
     }
   },

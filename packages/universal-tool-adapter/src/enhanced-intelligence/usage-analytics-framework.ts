@@ -929,11 +929,11 @@ export class UsageAnalyticsFramework {
   // =============================================================================
 
   private initializeComponents(): void {
-    this.eventStorage = new EventStorage(this.config.storage)
-    this.analyticsProcessor = new AnalyticsProcessor(this.config.processing)
+    this.eventStorage = new EventStorage()
+    this.analyticsProcessor = new AnalyticsProcessor()
     this.insightGenerator = new InsightGenerator()
-    this.predictiveEngine = new PredictiveEngine(this.config.mlPipelines)
-    this.realTimeMonitor = new RealTimeMonitor(this.config.monitoring)
+    this.predictiveEngine = new PredictiveEngine()
+    this.realTimeMonitor = new RealTimeMonitor()
 
     // Start periodic processes
     this.startPeriodicProcesses()

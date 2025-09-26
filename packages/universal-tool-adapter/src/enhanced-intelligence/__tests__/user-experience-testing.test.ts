@@ -20,7 +20,7 @@ import {
 // User Experience Testing Framework
 // =============================================================================
 
-export class UserExperienceTestingFramework {
+class UserExperienceTestingFramework {
   private engine: EnhancedToolIntelligenceEngine
   private abTestingManager: ABTestingManager
   private userSimulator: UserSimulator
@@ -1578,15 +1578,5 @@ describe('User Experience Testing Framework', () => {
 // Additional Exports
 // =============================================================================
 
-export type {
-  UserExperienceTestReport,
-  DiscoverabilityTestResults,
-  DiscoverabilityTest,
-  SatisfactionTestResults,
-  SatisfactionTest,
-  ConversationFlowTestResults,
-  ConversationFlowTest,
-  OnboardingTestResults,
-  OnboardingTest,
-  AccessibilityTestResults,
-}
+// Removed type exports to comply with noExportsInTest lint rule
+// These types are only used within test files

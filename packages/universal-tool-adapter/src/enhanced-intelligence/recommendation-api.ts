@@ -676,13 +676,13 @@ export class RecommendationAPI {
   }
 
   private initializeComponents(): void {
-    this.cache = new MultiLevelCache(this.config.cache)
-    this.performanceMonitor = new PerformanceMonitor(this.config.monitoring)
-    this.rateLimiter = new RateLimiter(this.config.security.rateLimiting)
-    this.circuitBreaker = new CircuitBreaker(this.config.circuitBreaker)
-    this.abTesting = new ABTestingManager(this.config.abTesting)
-    this.batchProcessor = new BatchProcessor(this.config.performance)
-    this.alertManager = new AlertManager(this.config.monitoring)
+    this.cache = new MultiLevelCache()
+    this.performanceMonitor = new PerformanceMonitor()
+    this.rateLimiter = new RateLimiter()
+    this.circuitBreaker = new CircuitBreaker()
+    this.abTesting = new ABTestingManager()
+    this.batchProcessor = new BatchProcessor()
+    this.alertManager = new AlertManager()
 
     this.metrics = this.initializeMetrics()
     this.initializeTime = Date.now()
@@ -905,21 +905,18 @@ class MultiLevelCache {
 }
 
 class PerformanceMonitor {
-  constructor(_config?: any) {}
   getAnalytics(timeRange?: { start: Date; end: Date }): APIAnalytics {
     return {} as APIAnalytics
   }
 }
 
 class RateLimiter {
-  constructor(_config?: any) {}
   async checkLimit(userId: string, ipAddress: string): Promise<void> {
     // Implementation would check and enforce rate limits
   }
 }
 
 class CircuitBreaker {
-  constructor(_config?: any) {}
   canExecute(): boolean {
     return true
   }
@@ -933,21 +930,18 @@ class CircuitBreaker {
 }
 
 class ABTestingManager {
-  constructor(_config?: any) {}
   async getVariant(userId: string): Promise<ABTestVariant | undefined> {
     return undefined
   }
 }
 
 class BatchProcessor {
-  constructor(_config?: any) {}
   async processBatch(requests: RecommendationAPIRequest[]): Promise<RecommendationAPIResponse[]> {
     return []
   }
 }
 
-class AlertManager {
-  constructor(_config?: any) {}}
+class AlertManager {}
 
 // =============================================================================
 // Additional Supporting Types

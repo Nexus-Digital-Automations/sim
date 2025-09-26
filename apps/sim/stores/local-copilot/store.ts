@@ -136,7 +136,8 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
 
             logger.info('Successfully loaded agents', { count: agents.length })
           } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error loading agents'
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown error loading agents'
             logger.error('Failed to load agents', { error: errorMessage })
 
             set((draft) => {
@@ -166,12 +167,12 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
 
             logger.info('Agent selected with tools', {
               agentId: agent.id,
-              toolCount: toolDescriptions.length
+              toolCount: toolDescriptions.length,
             })
           } catch (error) {
             logger.error('Failed to load agent tools', {
               agentId: agent.id,
-              error: error instanceof Error ? error.message : 'Unknown error'
+              error: error instanceof Error ? error.message : 'Unknown error',
             })
 
             // Still select the agent even if tool loading fails
@@ -218,10 +219,13 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
           })
 
           try {
-            const response = await fetch(`/api/local-copilot/conversations?workspaceId=${workspaceId}`, {
-              method: 'GET',
-              credentials: 'include',
-            })
+            const response = await fetch(
+              `/api/local-copilot/conversations?workspaceId=${workspaceId}`,
+              {
+                method: 'GET',
+                credentials: 'include',
+              }
+            )
 
             if (!response.ok) {
               throw new Error(`Failed to load conversations: ${response.statusText}`)
@@ -238,7 +242,8 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
 
             logger.info('Successfully loaded conversations', { count: conversations.length })
           } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error loading conversations'
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown error loading conversations'
             logger.error('Failed to load conversations', { error: errorMessage })
 
             set((draft) => {
@@ -248,7 +253,10 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
           }
         },
 
-        createConversation: async (agentId: string, initialMessage?: string): Promise<LocalCopilotConversation | null> => {
+        createConversation: async (
+          agentId: string,
+          initialMessage?: string
+        ): Promise<LocalCopilotConversation | null> => {
           const state = get()
           if (!state.workspaceId) {
             logger.error('Cannot create conversation: no workspace ID')
@@ -288,7 +296,8 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
             logger.info('Successfully created conversation', { conversationId: conversation.id })
             return conversation
           } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error creating conversation'
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown error creating conversation'
             logger.error('Failed to create conversation', { error: errorMessage })
 
             set((draft) => {
@@ -307,7 +316,7 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
             draft.messagesLoadedForConversation = conversation.id
 
             // Select the conversation's agent if available
-            const agent = draft.availableAgents.find(a => a.id === conversation.agentId)
+            const agent = draft.availableAgents.find((a) => a.id === conversation.agentId)
             if (agent) {
               draft.selectedAgent = agent
             }
@@ -332,7 +341,7 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
             }
 
             set((draft) => {
-              const conversation = draft.conversations.find(c => c.id === conversationId)
+              const conversation = draft.conversations.find((c) => c.id === conversationId)
               if (conversation) {
                 conversation.isArchived = true
               }
@@ -359,7 +368,7 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
             }
 
             set((draft) => {
-              draft.conversations = draft.conversations.filter(c => c.id !== conversationId)
+              draft.conversations = draft.conversations.filter((c) => c.id !== conversationId)
               if (draft.activeConversation?.id === conversationId) {
                 draft.activeConversation = null
                 draft.messages = []
@@ -473,12 +482,12 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
 
             // Process streaming response
             await get().processStreamingResponse(response.body)
-
           } catch (error) {
             if (error instanceof Error && error.name === 'AbortError') {
               logger.info('Message sending was aborted')
             } else {
-              const errorMessage = error instanceof Error ? error.message : 'Unknown error sending message'
+              const errorMessage =
+                error instanceof Error ? error.message : 'Unknown error sending message'
               logger.error('Failed to send message', { error: errorMessage })
 
               set((draft) => {
@@ -505,7 +514,8 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
 
         loadMessages: async (conversationId: string) => {
           const state = get()
-          if (state.isLoadingMessages || state.messagesLoadedForConversation === conversationId) return
+          if (state.isLoadingMessages || state.messagesLoadedForConversation === conversationId)
+            return
 
           logger.info('Loading messages for conversation', { conversationId })
           set((draft) => {
@@ -514,10 +524,13 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
           })
 
           try {
-            const response = await fetch(`/api/local-copilot/conversations/${conversationId}/messages`, {
-              method: 'GET',
-              credentials: 'include',
-            })
+            const response = await fetch(
+              `/api/local-copilot/conversations/${conversationId}/messages`,
+              {
+                method: 'GET',
+                credentials: 'include',
+              }
+            )
 
             if (!response.ok) {
               throw new Error(`Failed to load messages: ${response.statusText}`)
@@ -534,7 +547,8 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
 
             logger.info('Successfully loaded messages', { count: messages.length })
           } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error loading messages'
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown error loading messages'
             logger.error('Failed to load messages', { error: errorMessage })
 
             set((draft) => {
@@ -552,7 +566,7 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
 
         updateMessage: (messageId: string, updates: Partial<LocalCopilotMessage>) => {
           set((draft) => {
-            const messageIndex = draft.messages.findIndex(m => m.id === messageId)
+            const messageIndex = draft.messages.findIndex((m) => m.id === messageId)
             if (messageIndex !== -1) {
               Object.assign(draft.messages[messageIndex], updates)
             }
@@ -647,7 +661,9 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
                   draft.executingToolCalls.set(toolCall.id, toolCall)
 
                   // Add to current message
-                  const currentMessage = draft.messages.find(m => m.id === draft.streaming.currentMessageId)
+                  const currentMessage = draft.messages.find(
+                    (m) => m.id === draft.streaming.currentMessageId
+                  )
                   if (currentMessage) {
                     currentMessage.toolCalls = [...(currentMessage.toolCalls || []), toolCall]
                   }
@@ -686,7 +702,9 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
 
             case 'done':
               set((draft) => {
-                const currentMessage = draft.messages.find(m => m.id === draft.streaming.currentMessageId)
+                const currentMessage = draft.messages.find(
+                  (m) => m.id === draft.streaming.currentMessageId
+                )
                 if (currentMessage) {
                   currentMessage.isStreaming = false
                   currentMessage.streamingComplete = true
@@ -718,7 +736,7 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
             logger.info('Tool integration system initialized successfully')
           } catch (error) {
             logger.error('Failed to initialize tool integration system', {
-              error: error instanceof Error ? error.message : 'Unknown error'
+              error: error instanceof Error ? error.message : 'Unknown error',
             })
             throw error
           }
@@ -733,7 +751,7 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
           }
 
           try {
-            const conversationHistory = state.messages.slice(-10).map(msg => ({
+            const conversationHistory = state.messages.slice(-10).map((msg) => ({
               role: msg.role,
               content: msg.content,
               timestamp: new Date(msg.timestamp),
@@ -749,7 +767,7 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
             return recommendations
           } catch (error) {
             logger.error('Failed to get tool recommendations', {
-              error: error instanceof Error ? error.message : 'Unknown error'
+              error: error instanceof Error ? error.message : 'Unknown error',
             })
             return []
           }
@@ -768,19 +786,19 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
           } catch (error) {
             logger.error('Failed to search tools', {
               query,
-              error: error instanceof Error ? error.message : 'Unknown error'
+              error: error instanceof Error ? error.message : 'Unknown error',
             })
             return []
           }
         },
 
-        validateToolArguments: (toolId: string, arguments: Record<string, any>) => {
+        validateToolArguments: (toolId: string, args: Record<string, any>) => {
           try {
-            return localCopilotToolIntegration.validateToolArguments(toolId, arguments)
+            return localCopilotToolIntegration.validateToolArguments(toolId, args)
           } catch (error) {
             logger.error('Failed to validate tool arguments', {
               toolId,
-              error: error instanceof Error ? error.message : 'Unknown error'
+              error: error instanceof Error ? error.message : 'Unknown error',
             })
             return {
               valid: false,
@@ -807,7 +825,7 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
             return localCopilotToolIntegration.getAgentToolStats(agent)
           } catch (error) {
             logger.error('Failed to get agent tool stats', {
-              error: error instanceof Error ? error.message : 'Unknown error'
+              error: error instanceof Error ? error.message : 'Unknown error',
             })
             return {
               totalTools: 0,
@@ -818,7 +836,10 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
           }
         },
 
-        executeToolCall: async (toolCall: LocalCopilotToolCall, contexts: MessageContext[] = []) => {
+        executeToolCall: async (
+          toolCall: LocalCopilotToolCall,
+          contexts: MessageContext[] = []
+        ) => {
           const state = get()
           const agent = state.selectedAgent
 
@@ -827,7 +848,10 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
             return
           }
 
-          logger.info('Executing tool call via tool integration', { toolCallId: toolCall.id, toolName: toolCall.name })
+          logger.info('Executing tool call via tool integration', {
+            toolCallId: toolCall.id,
+            toolName: toolCall.name,
+          })
 
           set((draft) => {
             draft.executingToolCalls.set(toolCall.id, { ...toolCall, state: 'executing' })
@@ -848,13 +872,17 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
 
             logger.info('Successfully executed tool call via integration', {
               toolCallId: toolCall.id,
-              duration: executedToolCall.duration
+              duration: executedToolCall.duration,
             })
 
             return { toolCall: executedToolCall, formattedResult }
           } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown tool execution error'
-            logger.error('Tool execution failed via integration', { toolCallId: toolCall.id, error: errorMessage })
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown tool execution error'
+            logger.error('Tool execution failed via integration', {
+              toolCallId: toolCall.id,
+              error: errorMessage,
+            })
 
             set((draft) => {
               const executingToolCall = draft.executingToolCalls.get(toolCall.id)
@@ -868,9 +896,15 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
           }
         },
 
-        updateToolCallState: (toolCallId: string, state: LocalCopilotToolCall['state'], result?: any, error?: string) => {
+        updateToolCallState: (
+          toolCallId: string,
+          state: LocalCopilotToolCall['state'],
+          result?: any,
+          error?: string
+        ) => {
           set((draft) => {
-            const toolCall = draft.executingToolCalls.get(toolCallId) || draft.completedToolCalls.get(toolCallId)
+            const toolCall =
+              draft.executingToolCalls.get(toolCallId) || draft.completedToolCalls.get(toolCallId)
             if (toolCall) {
               toolCall.state = state
               if (result !== undefined) toolCall.result = result
@@ -976,15 +1010,14 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
             await get().initializeToolIntegration()
 
             // Load agents and conversations in parallel
-            await Promise.all([
-              get().loadAgents(workspaceId),
-              get().loadConversations(workspaceId),
-            ])
+            await Promise.all([get().loadAgents(workspaceId), get().loadConversations(workspaceId)])
 
             // Auto-select default agent if configured
             const state = get()
             if (state.preferences.defaultAgentId && state.preferences.autoSelectAgent) {
-              const defaultAgent = state.availableAgents.find(a => a.id === state.preferences.defaultAgentId)
+              const defaultAgent = state.availableAgents.find(
+                (a) => a.id === state.preferences.defaultAgentId
+              )
               if (defaultAgent) {
                 await get().selectAgent(defaultAgent)
               }
@@ -996,7 +1029,8 @@ export const useLocalCopilotStore = create<LocalCopilotStore>()(
 
             logger.info('Local copilot store initialized successfully')
           } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown initialization error'
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown initialization error'
             logger.error('Failed to initialize local copilot store', { error: errorMessage })
 
             set((draft) => {

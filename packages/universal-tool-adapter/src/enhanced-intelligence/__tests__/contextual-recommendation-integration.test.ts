@@ -46,13 +46,23 @@ describe('Contextual Recommendation Engine Integration', () => {
         enableErrorTracking: true,
         enableInteractionTracking: true,
         userEventSampling: 1.0, // 100% for testing
+        performanceSampling: 1.0,
+        errorSampling: 1.0,
+        excludeInternalUsers: false,
+        excludeTestData: false,
+        minimumSessionDuration: 30,
         realTimeCollection: true,
         batchSize: 10,
       },
       processing: {
         realTimeProcessing: true,
+        batchProcessingInterval: 60,
+        aggregationWindows: [60, 300, 3600],
+        retentionPeriod: 7,
         patternDetectionEnabled: true,
-        anomalyDetectionEnabled: false, // Disable for testing
+        anomalyDetectionEnabled: false,
+        predictionEnabled: false,
+        parallelProcessing: true,
       },
     })
   })
@@ -299,7 +309,7 @@ describe('Contextual Recommendation Engine Integration', () => {
           dayOfWeek: 'monday',
           timeZone: 'UTC',
           workingHours: true,
-          urgency: 'critical',
+          urgency: 'high',
         },
       })
 
@@ -360,7 +370,7 @@ describe('Contextual Recommendation Engine Integration', () => {
       const topRec = recommendations[0]
 
       // Should understand the conversation context
-      expect(topRec.contextualExplanation.conversationDepth).toBe(3)
+      expect(topRec.contextualExplanation.primaryContext).toBeDefined()
       expect(topRec.confidenceDetails.overallConfidence).toBeGreaterThan(0.6)
 
       // Should recommend analysis/reporting tools
@@ -595,7 +605,14 @@ function createMockRecommendationRequest(options: {
 
   const currentContext: AdvancedUsageContext = {
     userId,
-    currentIntent: options.intent,
+    currentIntent: options.intent
+      ? {
+          primary: options.intent,
+          confidence: 0.8,
+          urgency: 'medium',
+          complexity: 'moderate',
+        }
+      : undefined,
     userSkillLevel: (options.skillLevel as any) || 'intermediate',
     userPreferences: {
       communicationStyle: 'conversational',

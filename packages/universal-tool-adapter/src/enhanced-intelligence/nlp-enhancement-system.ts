@@ -331,10 +331,10 @@ export class NLPEnhancementEngine {
   constructor(config: NLPEnhancementConfig) {
     this.config = config
     this.textGenerator = new TextGenerationService(config.textGenerationModel)
-    this.semanticAnalyzer = new SemanticAnalysisService(config.semanticAnalysisModel)
-    this.qualityAssessor = new QualityAssessmentService(config.qualityAssessmentModel)
-    this.knowledgeBase = new KnowledgeBaseService(config.knowledgeBase)
-    this.cacheService = new CacheService(config.cacheSettings)
+    this.semanticAnalyzer = new SemanticAnalysisService()
+    this.qualityAssessor = new QualityAssessmentService()
+    this.knowledgeBase = new KnowledgeBaseService()
+    this.cacheService = new CacheService()
 
     this.initializeEnhancementStrategies()
     logger.info('NLP Enhancement Engine initialized')
@@ -1020,8 +1020,6 @@ class SemanticAnalysisService {
 }
 
 class QualityAssessmentService {
-  constructor(private _config?: any) {}
-
   async assessOverallQuality(
     text: string,
     description: EnhancedDescriptionSchema

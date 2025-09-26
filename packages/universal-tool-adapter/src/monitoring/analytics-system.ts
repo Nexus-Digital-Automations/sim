@@ -92,8 +92,8 @@ export class AnalyticsSystem extends EventEmitter {
     // Initialize subsystems
     this.alertManager = new AlertManager(this.config, this)
     this.healthChecker = new HealthChecker(this.config, this)
-    this.trendAnalyzer = new TrendAnalyzer(this.config, this)
-    this.aggregationEngine = new AggregationEngine(this.config, this)
+    this.trendAnalyzer = new TrendAnalyzer()
+    this.aggregationEngine = new AggregationEngine()
     this.reportGenerator = new ReportGenerator(this.config, this)
 
     // Start monitoring
@@ -1014,11 +1014,6 @@ class HealthChecker {
 }
 
 class TrendAnalyzer {
-  constructor(
-    private _config: AnalyticsConfig,
-    private _analytics: AnalyticsSystem
-  ) {}
-
   analyze(adapterId?: string): TrendAnalysis {
     // Trend analysis logic would go here
     return {
@@ -1033,11 +1028,6 @@ class TrendAnalyzer {
 }
 
 class AggregationEngine {
-  constructor(
-    private _config: AnalyticsConfig,
-    private _analytics: AnalyticsSystem
-  ) {}
-
   async aggregateData(options: AggregationOptions): Promise<any> {
     // Data aggregation logic
     return {}

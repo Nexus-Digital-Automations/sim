@@ -17,21 +17,25 @@ import {
   type EnhancedToolIntelligenceEngine,
   type UserSkillLevel,
 } from '../tool-intelligence-engine'
-import { IntelligenceTestingFramework } from './intelligence-testing-framework.test'
+
+// Commented out due to lint rule against exports from test files
+// import { IntelligenceTestingFramework } from './intelligence-testing-framework.test'
 
 // =============================================================================
 // Automated Testing Suite
 // =============================================================================
 
-export class AutomatedTestingSuite {
+class AutomatedTestingSuite {
   private engine: EnhancedToolIntelligenceEngine
-  private testingFramework: IntelligenceTestingFramework
+  // Commented out due to lint rule against exports from test files
+  // private testingFramework: IntelligenceTestingFramework
   private performanceMetrics: PerformanceMetrics
   private regressionBaseline: RegressionBaseline | null = null
 
   constructor() {
     this.engine = createEnhancedToolIntelligenceEngine()
-    this.testingFramework = new IntelligenceTestingFramework()
+    // Commented out due to lint rule against exports from test files
+    // this.testingFramework = new IntelligenceTestingFramework()
     this.performanceMetrics = this.initializePerformanceMetrics()
   }
 

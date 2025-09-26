@@ -414,7 +414,7 @@ export class LocalCopilotToolIntegration {
         return {
           success: true,
           message: `${tool.name} executed successfully`,
-          parameters: arguments,
+          parameters: args,
         }
     }
   }
