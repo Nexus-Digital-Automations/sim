@@ -876,8 +876,8 @@ export class EnhancedAdapterRegistry extends EventEmitter {
 
   private applyDiscoveryOrdering(results: DiscoveredTool[], query: ToolDiscoveryQuery): void {
     switch (query.orderBy) {
-      case 'relevance':
       default:
+      case 'relevance':
         results.sort((a, b) => b.relevanceScore - a.relevanceScore)
         break
       case 'usage':
@@ -1364,7 +1364,7 @@ class RegistryMetrics {
 }
 
 class RegistryAnalytics {
-  constructor(private readonly config: RegistryConfiguration) {}
+  constructor(private readonly _config: RegistryConfiguration) {}
 
   async getUserPreferences(userId?: string): Promise<UserPreferences | undefined> {
     if (!userId) return undefined
@@ -1400,8 +1400,8 @@ class RegistryAnalytics {
 
 class LoadBalancer {
   constructor(
-    private readonly config: RegistryConfiguration,
-    private readonly registry: EnhancedAdapterRegistry
+    private readonly _config: RegistryConfiguration,
+    private readonly _registry: EnhancedAdapterRegistry
   ) {}
 }
 
