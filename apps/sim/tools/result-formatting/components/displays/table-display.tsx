@@ -310,7 +310,10 @@ export function TableDisplay({ content, onAction, compact = false, className }: 
                 .filter((col) => col.filterable)
                 .map((column) => (
                   <div key={column.key} className='space-y-2'>
-                    <label className='font-medium text-gray-700 text-xs dark:text-gray-300'>
+                    <label
+                      className='font-medium text-gray-700 text-xs dark:text-gray-300'
+                      htmlFor={`filter-${column.key}`}
+                    >
                       {column.label}
                     </label>
                     <div className='flex gap-2'>
@@ -340,6 +343,7 @@ export function TableDisplay({ content, onAction, compact = false, className }: 
                         </SelectContent>
                       </Select>
                       <Input
+                        id={`filter-${column.key}`}
                         placeholder='Filter value...'
                         value={columnFilters.find((f) => f.column === column.key)?.value || ''}
                         onChange={(e) => {
