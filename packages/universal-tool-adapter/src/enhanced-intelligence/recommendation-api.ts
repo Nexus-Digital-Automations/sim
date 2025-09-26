@@ -372,19 +372,19 @@ export interface AlertCondition {
 
 export class RecommendationAPI {
   private config: RecommendationAPIConfig
-  private cache: MultiLevelCache
-  private performanceMonitor: PerformanceMonitor
-  private rateLimiter: RateLimiter
-  private circuitBreaker: CircuitBreaker
-  private abTesting: ABTestingManager
+  private cache!: MultiLevelCache
+  private performanceMonitor!: PerformanceMonitor
+  private rateLimiter!: RateLimiter
+  private circuitBreaker!: CircuitBreaker
+  private abTesting!: ABTestingManager
 
   // Request processing
   private requestQueue: Map<string, Promise<RecommendationAPIResponse>> = new Map()
-  private batchProcessor: BatchProcessor
+  private batchProcessor!: BatchProcessor
 
   // Metrics and monitoring
-  private metrics: PerformanceMetrics
-  private alertManager: AlertManager
+  private metrics!: PerformanceMetrics
+  private alertManager!: AlertManager
 
   constructor(config: Partial<RecommendationAPIConfig> = {}) {
     this.config = {
@@ -877,6 +877,8 @@ export class RecommendationAPI {
 // =============================================================================
 
 class MultiLevelCache {
+  constructor(private config: CacheConfig) {}
+
   async get(key: string): Promise<any> {
     return null
   }
@@ -905,18 +907,24 @@ class MultiLevelCache {
 }
 
 class PerformanceMonitor {
+  constructor(private config: MonitoringConfig) {}
+
   getAnalytics(timeRange?: { start: Date; end: Date }): APIAnalytics {
     return {} as APIAnalytics
   }
 }
 
 class RateLimiter {
+  constructor(private config: RateLimitConfig) {}
+
   async checkLimit(userId: string, ipAddress: string): Promise<void> {
     // Implementation would check and enforce rate limits
   }
 }
 
 class CircuitBreaker {
+  constructor(private config: CircuitBreakerConfig) {}
+
   canExecute(): boolean {
     return true
   }
@@ -930,18 +938,24 @@ class CircuitBreaker {
 }
 
 class ABTestingManager {
+  constructor(private config: ABTestingConfig) {}
+
   async getVariant(userId: string): Promise<ABTestVariant | undefined> {
     return undefined
   }
 }
 
 class BatchProcessor {
+  constructor(private config: PerformanceConfig) {}
+
   async processBatch(requests: RecommendationAPIRequest[]): Promise<RecommendationAPIResponse[]> {
     return []
   }
 }
 
-class AlertManager {}
+class AlertManager {
+  constructor(private config: MonitoringConfig) {}
+}
 
 // =============================================================================
 // Additional Supporting Types
