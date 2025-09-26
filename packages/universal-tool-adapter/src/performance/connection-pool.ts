@@ -589,8 +589,9 @@ export class AdvancedConnectionPool extends EventEmitter {
 
   private calculateErrorRate(): number {
     const metrics = this.metricsCollector.getMetrics()
-    const totalRequests = metrics.totalAcquired
-    return totalRequests > 0 ? (metrics.errorCount / totalRequests) * 100 : 0
+    const totalRequests = metrics.totalAcquired ?? 0
+    const errorCount = metrics.errorCount ?? 0
+    return totalRequests > 0 ? (errorCount / totalRequests) * 100 : 0
   }
 
   private async waitForActiveConnections(): Promise<void> {
@@ -835,7 +836,7 @@ class MetricsCollector {
     this.totalDestroyed++
   }
 
-  getMetrics(): Partial<ConnectionMetrics> {
+  getMetrics(): Pick<ConnectionMetrics, 'poolName' | 'totalAcquired' | 'totalReleased' | 'totalCreated' | 'totalDestroyed' | 'errorCount' | 'averageAcquireTimeMs' | 'averageConnectionLifetimeMs'> {
     return {
       poolName: this.poolName,
       totalAcquired: this.totalAcquired,

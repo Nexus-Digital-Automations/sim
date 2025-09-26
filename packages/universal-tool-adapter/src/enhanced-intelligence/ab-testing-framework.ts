@@ -328,10 +328,10 @@ export type TestType =
 
 export type TestStatus =
   | 'draft'
-  | 'review'
   | 'approved'
   | 'running'
   | 'paused'
+  | 'stopped'
   | 'completed'
   | 'cancelled'
   | 'archived'

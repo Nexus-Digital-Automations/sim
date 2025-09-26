@@ -345,9 +345,9 @@ export class ContextualAdaptationEngine {
       currentSituation: this.createDefaultSituation(),
       workflowContext: this.createDefaultWorkflow(),
       environment: this.createDefaultEnvironment(),
-      interactionHistory: this.getUserInteractionHistory(userProfile.id || ''),
-      learningProfile: this.getUserLearningProfile(userProfile.id || ''),
-      adaptationPreferences: this.getUserAdaptationPreferences(userProfile.id || ''),
+      interactionHistory: this.getUserInteractionHistory(userProfile.userId || ''),
+      learningProfile: this.getUserLearningProfile(userProfile.userId || ''),
+      adaptationPreferences: this.getUserAdaptationPreferences(userProfile.userId || ''),
     }
 
     // Override personalization intensity

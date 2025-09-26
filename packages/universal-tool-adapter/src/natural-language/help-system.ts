@@ -10,6 +10,9 @@
 
 import type { ConversationMessage, UsageContext, UserIntent } from './usage-guidelines'
 
+// Re-export ConversationExample for external use
+export type { ConversationExample } from './usage-guidelines'
+
 // =============================================================================
 // Help System Types
 // =============================================================================

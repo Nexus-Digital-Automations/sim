@@ -613,7 +613,7 @@ export class DescriptionGenerator {
 
     if (Object.keys(outputs).length > 0) {
       const outputDescriptions = Object.entries(outputs).map(([key, config]) => {
-        if (typeof config === 'object' && config.description) {
+        if (typeof config === 'object' && config !== null && config.description) {
           return `${key}: ${config.description}`
         }
         return key

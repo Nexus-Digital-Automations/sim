@@ -483,7 +483,7 @@ class ToolScoringEngine {
     return Math.max(0, Math.min(relevance, 1))
   }
 
-  private classifyTool(tool: ToolConfig): string {
+  public classifyTool(tool: ToolConfig): string {
     const toolId = tool.id.toLowerCase()
 
     if (toolId.includes('email') || toolId.includes('mail') || toolId.includes('message')) {

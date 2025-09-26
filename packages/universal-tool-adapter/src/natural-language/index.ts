@@ -397,7 +397,14 @@ export class NaturalLanguageEngine {
     }
   > {
     // This would fetch the actual tool configuration
-    const mockTool: ToolConfig = { id: toolId, name: toolId }
+    const mockTool: ToolConfig = {
+      id: toolId,
+      name: toolId,
+      description: `Tool for ${toolId}`,
+      version: '1.0.0',
+      params: {},
+      output: {}
+    }
 
     const config = this.descriptionGenerator.generateNaturalLanguageConfig(mockTool)
     const description = this.descriptionGenerator.generateToolDescription(

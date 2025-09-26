@@ -983,3 +983,12 @@ export type AdapterAdvancedTypes =
  * All testing and performance types
  */
 export type AdapterTestingPerformanceTypes = PerformanceThresholds | TestConfiguration
+
+// =============================================================================
+// Re-exports from Natural Language Module
+// =============================================================================
+
+/**
+ * Re-export UsageContext from usage-guidelines for easier imports
+ */
+export type { UsageContext, ConversationMessage, UserIntent, UserProfile, UserPreferences } from '../natural-language/usage-guidelines'

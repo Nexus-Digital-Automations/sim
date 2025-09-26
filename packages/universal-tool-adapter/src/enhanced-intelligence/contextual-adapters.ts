@@ -157,9 +157,9 @@ export abstract class BaseContextualAdapter {
       case 'emergency':
         return context.urgency === 'critical' || context.priority === 'urgent'
       case 'learning':
-        return context.intent === 'learning' || context.userProfile?.isLearning
+        return context.intent === 'learning' || Boolean(context.userProfile?.isLearning)
       case 'troubleshooting':
-        return context.intent === 'troubleshooting' || context.hasErrors
+        return context.intent === 'troubleshooting' || Boolean(context.hasErrors)
       default:
         return false
     }

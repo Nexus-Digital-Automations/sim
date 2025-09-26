@@ -40,6 +40,9 @@ export interface UsageContext {
   businessDomain?: string
   projectType?: string
   industry?: string
+
+  // Available tools context
+  availableTools?: string[]
 }
 
 export interface ConversationMessage {
