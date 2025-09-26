@@ -543,7 +543,7 @@ export class ContextualRecommendationEngine {
       logger.info('Registering agent with recommendation engine', {
         agentId,
         capabilities: integration.capabilities?.length || 0,
-        workspaceId: integration.workspaceId
+        workspaceId: integration.workspaceId,
       })
 
       // Initialize agent-specific data structures
@@ -1313,6 +1313,85 @@ class CollaborativeFilteringEngine {
 
     return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2))
   }
+
+  /**
+   * Register a new user for collaborative filtering
+   */
+  async registerUser(userId: string, integration: any): Promise<void> {
+    try {
+      logger.info('Registering user for collaborative filtering', { userId })
+
+      // Initialize user item matrix entry
+      if (!this.userItemMatrix.has(userId)) {
+        this.userItemMatrix.set(userId, new Map())
+      }
+
+      // Initialize user similarities
+      if (!this.userSimilarities.has(userId)) {
+        this.userSimilarities.set(userId, new Map())
+      }
+
+      const userPrefs = this.userItemMatrix.get(userId)!
+
+      // Import existing tool preferences if available
+      if (integration.toolPreferences && typeof integration.toolPreferences === 'object') {
+        for (const [toolId, rating] of Object.entries(integration.toolPreferences)) {
+          if (typeof rating === 'number' && rating >= 0 && rating <= 1) {
+            userPrefs.set(toolId, rating)
+          }
+        }
+      }
+
+      // Import historical tool usage as implicit ratings
+      if (integration.toolUsageHistory && Array.isArray(integration.toolUsageHistory)) {
+        for (const usage of integration.toolUsageHistory) {
+          if (usage.toolId && typeof usage.successRate === 'number') {
+            // Convert success rate to preference rating (0.0 - 1.0)
+            const implicitRating = Math.max(0.1, Math.min(1.0, usage.successRate))
+            userPrefs.set(usage.toolId, implicitRating)
+          }
+        }
+      }
+
+      // Import recent tool interactions
+      if (integration.recentToolUsage && Array.isArray(integration.recentToolUsage)) {
+        for (const recentUsage of integration.recentToolUsage) {
+          if (recentUsage.toolId && typeof recentUsage.userSatisfaction === 'number') {
+            const currentRating = userPrefs.get(recentUsage.toolId) || 0.5
+            // Weighted average with recent satisfaction
+            const newRating = currentRating * 0.7 + recentUsage.userSatisfaction * 0.3
+            userPrefs.set(recentUsage.toolId, Math.max(0.0, Math.min(1.0, newRating)))
+          }
+        }
+      }
+
+      // Set default preferences for common tools if no data exists
+      if (userPrefs.size === 0) {
+        const defaultTools = [
+          'get_user_workflow',
+          'build_workflow',
+          'run_workflow',
+          'edit_workflow',
+        ]
+        for (const toolId of defaultTools) {
+          userPrefs.set(toolId, 0.5) // Neutral starting preference
+        }
+      }
+
+      // Calculate initial user similarities if we have enough data
+      if (userPrefs.size >= 3) {
+        await this.updateUserSimilarities(userId)
+      }
+
+      logger.info('Successfully registered user for collaborative filtering', {
+        userId,
+        preferencesCount: userPrefs.size,
+      })
+    } catch (error) {
+      logger.error('Error registering user for collaborative filtering', { error, userId })
+      throw error
+    }
+  }
 }
 
 class ContentBasedFilteringEngine {
@@ -1630,6 +1709,349 @@ class ContentBasedFilteringEngine {
       hash = hash & hash // Convert to 32bit integer
     }
     return Math.abs(hash)
+  }
+
+  /**
+   * Register a set of tools for content-based filtering
+   */
+  async registerToolSet(userId: string, availableTools: any[]): Promise<void> {
+    try {
+      logger.info('Registering tool set for content-based filtering', {
+        userId,
+        toolCount: availableTools.length,
+      })
+
+      // Process each tool and create feature representations
+      for (const tool of availableTools) {
+        if (!tool.id) {
+          logger.warn('Skipping tool without ID', { tool })
+          continue
+        }
+
+        const toolId = tool.id
+
+        // Create or update tool features
+        const toolFeatures: ToolFeatures = {
+          categories: this.extractCategoriesFromTool(tool),
+          complexity: this.determineToolComplexity(tool),
+          contexts: this.extractContextsFromTool(tool),
+          usagePatterns: this.extractUsagePatternsFromTool(tool),
+          supportedIntents: this.extractSupportedIntentsFromTool(tool),
+          textFeatures: this.extractTextFeatures(toolId),
+          functionalFeatures: this.extractFunctionalFeaturesFromTool(tool),
+        }
+
+        // Store tool features
+        this.toolFeatures.set(toolId, toolFeatures)
+
+        logger.debug('Registered tool features', {
+          toolId,
+          categories: toolFeatures.categories,
+          complexity: toolFeatures.complexity,
+        })
+      }
+
+      // Update user profile if it exists
+      if (this.userProfiles.has(userId)) {
+        await this.updateUserProfileWithTools(userId, availableTools)
+      }
+
+      logger.info('Successfully registered tool set for content-based filtering', {
+        userId,
+        registeredToolsCount: availableTools.length,
+      })
+    } catch (error) {
+      logger.error('Error registering tool set for content-based filtering', {
+        error,
+        userId,
+        toolCount: availableTools.length,
+      })
+      throw error
+    }
+  }
+
+  /**
+   * Extract categories from tool metadata
+   */
+  private extractCategoriesFromTool(tool: any): string[] {
+    const categories: string[] = []
+
+    // Use explicit categories if provided
+    if (tool.categories && Array.isArray(tool.categories)) {
+      categories.push(...tool.categories)
+    }
+
+    // Infer categories from tool metadata
+    if (tool.type) {
+      categories.push(tool.type)
+    }
+
+    if (tool.domain) {
+      categories.push(tool.domain)
+    }
+
+    // Infer from tool ID/name
+    const inferredCategories = this.inferCategoriesFromToolId(tool.id || tool.name || '')
+    categories.push(...inferredCategories)
+
+    // Remove duplicates and return
+    return [...new Set(categories)]
+  }
+
+  /**
+   * Determine tool complexity from metadata
+   */
+  private determineToolComplexity(tool: any): string {
+    // Use explicit complexity if provided
+    if (tool.complexity) {
+      return tool.complexity
+    }
+
+    // Infer complexity from tool metadata
+    let complexityScore = 0
+
+    // Parameter complexity
+    if (tool.parameters && Array.isArray(tool.parameters)) {
+      complexityScore += tool.parameters.length * 0.1
+    }
+
+    // Required vs optional parameters
+    if (tool.requiredParameters && Array.isArray(tool.requiredParameters)) {
+      complexityScore += tool.requiredParameters.length * 0.15
+    }
+
+    // Description complexity (word count)
+    if (tool.description && typeof tool.description === 'string') {
+      const wordCount = tool.description.split(/\s+/).length
+      complexityScore += wordCount * 0.01
+    }
+
+    // Advanced features
+    if (tool.advanced === true || tool.tags?.includes('advanced')) {
+      complexityScore += 0.5
+    }
+
+    // Convert score to complexity level
+    if (complexityScore > 1.5) return 'expert'
+    if (complexityScore > 1.0) return 'advanced'
+    if (complexityScore > 0.5) return 'intermediate'
+    return 'beginner'
+  }
+
+  /**
+   * Extract contexts from tool metadata
+   */
+  private extractContextsFromTool(tool: any): string[] {
+    const contexts: string[] = []
+
+    // Use explicit contexts if provided
+    if (tool.contexts && Array.isArray(tool.contexts)) {
+      contexts.push(...tool.contexts)
+    }
+
+    // Infer contexts from tool metadata
+    if (tool.useCase) {
+      contexts.push(tool.useCase)
+    }
+
+    if (tool.workflowStage) {
+      contexts.push(tool.workflowStage)
+    }
+
+    // Infer from tool ID/name
+    const inferredContexts = this.inferContextsFromToolId(tool.id || tool.name || '')
+    contexts.push(...inferredContexts)
+
+    // Remove duplicates and return
+    return [...new Set(contexts)]
+  }
+
+  /**
+   * Extract usage patterns from tool metadata
+   */
+  private extractUsagePatternsFromTool(tool: any): string[] {
+    const patterns: string[] = []
+
+    // Use explicit usage patterns if provided
+    if (tool.usagePatterns && Array.isArray(tool.usagePatterns)) {
+      patterns.push(...tool.usagePatterns)
+    }
+
+    // Infer patterns from tool metadata
+    if (tool.interactive !== false) {
+      patterns.push('interactive')
+    }
+
+    if (tool.automated === true) {
+      patterns.push('automated')
+    }
+
+    if (tool.guided === true) {
+      patterns.push('guided')
+    }
+
+    // Default pattern if none specified
+    if (patterns.length === 0) {
+      patterns.push('interactive')
+    }
+
+    return [...new Set(patterns)]
+  }
+
+  /**
+   * Extract supported intents from tool metadata
+   */
+  private extractSupportedIntentsFromTool(tool: any): string[] {
+    const intents: string[] = []
+
+    // Use explicit intents if provided
+    if (tool.supportedIntents && Array.isArray(tool.supportedIntents)) {
+      intents.push(...tool.supportedIntents)
+    }
+
+    // Infer intents from tool metadata
+    if (tool.purpose) {
+      intents.push(this.mapPurposeToIntent(tool.purpose))
+    }
+
+    // Infer from tool name/ID
+    const toolName = (tool.id || tool.name || '').toLowerCase()
+    if (toolName.includes('create') || toolName.includes('generate')) {
+      intents.push('creation')
+    } else if (toolName.includes('analyze') || toolName.includes('check')) {
+      intents.push('analysis')
+    } else if (toolName.includes('get') || toolName.includes('fetch')) {
+      intents.push('information')
+    } else if (toolName.includes('run') || toolName.includes('execute')) {
+      intents.push('action')
+    }
+
+    // Default intent if none specified
+    if (intents.length === 0) {
+      intents.push('action')
+    }
+
+    return [...new Set(intents)]
+  }
+
+  /**
+   * Extract enhanced functional features from tool metadata
+   */
+  private extractFunctionalFeaturesFromTool(tool: any): number[] {
+    const features = new Array(50).fill(0)
+
+    // Basic CRUD operations
+    const toolName = (tool.id || tool.name || '').toLowerCase()
+    if (toolName.includes('get') || toolName.includes('fetch') || toolName.includes('read'))
+      features[0] = 1
+    if (toolName.includes('create') || toolName.includes('add') || toolName.includes('new'))
+      features[1] = 1
+    if (toolName.includes('update') || toolName.includes('modify') || toolName.includes('edit'))
+      features[2] = 1
+    if (toolName.includes('delete') || toolName.includes('remove') || toolName.includes('destroy'))
+      features[3] = 1
+
+    // Execution operations
+    if (toolName.includes('run') || toolName.includes('execute') || toolName.includes('start'))
+      features[4] = 1
+    if (toolName.includes('build') || toolName.includes('compile') || toolName.includes('generate'))
+      features[5] = 1
+    if (toolName.includes('deploy') || toolName.includes('publish') || toolName.includes('release'))
+      features[6] = 1
+    if (toolName.includes('test') || toolName.includes('validate') || toolName.includes('verify'))
+      features[7] = 1
+
+    // Data operations
+    if (
+      toolName.includes('analyze') ||
+      toolName.includes('process') ||
+      toolName.includes('transform')
+    )
+      features[8] = 1
+    if (toolName.includes('search') || toolName.includes('find') || toolName.includes('query'))
+      features[9] = 1
+
+    // Domain-specific features
+    if (toolName.includes('workflow')) features[10] = 1
+    if (toolName.includes('user')) features[11] = 1
+    if (toolName.includes('data')) features[12] = 1
+    if (toolName.includes('file')) features[13] = 1
+    if (toolName.includes('api')) features[14] = 1
+    if (toolName.includes('database') || toolName.includes('db')) features[15] = 1
+    if (toolName.includes('config') || toolName.includes('setting')) features[16] = 1
+    if (toolName.includes('auth') || toolName.includes('security')) features[17] = 1
+    if (toolName.includes('report') || toolName.includes('export')) features[18] = 1
+    if (toolName.includes('import') || toolName.includes('upload')) features[19] = 1
+
+    // Parameter complexity features
+    if (tool.parameters && Array.isArray(tool.parameters)) {
+      features[20] = Math.min(1, tool.parameters.length / 10) // Normalized parameter count
+    }
+
+    if (tool.requiredParameters && Array.isArray(tool.requiredParameters)) {
+      features[21] = Math.min(1, tool.requiredParameters.length / 5) // Normalized required parameter count
+    }
+
+    // Advanced features
+    if (tool.advanced === true) features[25] = 1
+    if (tool.async === true) features[26] = 1
+    if (tool.streaming === true) features[27] = 1
+    if (tool.realtime === true) features[28] = 1
+    if (tool.batch === true) features[29] = 1
+
+    return features
+  }
+
+  /**
+   * Map tool purpose to intent
+   */
+  private mapPurposeToIntent(purpose: string): string {
+    const purposeIntentMap: Record<string, string> = {
+      create: 'creation',
+      generate: 'creation',
+      build: 'creation',
+      analyze: 'analysis',
+      process: 'analysis',
+      examine: 'analysis',
+      retrieve: 'information',
+      fetch: 'information',
+      get: 'information',
+      execute: 'action',
+      run: 'action',
+      perform: 'action',
+      decide: 'decision',
+      choose: 'decision',
+      select: 'decision',
+    }
+
+    const purposeLower = purpose.toLowerCase()
+    for (const [key, intent] of Object.entries(purposeIntentMap)) {
+      if (purposeLower.includes(key)) {
+        return intent
+      }
+    }
+
+    return 'action' // Default intent
+  }
+
+  /**
+   * Update user profile with newly registered tools
+   */
+  private async updateUserProfileWithTools(userId: string, tools: any[]): Promise<void> {
+    const userProfile = this.userProfiles.get(userId)
+    if (!userProfile) return
+
+    // Update category preferences based on available tools
+    for (const tool of tools) {
+      const toolFeatures = this.toolFeatures.get(tool.id)
+      if (!toolFeatures) continue
+
+      // Slightly increase preference for available tool categories
+      for (const category of toolFeatures.categories) {
+        const currentPref = userProfile.preferredCategories.get(category) || 0.3
+        userProfile.preferredCategories.set(category, Math.min(1.0, currentPref + 0.05))
+      }
+    }
   }
 }
 
@@ -2172,6 +2594,9 @@ interface WorkflowStageInfo {
 }
 
 class UserBehaviorAnalyzer {
+  private userProfiles: Map<string, UserBehaviorProfile> = new Map()
+  private behaviorHistory: Map<string, UserBehaviorHistory> = new Map()
+
   async analyzeBehavior(userId: string, history?: UserBehaviorHistory): Promise<BehaviorInsights> {
     // Analyze user behavior patterns
     return {
@@ -2184,6 +2609,98 @@ class UserBehaviorAnalyzer {
 
   async recordFeedback(userId: string, recommendations: any[], feedback: any): Promise<void> {
     // Record behavior feedback
+  }
+
+  /**
+   * Initialize user profile for behavior analysis
+   */
+  async initializeUserProfile(userId: string, integration: any): Promise<void> {
+    try {
+      logger.info('Initializing user behavior profile', { userId })
+
+      // Create user behavior profile
+      const behaviorProfile: UserBehaviorProfile = {
+        userId,
+        toolUsageHistory: new Map(),
+        sessionPatterns: [],
+        learningProgression: {},
+        preferenceWeights: new Map(),
+        skillLevel: integration.skillLevel || 'intermediate',
+        lastUpdated: new Date(),
+        totalSessions: 0,
+        averageSessionDuration: 0,
+        mostUsedTools: [],
+        recentToolUsage: [],
+      }
+
+      // Initialize behavior history
+      const behaviorHistory: UserBehaviorHistory = {
+        toolUsagePatterns: [],
+        successfulSequences: [],
+        commonMistakes: [],
+        learningProgression: [],
+        sessionPatterns: [],
+      }
+
+      // Store profiles
+      this.userProfiles.set(userId, behaviorProfile)
+      this.behaviorHistory.set(userId, behaviorHistory)
+
+      // Initialize from integration data if available
+      if (integration.behaviorHistory) {
+        await this.importBehaviorHistory(userId, integration.behaviorHistory)
+      }
+
+      logger.info('Successfully initialized user behavior profile', { userId })
+    } catch (error) {
+      logger.error('Error initializing user behavior profile', { error, userId })
+      throw error
+    }
+  }
+
+  /**
+   * Import existing behavior history during initialization
+   */
+  private async importBehaviorHistory(userId: string, history: any): Promise<void> {
+    const profile = this.userProfiles.get(userId)
+    if (!profile) return
+
+    // Import tool usage patterns
+    if (history.toolUsage && Array.isArray(history.toolUsage)) {
+      for (const usage of history.toolUsage) {
+        profile.toolUsageHistory.set(usage.toolId, {
+          totalUsage: usage.count || 1,
+          lastUsed: new Date(usage.lastUsed || Date.now()),
+          averageRating: usage.rating || 0.5,
+          successRate: usage.successRate || 0.5,
+          contexts: usage.contexts || [],
+        })
+      }
+    }
+
+    // Update recent tool usage
+    if (history.recentTools && Array.isArray(history.recentTools)) {
+      profile.recentToolUsage = history.recentTools.map((tool: any) => ({
+        toolId: tool.id,
+        timestamp: new Date(tool.timestamp || Date.now()),
+        context: tool.context || 'unknown',
+        success: tool.success !== false,
+        userSatisfaction: tool.satisfaction || 0.5,
+        timeTaken: tool.duration || 0,
+      }))
+    }
+
+    // Update skill level if provided
+    if (history.skillLevel) {
+      profile.skillLevel = history.skillLevel
+    }
+
+    // Update learning progression
+    if (history.learningProgress && typeof history.learningProgress === 'object') {
+      profile.learningProgression = history.learningProgress
+    }
+
+    profile.lastUpdated = new Date()
   }
 }
 
@@ -2199,6 +2716,10 @@ class MachineLearningPredictor {
 }
 
 class ABTestingEngine {
+  private userVariants: Map<string, string> = new Map()
+  private testConfigurations: Map<string, ABTestConfiguration> = new Map()
+  private userTestHistory: Map<string, ABTestUserHistory> = new Map()
+
   async getVariant(userId: string): Promise<ABTestVariant | null> {
     // Get A/B test variant for user
     return null
@@ -2206,6 +2727,228 @@ class ABTestingEngine {
 
   async recordOutcome(userId: string, feedback: any): Promise<void> {
     // Record A/B test outcome
+  }
+
+  /**
+   * Initialize user profile for A/B testing
+   */
+  async initializeUserProfile(userId: string): Promise<void> {
+    try {
+      logger.info('Initializing user A/B testing profile', { userId })
+
+      // Initialize user test history if not exists
+      if (!this.userTestHistory.has(userId)) {
+        const testHistory: ABTestUserHistory = {
+          userId,
+          activeTests: new Map(),
+          completedTests: [],
+          variantHistory: [],
+          outcomes: [],
+          joinedAt: new Date(),
+          lastActivity: new Date(),
+          totalTestsParticipated: 0,
+          testPreferences: {
+            participationConsent: true,
+            preferredTestTypes: ['recommendation_optimization'],
+            excludeTestTypes: [],
+          },
+        }
+
+        this.userTestHistory.set(userId, testHistory)
+      }
+
+      // Assign user to active test variants if any tests are running
+      await this.assignUserToActiveTests(userId)
+
+      logger.info('Successfully initialized user A/B testing profile', { userId })
+    } catch (error) {
+      logger.error('Error initializing user A/B testing profile', { error, userId })
+      throw error
+    }
+  }
+
+  /**
+   * Assign user to active A/B tests
+   */
+  private async assignUserToActiveTests(userId: string): Promise<void> {
+    const userHistory = this.userTestHistory.get(userId)
+    if (!userHistory) return
+
+    // Check each active test configuration
+    for (const [testId, config] of this.testConfigurations.entries()) {
+      if (!config.enabled) continue
+
+      // Check if user is already assigned to this test
+      if (userHistory.activeTests.has(testId)) continue
+
+      // Check if user meets test criteria
+      if (!this.isUserEligibleForTest(userId, config)) continue
+
+      // Assign user to a variant based on traffic allocation
+      const assignedVariant = this.assignUserToVariant(userId, config)
+      if (assignedVariant) {
+        // Record variant assignment
+        userHistory.activeTests.set(testId, {
+          testId,
+          variantId: assignedVariant.variantId,
+          assignedAt: new Date(),
+          status: 'active',
+        })
+
+        userHistory.variantHistory.push({
+          testId,
+          variantId: assignedVariant.variantId,
+          assignedAt: new Date(),
+          duration: config.duration,
+          status: 'assigned',
+        })
+
+        // Store in user variants map for quick lookup
+        this.userVariants.set(`${userId}:${testId}`, assignedVariant.variantId)
+
+        userHistory.totalTestsParticipated++
+        userHistory.lastActivity = new Date()
+
+        logger.debug('Assigned user to A/B test variant', {
+          userId,
+          testId,
+          variantId: assignedVariant.variantId,
+        })
+      }
+    }
+  }
+
+  /**
+   * Check if user is eligible for a test
+   */
+  private isUserEligibleForTest(userId: string, config: ABTestConfiguration): boolean {
+    const userHistory = this.userTestHistory.get(userId)
+    if (!userHistory) return false
+
+    // Check user preferences
+    if (!userHistory.testPreferences.participationConsent) return false
+
+    // Check if test type is excluded
+    if (userHistory.testPreferences.excludeTestTypes.includes(config.testId)) return false
+
+    // Check if user prefers this test type
+    if (
+      userHistory.testPreferences.preferredTestTypes.length > 0 &&
+      !userHistory.testPreferences.preferredTestTypes.some((type) => config.testId.includes(type))
+    ) {
+      return false
+    }
+
+    // Check if user has already completed this test recently
+    const recentCompletion = userHistory.completedTests.find(
+      (test) =>
+        test.testId === config.testId &&
+        Date.now() - test.completedAt.getTime() < 30 * 24 * 60 * 60 * 1000 // 30 days
+    )
+
+    if (recentCompletion) return false
+
+    return true
+  }
+
+  /**
+   * Assign user to a variant based on traffic allocation
+   */
+  private assignUserToVariant(userId: string, config: ABTestConfiguration): ABTestVariant | null {
+    if (!config.variants || config.variants.length === 0) return null
+
+    // Generate deterministic random value based on userId and testId
+    const hash = this.generateHash(userId + config.testId)
+    const random = (hash % 1000) / 1000 // Convert to 0-1 range
+
+    // Find variant based on traffic allocation
+    let cumulativeAllocation = 0
+    for (const variant of config.variants) {
+      const allocation = config.trafficAllocation[variant.variantId] || 0
+      cumulativeAllocation += allocation
+
+      if (random < cumulativeAllocation) {
+        return variant
+      }
+    }
+
+    // Fallback to control variant
+    return config.variants.find((v) => v.variantId === 'control') || config.variants[0] || null
+  }
+
+  /**
+   * Generate hash for deterministic variant assignment
+   */
+  private generateHash(str: string): number {
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32bit integer
+    }
+    return Math.abs(hash)
+  }
+
+  /**
+   * Register a new A/B test configuration
+   */
+  registerTest(config: ABTestConfiguration): void {
+    try {
+      logger.info('Registering A/B test configuration', { testId: config.testId })
+
+      // Validate test configuration
+      if (!this.validateTestConfiguration(config)) {
+        throw new Error('Invalid A/B test configuration')
+      }
+
+      // Store test configuration
+      this.testConfigurations.set(config.testId, config)
+
+      logger.info('Successfully registered A/B test', {
+        testId: config.testId,
+        variantCount: config.variants.length,
+        duration: config.duration,
+      })
+    } catch (error) {
+      logger.error('Error registering A/B test', { error, testId: config.testId })
+      throw error
+    }
+  }
+
+  /**
+   * Validate A/B test configuration
+   */
+  private validateTestConfiguration(config: ABTestConfiguration): boolean {
+    // Check required fields
+    if (!config.testId || !config.variants || config.variants.length === 0) {
+      return false
+    }
+
+    // Check traffic allocation sums to ~1.0
+    const totalAllocation = Object.values(config.trafficAllocation).reduce(
+      (sum, allocation) => sum + allocation,
+      0
+    )
+    if (Math.abs(totalAllocation - 1.0) > 0.01) {
+      logger.warn('Traffic allocation does not sum to 1.0', {
+        totalAllocation,
+        testId: config.testId,
+      })
+      return false
+    }
+
+    // Check all variants have allocation
+    for (const variant of config.variants) {
+      if (!config.trafficAllocation[variant.variantId]) {
+        logger.warn('Variant missing traffic allocation', {
+          variantId: variant.variantId,
+          testId: config.testId,
+        })
+        return false
+      }
+    }
+
+    return true
   }
 }
 
@@ -2348,4 +3091,104 @@ export function createEnhancedRecommendationEngine(config: {
   }
 
   return new ContextualRecommendationEngine(engineConfig)
+}
+
+// =============================================================================
+// Additional Type Interfaces for Implementation
+// =============================================================================
+
+/**
+ * User behavior profile for behavior analysis
+ */
+export interface UserBehaviorProfile {
+  userId: string
+  toolUsageHistory: Map<string, ToolUsageData>
+  sessionPatterns: SessionPattern[]
+  learningProgression: Record<string, any>
+  preferenceWeights: Map<string, number>
+  skillLevel: UserSkillLevel
+  lastUpdated: Date
+  totalSessions: number
+  averageSessionDuration: number
+  mostUsedTools: string[]
+  recentToolUsage: RecentToolUsage[]
+}
+
+/**
+ * Tool usage data for collaborative filtering
+ */
+export interface ToolUsageData {
+  totalUsage: number
+  lastUsed: Date
+  averageRating: number
+  successRate: number
+  contexts: string[]
+}
+
+/**
+ * A/B testing user history
+ */
+export interface ABTestUserHistory {
+  userId: string
+  activeTests: Map<string, ABTestAssignment>
+  completedTests: ABTestCompletion[]
+  variantHistory: ABTestVariantHistory[]
+  outcomes: ABTestOutcome[]
+  joinedAt: Date
+  lastActivity: Date
+  totalTestsParticipated: number
+  testPreferences: ABTestUserPreferences
+}
+
+/**
+ * A/B test assignment information
+ */
+export interface ABTestAssignment {
+  testId: string
+  variantId: string
+  assignedAt: Date
+  status: 'active' | 'completed' | 'terminated'
+}
+
+/**
+ * A/B test completion record
+ */
+export interface ABTestCompletion {
+  testId: string
+  variantId: string
+  completedAt: Date
+  outcome: 'success' | 'failure' | 'inconclusive'
+  metrics: Record<string, number>
+}
+
+/**
+ * A/B test variant history
+ */
+export interface ABTestVariantHistory {
+  testId: string
+  variantId: string
+  assignedAt: Date
+  duration: number
+  status: 'assigned' | 'active' | 'completed'
+}
+
+/**
+ * A/B test outcome record
+ */
+export interface ABTestOutcome {
+  testId: string
+  variantId: string
+  timestamp: Date
+  outcome: string
+  value: number
+  metadata: Record<string, any>
+}
+
+/**
+ * User preferences for A/B testing
+ */
+export interface ABTestUserPreferences {
+  participationConsent: boolean
+  preferredTestTypes: string[]
+  excludeTestTypes: string[]
 }
