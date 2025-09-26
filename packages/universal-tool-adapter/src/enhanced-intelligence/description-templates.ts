@@ -10,7 +10,10 @@
  * @version 2.0.0
  */
 
+import { createLogger } from '../utils/logger'
 import type { SkillLevel, ToolCategory, UserRole } from './natural-language-description-framework'
+
+const logger = createLogger('DescriptionTemplates')
 
 // =============================================================================
 // Template Schema Types
@@ -424,7 +427,7 @@ export const COMMUNICATION_TEMPLATES: EnhancedDescriptionTemplate = {
         { criterion: 'collaboration', weight: 0.8 },
       ],
       benefitsEmphasis: ['research collaboration', 'data collection', 'academic networking'],
-      challenglesAwareness: ['data privacy', 'research ethics', 'institutional policies'],
+      challengesAwareness: ['data privacy', 'research ethics', 'institutional policies'],
       recommendedApproachPattern:
         'Design {researchProtocol}, collect {dataEthically}, collaborate with {academicPeers}',
     },
