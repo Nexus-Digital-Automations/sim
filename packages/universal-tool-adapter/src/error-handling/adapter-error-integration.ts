@@ -571,10 +571,32 @@ export class ErrorAwareExecutionWrapper {
             toolCallId: context.executionId,
             toolName: context.toolId,
             log: (level: string, message: string, extra?: any) => {
-              logger[level as keyof typeof logger]?.(message, {
+              const logContext = {
                 executionId: context.executionId,
                 ...extra,
-              })
+              }
+
+              // Safe logger method invocation with proper type handling
+              switch (level.toLowerCase()) {
+                case 'debug':
+                  logger.debug(message, logContext)
+                  break
+                case 'info':
+                  logger.info(message, logContext)
+                  break
+                case 'warn':
+                  logger.warn(message, logContext)
+                  break
+                case 'error':
+                  logger.error(message, logContext)
+                  break
+                case 'fatal':
+                  logger.fatal(message, logContext)
+                  break
+                default:
+                  // Fallback to info level for unknown levels
+                  logger.info(`[${level.toUpperCase()}] ${message}`, logContext)
+              }
             },
           },
           mappingResult.mappedParams
@@ -629,7 +651,8 @@ export function withErrorHandling(config?: Partial<ErrorHandlingConfig>) {
 
         // Re-throw with enhanced error information
         const enhancedError = new Error(errorResult.explanation.userMessage)
-        enhancedError.cause = error
+        // Store original error for debugging (compatible with older TypeScript versions)
+        ;(enhancedError as any).originalError = error
         throw enhancedError
       }
     }
