@@ -235,9 +235,9 @@ export class ContextualAdaptationEngine {
   private qualityMonitor: AdaptationQualityMonitor
 
   constructor(config?: AdaptationEngineConfig) {
-    this.contextAnalyzer = new ContextAnalyzer(config?.analysisConfig)
-    this.adaptationLearner = new AdaptationLearner(config?.learningConfig)
-    this.qualityMonitor = new AdaptationQualityMonitor(config?.qualityConfig)
+    this.contextAnalyzer = new ContextAnalyzer()
+    this.adaptationLearner = new AdaptationLearner()
+    this.qualityMonitor = new AdaptationQualityMonitor()
 
     this.initializeAdaptationStrategies()
     logger.info('Contextual Adaptation Engine initialized')

@@ -609,7 +609,7 @@ export class DescriptionGenerator {
 
   private generateResultHints(tool: ToolConfig, template: DescriptionTemplate): string {
     // Generate hints based on tool outputs or common patterns
-    const outputs = tool.outputs || {}
+    const outputs = tool.output || {}
 
     if (Object.keys(outputs).length > 0) {
       const outputDescriptions = Object.entries(outputs).map(([key, config]) => {
