@@ -1,0 +1,56 @@
+{
+  "project": "parlant-server",
+  "features": [],
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-09-26T18:03:51.183Z",
+    "updated": "2025-09-26T18:03:51.203Z",
+    "total_features": 0,
+    "approval_history": [],
+    "initialization_stats": {
+      "total_initializations": 0,
+      "total_reinitializations": 1,
+      "current_day": "2025-09-26",
+      "time_buckets": {
+        "10:00-14:59": {
+          "init": 0,
+          "reinit": 1
+        },
+        "15:00-19:59": {
+          "init": 0,
+          "reinit": 0
+        },
+        "20:00-00:59": {
+          "init": 0,
+          "reinit": 0
+        },
+        "01:00-05:59": {
+          "init": 0,
+          "reinit": 0
+        },
+        "06:00-10:59": {
+          "init": 0,
+          "reinit": 0
+        }
+      },
+      "daily_history": [],
+      "last_reset": "2025-09-26T18:03:51.313Z",
+      "last_updated": "2025-09-26T18:03:51.314Z"
+    }
+  },
+  "workflow_config": {
+    "require_approval": true,
+    "auto_reject_timeout_hours": 168,
+    "allowed_statuses": ["suggested", "approved", "rejected", "implemented"],
+    "required_fields": ["title", "description", "business_value", "category"]
+  },
+  "agents": {
+    "LOCALHOST_CONNECTION_DEBUG_AGENT": {
+      "lastHeartbeat": "2025-09-26T18:03:51.288Z",
+      "status": "active",
+      "reinitialized": "2025-09-26T18:03:51.288Z",
+      "sessionId": "ea71e21b4f2627a6",
+      "previousSessions": []
+    }
+  }
+}

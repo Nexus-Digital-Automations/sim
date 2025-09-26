@@ -515,12 +515,12 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 62,
-      "total_reinitializations": 192,
+      "total_reinitializations": 193,
       "current_day": "2025-09-26",
       "time_buckets": {
         "10:00-14:59": {
           "init": 0,
-          "reinit": 16
+          "reinit": 17
         },
         "15:00-19:59": {
           "init": 0,
@@ -596,7 +596,7 @@
         }
       ],
       "last_reset": "2025-09-26T07:07:58.790Z",
-      "last_updated": "2025-09-26T17:50:20.580Z"
+      "last_updated": "2025-09-26T18:15:41.483Z"
     },
     "approval_history": [
       {
@@ -687,19 +687,12 @@
     "updated": "2025-09-24T04:24:12.431Z"
   },
   "agents": {
-    "DATABASE_SCHEMA_FIX_AGENT": {
-      "lastHeartbeat": "2025-09-26T17:41:25.710Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T17:41:25.710Z",
-      "sessionId": "c694867451153398",
-      "previousSessions": ["fb40a381644ec57c", "9edb101323c4e090"]
-    },
     "DATABASE_ERROR_AGENT": {
-      "lastHeartbeat": "2025-09-26T17:50:20.578Z",
+      "lastHeartbeat": "2025-09-26T18:15:41.470Z",
       "status": "active",
-      "reinitialized": "2025-09-26T17:50:20.578Z",
-      "sessionId": "bcde826859291340",
-      "previousSessions": ["846e7936d091a18b", "41bf7be01677ba91"]
+      "reinitialized": "2025-09-26T18:15:41.470Z",
+      "sessionId": "3a2d4040a5e3616a",
+      "previousSessions": ["846e7936d091a18b", "41bf7be01677ba91", "bcde826859291340"]
     },
     "LOCALHOST_CONNECTION_DEBUG_AGENT": {
       "lastHeartbeat": "2025-09-26T17:50:06.576Z",
