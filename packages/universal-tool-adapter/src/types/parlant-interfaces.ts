@@ -8,6 +8,9 @@
  * @version 1.0.0
  */
 
+// Import shared types
+import type { NaturalLanguageConfig } from './adapter-interfaces'
+
 // =============================================================================
 // Core Parlant Tool Interface
 // =============================================================================
@@ -183,43 +186,7 @@ export interface ToolMetadata {
   }
 }
 
-/**
- * Natural language configuration for conversational interaction
- */
-export interface NaturalLanguageConfig {
-  // Primary usage description
-  usageDescription: string
-
-  // Example usage scenarios
-  exampleUsage: string[]
-
-  // Conversational hints for agents
-  conversationalHints: {
-    whenToUse: string
-    parameters: string
-    results: string
-  }
-
-  // Alternative names and aliases
-  aliases?: string[]
-
-  // Keywords for discovery and matching
-  keywords?: string[]
-
-  // Localization support
-  localization?: Record<
-    string,
-    {
-      usageDescription: string
-      exampleUsage: string[]
-      conversationalHints: {
-        whenToUse: string
-        parameters: string
-        results: string
-      }
-    }
-  >
-}
+// NaturalLanguageConfig is imported above to avoid duplication
 
 // =============================================================================
 // Execution Context and Environment

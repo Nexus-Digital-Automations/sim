@@ -390,8 +390,8 @@ export class ContextualRecommendationEngine {
     this.contextAnalyzer = new ContextAnalysisEngine()
     this.behaviorAnalyzer = new UserBehaviorAnalyzer()
     this.mlPredictor = new MachineLearningPredictor()
-    this.abTesting = new ABTestingEngine(config?.abTesting)
-    this.performanceMonitor = new PerformanceMonitor(config?.performanceTracking)
+    this.abTesting = new ABTestingEngine()
+    this.performanceMonitor = new PerformanceMonitor()
 
     logger.info('Contextual Recommendation Engine initialized')
   }
@@ -532,6 +532,41 @@ export class ContextualRecommendationEngine {
     return this.performanceMonitor.getAnalytics(timeRange)
   }
 
+  /**
+   * Register an agent for recommendation integration
+   *
+   * @param agentId - Unique identifier for the agent
+   * @param integration - Agent integration configuration
+   */
+  async registerAgent(agentId: string, integration: any): Promise<void> {
+    try {
+      logger.info('Registering agent with recommendation engine', {
+        agentId,
+        capabilities: integration.capabilities?.length || 0,
+        workspaceId: integration.workspaceId
+      })
+
+      // Initialize agent-specific data structures
+      await this.behaviorAnalyzer.initializeUserProfile(agentId, integration)
+      await this.collaborativeFilter.registerUser(agentId, integration)
+
+      // Register agent's available tools for recommendation
+      if (integration.availableTools && integration.availableTools.length > 0) {
+        await this.contentFilter.registerToolSet(agentId, integration.availableTools)
+      }
+
+      // Initialize A/B testing profile for agent
+      if (integration.recommendationSettings?.enableABTesting !== false) {
+        await this.abTesting.initializeUserProfile(agentId)
+      }
+
+      logger.info('Successfully registered agent with recommendation engine', { agentId })
+    } catch (error) {
+      logger.error('Error registering agent with recommendation engine', { error, agentId })
+      throw error
+    }
+  }
+
   // =============================================================================
   // Private Algorithm Implementation Methods
   // =============================================================================
@@ -549,7 +584,7 @@ export class ContextualRecommendationEngine {
 
     for (const toolId of availableTools) {
       const algorithmScores: AlgorithmScores = {
-        collaborative: await this.collaborativeFilter.scoretool(toolId, request),
+        collaborative: await this.collaborativeFilter.scoreToolId(toolId, request),
         contentBased: await this.contentFilter.scoreToolContent(toolId, contextInsights),
         contextual: this.contextAnalyzer.scoreContextualFit(toolId, contextInsights),
         temporal: this.scoreTemporalRelevance(toolId, request.currentContext.timeContext),
@@ -1115,7 +1150,7 @@ class CollaborativeFilteringEngine {
       let weightSum = 0
 
       // Score based on similar users' preferences
-      for (const [similarUserId, similarity] of similarUsers) {
+      for (const [similarUserId, similarity] of Array.from(similarUsers)) {
         const similarUserPrefs = this.userItemMatrix.get(similarUserId)
         if (similarUserPrefs?.has(toolId)) {
           const rating = similarUserPrefs.get(toolId) || 0
@@ -1151,7 +1186,7 @@ class CollaborativeFilteringEngine {
     let score = 0
     let weightSum = 0
 
-    for (const [similarUserId, similarity] of similarUsers) {
+    for (const [similarUserId, similarity] of Array.from(similarUsers)) {
       const similarUserPrefs = this.userItemMatrix.get(similarUserId)
       if (similarUserPrefs?.has(toolId)) {
         const rating = similarUserPrefs.get(toolId) || 0
@@ -1199,7 +1234,7 @@ class CollaborativeFilteringEngine {
     let userCount = 0
     let totalRating = 0
 
-    for (const [userId, userPrefs] of this.userItemMatrix) {
+    for (const [userId, userPrefs] of Array.from(this.userItemMatrix)) {
       if (userPrefs.has(toolId)) {
         userCount++
         totalRating += userPrefs.get(toolId) || 0
@@ -1218,7 +1253,7 @@ class CollaborativeFilteringEngine {
     let score = 0
     let weightSum = 0
 
-    for (const [similarItemId, similarity] of itemSimilarities) {
+    for (const [similarItemId, similarity] of Array.from(itemSimilarities)) {
       if (userPrefs.has(similarItemId)) {
         const rating = userPrefs.get(similarItemId) || 0
         score += similarity * rating
@@ -1235,7 +1270,7 @@ class CollaborativeFilteringEngine {
 
     const similarities = new Map<string, number>()
 
-    for (const [otherUserId, otherPrefs] of this.userItemMatrix) {
+    for (const [otherUserId, otherPrefs] of Array.from(this.userItemMatrix)) {
       if (otherUserId === userId) continue
 
       const similarity = this.calculateCosineSimilarity(userPrefs, otherPrefs)
@@ -1253,7 +1288,7 @@ class CollaborativeFilteringEngine {
     prefs2: Map<string, number>
   ): number {
     const commonItems = new Set<string>()
-    for (const item of prefs1.keys()) {
+    for (const item of Array.from(prefs1.keys())) {
       if (prefs2.has(item)) {
         commonItems.add(item)
       }
@@ -1265,7 +1300,7 @@ class CollaborativeFilteringEngine {
     let norm1 = 0
     let norm2 = 0
 
-    for (const item of commonItems) {
+    for (const item of Array.from(commonItems)) {
       const rating1 = prefs1.get(item) || 0
       const rating2 = prefs2.get(item) || 0
 
@@ -2196,8 +2231,15 @@ class PerformanceMonitor {
 interface ContextInsights {
   summary: string
   workflowStage: string
+  primaryIntent: string
   intentConfidence: number
   environmentalFactors: any[]
+  contextStability: number
+  urgencyLevel: string
+  userExpertiseLevel: string
+  conversationDepth: number
+  analysisTime?: number
+  confidence?: number
 }
 
 interface BehaviorInsights {

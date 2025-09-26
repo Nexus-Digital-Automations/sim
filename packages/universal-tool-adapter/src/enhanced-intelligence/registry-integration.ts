@@ -16,7 +16,7 @@ import type {
 } from '../types/adapter-interfaces'
 import type { ParlantTool } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
-import { DomainAdapter, RoleBasedAdapter, SkillLevelAdapter } from './contextual-adapters'
+import { DomainSpecificAdapter, RoleBasedAdapter, SkillLevelAdapter } from './contextual-adapters'
 import type {
   DescriptionLevels,
   EnhancedDescriptionSchema,
@@ -140,7 +140,7 @@ export class NaturalLanguageRegistryIntegration {
   private nlpProcessor: NLPProcessor
   private roleAdapter: RoleBasedAdapter
   private skillAdapter: SkillLevelAdapter
-  private domainAdapter: DomainAdapter
+  private domainAdapter: DomainSpecificAdapter
   private templateEngine: IntelligentTemplateEngine
   private semanticSearchEngine: SemanticSearchEngine
   private descriptionCache = new Map<string, any>()
@@ -163,7 +163,7 @@ export class NaturalLanguageRegistryIntegration {
 
     this.roleAdapter = new RoleBasedAdapter()
     this.skillAdapter = new SkillLevelAdapter()
-    this.domainAdapter = new DomainAdapter()
+    this.domainAdapter = new DomainSpecificAdapter()
     this.templateEngine = new IntelligentTemplateEngine()
     this.semanticSearchEngine = createSemanticSearchEngine(config.semanticSearch)
 

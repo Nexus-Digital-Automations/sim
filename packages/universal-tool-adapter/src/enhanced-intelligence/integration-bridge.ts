@@ -286,6 +286,7 @@ export interface UsageAnalytics {
   userJourneyPatterns: UserJourneyPattern[]
 
   // Success metrics
+  totalRecommendations: number
   successfulRecommendations: number
   recommendationToUsageRate: number
   repeatUsageRate: number
@@ -630,7 +631,7 @@ export class IntegrationBridge {
       }
     } catch (error) {
       logger.error('Error getting integration analytics', { error, agentId })
-      return this.createEmptyAnalytics()
+      return this.createEmptyIntegrationAnalytics()
     }
   }
 
@@ -844,6 +845,7 @@ export class IntegrationBridge {
       peakUsageHours: [],
       popularToolCombinations: [],
       userJourneyPatterns: [],
+      totalRecommendations: 0,
       successfulRecommendations: 0,
       recommendationToUsageRate: 0,
       repeatUsageRate: 0,
@@ -854,6 +856,20 @@ export class IntegrationBridge {
       toolEffectivenessScores: new Map(),
       toolRecommendationFrequency: new Map(),
       toolUserSatisfaction: new Map(),
+    }
+  }
+
+  private createEmptyIntegrationAnalytics(): IntegrationAnalytics {
+    return {
+      performance: this.createEmptyMetrics(),
+      usage: this.createEmptyAnalytics(),
+      recommendations: {
+        totalGenerated: 0,
+        adoptionRate: 0,
+        accuracyScore: 0,
+        userSatisfaction: 0,
+      },
+      integration_health: { status: 'unknown', score: 0 },
     }
   }
 
@@ -957,9 +973,6 @@ export class IntegrationBridge {
   }
   private assessIntegrationHealth(agentId?: string): any {
     return { status: 'healthy', score: 0.9 }
-  }
-  private createEmptyAnalytics(): IntegrationAnalytics {
-    return {} as any
   }
 }
 

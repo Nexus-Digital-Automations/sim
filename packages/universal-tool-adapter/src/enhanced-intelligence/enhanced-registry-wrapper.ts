@@ -164,7 +164,14 @@ export class EnhancedRegistryWrapper {
       // Register with natural language engine
       if (naturalLanguageConfig) {
         await this.naturalLanguageEngine.registerTool(
-          { id: config.parlantId || `sim_${simTool.name}`, name: simTool.name },
+          {
+            id: config.parlantId || `sim_${simTool.name}`,
+            name: simTool.name,
+            description: config.description || simTool.metadata?.description || '',
+            version: '1.0.0',
+            params: {},
+            output: {}
+          },
           naturalLanguageConfig
         )
       }
@@ -530,14 +537,14 @@ export class EnhancedRegistryWrapper {
   private convertToExtendedContext(context: UsageContext): any {
     return {
       userProfile: {
-        userId: context.userProfile?.userId || 'anonymous',
+        userId: context.userId || 'anonymous',
         role: context.userProfile?.role || 'user',
-        skillLevel: context.userProfile?.skillLevel || 'beginner',
-        domain: context.userProfile?.domain,
+        skillLevel: context.userProfile?.experience || 'beginner',
+        domain: context.userProfile?.domains?.[0],
         preferences: context.userProfile?.preferences || {},
       },
-      conversationHistory: [],
-      sessionContext: context.sessionContext || {},
+      conversationHistory: context.messageHistory || [],
+      sessionContext: {},
       environment: 'production',
     }
   }
@@ -628,23 +635,25 @@ export class EnhancedRegistryWrapper {
 
     if (entry.config.naturalLanguage) capabilities.push('natural_language')
     if (entry.config.caching?.enabled) capabilities.push('caching')
-    if (entry.config.monitoring?.enabled) capabilities.push('monitoring')
+    if (entry.config.monitoring?.metrics?.enabled) capabilities.push('monitoring')
 
-    return [...new Set(capabilities)]
+    return Array.from(new Set(capabilities))
   }
 
   private extractRequirements(entry: AdapterRegistryEntry): string[] {
     const requirements: string[] = []
 
+    // Add security requirements based on security configuration
     if (entry.config.security?.accessControl?.requiredPermissions) {
       requirements.push(...entry.config.security.accessControl.requiredPermissions)
     }
 
+    // Add authentication requirement based on tags
     if (entry.metadata.tags.includes('authentication')) {
       requirements.push('authentication')
     }
 
-    return [...new Set(requirements)]
+    return Array.from(new Set(requirements))
   }
 
   private async enhanceToolInBackground(toolId: string): Promise<void> {
@@ -669,7 +678,7 @@ export class EnhancedRegistryWrapper {
 
       // Sort by usage statistics to identify popular tools
       const popularTools = entries
-        .filter((entry) => entry.statistics?.executionCount > 0)
+        .filter((entry) => (entry.statistics?.executionCount || 0) > 0)
         .sort((a, b) => (b.statistics?.executionCount || 0) - (a.statistics?.executionCount || 0))
         .slice(0, 10) // Preload top 10 popular tools
 

@@ -44,6 +44,9 @@ export interface SimToolMetadata {
   version: string
   category: SimToolCategory
   subcategory?: string
+  description?: string
+  keyCapabilities?: string[]
+  tags?: string[]
 
   // Execution context
   executionContext: 'client' | 'server' | 'hybrid'
@@ -131,6 +134,9 @@ export const SIM_TOOL_CATALOG: Record<string, SimToolMetadata> = {
     version: '2.0.0',
     category: 'workflow_management',
     subcategory: 'execution',
+    description: 'Execute automated workflows with real-time monitoring and audit capabilities',
+    keyCapabilities: ['workflow execution', 'real-time monitoring', 'audit trails', 'batch processing'],
+    tags: ['automation', 'business-process', 'batch-processing', 'monitoring'],
 
     executionContext: 'client',
     hasInterrupt: true,

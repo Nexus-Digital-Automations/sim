@@ -645,11 +645,11 @@ export interface OptimizationRecommendation {
 export class UsageAnalyticsFramework {
   private config: AnalyticsConfig
   private eventQueue: UsageEvent[] = []
-  private eventStorage: EventStorage
-  private analyticsProcessor: AnalyticsProcessor
-  private insightGenerator: InsightGenerator
-  private predictiveEngine: PredictiveEngine
-  private realTimeMonitor: RealTimeMonitor
+  private eventStorage!: EventStorage
+  private analyticsProcessor!: AnalyticsProcessor
+  private insightGenerator!: InsightGenerator
+  private predictiveEngine!: PredictiveEngine
+  private realTimeMonitor!: RealTimeMonitor
 
   constructor(config: Partial<AnalyticsConfig> = {}) {
     this.config = {
@@ -1123,29 +1123,19 @@ export class UsageAnalyticsFramework {
 // =============================================================================
 
 class EventStorage {
-  constructor(private config: StorageConfig) {}
-
   async storeEvents(events: UsageEvent[]): Promise<void> {}
   async exportData(format: string, timeRange: any, filters?: any): Promise<ExportedData> {
     return {} as ExportedData
   }
 }
 
-class AnalyticsProcessor {
-  constructor(private config: ProcessingConfig) {}
-}
+class AnalyticsProcessor {}
 
-class InsightGenerator {
-  constructor() {}
-}
+class InsightGenerator {}
 
-class PredictiveEngine {
-  constructor(private config: MLPipelineConfig) {}
-}
+class PredictiveEngine {}
 
 class RealTimeMonitor {
-  constructor(private config: MonitoringConfig) {}
-
   processEvent(event: UsageEvent): void {}
   getDashboardData(): RealTimeDashboard {
     return {} as RealTimeDashboard

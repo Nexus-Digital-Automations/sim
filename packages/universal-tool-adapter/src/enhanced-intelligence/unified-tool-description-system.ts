@@ -26,7 +26,7 @@ import {
 } from '../examples/tool-integration-examples'
 import {
   type GuidelineDefinition,
-  GuidelinesFramework,
+  GuidelineTemplateRegistry,
 } from '../usage-guidelines/guidelines-framework'
 import { createLogger } from '../utils/logger'
 import type {
@@ -38,7 +38,7 @@ import type {
   UserRole,
 } from './natural-language-description-framework'
 import {
-  SimToolCatalog,
+  SIM_TOOL_CATALOG,
   type SimToolCategory,
   SimToolClassifier,
   type SimToolMetadata,
@@ -48,6 +48,7 @@ import {
   type ToolRecommendationResult,
   ToolSelectionIntelligenceEngine,
   type ToolSelectionQuery,
+  type SelectionCriteria,
   type UserContext,
 } from './tool-selection-intelligence'
 
@@ -152,11 +153,11 @@ export interface SystemCapabilities {
 
 export class UnifiedToolDescriptionSystem {
   private nlFramework: NaturalLanguageDescriptionFramework
-  private toolCatalog: SimToolCatalog
+  private toolCatalog: Record<string, SimToolMetadata>
   private toolClassifier: SimToolClassifier
   private selectionEngine: ToolSelectionIntelligenceEngine
   private examplesCollection: ToolIntegrationExamplesCollection
-  private guidelinesFramework: GuidelinesFramework
+  private guidelinesFramework: GuidelineTemplateRegistry
 
   private queryCache: Map<string, UnifiedToolResponse> = new Map()
   private config: UnifiedToolDescriptionConfig
@@ -165,17 +166,17 @@ export class UnifiedToolDescriptionSystem {
     this.config = config
 
     // Initialize core components
-    this.toolCatalog = new SimToolCatalog()
+    this.toolCatalog = SIM_TOOL_CATALOG
     this.toolClassifier = new SimToolClassifier(this.toolCatalog)
     this.selectionEngine = new ToolSelectionIntelligenceEngine(config.selectionIntelligenceConfig)
     this.examplesCollection = new ToolIntegrationExamplesCollection()
-    this.guidelinesFramework = new GuidelinesFramework()
+    this.guidelinesFramework = new GuidelineTemplateRegistry()
 
     // Initialize Natural Language Framework
     this.nlFramework = this.createNLFramework(config.naturalLanguageConfig)
 
     logger.info('Unified Tool Description System initialized', {
-      totalTools: this.toolCatalog.getAllTools().length,
+      totalTools: Object.keys(this.toolCatalog).length,
       totalExamples: this.getSystemCapabilities().totalExamples,
       cacheEnabled: !!config.cacheSettings?.enabled,
     })
@@ -245,10 +246,9 @@ export class UnifiedToolDescriptionSystem {
 
       return response
     } catch (error) {
-      logger.error('Query processing failed:', error)
-      throw new Error(
-        `Tool query failed: ${error instanceof Error ? error.message : String(error)}`
-      )
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      logger.error('Query processing failed:', { error: errorMessage })
+      throw new Error(`Tool query failed: ${errorMessage}`)
     }
   }
 
@@ -263,7 +263,7 @@ export class UnifiedToolDescriptionSystem {
     logger.debug(`Getting comprehensive description for tool: ${toolId}`)
 
     // Get base tool metadata
-    const toolMetadata = this.toolCatalog.getToolMetadata(toolId)
+    const toolMetadata = this.toolCatalog[toolId]
     if (!toolMetadata) {
       throw new Error(`Tool not found: ${toolId}`)
     }
@@ -271,7 +271,7 @@ export class UnifiedToolDescriptionSystem {
     // Generate enhanced description
     const enhancedDescription = await this.nlFramework.generateEnhancedDescription(
       this.mapToToolConfig(toolMetadata),
-      { userProfile: userContext as any }
+      { userProfile: this.convertUserContextToProfile(userContext) }
     )
 
     // Get personalized description
@@ -281,7 +281,7 @@ export class UnifiedToolDescriptionSystem {
     )
 
     // Get usage guidelines
-    const usageGuidelines = await this.guidelinesFramework.getGuidelinesForTool(
+    const usageGuidelines = this.getGuidelinesForTool(
       toolId,
       userContext.role,
       userContext.skillLevel
@@ -328,7 +328,7 @@ export class UnifiedToolDescriptionSystem {
       userIntent,
       userContext,
       selectionPreferences: {
-        prioritizeCriteria: preferences.priorityCriteria || [],
+        prioritizeCriteria: preferences.priorityCriteria || [] as SelectionCriteria[],
         criteriaWeights: preferences.criteriaWeights || {},
         maxRecommendations: preferences.maxRecommendations || 5,
         includeAlternatives: preferences.includeAlternatives ?? true,
@@ -354,11 +354,11 @@ export class UnifiedToolDescriptionSystem {
     const nlResults = await this.nlFramework.searchDescriptions(query, searchContext)
 
     // Use tool classifier for category-based search
-    const classificationResults = await this.toolClassifier.classifyAndRecommend(
-      query,
-      userContext.role,
-      userContext.skillLevel
-    )
+    const classificationResults = this.toolClassifier.generateToolRecommendations({
+      useCase: query,
+      userRole: userContext.role,
+      skillLevel: userContext.skillLevel
+    })
 
     // Combine and rank results
     const combinedResults = await this.combineSearchResults(
@@ -374,7 +374,7 @@ export class UnifiedToolDescriptionSystem {
    * Get system capabilities and statistics
    */
   getSystemCapabilities(): SystemCapabilities {
-    const allTools = this.toolCatalog.getAllTools()
+    const allTools = Object.values(this.toolCatalog)
 
     return {
       supportedOperations: [
@@ -478,7 +478,7 @@ export class UnifiedToolDescriptionSystem {
     queryAnalysis: QueryAnalysisResult
   ): Promise<UnifiedToolResponse> {
     // Get all tools in category
-    const categoryTools = this.toolCatalog.getToolsByCategory(query.category!)
+    const categoryTools = Object.values(this.toolCatalog).filter(tool => tool.category === query.category!)
 
     // Rank tools by appropriateness for user
     const rankedTools = await this.rankToolsForUser(categoryTools, query.userContext)
@@ -567,7 +567,7 @@ export class UnifiedToolDescriptionSystem {
     // This would create the actual framework instance
     // For now, returning a mock implementation
     return {
-      generateEnhancedDescription: async (toolConfig, context) => ({
+      generateEnhancedDescription: async (toolConfig: any, context: any) => ({
         toolId: toolConfig.id,
         toolName: toolConfig.name || toolConfig.id,
         toolVersion: toolConfig.version || '1.0.0',
@@ -713,7 +713,7 @@ export class UnifiedToolDescriptionSystem {
           },
         },
       }),
-      searchDescriptions: async (query, context) => [],
+      searchDescriptions: async (query: string, context: any) => [],
     } as any
   }
 
@@ -759,7 +759,9 @@ export class UnifiedToolDescriptionSystem {
     const maxCacheSize = this.config.cacheSettings?.maxSize || 1000
     if (this.queryCache.size > maxCacheSize) {
       const firstKey = this.queryCache.keys().next().value
-      this.queryCache.delete(firstKey)
+      if (firstKey) {
+        this.queryCache.delete(firstKey)
+      }
     }
   }
 
@@ -947,16 +949,15 @@ export class UnifiedToolDescriptionSystem {
     userContext: UserContext,
     options: { maxResults: number }
   ): Promise<ToolDescriptionResult[]> {
-    const tool = this.toolCatalog.getToolMetadata(toolId)
+    const tool = this.toolCatalog[toolId]
     if (!tool) return []
 
-    const relatedTools = this.toolCatalog
-      .getToolsByCategory(tool.category)
-      .filter((t) => t.toolId !== toolId)
+    const relatedTools = Object.values(this.toolCatalog)
+      .filter((t: SimToolMetadata) => t.category === tool.category && t.toolId !== toolId)
       .slice(0, options.maxResults)
 
     return Promise.all(
-      relatedTools.map((t) => this.getComprehensiveToolDescription(t.toolId, userContext))
+      relatedTools.map((t: SimToolMetadata) => this.getComprehensiveToolDescription(t.toolId, userContext))
     )
   }
 
@@ -988,7 +989,7 @@ export class UnifiedToolDescriptionSystem {
   }
 
   private countTotalGuidelines(): number {
-    return this.guidelinesFramework.getAllGuidelines().length
+    return this.guidelinesFramework.getAllTemplates().length
   }
 
   private async generateSituationalGuidance(
@@ -999,7 +1000,7 @@ export class UnifiedToolDescriptionSystem {
       currentSituation: `Using ${tool.toolName} as a ${userContext.role}`,
       applicableScenarios: [`${tool.primaryUseCases[0] || 'General usage'} scenario`],
       contextualTips: [
-        `Focus on ${tool.keyCapabilities[0] || 'core functionality'} for best results`,
+        `Focus on ${tool.keyBenefits[0] || 'core functionality'} for best results`,
       ],
       environmentalConsiderations: ['Check system requirements', 'Verify permissions'],
     }
@@ -1076,7 +1077,7 @@ export class UnifiedToolDescriptionSystem {
     role: UserRole,
     maxResults: number
   ): Promise<ToolDescriptionResult[]> {
-    const allTools = this.toolCatalog.getAllTools()
+    const allTools = Object.values(this.toolCatalog)
     const roleTools = allTools
       .filter((tool) => tool.targetUsers.includes(role))
       .slice(0, maxResults)
@@ -1097,6 +1098,132 @@ export class UnifiedToolDescriptionSystem {
         })
       )
     )
+  }
+
+  // Helper methods
+  private convertUserContextToProfile(userContext: UserContext): any {
+    return {
+      role: userContext.role,
+      skillLevel: userContext.skillLevel,
+      experience: userContext.experience || {
+        usedTools: [],
+        preferredToolTypes: [],
+        avoidedTools: [],
+        technicalSkills: [],
+        domainExpertise: [],
+        learningPreferences: [],
+      },
+    }
+  }
+
+  private getGuidelinesForTool(
+    toolId: string,
+    role: UserRole,
+    skillLevel: SkillLevel
+  ): GuidelineDefinition[] {
+    // Mock implementation - would integrate with actual guidelines system
+    return [
+      {
+        id: `${toolId}_basic_guideline`,
+        toolId,
+        title: `Basic usage guide for ${toolId}`,
+        description: `Guidelines for using ${toolId} effectively`,
+        version: '1.0.0',
+        lastUpdated: new Date(),
+        category: 'basic-usage',
+        complexity: 'beginner',
+        priority: 'medium',
+        applicableContexts: [],
+        content: {
+          whenToUse: {
+            primary: `Use ${toolId} when you need its specific functionality`,
+            scenarios: [],
+            conditions: [],
+            antipatterns: [],
+          },
+          howToUse: {
+            quickStart: {
+              summary: `Quick start guide for ${toolId}`,
+              essentialSteps: [],
+              minimumRequiredFields: [],
+              estimatedTime: '5 minutes',
+              successCriteria: [],
+            },
+            stepByStep: {
+              title: 'Step-by-step guide',
+              overview: 'Detailed walkthrough',
+              prerequisites: [],
+              steps: [],
+              verification: [],
+              troubleshooting: [],
+            },
+            parameterGuidance: {},
+            bestPractices: [],
+            commonMistakes: [],
+          },
+          examples: {
+            basic: [],
+            advanced: [],
+            realWorld: [],
+            conversational: [],
+          },
+          troubleshooting: {
+            commonIssues: [],
+            errorCodes: {},
+            diagnostics: [],
+            recovery: [],
+          },
+          relatedResources: {
+            alternativeTools: [],
+            complementaryTools: [],
+            prerequisites: [],
+            followUpActions: [],
+          },
+        },
+        adaptations: {
+          experienceLevel: {
+            beginner: { emphasisPoints: [] },
+            intermediate: { emphasisPoints: [] },
+            advanced: { emphasisPoints: [] },
+          },
+          userRole: {},
+          contextual: {
+            urgent: { emphasisPoints: [] },
+            collaborative: { emphasisPoints: [] },
+            automated: { emphasisPoints: [] },
+          },
+          domainSpecific: {},
+          localization: {},
+        },
+        metadata: {
+          author: 'System Generated',
+          contributors: [],
+          reviewedBy: [],
+          usageStats: {
+            viewCount: 0,
+            helpfulVotes: 0,
+            unhelpfulVotes: 0,
+            feedbackCount: 0,
+            lastAccessed: new Date(),
+          },
+          quality: {
+            completeness: 0.7,
+            accuracy: 0.8,
+            clarity: 0.7,
+            usefulness: 0.7,
+          },
+          relationships: {
+            dependsOn: [],
+            supersedes: [],
+            relatedTo: [],
+            conflictsWith: [],
+          },
+          lifecycle: {
+            status: 'draft',
+          },
+        },
+      },
+    ]
   }
 }
 
@@ -1196,7 +1323,7 @@ export interface DescriptionOptions {
 }
 
 export interface RecommendationPreferences {
-  priorityCriteria?: string[]
+  priorityCriteria?: SelectionCriteria[]
   criteriaWeights?: Record<string, number>
   maxRecommendations?: number
   includeAlternatives?: boolean

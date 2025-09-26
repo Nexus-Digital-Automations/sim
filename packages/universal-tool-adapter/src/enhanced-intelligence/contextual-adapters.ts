@@ -101,8 +101,8 @@ export interface PreferenceContext {
 // =============================================================================
 
 export abstract class BaseContextualAdapter {
-  protected adapterId: string
-  protected adapterName: string
+  public readonly adapterId: string
+  public readonly adapterName: string
   protected supportedContextTypes: ContextType[]
 
   constructor(adapterId: string, adapterName: string, supportedContextTypes: ContextType[]) {
@@ -201,7 +201,7 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
     schema: EnhancedDescriptionSchema,
     context: ExtendedUsageContext
   ): Promise<DescriptionAdaptation> {
-    const userRole = context.userProfile?.role
+    const userRole = context.userProfile?.role as UserRole
     if (!userRole) {
       throw new Error('User role required for role-based adaptation')
     }
@@ -215,7 +215,7 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
     logger.debug(`Applying role-based adaptation for: ${userRole}`)
 
     const adaptedSchema = await this.applyRoleStrategy(schema, strategy, context)
-    const adaptationSummary = this.generateAdaptationSummary(userRole as UserRole, strategy)
+    const adaptationSummary = this.generateAdaptationSummary(userRole, strategy)
 
     return {
       type: 'role-based',
@@ -1009,11 +1009,11 @@ export class ContextualAdapterRegistry {
   getApplicableAdapters(context: ExtendedUsageContext): BaseContextualAdapter[] {
     const applicable: BaseContextualAdapter[] = []
 
-    for (const adapter of this.adapters.values()) {
+    Array.from(this.adapters.values()).forEach(adapter => {
       if (adapter.canHandle(context)) {
         applicable.push(adapter)
       }
-    }
+    })
 
     // Sort by priority
     return applicable.sort((a, b) => b.getPriority(context) - a.getPriority(context))

@@ -9,6 +9,18 @@
  * @version 2.0.0
  */
 
+// Internal imports for the UniversalToolAdapterSystem class
+import { AutoDiscoverySystem } from './config/auto-discovery-system'
+import { EnhancedAdapterFramework, BlockConfigAdapter } from './core/enhanced-adapter-framework'
+import { IntelligenceIntegrationLayer, type IntelligenceConfiguration } from './enhanced-intelligence/intelligence-integration-layer'
+import { AnalyticsSystem } from './monitoring/analytics-system'
+import { PerformanceOptimizationEngine } from './performance/optimization-engine'
+import { PluginSystem } from './plugins/plugin-system'
+import { EnhancedAdapterRegistry } from './registry/enhanced-adapter-registry'
+import { AdapterTestFramework } from './testing/test-framework'
+import { type AdapterExecutionResult } from './types/adapter-interfaces'
+import { EnhancedValidationEngine } from './validation/enhanced-validation-engine'
+
 export {
   AutoDiscoverySystem,
   createAutoDiscoverySystem,
@@ -19,10 +31,13 @@ export { BaseAdapter } from './core/base-adapter'
 // Core framework components
 export { BlockConfigAdapter, EnhancedAdapterFramework } from './core/enhanced-adapter-framework'
 export {
-  type ContextualAdapter,
-  DomainAdapter,
+  BaseContextualAdapter,
+  DomainSpecificAdapter,
   RoleBasedAdapter,
   SkillLevelAdapter,
+  ContextualAdapterRegistry,
+  createContextualAdapterRegistry,
+  adaptSchemaToContext,
 } from './enhanced-intelligence/contextual-adapters'
 export { ContextualRecommendationEngine } from './enhanced-intelligence/contextual-recommendation-engine'
 export {
@@ -37,6 +52,7 @@ export {
   createFullyIntelligentAdapter,
   createIntelligenceEnhancedAdapter,
   IntelligenceIntegrationLayer,
+  type IntelligenceConfiguration,
 } from './enhanced-intelligence/intelligence-integration-layer'
 export { IntelligentTemplateEngine } from './enhanced-intelligence/intelligent-template-engine'
 export { NaturalLanguageDescriptionFramework } from './enhanced-intelligence/natural-language-description-framework'
@@ -208,12 +224,72 @@ export class UniversalToolAdapterSystem {
       adapterId,
       context,
       args,
-      async (id, ctx, params) => {
+      async (id: string, ctx: any, params: any): Promise<AdapterExecutionResult> => {
+        const startedAt = new Date()
         const adapter = await this.registry.get(id)
         if (!adapter) {
           throw new Error(`Adapter not found: ${id}`)
         }
-        return adapter.execute(ctx, params)
+
+        try {
+          // Execute the adapter and get ParlantToolResult
+          const parlantResult = await adapter.execute(ctx, params)
+          const completedAt = new Date()
+
+          // Transform ParlantToolResult to AdapterExecutionResult
+          const adapterResult: AdapterExecutionResult = {
+            success: parlantResult.type === 'success',
+            executionId: ctx.executionId || `${id}_${Date.now()}`,
+            toolId: id,
+            startedAt,
+            completedAt,
+            durationMs: completedAt.getTime() - startedAt.getTime(),
+            data: parlantResult.data,
+            metadata: parlantResult.metadata || {},
+            warnings: parlantResult.warnings,
+            notices: parlantResult.notices,
+          }
+
+          // Handle errors
+          if (parlantResult.type === 'error' || parlantResult.error) {
+            adapterResult.success = false
+            adapterResult.error = {
+              type: parlantResult.error?.type || 'execution_error',
+              message: parlantResult.error?.message || parlantResult.message || 'Unknown error',
+              code: parlantResult.error?.code,
+              details: parlantResult.error?.details,
+              recoverable: parlantResult.error?.recoverable ?? false,
+            }
+          }
+
+          // Transform follow-up suggestions
+          if (parlantResult.followUp?.suggestedActions) {
+            adapterResult.suggestions = parlantResult.followUp.suggestedActions.map(action => ({
+              type: action.type,
+              message: action.description || action.label,
+              action: action.id,
+              priority: action.priority || 'medium',
+            }))
+          }
+
+          return adapterResult
+        } catch (error: any) {
+          const completedAt = new Date()
+          return {
+            success: false,
+            executionId: ctx.executionId || `${id}_${Date.now()}`,
+            toolId: id,
+            startedAt,
+            completedAt,
+            durationMs: completedAt.getTime() - startedAt.getTime(),
+            error: {
+              type: 'execution_error',
+              message: error.message || 'Adapter execution failed',
+              details: error.stack || error,
+              recoverable: false,
+            },
+          }
+        }
       }
     )
 

@@ -230,10 +230,10 @@ export class SemanticSearchEngine {
 
     // Initialize NLP processor with semantic search optimizations
     this.nlpProcessor = new NLPProcessor({
-      enableAdvancedAnalysis: true,
-      enableSemanticAnalysis: true,
-      vocabularyEnhancement: true,
-      qualityThreshold: 0.8,
+      model: 'advanced-nlp-v2',
+      accuracy: 0.8,
+      verbosity: 'standard',
+      analysisDepth: 'deep',
     })
 
     // Initialize semantic index
@@ -403,9 +403,12 @@ export class SemanticSearchEngine {
 
     // Extract concepts from partial query
     const queryAnalysis = await this.nlpProcessor.extractKeyInformation({
+      id: 'partial_query',
       name: 'partial_query',
       description: partialQuery,
-      parameters: {},
+      params: {},
+      version: '1.0.0',
+      output: {},
     })
 
     const suggestions: string[] = []
@@ -413,7 +416,7 @@ export class SemanticSearchEngine {
     const contextualSuggestions: string[] = []
 
     // Generate concept-based suggestions
-    for (const concept of queryAnalysis.keyInformation.concepts) {
+    for (const concept of queryAnalysis.quickTags) {
       const relatedConcepts = this.findRelatedConcepts(concept)
       suggestions.push(...relatedConcepts.slice(0, 3))
     }
@@ -429,8 +432,8 @@ export class SemanticSearchEngine {
     }
 
     // Add contextual suggestions based on user context
-    if (userContext) {
-      const userModel = this.getUserModel(userContext.userProfile?.userId)
+    if (userContext && userContext.userId) {
+      const userModel = this.getUserModel(userContext.userId)
       if (userModel) {
         for (const [concept, weight] of userModel.preferredConcepts) {
           if (
@@ -548,14 +551,17 @@ export class SemanticSearchEngine {
   ): Promise<EnhancedSearchQuery> {
     // Analyze the query using NLP
     const queryAnalysis = await this.nlpProcessor.extractKeyInformation({
+      id: 'search_query',
       name: 'search_query',
       description: query,
-      parameters: {},
+      params: {},
+      version: '1.0.0',
+      output: {},
     })
 
     // Extract entities and concepts
-    const extractedEntities = queryAnalysis.keyInformation.entities || []
-    const identifiedConcepts = queryAnalysis.keyInformation.concepts
+    const extractedEntities: string[] = []
+    const identifiedConcepts = queryAnalysis.quickTags
 
     // Recognize intent (simplified)
     const recognizedIntent = this.recognizeSearchIntent(query)
@@ -573,7 +579,6 @@ export class SemanticSearchEngine {
       userContext,
       searchContext: {
         timestamp: new Date(),
-        sessionId: userContext?.sessionId,
         previousQueries: [],
         userFeedback: [],
       },
@@ -605,18 +610,31 @@ export class SemanticSearchEngine {
       try {
         // Analyze tool to extract concepts
         const analysis = await this.nlpProcessor.analyzeToolComprehensively({
+          id: tool.id,
           name: tool.simTool.name,
           description: tool.config.description || '',
-          parameters: tool.simTool.parameters || {},
+          params: (tool.simTool as any).params || (tool.simTool as any).parameters || {},
+          version: '1.0.0',
+          output: {},
+        })
+
+        // Get key information for concepts
+        const keyInfo = await this.nlpProcessor.extractKeyInformation({
+          id: tool.id,
+          name: tool.simTool.name,
+          description: tool.config.description || '',
+          params: (tool.simTool as any).params || (tool.simTool as any).parameters || {},
+          version: '1.0.0',
+          output: {},
         })
 
         // Generate semantic vectors (simplified representation)
-        const vectors = this.generateSemanticVectors(analysis.keyInformation.concepts)
+        const vectors = this.generateSemanticVectors(keyInfo.quickTags)
 
         // Store in index
         this.semanticIndex.tools.set(tool.id, {
           id: tool.id,
-          concepts: analysis.keyInformation.concepts,
+          concepts: keyInfo.quickTags,
           vectors,
           metadata: {
             category: tool.metadata.category,
@@ -724,9 +742,10 @@ export class SemanticSearchEngine {
         // Domain-specific scoring
         if (
           this.config.contextualSearch.domainSpecificScoring &&
-          query.userContext?.userProfile?.domain
+          query.userContext?.userProfile?.domains &&
+          query.userContext.userProfile.domains.length > 0
         ) {
-          contextualBoost += this.calculateDomainBoost(result, query.userContext.userProfile.domain)
+          contextualBoost += this.calculateDomainBoost(result, query.userContext.userProfile.domains[0])
         }
 
         // Update scoring
@@ -742,11 +761,11 @@ export class SemanticSearchEngine {
     results: EnhancedSemanticSearchResult[],
     userContext: UsageContext
   ): Promise<EnhancedSemanticSearchResult[]> {
-    if (!this.config.contextualSearch.personalizedResults || !userContext.userProfile?.userId) {
+    if (!this.config.contextualSearch.personalizedResults || !userContext.userId) {
       return results
     }
 
-    const userModel = this.getUserModel(userContext.userProfile.userId)
+    const userModel = this.getUserModel(userContext.userId)
     if (!userModel) {
       return results
     }
@@ -874,8 +893,8 @@ export class SemanticSearchEngine {
     }
 
     // Domain-based relevance
-    if (query.userContext?.userProfile?.domain) {
-      relevance += this.calculateDomainRelevance(tool, query.userContext.userProfile.domain) * 0.2
+    if (query.userContext?.userProfile?.domains && query.userContext.userProfile.domains.length > 0) {
+      relevance += this.calculateDomainRelevance(tool, query.userContext.userProfile.domains[0]) * 0.2
     }
 
     return Math.min(relevance, 1)
@@ -992,7 +1011,9 @@ export class SemanticSearchEngine {
   private getUserModel(
     userId?: string
   ): SemanticIndex['userModels'] extends Map<string, infer U> ? U : never | undefined {
-    return userId ? this.semanticIndex.userModels.get(userId) : undefined
+    if (!userId) return undefined
+    const userModel = this.semanticIndex.userModels.get(userId)
+    return userModel || undefined
   }
 
   private calculateUserSimilarity(result: EnhancedSemanticSearchResult, userModel: any): number {
@@ -1002,11 +1023,12 @@ export class SemanticSearchEngine {
 
   private calculateHistoricalUsage(result: EnhancedSemanticSearchResult, userModel: any): number {
     // Calculate score based on historical usage
+    if (!userModel || !userModel.clickedResults) return 0
     return userModel.clickedResults.get(result.toolId) || 0
   }
 
   private generateCacheKey(query: EnhancedSearchQuery): string {
-    return `${query.originalQuery}_${query.userContext?.userProfile?.userId || 'anonymous'}`
+    return `${query.originalQuery}_${query.userContext?.userId || 'anonymous'}`
   }
 
   private extractSearchPattern(feedback: SearchFeedback): string {

@@ -363,8 +363,10 @@ export class IntelligenceIntegrationLayer {
     } catch (error) {
       // Apply intelligent error handling
       if (this.config.enableIntelligentErrorHandling) {
+        // Type guard for Error objects
+        const errorToHandle = error instanceof Error ? error : new Error(String(error))
         const enhancedError = await this.handleErrorIntelligently(
-          error,
+          errorToHandle,
           adapterId,
           context,
           userContext
@@ -382,9 +384,11 @@ export class IntelligenceIntegrationLayer {
           completedAt: new Date(),
           durationMs: Date.now() - startTime,
           error: {
-            type: error.constructor.name,
-            message: error instanceof Error ? error.message : String(error),
+            type: errorToHandle.constructor.name,
+            message: errorToHandle.message,
             recoverable: true,
+          },
+          metadata: {
             intelligentExplanation: enhancedError,
           },
         }
@@ -709,7 +713,7 @@ export class IntelligenceIntegrationLayer {
         conversationHistory: [],
         currentContext: {
           ...userContext,
-          userSkillLevel: userContext.userProfile?.skillLevel || 'intermediate',
+          userSkillLevel: userContext.userProfile?.experience || 'intermediate',
           userPreferences: {
             communicationStyle: 'detailed',
             complexityPreference: 'moderate',
@@ -759,7 +763,7 @@ export class IntelligenceIntegrationLayer {
               recommendationScore: recommendation.confidence,
               whyRecommended: recommendation.whyRecommended,
               userGuidance: recommendation.personalizedInstructions,
-              estimatedTime: recommendation.estimatedTime || '2-5 minutes',
+              estimatedTime: '2-5 minutes',
             },
           }
         }
@@ -790,7 +794,10 @@ export class IntelligenceIntegrationLayer {
         toolId: adapterId,
         executionId: `validation-${adapterId}-${Date.now()}`,
         userId: userContext.userId || 'anonymous',
-        workspaceId: userContext.workspaceId,
+        workspaceId: userContext.workspaceId || '',
+        adapterVersion: '1.0.0',
+        startedAt: new Date(),
+        requestSource: 'api' as const,
       }
 
       // Perform proactive validation
@@ -814,7 +821,8 @@ export class IntelligenceIntegrationLayer {
         })
       }
     } catch (error) {
-      if (error instanceof Error ? error.message : String(error).includes('Validation failed:')) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('Validation failed:')) {
         throw error // Re-throw validation errors
       }
       logger.warn('Proactive validation error', {
@@ -835,7 +843,10 @@ export class IntelligenceIntegrationLayer {
         toolId: adapterId,
         executionId: context.executionId || `error-${adapterId}-${Date.now()}`,
         userId: context.userId || userContext?.userId || 'anonymous',
-        workspaceId: context.workspaceId || userContext?.workspaceId,
+        workspaceId: context.workspaceId || userContext?.workspaceId || '',
+        adapterVersion: '1.0.0',
+        startedAt: new Date(),
+        requestSource: 'api' as const,
       }
 
       const errorHandlingResult = await this.errorManager.handleToolError(error, executionContext)
@@ -885,11 +896,12 @@ export class IntelligenceIntegrationLayer {
   private extractToolConfig(adapter: BaseAdapter): ToolConfig {
     // Extract or create tool configuration from adapter
     // This is a simplified implementation
+    const metadata = adapter.metadata;
     return {
       id: adapter.id,
-      name: adapter.metadata?.displayName || adapter.id,
-      version: adapter.metadata?.version || '1.0.0',
-      description: adapter.metadata?.description || '',
+      name: adapter.name || adapter.id,
+      version: metadata?.version || '1.0.0',
+      description: adapter.description || '',
       // Additional tool config properties would be mapped here
     } as ToolConfig
   }

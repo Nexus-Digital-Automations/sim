@@ -28,12 +28,19 @@ import { createLogger } from '../utils/logger'
 //   UserSkillLevel,
 // } from '../../../parlant-server/error-explanations'
 
-// Local placeholder types
-type ErrorExplanationService = {
-  explain: (error: any, skillLevel: UserSkillLevel) => string
+// Local placeholder types and classes
+class ErrorExplanationService {
+  explain(error: any, skillLevel: UserSkillLevel): string {
+    return `Error: ${error instanceof Error ? error.message : String(error) || error}`
+  }
 }
 
-type UserSkillLevel = 'beginner' | 'intermediate' | 'advanced'
+enum UserSkillLevel {
+  BEGINNER = 'beginner',
+  INTERMEDIATE = 'intermediate',
+  ADVANCED = 'advanced',
+  DEVELOPER = 'developer'
+}
 
 // Placeholder implementation
 const explainError = (error: any, skillLevel: UserSkillLevel): string => {
@@ -531,7 +538,7 @@ export class ComprehensiveToolErrorManager {
     const errorsByCategory: Record<string, number> = {}
     let totalErrors = 0
 
-    for (const [category, count] of this.errorAnalytics.errorFrequency.entries()) {
+    for (const [category, count] of Array.from(this.errorAnalytics.errorFrequency.entries())) {
       errorsByCategory[category] = count
       totalErrors += count
     }
@@ -638,13 +645,8 @@ export class ComprehensiveToolErrorManager {
     }
 
     // Classify based on error type and context
-    if (
-      error instanceof Error
-        ? error.message
-        : String(error).includes('timeout') || error instanceof Error
-          ? error.message
-          : String(error).includes('TIMEOUT')
-    ) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    if (errorMessage.includes('timeout') || errorMessage.includes('TIMEOUT')) {
       return new ToolExecutionError(
         error instanceof Error ? error.message : String(error),
         'timeout',
@@ -655,13 +657,7 @@ export class ComprehensiveToolErrorManager {
       )
     }
 
-    if (
-      error instanceof Error
-        ? error.message
-        : String(error).includes('authentication') || error instanceof Error
-          ? error.message
-          : String(error).includes('unauthorized')
-    ) {
+    if (errorMessage.includes('authentication') || errorMessage.includes('unauthorized')) {
       return new ToolAuthenticationError(
         error instanceof Error ? error.message : String(error),
         'invalid_credentials',
@@ -671,13 +667,7 @@ export class ComprehensiveToolErrorManager {
       )
     }
 
-    if (
-      error instanceof Error
-        ? error.message
-        : String(error).includes('validation') || error instanceof Error
-          ? error.message
-          : String(error).includes('invalid parameter')
-    ) {
+    if (errorMessage.includes('validation') || errorMessage.includes('invalid parameter')) {
       return new UserInputError(
         error instanceof Error ? error.message : String(error),
         'invalid_format',
@@ -685,13 +675,7 @@ export class ComprehensiveToolErrorManager {
       )
     }
 
-    if (
-      error instanceof Error
-        ? error.message
-        : String(error).includes('rate limit') || error instanceof Error
-          ? error.message
-          : String(error).includes('quota')
-    ) {
+    if (errorMessage.includes('rate limit') || errorMessage.includes('quota')) {
       return new ToolAuthenticationError(
         error instanceof Error ? error.message : String(error),
         'rate_limit_exceeded',
@@ -757,26 +741,26 @@ export class ComprehensiveToolErrorManager {
       errorType: this.mapToToolErrorCategory(error.category, error.subcategory),
       severity: error.severity,
       impact: error.impact,
-      userMessage: baseExplanation.messages[userSkillLevel],
-      detailedExplanation: baseExplanation.summary,
+      userMessage: typeof baseExplanation === 'string' ? baseExplanation : 'An error occurred',
+      detailedExplanation: typeof baseExplanation === 'string' ? baseExplanation : 'Error details not available',
       technicalDetails: error instanceof Error ? error.message : String(error),
-      immediateActions: baseExplanation.quickActions.map((action) => ({
-        action: action.title,
-        description: action.description,
-        estimatedTime: action.estimatedTime,
-        difficulty: this.mapSkillLevelToDifficulty(action.skillLevel),
-      })),
-      preventionTips: baseExplanation.preventionTips.map((tip) => ({
-        tip: tip.description,
-        category: tip.category,
-      })),
+      immediateActions: [
+        {
+          action: 'Retry Operation',
+          description: 'Try the operation again',
+          estimatedTime: '30 seconds',
+          difficulty: 'beginner' as const
+        }
+      ],
+      preventionTips: [
+        {
+          tip: 'Verify all required parameters before execution',
+          category: 'usage' as const
+        }
+      ],
       troubleshootingSteps: this.generateTroubleshootingSteps(error, context),
-      relatedErrors: baseExplanation.relatedErrors,
-      documentationLinks: baseExplanation.documentationLinks.map((link) => ({
-        title: link.title,
-        url: link.url,
-        type: link.type as 'tutorial' | 'reference' | 'troubleshooting',
-      })),
+      relatedErrors: [],
+      documentationLinks: [],
       timestamp: new Date().toISOString(),
       context: {
         ...context,

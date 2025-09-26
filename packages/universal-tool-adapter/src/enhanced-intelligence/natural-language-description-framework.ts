@@ -1402,7 +1402,11 @@ export interface DescriptionTemplate {
 }
 export interface DescriptionAdaptation {
   type: string
+  adapterId: string
+  confidence: number
   changes: Record<string, any>
+  metadata?: Record<string, any>
+  summary: string
 }
 export interface KeyInformationResult {
   oneSentenceSummary: string

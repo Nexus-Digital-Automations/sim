@@ -109,6 +109,30 @@ export class EnhancedAdapterRegistry extends EventEmitter {
   }
 
   /**
+   * Register an adapter with configuration (backwards compatibility)
+   */
+  async registerAdapter(
+    simTool: any,
+    config: any
+  ): Promise<void> {
+    // Create a mock BaseAdapter from the SimTool and config
+    const adapter = {
+      id: config.parlantId || `sim_${simTool.name}`,
+      getSimTool: () => simTool,
+      getConfiguration: () => config,
+      metadata: {
+        category: config.category || 'utility',
+        tags: config.tags || [],
+      },
+    } as any
+
+    await this.register(adapter as BaseAdapter, {
+      category: config.category || 'utility',
+      tags: config.tags || [],
+    })
+  }
+
+  /**
    * Register a new adapter with comprehensive configuration
    */
   async register(

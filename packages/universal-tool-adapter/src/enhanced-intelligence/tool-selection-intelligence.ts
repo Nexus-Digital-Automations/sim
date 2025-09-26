@@ -24,9 +24,11 @@ import type {
   SkillLevel,
   ToolCategory,
   UserRole,
+  RoleSpecificDescription,
+  SkillSpecificDescription,
 } from './natural-language-description-framework'
 import {
-  SimToolCatalog,
+  SIM_TOOL_CATALOG,
   type SimToolCategory,
   SimToolClassifier,
   type SimToolMetadata,
@@ -180,6 +182,19 @@ export interface PersonalizedDescription {
 // Tool Selection Intelligence Engine
 // =============================================================================
 
+// Simple wrapper class for the catalog
+class SimToolCatalog {
+  private catalog = SIM_TOOL_CATALOG
+
+  getAllTools(): SimToolMetadata[] {
+    return Object.values(this.catalog)
+  }
+
+  getToolMetadata(toolId: string): SimToolMetadata | undefined {
+    return this.catalog[toolId]
+  }
+}
+
 export class ToolSelectionIntelligenceEngine {
   private simToolCatalog: SimToolCatalog
   private toolClassifier: SimToolClassifier
@@ -190,10 +205,10 @@ export class ToolSelectionIntelligenceEngine {
 
   constructor(config?: ToolSelectionConfig) {
     this.simToolCatalog = new SimToolCatalog()
-    this.toolClassifier = new SimToolClassifier(this.simToolCatalog)
+    this.toolClassifier = new SimToolClassifier()
     this.contextAnalyzer = new ContextAnalyzer(config?.contextSettings)
     this.userProfiler = new UserProfiler(config?.userProfilingSettings)
-    this.recommendationEngine = new RecommendationEngine(config?.recommendationSettings)
+    this.recommendationEngine = new RecommendationEngine()
     this.reasoningEngine = new ReasoningEngine(config?.reasoningSettings)
 
     logger.info('Tool Selection Intelligence Engine initialized')
@@ -280,7 +295,23 @@ export class ToolSelectionIntelligenceEngine {
     const userProfile = await this.buildUserProfile(userContext)
     const contextualFactors = await this.contextAnalyzer.analyzeContext(userContext)
 
-    return this.generatePersonalizedDescription(toolMetadata, userProfile, contextualFactors)
+    const personalizedDescription = await this.generatePersonalizedDescription(toolMetadata, userProfile, contextualFactors)
+    const userSpecificGuidance = await this.generateUserSpecificGuidance(
+      toolMetadata,
+      userProfile,
+      { primaryGoal: 'use tool effectively', extractedActions: [], domain: 'general' } as UserIntentAnalysis
+    )
+
+    return {
+      toolId,
+      personalizedDescription,
+      contextualGuidance: userSpecificGuidance,
+      userFitAnalysis: {
+        fitScore: 0.8,
+        strengths: ['Good match for role', 'Appropriate skill level'],
+        concerns: ['May require setup time']
+      }
+    }
   }
 
   /**
@@ -409,7 +440,7 @@ export class ToolSelectionIntelligenceEngine {
         candidates.push({
           toolMetadata: tool,
           initialRelevanceScore: relevanceScore,
-          constraintCompatibility: this.assessConstraintCompatibility(tool, constraints),
+          constraintCompatibility: await this.assessConstraintCompatibility(tool, constraints),
           userCompatibility: await this.assessUserCompatibility(tool, userProfile),
         })
       }
@@ -738,7 +769,7 @@ export class ToolSelectionIntelligenceEngine {
     // This would use more sophisticated semantic matching in production
     // For now, use simple keyword matching
     const goalWords = primaryGoal.toLowerCase().split(/\W+/)
-    const toolWords = `${tool.description} ${tool.displayName}`.toLowerCase().split(/\W+/)
+    const toolWords = `${tool.description || tool.displayName} ${tool.displayName}`.toLowerCase().split(/\W+/)
 
     let matches = 0
     for (const goalWord of goalWords) {
@@ -827,14 +858,14 @@ export class ToolSelectionIntelligenceEngine {
       subcategories: [tool.subcategory || ''],
       descriptions: {
         brief: {
-          summary: tool.description,
+          summary: tool.description || tool.displayName,
           primaryUseCase: tool.primaryUseCases[0] || 'General purpose tool',
-          keyCapability: tool.keyCapabilities[0] || 'Tool functionality',
+          keyCapability: tool.keyCapabilities?.[0] || 'Tool functionality',
           complexityLevel: tool.complexity,
           quickTags: tool.tags || [],
         },
         detailed: {
-          overview: tool.description,
+          overview: tool.description || tool.displayName,
           functionality: 'Detailed functionality description',
           useCases: [
             {
@@ -895,8 +926,8 @@ export class ToolSelectionIntelligenceEngine {
         contextual: {},
       },
       contextualDescriptions: {
-        roleAdaptations: {},
-        skillAdaptations: {},
+        roleAdaptations: this.createDefaultRoleAdaptations(),
+        skillAdaptations: this.createDefaultSkillAdaptations(),
         domainAdaptations: {},
         workflowAdaptations: {},
         situationalAdaptations: {},
@@ -1071,6 +1102,120 @@ export class ToolSelectionIntelligenceEngine {
     }
   }
 
+  private createDefaultRoleAdaptations(): Record<UserRole, RoleSpecificDescription> {
+    const roles: UserRole[] = ['developer', 'business_user', 'admin', 'analyst', 'manager', 'researcher', 'designer', 'qa_tester'];
+    const adaptations: Record<UserRole, RoleSpecificDescription> = {} as any;
+
+    for (const role of roles) {
+      adaptations[role] = {
+        role,
+        perspective: `Tailored for ${role} role`,
+        relevantAspects: ['Core functionality', 'Integration points'],
+        roleSpecificBenefits: ['Improved efficiency', 'Better outcomes'],
+        roleSpecificChallenges: ['Learning curve', 'Setup complexity'],
+        recommendedApproach: 'Start with basic features and gradually explore advanced capabilities',
+        relatedTools: ['workflow_management', 'task_management']
+      };
+    }
+    return adaptations;
+  }
+
+  private createDefaultSkillAdaptations(): Record<SkillLevel, SkillSpecificDescription> {
+    const skills: SkillLevel[] = ['beginner', 'intermediate', 'advanced', 'expert'];
+    const adaptations: Record<SkillLevel, SkillSpecificDescription> = {} as any;
+
+    for (const skill of skills) {
+      adaptations[skill] = {
+        skillLevel: skill,
+        appropriatenessRating: skill === 'beginner' ? 7 : skill === 'intermediate' ? 8 : skill === 'advanced' ? 8 : 9,
+        learningCurve: skill === 'beginner' ? 'gentle' : skill === 'intermediate' ? 'moderate' : 'steep',
+        prerequisites: skill === 'beginner' ? [] : [`${skill} level knowledge required`],
+        skillBuildingOpportunities: ['Advanced features', 'Integration patterns'],
+        mentorshipNeeds: skill === 'beginner' ? ['Step-by-step guidance', 'Hands-on support'] : [],
+        confidenceBuilders: ['Quick wins', 'Progressive complexity']
+      };
+    }
+    return adaptations;
+  }
+
+  private async analyzeSimilarity(
+    baseTool: SimToolMetadata,
+    userProfile: ComprehensiveUserProfile,
+    options: SimilarToolsOptions
+  ): Promise<{
+    similarTools: ToolSimilarityMatch[];
+    alternativeTools: ToolSimilarityMatch[];
+    upgradePaths: ToolUpgradePath[];
+    complementaryTools: ToolSimilarityMatch[];
+    reasoning: string[];
+  }> {
+    const allTools = this.simToolCatalog.getAllTools();
+    const similarTools: ToolSimilarityMatch[] = [];
+    const alternativeTools: ToolSimilarityMatch[] = [];
+
+    for (const tool of allTools) {
+      if (tool.toolId === baseTool.toolId) continue;
+
+      if (tool.category === baseTool.category) {
+        similarTools.push({
+          toolId: tool.toolId,
+          similarityScore: 0.8,
+          reason: 'Same category'
+        });
+      }
+
+      if (tool.skillLevel === baseTool.skillLevel && tool.category !== baseTool.category) {
+        alternativeTools.push({
+          toolId: tool.toolId,
+          similarityScore: 0.6,
+          reason: 'Similar skill level, different category'
+        });
+      }
+    }
+
+    return {
+      similarTools: similarTools.slice(0, options.maxResults || 5),
+      alternativeTools: alternativeTools.slice(0, options.maxResults || 3),
+      upgradePaths: [],
+      complementaryTools: [],
+      reasoning: ['Tools matched based on category and skill level similarity']
+    };
+  }
+
+  private async analyzeWorkflow(
+    workflowDescription: string,
+    workflowStage?: WorkflowStage
+  ): Promise<WorkflowAnalysisResult> {
+    return {
+      stages: workflowStage ? [workflowStage.stage] : ['planning', 'execution', 'review'],
+      requirements: ['Clear objectives', 'Resource allocation', 'Timeline planning'],
+      constraints: ['Time limitations', 'Resource constraints', 'Technical dependencies']
+    };
+  }
+
+  private async generateWorkflowRecommendations(
+    workflowAnalysis: WorkflowAnalysisResult,
+    userProfile: ComprehensiveUserProfile
+  ): Promise<{
+    stageRecommendations: Record<string, ToolRecommendation[]>;
+    sequentialFlow: ToolSequence[];
+    parallelOptions: ToolParallelGroup[];
+    integrationGuidance: IntegrationGuidance[];
+  }> {
+    const stageRecommendations: Record<string, ToolRecommendation[]> = {};
+
+    for (const stage of workflowAnalysis.stages) {
+      stageRecommendations[stage] = [];
+    }
+
+    return {
+      stageRecommendations,
+      sequentialFlow: [],
+      parallelOptions: [],
+      integrationGuidance: []
+    };
+  }
+
   // Additional method stubs for completeness
   private async extractActions(userIntent: string): Promise<ActionAnalysisResult> {
     return {
@@ -1145,7 +1290,7 @@ class ContextAnalyzer {
 
   async analyzeContext(userContext: UserContext): Promise<ContextualAnalysisResult> {
     return {
-      workflowStage: userContext.workflowStage || 'planning',
+      workflowStage: userContext.workflowStage?.stage || 'planning',
       urgencyLevel: 'medium',
       collaborationNeeds: 'individual',
       technicalConstraints: [],
