@@ -11,7 +11,6 @@
 
 import { describe, expect, it, jest } from '@jest/globals'
 import {
-  createAuthContext,
   multiAgentOrchestrationService,
   orchestrationCollaborationHub,
 } from '../index'
@@ -22,33 +21,37 @@ jest.mock('../agent-service')
 jest.mock('../session-service')
 
 describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
-  const mockAuth = createAuthContext('test-user-123', 'test-workspace-456', 'workspace', [
-    'orchestration:teams:create',
-    'orchestration:processes:create',
-    'orchestration:handoffs:create',
-    'orchestration:interventions:create',
-  ])
+  const mockAuth = {
+    user_id: 'test-user-123',
+    workspace_id: 'test-workspace-456',
+    permissions: [
+      'orchestration:teams:create',
+      'orchestration:processes:create',
+      'orchestration:handoffs:create',
+      'orchestration:interventions:create',
+    ]
+  }
 
   describe('AC1: Multiple agents can work on same workflow', () => {
     it('should allow creating agent teams with multiple agents', async () => {
       const teamData = {
         name: 'Customer Support Team',
         description: 'Multi-agent team for customer support workflows',
-        workspaceId: mockAuth.workspace_id!,
+        workspaceId: mockAuth.workspace_id,
         agents: [
           {
             agentId: 'agent-1-leader',
-            role: 'leader' as const,
+            role: 'leader',
             specialization: 'General Support',
           },
           {
             agentId: 'agent-2-specialist',
-            role: 'specialist' as const,
+            role: 'specialist',
             specialization: 'Technical Issues',
           },
           {
             agentId: 'agent-3-support',
-            role: 'support' as const,
+            role: 'support',
             specialization: 'Documentation',
           },
         ],
@@ -71,7 +74,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
         {
           name: 'Test Team',
           description: 'Test team for process validation',
-          workspaceId: mockAuth.workspace_id!,
+          workspaceId: mockAuth.workspace_id,
           agents: [
             { agentId: 'agent-1', role: 'leader', specialization: 'Analysis' },
             { agentId: 'agent-2', role: 'specialist', specialization: 'Processing' },
@@ -127,7 +130,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
         {
           name: 'Handoff Test Team',
           description: 'Team for testing handoffs',
-          workspaceId: mockAuth.workspace_id!,
+          workspaceId: mockAuth.workspace_id,
           agents: [
             { agentId: 'agent-from', role: 'leader', specialization: 'Initial' },
             { agentId: 'agent-to', role: 'specialist', specialization: 'Final' },
@@ -166,7 +169,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
         context: {
           taskContext: { customerData: 'sensitive info', priority: 'high' },
           recommendations: ['Approach with empathy', 'Focus on resolution'],
-          priority: 'high' as const,
+          priority: 'high',
         },
         reason: 'Specialized technical knowledge required',
       }
@@ -195,8 +198,8 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
         toAgentId: 'agent-2',
         processId: 'process-123',
         message: 'Can you help with the technical analysis of this customer issue?',
-        type: 'question' as const,
-        priority: 'medium' as const,
+        type: 'question',
+        priority: 'medium',
         metadata: { urgency: 'normal', category: 'technical' },
       }
 
@@ -225,8 +228,8 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       )
 
       expect(responseResult.response).toBeDefined()
-      expect(responseResult.response!.respondingAgentId).toBe('agent-2')
-      expect(responseResult.response!.response).toContain('analyze the technical logs')
+      expect(responseResult.response.respondingAgentId).toBe('agent-2')
+      expect(responseResult.response.response).toContain('analyze the technical logs')
     })
   })
 
@@ -236,7 +239,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
         {
           name: 'Intervention Test Team',
           description: 'Team for testing human intervention',
-          workspaceId: mockAuth.workspace_id!,
+          workspaceId: mockAuth.workspace_id,
           agents: [{ agentId: 'agent-1', role: 'leader', specialization: 'General' }],
         },
         mockAuth
@@ -261,10 +264,10 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       const interventionData = {
         processId: process.id,
         stepId: process.steps[0].id,
-        type: 'approval' as const,
+        type: 'approval',
         description:
           'This customer request involves a significant refund that requires manager approval',
-        priority: 'high' as const,
+        priority: 'high',
       }
 
       const intervention = await multiAgentOrchestrationService.requestHumanIntervention(
@@ -280,7 +283,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
 
       // Test human response
       const responseData = {
-        action: 'approve' as const,
+        action: 'approve',
         comments: 'Approved based on customer history and circumstances',
         modifications: { approvedAmount: 150.0, reason: 'customer_satisfaction' },
       }
@@ -293,15 +296,15 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
 
       expect(responseResult.status).toBe('completed')
       expect(responseResult.response).toBeDefined()
-      expect(responseResult.response!.action).toBe('approve')
-      expect(responseResult.response!.comments).toContain('customer history')
+      expect(responseResult.response.action).toBe('approve')
+      expect(responseResult.response.comments).toContain('customer history')
     })
 
     it('should pause processes when human approval is required', async () => {
       const interventionData = {
         processId: 'process-pause-test',
         stepId: 'step-1',
-        type: 'decision' as const,
+        type: 'decision',
         description: 'Critical decision point requiring human input',
       }
 
@@ -310,7 +313,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
         {
           name: 'Pause Test Team',
           description: 'Team for testing process pausing',
-          workspaceId: mockAuth.workspace_id!,
+          workspaceId: mockAuth.workspace_id,
           agents: [{ agentId: 'agent-1', role: 'leader', specialization: 'General' }],
         },
         mockAuth
@@ -355,7 +358,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
         {
           name: 'Complex Process Team',
           description: 'Team for complex multi-step processes',
-          workspaceId: mockAuth.workspace_id!,
+          workspaceId: mockAuth.workspace_id,
           agents: [
             { agentId: 'agent-analysis', role: 'specialist', specialization: 'Data Analysis' },
             { agentId: 'agent-processing', role: 'specialist', specialization: 'Data Processing' },
@@ -382,9 +385,9 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
             dependencies: ['step_1'], // Depends on first step
             conditions: [
               {
-                type: 'success' as const,
+                type: 'success',
                 condition: 'data_validated === true',
-                action: 'continue' as const,
+                action: 'continue',
               },
             ],
           },
@@ -440,7 +443,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
         {
           name: 'Metrics Test Team',
           description: 'Team for testing process metrics',
-          workspaceId: mockAuth.workspace_id!,
+          workspaceId: mockAuth.workspace_id,
           agents: [{ agentId: 'agent-metrics', role: 'leader', specialization: 'Testing' }],
         },
         mockAuth
@@ -500,14 +503,14 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
             assignedAgentId: 'agent-test',
             conditions: [
               {
-                type: 'failure' as const,
+                type: 'failure',
                 condition: 'error_occurred === true',
-                action: 'retry' as const,
+                action: 'retry',
               },
               {
-                type: 'timeout' as const,
+                type: 'timeout',
                 condition: 'timeout > 300000',
-                action: 'escalate' as const,
+                action: 'escalate',
               },
             ],
           },
@@ -531,7 +534,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
         {
           name: 'E2E Test Team',
           description: 'End-to-end testing team',
-          workspaceId: mockAuth.workspace_id!,
+          workspaceId: mockAuth.workspace_id,
           agents: [
             { agentId: 'agent-intake', role: 'specialist', specialization: 'Customer Intake' },
             { agentId: 'agent-analysis', role: 'specialist', specialization: 'Issue Analysis' },
@@ -580,19 +583,19 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
         {
           name: 'E2E Process Collaboration',
           type: 'process',
-          workspaceId: mockAuth.workspace_id!,
+          workspaceId: mockAuth.workspace_id,
           processId: process.id,
           teamId: team.id,
           participants: [
             ...team.agents.map((agent) => ({
-              type: 'agent' as const,
+              type: 'agent',
               agentId: agent.agentId,
-              role: 'participant' as const,
+              role: 'participant',
             })),
             {
-              type: 'human' as const,
+              type: 'human',
               userId: mockAuth.user_id,
-              role: 'supervisor' as const,
+              role: 'supervisor',
             },
           ],
         },
@@ -641,7 +644,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       expect(intervention.status).toBe('pending')
 
       console.log(
-        '✓ Multi-Agent Orchestration System - All acceptance criteria validated successfully!'
+        '✓ Multi-Agent Orchestration System - All acceptance criteria validated successfully'
       )
     })
   })
