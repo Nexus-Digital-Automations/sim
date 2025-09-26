@@ -39,6 +39,7 @@
  * ```
  */
 
+// Agent Learning and Intelligence
 export {
   agentLearningService,
   type LearningInsight,
@@ -46,7 +47,98 @@ export {
   learningUtils,
   type UserInteraction,
 } from './agent-learning-service'
+
+// Agent Management
 export { AgentService, agentService } from './agent-service'
+
+// Enterprise Governance and Compliance System
+export {
+  governanceComplianceService,
+  initializeWorkspaceGovernance,
+  quickComplianceCheck,
+  type GovernancePolicy,
+  type PolicyEvaluationResult,
+  type GovernanceContext,
+  type CreatePolicyRequest,
+  type UpdatePolicyRequest,
+  type GovernanceHealthCheck,
+  type RegulatoryRequirement,
+  type RegulationType
+} from './governance-compliance-service'
+
+export {
+  cannedResponseService,
+  suggestResponse,
+  getPersonalizedResponse,
+  type CannedResponse,
+  type CannedResponseMatch,
+  type CreateCannedResponseRequest,
+  type UpdateCannedResponseRequest,
+  type ResponseCategory,
+  type BrandingConfig,
+  type PersonalizationField
+} from './canned-response-service'
+
+export {
+  securityScanningService,
+  quickSecurityScan,
+  safeFilterContent,
+  type SecurityScan,
+  type SecurityScanRequest,
+  type SecurityScanResult,
+  type SecurityViolation,
+  type ContentFilter,
+  type ContentFilterResult,
+  type ViolationType,
+  type ViolationSeverity
+} from './security-scanning-service'
+
+export {
+  complianceReportingService,
+  logAudit,
+  generateComplianceSummary,
+  type ComplianceReport,
+  type ComplianceReportRequest,
+  type AuditEvent,
+  type ComplianceMetrics,
+  type ComplianceFinding,
+  type GovernanceDashboardData,
+  type ReportType,
+  type ReportFormat
+} from './compliance-reporting-service'
+
+// Governance and Compliance Types
+export type {
+  // Core governance types
+  PolicyCategory,
+  PolicyType,
+  PolicyStatus,
+  PolicyPriority,
+  PolicyRule,
+  PolicyCondition,
+  PolicyAction,
+  EnforcementLevel,
+
+  // Security scanning types
+  ScanType,
+  ScanStatus,
+  FilterType,
+  FilterPattern,
+  ViolationEvidence,
+
+  // Compliance reporting types
+  AuditEventType,
+  AuditAction,
+  AuditChange,
+  ComplianceStatus,
+  FindingType,
+  ComplianceRecommendation,
+
+  // Utility types
+  GovernanceError,
+  GovernanceErrorCode
+} from './governance-compliance-types'
+
 // Core services
 export { closeParlantClient, createParlantClient, getParlantClient, ParlantClient } from './client'
 // Configuration and utilities
@@ -426,6 +518,210 @@ export const parlantUtils = {
   ) {
     return ragOperations.bulkUpload(files, knowledgeBaseId, auth)
   },
+
+  // ==================== GOVERNANCE AND COMPLIANCE UTILITIES ====================
+
+  /**
+   * Initialize governance for a workspace with default policies
+   */
+  async initializeWorkspaceGovernance(workspaceId: string, auth: AuthContext) {
+    try {
+      await initializeWorkspaceGovernance(workspaceId, auth)
+      console.log(`[Parlant] Governance initialized for workspace: ${workspaceId}`)
+    } catch (error) {
+      console.error(`[Parlant] Failed to initialize governance for workspace ${workspaceId}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Perform quick compliance check on content
+   */
+  async checkContentCompliance(
+    content: string,
+    workspaceId: string,
+    userId: string,
+    options?: {
+      agentId?: string
+      sessionId?: string
+    }
+  ) {
+    try {
+      return await quickComplianceCheck(content, workspaceId, userId, options?.agentId)
+    } catch (error) {
+      console.error('[Parlant] Compliance check failed:', error)
+      return { compliant: false, violations: [], riskScore: 100 }
+    }
+  },
+
+  /**
+   * Get intelligent response suggestion for query
+   */
+  async suggestCannedResponse(
+    query: string,
+    workspaceId: string,
+    context?: Record<string, any>
+  ) {
+    try {
+      return await suggestResponse(query, workspaceId, context)
+    } catch (error) {
+      console.error('[Parlant] Response suggestion failed:', error)
+      return null
+    }
+  },
+
+  /**
+   * Apply security filtering to content
+   */
+  async filterContentSafely(content: string, workspaceId: string) {
+    try {
+      return await safeFilterContent(content, workspaceId)
+    } catch (error) {
+      console.error('[Parlant] Content filtering failed:', error)
+      return { filteredContent: content, modificationsCount: 0 }
+    }
+  },
+
+  /**
+   * Generate compliance summary report for workspace
+   */
+  async getComplianceSummary(workspaceId: string, days: number = 30) {
+    try {
+      return await generateComplianceSummary(workspaceId, days)
+    } catch (error) {
+      console.error('[Parlant] Compliance summary generation failed:', error)
+      return {
+        complianceScore: 0,
+        violations: 0,
+        recommendations: ['Manual review required due to error']
+      }
+    }
+  },
+
+  /**
+   * Comprehensive governance health check
+   */
+  async checkGovernanceHealth() {
+    try {
+      const governanceHealth = await governanceComplianceService.healthCheck()
+      const scanningHealth = await securityScanningService.getScanningHealth()
+
+      return {
+        overall_status: governanceHealth.overall_status === 'healthy' &&
+                       scanningHealth.status === 'healthy' ? 'healthy' : 'degraded',
+        governance: governanceHealth,
+        scanning: scanningHealth,
+        timestamp: new Date().toISOString()
+      }
+    } catch (error) {
+      console.error('[Parlant] Governance health check failed:', error)
+      return {
+        overall_status: 'critical',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      }
+    }
+  },
+
+  /**
+   * Create policy with standard configuration
+   */
+  async createStandardPolicy(
+    name: string,
+    category: 'data_governance' | 'content_filtering' | 'security' | 'compliance',
+    workspaceId: string,
+    auth: AuthContext,
+    options?: {
+      description?: string
+      priority?: 'low' | 'medium' | 'high' | 'critical'
+      enforcement?: 'monitor' | 'warn' | 'block' | 'escalate'
+    }
+  ) {
+    const policyData = {
+      workspace_id: workspaceId,
+      name,
+      description: options?.description || `Standard ${category} policy`,
+      category,
+      type: 'mandatory' as const,
+      status: 'active' as const,
+      priority: options?.priority || 'medium',
+      rules: [], // Would be populated based on category
+      enforcement_level: options?.enforcement || 'warn',
+      created_by: auth.user_id,
+      last_modified_by: auth.user_id
+    }
+
+    return governanceComplianceService.createPolicy(policyData, auth)
+  },
+
+  /**
+   * Integrated conversation flow with governance
+   */
+  async startGovernedConversation(
+    agentId: string,
+    workspaceId: string,
+    auth: AuthContext,
+    initialMessage?: string,
+    options?: {
+      enableCompliance?: boolean
+      enableFiltering?: boolean
+      customerId?: string
+    }
+  ) {
+    // Initialize governance if not already done
+    try {
+      await initializeWorkspaceGovernance(workspaceId, auth)
+    } catch (error) {
+      console.warn('[Parlant] Governance initialization warning:', error)
+    }
+
+    // Check message compliance if enabled and message provided
+    if (initialMessage && options?.enableCompliance) {
+      const complianceCheck = await this.checkContentCompliance(
+        initialMessage,
+        workspaceId,
+        auth.user_id,
+        { agentId }
+      )
+
+      if (!complianceCheck.compliant) {
+        throw new Error(`Message violates compliance policies. Risk score: ${complianceCheck.riskScore}`)
+      }
+    }
+
+    // Filter content if enabled
+    let filteredMessage = initialMessage
+    if (initialMessage && options?.enableFiltering) {
+      const filterResult = await this.filterContentSafely(initialMessage, workspaceId)
+      filteredMessage = filterResult.filteredContent
+
+      // Log if modifications were made
+      if (filterResult.modificationsCount > 0) {
+        await logAudit(
+          'content_filter',
+          'message',
+          'initial_message',
+          'filter',
+          workspaceId,
+          auth.user_id,
+          {
+            modifications_count: filterResult.modificationsCount,
+            original_length: initialMessage.length,
+            filtered_length: filteredMessage.length
+          }
+        )
+      }
+    }
+
+    // Start conversation with filtered/validated content
+    return this.startConversation(
+      agentId,
+      workspaceId,
+      auth,
+      filteredMessage,
+      options?.customerId
+    )
+  }
 }
 
 /**
@@ -433,10 +729,21 @@ export const parlantUtils = {
  */
 export const version = {
   major: 1,
-  minor: 0,
+  minor: 1,
   patch: 0,
-  build: 'integration-bridge',
-  toString: () => '1.0.0-integration-bridge',
+  build: 'governance-compliance',
+  toString: () => '1.1.0-governance-compliance',
+  features: [
+    'agent-management',
+    'session-handling',
+    'rag-integration',
+    'multi-agent-orchestration',
+    'governance-compliance',
+    'security-scanning',
+    'canned-responses',
+    'audit-trails',
+    'regulatory-compliance'
+  ]
 }
 
 /**
@@ -448,12 +755,42 @@ export default {
   agentService,
   sessionService,
 
+  // Governance and Compliance services
+  governance: {
+    service: governanceComplianceService,
+    initialize: initializeWorkspaceGovernance,
+    quickCheck: quickComplianceCheck
+  },
+  cannedResponses: {
+    service: cannedResponseService,
+    suggest: suggestResponse,
+    personalize: getPersonalizedResponse
+  },
+  security: {
+    scanning: securityScanningService,
+    quickScan: quickSecurityScan,
+    filter: safeFilterContent
+  },
+  compliance: {
+    reporting: complianceReportingService,
+    audit: logAudit,
+    summary: generateComplianceSummary
+  },
+
   // Utilities
   utils: parlantUtils,
   health: checkParlantHealth,
   initialize: initializeParlantIntegration,
   createAuthContext,
 
-  // Version
+  // Version and capabilities
   version,
+  capabilities: {
+    hasGovernance: true,
+    hasCompliance: true,
+    hasSecurity: true,
+    hasAuditTrails: true,
+    hasRAG: true,
+    hasOrchestration: true
+  }
 }
