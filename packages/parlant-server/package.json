@@ -2,7 +2,8 @@
   "name": "parlant-server",
   "version": "1.0.0",
   "description": "Parlant Python server for Sim integration",
-  "main": "server.py",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "start": "python server.py",
     "dev": "python server.py --reload",

@@ -1,0 +1,200 @@
+$ bun run lint:check
+$ bunx biome check --unsafe .
+FEATURES.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     45  45 │         "status": "implemented",
+     46  46 │         "estimatedWeeks": 1,
+     47     │ - ······"dependencies":·[
+     48     │ - ········"parlant-server-setup"
+     49     │ - ······],
+         47 │ + ······"dependencies":·["parlant-server-setup"],
+     50  48 │         "components": [
+     51  49 │           "Create apps/sim/services/parlant/ integration layer",
+    ······· │ 
+     86  84 │         "status": "implemented",
+     87  85 │         "estimatedWeeks": 1,
+     88     │ - ······"dependencies":·[
+     89     │ - ········"parlant-server-setup"
+     90     │ - ······],
+         86 │ + ······"dependencies":·["parlant-server-setup"],
+     91  87 │         "components": [
+     92  88 │           "Add Parlant agent tables (agents, guidelines, journeys, sessions)",
+    ······· │ 
+    127 123 │         "status": "implemented",
+    128 124 │         "estimatedWeeks": 2,
+    129     │ - ······"dependencies":·[
+    130     │ - ········"sim-parlant-bridge"
+    131     │ - ······],
+        125 │ + ······"dependencies":·["sim-parlant-bridge"],
+    132 126 │         "components": [
+    133 127 │           "Create adapter pattern for Sim tools → Parlant format",
+    ······· │ 
+    167 161 │         "status": "implemented",
+    168 162 │         "estimatedWeeks": 2,
+    169     │ - ······"dependencies":·[
+    170     │ - ········"universal-tool-adapter"
+    171     │ - ······],
+        163 │ + ······"dependencies":·["universal-tool-adapter"],
+    172 164 │         "components": [
+    173 165 │           "Map ReactFlow nodes to Parlant journey states",
+    ······· │ 
+    208 200 │         "status": "implemented",
+    209 201 │         "estimatedWeeks": 2,
+    210     │ - ······"dependencies":·[
+    211     │ - ········"universal-tool-adapter"
+    212     │ - ······],
+        202 │ + ······"dependencies":·["universal-tool-adapter"],
+    213 203 │         "components": [
+    214 204 │           "Add natural language descriptions to all tools",
+    ······· │ 
+    250 240 │         "status": "implemented",
+    251 241 │         "estimatedWeeks": 2,
+    252     │ - ······"dependencies":·[
+    253     │ - ········"sim-parlant-bridge"
+    254     │ - ······],
+        242 │ + ······"dependencies":·["sim-parlant-bridge"],
+    255 243 │         "components": [
+    256 244 │           "Install and configure parlant-chat-react widget",
+    ······· │ 
+    293 281 │         "status": "implemented",
+    294 282 │         "estimatedWeeks": 2,
+    295     │ - ······"dependencies":·[
+    296     │ - ········"parlant-chat-interface",
+    297     │ - ········"workflow-journey-mapping"
+    298     │ - ······],
+        283 │ + ······"dependencies":·["parlant-chat-interface",·"workflow-journey-mapping"],
+    299 284 │         "components": [
+    300 285 │           "Add 'Chat with Workflow' buttons to workflow cards",
+    ······· │ 
+    335 320 │         "status": "implemented",
+    336 321 │         "estimatedWeeks": 2,
+    337     │ - ······"dependencies":·[
+    338     │ - ········"parlant-chat-interface"
+    339     │ - ······],
+        322 │ + ······"dependencies":·["parlant-chat-interface"],
+    340 323 │         "components": [
+    341 324 │           "Create agent configuration panels in workspace settings",
+    ······· │ 
+    375 358 │         "status": "approved",
+    376 359 │         "estimatedWeeks": 2,
+    377     │ - ······"dependencies":·[
+    378     │ - ········"agent-management-ui"
+    379     │ - ······],
+        360 │ + ······"dependencies":·["agent-management-ui"],
+    380 361 │         "components": [
+    381 362 │           "Connect existing knowledge bases to Parlant retrievers",
+    ······· │ 
+    403 384 │         "status": "approved",
+    404 385 │         "estimatedWeeks": 3,
+    405     │ - ······"dependencies":·[
+    406     │ - ········"knowledge-integration"
+    407     │ - ······],
+        386 │ + ······"dependencies":·["knowledge-integration"],
+    408 387 │         "components": [
+    409 388 │           "Create agent teams for complex workflows",
+    ······· │ 
+    431 410 │         "status": "approved",
+    432 411 │         "estimatedWeeks": 3,
+    433     │ - ······"dependencies":·[
+    434     │ - ········"multi-agent-orchestration"
+    435     │ - ······],
+        412 │ + ······"dependencies":·["multi-agent-orchestration"],
+    436 413 │         "components": [
+    437 414 │           "Implement canned responses for compliance and branding",
+    ······· │ 
+    459 436 │         "status": "implemented",
+    460 437 │         "estimatedWeeks": 3,
+    461     │ - ······"dependencies":·[
+    462     │ - ········"parlant-chat-interface",
+    463     │ - ········"universal-tool-adapter"
+    464     │ - ······],
+        438 │ + ······"dependencies":·["parlant-chat-interface",·"universal-tool-adapter"],
+    465 439 │         "components": [
+    466 440 │           "Create local copilot store system using Parlant agents",
+    ······· │ 
+    732 706 │     "tasks": [],
+    733 707 │     "completed_tasks": []
+    734     │ - }
+        708 │ + }
+        709 │ + 
+  
+
+apps/sim/hooks/use-toast.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     90  90 │         ${options.title}
+     91  91 │       </div>
+     92     │ - ····${options.description·?·`
+         92 │ + ····${
+         93 │ + ······options.description
+         94 │ + ········?·`
+     93  95 │         <div style="font-size: 14px; opacity: 0.9; color: inherit;">
+     94  96 │           ${options.description}
+     95  97 │         </div>
+     96     │ - ····`·:·''}
+         98 │ + ····`
+         99 │ + ········:·''
+        100 │ + ····}
+     97 101 │     `
+     98 102 │     toast.appendChild(content)
+    ······· │ 
+    136 140 │           background: '#fef2f2',
+    137 141 │           border: '1px solid #fecaca',
+    138     │ - ········color:·'#dc2626'
+        142 │ + ········color:·'#dc2626',
+    139 143 │         }
+    140 144 │       case 'success':
+    ······· │ 
+    142 146 │           background: '#f0fdf4',
+    143 147 │           border: '1px solid #bbf7d0',
+    144     │ - ········color:·'#16a34a'
+        148 │ + ········color:·'#16a34a',
+    145 149 │         }
+    146 150 │       case 'warning':
+    ······· │ 
+    148 152 │           background: '#fffbeb',
+    149 153 │           border: '1px solid #fed7aa',
+    150     │ - ········color:·'#d97706'
+        154 │ + ········color:·'#d97706',
+    151 155 │         }
+    152 156 │       case 'info':
+    ······· │ 
+    154 158 │           background: '#eff6ff',
+    155 159 │           border: '1px solid #bfdbfe',
+    156     │ - ········color:·'#2563eb'
+        160 │ + ········color:·'#2563eb',
+    157 161 │         }
+    158 162 │       default:
+    ······· │ 
+    160 164 │           background: '#ffffff',
+    161 165 │           border: '1px solid #e2e8f0',
+    162     │ - ········color:·'#374151'
+        166 │ + ········color:·'#374151',
+    163 167 │         }
+    164 168 │     }
+    ······· │ 
+    191 195 │     return {
+    192 196 │       toast: showToast,
+    193     │ - ····dismiss:·useCallback((id:·string)·=>·removeToast(id),·[])
+        197 │ + ····dismiss:·useCallback((id:·string)·=>·removeToast(id),·[]),
+    194 198 │     }
+    195 199 │   }
+    196 200 │   
+    197 201 │   // Default export for compatibility
+    198     │ - export·default·useToast
+        202 │ + export·default·useToast
+        203 │ + 
+  
+
+Checked 2397 files in 6s. No fixes applied.
+Found 2 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+error: script "lint:check" exited with code 1
+error: script "prebuild" exited with code 1
