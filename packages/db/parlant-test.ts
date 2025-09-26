@@ -408,7 +408,7 @@ function testFeatureFlagsAndIntegrations() {
     'POLYMORPHIC_RELATIONSHIPS',
   ]
 
-  const missingFeatures = requiredFeatures.filter((feature) => !PARLANT_FEATURES[feature])
+  const missingFeatures = requiredFeatures.filter((feature) => !(PARLANT_FEATURES as any)[feature])
 
   if (missingFeatures.length === 0) {
     console.log('✓ All required features are enabled')
@@ -425,7 +425,7 @@ function testFeatureFlagsAndIntegrations() {
   ]
 
   const missingIntegrations = requiredIntegrations.filter(
-    (integration) => !PARLANT_INTEGRATIONS[integration]
+    (integration) => !(PARLANT_INTEGRATIONS as any)[integration]
   )
 
   if (missingIntegrations.length === 0) {

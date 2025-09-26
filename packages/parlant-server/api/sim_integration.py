@@ -301,7 +301,7 @@ async def handle_sim_permission_webhook(
 async def sync_workspaces_with_sim(
     sync_request: WorkspaceSyncRequest,
     session: SimSession = Depends(get_current_session),
-    background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks = BackgroundTasks()
 ) -> WorkspaceSyncResponse:
     """
     Synchronize workspace data with Sim's database.

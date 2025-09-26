@@ -241,36 +241,40 @@ class ChatHistoryRetrieval {
     const limit = params.limit || 50
     const offset = params.offset || 0
 
-    let query = this.db
-      .select()
-      .from(chatMessage)
-      .where(
-        and(
-          eq(chatMessage.sessionId, params.sessionId),
-          eq(chatMessage.workspaceId, params.workspaceId),
-          params.includeDeleted ? undefined : isNull(chatMessage.deletedAt)
-        )
-      )
+    // Build all conditions first
+    const conditions = [
+      eq(chatMessage.sessionId, params.sessionId),
+      eq(chatMessage.workspaceId, params.workspaceId),
+    ]
 
-    // Apply message type filtering
-    if (params.messageTypes?.length) {
-      query = query.where(inArray(chatMessage.messageType, params.messageTypes))
+    if (!params.includeDeleted) {
+      conditions.push(isNull(chatMessage.deletedAt))
     }
 
-    // Apply cursor-based pagination
+    // Add message type filtering
+    if (params.messageTypes?.length) {
+      conditions.push(inArray(chatMessage.messageType, params.messageTypes as any))
+    }
+
+    // Add cursor-based pagination conditions
     if (params.beforeMessage) {
       const beforeSeq = await this.getMessageSequence(params.beforeMessage)
       if (beforeSeq) {
-        query = query.where(lte(chatMessage.sequenceNumber, beforeSeq))
+        conditions.push(lte(chatMessage.sequenceNumber, beforeSeq))
       }
     }
 
     if (params.afterMessage) {
       const afterSeq = await this.getMessageSequence(params.afterMessage)
       if (afterSeq) {
-        query = query.where(gte(chatMessage.sequenceNumber, afterSeq))
+        conditions.push(gte(chatMessage.sequenceNumber, afterSeq))
       }
     }
+
+    const query = this.db
+      .select()
+      .from(chatMessage)
+      .where(and(...conditions))
 
     // Get messages with pagination
     const messages = await query
@@ -314,7 +318,22 @@ class ChatHistoryRetrieval {
     const limit = params.limit || 100
     const offset = params.offset || 0
 
-    let query = this.db
+    // Build all conditions first
+    const conditions = [
+      eq(chatConversation.id, params.conversationId),
+      eq(chatMessage.workspaceId, params.workspaceId),
+      isNull(chatMessage.deletedAt),
+    ]
+
+    // Apply date range filtering
+    if (params.dateRange) {
+      conditions.push(
+        gte(chatMessage.createdAt, params.dateRange.start),
+        lte(chatMessage.createdAt, params.dateRange.end)
+      )
+    }
+
+    const query = this.db
       .select({
         message: chatMessage,
         session: {
@@ -326,23 +345,7 @@ class ChatHistoryRetrieval {
       .from(chatMessage)
       .innerJoin(parlantSession, eq(chatMessage.sessionId, parlantSession.id))
       .innerJoin(chatConversation, eq(parlantSession.id, chatConversation.currentSessionId))
-      .where(
-        and(
-          eq(chatConversation.id, params.conversationId),
-          eq(chatMessage.workspaceId, params.workspaceId),
-          isNull(chatMessage.deletedAt)
-        )
-      )
-
-    // Apply date range filtering
-    if (params.dateRange) {
-      query = query.where(
-        and(
-          gte(chatMessage.createdAt, params.dateRange.start),
-          lte(chatMessage.createdAt, params.dateRange.end)
-        )
-      )
-    }
+      .where(and(...conditions))
 
     const results = await query.orderBy(desc(chatMessage.createdAt)).limit(limit).offset(offset)
 
@@ -397,7 +400,33 @@ class ChatHistoryRetrieval {
       .split(' ')
       .filter((term) => term.length > 2)
 
-    let query = this.db
+    // Build all conditions first
+    const conditions = [
+      eq(chatMessage.workspaceId, params.workspaceId),
+      or(
+        ilike(chatMessage.rawContent, `%${params.query}%`),
+        ...searchTerms.map((term) => ilike(chatMessage.rawContent, `%${term}%`))
+      ),
+      isNull(chatMessage.deletedAt),
+    ]
+
+    // Apply additional filters
+    if (params.sessionIds?.length) {
+      conditions.push(inArray(chatMessage.sessionId, params.sessionIds))
+    }
+
+    if (params.messageTypes?.length) {
+      conditions.push(inArray(chatMessage.messageType, params.messageTypes as any))
+    }
+
+    if (params.dateRange) {
+      conditions.push(
+        gte(chatMessage.createdAt, params.dateRange.start),
+        lte(chatMessage.createdAt, params.dateRange.end)
+      )
+    }
+
+    const query = this.db
       .select({
         message: chatMessage,
         relevanceScore: sql<number>`
@@ -408,34 +437,7 @@ class ChatHistoryRetrieval {
         `,
       })
       .from(chatMessage)
-      .where(
-        and(
-          eq(chatMessage.workspaceId, params.workspaceId),
-          or(
-            ilike(chatMessage.rawContent, `%${params.query}%`),
-            ...searchTerms.map((term) => ilike(chatMessage.rawContent, `%${term}%`))
-          ),
-          isNull(chatMessage.deletedAt)
-        )
-      )
-
-    // Apply additional filters
-    if (params.sessionIds?.length) {
-      query = query.where(inArray(chatMessage.sessionId, params.sessionIds))
-    }
-
-    if (params.messageTypes?.length) {
-      query = query.where(inArray(chatMessage.messageType, params.messageTypes))
-    }
-
-    if (params.dateRange) {
-      query = query.where(
-        and(
-          gte(chatMessage.createdAt, params.dateRange.start),
-          lte(chatMessage.createdAt, params.dateRange.end)
-        )
-      )
-    }
+      .where(and(...conditions))
 
     const results = await query
       .orderBy(desc(sql`relevanceScore`), desc(chatMessage.createdAt))
@@ -688,7 +690,7 @@ class BrowserSessionManager {
       })
       .where(lte(chatBrowserSession.expiresAt, new Date()))
 
-    return result.rowCount || 0
+    return (result as any).rowCount || 0
   }
 }
 

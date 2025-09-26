@@ -17,6 +17,10 @@ import asyncio
 import logging
 from typing import Dict, Any, Optional
 import parlant.sdk as p
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 from database import PostgreSQLSessionStore, db_manager, ParlantAgent
 from workspace_isolation import workspace_isolation_manager
 from auth.workspace_access_control import workspace_access_controller

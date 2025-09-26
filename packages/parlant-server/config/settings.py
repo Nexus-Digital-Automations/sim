@@ -4,9 +4,14 @@ Configuration management for Sim integration
 """
 
 import os
+from pathlib import Path
 from typing import List, Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -28,12 +33,12 @@ class Settings(BaseSettings):
     db_connection_timeout: int = Field(default=10, env="DB_CONNECTION_TIMEOUT")
 
     # Sim authentication configuration
-    sim_app_url: str = Field(..., env="NEXT_PUBLIC_APP_URL")
-    sim_auth_secret: str = Field(..., env="BETTER_AUTH_SECRET")
+    sim_app_url: str = Field(default="http://localhost:3000", env="NEXT_PUBLIC_APP_URL")
+    sim_auth_secret: str = Field(default="dev-secret-key-123", env="BETTER_AUTH_SECRET")
     better_auth_url: Optional[str] = Field(default=None, env="BETTER_AUTH_URL")
 
     # JWT configuration for Sim integration
-    jwt_secret_key: str = Field(..., env="BETTER_AUTH_SECRET")  # Reuse Better Auth secret
+    jwt_secret_key: str = Field(default="dev-secret-key-123", env="BETTER_AUTH_SECRET")  # Reuse Better Auth secret
     jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
     jwt_expire_hours: int = Field(default=24, env="JWT_EXPIRE_HOURS")
 
@@ -67,9 +72,10 @@ class Settings(BaseSettings):
     max_agents_per_workspace: int = Field(default=10, env="MAX_AGENTS_PER_WORKSPACE")
 
     class Config:
-        env_file = ".env"
+        env_file = Path(__file__).parent.parent / ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
+        extra = "ignore"
 
     def get_database_url(self) -> str:
         """Get the database URL, preferring POSTGRES_URL (Vercel) over DATABASE_URL."""

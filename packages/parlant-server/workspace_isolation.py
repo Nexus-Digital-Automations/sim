@@ -29,7 +29,7 @@ from fastapi import HTTPException
 
 from database.connection import get_async_session_context, get_session_factory
 from auth.sim_auth_bridge import SimSession, SimUser
-from auth.parlant_authorization import ParlantAuthorizationPolicy
+from auth.parlant_authorization import SimParlantAuthorizationPolicy
 from config.settings import get_settings
 
 logger = logging.getLogger(__name__)

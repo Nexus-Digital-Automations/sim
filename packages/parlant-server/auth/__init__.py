@@ -447,7 +447,7 @@ def setup_workspace_isolation(app: FastAPI, db_session: Session, settings: Any) 
 
 
 # Dependencies for FastAPI routes
-from .workspace_context import get_workspace_context, require_operation_context
+from .workspace_context import get_operation_context, require_operation_context
 from .workspace_isolation import require_workspace_permission
 
 # Version and metadata
