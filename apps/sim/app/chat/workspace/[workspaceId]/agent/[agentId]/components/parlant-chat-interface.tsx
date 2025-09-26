@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useSession } from 'next-auth/react'
 import Chatbox, { type ChatProps } from 'parlant-chat-react'
+import { useSession } from '@/lib/auth-client'
 import { env } from '@/lib/env'
 import { createLogger } from '@/lib/logs/console/logger'
 import { createParlantSocketClient, type ParlantSocketClient } from './socket-client'
