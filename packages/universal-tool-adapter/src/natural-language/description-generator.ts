@@ -11,6 +11,9 @@
 import type { ConversationalHint, NaturalLanguageConfig } from '../types/adapter-interfaces'
 import type { ToolConfig } from '../types/tools-types'
 
+// Re-export types for external use
+export type { ConversationalHint, NaturalLanguageConfig } from '../types/adapter-interfaces'
+
 // =============================================================================
 // Core Description Templates
 // =============================================================================
