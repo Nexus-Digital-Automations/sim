@@ -821,7 +821,7 @@ export class IntelligenceIntegrationLayer {
         })
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error)
       if (errorMessage.includes('Validation failed:')) {
         throw error // Re-throw validation errors
       }
@@ -896,7 +896,7 @@ export class IntelligenceIntegrationLayer {
   private extractToolConfig(adapter: BaseAdapter): ToolConfig {
     // Extract or create tool configuration from adapter
     // This is a simplified implementation
-    const metadata = adapter.metadata;
+    const metadata = adapter.metadata
     return {
       id: adapter.id,
       name: adapter.name || adapter.id,

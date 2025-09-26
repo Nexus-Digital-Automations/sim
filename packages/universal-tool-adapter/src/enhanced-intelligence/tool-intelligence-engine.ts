@@ -194,7 +194,7 @@ export interface IntelligentErrorExplanation extends ToolErrorExplanation {
 
   // Interactive guidance
   stepByStepResolution: ResolutionStep[]
-  preventionTips: string[]
+  intelligentPreventionTips: string[]
   relatedDocumentation: string[]
 
   // Learning opportunities
@@ -307,10 +307,20 @@ export class EnhancedToolIntelligenceEngine {
       userMessage: error instanceof Error ? error.message : String(error),
       detailedExplanation: error.details || '',
       immediateActions: [],
-      preventionSteps: [],
+      preventionTips: [],
+      troubleshootingSteps: [],
       relatedErrors: [],
-      recoveryTime: '5 minutes',
-      additionalContext: {},
+      documentationLinks: [],
+      timestamp: new Date().toISOString(),
+      context: {
+        toolId: toolId,
+        toolName: toolId,
+        adapterVersion: '1.0.0',
+        executionId: `execution-${Date.now()}`,
+        userId: userContext.userProfile?.role || 'anonymous',
+        workspaceId: 'default',
+        userSkillLevel: 'intermediate' as any,
+      },
     }
 
     // Create intelligent explanation
@@ -319,7 +329,7 @@ export class EnhancedToolIntelligenceEngine {
       contextualMessage: await this.createContextualErrorMessage(error, toolId, userContext),
       userLevelExplanation: this.createUserLevelExplanations(error, toolId),
       stepByStepResolution: await this.createResolutionSteps(error, toolId, userSkillLevel),
-      preventionTips: this.generatePreventionTips(error, toolId),
+      intelligentPreventionTips: this.generatePreventionTips(error, toolId),
       relatedDocumentation: this.findRelatedDocumentation(error, toolId),
       learningMoments: this.identifyLearningMoments(error, toolId),
       skillDevelopmentTips: this.generateSkillDevelopmentTips(error, toolId, userSkillLevel),
@@ -638,7 +648,7 @@ export class EnhancedToolIntelligenceEngine {
     const personalized = { ...baseDescription }
 
     // Adjust based on user skill level
-    const userSkillLevel = userContext.userProfile?.skillLevel || 'intermediate'
+    const userSkillLevel = userContext.userProfile?.experience || 'intermediate'
 
     // Personalize scenarios based on skill level
     personalized.usageScenarios = baseDescription.usageScenarios.filter((scenario) =>

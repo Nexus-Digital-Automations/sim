@@ -170,7 +170,7 @@ export class EnhancedRegistryWrapper {
             description: config.description || simTool.metadata?.description || '',
             version: '1.0.0',
             params: {},
-            output: {}
+            output: {},
           },
           naturalLanguageConfig
         )

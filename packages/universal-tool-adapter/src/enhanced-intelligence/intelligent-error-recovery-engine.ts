@@ -37,6 +37,7 @@ import type {
 } from './contextual-recommendation-engine'
 import { createContextualRecommendationEngine } from './contextual-recommendation-engine'
 import { createNaturalLanguageDescriptionFramework } from './natural-language-description-framework'
+import type { UserSkillLevel } from './tool-intelligence-engine'
 
 const logger = createLogger('IntelligentErrorRecoveryEngine')
 
@@ -46,7 +47,7 @@ const logger = createLogger('IntelligentErrorRecoveryEngine')
 
 export interface ErrorRecoveryContext extends AdapterExecutionContext {
   // User context
-  userSkillLevel?: 'beginner' | 'intermediate' | 'advanced' | 'developer'
+  userSkillLevel?: UserSkillLevel
   userPreferences?: UserRecoveryPreferences
   userBehaviorHistory?: UserBehaviorHistory
 
@@ -817,6 +818,9 @@ export class IntelligentErrorRecoveryEngine {
         executionId: context.executionId,
         userId: context.userId,
         workspaceId: context.workspaceId,
+        adapterVersion: context.adapterVersion || '1.0.0',
+        startedAt: context.startedAt || new Date(),
+        requestSource: context.requestSource || 'api',
       }
     )
 
@@ -1109,7 +1113,7 @@ export class IntelligentErrorRecoveryEngine {
     // Build explanation context from recovery context
     const explanationContext: ExplanationContext = {
       userId: context.userId,
-      userSkillLevel: context.userSkillLevel || 'intermediate',
+      userSkillLevel: (context.userSkillLevel as any) || 'intermediate',
       preferredLanguage: context.userPreferences?.preferredLanguage || SupportedLanguage.ENGLISH,
       communicationStyle: context.userPreferences?.communicationStyle || CommunicationStyle.CASUAL,
       previousInteractions: this.getUserInteractionHistory(context.userId),
@@ -1348,13 +1352,19 @@ export class IntelligentErrorRecoveryEngine {
       userId: context.userId,
       workspaceId: context.workspaceId,
       userProfile: {
-        skillLevel: context.userSkillLevel || 'intermediate',
         role: 'user',
-        preferences: context.userPreferences || {},
+        experience: (context.userSkillLevel as any) || 'intermediate',
+        preferences: {
+          communication: 'detailed' as 'brief' | 'detailed' | 'conversational',
+          automation: 'guided' as 'manual' | 'guided' | 'automatic',
+          explanation: 'moderate' as 'minimal' | 'moderate' | 'comprehensive',
+        },
+        domains: [],
+        frequentTools: [],
       },
-      currentIntent: 'error_recovery',
-      userSkillLevel: context.userSkillLevel || 'intermediate',
-      userPreferences: context.userPreferences || {
+      currentIntent: 'error_recovery' as any,
+      userSkillLevel: (context.userSkillLevel as any) || 'intermediate',
+      userPreferences: (context.userPreferences as any) || {
         explanationDetail: 'standard',
         preferredLanguage: SupportedLanguage.ENGLISH,
         communicationStyle: CommunicationStyle.CASUAL,
@@ -1369,7 +1379,10 @@ export class IntelligentErrorRecoveryEngine {
         dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase(),
         timeZone: 'UTC',
         workingHours: true,
-        urgency: context.timeConstraints?.urgency || 'medium',
+        urgency:
+          (context.timeConstraints?.urgency === 'critical'
+            ? 'high'
+            : context.timeConstraints?.urgency) || 'medium',
       },
       businessContext: {
         industry: 'technology',
@@ -1646,7 +1659,7 @@ export class IntelligentErrorRecoveryEngine {
         recoverability: 'manual',
       },
       recoveryStrategy: {
-        approach: 'manual',
+        approach: 'escalation' as 'retry' | 'alternative' | 'workaround' | 'escalation' | 'hybrid',
         reasoning: 'Fallback to manual recovery due to analysis failure',
         steps: [],
         fallbacks: [],

@@ -877,7 +877,7 @@ export class RecommendationAPI {
 // =============================================================================
 
 class MultiLevelCache {
-  constructor(private config: CacheConfig) {}
+  constructor(private config: any) {}
 
   async get(key: string): Promise<any> {
     return null
@@ -907,7 +907,7 @@ class MultiLevelCache {
 }
 
 class PerformanceMonitor {
-  constructor(private config: MonitoringConfig) {}
+  constructor(private config: any) {}
 
   getAnalytics(timeRange?: { start: Date; end: Date }): APIAnalytics {
     return {} as APIAnalytics
@@ -915,7 +915,7 @@ class PerformanceMonitor {
 }
 
 class RateLimiter {
-  constructor(private config: RateLimitConfig) {}
+  constructor(private config: any) {}
 
   async checkLimit(userId: string, ipAddress: string): Promise<void> {
     // Implementation would check and enforce rate limits
@@ -923,7 +923,7 @@ class RateLimiter {
 }
 
 class CircuitBreaker {
-  constructor(private config: CircuitBreakerConfig) {}
+  constructor(private config: any) {}
 
   canExecute(): boolean {
     return true
@@ -938,7 +938,7 @@ class CircuitBreaker {
 }
 
 class ABTestingManager {
-  constructor(private config: ABTestingConfig) {}
+  constructor(private config: any) {}
 
   async getVariant(userId: string): Promise<ABTestVariant | undefined> {
     return undefined
@@ -946,7 +946,7 @@ class ABTestingManager {
 }
 
 class BatchProcessor {
-  constructor(private config: PerformanceConfig) {}
+  constructor(private config: any) {}
 
   async processBatch(requests: RecommendationAPIRequest[]): Promise<RecommendationAPIResponse[]> {
     return []
@@ -954,7 +954,7 @@ class BatchProcessor {
 }
 
 class AlertManager {
-  constructor(private config: MonitoringConfig) {}
+  constructor(private config: any) {}
 }
 
 // =============================================================================

@@ -434,7 +434,7 @@ export class SemanticSearchEngine {
     }
 
     // Add contextual suggestions based on user context
-    if (userContext && userContext.userId) {
+    if (userContext?.userId) {
       const userModel = this.getUserModel(userContext.userId)
       if (userModel) {
         for (const [concept, weight] of userModel.preferredConcepts) {
@@ -1022,12 +1022,18 @@ export class SemanticSearchEngine {
     return this.semanticIndex.userModels.get(userId)
   }
 
-  private calculateUserSimilarity(result: EnhancedSemanticSearchResult, userModel: UserModel): number {
+  private calculateUserSimilarity(
+    result: EnhancedSemanticSearchResult,
+    userModel: UserModel
+  ): number {
     // Calculate similarity between result and user preferences
     return 0.5 // Simplified implementation
   }
 
-  private calculateHistoricalUsage(result: EnhancedSemanticSearchResult, userModel: UserModel): number {
+  private calculateHistoricalUsage(
+    result: EnhancedSemanticSearchResult,
+    userModel: UserModel
+  ): number {
     // Calculate score based on historical usage
     if (!userModel || !userModel.clickedResults) return 0
     return userModel.clickedResults.get(result.toolId) || 0

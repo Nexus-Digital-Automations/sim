@@ -8,13 +8,11 @@
 
 import { ContextAnalysisEngine } from './context-analysis-system'
 import type {
-  AdvancedUsageContext,
   ContextualRecommendationRequest,
   UserPreferences,
 } from './contextual-recommendation-engine'
-import type { UserIntent } from '../natural-language/usage-guidelines'
-import type { UsageEvent } from './usage-analytics-framework'
 import { ContextualRecommendationEngine } from './contextual-recommendation-engine'
+import type { UsageEvent } from './usage-analytics-framework'
 import { UsageAnalyticsFramework } from './usage-analytics-framework'
 
 /**
@@ -32,8 +30,8 @@ export async function example1_BasicRecommendation() {
       contextTTL: 300000,
       behaviorTTL: 600000,
       maxCacheSize: 1000,
-      compressionEnabled: false
-    }
+      compressionEnabled: false,
+    },
   })
 
   // Create a recommendation request for authentication implementation
@@ -54,7 +52,7 @@ export async function example1_BasicRecommendation() {
         primary: 'Implement user authentication system',
         confidence: 0.9,
         urgency: 'medium',
-        complexity: 'moderate'
+        complexity: 'moderate',
       },
       userSkillLevel: 'intermediate',
       userPreferences: {
@@ -63,7 +61,7 @@ export async function example1_BasicRecommendation() {
         automationLevel: 'guided',
         feedbackLevel: 'standard',
         toolCategories: ['authentication', 'security'],
-        preferredWorkflowPatterns: ['guided-implementation']
+        preferredWorkflowPatterns: ['guided-implementation'],
       },
       recentToolUsage: [],
       activeWorkflows: [],
@@ -72,24 +70,24 @@ export async function example1_BasicRecommendation() {
         dayOfWeek: 'Tuesday',
         timeZone: 'UTC',
         workingHours: true,
-        urgency: 'medium'
+        urgency: 'medium',
       },
       businessContext: {
         industry: 'technology',
         companySize: 'startup',
         businessFunction: 'development',
         complianceRequirements: [],
-        securityLevel: 'enhanced'
+        securityLevel: 'enhanced',
       },
       deviceContext: {
         deviceType: 'desktop',
         screenSize: 'large',
         inputMethod: 'keyboard',
-        connectionQuality: 'fast'
-      }
+        connectionQuality: 'fast',
+      },
     },
     maxRecommendations: 5,
-    includeExplanations: true
+    includeExplanations: true,
   }
 
   try {
@@ -101,7 +99,7 @@ export async function example1_BasicRecommendation() {
       console.log(`   Confidence: ${(rec.confidence * 100).toFixed(1)}%`)
       console.log(`   Contextual Relevance: ${(rec.contextualRelevance * 100).toFixed(1)}%`)
       console.log(`   Reasoning: ${rec.reason}`)
-      console.log(`   Instructions: ${rec.personalizedInstructions.map(i => i.step).join(', ')}`)
+      console.log(`   Instructions: ${rec.personalizedInstructions.map((i) => i.step).join(', ')}`)
     })
 
     return recommendations
@@ -152,7 +150,7 @@ export async function example2_ContextAnalysis() {
         primary: 'debug authentication issues',
         confidence: 0.95,
         urgency: 'high',
-        complexity: 'complex'
+        complexity: 'complex',
       },
       userSkillLevel: 'intermediate',
       userPreferences: {
@@ -161,7 +159,7 @@ export async function example2_ContextAnalysis() {
         automationLevel: 'guided',
         feedbackLevel: 'verbose',
         toolCategories: ['debugging', 'authentication', 'analysis'],
-        preferredWorkflowPatterns: ['systematic-debugging']
+        preferredWorkflowPatterns: ['systematic-debugging'],
       },
       recentToolUsage: [],
       activeWorkflows: ['debug-authentication-flow'],
@@ -170,22 +168,22 @@ export async function example2_ContextAnalysis() {
         dayOfWeek: 'Wednesday',
         timeZone: 'UTC',
         workingHours: true,
-        urgency: 'high'
+        urgency: 'high',
       },
       businessContext: {
         industry: 'technology',
         companySize: 'medium',
         businessFunction: 'backend-development',
         complianceRequirements: [],
-        securityLevel: 'enhanced'
+        securityLevel: 'enhanced',
       },
       deviceContext: {
         deviceType: 'desktop',
         screenSize: 'large',
         inputMethod: 'keyboard',
-        connectionQuality: 'fast'
-      }
-    }
+        connectionQuality: 'fast',
+      },
+    },
   }
 
   try {
@@ -194,9 +192,13 @@ export async function example2_ContextAnalysis() {
     console.log('Context Analysis Results:')
     console.log(`Primary Context: ${analysis.primaryContext}`)
     console.log(`Primary Intent: ${analysis.intentAnalysis.primaryIntent.name}`)
-    console.log(`Secondary Intents: ${analysis.intentAnalysis.secondaryIntents.map(i => i.name).join(', ')}`)
+    console.log(
+      `Secondary Intents: ${analysis.intentAnalysis.secondaryIntents.map((i) => i.name).join(', ')}`
+    )
     console.log(`Context Confidence: ${(analysis.contextConfidence * 100).toFixed(1)}%`)
-    console.log(`Intent Confidence: ${(analysis.intentAnalysis.intentConfidence * 100).toFixed(1)}%`)
+    console.log(
+      `Intent Confidence: ${(analysis.intentAnalysis.intentConfidence * 100).toFixed(1)}%`
+    )
 
     console.log('\nContext Factors:')
     analysis.contextFactors.forEach((factor, index) => {
@@ -208,7 +210,9 @@ export async function example2_ContextAnalysis() {
     console.log('\nSuggested Actions:')
     analysis.suggestedActions.forEach((action, index) => {
       console.log(`${index + 1}. ${action.action}`)
-      console.log(`   Priority: ${action.priority}, Confidence: ${(action.confidence * 100).toFixed(1)}%`)
+      console.log(
+        `   Priority: ${action.priority}, Confidence: ${(action.confidence * 100).toFixed(1)}%`
+      )
       console.log(`   Reasoning: ${action.reasoning}`)
     })
 
@@ -257,7 +261,7 @@ export async function example3_UsageAnalytics() {
       metadata: {
         version: '1.0',
         source: 'examples',
-        environment: 'development'
+        environment: 'development',
       } as any,
     },
     {
@@ -285,7 +289,7 @@ export async function example3_UsageAnalytics() {
       metadata: {
         version: '1.0',
         source: 'examples',
-        environment: 'development'
+        environment: 'development',
       } as any,
     },
     {
@@ -313,7 +317,7 @@ export async function example3_UsageAnalytics() {
       metadata: {
         version: '1.0',
         source: 'examples',
-        environment: 'development'
+        environment: 'development',
       } as any,
     },
   ]
@@ -322,7 +326,9 @@ export async function example3_UsageAnalytics() {
     // Track all usage events
     for (const event of usageEvents) {
       await analytics.trackEvent(event)
-      console.log(`Tracked usage of ${event.toolId} (${event.eventData.success ? 'Success' : 'Failed'})`)
+      console.log(
+        `Tracked usage of ${event.toolId} (${event.eventData.success ? 'Success' : 'Failed'})`
+      )
     }
 
     // Generate user insights
@@ -333,8 +339,12 @@ export async function example3_UsageAnalytics() {
 
     console.log('\nUsage Insights:')
     console.log(`Total Tool Executions: ${insights.overallMetrics.totalToolExecutions}`)
-    console.log(`Overall Satisfaction: ${(insights.overallMetrics.overallSatisfactionScore * 100).toFixed(1)}%`)
-    console.log(`Average Session Duration: ${Math.round(insights.overallMetrics.averageSessionDuration / 1000)}s`)
+    console.log(
+      `Overall Satisfaction: ${(insights.overallMetrics.overallSatisfactionScore * 100).toFixed(1)}%`
+    )
+    console.log(
+      `Average Session Duration: ${Math.round(insights.overallMetrics.averageSessionDuration / 1000)}s`
+    )
     console.log(`Error Rate: ${(insights.overallMetrics.errorRate * 100).toFixed(1)}%`)
 
     console.log('\nUser Behavior Insights:')
@@ -346,7 +356,10 @@ export async function example3_UsageAnalytics() {
     }
 
     console.log('\nTool Performance:')
-    if (insights.toolPerformance.mostUsedTools && insights.toolPerformance.mostUsedTools.length > 0) {
+    if (
+      insights.toolPerformance.mostUsedTools &&
+      insights.toolPerformance.mostUsedTools.length > 0
+    ) {
       insights.toolPerformance.mostUsedTools.slice(0, 3).forEach((tool: any, index: number) => {
         console.log(`${index + 1}. ${tool.toolId} - Usage Count: ${tool.usageCount}`)
       })
@@ -354,9 +367,15 @@ export async function example3_UsageAnalytics() {
 
     console.log('\nRecommendation Effectiveness:')
     if (insights.recommendationEffectiveness) {
-      console.log(`Overall Accuracy: ${(insights.recommendationEffectiveness.overallAccuracy * 100).toFixed(1)}%`)
-      console.log(`Click Through Rate: ${(insights.recommendationEffectiveness.clickThroughRate * 100).toFixed(1)}%`)
-      console.log(`User Satisfaction: ${(insights.recommendationEffectiveness.recommendationSatisfaction * 100).toFixed(1)}%`)
+      console.log(
+        `Overall Accuracy: ${(insights.recommendationEffectiveness.overallAccuracy * 100).toFixed(1)}%`
+      )
+      console.log(
+        `Click Through Rate: ${(insights.recommendationEffectiveness.clickThroughRate * 100).toFixed(1)}%`
+      )
+      console.log(
+        `User Satisfaction: ${(insights.recommendationEffectiveness.recommendationSatisfaction * 100).toFixed(1)}%`
+      )
     }
 
     return insights
@@ -381,9 +400,9 @@ export async function example4_AdvancedConfiguration() {
       contextTTL: 150000,
       behaviorTTL: 1800000,
       maxCacheSize: 2000,
-      compressionEnabled: true
+      compressionEnabled: true,
     },
-    performanceTracking: true
+    performanceTracking: true,
   }
 
   const engine = new ContextualRecommendationEngine(advancedConfig)
@@ -394,19 +413,13 @@ export async function example4_AdvancedConfiguration() {
     complexityPreference: 'advanced',
     automationLevel: 'automatic',
     feedbackLevel: 'minimal',
-    toolCategories: [
-      'debugging',
-      'performance',
-      'analysis',
-      'security',
-      'architecture'
-    ],
+    toolCategories: ['debugging', 'performance', 'analysis', 'security', 'architecture'],
     preferredWorkflowPatterns: [
       'advanced-debugging',
       'performance-optimization',
       'architectural-analysis',
-      'security-auditing'
-    ]
+      'security-auditing',
+    ],
   }
 
   // Complex architectural task
@@ -434,7 +447,7 @@ export async function example4_AdvancedConfiguration() {
         primary: 'Design microservices architecture for high-throughput payment processing',
         confidence: 0.9,
         urgency: 'medium',
-        complexity: 'complex'
+        complexity: 'complex',
       },
       userSkillLevel: 'expert',
       userPreferences: seniorDevProfile,
@@ -445,38 +458,42 @@ export async function example4_AdvancedConfiguration() {
         dayOfWeek: 'Monday',
         timeZone: 'UTC',
         workingHours: true,
-        urgency: 'medium'
+        urgency: 'medium',
       },
       businessContext: {
         industry: 'fintech',
         companySize: 'enterprise',
         businessFunction: 'architecture',
         complianceRequirements: ['PCI-DSS', 'SOC2', 'GDPR'],
-        securityLevel: 'strict'
+        securityLevel: 'strict',
       },
       deviceContext: {
         deviceType: 'desktop',
         screenSize: 'large',
         inputMethod: 'keyboard',
-        connectionQuality: 'fast'
-      }
+        connectionQuality: 'fast',
+      },
     },
     maxRecommendations: 8, // More recommendations for complex tasks
-    includeExplanations: true
+    includeExplanations: true,
   }
 
   try {
     console.log('Getting personalized recommendations for senior developer...')
     const recommendations = await engine.getRecommendations(architecturalRequest)
 
-    console.log(`\nPersonalized recommendations for ${seniorDevProfile.complexityPreference} complexity level user:`)
+    console.log(
+      `\nPersonalized recommendations for ${seniorDevProfile.complexityPreference} complexity level user:`
+    )
     recommendations.forEach((rec, index) => {
       console.log(`\n${index + 1}. ${rec.toolId}`)
       console.log(`   Confidence: ${(rec.confidence * 100).toFixed(1)}%`)
       console.log(`   Contextual Relevance: ${(rec.contextualRelevance * 100).toFixed(1)}%`)
-      console.log(`   Personalization: Tailored for ${seniorDevProfile.complexityPreference} complexity preference`)
+      console.log(
+        `   Personalization: Tailored for ${seniorDevProfile.complexityPreference} complexity preference`
+      )
       console.log(`   Reasoning: ${rec.reason}`)
-      console.log(`   Instructions: ${rec.personalizedInstructions.map(i => i.step).join(', ')}`)
+      console.log(`   Instructions: ${rec.personalizedInstructions.map((i) => i.step).join(', ')}`)
 
       if (rec.alternatives && rec.alternatives.length > 0) {
         console.log(`   Alternatives: ${rec.alternatives.join(', ')}`)
@@ -522,9 +539,9 @@ export async function example5_ExternalIntegration() {
       contextTTL: 300000,
       behaviorTTL: 600000,
       maxCacheSize: 1500,
-      compressionEnabled: true
+      compressionEnabled: true,
     },
-    performanceTracking: true
+    performanceTracking: true,
   }
 
   const engine = new ContextualRecommendationEngine(integrationConfig)
@@ -548,7 +565,7 @@ export async function example5_ExternalIntegration() {
         primary: 'Optimize database queries for better performance',
         confidence: 0.9,
         urgency: 'high',
-        complexity: 'complex'
+        complexity: 'complex',
       },
       userSkillLevel: 'advanced',
       userPreferences: {
@@ -557,7 +574,7 @@ export async function example5_ExternalIntegration() {
         automationLevel: 'manual',
         feedbackLevel: 'verbose',
         toolCategories: ['performance', 'database', 'optimization'],
-        preferredWorkflowPatterns: ['systematic-optimization']
+        preferredWorkflowPatterns: ['systematic-optimization'],
       },
       recentToolUsage: [],
       activeWorkflows: ['performance-optimization'],
@@ -566,24 +583,24 @@ export async function example5_ExternalIntegration() {
         dayOfWeek: 'Friday',
         timeZone: 'UTC',
         workingHours: true,
-        urgency: 'high'
+        urgency: 'high',
       },
       businessContext: {
         industry: 'technology',
         companySize: 'medium',
         businessFunction: 'backend-optimization',
         complianceRequirements: [],
-        securityLevel: 'enhanced'
+        securityLevel: 'enhanced',
       },
       deviceContext: {
         deviceType: 'desktop',
         screenSize: 'large',
         inputMethod: 'keyboard',
-        connectionQuality: 'fast'
-      }
+        connectionQuality: 'fast',
+      },
     },
     maxRecommendations: 6,
-    includeExplanations: true
+    includeExplanations: true,
   }
 
   try {
@@ -653,9 +670,9 @@ export async function example6_PerformanceMonitoring() {
       contextTTL: 300000,
       behaviorTTL: 600000,
       maxCacheSize: 500,
-      compressionEnabled: false
+      compressionEnabled: false,
     },
-    performanceTracking: true
+    performanceTracking: true,
   })
 
   const analytics = new UsageAnalyticsFramework()
@@ -671,7 +688,7 @@ export async function example6_PerformanceMonitoring() {
         primary: 'Performance monitoring test',
         confidence: 0.8,
         urgency: 'low',
-        complexity: 'simple'
+        complexity: 'simple',
       },
       userSkillLevel: 'intermediate',
       userPreferences: {
@@ -680,7 +697,7 @@ export async function example6_PerformanceMonitoring() {
         automationLevel: 'automatic',
         feedbackLevel: 'minimal',
         toolCategories: ['testing', 'performance'],
-        preferredWorkflowPatterns: ['automated-testing']
+        preferredWorkflowPatterns: ['automated-testing'],
       },
       recentToolUsage: [],
       activeWorkflows: [],
@@ -689,23 +706,23 @@ export async function example6_PerformanceMonitoring() {
         dayOfWeek: 'Monday',
         timeZone: 'UTC',
         workingHours: true,
-        urgency: 'low'
+        urgency: 'low',
       },
       businessContext: {
         industry: 'testing',
         companySize: 'small',
         businessFunction: 'qa',
         complianceRequirements: [],
-        securityLevel: 'basic'
+        securityLevel: 'basic',
       },
       deviceContext: {
         deviceType: 'desktop',
         screenSize: 'medium',
         inputMethod: 'keyboard',
-        connectionQuality: 'fast'
-      }
+        connectionQuality: 'fast',
+      },
     },
-    maxRecommendations: 5
+    maxRecommendations: 5,
   }
 
   try {
@@ -722,8 +739,8 @@ export async function example6_PerformanceMonitoring() {
         ...perfRequest,
         currentContext: {
           ...perfRequest.currentContext,
-          userId: `perf-test-${i.toString().padStart(3, '0')}`
-        }
+          userId: `perf-test-${i.toString().padStart(3, '0')}`,
+        },
       })
 
       const endTime = Date.now()

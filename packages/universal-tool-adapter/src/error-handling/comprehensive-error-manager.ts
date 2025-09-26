@@ -39,7 +39,7 @@ enum UserSkillLevel {
   BEGINNER = 'beginner',
   INTERMEDIATE = 'intermediate',
   ADVANCED = 'advanced',
-  DEVELOPER = 'developer'
+  DEVELOPER = 'developer',
 }
 
 // Placeholder implementation
@@ -742,21 +742,22 @@ export class ComprehensiveToolErrorManager {
       severity: error.severity,
       impact: error.impact,
       userMessage: typeof baseExplanation === 'string' ? baseExplanation : 'An error occurred',
-      detailedExplanation: typeof baseExplanation === 'string' ? baseExplanation : 'Error details not available',
+      detailedExplanation:
+        typeof baseExplanation === 'string' ? baseExplanation : 'Error details not available',
       technicalDetails: error instanceof Error ? error.message : String(error),
       immediateActions: [
         {
           action: 'Retry Operation',
           description: 'Try the operation again',
           estimatedTime: '30 seconds',
-          difficulty: 'beginner' as const
-        }
+          difficulty: 'beginner' as const,
+        },
       ],
       preventionTips: [
         {
           tip: 'Verify all required parameters before execution',
-          category: 'usage' as const
-        }
+          category: 'usage' as const,
+        },
       ],
       troubleshootingSteps: this.generateTroubleshootingSteps(error, context),
       relatedErrors: [],

@@ -111,10 +111,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
   /**
    * Register an adapter with configuration (backwards compatibility)
    */
-  async registerAdapter(
-    simTool: any,
-    config: any
-  ): Promise<void> {
+  async registerAdapter(simTool: any, config: any): Promise<void> {
     // Create a mock BaseAdapter from the SimTool and config
     const adapter = {
       id: config.parlantId || `sim_${simTool.name}`,
@@ -360,7 +357,10 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       // Cache result if successful
       if (this.config.executionCache?.enabled && result.success) {
         this.executionCache.set(cacheKey, result)
-        setTimeout(() => this.executionCache.delete(cacheKey), this.config.executionCache?.ttlMs || 300000)
+        setTimeout(
+          () => this.executionCache.delete(cacheKey),
+          this.config.executionCache?.ttlMs || 300000
+        )
       }
 
       // Update performance tracking
@@ -486,7 +486,10 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     // Cache results
     if (this.config.discoveryCache?.enabled) {
       this.discoveryCache.set(cacheKey, paginatedResults)
-      setTimeout(() => this.discoveryCache.delete(cacheKey), this.config.discoveryCache?.ttlMs || 60000)
+      setTimeout(
+        () => this.discoveryCache.delete(cacheKey),
+        this.config.discoveryCache?.ttlMs || 60000
+      )
     }
 
     logger.debug('Discovery completed', {
@@ -642,7 +645,9 @@ export class EnhancedAdapterRegistry extends EventEmitter {
 
       logger.info('Registry shutdown completed')
     } catch (error) {
-      logger.error('Error during shutdown', { error: error instanceof Error ? error.message : String(error) })
+      logger.error('Error during shutdown', {
+        error: error instanceof Error ? error.message : String(error),
+      })
       throw error
     }
   }
@@ -1106,7 +1111,9 @@ class HealthMonitor {
       entry.health = {
         status: 'unhealthy',
         lastCheckAt: new Date(),
-        issues: ['Health check failed: ' + (error instanceof Error ? error.message : String(error))],
+        issues: [
+          'Health check failed: ' + (error instanceof Error ? error.message : String(error)),
+        ],
       }
 
       logger.warn('Health check error', {

@@ -8,7 +8,6 @@
  * @version 1.0.0
  */
 
-import type { ConversationExample as HelpConversationExample } from './help-system'
 import type { ConversationExample as RecommendationConversationExample } from './recommendation-engine'
 import type { UsageContext, UserIntent } from './usage-guidelines'
 

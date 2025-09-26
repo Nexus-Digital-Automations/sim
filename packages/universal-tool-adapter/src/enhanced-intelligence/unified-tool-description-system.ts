@@ -45,10 +45,10 @@ import {
 } from './sim-tool-catalog'
 import {
   type PersonalizedToolDescription,
+  type SelectionCriteria,
   type ToolRecommendationResult,
   ToolSelectionIntelligenceEngine,
   type ToolSelectionQuery,
-  type SelectionCriteria,
   type UserContext,
 } from './tool-selection-intelligence'
 
@@ -328,7 +328,7 @@ export class UnifiedToolDescriptionSystem {
       userIntent,
       userContext,
       selectionPreferences: {
-        prioritizeCriteria: preferences.priorityCriteria || [] as SelectionCriteria[],
+        prioritizeCriteria: preferences.priorityCriteria || ([] as SelectionCriteria[]),
         criteriaWeights: preferences.criteriaWeights || {},
         maxRecommendations: preferences.maxRecommendations || 5,
         includeAlternatives: preferences.includeAlternatives ?? true,
@@ -357,7 +357,7 @@ export class UnifiedToolDescriptionSystem {
     const classificationResults = this.toolClassifier.generateToolRecommendations({
       useCase: query,
       userRole: userContext.role,
-      skillLevel: userContext.skillLevel
+      skillLevel: userContext.skillLevel,
     })
 
     // Combine and rank results
@@ -478,7 +478,9 @@ export class UnifiedToolDescriptionSystem {
     queryAnalysis: QueryAnalysisResult
   ): Promise<UnifiedToolResponse> {
     // Get all tools in category
-    const categoryTools = Object.values(this.toolCatalog).filter(tool => tool.category === query.category!)
+    const categoryTools = Object.values(this.toolCatalog).filter(
+      (tool) => tool.category === query.category!
+    )
 
     // Rank tools by appropriateness for user
     const rankedTools = await this.rankToolsForUser(categoryTools, query.userContext)
@@ -957,7 +959,9 @@ export class UnifiedToolDescriptionSystem {
       .slice(0, options.maxResults)
 
     return Promise.all(
-      relatedTools.map((t: SimToolMetadata) => this.getComprehensiveToolDescription(t.toolId, userContext))
+      relatedTools.map((t: SimToolMetadata) =>
+        this.getComprehensiveToolDescription(t.toolId, userContext)
+      )
     )
   }
 
@@ -999,9 +1003,7 @@ export class UnifiedToolDescriptionSystem {
     return {
       currentSituation: `Using ${tool.toolName} as a ${userContext.role}`,
       applicableScenarios: [`${tool.primaryUseCases[0] || 'General usage'} scenario`],
-      contextualTips: [
-        `Focus on ${tool.keyBenefits[0] || 'core functionality'} for best results`,
-      ],
+      contextualTips: [`Focus on ${tool.keyBenefits[0] || 'core functionality'} for best results`],
       environmentalConsiderations: ['Check system requirements', 'Verify permissions'],
     }
   }

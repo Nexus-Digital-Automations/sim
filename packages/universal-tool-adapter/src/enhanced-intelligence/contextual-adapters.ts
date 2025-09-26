@@ -22,13 +22,13 @@ import type {
 } from './natural-language-description-framework'
 
 // Extended UserProfile with additional fields for enhanced adaptation
-interface ExtendedUserProfile extends UserProfile {
+export interface ExtendedUserProfile extends UserProfile {
   skillLevel?: SkillLevel
   isLearning?: boolean
 }
 
 // Extended UsageContext with additional fields for enhanced adaptation
-interface ExtendedUsageContext extends UsageContext {
+export interface ExtendedUsageContext extends UsageContext {
   userProfile?: ExtendedUserProfile
   organizationId?: string
   projectId?: string
@@ -1009,7 +1009,7 @@ export class ContextualAdapterRegistry {
   getApplicableAdapters(context: ExtendedUsageContext): BaseContextualAdapter[] {
     const applicable: BaseContextualAdapter[] = []
 
-    Array.from(this.adapters.values()).forEach(adapter => {
+    Array.from(this.adapters.values()).forEach((adapter) => {
       if (adapter.canHandle(context)) {
         applicable.push(adapter)
       }

@@ -135,7 +135,12 @@ export const SIM_TOOL_CATALOG: Record<string, SimToolMetadata> = {
     category: 'workflow_management',
     subcategory: 'execution',
     description: 'Execute automated workflows with real-time monitoring and audit capabilities',
-    keyCapabilities: ['workflow execution', 'real-time monitoring', 'audit trails', 'batch processing'],
+    keyCapabilities: [
+      'workflow execution',
+      'real-time monitoring',
+      'audit trails',
+      'batch processing',
+    ],
     tags: ['automation', 'business-process', 'batch-processing', 'monitoring'],
 
     executionContext: 'client',

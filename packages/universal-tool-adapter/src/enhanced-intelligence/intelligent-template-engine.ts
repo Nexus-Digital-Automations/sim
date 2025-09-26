@@ -13,7 +13,9 @@ import type { ToolConfig } from '../types/tools-types'
 import { createLogger } from '../utils/logger'
 import type {
   EnhancedDescriptionTemplate,
+  RoleSpecificTemplate,
   SkillLevel,
+  SkillSpecificTemplate,
   ToolCategory,
   UserRole,
 } from './description-templates'
@@ -196,7 +198,10 @@ export class IntelligentTemplateEngine {
 
       return personalizedDescriptions
     } catch (error) {
-      logger.error(`Failed to generate enhanced descriptions:`, error)
+      logger.error(
+        `Failed to generate enhanced descriptions:`,
+        error instanceof Error ? error : new Error(String(error))
+      )
       throw error
     }
   }
@@ -248,7 +253,10 @@ export class IntelligentTemplateEngine {
         processingTime,
       }
     } catch (error) {
-      logger.error('Failed to generate content from template:', error)
+      logger.error(
+        'Failed to generate content from template:',
+        error instanceof Error ? error : new Error(String(error))
+      )
       throw error
     }
   }
@@ -604,7 +612,7 @@ export class IntelligentTemplateEngine {
 
     // Generate role-based variations if user role is specified
     if (context.userRole && template.roleTemplates[context.userRole]) {
-      const roleTemplate = template.roleTemplates[context.userRole]
+      const roleTemplate = template.roleTemplates[context.userRole] as RoleSpecificTemplate
       variations[`role-${context.userRole}`] = {
         contextType: 'workflow',
         contextValue: context.userRole,
@@ -620,7 +628,7 @@ export class IntelligentTemplateEngine {
 
     // Generate skill-level variations
     if (context.skillLevel && template.skillTemplates[context.skillLevel]) {
-      const skillTemplate = template.skillTemplates[context.skillLevel]
+      const skillTemplate = template.skillTemplates[context.skillLevel] as SkillSpecificTemplate
       variations[`skill-${context.skillLevel}`] = {
         contextType: 'learning',
         contextValue: context.skillLevel,
@@ -755,7 +763,7 @@ export class IntelligentTemplateEngine {
   }
 
   private estimateUseCaseTime(difficulty: SkillLevel): string {
-    const timeEstimates = {
+    const timeEstimates: Record<SkillLevel, string> = {
       beginner: '10-15 minutes',
       intermediate: '5-10 minutes',
       advanced: '3-5 minutes',
@@ -807,7 +815,7 @@ export class IntelligentTemplateEngine {
   }
 
   private async generateRoleSpecificContent(role: UserRole, tool: ToolConfig): Promise<string> {
-    const roleContexts = {
+    const roleContexts: Record<UserRole, string> = {
       business_user: 'business efficiency and ROI optimization',
       developer: 'technical implementation and integration',
       admin: 'system administration and security management',

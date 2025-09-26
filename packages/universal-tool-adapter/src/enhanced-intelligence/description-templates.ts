@@ -13,6 +13,9 @@
 import { createLogger } from '../utils/logger'
 import type { SkillLevel, ToolCategory, UserRole } from './natural-language-description-framework'
 
+// Re-export types for use in other modules
+export type { SkillLevel, ToolCategory, UserRole } from './natural-language-description-framework'
+
 const logger = createLogger('DescriptionTemplates')
 
 // =============================================================================

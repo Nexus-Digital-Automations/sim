@@ -11,14 +11,20 @@
 
 // Internal imports for the UniversalToolAdapterSystem class
 import { AutoDiscoverySystem } from './config/auto-discovery-system'
-import { EnhancedAdapterFramework, BlockConfigAdapter } from './core/enhanced-adapter-framework'
-import { IntelligenceIntegrationLayer, type IntelligenceConfiguration } from './enhanced-intelligence/intelligence-integration-layer'
+import {
+  type BlockConfigAdapter,
+  EnhancedAdapterFramework,
+} from './core/enhanced-adapter-framework'
+import {
+  type IntelligenceConfiguration,
+  IntelligenceIntegrationLayer,
+} from './enhanced-intelligence/intelligence-integration-layer'
 import { AnalyticsSystem } from './monitoring/analytics-system'
 import { PerformanceOptimizationEngine } from './performance/optimization-engine'
 import { PluginSystem } from './plugins/plugin-system'
 import { EnhancedAdapterRegistry } from './registry/enhanced-adapter-registry'
 import { AdapterTestFramework } from './testing/test-framework'
-import { type AdapterExecutionResult } from './types/adapter-interfaces'
+import type { AdapterExecutionResult } from './types/adapter-interfaces'
 import { EnhancedValidationEngine } from './validation/enhanced-validation-engine'
 
 export {
@@ -31,13 +37,13 @@ export { BaseAdapter } from './core/base-adapter'
 // Core framework components
 export { BlockConfigAdapter, EnhancedAdapterFramework } from './core/enhanced-adapter-framework'
 export {
+  adaptSchemaToContext,
   BaseContextualAdapter,
+  ContextualAdapterRegistry,
+  createContextualAdapterRegistry,
   DomainSpecificAdapter,
   RoleBasedAdapter,
   SkillLevelAdapter,
-  ContextualAdapterRegistry,
-  createContextualAdapterRegistry,
-  adaptSchemaToContext,
 } from './enhanced-intelligence/contextual-adapters'
 export { ContextualRecommendationEngine } from './enhanced-intelligence/contextual-recommendation-engine'
 export {
@@ -51,8 +57,8 @@ export {
   checkIntelligenceCapabilities,
   createFullyIntelligentAdapter,
   createIntelligenceEnhancedAdapter,
-  IntelligenceIntegrationLayer,
   type IntelligenceConfiguration,
+  IntelligenceIntegrationLayer,
 } from './enhanced-intelligence/intelligence-integration-layer'
 export { IntelligentTemplateEngine } from './enhanced-intelligence/intelligent-template-engine'
 export { NaturalLanguageDescriptionFramework } from './enhanced-intelligence/natural-language-description-framework'
@@ -264,7 +270,7 @@ export class UniversalToolAdapterSystem {
 
           // Transform follow-up suggestions
           if (parlantResult.followUp?.suggestedActions) {
-            adapterResult.suggestions = parlantResult.followUp.suggestedActions.map(action => ({
+            adapterResult.suggestions = parlantResult.followUp.suggestedActions.map((action) => ({
               type: action.type,
               message: action.description || action.label,
               action: action.id,

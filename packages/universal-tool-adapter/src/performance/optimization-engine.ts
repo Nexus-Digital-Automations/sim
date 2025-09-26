@@ -563,7 +563,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     const executionStats = this.executionCache.getStats()
     const hitRate = this.calculateHitRate()
 
-    const optimizationThreshold = this.config.adaptation?.optimizationThreshold;
+    const optimizationThreshold = this.config.adaptation?.optimizationThreshold
     if (optimizationThreshold !== undefined && hitRate < optimizationThreshold) {
       this.emit('performance:degradation', {
         type: 'cache_hit_rate',
@@ -583,7 +583,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     const memoryMB = this.getMemoryUsage()
     this.stats.memoryUsage = memoryMB
 
-    const gcThresholdMB = this.config.memoryManagement?.gcThresholdMB;
+    const gcThresholdMB = this.config.memoryManagement?.gcThresholdMB
     if (gcThresholdMB !== undefined && memoryMB > gcThresholdMB) {
       this.optimizeMemory().catch((error) => {
         logger.error('Automatic memory optimization failed', {
@@ -818,8 +818,8 @@ class IntelligentCache<T> {
   }
 
   private async evictEntries(): Promise<void> {
-    const maxSize = this.config.maxSize;
-    if (maxSize === undefined) return;
+    const maxSize = this.config.maxSize
+    if (maxSize === undefined) return
     const targetSize = Math.floor(maxSize * 0.8) // Evict 20%
     const entriesToRemove = this.data.size - targetSize
 
@@ -951,7 +951,10 @@ class AdapterConnectionPool {
     }
 
     // Create new connection if under limit
-    if (this.config.maxConnections !== undefined && poolEntry.created < this.config.maxConnections) {
+    if (
+      this.config.maxConnections !== undefined &&
+      poolEntry.created < this.config.maxConnections
+    ) {
       return this.createNewConnection(adapterId, poolEntry)
     }
 
@@ -1126,7 +1129,11 @@ class RequestBatcher {
       })
 
       // Process batch if it's full
-      if (batch && this.config.maxBatchSize !== undefined && batch.requests.length >= this.config.maxBatchSize) {
+      if (
+        batch &&
+        this.config.maxBatchSize !== undefined &&
+        batch.requests.length >= this.config.maxBatchSize
+      ) {
         clearTimeout(batch.timeout)
         this.processBatch(batchKey)
       }

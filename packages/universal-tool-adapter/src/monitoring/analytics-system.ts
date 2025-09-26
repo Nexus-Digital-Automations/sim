@@ -473,7 +473,9 @@ export class AnalyticsSystem extends EventEmitter {
       'cleanup',
       setInterval(() => {
         this.cleanup().catch((error) => {
-          logger.error('Scheduled cleanup failed', { error: error instanceof Error ? error.message : String(error) })
+          logger.error('Scheduled cleanup failed', {
+            error: error instanceof Error ? error.message : String(error),
+          })
         })
       }, 86400000)
     ) // Daily cleanup
@@ -484,7 +486,9 @@ export class AnalyticsSystem extends EventEmitter {
         'persistence',
         setInterval(() => {
           this.persistData().catch((error) => {
-            logger.error('Data persistence failed', { error: error instanceof Error ? error.message : String(error) })
+            logger.error('Data persistence failed', {
+              error: error instanceof Error ? error.message : String(error),
+            })
           })
         }, this.config.persistenceInterval || 300000)
       )

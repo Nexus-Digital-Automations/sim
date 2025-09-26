@@ -752,32 +752,20 @@ export class ErrorUtils {
       const message = `Bad request: ${body?.message || statusText}`
       const validationErrors = body?.errors || []
       return new ValidationError(message, validationErrors, enhancedContext, suggestedFix)
-    } else if (status === 401) {
+    }
+    if (status === 401) {
       const message = `Unauthorized: ${body?.message || statusText}`
-      return new AuthenticationError(
-        message,
-        body?.authProvider,
-        body?.userId,
-        enhancedContext
-      )
-    } else if (status === 403) {
+      return new AuthenticationError(message, body?.authProvider, body?.userId, enhancedContext)
+    }
+    if (status === 403) {
       const message = `Forbidden: ${body?.message || statusText}`
-      return new AuthenticationError(
-        message,
-        body?.authProvider,
-        body?.userId,
-        enhancedContext
-      )
-    } else if (status === 404) {
+      return new AuthenticationError(message, body?.authProvider, body?.userId, enhancedContext)
+    }
+    if (status === 404) {
       const message = `Not found: ${body?.message || statusText}`
-      return new RegistryError(
-        message,
-        'lookup',
-        enhancedContext,
-        false,
-        suggestedFix
-      )
-    } else if (status === 429) {
+      return new RegistryError(message, 'lookup', enhancedContext, false, suggestedFix)
+    }
+    if (status === 429) {
       const message = `Rate limit exceeded: ${body?.message || statusText}`
       const resetTime = body?.resetTime ? new Date(body.resetTime) : undefined
       const retryAfterMs = body?.retryAfter ? body.retryAfter * 1000 : undefined

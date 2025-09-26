@@ -560,7 +560,10 @@ export class DescriptionManagementSystem {
       logger.info(`Description creation started for tool: ${toolId}`)
       return session
     } catch (error) {
-      logger.error(`Failed to create description for tool ${toolId}:`, error instanceof Error ? error : { message: String(error) })
+      logger.error(
+        `Failed to create description for tool ${toolId}:`,
+        error instanceof Error ? error : { message: String(error) }
+      )
       throw error
     }
   }
@@ -603,7 +606,10 @@ export class DescriptionManagementSystem {
 
       return session
     } catch (error) {
-      logger.error(`Failed to open description for editing ${descriptionId}:`, error instanceof Error ? error : { message: String(error) })
+      logger.error(
+        `Failed to open description for editing ${descriptionId}:`,
+        error instanceof Error ? error : { message: String(error) }
+      )
       throw error
     }
   }
@@ -674,7 +680,10 @@ export class DescriptionManagementSystem {
       logger.info(`Description saved successfully: ${session.descriptionId}`)
       return saveResult
     } catch (error) {
-      logger.error(`Failed to save description ${session.descriptionId}:`, error instanceof Error ? error : { message: String(error) })
+      logger.error(
+        `Failed to save description ${session.descriptionId}:`,
+        error instanceof Error ? error : { message: String(error) }
+      )
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),
@@ -725,7 +734,10 @@ export class DescriptionManagementSystem {
       logger.info(`Review workflow started for description: ${session.descriptionId}`)
       return workflow
     } catch (error) {
-      logger.error(`Failed to submit description for review:`, error instanceof Error ? error : { message: String(error) })
+      logger.error(
+        `Failed to submit description for review:`,
+        error instanceof Error ? error : { message: String(error) }
+      )
       throw error
     }
   }
@@ -768,7 +780,10 @@ export class DescriptionManagementSystem {
       logger.info(`Description published successfully: ${descriptionId}`)
       return result
     } catch (error) {
-      logger.error(`Failed to publish description ${descriptionId}:`, error instanceof Error ? error : { message: String(error) })
+      logger.error(
+        `Failed to publish description ${descriptionId}:`,
+        error instanceof Error ? error : { message: String(error) }
+      )
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),
@@ -1073,7 +1088,7 @@ export class DescriptionManagementSystem {
 // =============================================================================
 
 class StorageService {
-  constructor(private config: StorageConfig) {}
+  constructor(private config: any) {}
 
   async storeAuthoringSession(session: AuthoringSession): Promise<void> {}
   async loadAuthoringSession(
@@ -1092,7 +1107,7 @@ class StorageService {
 }
 
 class VersionControlService {
-  constructor(private config: VersionControlConfig) {}
+  constructor(private config: any) {}
 
   async createInitialVersion(
     description: EnhancedDescriptionSchema,
@@ -1114,7 +1129,7 @@ class VersionControlService {
 }
 
 class CollaborationService {
-  constructor(private config: CollaborationConfig) {}
+  constructor(private config: any) {}
 
   async joinEditingSession(sessionId: string, userId: string): Promise<void> {}
   async notifyCollaborators(sessionId: string, eventType: string, data: any): Promise<void> {}
@@ -1139,7 +1154,7 @@ class CollaborationService {
 }
 
 class QualityAssuranceService {
-  constructor(private config: QualityAssuranceConfig) {}
+  constructor(private config: any) {}
 
   async initializeQualityTracking(descriptionId: string, versionId: string): Promise<void> {}
   async runQualityChecks(description: EnhancedDescriptionSchema): Promise<QualityCheckResult[]> {
@@ -1148,7 +1163,7 @@ class QualityAssuranceService {
 }
 
 class PublishingService {
-  constructor(private config: PublishingConfig) {}
+  constructor(private config: any) {}
 
   async publishVersion(
     descriptionId: string,
@@ -1160,7 +1175,7 @@ class PublishingService {
 }
 
 class AnalyticsService {
-  constructor(private config: AnalyticsConfig) {}
+  constructor(private config: any) {}
 
   async trackPublication(publication: Publication): Promise<void> {}
   async getDescriptionAnalytics(descriptionId: string): Promise<DescriptionAnalytics> {
@@ -1544,7 +1559,7 @@ export function createDefaultManagementConfig(): DescriptionManagementConfig {
           passingThreshold: 0.7,
           requiredChecks: ['grammar', 'completeness'],
           blockingFailures: ['critical-grammar-error'],
-          autoAdvance: true
+          autoAdvance: true,
         },
         {
           gateId: 'gate-quality-review',
@@ -1553,7 +1568,7 @@ export function createDefaultManagementConfig(): DescriptionManagementConfig {
           passingThreshold: 0.8,
           requiredChecks: ['accuracy', 'relevance'],
           blockingFailures: ['inaccurate-content'],
-          autoAdvance: false
+          autoAdvance: false,
         },
       ],
       continuousImprovement: true,
