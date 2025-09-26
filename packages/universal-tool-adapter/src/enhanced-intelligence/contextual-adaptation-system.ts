@@ -323,7 +323,7 @@ export class ContextualAdaptationEngine {
       )
       return result
     } catch (error) {
-      logger.error(`Failed to adapt description for ${originalDescription.toolId}:`, error)
+      logger.error(`Failed to adapt description for ${originalDescription.toolId}:`, error instanceof Error ? error : new Error(String(error)))
       throw error
     }
   }
@@ -464,7 +464,7 @@ export class ContextualAdaptationEngine {
 
       effectiveness /= strategy.adaptationRules.length
     } catch (error) {
-      logger.error(`Strategy application failed for ${strategy.strategyId}:`, error)
+      logger.error(`Strategy application failed for ${strategy.strategyId}:`, error instanceof Error ? error : new Error(String(error)))
       success = false
     }
 
@@ -508,7 +508,7 @@ export class ContextualAdaptationEngine {
           success = false
       }
     } catch (error) {
-      logger.error(`Action application failed for ${action.actionType}:`, error)
+      logger.error(`Action application failed for ${action.actionType}:`, error instanceof Error ? error : new Error(String(error)))
       success = false
     }
 
@@ -565,7 +565,7 @@ export class ContextualAdaptationEngine {
 
       return true
     } catch (error) {
-      logger.error('Content modification failed:', error)
+      logger.error('Content modification failed:', error instanceof Error ? error : new Error(String(error)))
       return false
     }
   }
@@ -589,7 +589,7 @@ export class ContextualAdaptationEngine {
 
       return true
     } catch (error) {
-      logger.error('Complexity adjustment failed:', error)
+      logger.error('Complexity adjustment failed:', error instanceof Error ? error : new Error(String(error)))
       return false
     }
   }
