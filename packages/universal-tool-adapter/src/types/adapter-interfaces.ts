@@ -175,6 +175,9 @@ export interface ErrorHandlingConfig {
   userFriendlyMessages?: {
     [errorPattern: string]: string
   }
+
+  // Metrics collection configuration
+  collectMetrics?: boolean
 }
 
 /**

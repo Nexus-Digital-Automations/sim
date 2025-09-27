@@ -472,11 +472,7 @@ describe('Error-Aware Integration Components', () => {
 
   describe('Error-Aware Execution Wrapper', () => {
     test('should execute operation successfully', async () => {
-      const mockOperation = jest
-        .fn()
-        .mockResolvedValue({ success: true, data: 'test' }) as jest.MockedFunction<
-        () => Promise<any>
-      >
+      const mockOperation = jest.fn().mockResolvedValue({ success: true, data: 'test' })
 
       const result = await executionWrapper.executeWithErrorHandling(
         mockOperation,
@@ -490,9 +486,7 @@ describe('Error-Aware Integration Components', () => {
     })
 
     test('should handle operation failures', async () => {
-      const mockOperation = jest
-        .fn()
-        .mockRejectedValue(new Error('Operation failed')) as jest.MockedFunction<() => Promise<any>>
+      const mockOperation = jest.fn().mockRejectedValue(new Error('Operation failed'))
 
       const result = await executionWrapper.executeWithErrorHandling(
         mockOperation,
@@ -511,11 +505,7 @@ describe('Error-Aware Integration Components', () => {
 
     test('should execute full pipeline with all components', async () => {
       const mockSimTool = {
-        execute: jest
-          .fn()
-          .mockResolvedValue({ success: true, data: 'result' }) as jest.MockedFunction<
-          () => Promise<any>
-        >,
+        execute: jest.fn().mockResolvedValue({ success: true, data: 'result' }),
       }
 
       const parlantParams = { input: 'test' }

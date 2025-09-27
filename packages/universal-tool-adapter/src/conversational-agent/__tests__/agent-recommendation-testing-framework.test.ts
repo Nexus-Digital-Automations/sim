@@ -115,6 +115,7 @@ class AgentRecommendationTestingFramework {
   private contextAnalyzer: ConversationalContextAnalyzer
   private agentToolAPI: AgentToolAPI
   private workflowEngine: WorkflowRecommendationEngine
+  private realtimeService: any
 
   private testResults: TestResult[] = []
   private configuration: TestConfiguration
