@@ -83,7 +83,7 @@ export function ChatDeploy({
   const [showSuccessView, setShowSuccessView] = useState(false)
 
   // Generate unique IDs for form elements
-  const formId = useId()
+  const chatDeployFormId = useId()
   const titleId = useId()
   const descriptionId = useId()
   const welcomeMessageId = useId()
@@ -102,11 +102,6 @@ export function ChatDeploy({
   const formRef = useRef<HTMLFormElement>(null)
   const [isSubdomainValid, setIsSubdomainValid] = useState(false)
 
-  // Generate unique IDs for form elements
-  const chatDeployFormId = useId()
-  const titleId = useId()
-  const descriptionId = useId()
-  const welcomeMessageId = useId()
   const isFormValid =
     isSubdomainValid &&
     Boolean(formData.title.trim()) &&

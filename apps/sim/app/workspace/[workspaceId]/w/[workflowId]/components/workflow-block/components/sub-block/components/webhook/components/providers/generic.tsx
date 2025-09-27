@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Checkbox, Input, Label } from '@/components/ui'
 import {
   ConfigField,
@@ -41,26 +42,31 @@ export function GenericConfig({
   copied,
   copyToClipboard,
 }: GenericConfigProps) {
+  const requireAuthId = useId()
+  const authTokenId = useId()
+  const headerNameId = useId()
+  const allowedIpsId = useId()
+
   return (
     <div className='space-y-4'>
       <ConfigSection title='Authentication'>
         <div className='flex items-center space-x-2'>
           <Checkbox
-            id='require-auth'
+            id={requireAuthId}
             checked={requireAuth}
             onCheckedChange={(checked) => setRequireAuth(checked as boolean)}
             className='translate-y-[1px]' // Align checkbox better with label
           />
-          <Label htmlFor='require-auth' className='cursor-pointer font-medium text-sm'>
+          <Label htmlFor={requireAuthId} className='cursor-pointer font-medium text-sm'>
             Require Authentication
           </Label>
         </div>
 
         {requireAuth && (
           <div className='ml-5 space-y-4 border-border border-l-2 pl-4 dark:border-border/50'>
-            <ConfigField id='auth-token' label='Authentication Token'>
+            <ConfigField id={authTokenId} label='Authentication Token'>
               <CopyableField
-                id='auth-token'
+                id={authTokenId}
                 value={generalToken}
                 onChange={setGeneralToken}
                 placeholder='Enter an auth token'
@@ -73,12 +79,12 @@ export function GenericConfig({
             </ConfigField>
 
             <ConfigField
-              id='header-name'
+              id={headerNameId}
               label='Secret Header Name (Optional)'
               description="Custom HTTP header name for the auth token (e.g., X-Secret-Key). If blank, use 'Authorization: Bearer TOKEN'."
             >
               <Input
-                id='header-name'
+                id={headerNameId}
                 value={secretHeaderName}
                 onChange={(e) => setSecretHeaderName(e.target.value)}
                 placeholder='X-Secret-Key'
@@ -90,12 +96,12 @@ export function GenericConfig({
 
       <ConfigSection title='Network'>
         <ConfigField
-          id='allowed-ips'
+          id={allowedIpsId}
           label='Allowed IP Addresses (Optional)'
           description='Comma-separated list of IP addresses allowed to access this webhook.'
         >
           <Input
-            id='allowed-ips'
+            id={allowedIpsId}
             value={allowedIps}
             onChange={(e) => setAllowedIps(e.target.value)}
             placeholder='192.168.1.1, 10.0.0.1'

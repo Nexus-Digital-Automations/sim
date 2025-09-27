@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Info } from 'lucide-react'
 import { GmailIcon } from '@/components/icons'
 import {
@@ -149,6 +149,10 @@ export function GmailConfig({
   includeRawEmail = false,
   setIncludeRawEmail = () => {},
 }: GmailConfigProps) {
+  const labelBehaviorId = useId()
+  const markAsReadId = useId()
+  const includeRawEmailId = useId()
+
   const [labels, setLabels] = useState<GmailLabel[]>([])
   const [isLoadingLabels, setIsLoadingLabels] = useState(false)
   const [labelError, setLabelError] = useState<string | null>(null)
@@ -267,7 +271,7 @@ export function GmailConfig({
 
         <div className='mt-4'>
           <div className='flex items-center gap-2'>
-            <Label htmlFor='label-behavior' className='font-medium text-sm'>
+            <Label htmlFor={labelBehaviorId} className='font-medium text-sm'>
               Label Filter Behavior
             </Label>
             <Tooltip>
@@ -293,7 +297,7 @@ export function GmailConfig({
           </div>
           <div className='mt-1'>
             <Select value={labelFilterBehavior} onValueChange={setLabelFilterBehavior}>
-              <SelectTrigger id='label-behavior' className='w-full'>
+              <SelectTrigger id={labelBehaviorId} className='w-full'>
                 <SelectValue placeholder='Select behavior' />
               </SelectTrigger>
               <SelectContent>
@@ -312,11 +316,11 @@ export function GmailConfig({
           <div className='flex items-center'>
             <div className='flex flex-1 items-center gap-2'>
               <Checkbox
-                id='mark-as-read'
+                id={markAsReadId}
                 checked={markAsRead}
                 onCheckedChange={(checked) => setMarkAsRead(checked as boolean)}
               />
-              <Label htmlFor='mark-as-read' className='cursor-pointer font-normal text-sm'>
+              <Label htmlFor={markAsReadId} className='cursor-pointer font-normal text-sm'>
                 Mark emails as read after processing
               </Label>
               <Tooltip>
@@ -340,11 +344,11 @@ export function GmailConfig({
           <div className='flex items-center'>
             <div className='flex flex-1 items-center gap-2'>
               <Checkbox
-                id='include-raw-email'
+                id={includeRawEmailId}
                 checked={includeRawEmail}
                 onCheckedChange={(checked) => setIncludeRawEmail(checked as boolean)}
               />
-              <Label htmlFor='include-raw-email' className='cursor-pointer font-normal text-sm'>
+              <Label htmlFor={includeRawEmailId} className='cursor-pointer font-normal text-sm'>
                 Include raw email data
               </Label>
               <Tooltip>

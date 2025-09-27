@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useId, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -45,6 +45,10 @@ interface McpServerFormData {
 export function McpServerModal({ open, onOpenChange, onServerCreated }: McpServerModalProps) {
   const params = useParams()
   const workspaceId = params.workspaceId as string
+
+  // Generate unique IDs for form elements
+  const serverNameId = useId()
+  const serverUrlId = useId()
   const [formData, setFormData] = useState<McpServerFormData>({
     name: '',
     transport: 'streamable-http',
@@ -275,9 +279,9 @@ export function McpServerModal({ open, onOpenChange, onServerCreated }: McpServe
         <div className='space-y-4 py-4'>
           <div className='grid grid-cols-2 gap-4'>
             <div>
-              <Label htmlFor='server-name'>Server Name</Label>
+              <Label htmlFor={serverNameId}>Server Name</Label>
               <Input
-                id='server-name'
+                id={serverNameId}
                 placeholder='e.g., My MCP Server'
                 value={formData.name}
                 onChange={(e) => {
@@ -312,11 +316,11 @@ export function McpServerModal({ open, onOpenChange, onServerCreated }: McpServe
           </div>
 
           <div className='relative'>
-            <Label htmlFor='server-url'>Server URL</Label>
+            <Label htmlFor={serverUrlId}>Server URL</Label>
             <div className='relative'>
               <Input
                 ref={urlInputRef}
-                id='server-url'
+                id={serverUrlId}
                 placeholder='https://mcp.server.dev/{{YOUR_API_KEY}}/sse'
                 value={formData.url}
                 onChange={(e) => handleInputChange('url', e.target.value)}

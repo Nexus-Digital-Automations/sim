@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Info } from 'lucide-react'
 import {
   Button,
@@ -48,11 +49,16 @@ export function AirtableConfig({
   webhookId,
   webhookUrl,
 }: AirtableConfigProps) {
+  const webhookUrlId = useId()
+  const airtableBaseId = useId()
+  const airtableTableId = useId()
+  const includeCellValuesId = useId()
+
   return (
     <div className='space-y-4'>
       <ConfigSection title='Airtable Configuration'>
         <WebhookConfigField
-          id='webhook-url'
+          id={webhookUrlId}
           label='Webhook URL'
           value={webhookUrl}
           description='This is the URL that will receive webhook requests'
@@ -64,7 +70,7 @@ export function AirtableConfig({
         />
 
         <ConfigField
-          id='airtable-base-id'
+          id={airtableBaseId}
           label='Base ID *'
           description='The ID of the Airtable Base this webhook will monitor.'
         >
@@ -72,7 +78,7 @@ export function AirtableConfig({
             <Skeleton className='h-10 w-full' />
           ) : (
             <Input
-              id='airtable-base-id'
+              id={airtableBaseId}
               value={baseId}
               onChange={(e) => setBaseId(e.target.value)}
               placeholder='appXXXXXXXXXXXXXX'
@@ -82,7 +88,7 @@ export function AirtableConfig({
         </ConfigField>
 
         <ConfigField
-          id='airtable-table-id'
+          id={airtableTableId}
           label='Table ID *'
           description='The ID of the table within the Base that the webhook will monitor.'
         >
@@ -90,7 +96,7 @@ export function AirtableConfig({
             <Skeleton className='h-10 w-full' />
           ) : (
             <Input
-              id='airtable-table-id'
+              id={airtableTableId}
               value={tableId}
               onChange={(e) => setTableId(e.target.value)}
               placeholder='tblXXXXXXXXXXXXXX'
@@ -101,7 +107,7 @@ export function AirtableConfig({
 
         <div className='flex items-center justify-between rounded-lg border border-border bg-background p-3 shadow-sm'>
           <div className='flex items-center gap-2'>
-            <Label htmlFor='include-cell-values' className='font-normal'>
+            <Label htmlFor={includeCellValuesId} className='font-normal'>
               Include Full Record Data
             </Label>
             <Tooltip>
@@ -131,7 +137,7 @@ export function AirtableConfig({
             <Skeleton className='h-5 w-9' />
           ) : (
             <Switch
-              id='include-cell-values'
+              id={includeCellValuesId}
               checked={includeCellValues}
               onCheckedChange={setIncludeCellValues}
               disabled={isLoadingToken}

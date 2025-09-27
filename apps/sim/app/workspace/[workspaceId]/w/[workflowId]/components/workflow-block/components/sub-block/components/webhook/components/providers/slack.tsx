@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { SlackIcon } from '@/components/icons'
 import { Notice } from '@/components/ui'
 import { JSONView } from '@/app/workspace/[workspaceId]/w/[workflowId]/components/panel/components/console/components'
@@ -50,11 +51,14 @@ export function SlackConfig({
   copyToClipboard,
   webhookUrl,
 }: SlackConfigProps) {
+  const webhookUrlId = useId()
+  const signingSecretId = useId()
+
   return (
     <div className='space-y-4'>
       <ConfigSection title='Slack Configuration'>
         <WebhookConfigField
-          id='webhook-url'
+          id={webhookUrlId}
           label='Webhook URL'
           value={webhookUrl}
           description='This is the URL that will receive webhook requests'
@@ -66,7 +70,7 @@ export function SlackConfig({
         />
 
         <WebhookConfigField
-          id='slack-signing-secret'
+          id={signingSecretId}
           label='Signing Secret'
           value={signingSecret}
           onChange={setSigningSecret}

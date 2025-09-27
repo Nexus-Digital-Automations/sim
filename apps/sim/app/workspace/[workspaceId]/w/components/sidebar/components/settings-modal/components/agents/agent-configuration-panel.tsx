@@ -191,6 +191,10 @@ export function AgentConfigurationPanel({
   open,
   onOpenChange,
 }: AgentConfigurationPanelProps) {
+  const agentNameId = useId()
+  const agentDescriptionId = useId()
+  const systemPromptId = useId()
+
   const {
     updateAgent,
     addGuideline,
@@ -348,7 +352,7 @@ export function AgentConfigurationPanel({
                         <div className='space-y-2'>
                           <Label htmlFor='agent-name'>Name</Label>
                           <Input
-                            id='agent-name'
+                            id={agentNameId}
                             value={formData.name || ''}
                             onChange={(e) => updateFormData({ name: e.target.value })}
                             className='h-9 rounded-[8px]'
@@ -375,7 +379,7 @@ export function AgentConfigurationPanel({
                       <div className='space-y-2'>
                         <Label htmlFor='agent-description'>Description</Label>
                         <Textarea
-                          id='agent-description'
+                          id={agentDescriptionId}
                           value={formData.description || ''}
                           onChange={(e) => updateFormData({ description: e.target.value })}
                           className='min-h-[80px] rounded-[8px]'
@@ -460,7 +464,7 @@ export function AgentConfigurationPanel({
                       <div className='space-y-2'>
                         <Label htmlFor='system-prompt'>System Prompt</Label>
                         <Textarea
-                          id='system-prompt'
+                          id={systemPromptId}
                           value={formData.configuration?.systemPrompt || ''}
                           onChange={(e) => updateConfiguration({ systemPrompt: e.target.value })}
                           className='min-h-[120px] rounded-[8px]'
