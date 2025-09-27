@@ -121,7 +121,9 @@ export class WorkspaceAnalyzer {
     // Calculate adoption rates for each tool
     const allTools = new Set<string>()
     for (const member of members) {
-      Object.keys(member.toolUsage).forEach((toolId) => allTools.add(toolId))
+      for (const toolId of Object.keys(member.toolUsage)) {
+        allTools.add(toolId)
+      }
     }
 
     for (const toolId of allTools) {

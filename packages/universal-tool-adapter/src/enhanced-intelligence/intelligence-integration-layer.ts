@@ -1003,7 +1003,9 @@ export class IntelligenceIntegrationLayer {
         Math.floor(this.intelligenceCache.size * 0.1)
       )
 
-      keysToDelete.forEach((key) => this.intelligenceCache.delete(key))
+      for (const key of keysToDelete) {
+        this.intelligenceCache.delete(key)
+      }
 
       logger.debug('Performed intelligence cache cleanup', {
         deletedKeys: keysToDelete.length,

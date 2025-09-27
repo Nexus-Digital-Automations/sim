@@ -176,7 +176,9 @@ describe('Socket Server Integration Tests', () => {
     expect(receivedCount).toBe(expectedCount)
 
     // Clean up
-    clients.forEach((client) => client.close())
+    for (const client of clients) {
+      client.close()
+    }
   })
 
   it('should handle rapid operations without loss', async () => {

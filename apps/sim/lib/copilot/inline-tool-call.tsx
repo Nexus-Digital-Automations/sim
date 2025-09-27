@@ -20,6 +20,17 @@ interface InlineToolCallProps {
   context?: Record<string, any>
 }
 
+const Section = ({ title, children }: { title: string; children: any }) => (
+  <Card className='mt-1.5'>
+    <CardContent className='p-3'>
+      <div className='mb-1 font-medium text-[11px] text-muted-foreground uppercase tracking-wide'>
+        {title}
+      </div>
+      {children}
+    </CardContent>
+  </Card>
+)
+
 function shouldShowRunSkipButtons(toolCall: CopilotToolCall): boolean {
   const instance = getClientTool(toolCall.id)
   let hasInterrupt = !!instance?.getInterruptDisplays?.()
@@ -279,17 +290,6 @@ export function InlineToolCall({
 
   const displayName = getDisplayName(toolCall)
   const params = (toolCall as any).parameters || (toolCall as any).input || toolCall.params || {}
-
-  const Section = ({ title, children }: { title: string; children: any }) => (
-    <Card className='mt-1.5'>
-      <CardContent className='p-3'>
-        <div className='mb-1 font-medium text-[11px] text-muted-foreground uppercase tracking-wide'>
-          {title}
-        </div>
-        {children}
-      </CardContent>
-    </Card>
-  )
 
   const renderPendingDetails = () => {
     if (toolCall.name === 'make_api_request') {

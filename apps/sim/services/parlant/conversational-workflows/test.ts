@@ -410,9 +410,10 @@ if (require.main === module) {
 
       if (!results.success) {
         console.log('\nFailures:')
-        results.results
-          .filter((r) => !r.success)
-          .forEach((r) => console.log(`  - ${r.test}: ${r.error}`))
+        const failures = results.results.filter((r) => !r.success)
+        for (const r of failures) {
+          console.log(`  - ${r.test}: ${r.error}`)
+        }
 
         process.exit(1)
       } else {

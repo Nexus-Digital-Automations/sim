@@ -122,7 +122,9 @@ export async function clearUserData(): Promise<void> {
     // Clear localStorage except for essential app settings (minimal usage)
     const keysToKeep = ['next-favicon', 'theme']
     const keysToRemove = Object.keys(localStorage).filter((key) => !keysToKeep.includes(key))
-    keysToRemove.forEach((key) => localStorage.removeItem(key))
+    for (const key of keysToRemove) {
+      localStorage.removeItem(key)
+    }
 
     // Reset application initialization state
     appFullyInitialized = false

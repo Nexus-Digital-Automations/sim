@@ -69,7 +69,7 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 27,
+      "total_reinitializations": 29,
       "current_day": "2025-09-27",
       "time_buckets": {
         "10:00-14:59": {
@@ -82,7 +82,7 @@
         },
         "20:00-00:59": {
           "init": 0,
-          "reinit": 9
+          "reinit": 11
         },
         "01:00-05:59": {
           "init": 0,
@@ -123,7 +123,7 @@
         }
       ],
       "last_reset": "2025-09-27T03:12:58.705Z",
-      "last_updated": "2025-09-27T03:32:36.175Z"
+      "last_updated": "2025-09-27T03:46:48.680Z"
     }
   },
   "agents": {
@@ -285,6 +285,20 @@
       "status": "active",
       "reinitialized": "2025-09-27T03:32:36.174Z",
       "sessionId": "58099212e2f4effa",
+      "previousSessions": []
+    },
+    "STALE_RECOVERY_AGENT": {
+      "lastHeartbeat": "2025-09-27T03:45:09.375Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T03:45:09.375Z",
+      "sessionId": "d24b9348548f59b6",
+      "previousSessions": []
+    },
+    "RECOVERY_AGENT_5": {
+      "lastHeartbeat": "2025-09-27T03:46:48.673Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T03:46:48.673Z",
+      "sessionId": "ffd555f9bc7a9dfd",
       "previousSessions": []
     }
   }
