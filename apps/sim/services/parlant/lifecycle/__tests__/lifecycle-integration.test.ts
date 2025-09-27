@@ -605,7 +605,7 @@ describe('Agent Lifecycle Management - Integration Tests', () => {
             done()
           }
         })
-      })
+      }
 
       // Create a session to trigger events
       agentLifecycleOrchestrator
