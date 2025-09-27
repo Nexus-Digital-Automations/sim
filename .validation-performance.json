@@ -659,27 +659,71 @@
       },
       "success": true,
       "error": null
+    },
+    {
+      "criterion": "focused-codebase",
+      "startTime": "2025-09-27T12:06:56.786Z",
+      "endTime": "2025-09-27T12:06:56.798Z",
+      "durationMs": 12,
+      "memoryUsageBefore": {
+        "rss": 103251968,
+        "heapTotal": 20840448,
+        "heapUsed": 14456856,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 104054784,
+        "heapTotal": 21102592,
+        "heapUsed": 14872752,
+        "external": 2449478,
+        "arrayBuffers": 344205
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "criterion": "linter-validation",
+      "startTime": "2025-09-27T12:07:17.499Z",
+      "endTime": "2025-09-27T12:07:17.499Z",
+      "durationMs": 0,
+      "memoryUsageBefore": {
+        "rss": 102121472,
+        "heapTotal": 21102592,
+        "heapUsed": 14456528,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 102285312,
+        "heapTotal": 21102592,
+        "heapUsed": 14498736,
+        "external": 2427200,
+        "arrayBuffers": 323063
+      },
+      "success": false,
+      "error": "Must validate steps sequentially. Expected: security-validation, Got: linter-validation"
     }
   ],
   "statistics": {
-    "lastUpdated": "2025-09-27T12:01:35.280Z",
-    "totalMeasurements": 30,
-    "averageDurationMs": 11260.066666666668,
-    "successRate": 83.33333333333334,
+    "lastUpdated": "2025-09-27T12:07:17.499Z",
+    "totalMeasurements": 32,
+    "averageDurationMs": 10556.6875,
+    "successRate": 81.25,
     "bycriterion": {
       "focused-codebase": {
-        "count": 5,
-        "totalDuration": 295,
-        "successCount": 5,
-        "avgDuration": 59,
+        "count": 6,
+        "totalDuration": 307,
+        "successCount": 6,
+        "avgDuration": 51.166666666666664,
         "successRate": 100
       },
       "linter-validation": {
-        "count": 6,
+        "count": 7,
         "totalDuration": 20906,
         "successCount": 4,
-        "avgDuration": 3484.3333333333335,
-        "successRate": 66.66666666666666
+        "avgDuration": 2986.5714285714284,
+        "successRate": 57.14285714285714
       },
       "type-validation": {
         "count": 6,
