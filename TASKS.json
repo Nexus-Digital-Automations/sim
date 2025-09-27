@@ -105,12 +105,12 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 44,
+      "total_reinitializations": 46,
       "current_day": "2025-09-27",
       "time_buckets": {
         "11:00-15:59": {
           "init": 0,
-          "reinit": 0
+          "reinit": 2
         },
         "16:00-20:59": {
           "init": 0,
@@ -159,24 +159,19 @@
         }
       ],
       "last_reset": "2025-09-27T05:02:22.444Z",
-      "last_updated": "2025-09-27T12:13:12.152Z"
+      "last_updated": "2025-09-27T17:17:15.359Z"
     }
   },
   "agents": {
-    "agent_main_1758974357": {
-      "lastHeartbeat": "2025-09-27T11:59:17.560Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T11:59:17.560Z",
-      "sessionId": "e410e35f2d6c50b9",
-      "previousSessions": []
-    },
     "agent_continue_1758974732": {
-      "lastHeartbeat": "2025-09-27T12:13:12.149Z",
+      "lastHeartbeat": "2025-09-27T17:17:15.353Z",
       "status": "active",
-      "reinitialized": "2025-09-27T12:13:12.149Z",
-      "sessionId": "bf63ff46114dfd59",
+      "reinitialized": "2025-09-27T17:17:15.353Z",
+      "sessionId": "caf4d992ab27b6f8",
       "previousSessions": [
-        "d757f4c178cf770f"
+        "d757f4c178cf770f",
+        "bf63ff46114dfd59",
+        "3eb04ed1dca22ae1"
       ]
     }
   },

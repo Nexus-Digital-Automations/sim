@@ -813,13 +813,35 @@
       },
       "success": true,
       "error": null
+    },
+    {
+      "criterion": "test-validation",
+      "startTime": "2025-09-27T12:19:53.548Z",
+      "endTime": "2025-09-27T12:19:54.244Z",
+      "durationMs": 696,
+      "memoryUsageBefore": {
+        "rss": 102318080,
+        "heapTotal": 21102592,
+        "heapUsed": 14713096,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 103153664,
+        "heapTotal": 21102592,
+        "heapUsed": 15196144,
+        "external": 2440492,
+        "arrayBuffers": 335219
+      },
+      "success": true,
+      "error": null
     }
   ],
   "statistics": {
-    "lastUpdated": "2025-09-27T12:10:51.830Z",
-    "totalMeasurements": 37,
-    "averageDurationMs": 12017.432432432432,
-    "successRate": 83.78378378378379,
+    "lastUpdated": "2025-09-27T12:19:54.245Z",
+    "totalMeasurements": 38,
+    "averageDurationMs": 11719.5,
+    "successRate": 84.21052631578947,
     "bycriterion": {
       "focused-codebase": {
         "count": 6,
@@ -861,6 +883,13 @@
         "totalDuration": 20169,
         "successCount": 5,
         "avgDuration": 4033.8,
+        "successRate": 100
+      },
+      "test-validation": {
+        "count": 1,
+        "totalDuration": 696,
+        "successCount": 1,
+        "avgDuration": 696,
         "successRate": 100
       }
     }

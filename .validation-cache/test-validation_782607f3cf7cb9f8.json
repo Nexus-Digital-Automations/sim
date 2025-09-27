@@ -1,0 +1,10 @@
+{
+  "criterion": "test-validation",
+  "cacheKey": "782607f3cf7cb9f8",
+  "result": {
+    "success": true,
+    "details": "Testing passed with command: npm test"
+  },
+  "timestamp": 1758975594244,
+  "originalDuration": 695
+}
