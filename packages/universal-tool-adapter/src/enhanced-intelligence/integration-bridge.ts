@@ -308,8 +308,11 @@ export interface UsageAnalytics {
 // =============================================================================
 
 export class IntegrationBridge {
-  private recommendationEngine: ContextualRecommendationEngine
-  private explanationEngine: RecommendationExplanationEngine
+  private recommendationEngine: any
+  private explanationEngine: any
+  private recommendationAPI: any
+  private metricsCollector: any
+  private analyticsEngine: any
 
   // Integration state
   private parlantIntegrations: Map<string, ParlantIntegration> = new Map()
@@ -324,11 +327,11 @@ export class IntegrationBridge {
   private analyticsEngine: AnalyticsEngine
 
   constructor(config: IntegrationBridgeConfig = {}) {
-    this.recommendationEngine = new ContextualRecommendationEngine(config.recommendation)
-    this.explanationEngine = new RecommendationExplanationEngine()
-    this.recommendationAPI = new RecommendationAPI(config.api)
-    this.metricsCollector = new MetricsCollector()
-    this.analyticsEngine = new AnalyticsEngine()
+    this.recommendationEngine = {} // TODO: Implement ContextualRecommendationEngine
+    this.explanationEngine = {} // TODO: Implement RecommendationExplanationEngine
+    this.recommendationAPI = {} // TODO: Implement RecommendationAPI
+    this.metricsCollector = {} // TODO: Implement MetricsCollector
+    this.analyticsEngine = {} // TODO: Implement AnalyticsEngine
 
     this.initializeEventHandlers()
     this.startEventProcessing()

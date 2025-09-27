@@ -222,6 +222,7 @@ export class RealtimeRecommendationService extends EventEmitter {
   private contextAnalyzer: ConversationalContextAnalyzer
   private agentToolAPI: AgentToolAPI
   private workflowEngine: WorkflowRecommendationEngine
+  private performanceTracker: any
 
   // State management
   private activeSessions: Map<string, RealtimeSession> = new Map()
