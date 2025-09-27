@@ -4,9 +4,7 @@
   "startTime": "2025-09-27T18:06:39.808Z",
   "expiresAt": "2025-09-27T18:36:39.808Z",
   "currentStep": 1,
-  "completedSteps": [
-    "focused-codebase"
-  ],
+  "completedSteps": ["focused-codebase"],
   "requiredSteps": [
     "focused-codebase",
     "security-validation",

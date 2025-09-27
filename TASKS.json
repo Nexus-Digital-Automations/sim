@@ -105,12 +105,12 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 52,
+      "total_reinitializations": 54,
       "current_day": "2025-09-27",
       "time_buckets": {
         "11:00-15:59": {
           "init": 0,
-          "reinit": 8
+          "reinit": 10
         },
         "16:00-20:59": {
           "init": 0,
@@ -159,17 +159,10 @@
         }
       ],
       "last_reset": "2025-09-27T05:02:22.444Z",
-      "last_updated": "2025-09-27T18:08:36.910Z"
+      "last_updated": "2025-09-27T18:13:03.896Z"
     }
   },
   "agents": {
-    "UNIVERSAL_TOOL_ADAPTER_TEST_FIXER": {
-      "lastHeartbeat": "2025-09-27T17:40:03.455Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T17:40:03.455Z",
-      "sessionId": "550d5be29b5883b2",
-      "previousSessions": []
-    },
     "agent_nextjs_build_fix": {
       "lastHeartbeat": "2025-09-27T17:45:45.033Z",
       "status": "active",
@@ -192,6 +185,15 @@
       "previousSessions": [
         "46bf32df27cadb10",
         "e2a4d548d79313b4"
+      ]
+    },
+    "AGENT_MAIN": {
+      "lastHeartbeat": "2025-09-27T18:13:03.886Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T18:13:03.886Z",
+      "sessionId": "ef4413e55f2a6b35",
+      "previousSessions": [
+        "ca9a1647c9f05de9"
       ]
     }
   },
