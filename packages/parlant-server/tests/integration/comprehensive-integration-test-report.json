@@ -1,6 +1,6 @@
 {
   "test_suite": "Comprehensive Sim-Parlant Integration Bridge Tests",
-  "started_at": "2025-09-26T18:58:34.998Z",
+  "started_at": "2025-09-27T05:47:17.868Z",
   "acceptance_criteria": {},
   "performance_metrics": {},
   "security_validation": {},
@@ -9,12 +9,12 @@
     "parlant_server_url": "http://localhost:8800",
     "sim_server_url": "http://localhost:3000",
     "socket_server_url": "http://localhost:3001",
-    "database_url": "postgresql://postgres:***@localhost:5432/simstudio_test",
+    "database_url": "postgresql://postgres:***@localhost:5432/simstudio",
     "node_version": "v22.20.0",
     "platform": "darwin"
   },
-  "completed_at": "2025-09-26T18:59:04.834Z",
-  "total_duration": 29836,
+  "completed_at": "2025-09-27T05:47:47.251Z",
+  "total_duration": 29383,
   "summary": {
     "total_acceptance_criteria": 0,
     "acceptance_criteria_passed": 0,

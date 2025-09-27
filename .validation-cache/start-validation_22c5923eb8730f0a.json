@@ -1,0 +1,10 @@
+{
+  "criterion": "start-validation",
+  "cacheKey": "22c5923eb8730f0a",
+  "result": {
+    "success": true,
+    "details": "Starting command executed successfully: npm run start"
+  },
+  "timestamp": 1758951515519,
+  "originalDuration": 5021
+}

@@ -307,8 +307,40 @@ describe('Error-Aware Integration Components', () => {
   let parameterMapper: ErrorAwareParameterMapper
   let resultFormatter: ErrorAwareResultFormatter
   let executionWrapper: ErrorAwareExecutionWrapper
+  let mockContext: AdapterExecutionContext
+  let mockConfig: AdapterConfiguration
 
   beforeEach(() => {
+    mockContext = {
+      executionId: 'test-exec-123',
+      toolId: 'test-tool',
+      adapterVersion: '1.0.0',
+      startedAt: new Date(),
+      userId: 'user-123',
+      workspaceId: 'workspace-456',
+      requestSource: 'api',
+      logger: jest.fn(),
+      metrics: jest.fn(),
+    }
+
+    mockConfig = {
+      parlantId: 'test-tool-adapter',
+      displayName: 'Test Tool',
+      description: 'Test tool for error handling',
+      parameterMappings: [],
+      resultMappings: [],
+      errorHandling: {
+        maxRetries: 3,
+        baseDelayMs: 1000,
+        maxDelayMs: 5000,
+        backoffMultiplier: 2,
+        timeoutMs: 30000,
+        retryableErrors: ['network', 'timeout'],
+        provideFeedback: true,
+        collectMetrics: true,
+      },
+    }
+
     parameterMapper = new ErrorAwareParameterMapper()
     resultFormatter = new ErrorAwareResultFormatter()
     executionWrapper = new ErrorAwareExecutionWrapper()
