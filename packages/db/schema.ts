@@ -1629,7 +1629,7 @@ export const mcpServers = pgTable(
   })
 )
 
-// Export all chat persistence and Parlant tables and enums
+// Export all chat persistence tables and enums
 export {
   chatBrowserSession,
   chatConversation,
@@ -1642,36 +1642,5 @@ export {
   messageStatusEnum,
   messageTypeEnum,
 } from './chat-persistence-schema'
-export {
-  agentStatusEnum,
-  compositionModeEnum,
-  eventTypeEnum,
-  journeyStateTypeEnum,
-  parlantAgent,
-  parlantAgentApiKey,
-  parlantAgentKnowledgeBase,
-  parlantAgentTool,
-  parlantAgentWorkflow,
-  parlantCannedResponse,
-  parlantConversionCache,
-  parlantConversionHistory,
-  parlantEnums,
-  parlantEvent,
-  parlantGuideline,
-  parlantJourney,
-  parlantJourneyGenerationHistory,
-  parlantJourneyGuideline,
-  parlantJourneyState,
-  parlantJourneyTransition,
-  parlantSession,
-  parlantSessionWorkflow,
-  parlantTables,
-  parlantTemplateParameter,
-  parlantTerm,
-  parlantTool,
-  parlantToolIntegration,
-  parlantVariable,
-  parlantWorkflowTemplate,
-  sessionModeEnum,
-  sessionStatusEnum,
-} from './parlant-schema'
+
+// Note: Parlant tables and enums are exported through parlant-exports.ts to avoid conflicts
