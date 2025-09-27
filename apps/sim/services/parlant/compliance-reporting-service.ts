@@ -250,7 +250,9 @@ export class ComplianceReportingService {
         const eventTypeIds = new Set<string>()
         for (const eventType of query.event_types) {
           const typeIds = this.auditIndexes.byEventType.get(eventType) || []
-          typeIds.forEach((id) => eventTypeIds.add(id))
+          for (const id of typeIds) {
+            eventTypeIds.add(id)
+          }
         }
         candidateIds = candidateIds.filter((id) => eventTypeIds.has(id))
       }
@@ -259,7 +261,9 @@ export class ComplianceReportingService {
         const entityTypeIds = new Set<string>()
         for (const entityType of query.entity_types) {
           const typeIds = this.auditIndexes.byEntityType.get(entityType) || []
-          typeIds.forEach((id) => entityTypeIds.add(id))
+          for (const id of typeIds) {
+            entityTypeIds.add(id)
+          }
         }
         candidateIds = candidateIds.filter((id) => entityTypeIds.has(id))
       }

@@ -984,10 +984,14 @@ describe('Universal Tool Adapter System - Integration Testing', () => {
       console.log(`  Average Execution Time: ${report.summary.averageExecutionTime.toFixed(2)}ms`)
 
       console.log('\n📋 Key Recommendations:')
-      report.recommendations.forEach((rec) => console.log(`  • ${rec}`))
+      for (const rec of report.recommendations) {
+        console.log(`  • ${rec}`)
+      }
 
       console.log('\n🚀 Next Steps:')
-      report.nextSteps.forEach((step) => console.log(`  • ${step}`))
+      for (const step of report.nextSteps) {
+        console.log(`  • ${step}`)
+      }
     })
   })
 })
