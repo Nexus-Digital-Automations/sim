@@ -84,8 +84,6 @@ const mockError = {
 
 class IntelligenceTestingFramework {
   private engine: EnhancedToolIntelligenceEngine
-  private testMetrics: any
-  private testResults: TestResult[]
 
   constructor() {
     this.engine = createEnhancedToolIntelligenceEngine()

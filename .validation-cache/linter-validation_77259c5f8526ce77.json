@@ -1,10 +1,10 @@
 {
   "criterion": "linter-validation",
-  "cacheKey": "5aa3aab4d516a1ec",
+  "cacheKey": "77259c5f8526ce77",
   "result": {
     "success": true,
     "details": "Linting passed with command: npm run lint"
   },
-  "timestamp": 1758951473764,
-  "originalDuration": 8163
+  "timestamp": 1758953404267,
+  "originalDuration": 7271
 }

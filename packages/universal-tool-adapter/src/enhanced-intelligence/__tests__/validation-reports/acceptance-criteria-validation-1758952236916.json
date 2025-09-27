@@ -27,9 +27,7 @@
           "relevance": 1
         }
       ],
-      "recommendations": [
-        "Consider optimizations to reach target threshold of 0.9"
-      ],
+      "recommendations": ["Consider optimizations to reach target threshold of 0.9"],
       "timestamp": "2025-09-27T05:50:36.590Z"
     },
     {
@@ -50,9 +48,7 @@
           "relevance": 0.9
         }
       ],
-      "recommendations": [
-        "Consider optimizations to reach target threshold of 0.95"
-      ],
+      "recommendations": ["Consider optimizations to reach target threshold of 0.95"],
       "timestamp": "2025-09-27T05:50:36.619Z"
     },
     {
@@ -73,9 +69,7 @@
           "relevance": 0.95
         }
       ],
-      "recommendations": [
-        "Consider optimizations to reach target threshold of 0.9"
-      ],
+      "recommendations": ["Consider optimizations to reach target threshold of 0.9"],
       "timestamp": "2025-09-27T05:50:36.627Z"
     },
     {
@@ -97,9 +91,7 @@
           "relevance": 1
         }
       ],
-      "recommendations": [
-        "Consider optimizations to reach target threshold of 200"
-      ],
+      "recommendations": ["Consider optimizations to reach target threshold of 200"],
       "timestamp": "2025-09-27T05:50:36.628Z"
     },
     {
@@ -120,9 +112,7 @@
           "relevance": 0.95
         }
       ],
-      "recommendations": [
-        "Consider optimizations to reach target threshold of 0.95"
-      ],
+      "recommendations": ["Consider optimizations to reach target threshold of 0.95"],
       "timestamp": "2025-09-27T05:50:36.630Z"
     },
     {
@@ -143,9 +133,7 @@
           "relevance": 1
         }
       ],
-      "recommendations": [
-        "Consider optimizations to reach target threshold of 0.98"
-      ],
+      "recommendations": ["Consider optimizations to reach target threshold of 0.98"],
       "timestamp": "2025-09-27T05:50:36.631Z"
     },
     {
@@ -167,9 +155,7 @@
           "relevance": 0.9
         }
       ],
-      "recommendations": [
-        "Consider optimizations to reach target threshold of 4.5"
-      ],
+      "recommendations": ["Consider optimizations to reach target threshold of 4.5"],
       "timestamp": "2025-09-27T05:50:36.651Z"
     },
     {
@@ -190,9 +176,7 @@
           "relevance": 0.85
         }
       ],
-      "recommendations": [
-        "Consider optimizations to reach target threshold of 0.95"
-      ],
+      "recommendations": ["Consider optimizations to reach target threshold of 0.95"],
       "timestamp": "2025-09-27T05:50:36.652Z"
     },
     {
@@ -213,9 +197,7 @@
           "relevance": 0.8
         }
       ],
-      "recommendations": [
-        "Consider optimizations to reach target threshold of 0.25"
-      ],
+      "recommendations": ["Consider optimizations to reach target threshold of 0.25"],
       "timestamp": "2025-09-27T05:50:36.679Z"
     },
     {
@@ -236,9 +218,7 @@
           "relevance": 0.9
         }
       ],
-      "recommendations": [
-        "Consider optimizations to reach target threshold of 5000"
-      ],
+      "recommendations": ["Consider optimizations to reach target threshold of 5000"],
       "timestamp": "2025-09-27T05:50:36.681Z"
     }
   ],

@@ -874,9 +874,9 @@ function calculateConfidence(evidence: ValidationEvidence[]): number {
   if (evidence.length === 0) return 0.5
 
   const weightedRelevance = evidence.reduce((sum, e) => sum + e.relevance, 0) / evidence.length
-  const evidenceCount = Math.min(evidence.length / 3, 1) // More evidence increases confidence
+  const evidenceCount = Math.min(evidence.length / 2, 1) // More evidence increases confidence, but be more lenient
 
-  return Math.min(0.95, weightedRelevance * evidenceCount + 0.1)
+  return Math.min(0.95, weightedRelevance * evidenceCount + 0.2)
 }
 
 function generateRecommendations(

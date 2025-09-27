@@ -1,0 +1,13 @@
+{
+  "authKey": "7a9e5dfa-f539-45fe-acf8-08789d587296",
+  "failedCriteria": [
+    {
+      "criterion": "test-validation",
+      "error": "Testing failed - no working commands found",
+      "timestamp": "2025-09-27T06:13:38.578Z",
+      "retryCount": 1
+    }
+  ],
+  "lastUpdate": "2025-09-27T06:13:38.586Z",
+  "totalFailures": 1
+}

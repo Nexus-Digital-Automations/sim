@@ -1,10 +1,10 @@
 {
   "criterion": "type-validation",
-  "cacheKey": "dcdc767a59c41fb3",
+  "cacheKey": "d3555ee59c4f9fc4",
   "result": {
     "success": true,
     "details": "Type checking passed with command: npm run typecheck"
   },
-  "timestamp": 1758951489094,
-  "originalDuration": 1985
+  "timestamp": 1758953442628,
+  "originalDuration": 11270
 }

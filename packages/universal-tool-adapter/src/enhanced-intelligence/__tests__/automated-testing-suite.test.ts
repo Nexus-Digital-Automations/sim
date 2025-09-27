@@ -40,8 +40,8 @@ class AutomatedTestingSuite {
         recommendations: [],
         performance: { avgResponseTime: 150 },
         testsPassed: 10,
-        testsFailed: 0
-      })
+        testsFailed: 0,
+      }),
     }
     this.performanceMetrics = this.initializePerformanceMetrics()
   }

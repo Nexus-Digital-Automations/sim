@@ -42,8 +42,8 @@ class IntegrationValidationSuite {
         recommendations: [],
         performance: { avgResponseTime: 150 },
         testsPassed: 10,
-        testsFailed: 0
-      })
+        testsFailed: 0,
+      }),
     }
     this.automatedSuite = {
       runAutomatedTestSuite: async () => ({
@@ -52,8 +52,8 @@ class IntegrationValidationSuite {
         regression: { score: 95 },
         load: { score: 88 },
         testsPassed: 20,
-        testsFailed: 0
-      })
+        testsFailed: 0,
+      }),
     }
     this.uxFramework = new UserExperienceTestingFramework()
     this.validationMetrics = this.initializeMetrics()
@@ -1002,7 +1002,9 @@ class IntegrationValidationSuite {
   }
 
   private calculateOverallScore(scores: number[]): number {
-    const validScores = scores.filter(score => typeof score === 'number' && !isNaN(score) && isFinite(score))
+    const validScores = scores.filter(
+      (score) => typeof score === 'number' && !Number.isNaN(score) && Number.isFinite(score)
+    )
     if (validScores.length === 0) return 85 // Return a default score if no valid scores
     return validScores.reduce((sum, score) => sum + score, 0) / validScores.length
   }

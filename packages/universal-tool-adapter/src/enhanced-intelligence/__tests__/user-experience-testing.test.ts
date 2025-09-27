@@ -12,7 +12,6 @@
 import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
 import {
   createEnhancedToolIntelligenceEngine,
-  type EnhancedToolIntelligenceEngine,
   type UserSkillLevel,
 } from '../tool-intelligence-engine'
 
@@ -20,8 +19,7 @@ import {
 // User Experience Testing Framework
 // =============================================================================
 
-export class UserExperienceTestingFramework {
-  private engine: EnhancedToolIntelligenceEngine
+class UserExperienceTestingFramework {
   private abTestingManager: ABTestingManager
   private userSimulator: UserSimulator
   private discoverabilityTester: DiscoverabilityTester

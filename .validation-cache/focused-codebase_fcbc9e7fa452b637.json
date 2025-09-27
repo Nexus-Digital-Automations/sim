@@ -1,0 +1,11 @@
+{
+  "criterion": "focused-codebase",
+  "cacheKey": "fcbc9e7fa452b637",
+  "result": {
+    "success": true,
+    "count": 0,
+    "details": "Validated 0 focused features only"
+  },
+  "timestamp": 1758953175769,
+  "originalDuration": 39
+}
