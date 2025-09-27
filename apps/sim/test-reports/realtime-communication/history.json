@@ -7888,5 +7888,350 @@
     },
     "endTime": "2025-09-27T18:39:14.239Z",
     "duration": 28282
+  },
+  {
+    "id": "realtime-communication",
+    "name": "WebSocket Real-time Communication Testing",
+    "description": "Comprehensive validation of Socket.io messaging, connection handling, and network resilience",
+    "startTime": "2025-09-27T18:48:23.669Z",
+    "totalTests": 7,
+    "passed": 6,
+    "failed": 1,
+    "skipped": 0,
+    "errors": 0,
+    "results": [
+      {
+        "testId": "test_websocket-connection-establish_1758998903739",
+        "scenarioId": "websocket-connection-establish",
+        "scenarioName": "WebSocket Connection Establishment",
+        "status": "passed",
+        "duration": 66,
+        "startTime": "2025-09-27T18:48:23.673Z",
+        "endTime": "2025-09-27T18:48:23.739Z",
+        "errors": [],
+        "warnings": [],
+        "metrics": {
+          "conversionAccuracy": null,
+          "performanceScore": 100,
+          "memoryUsage": {
+            "peak": null,
+            "average": null,
+            "final": null
+          },
+          "processingTime": {
+            "conversion": 46.199999999999996,
+            "validation": 13.200000000000001,
+            "total": 66
+          },
+          "qualityMetrics": {
+            "stateCount": 0,
+            "transitionCount": 0,
+            "complexityScore": null,
+            "completeness": null
+          }
+        },
+        "artifacts": {
+          "screenshots": [],
+          "logs": [
+            "test-reports/realtime-communication/artifacts/test_websocket-connection-establish_1758998903739.log"
+          ],
+          "conversionOutput": "{\n  \"success\": true,\n  \"connectionTime\": 66\n}",
+          "errorTraces": [],
+          "performanceProfiles": [],
+          "visualizations": []
+        },
+        "metadata": {
+          "scenarioComplexity": "simple",
+          "validationScore": 100
+        }
+      },
+      {
+        "testId": "test_websocket-concurrent-connections_1758998903930",
+        "scenarioId": "websocket-concurrent-connections",
+        "scenarioName": "WebSocket Concurrent Connections",
+        "status": "passed",
+        "duration": 182,
+        "startTime": "2025-09-27T18:48:23.748Z",
+        "endTime": "2025-09-27T18:48:23.930Z",
+        "errors": [],
+        "warnings": [],
+        "metrics": {
+          "conversionAccuracy": null,
+          "performanceScore": 100,
+          "memoryUsage": {
+            "peak": null,
+            "average": null,
+            "final": null
+          },
+          "processingTime": {
+            "conversion": 127.39999999999999,
+            "validation": 36.4,
+            "total": 182
+          },
+          "qualityMetrics": {
+            "stateCount": 0,
+            "transitionCount": 0,
+            "complexityScore": null,
+            "completeness": null
+          }
+        },
+        "artifacts": {
+          "screenshots": [],
+          "logs": [
+            "test-reports/realtime-communication/artifacts/test_websocket-concurrent-connections_1758998903930.log"
+          ],
+          "conversionOutput": "{\n  \"success\": true,\n  \"connectionCount\": 50,\n  \"connectionTime\": 182\n}",
+          "errorTraces": [],
+          "performanceProfiles": [],
+          "visualizations": []
+        },
+        "metadata": {
+          "scenarioComplexity": "complex",
+          "validationScore": 100
+        }
+      },
+      {
+        "testId": "test_websocket-authentication_1758998903957",
+        "scenarioId": "websocket-authentication",
+        "scenarioName": "WebSocket Connection Authentication",
+        "status": "passed",
+        "duration": 15,
+        "startTime": "2025-09-27T18:48:23.942Z",
+        "endTime": "2025-09-27T18:48:23.957Z",
+        "errors": [],
+        "warnings": [],
+        "metrics": {
+          "conversionAccuracy": null,
+          "performanceScore": 100,
+          "memoryUsage": {
+            "peak": null,
+            "average": null,
+            "final": null
+          },
+          "processingTime": {
+            "conversion": 10.5,
+            "validation": 3,
+            "total": 15
+          },
+          "qualityMetrics": {
+            "stateCount": 0,
+            "transitionCount": 0,
+            "complexityScore": null,
+            "completeness": null
+          }
+        },
+        "artifacts": {
+          "screenshots": [],
+          "logs": [
+            "test-reports/realtime-communication/artifacts/test_websocket-authentication_1758998903957.log"
+          ],
+          "conversionOutput": "{\n  \"success\": true,\n  \"validAuth\": true,\n  \"invalidAuthBlocked\": true\n}",
+          "errorTraces": [],
+          "performanceProfiles": [],
+          "visualizations": []
+        },
+        "metadata": {
+          "scenarioComplexity": "medium",
+          "validationScore": 100
+        }
+      },
+      {
+        "testId": "test_message-queuing_1758998914412",
+        "scenarioId": "message-queuing",
+        "scenarioName": "Message Queuing During Disconnection",
+        "status": "failed",
+        "duration": 221,
+        "startTime": "2025-09-27T18:48:34.191Z",
+        "endTime": "2025-09-27T18:48:34.412Z",
+        "errors": [],
+        "warnings": [],
+        "metrics": {
+          "conversionAccuracy": null,
+          "performanceScore": 100,
+          "memoryUsage": {
+            "peak": null,
+            "average": null,
+            "final": null
+          },
+          "processingTime": {
+            "conversion": 154.7,
+            "validation": 44.2,
+            "total": 221
+          },
+          "qualityMetrics": {
+            "stateCount": 0,
+            "transitionCount": 0,
+            "complexityScore": null,
+            "completeness": null
+          }
+        },
+        "artifacts": {
+          "screenshots": [],
+          "logs": [
+            "test-reports/realtime-communication/artifacts/test_message-queuing_1758998914413.log"
+          ],
+          "conversionOutput": "{\n  \"success\": false,\n  \"messageQueued\": true,\n  \"messageDeliveredOnReconnect\": false\n}",
+          "errorTraces": [],
+          "performanceProfiles": [],
+          "visualizations": []
+        },
+        "metadata": {
+          "scenarioComplexity": "complex",
+          "validationScore": 0
+        }
+      },
+      {
+        "testId": "test_network-interruption-handling_1758998916527",
+        "scenarioId": "network-interruption-handling",
+        "scenarioName": "Network Interruption Handling",
+        "status": "passed",
+        "duration": 2111,
+        "startTime": "2025-09-27T18:48:34.416Z",
+        "endTime": "2025-09-27T18:48:36.527Z",
+        "errors": [],
+        "warnings": [],
+        "metrics": {
+          "conversionAccuracy": null,
+          "performanceScore": 94.74182851729039,
+          "memoryUsage": {
+            "peak": null,
+            "average": null,
+            "final": null
+          },
+          "processingTime": {
+            "conversion": 1477.6999999999998,
+            "validation": 422.20000000000005,
+            "total": 2111
+          },
+          "qualityMetrics": {
+            "stateCount": 0,
+            "transitionCount": 0,
+            "complexityScore": null,
+            "completeness": null
+          }
+        },
+        "artifacts": {
+          "screenshots": [],
+          "logs": [
+            "test-reports/realtime-communication/artifacts/test_network-interruption-handling_1758998916528.log"
+          ],
+          "conversionOutput": "{\n  \"success\": true,\n  \"disconnectDetected\": true,\n  \"reconnectionAttempted\": true\n}",
+          "errorTraces": [],
+          "performanceProfiles": [],
+          "visualizations": []
+        },
+        "metadata": {
+          "scenarioComplexity": "complex",
+          "validationScore": 90
+        }
+      },
+      {
+        "testId": "test_exponential-backoff-reconnection_1758998919537",
+        "scenarioId": "exponential-backoff-reconnection",
+        "scenarioName": "Exponential Backoff Reconnection",
+        "status": "passed",
+        "duration": 3008,
+        "startTime": "2025-09-27T18:48:36.529Z",
+        "endTime": "2025-09-27T18:48:39.537Z",
+        "errors": [],
+        "warnings": [],
+        "metrics": {
+          "conversionAccuracy": null,
+          "performanceScore": 66.48936170212765,
+          "memoryUsage": {
+            "peak": null,
+            "average": null,
+            "final": null
+          },
+          "processingTime": {
+            "conversion": 2105.6,
+            "validation": 601.6,
+            "total": 3008
+          },
+          "qualityMetrics": {
+            "stateCount": 0,
+            "transitionCount": 0,
+            "complexityScore": null,
+            "completeness": null
+          }
+        },
+        "artifacts": {
+          "screenshots": [],
+          "logs": [
+            "test-reports/realtime-communication/artifacts/test_exponential-backoff-reconnection_1758998919538.log"
+          ],
+          "conversionOutput": "{\n  \"success\": true,\n  \"reconnectionAttempts\": 0,\n  \"backoffImplemented\": false\n}",
+          "errorTraces": [],
+          "performanceProfiles": [],
+          "visualizations": []
+        },
+        "metadata": {
+          "scenarioComplexity": "complex",
+          "validationScore": 100
+        }
+      },
+      {
+        "testId": "test_server-overload-handling_1758998920553",
+        "scenarioId": "server-overload-handling",
+        "scenarioName": "Server Overload Handling",
+        "status": "passed",
+        "duration": 1013,
+        "startTime": "2025-09-27T18:48:39.539Z",
+        "endTime": "2025-09-27T18:48:40.552Z",
+        "errors": [],
+        "warnings": [],
+        "metrics": {
+          "conversionAccuracy": null,
+          "performanceScore": 100,
+          "memoryUsage": {
+            "peak": null,
+            "average": null,
+            "final": null
+          },
+          "processingTime": {
+            "conversion": 709.0999999999999,
+            "validation": 202.60000000000002,
+            "total": 1013
+          },
+          "qualityMetrics": {
+            "stateCount": 0,
+            "transitionCount": 0,
+            "complexityScore": null,
+            "completeness": null
+          }
+        },
+        "artifacts": {
+          "screenshots": [],
+          "logs": [
+            "test-reports/realtime-communication/artifacts/test_server-overload-handling_1758998920553.log"
+          ],
+          "conversionOutput": "{\n  \"success\": true,\n  \"connectionSuccessRate\": 1,\n  \"overloadHandled\": true\n}",
+          "errorTraces": [],
+          "performanceProfiles": [],
+          "visualizations": []
+        },
+        "metadata": {
+          "scenarioComplexity": "extreme",
+          "validationScore": 100
+        }
+      }
+    ],
+    "summary": {
+      "overallStatus": "failed",
+      "successRate": 85.71428571428571,
+      "averageDuration": 945.1428571428571,
+      "totalDuration": 27266,
+      "criticalIssues": 0,
+      "warningsCount": 0,
+      "performanceAverage": 94.461598602774,
+      "coveragePercentage": 0,
+      "trends": {
+        "improvement": false,
+        "regressions": [],
+        "newIssues": []
+      }
+    },
+    "endTime": "2025-09-27T18:48:50.935Z",
+    "duration": 27266
   }
 ]

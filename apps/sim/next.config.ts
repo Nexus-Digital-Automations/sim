@@ -1,7 +1,6 @@
 import type { NextConfig } from 'next'
 import { env } from './lib/env'
-import { isDev, isHosted, isProd } from './lib/environment'
-import { getMainCSPPolicy, getWorkflowExecutionCSPPolicy } from './lib/security/csp'
+import { isProd } from './lib/environment'
 
 const nextConfig: NextConfig = {
   // ULTRA-MINIMAL CONFIG TO PREVENT BUILD HANGS

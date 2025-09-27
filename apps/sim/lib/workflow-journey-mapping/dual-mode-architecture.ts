@@ -13,9 +13,9 @@
  */
 
 import type { Edge } from 'reactflow'
-import { createLogger } from '../logs/console/logger'
 import { getBlock } from '../../blocks'
 import type { BlockState, WorkflowState } from '../../stores/workflows/workflow/types'
+import { createLogger } from '../logs/console/logger'
 import { workflowCompatibilityValidator } from './compatibility-validator'
 
 const logger = createLogger('DualModeArchitecture')
@@ -730,7 +730,8 @@ export class DualModeExecutionArchitecture {
             conflicts.push({
               type: 'STATE_INCONSISTENCY',
               description: `Critical state inconsistency requiring manual resolution`,
-              reactFlowValue: changeData.state || changeData.path || changeData.message || changeData.value,
+              reactFlowValue:
+                changeData.state || changeData.path || changeData.message || changeData.value,
               journeyValue: 'journey-conflicting-value',
               resolution: 'MANUAL_RESOLUTION_REQUIRED',
             })
@@ -768,7 +769,7 @@ export class DualModeExecutionArchitecture {
 
     // Initialize conflict resolution history if it doesn't exist
     if (!(context as any).conflictResolutionHistory) {
-      (context as any).conflictResolutionHistory = []
+      ;(context as any).conflictResolutionHistory = []
     }
 
     for (const conflict of conflicts) {
@@ -779,7 +780,7 @@ export class DualModeExecutionArchitecture {
       })
 
       switch (conflict.resolution) {
-        case 'PREFER_REACTFLOW':
+        case 'PREFER_REACTFLOW': {
           // Apply ReactFlow value to Journey state
           if (context.journeyState && conflict.reactFlowValue) {
             // Update journey state with ReactFlow value
@@ -799,8 +800,9 @@ export class DualModeExecutionArchitecture {
             resolved: true,
           })
           break
+        }
 
-        case 'PREFER_JOURNEY':
+        case 'PREFER_JOURNEY': {
           // Apply Journey value to ReactFlow state
           if (conflict.journeyValue) {
             // Update ReactFlow state with Journey value
@@ -820,6 +822,7 @@ export class DualModeExecutionArchitecture {
             resolved: true,
           })
           break
+        }
 
         case 'MANUAL_RESOLUTION_REQUIRED':
           this.logger.warn('Manual conflict resolution required', {

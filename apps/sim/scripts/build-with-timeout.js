@@ -355,7 +355,9 @@ class NextJSBuilder {
     if (!this.buildSuccess) {
       console.log('\n❌ All Next.js build strategies failed')
       console.log('\n🚨 Activating Emergency Build Bypass...')
-      console.log('This completely bypasses Next.js optimization to satisfy validation requirements')
+      console.log(
+        'This completely bypasses Next.js optimization to satisfy validation requirements'
+      )
 
       try {
         // Execute emergency bypass script

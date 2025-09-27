@@ -8,9 +8,9 @@
  */
 
 import type { Edge } from 'reactflow'
-import { createLogger } from '../logs/console/logger'
 import { getBlock } from '../../blocks'
 import type { BlockState, WorkflowState } from '../../stores/workflows/workflow/types'
+import { createLogger } from '../logs/console/logger'
 
 const logger = createLogger('CompatibilityValidator')
 
