@@ -19,8 +19,6 @@ import {
 // Import chat persistence extensions
 import { chatPersistenceEnums, chatPersistenceTables } from './chat-persistence-schema'
 import { DEFAULT_FREE_CREDITS, TAG_SLOTS } from './consts'
-// Import Parlant schema extensions
-import { parlantEnums, parlantTables } from './parlant-schema'
 // Custom tsvector type for full-text search
 export const tsvector = customType({
   dataType() {
@@ -1553,36 +1551,4 @@ export const {
   chatExportRequest,
 } = chatPersistenceTables
 export const { messageStatusEnum, conversationTypeEnum, messageTypeEnum } = chatPersistenceEnums
-export const {
-  parlantAgent,
-  parlantSession,
-  parlantEvent,
-  parlantGuideline,
-  parlantJourney,
-  parlantJourneyState,
-  parlantJourneyTransition,
-  parlantVariable,
-  parlantTool,
-  parlantTerm,
-  parlantCannedResponse,
-  parlantAgentWorkflow,
-  parlantAgentApiKey,
-  parlantSessionWorkflow,
-  parlantAgentTool,
-  parlantJourneyGuideline,
-  parlantAgentKnowledgeBase,
-  parlantToolIntegration,
-  parlantWorkflowTemplate,
-  parlantTemplateParameter,
-  parlantConversionCache,
-  parlantConversionHistory,
-  parlantJourneyGenerationHistory,
-} = parlantTables
-export const {
-  agentStatusEnum,
-  sessionModeEnum,
-  sessionStatusEnum,
-  eventTypeEnum,
-  journeyStateTypeEnum,
-  compositionModeEnum,
-} = parlantEnums
+// Parlant tables and enums are exported via parlant-exports.js to avoid conflicts

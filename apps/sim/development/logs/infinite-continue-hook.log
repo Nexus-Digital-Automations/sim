@@ -1,0 +1,33 @@
+{
+  "execution": {
+    "timestamp": "2025-09-27T22:08:18.403Z",
+    "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim",
+    "hookVersion": "1.0.0",
+    "nodeVersion": "v22.20.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "pid": 73482,
+    "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim",
+    "endTimestamp": "2025-09-27T22:08:18.403Z",
+    "durationMs": 0
+  },
+  "input": {},
+  "projectState": {},
+  "decisions": [],
+  "flow": [
+    {
+      "timestamp": "2025-09-27T22:08:18.403Z",
+      "message": "ERROR in autoSortTasksByPriority: Validation failed: Task error_1759010898402_mn20muybp: Required field 'category' is missing, Task error_1759010898402_4ohllx8z5: Required field 'category' is missing"
+    }
+  ],
+  "output": {},
+  "errors": [
+    {
+      "timestamp": "2025-09-27T22:08:18.403Z",
+      "context": "autoSortTasksByPriority",
+      "message": "Validation failed: Task error_1759010898402_mn20muybp: Required field 'category' is missing, Task error_1759010898402_4ohllx8z5: Required field 'category' is missing",
+      "stack": "Error: Validation failed: Task error_1759010898402_mn20muybp: Required field 'category' is missing, Task error_1759010898402_4ohllx8z5: Required field 'category' is missing\n    at TaskManager.writeTodo (/Users/jeremyparker/infinite-continue-stop-hook/lib/taskManager.js:211:17)\n    at autoSortTasksByPriority (/Users/jeremyparker/infinite-continue-stop-hook/stop-hook.js:696:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async Socket.<anonymous> (/Users/jeremyparker/infinite-continue-stop-hook/stop-hook.js:1202:26)",
+      "name": "Error"
+    }
+  ]
+}

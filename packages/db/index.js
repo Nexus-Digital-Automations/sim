@@ -4,7 +4,7 @@ import * as schema from './schema'
 
 // Re-export Parlant types and utilities (comprehensive exports)
 export * from './parlant-exports'
-// Re-export non-Parlant schema items only
+// Re-export non-Parlant schema items only (Parlant items exported via parlant-exports to avoid conflicts)
 export * from './schema'
 
 // In production, use the Vercel-generated POSTGRES_URL
