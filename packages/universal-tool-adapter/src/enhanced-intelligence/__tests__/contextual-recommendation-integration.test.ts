@@ -63,6 +63,7 @@ describe('Contextual Recommendation Engine Integration', () => {
         anomalyDetectionEnabled: false,
         predictionEnabled: false,
         parallelProcessing: true,
+        maxProcessingThreads: 4,
       },
     })
   })
@@ -605,6 +606,7 @@ function createMockRecommendationRequest(options: {
 
   const currentContext: AdvancedUsageContext = {
     userId,
+    workspaceId: 'test_workspace_' + Math.random().toString(36).substr(2, 9),
     currentIntent: options.intent
       ? {
           primary: options.intent,

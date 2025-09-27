@@ -20,7 +20,7 @@ import {
 // User Experience Testing Framework
 // =============================================================================
 
-class UserExperienceTestingFramework {
+export class UserExperienceTestingFramework {
   private engine: EnhancedToolIntelligenceEngine
   private abTestingManager: ABTestingManager
   private userSimulator: UserSimulator
@@ -30,7 +30,7 @@ class UserExperienceTestingFramework {
   constructor() {
     this.engine = createEnhancedToolIntelligenceEngine()
     this.abTestingManager = new ABTestingManager()
-    this.userSimulator = new UserSimulator(this.engine)
+    this.userSimulator = new UserSimulator()
     this.discoverabilityTester = new DiscoverabilityTester()
     this.satisfactionAnalyzer = new SatisfactionAnalyzer()
   }

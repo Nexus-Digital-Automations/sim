@@ -196,10 +196,9 @@ describe('ErrorAnalyticsSystem', () => {
         timestamp: new Date(),
         classification: {
           category: 'network',
-          severity: 'medium',
-          isRetryable: true,
-          requiresUserAction: false,
-          requiresEscalation: false,
+          subcategory: 'concurrent',
+          type: 'testing',
+          domain: 'validation',
           confidence: 0.8,
           patterns: [],
           suggestedActions: [],
@@ -333,9 +332,6 @@ describe('ErrorAnalyticsSystem', () => {
         const classification: ErrorClassification = {
           category: 'test',
           severity: 'low',
-          isRetryable: true,
-          requiresUserAction: false,
-          requiresEscalation: false,
           confidence: 0.8,
           patterns: [],
           suggestedActions: [],
@@ -443,10 +439,9 @@ describe('ErrorAnalyticsSystem', () => {
 
         const classification: ErrorClassification = {
           category: 'test',
-          severity: 'medium',
-          isRetryable: true,
-          requiresUserAction: false,
-          requiresEscalation: false,
+          subcategory: 'concurrent',
+          type: 'testing',
+          domain: 'validation',
           confidence: 0.8,
           patterns: [],
           suggestedActions: [],
@@ -542,9 +537,6 @@ describe('ErrorAnalyticsSystem', () => {
         const classification: ErrorClassification = {
           category: 'test',
           severity: 'low',
-          isRetryable: true,
-          requiresUserAction: false,
-          requiresEscalation: false,
           confidence: 0.8,
           patterns: [],
           suggestedActions: [],
@@ -653,9 +645,6 @@ describe('ErrorAnalyticsSystem', () => {
         const classification: ErrorClassification = {
           category: 'test',
           severity: 'high',
-          isRetryable: true,
-          requiresUserAction: false,
-          requiresEscalation: false,
           confidence: 0.8,
           patterns: [],
           suggestedActions: [],
@@ -920,9 +909,6 @@ describe('ErrorAnalyticsSystem', () => {
         const classification: ErrorClassification = {
           category: 'test',
           severity: 'low',
-          isRetryable: true,
-          requiresUserAction: false,
-          requiresEscalation: false,
           confidence: 0.8,
           patterns: [],
           suggestedActions: [],
@@ -948,11 +934,12 @@ describe('ErrorAnalyticsSystem', () => {
       const concurrentOperations = Array.from({ length: 50 }, async (_, i) => {
         const error = new Error(`Concurrent error ${i}`)
         const context: ErrorRecoveryContext = {
-          toolName: `concurrent_tool_${i}`,
-          operation: 'concurrent_test',
-          parameters: { index: i },
-          timestamp: new Date(),
+          toolId: `concurrent_tool_${i}`,
+          userId: `user_${i}`,
           sessionId: `concurrent_session_${i}`,
+          workspaceId: `workspace_${i}`,
+          operationId: `operation_${i}`,
+          timestamp: new Date(),
           userAgent: 'Test/1.0',
           previousAttempts: 0,
           platform: 'web',
@@ -960,10 +947,9 @@ describe('ErrorAnalyticsSystem', () => {
 
         const classification: ErrorClassification = {
           category: 'test',
-          severity: 'medium',
-          isRetryable: true,
-          requiresUserAction: false,
-          requiresEscalation: false,
+          subcategory: 'concurrent',
+          type: 'testing',
+          domain: 'validation',
           confidence: 0.8,
           patterns: [],
           suggestedActions: [],
