@@ -4,25 +4,15 @@ import { isDev, isHosted, isProd } from './lib/environment'
 import { getMainCSPPolicy, getWorkflowExecutionCSPPolicy } from './lib/security/csp'
 
 const nextConfig: NextConfig = {
-  // EXTREME OPTIMIZATION BYPASS - Static Export Mode
-  devIndicators: false,
+  // ULTRA-MINIMAL CONFIG TO PREVENT BUILD HANGS
+  output: 'standalone',
 
-  // Force static export to completely bypass server optimization
-  output: 'export',
-  trailingSlash: true,
-
-  // Basic images config only
+  // Disable ALL optimization features
   images: {
-    unoptimized: true, // Disable image optimization to prevent hangs
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**', // Simplified pattern to avoid complex matching
-      },
-    ],
+    unoptimized: true,
   },
 
-  // Ignore all errors during build to prevent hangs
+  // Skip all validation during build
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -30,22 +20,11 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // Minimal experimental config with MAXIMUM bypass flags
-  experimental: {
-    optimizeCss: false,
-    turbopackSourceMaps: false,
-    optimizePackageImports: [],
-    forceSwcTransforms: false,
-    fullySpecified: false,
-    staticPageGenerationTimeout: 5, // Reduce timeout to prevent hangs
-    disableOptimizedLoading: true,
-    gzipSize: false,
-    // Removed esmExternals per Next.js recommendation
-    // Remove invalid Next.js 15 properties (appDir is default, serverComponentsExternalPackages moved to serverExternalPackages)
-  },
+  // Disable all experimental features
+  experimental: {},
 
-  // Minimal server external packages
-  serverExternalPackages: ['pdf-parse', 'parlant-server', 'fs', 'fs/promises', 'path'],
+  // Minimal externals only
+  serverExternalPackages: ['fs', 'path'],
 
   // EXTREME WEBPACK BYPASS - Maximum optimization disable
   webpack: (config, { isServer, dev }) => {
