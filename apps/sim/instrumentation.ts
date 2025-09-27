@@ -30,3 +30,13 @@ export async function register() {
     await import('./instrumentation-client')
   }
 }
+
+export async function onRequestError(error: unknown, request: any) {
+  // Load Node.js instrumentation and call its onRequestError function
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    const nodeInstrumentation = await import('./instrumentation-node')
+    if (nodeInstrumentation.onRequestError) {
+      return nodeInstrumentation.onRequestError(error, request)
+    }
+  }
+}

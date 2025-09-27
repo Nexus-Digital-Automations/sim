@@ -137,4 +137,6 @@ export async function register() {
   await initializeOpenTelemetry()
 }
 
-export const onRequestError = Sentry.captureRequestError
+export function onRequestError(error: unknown, request: any) {
+  return Sentry.captureRequestError(error, request)
+}

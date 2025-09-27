@@ -58,8 +58,6 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['pdf-parse', 'parlant-server', 'fs', 'fs/promises', 'path'],
   experimental: {
     optimizeCss: false,
-    turbopackSourceMaps: false,
-    optimizePackageImports: [],
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

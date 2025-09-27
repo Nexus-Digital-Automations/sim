@@ -105,12 +105,12 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 46,
+      "total_reinitializations": 48,
       "current_day": "2025-09-27",
       "time_buckets": {
         "11:00-15:59": {
           "init": 0,
-          "reinit": 2
+          "reinit": 4
         },
         "16:00-20:59": {
           "init": 0,
@@ -159,7 +159,7 @@
         }
       ],
       "last_reset": "2025-09-27T05:02:22.444Z",
-      "last_updated": "2025-09-27T17:17:15.359Z"
+      "last_updated": "2025-09-27T17:45:45.034Z"
     }
   },
   "agents": {
@@ -173,6 +173,20 @@
         "bf63ff46114dfd59",
         "3eb04ed1dca22ae1"
       ]
+    },
+    "UNIVERSAL_TOOL_ADAPTER_TEST_FIXER": {
+      "lastHeartbeat": "2025-09-27T17:40:03.455Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T17:40:03.455Z",
+      "sessionId": "550d5be29b5883b2",
+      "previousSessions": []
+    },
+    "agent_nextjs_build_fix": {
+      "lastHeartbeat": "2025-09-27T17:45:45.033Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T17:45:45.033Z",
+      "sessionId": "58eb92b36efc916f",
+      "previousSessions": []
     }
   },
   "features": []
