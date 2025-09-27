@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Info } from 'lucide-react'
 import { OutlookIcon } from '@/components/icons'
 import {
@@ -128,6 +128,9 @@ export function OutlookConfig({
   includeRawEmail = false,
   setIncludeRawEmail = () => {},
 }: OutlookConfigProps) {
+  const markAsReadId = useId()
+  const includeRawEmailId = useId()
+
   const [folders, setFolders] = useState<OutlookFolder[]>([])
   const [isLoadingFolders, setIsLoadingFolders] = useState(false)
   const [folderError, setFolderError] = useState<string | null>(null)
@@ -316,11 +319,11 @@ export function OutlookConfig({
           <div className='flex items-center'>
             <div className='flex flex-1 items-center gap-2'>
               <Checkbox
-                id='mark-as-read'
+                id={markAsReadId}
                 checked={markAsRead}
                 onCheckedChange={(checked) => setMarkAsRead(checked as boolean)}
               />
-              <Label htmlFor='mark-as-read' className='cursor-pointer font-normal text-sm'>
+              <Label htmlFor={markAsReadId} className='cursor-pointer font-normal text-sm'>
                 Mark emails as read after processing
               </Label>
               <Tooltip>
@@ -344,11 +347,11 @@ export function OutlookConfig({
           <div className='flex items-center'>
             <div className='flex flex-1 items-center gap-2'>
               <Checkbox
-                id='include-raw-email'
+                id={includeRawEmailId}
                 checked={includeRawEmail}
                 onCheckedChange={(checked) => setIncludeRawEmail(checked as boolean)}
               />
-              <Label htmlFor='include-raw-email' className='cursor-pointer font-normal text-sm'>
+              <Label htmlFor={includeRawEmailId} className='cursor-pointer font-normal text-sm'>
                 Include raw email data
               </Label>
               <Tooltip>

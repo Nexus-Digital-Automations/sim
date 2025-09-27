@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { CheckCheck, Copy, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,10 +19,12 @@ export function WebhookUrlField({
   copied,
   copyToClipboard,
 }: WebhookUrlFieldProps) {
+  const webhookUrlId = useId()
+
   return (
     <div className='mb-4 space-y-1'>
       <div className='flex items-center gap-2'>
-        <Label htmlFor='webhook-url' className='font-medium text-sm'>
+        <Label htmlFor={webhookUrlId} className='font-medium text-sm'>
           Webhook URL
         </Label>
         <Tooltip>
@@ -47,7 +50,7 @@ export function WebhookUrlField({
       </div>
       <div className='flex'>
         <Input
-          id='webhook-url'
+          id={webhookUrlId}
           readOnly
           value={webhookUrl}
           className={cn(

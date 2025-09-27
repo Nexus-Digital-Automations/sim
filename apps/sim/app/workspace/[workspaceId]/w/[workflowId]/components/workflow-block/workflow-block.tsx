@@ -42,6 +42,11 @@ interface WorkflowBlockProps {
 export function WorkflowBlock({ id, data }: NodeProps<WorkflowBlockProps>) {
   const { type, config, name, isActive: dataIsActive, isPending } = data
 
+  // Generate unique IDs for React Flow handles
+  const targetHandleId = useId()
+  const sourceHandleId = useId()
+  const errorHandleId = useId()
+
   // State management
   const [isConnecting, setIsConnecting] = useState(false)
 
@@ -636,7 +641,7 @@ export function WorkflowBlock({ id, data }: NodeProps<WorkflowBlockProps>) {
           <Handle
             type='target'
             position={horizontalHandles ? Position.Left : Position.Top}
-            id='target'
+            id={targetHandleId}
             className={cn(
               horizontalHandles ? '!w-[7px] !h-5' : '!w-5 !h-[7px]',
               '!bg-slate-300 dark:!bg-slate-500 !rounded-[2px] !border-none',
@@ -1024,7 +1029,7 @@ export function WorkflowBlock({ id, data }: NodeProps<WorkflowBlockProps>) {
             <Handle
               type='source'
               position={horizontalHandles ? Position.Right : Position.Bottom}
-              id='source'
+              id={sourceHandleId}
               className={cn(
                 horizontalHandles ? '!w-[7px] !h-5' : '!w-5 !h-[7px]',
                 '!bg-slate-300 dark:!bg-slate-500 !rounded-[2px] !border-none',
@@ -1054,7 +1059,7 @@ export function WorkflowBlock({ id, data }: NodeProps<WorkflowBlockProps>) {
               <Handle
                 type='source'
                 position={horizontalHandles ? Position.Right : Position.Bottom}
-                id='error'
+                id={errorHandleId}
                 className={cn(
                   horizontalHandles ? '!w-[7px] !h-5' : '!w-5 !h-[7px]',
                   '!bg-red-400 dark:!bg-red-500 !rounded-[2px] !border-none',

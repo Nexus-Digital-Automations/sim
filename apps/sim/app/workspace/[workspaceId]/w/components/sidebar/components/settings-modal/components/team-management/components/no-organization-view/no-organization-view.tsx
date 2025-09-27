@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -40,6 +41,10 @@ export function NoOrganizationView({
   createOrgDialogOpen,
   setCreateOrgDialogOpen,
 }: NoOrganizationViewProps) {
+  const orgNameId = useId()
+  const orgSlugId = useId()
+  const dialogOrgNameId = useId()
+  const dialogOrgSlugId = useId()
   if (hasTeamPlan || hasEnterprisePlan) {
     return (
       <div className='px-6 pt-4 pb-4'>
@@ -56,11 +61,11 @@ export function NoOrganizationView({
           {/* Form fields - clean layout without card */}
           <div className='space-y-4'>
             <div>
-              <Label htmlFor='orgName' className='font-medium text-sm'>
+              <Label htmlFor={orgNameId} className='font-medium text-sm'>
                 Team Name
               </Label>
               <Input
-                id='orgName'
+                id={orgNameId}
                 value={orgName}
                 onChange={onOrgNameChange}
                 placeholder='My Team'
@@ -69,7 +74,7 @@ export function NoOrganizationView({
             </div>
 
             <div>
-              <Label htmlFor='orgSlug' className='font-medium text-sm'>
+              <Label htmlFor={orgSlugId} className='font-medium text-sm'>
                 Team URL
               </Label>
               <div className='mt-1 flex items-center'>
@@ -77,7 +82,7 @@ export function NoOrganizationView({
                   sim.ai/team/
                 </div>
                 <Input
-                  id='orgSlug'
+                  id={orgSlugId}
                   value={orgSlug}
                   onChange={(e) => setOrgSlug(e.target.value)}
                   placeholder='my-team'
@@ -124,11 +129,11 @@ export function NoOrganizationView({
               )}
 
               <div>
-                <Label htmlFor='org-name' className='font-medium text-sm'>
+                <Label htmlFor={dialogOrgNameId} className='font-medium text-sm'>
                   Organization Name
                 </Label>
                 <Input
-                  id='org-name'
+                  id={dialogOrgNameId}
                   placeholder='Enter organization name'
                   value={orgName}
                   onChange={onOrgNameChange}
@@ -138,11 +143,11 @@ export function NoOrganizationView({
               </div>
 
               <div>
-                <Label htmlFor='org-slug' className='font-medium text-sm'>
+                <Label htmlFor={dialogOrgSlugId} className='font-medium text-sm'>
                   Organization Slug
                 </Label>
                 <Input
-                  id='org-slug'
+                  id={dialogOrgSlugId}
                   placeholder='organization-slug'
                   value={orgSlug}
                   onChange={(e) => setOrgSlug(e.target.value)}

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useId } from 'react'
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -22,6 +22,10 @@ const TOOLTIPS = {
 }
 
 export function General() {
+  const themeSelectId = useId()
+  const autoConnectId = useId()
+  const consoleExpandedId = useId()
+
   const isLoading = useGeneralStore((state) => state.isLoading)
   const theme = useGeneralStore((state) => state.theme)
   const isAutoConnectEnabled = useGeneralStore((state) => state.isAutoConnectEnabled)
@@ -85,7 +89,7 @@ export function General() {
             {/* Theme setting with skeleton value */}
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
-                <Label htmlFor='theme-select' className='font-normal'>
+                <Label htmlFor={themeSelectId} className='font-normal'>
                   Theme
                 </Label>
               </div>
@@ -95,7 +99,7 @@ export function General() {
             {/* Auto-connect setting with skeleton value */}
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
-                <Label htmlFor='auto-connect' className='font-normal'>
+                <Label htmlFor={autoConnectId} className='font-normal'>
                   Auto-connect on drop
                 </Label>
                 <Tooltip>
@@ -121,7 +125,7 @@ export function General() {
             {/* Console expanded setting with skeleton value */}
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
-                <Label htmlFor='console-expanded-by-default' className='font-normal'>
+                <Label htmlFor={consoleExpandedId} className='font-normal'>
                   Console expanded by default
                 </Label>
                 <Tooltip>
@@ -148,7 +152,7 @@ export function General() {
           <>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
-                <Label htmlFor='theme-select' className='font-normal'>
+                <Label htmlFor={themeSelectId} className='font-normal'>
                   Theme
                 </Label>
               </div>
@@ -157,7 +161,7 @@ export function General() {
                 onValueChange={handleThemeChange}
                 disabled={isLoading || isThemeLoading}
               >
-                <SelectTrigger id='theme-select' className='h-9 w-[180px]'>
+                <SelectTrigger id={themeSelectId} className='h-9 w-[180px]'>
                   <SelectValue placeholder='Select theme' />
                 </SelectTrigger>
                 <SelectContent className='min-w-32 rounded-[10px] border-[#E5E5E5] bg-[#FFFFFF] shadow-xs dark:border-[#414141] dark:bg-[#202020]'>
@@ -184,7 +188,7 @@ export function General() {
             </div>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
-                <Label htmlFor='auto-connect' className='font-normal'>
+                <Label htmlFor={autoConnectId} className='font-normal'>
                   Auto-connect on drop
                 </Label>
                 <Tooltip>
@@ -205,7 +209,7 @@ export function General() {
                 </Tooltip>
               </div>
               <Switch
-                id='auto-connect'
+                id={autoConnectId}
                 checked={isAutoConnectEnabled}
                 onCheckedChange={handleAutoConnectChange}
                 disabled={isLoading || isAutoConnectLoading}
@@ -214,7 +218,7 @@ export function General() {
 
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
-                <Label htmlFor='console-expanded-by-default' className='font-normal'>
+                <Label htmlFor={consoleExpandedId} className='font-normal'>
                   Console expanded by default
                 </Label>
                 <Tooltip>
@@ -235,7 +239,7 @@ export function General() {
                 </Tooltip>
               </div>
               <Switch
-                id='console-expanded-by-default'
+                id={consoleExpandedId}
                 checked={isConsoleExpandedByDefault}
                 onCheckedChange={handleConsoleExpandedByDefaultChange}
                 disabled={isLoading || isConsoleExpandedByDefaultLoading}

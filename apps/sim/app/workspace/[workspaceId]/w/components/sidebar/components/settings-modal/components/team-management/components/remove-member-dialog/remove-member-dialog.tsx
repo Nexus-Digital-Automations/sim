@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -27,6 +28,8 @@ export function RemoveMemberDialog({
   onConfirmRemove,
   onCancel,
 }: RemoveMemberDialogProps) {
+  const reduceSeatsId = useId()
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -41,12 +44,12 @@ export function RemoveMemberDialog({
           <div className='flex items-center space-x-2'>
             <input
               type='checkbox'
-              id='reduce-seats'
+              id={reduceSeatsId}
               className='rounded-[4px]'
               checked={shouldReduceSeats}
               onChange={(e) => onShouldReduceSeatsChange(e.target.checked)}
             />
-            <label htmlFor='reduce-seats' className='text-xs'>
+            <label htmlFor={reduceSeatsId} className='text-xs'>
               Also reduce seat count in my subscription
             </label>
           </div>

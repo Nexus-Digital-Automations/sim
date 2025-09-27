@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Input, Skeleton } from '@/components/ui'
 import {
   ConfigField,
@@ -29,11 +30,13 @@ export function TelegramConfig({
   webhookId,
   webhookUrl,
 }: TelegramConfigProps) {
+  const botTokenId = useId()
+
   return (
     <div className='space-y-4'>
       <ConfigSection title='Telegram Configuration'>
         <ConfigField
-          id='telegram-bot-token'
+          id={botTokenId}
           label='Bot Token *'
           description='Your Telegram Bot Token from BotFather'
         >
@@ -41,7 +44,7 @@ export function TelegramConfig({
             <Skeleton className='h-10 w-full' />
           ) : (
             <Input
-              id='telegram-bot-token'
+              id={botTokenId}
               value={botToken}
               onChange={(e) => {
                 setBotToken(e.target.value)

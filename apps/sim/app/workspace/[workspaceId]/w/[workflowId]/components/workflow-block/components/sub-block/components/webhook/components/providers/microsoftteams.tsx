@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Shield, Terminal } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle, CodeBlock, Input } from '@/components/ui'
 import {
@@ -51,16 +52,18 @@ export function MicrosoftTeamsConfig({
   copyToClipboard,
   testWebhook,
 }: MicrosoftTeamsConfigProps) {
+  const hmacSecretId = useId()
+
   return (
     <div className='space-y-4'>
       <ConfigSection title='Microsoft Teams Configuration'>
         <ConfigField
-          id='teams-hmac-secret'
+          id={hmacSecretId}
           label='HMAC Secret'
           description='The security token provided by Teams when creating an outgoing webhook. Used to verify request authenticity.'
         >
           <Input
-            id='teams-hmac-secret'
+            id={hmacSecretId}
             value={hmacSecret}
             onChange={(e) => setHmacSecret(e.target.value)}
             placeholder='Enter HMAC secret from Teams'

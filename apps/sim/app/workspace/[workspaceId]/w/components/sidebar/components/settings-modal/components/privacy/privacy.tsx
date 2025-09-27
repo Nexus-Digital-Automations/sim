@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useId } from 'react'
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -15,6 +15,7 @@ const TOOLTIPS = {
 }
 
 export function Privacy() {
+  const telemetryId = useId()
   const isLoading = useGeneralStore((state) => state.isLoading)
   const telemetryEnabled = useGeneralStore((state) => state.telemetryEnabled)
   const setTelemetryEnabled = useGeneralStore((state) => state.setTelemetryEnabled)
@@ -52,7 +53,7 @@ export function Privacy() {
         ) : (
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
-              <Label htmlFor='telemetry' className='font-normal'>
+              <Label htmlFor={telemetryId} className='font-normal'>
                 Allow anonymous telemetry
               </Label>
               <Tooltip>
@@ -72,7 +73,7 @@ export function Privacy() {
               </Tooltip>
             </div>
             <Switch
-              id='telemetry'
+              id={telemetryId}
               checked={telemetryEnabled}
               onCheckedChange={handleTelemetryToggle}
               disabled={isLoading}

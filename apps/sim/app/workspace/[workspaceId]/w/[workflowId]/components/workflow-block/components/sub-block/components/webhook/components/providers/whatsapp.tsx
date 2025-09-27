@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Network } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui'
 import {
@@ -29,16 +30,18 @@ export function WhatsAppConfig({
   copied,
   copyToClipboard,
 }: WhatsAppConfigProps) {
+  const verificationTokenId = useId()
+
   return (
     <div className='space-y-4'>
       <ConfigSection title='WhatsApp Configuration'>
         <ConfigField
-          id='whatsapp-verification-token'
+          id={verificationTokenId}
           label='Verification Token'
           description="Enter any secure token here. You'll need to provide the same token in your WhatsApp Business Platform dashboard."
         >
           <CopyableField
-            id='whatsapp-verification-token'
+            id={verificationTokenId}
             value={verificationToken}
             onChange={setVerificationToken}
             placeholder='Generate or enter a verification token'

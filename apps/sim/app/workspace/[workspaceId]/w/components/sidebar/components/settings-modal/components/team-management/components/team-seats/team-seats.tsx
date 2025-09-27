@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -47,6 +47,7 @@ export function TeamSeats({
   showCostBreakdown = false,
   isCancelledAtPeriodEnd = false,
 }: TeamSeatsProps) {
+  const seatsId = useId()
   const [selectedSeats, setSelectedSeats] = useState(initialSeats)
 
   useEffect(() => {
@@ -72,12 +73,12 @@ export function TeamSeats({
         </DialogHeader>
 
         <div className='py-4'>
-          <Label htmlFor='seats'>Number of seats</Label>
+          <Label htmlFor={seatsId}>Number of seats</Label>
           <Select
             value={selectedSeats.toString()}
             onValueChange={(value) => setSelectedSeats(Number.parseInt(value, 10))}
           >
-            <SelectTrigger id='seats' className='rounded-[8px]'>
+            <SelectTrigger id={seatsId} className='rounded-[8px]'>
               <SelectValue placeholder='Select number of seats' />
             </SelectTrigger>
             <SelectContent>
