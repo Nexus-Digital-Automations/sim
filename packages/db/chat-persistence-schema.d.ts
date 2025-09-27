@@ -11,6513 +11,6543 @@
  * - Browser session persistence support
  * - Efficient pagination and filtering
  */
-export declare const messageStatusEnum: import('drizzle-orm/pg-core').PgEnum<
-  ['pending', 'sent', 'delivered', 'read', 'failed']
->
-export declare const conversationTypeEnum: import('drizzle-orm/pg-core').PgEnum<
-  ['direct', 'group', 'workflow', 'support', 'onboarding']
->
-export declare const messageTypeEnum: import('drizzle-orm/pg-core').PgEnum<
-  ['text', 'tool_call', 'tool_result', 'system', 'error', 'media', 'file']
->
+export declare const messageStatusEnum: import("drizzle-orm/pg-core").PgEnum<
+  ["pending", "sent", "delivered", "read", "failed"]
+>;
+export declare const conversationTypeEnum: import("drizzle-orm/pg-core").PgEnum<
+  ["direct", "group", "workflow", "support", "onboarding"]
+>;
+export declare const messageTypeEnum: import("drizzle-orm/pg-core").PgEnum<
+  ["text", "tool_call", "tool_result", "system", "error", "media", "file"]
+>;
 /**
  * Chat Messages - Enhanced message storage with metadata and status tracking
  * Extends parlantEvent with chat-specific optimizations
  */
-export declare const chatMessage: import('drizzle-orm/pg-core').PgTableWithColumns<{
-  name: 'chat_message'
-  schema: undefined
+export declare const chatMessage: import("drizzle-orm/pg-core").PgTableWithColumns<{
+  name: "chat_message";
+  schema: undefined;
   columns: {
-    id: import('drizzle-orm/pg-core').PgColumn<
+    id: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'id'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: true
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "id";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: true;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    sessionId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    sessionId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'session_id'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "session_id";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    workspaceId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    workspaceId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'workspace_id'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "workspace_id";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    eventId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    eventId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'event_id'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "event_id";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    sequenceNumber: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    sequenceNumber: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'sequence_number'
-        tableName: 'chat_message'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "sequence_number";
+        tableName: "chat_message";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    messageType: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    messageType: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'message_type'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgEnumColumn'
-        data: 'error' | 'file' | 'system' | 'media' | 'text' | 'tool_call' | 'tool_result'
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: ['text', 'tool_call', 'tool_result', 'system', 'error', 'media', 'file']
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "message_type";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgEnumColumn";
+        data:
+          | "error"
+          | "file"
+          | "system"
+          | "media"
+          | "text"
+          | "tool_call"
+          | "tool_result";
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [
+          "text",
+          "tool_call",
+          "tool_result",
+          "system",
+          "error",
+          "media",
+          "file",
+        ];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    content: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    content: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'content'
-        tableName: 'chat_message'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "content";
+        tableName: "chat_message";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    rawContent: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    rawContent: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'raw_content'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "raw_content";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    senderId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    senderId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'sender_id'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "sender_id";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    senderType: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    senderType: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'sender_type'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "sender_type";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    senderName: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    senderName: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'sender_name'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "sender_name";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    status: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    status: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'status'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgEnumColumn'
-        data: 'pending' | 'failed' | 'read' | 'sent' | 'delivered'
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: ['pending', 'sent', 'delivered', 'read', 'failed']
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "status";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgEnumColumn";
+        data: "pending" | "failed" | "read" | "sent" | "delivered";
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: ["pending", "sent", "delivered", "read", "failed"];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    deliveredAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    deliveredAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'delivered_at'
-        tableName: 'chat_message'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "delivered_at";
+        tableName: "chat_message";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    readAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    readAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'read_at'
-        tableName: 'chat_message'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "read_at";
+        tableName: "chat_message";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    threadId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    threadId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'thread_id'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "thread_id";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    parentMessageId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    parentMessageId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'parent_message_id'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "parent_message_id";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    mentionedUserIds: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    mentionedUserIds: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'mentioned_user_ids'
-        tableName: 'chat_message'
-        dataType: 'array'
-        columnType: 'PgArray'
-        data: string[]
-        driverParam: string | string[]
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: import('drizzle-orm').Column<
+        name: "mentioned_user_ids";
+        tableName: "chat_message";
+        dataType: "array";
+        columnType: "PgArray";
+        data: string[];
+        driverParam: string | string[];
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: import("drizzle-orm").Column<
           {
-            name: 'mentioned_user_ids'
-            tableName: 'chat_message'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            driverParam: string
-            notNull: false
-            hasDefault: false
-            isPrimaryKey: false
-            isAutoincrement: false
-            hasRuntimeDefault: false
-            enumValues: [string, ...string[]]
-            baseColumn: never
-            identity: undefined
-            generated: undefined
+            name: "mentioned_user_ids";
+            tableName: "chat_message";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
           },
           {},
           {}
-        >
-        identity: undefined
-        generated: undefined
+        >;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {
-        size: undefined
-        baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+        size: undefined;
+        baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
           {
-            name: 'mentioned_user_ids'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            enumValues: [string, ...string[]]
-            driverParam: string
+            name: "mentioned_user_ids";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            enumValues: [string, ...string[]];
+            driverParam: string;
           },
           {},
           {},
-          import('drizzle-orm').ColumnBuilderExtraConfig
-        >
+          import("drizzle-orm").ColumnBuilderExtraConfig
+        >;
       }
-    >
-    attachments: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    attachments: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'attachments'
-        tableName: 'chat_message'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "attachments";
+        tableName: "chat_message";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    reactions: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    reactions: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'reactions'
-        tableName: 'chat_message'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "reactions";
+        tableName: "chat_message";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    editHistory: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    editHistory: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'edit_history'
-        tableName: 'chat_message'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "edit_history";
+        tableName: "chat_message";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    toolCallId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    toolCallId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'tool_call_id'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "tool_call_id";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    toolResults: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    toolResults: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'tool_results'
-        tableName: 'chat_message'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "tool_results";
+        tableName: "chat_message";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    tags: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    tags: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'tags'
-        tableName: 'chat_message'
-        dataType: 'array'
-        columnType: 'PgArray'
-        data: string[]
-        driverParam: string | string[]
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: import('drizzle-orm').Column<
+        name: "tags";
+        tableName: "chat_message";
+        dataType: "array";
+        columnType: "PgArray";
+        data: string[];
+        driverParam: string | string[];
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: import("drizzle-orm").Column<
           {
-            name: 'tags'
-            tableName: 'chat_message'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            driverParam: string
-            notNull: false
-            hasDefault: false
-            isPrimaryKey: false
-            isAutoincrement: false
-            hasRuntimeDefault: false
-            enumValues: [string, ...string[]]
-            baseColumn: never
-            identity: undefined
-            generated: undefined
+            name: "tags";
+            tableName: "chat_message";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
           },
           {},
           {}
-        >
-        identity: undefined
-        generated: undefined
+        >;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {
-        size: undefined
-        baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+        size: undefined;
+        baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
           {
-            name: 'tags'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            enumValues: [string, ...string[]]
-            driverParam: string
+            name: "tags";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            enumValues: [string, ...string[]];
+            driverParam: string;
           },
           {},
           {},
-          import('drizzle-orm').ColumnBuilderExtraConfig
-        >
+          import("drizzle-orm").ColumnBuilderExtraConfig
+        >;
       }
-    >
-    category: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    category: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'category'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "category";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    priority: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    priority: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'priority'
-        tableName: 'chat_message'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "priority";
+        tableName: "chat_message";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    tokenCount: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    tokenCount: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'token_count'
-        tableName: 'chat_message'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "token_count";
+        tableName: "chat_message";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    cost: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    cost: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'cost'
-        tableName: 'chat_message'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "cost";
+        tableName: "chat_message";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    processingTime: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    processingTime: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'processing_time'
-        tableName: 'chat_message'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "processing_time";
+        tableName: "chat_message";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    metadata: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    metadata: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'metadata'
-        tableName: 'chat_message'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "metadata";
+        tableName: "chat_message";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    customData: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    customData: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'custom_data'
-        tableName: 'chat_message'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "custom_data";
+        tableName: "chat_message";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    ipAddress: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    ipAddress: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'ip_address'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "ip_address";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    userAgent: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    userAgent: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'user_agent'
-        tableName: 'chat_message'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "user_agent";
+        tableName: "chat_message";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    createdAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    createdAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'created_at'
-        tableName: 'chat_message'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "created_at";
+        tableName: "chat_message";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    updatedAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    updatedAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'updated_at'
-        tableName: 'chat_message'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "updated_at";
+        tableName: "chat_message";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    deletedAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    deletedAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'deleted_at'
-        tableName: 'chat_message'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "deleted_at";
+        tableName: "chat_message";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-  }
-  dialect: 'pg'
-}>
+    >;
+  };
+  dialect: "pg";
+}>;
 /**
  * Chat Conversations - Logical grouping of related chat sessions
  * Enables conversation threading and persistent chat history
  */
-export declare const chatConversation: import('drizzle-orm/pg-core').PgTableWithColumns<{
-  name: 'chat_conversation'
-  schema: undefined
+export declare const chatConversation: import("drizzle-orm/pg-core").PgTableWithColumns<{
+  name: "chat_conversation";
+  schema: undefined;
   columns: {
-    id: import('drizzle-orm/pg-core').PgColumn<
+    id: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'id'
-        tableName: 'chat_conversation'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: true
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "id";
+        tableName: "chat_conversation";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: true;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    workspaceId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    workspaceId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'workspace_id'
-        tableName: 'chat_conversation'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "workspace_id";
+        tableName: "chat_conversation";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    title: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    title: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'title'
-        tableName: 'chat_conversation'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "title";
+        tableName: "chat_conversation";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    description: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    description: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'description'
-        tableName: 'chat_conversation'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "description";
+        tableName: "chat_conversation";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    conversationType: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    conversationType: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'conversation_type'
-        tableName: 'chat_conversation'
-        dataType: 'string'
-        columnType: 'PgEnumColumn'
-        data: 'workflow' | 'direct' | 'group' | 'support' | 'onboarding'
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: ['direct', 'group', 'workflow', 'support', 'onboarding']
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "conversation_type";
+        tableName: "chat_conversation";
+        dataType: "string";
+        columnType: "PgEnumColumn";
+        data: "workflow" | "direct" | "group" | "support" | "onboarding";
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: ["direct", "group", "workflow", "support", "onboarding"];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    participantIds: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    participantIds: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'participant_ids'
-        tableName: 'chat_conversation'
-        dataType: 'array'
-        columnType: 'PgArray'
-        data: string[]
-        driverParam: string | string[]
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: import('drizzle-orm').Column<
+        name: "participant_ids";
+        tableName: "chat_conversation";
+        dataType: "array";
+        columnType: "PgArray";
+        data: string[];
+        driverParam: string | string[];
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: import("drizzle-orm").Column<
           {
-            name: 'participant_ids'
-            tableName: 'chat_conversation'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            driverParam: string
-            notNull: false
-            hasDefault: false
-            isPrimaryKey: false
-            isAutoincrement: false
-            hasRuntimeDefault: false
-            enumValues: [string, ...string[]]
-            baseColumn: never
-            identity: undefined
-            generated: undefined
+            name: "participant_ids";
+            tableName: "chat_conversation";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
           },
           {},
           {}
-        >
-        identity: undefined
-        generated: undefined
+        >;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {
-        size: undefined
-        baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+        size: undefined;
+        baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
           {
-            name: 'participant_ids'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            enumValues: [string, ...string[]]
-            driverParam: string
+            name: "participant_ids";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            enumValues: [string, ...string[]];
+            driverParam: string;
           },
           {},
           {},
-          import('drizzle-orm').ColumnBuilderExtraConfig
-        >
+          import("drizzle-orm").ColumnBuilderExtraConfig
+        >;
       }
-    >
-    agentIds: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    agentIds: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'agent_ids'
-        tableName: 'chat_conversation'
-        dataType: 'array'
-        columnType: 'PgArray'
-        data: string[]
-        driverParam: string | string[]
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: import('drizzle-orm').Column<
+        name: "agent_ids";
+        tableName: "chat_conversation";
+        dataType: "array";
+        columnType: "PgArray";
+        data: string[];
+        driverParam: string | string[];
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: import("drizzle-orm").Column<
           {
-            name: 'agent_ids'
-            tableName: 'chat_conversation'
-            dataType: 'string'
-            columnType: 'PgUUID'
-            data: string
-            driverParam: string
-            notNull: false
-            hasDefault: false
-            isPrimaryKey: false
-            isAutoincrement: false
-            hasRuntimeDefault: false
-            enumValues: undefined
-            baseColumn: never
-            identity: undefined
-            generated: undefined
+            name: "agent_ids";
+            tableName: "chat_conversation";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
           },
           {},
           {}
-        >
-        identity: undefined
-        generated: undefined
+        >;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {
-        size: undefined
-        baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+        size: undefined;
+        baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
           {
-            name: 'agent_ids'
-            dataType: 'string'
-            columnType: 'PgUUID'
-            data: string
-            driverParam: string
-            enumValues: undefined
+            name: "agent_ids";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            enumValues: undefined;
           },
           {},
           {},
-          import('drizzle-orm').ColumnBuilderExtraConfig
-        >
+          import("drizzle-orm").ColumnBuilderExtraConfig
+        >;
       }
-    >
-    createdBy: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    createdBy: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'created_by'
-        tableName: 'chat_conversation'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "created_by";
+        tableName: "chat_conversation";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    isActive: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    isActive: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'is_active'
-        tableName: 'chat_conversation'
-        dataType: 'boolean'
-        columnType: 'PgBoolean'
-        data: boolean
-        driverParam: boolean
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "is_active";
+        tableName: "chat_conversation";
+        dataType: "boolean";
+        columnType: "PgBoolean";
+        data: boolean;
+        driverParam: boolean;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    isArchived: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    isArchived: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'is_archived'
-        tableName: 'chat_conversation'
-        dataType: 'boolean'
-        columnType: 'PgBoolean'
-        data: boolean
-        driverParam: boolean
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "is_archived";
+        tableName: "chat_conversation";
+        dataType: "boolean";
+        columnType: "PgBoolean";
+        data: boolean;
+        driverParam: boolean;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    isPinned: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    isPinned: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'is_pinned'
-        tableName: 'chat_conversation'
-        dataType: 'boolean'
-        columnType: 'PgBoolean'
-        data: boolean
-        driverParam: boolean
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "is_pinned";
+        tableName: "chat_conversation";
+        dataType: "boolean";
+        columnType: "PgBoolean";
+        data: boolean;
+        driverParam: boolean;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    isPrivate: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    isPrivate: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'is_private'
-        tableName: 'chat_conversation'
-        dataType: 'boolean'
-        columnType: 'PgBoolean'
-        data: boolean
-        driverParam: boolean
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "is_private";
+        tableName: "chat_conversation";
+        dataType: "boolean";
+        columnType: "PgBoolean";
+        data: boolean;
+        driverParam: boolean;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    accessLevel: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    accessLevel: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'access_level'
-        tableName: 'chat_conversation'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "access_level";
+        tableName: "chat_conversation";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    messageCount: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    messageCount: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'message_count'
-        tableName: 'chat_conversation'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "message_count";
+        tableName: "chat_conversation";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    participantCount: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    participantCount: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'participant_count'
-        tableName: 'chat_conversation'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "participant_count";
+        tableName: "chat_conversation";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    lastMessageAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    lastMessageAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'last_message_at'
-        tableName: 'chat_conversation'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "last_message_at";
+        tableName: "chat_conversation";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    lastActivityAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    lastActivityAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'last_activity_at'
-        tableName: 'chat_conversation'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "last_activity_at";
+        tableName: "chat_conversation";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    currentSessionId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    currentSessionId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'current_session_id'
-        tableName: 'chat_conversation'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "current_session_id";
+        tableName: "chat_conversation";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    sessionIds: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    sessionIds: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'session_ids'
-        tableName: 'chat_conversation'
-        dataType: 'array'
-        columnType: 'PgArray'
-        data: string[]
-        driverParam: string | string[]
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: import('drizzle-orm').Column<
+        name: "session_ids";
+        tableName: "chat_conversation";
+        dataType: "array";
+        columnType: "PgArray";
+        data: string[];
+        driverParam: string | string[];
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: import("drizzle-orm").Column<
           {
-            name: 'session_ids'
-            tableName: 'chat_conversation'
-            dataType: 'string'
-            columnType: 'PgUUID'
-            data: string
-            driverParam: string
-            notNull: false
-            hasDefault: false
-            isPrimaryKey: false
-            isAutoincrement: false
-            hasRuntimeDefault: false
-            enumValues: undefined
-            baseColumn: never
-            identity: undefined
-            generated: undefined
+            name: "session_ids";
+            tableName: "chat_conversation";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
           },
           {},
           {}
-        >
-        identity: undefined
-        generated: undefined
+        >;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {
-        size: undefined
-        baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+        size: undefined;
+        baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
           {
-            name: 'session_ids'
-            dataType: 'string'
-            columnType: 'PgUUID'
-            data: string
-            driverParam: string
-            enumValues: undefined
+            name: "session_ids";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            enumValues: undefined;
           },
           {},
           {},
-          import('drizzle-orm').ColumnBuilderExtraConfig
-        >
+          import("drizzle-orm").ColumnBuilderExtraConfig
+        >;
       }
-    >
-    tags: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    tags: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'tags'
-        tableName: 'chat_conversation'
-        dataType: 'array'
-        columnType: 'PgArray'
-        data: string[]
-        driverParam: string | string[]
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: import('drizzle-orm').Column<
+        name: "tags";
+        tableName: "chat_conversation";
+        dataType: "array";
+        columnType: "PgArray";
+        data: string[];
+        driverParam: string | string[];
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: import("drizzle-orm").Column<
           {
-            name: 'tags'
-            tableName: 'chat_conversation'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            driverParam: string
-            notNull: false
-            hasDefault: false
-            isPrimaryKey: false
-            isAutoincrement: false
-            hasRuntimeDefault: false
-            enumValues: [string, ...string[]]
-            baseColumn: never
-            identity: undefined
-            generated: undefined
+            name: "tags";
+            tableName: "chat_conversation";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
           },
           {},
           {}
-        >
-        identity: undefined
-        generated: undefined
+        >;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {
-        size: undefined
-        baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+        size: undefined;
+        baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
           {
-            name: 'tags'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            enumValues: [string, ...string[]]
-            driverParam: string
+            name: "tags";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            enumValues: [string, ...string[]];
+            driverParam: string;
           },
           {},
           {},
-          import('drizzle-orm').ColumnBuilderExtraConfig
-        >
+          import("drizzle-orm").ColumnBuilderExtraConfig
+        >;
       }
-    >
-    category: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    category: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'category'
-        tableName: 'chat_conversation'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "category";
+        tableName: "chat_conversation";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    priority: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    priority: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'priority'
-        tableName: 'chat_conversation'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "priority";
+        tableName: "chat_conversation";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    customData: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    customData: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'custom_data'
-        tableName: 'chat_conversation'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "custom_data";
+        tableName: "chat_conversation";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    totalTokens: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    totalTokens: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'total_tokens'
-        tableName: 'chat_conversation'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "total_tokens";
+        tableName: "chat_conversation";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    totalCost: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    totalCost: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'total_cost'
-        tableName: 'chat_conversation'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "total_cost";
+        tableName: "chat_conversation";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    averageResponseTime: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    averageResponseTime: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'average_response_time'
-        tableName: 'chat_conversation'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "average_response_time";
+        tableName: "chat_conversation";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    satisfactionScore: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    satisfactionScore: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'satisfaction_score'
-        tableName: 'chat_conversation'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "satisfaction_score";
+        tableName: "chat_conversation";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    createdAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    createdAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'created_at'
-        tableName: 'chat_conversation'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "created_at";
+        tableName: "chat_conversation";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    updatedAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    updatedAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'updated_at'
-        tableName: 'chat_conversation'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "updated_at";
+        tableName: "chat_conversation";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    archivedAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    archivedAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'archived_at'
-        tableName: 'chat_conversation'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "archived_at";
+        tableName: "chat_conversation";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    deletedAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    deletedAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'deleted_at'
-        tableName: 'chat_conversation'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "deleted_at";
+        tableName: "chat_conversation";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-  }
-  dialect: 'pg'
-}>
+    >;
+  };
+  dialect: "pg";
+}>;
 /**
  * Browser Session Persistence - Maintains chat state across browser sessions
  * Enables seamless conversation restoration and cross-device continuity
  */
-export declare const chatBrowserSession: import('drizzle-orm/pg-core').PgTableWithColumns<{
-  name: 'chat_browser_session'
-  schema: undefined
+export declare const chatBrowserSession: import("drizzle-orm/pg-core").PgTableWithColumns<{
+  name: "chat_browser_session";
+  schema: undefined;
   columns: {
-    id: import('drizzle-orm/pg-core').PgColumn<
+    id: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'id'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: true
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "id";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: true;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    sessionToken: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    sessionToken: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'session_token'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "session_token";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    workspaceId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    workspaceId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'workspace_id'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "workspace_id";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    userId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    userId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'user_id'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "user_id";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    conversationId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    conversationId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'conversation_id'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "conversation_id";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    parlantSessionId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    parlantSessionId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'parlant_session_id'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "parlant_session_id";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    chatState: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    chatState: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'chat_state'
-        tableName: 'chat_browser_session'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "chat_state";
+        tableName: "chat_browser_session";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    conversationState: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    conversationState: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'conversation_state'
-        tableName: 'chat_browser_session'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "conversation_state";
+        tableName: "chat_browser_session";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    uiState: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    uiState: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'ui_state'
-        tableName: 'chat_browser_session'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "ui_state";
+        tableName: "chat_browser_session";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    deviceInfo: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    deviceInfo: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'device_info'
-        tableName: 'chat_browser_session'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "device_info";
+        tableName: "chat_browser_session";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    lastActiveUrl: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    lastActiveUrl: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'last_active_url'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "last_active_url";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    scrollPosition: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    scrollPosition: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'scroll_position'
-        tableName: 'chat_browser_session'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "scroll_position";
+        tableName: "chat_browser_session";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    isActive: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    isActive: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'is_active'
-        tableName: 'chat_browser_session'
-        dataType: 'boolean'
-        columnType: 'PgBoolean'
-        data: boolean
-        driverParam: boolean
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "is_active";
+        tableName: "chat_browser_session";
+        dataType: "boolean";
+        columnType: "PgBoolean";
+        data: boolean;
+        driverParam: boolean;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    lastHeartbeat: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    lastHeartbeat: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'last_heartbeat'
-        tableName: 'chat_browser_session'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "last_heartbeat";
+        tableName: "chat_browser_session";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    heartbeatCount: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    heartbeatCount: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'heartbeat_count'
-        tableName: 'chat_browser_session'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "heartbeat_count";
+        tableName: "chat_browser_session";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    sessionDuration: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    sessionDuration: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'session_duration'
-        tableName: 'chat_browser_session'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "session_duration";
+        tableName: "chat_browser_session";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    messagesInSession: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    messagesInSession: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'messages_in_session'
-        tableName: 'chat_browser_session'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "messages_in_session";
+        tableName: "chat_browser_session";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    lastMessageAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    lastMessageAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'last_message_at'
-        tableName: 'chat_browser_session'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "last_message_at";
+        tableName: "chat_browser_session";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    userAgent: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    userAgent: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'user_agent'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "user_agent";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    ipAddress: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    ipAddress: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'ip_address'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "ip_address";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    referrer: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    referrer: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'referrer'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "referrer";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    locale: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    locale: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'locale'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "locale";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    timezone: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    timezone: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'timezone'
-        tableName: 'chat_browser_session'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "timezone";
+        tableName: "chat_browser_session";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    expiresAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    expiresAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'expires_at'
-        tableName: 'chat_browser_session'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "expires_at";
+        tableName: "chat_browser_session";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    createdAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    createdAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'created_at'
-        tableName: 'chat_browser_session'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "created_at";
+        tableName: "chat_browser_session";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    updatedAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    updatedAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'updated_at'
-        tableName: 'chat_browser_session'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "updated_at";
+        tableName: "chat_browser_session";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-  }
-  dialect: 'pg'
-}>
+    >;
+  };
+  dialect: "pg";
+}>;
 /**
  * Chat Search Index - Optimized full-text search for chat messages
  * Provides fast message search across conversations and sessions
  */
-export declare const chatSearchIndex: import('drizzle-orm/pg-core').PgTableWithColumns<{
-  name: 'chat_search_index'
-  schema: undefined
+export declare const chatSearchIndex: import("drizzle-orm/pg-core").PgTableWithColumns<{
+  name: "chat_search_index";
+  schema: undefined;
   columns: {
-    id: import('drizzle-orm/pg-core').PgColumn<
+    id: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'id'
-        tableName: 'chat_search_index'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: true
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "id";
+        tableName: "chat_search_index";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: true;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    messageId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    messageId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'message_id'
-        tableName: 'chat_search_index'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "message_id";
+        tableName: "chat_search_index";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    workspaceId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    workspaceId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'workspace_id'
-        tableName: 'chat_search_index'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "workspace_id";
+        tableName: "chat_search_index";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    conversationId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    conversationId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'conversation_id'
-        tableName: 'chat_search_index'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "conversation_id";
+        tableName: "chat_search_index";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    sessionId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    sessionId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'session_id'
-        tableName: 'chat_search_index'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "session_id";
+        tableName: "chat_search_index";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    searchableContent: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    searchableContent: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'searchable_content'
-        tableName: 'chat_search_index'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "searchable_content";
+        tableName: "chat_search_index";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    keywords: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    keywords: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'keywords'
-        tableName: 'chat_search_index'
-        dataType: 'array'
-        columnType: 'PgArray'
-        data: string[]
-        driverParam: string | string[]
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: import('drizzle-orm').Column<
+        name: "keywords";
+        tableName: "chat_search_index";
+        dataType: "array";
+        columnType: "PgArray";
+        data: string[];
+        driverParam: string | string[];
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: import("drizzle-orm").Column<
           {
-            name: 'keywords'
-            tableName: 'chat_search_index'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            driverParam: string
-            notNull: false
-            hasDefault: false
-            isPrimaryKey: false
-            isAutoincrement: false
-            hasRuntimeDefault: false
-            enumValues: [string, ...string[]]
-            baseColumn: never
-            identity: undefined
-            generated: undefined
+            name: "keywords";
+            tableName: "chat_search_index";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
           },
           {},
           {}
-        >
-        identity: undefined
-        generated: undefined
+        >;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {
-        size: undefined
-        baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+        size: undefined;
+        baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
           {
-            name: 'keywords'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            enumValues: [string, ...string[]]
-            driverParam: string
+            name: "keywords";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            enumValues: [string, ...string[]];
+            driverParam: string;
           },
           {},
           {},
-          import('drizzle-orm').ColumnBuilderExtraConfig
-        >
+          import("drizzle-orm").ColumnBuilderExtraConfig
+        >;
       }
-    >
-    entities: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    entities: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'entities'
-        tableName: 'chat_search_index'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "entities";
+        tableName: "chat_search_index";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    contentType: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    contentType: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'content_type'
-        tableName: 'chat_search_index'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "content_type";
+        tableName: "chat_search_index";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    language: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    language: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'language'
-        tableName: 'chat_search_index'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "language";
+        tableName: "chat_search_index";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    sentiment: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    sentiment: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'sentiment'
-        tableName: 'chat_search_index'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "sentiment";
+        tableName: "chat_search_index";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    wordCount: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    wordCount: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'word_count'
-        tableName: 'chat_search_index'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "word_count";
+        tableName: "chat_search_index";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    characterCount: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    characterCount: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'character_count'
-        tableName: 'chat_search_index'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "character_count";
+        tableName: "chat_search_index";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    searchableTerms: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    searchableTerms: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'searchable_terms'
-        tableName: 'chat_search_index'
-        dataType: 'array'
-        columnType: 'PgArray'
-        data: string[]
-        driverParam: string | string[]
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: import('drizzle-orm').Column<
+        name: "searchable_terms";
+        tableName: "chat_search_index";
+        dataType: "array";
+        columnType: "PgArray";
+        data: string[];
+        driverParam: string | string[];
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: import("drizzle-orm").Column<
           {
-            name: 'searchable_terms'
-            tableName: 'chat_search_index'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            driverParam: string
-            notNull: false
-            hasDefault: false
-            isPrimaryKey: false
-            isAutoincrement: false
-            hasRuntimeDefault: false
-            enumValues: [string, ...string[]]
-            baseColumn: never
-            identity: undefined
-            generated: undefined
+            name: "searchable_terms";
+            tableName: "chat_search_index";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
           },
           {},
           {}
-        >
-        identity: undefined
-        generated: undefined
+        >;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {
-        size: undefined
-        baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+        size: undefined;
+        baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
           {
-            name: 'searchable_terms'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            enumValues: [string, ...string[]]
-            driverParam: string
+            name: "searchable_terms";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            enumValues: [string, ...string[]];
+            driverParam: string;
           },
           {},
           {},
-          import('drizzle-orm').ColumnBuilderExtraConfig
-        >
+          import("drizzle-orm").ColumnBuilderExtraConfig
+        >;
       }
-    >
-    messageImportance: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    messageImportance: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'message_importance'
-        tableName: 'chat_search_index'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "message_importance";
+        tableName: "chat_search_index";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    engagementScore: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    engagementScore: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'engagement_score'
-        tableName: 'chat_search_index'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "engagement_score";
+        tableName: "chat_search_index";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    lastIndexed: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    lastIndexed: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'last_indexed'
-        tableName: 'chat_search_index'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "last_indexed";
+        tableName: "chat_search_index";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    indexVersion: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    indexVersion: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'index_version'
-        tableName: 'chat_search_index'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "index_version";
+        tableName: "chat_search_index";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    createdAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    createdAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'created_at'
-        tableName: 'chat_search_index'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "created_at";
+        tableName: "chat_search_index";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    updatedAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    updatedAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'updated_at'
-        tableName: 'chat_search_index'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "updated_at";
+        tableName: "chat_search_index";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-  }
-  dialect: 'pg'
-}>
+    >;
+  };
+  dialect: "pg";
+}>;
 /**
  * Chat Export Requests - Data portability and export management
  * Handles user data export requests for compliance and data portability
  */
-export declare const chatExportRequest: import('drizzle-orm/pg-core').PgTableWithColumns<{
-  name: 'chat_export_request'
-  schema: undefined
+export declare const chatExportRequest: import("drizzle-orm/pg-core").PgTableWithColumns<{
+  name: "chat_export_request";
+  schema: undefined;
   columns: {
-    id: import('drizzle-orm/pg-core').PgColumn<
+    id: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'id'
-        tableName: 'chat_export_request'
-        dataType: 'string'
-        columnType: 'PgUUID'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: true
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "id";
+        tableName: "chat_export_request";
+        dataType: "string";
+        columnType: "PgUUID";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: true;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    requestToken: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    requestToken: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'request_token'
-        tableName: 'chat_export_request'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "request_token";
+        tableName: "chat_export_request";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    workspaceId: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    workspaceId: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'workspace_id'
-        tableName: 'chat_export_request'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "workspace_id";
+        tableName: "chat_export_request";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    requestedBy: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    requestedBy: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'requested_by'
-        tableName: 'chat_export_request'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "requested_by";
+        tableName: "chat_export_request";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    exportScope: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    exportScope: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'export_scope'
-        tableName: 'chat_export_request'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "export_scope";
+        tableName: "chat_export_request";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    targetIds: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    targetIds: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'target_ids'
-        tableName: 'chat_export_request'
-        dataType: 'array'
-        columnType: 'PgArray'
-        data: string[]
-        driverParam: string | string[]
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: import('drizzle-orm').Column<
+        name: "target_ids";
+        tableName: "chat_export_request";
+        dataType: "array";
+        columnType: "PgArray";
+        data: string[];
+        driverParam: string | string[];
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: import("drizzle-orm").Column<
           {
-            name: 'target_ids'
-            tableName: 'chat_export_request'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            driverParam: string
-            notNull: false
-            hasDefault: false
-            isPrimaryKey: false
-            isAutoincrement: false
-            hasRuntimeDefault: false
-            enumValues: [string, ...string[]]
-            baseColumn: never
-            identity: undefined
-            generated: undefined
+            name: "target_ids";
+            tableName: "chat_export_request";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
           },
           {},
           {}
-        >
-        identity: undefined
-        generated: undefined
+        >;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {
-        size: undefined
-        baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+        size: undefined;
+        baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
           {
-            name: 'target_ids'
-            dataType: 'string'
-            columnType: 'PgText'
-            data: string
-            enumValues: [string, ...string[]]
-            driverParam: string
+            name: "target_ids";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            enumValues: [string, ...string[]];
+            driverParam: string;
           },
           {},
           {},
-          import('drizzle-orm').ColumnBuilderExtraConfig
-        >
+          import("drizzle-orm").ColumnBuilderExtraConfig
+        >;
       }
-    >
-    dateRange: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    dateRange: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'date_range'
-        tableName: 'chat_export_request'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "date_range";
+        tableName: "chat_export_request";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    includeMetadata: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    includeMetadata: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'include_metadata'
-        tableName: 'chat_export_request'
-        dataType: 'boolean'
-        columnType: 'PgBoolean'
-        data: boolean
-        driverParam: boolean
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "include_metadata";
+        tableName: "chat_export_request";
+        dataType: "boolean";
+        columnType: "PgBoolean";
+        data: boolean;
+        driverParam: boolean;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    includeAttachments: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    includeAttachments: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'include_attachments'
-        tableName: 'chat_export_request'
-        dataType: 'boolean'
-        columnType: 'PgBoolean'
-        data: boolean
-        driverParam: boolean
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "include_attachments";
+        tableName: "chat_export_request";
+        dataType: "boolean";
+        columnType: "PgBoolean";
+        data: boolean;
+        driverParam: boolean;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    exportFormat: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    exportFormat: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'export_format'
-        tableName: 'chat_export_request'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "export_format";
+        tableName: "chat_export_request";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    compressionType: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    compressionType: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'compression_type'
-        tableName: 'chat_export_request'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "compression_type";
+        tableName: "chat_export_request";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    status: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    status: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'status'
-        tableName: 'chat_export_request'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "status";
+        tableName: "chat_export_request";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    processingStartedAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    processingStartedAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'processing_started_at'
-        tableName: 'chat_export_request'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "processing_started_at";
+        tableName: "chat_export_request";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    processingCompletedAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    processingCompletedAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'processing_completed_at'
-        tableName: 'chat_export_request'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "processing_completed_at";
+        tableName: "chat_export_request";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    exportFilePath: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    exportFilePath: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'export_file_path'
-        tableName: 'chat_export_request'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "export_file_path";
+        tableName: "chat_export_request";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    exportFileSize: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    exportFileSize: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'export_file_size'
-        tableName: 'chat_export_request'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "export_file_size";
+        tableName: "chat_export_request";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    recordCount: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    recordCount: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'record_count'
-        tableName: 'chat_export_request'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "record_count";
+        tableName: "chat_export_request";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    errorMessage: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    errorMessage: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'error_message'
-        tableName: 'chat_export_request'
-        dataType: 'string'
-        columnType: 'PgText'
-        data: string
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: [string, ...string[]]
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "error_message";
+        tableName: "chat_export_request";
+        dataType: "string";
+        columnType: "PgText";
+        data: string;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: [string, ...string[]];
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    errorDetails: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    errorDetails: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'error_details'
-        tableName: 'chat_export_request'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "error_details";
+        tableName: "chat_export_request";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    downloadCount: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    downloadCount: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'download_count'
-        tableName: 'chat_export_request'
-        dataType: 'number'
-        columnType: 'PgInteger'
-        data: number
-        driverParam: string | number
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "download_count";
+        tableName: "chat_export_request";
+        dataType: "number";
+        columnType: "PgInteger";
+        data: number;
+        driverParam: string | number;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    lastDownloadAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    lastDownloadAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'last_download_at'
-        tableName: 'chat_export_request'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: false
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "last_download_at";
+        tableName: "chat_export_request";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: false;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    expiresAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    expiresAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'expires_at'
-        tableName: 'chat_export_request'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: false
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "expires_at";
+        tableName: "chat_export_request";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: false;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    requestMetadata: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    requestMetadata: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'request_metadata'
-        tableName: 'chat_export_request'
-        dataType: 'json'
-        columnType: 'PgJsonb'
-        data: unknown
-        driverParam: unknown
-        notNull: false
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "request_metadata";
+        tableName: "chat_export_request";
+        dataType: "json";
+        columnType: "PgJsonb";
+        data: unknown;
+        driverParam: unknown;
+        notNull: false;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    createdAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    createdAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'created_at'
-        tableName: 'chat_export_request'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "created_at";
+        tableName: "chat_export_request";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-    updatedAt: import('drizzle-orm/pg-core').PgColumn<
+    >;
+    updatedAt: import("drizzle-orm/pg-core").PgColumn<
       {
-        name: 'updated_at'
-        tableName: 'chat_export_request'
-        dataType: 'date'
-        columnType: 'PgTimestamp'
-        data: Date
-        driverParam: string
-        notNull: true
-        hasDefault: true
-        isPrimaryKey: false
-        isAutoincrement: false
-        hasRuntimeDefault: false
-        enumValues: undefined
-        baseColumn: never
-        identity: undefined
-        generated: undefined
+        name: "updated_at";
+        tableName: "chat_export_request";
+        dataType: "date";
+        columnType: "PgTimestamp";
+        data: Date;
+        driverParam: string;
+        notNull: true;
+        hasDefault: true;
+        isPrimaryKey: false;
+        isAutoincrement: false;
+        hasRuntimeDefault: false;
+        enumValues: undefined;
+        baseColumn: never;
+        identity: undefined;
+        generated: undefined;
       },
       {},
       {}
-    >
-  }
-  dialect: 'pg'
-}>
+    >;
+  };
+  dialect: "pg";
+}>;
 export declare const chatPersistenceTables: {
-  chatMessage: import('drizzle-orm/pg-core').PgTableWithColumns<{
-    name: 'chat_message'
-    schema: undefined
+  chatMessage: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "chat_message";
+    schema: undefined;
     columns: {
-      id: import('drizzle-orm/pg-core').PgColumn<
+      id: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'id'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: true
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "id";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: true;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      sessionId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      sessionId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'session_id'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "session_id";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      workspaceId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      workspaceId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'workspace_id'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "workspace_id";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      eventId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      eventId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'event_id'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "event_id";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      sequenceNumber: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      sequenceNumber: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'sequence_number'
-          tableName: 'chat_message'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "sequence_number";
+          tableName: "chat_message";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      messageType: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      messageType: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'message_type'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgEnumColumn'
-          data: 'error' | 'file' | 'system' | 'media' | 'text' | 'tool_call' | 'tool_result'
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: ['text', 'tool_call', 'tool_result', 'system', 'error', 'media', 'file']
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "message_type";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgEnumColumn";
+          data:
+            | "error"
+            | "file"
+            | "system"
+            | "media"
+            | "text"
+            | "tool_call"
+            | "tool_result";
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [
+            "text",
+            "tool_call",
+            "tool_result",
+            "system",
+            "error",
+            "media",
+            "file",
+          ];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      content: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      content: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'content'
-          tableName: 'chat_message'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "content";
+          tableName: "chat_message";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      rawContent: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      rawContent: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'raw_content'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "raw_content";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      senderId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      senderId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'sender_id'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "sender_id";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      senderType: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      senderType: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'sender_type'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "sender_type";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      senderName: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      senderName: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'sender_name'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "sender_name";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      status: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      status: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'status'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgEnumColumn'
-          data: 'pending' | 'failed' | 'read' | 'sent' | 'delivered'
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: ['pending', 'sent', 'delivered', 'read', 'failed']
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "status";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgEnumColumn";
+          data: "pending" | "failed" | "read" | "sent" | "delivered";
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: ["pending", "sent", "delivered", "read", "failed"];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      deliveredAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      deliveredAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'delivered_at'
-          tableName: 'chat_message'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "delivered_at";
+          tableName: "chat_message";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      readAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      readAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'read_at'
-          tableName: 'chat_message'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "read_at";
+          tableName: "chat_message";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      threadId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      threadId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'thread_id'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "thread_id";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      parentMessageId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      parentMessageId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'parent_message_id'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "parent_message_id";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      mentionedUserIds: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      mentionedUserIds: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'mentioned_user_ids'
-          tableName: 'chat_message'
-          dataType: 'array'
-          columnType: 'PgArray'
-          data: string[]
-          driverParam: string | string[]
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: import('drizzle-orm').Column<
+          name: "mentioned_user_ids";
+          tableName: "chat_message";
+          dataType: "array";
+          columnType: "PgArray";
+          data: string[];
+          driverParam: string | string[];
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: import("drizzle-orm").Column<
             {
-              name: 'mentioned_user_ids'
-              tableName: 'chat_message'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              driverParam: string
-              notNull: false
-              hasDefault: false
-              isPrimaryKey: false
-              isAutoincrement: false
-              hasRuntimeDefault: false
-              enumValues: [string, ...string[]]
-              baseColumn: never
-              identity: undefined
-              generated: undefined
+              name: "mentioned_user_ids";
+              tableName: "chat_message";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              driverParam: string;
+              notNull: false;
+              hasDefault: false;
+              isPrimaryKey: false;
+              isAutoincrement: false;
+              hasRuntimeDefault: false;
+              enumValues: [string, ...string[]];
+              baseColumn: never;
+              identity: undefined;
+              generated: undefined;
             },
             {},
             {}
-          >
-          identity: undefined
-          generated: undefined
+          >;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {
-          size: undefined
-          baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+          size: undefined;
+          baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
             {
-              name: 'mentioned_user_ids'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              enumValues: [string, ...string[]]
-              driverParam: string
+              name: "mentioned_user_ids";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              enumValues: [string, ...string[]];
+              driverParam: string;
             },
             {},
             {},
-            import('drizzle-orm').ColumnBuilderExtraConfig
-          >
+            import("drizzle-orm").ColumnBuilderExtraConfig
+          >;
         }
-      >
-      attachments: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      attachments: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'attachments'
-          tableName: 'chat_message'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "attachments";
+          tableName: "chat_message";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      reactions: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      reactions: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'reactions'
-          tableName: 'chat_message'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "reactions";
+          tableName: "chat_message";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      editHistory: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      editHistory: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'edit_history'
-          tableName: 'chat_message'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "edit_history";
+          tableName: "chat_message";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      toolCallId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      toolCallId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'tool_call_id'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "tool_call_id";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      toolResults: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      toolResults: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'tool_results'
-          tableName: 'chat_message'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "tool_results";
+          tableName: "chat_message";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      tags: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      tags: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'tags'
-          tableName: 'chat_message'
-          dataType: 'array'
-          columnType: 'PgArray'
-          data: string[]
-          driverParam: string | string[]
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: import('drizzle-orm').Column<
+          name: "tags";
+          tableName: "chat_message";
+          dataType: "array";
+          columnType: "PgArray";
+          data: string[];
+          driverParam: string | string[];
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: import("drizzle-orm").Column<
             {
-              name: 'tags'
-              tableName: 'chat_message'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              driverParam: string
-              notNull: false
-              hasDefault: false
-              isPrimaryKey: false
-              isAutoincrement: false
-              hasRuntimeDefault: false
-              enumValues: [string, ...string[]]
-              baseColumn: never
-              identity: undefined
-              generated: undefined
+              name: "tags";
+              tableName: "chat_message";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              driverParam: string;
+              notNull: false;
+              hasDefault: false;
+              isPrimaryKey: false;
+              isAutoincrement: false;
+              hasRuntimeDefault: false;
+              enumValues: [string, ...string[]];
+              baseColumn: never;
+              identity: undefined;
+              generated: undefined;
             },
             {},
             {}
-          >
-          identity: undefined
-          generated: undefined
+          >;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {
-          size: undefined
-          baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+          size: undefined;
+          baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
             {
-              name: 'tags'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              enumValues: [string, ...string[]]
-              driverParam: string
+              name: "tags";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              enumValues: [string, ...string[]];
+              driverParam: string;
             },
             {},
             {},
-            import('drizzle-orm').ColumnBuilderExtraConfig
-          >
+            import("drizzle-orm").ColumnBuilderExtraConfig
+          >;
         }
-      >
-      category: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      category: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'category'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "category";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      priority: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      priority: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'priority'
-          tableName: 'chat_message'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "priority";
+          tableName: "chat_message";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      tokenCount: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      tokenCount: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'token_count'
-          tableName: 'chat_message'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "token_count";
+          tableName: "chat_message";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      cost: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      cost: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'cost'
-          tableName: 'chat_message'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "cost";
+          tableName: "chat_message";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      processingTime: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      processingTime: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'processing_time'
-          tableName: 'chat_message'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "processing_time";
+          tableName: "chat_message";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      metadata: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      metadata: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'metadata'
-          tableName: 'chat_message'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "metadata";
+          tableName: "chat_message";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      customData: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      customData: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'custom_data'
-          tableName: 'chat_message'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "custom_data";
+          tableName: "chat_message";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      ipAddress: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      ipAddress: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'ip_address'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "ip_address";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      userAgent: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      userAgent: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'user_agent'
-          tableName: 'chat_message'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "user_agent";
+          tableName: "chat_message";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      createdAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      createdAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'created_at'
-          tableName: 'chat_message'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "created_at";
+          tableName: "chat_message";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      updatedAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      updatedAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'updated_at'
-          tableName: 'chat_message'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "updated_at";
+          tableName: "chat_message";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      deletedAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      deletedAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'deleted_at'
-          tableName: 'chat_message'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "deleted_at";
+          tableName: "chat_message";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-    }
-    dialect: 'pg'
-  }>
-  chatConversation: import('drizzle-orm/pg-core').PgTableWithColumns<{
-    name: 'chat_conversation'
-    schema: undefined
+      >;
+    };
+    dialect: "pg";
+  }>;
+  chatConversation: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "chat_conversation";
+    schema: undefined;
     columns: {
-      id: import('drizzle-orm/pg-core').PgColumn<
+      id: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'id'
-          tableName: 'chat_conversation'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: true
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "id";
+          tableName: "chat_conversation";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: true;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      workspaceId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      workspaceId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'workspace_id'
-          tableName: 'chat_conversation'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "workspace_id";
+          tableName: "chat_conversation";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      title: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      title: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'title'
-          tableName: 'chat_conversation'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "title";
+          tableName: "chat_conversation";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      description: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      description: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'description'
-          tableName: 'chat_conversation'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "description";
+          tableName: "chat_conversation";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      conversationType: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      conversationType: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'conversation_type'
-          tableName: 'chat_conversation'
-          dataType: 'string'
-          columnType: 'PgEnumColumn'
-          data: 'workflow' | 'direct' | 'group' | 'support' | 'onboarding'
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: ['direct', 'group', 'workflow', 'support', 'onboarding']
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "conversation_type";
+          tableName: "chat_conversation";
+          dataType: "string";
+          columnType: "PgEnumColumn";
+          data: "workflow" | "direct" | "group" | "support" | "onboarding";
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: ["direct", "group", "workflow", "support", "onboarding"];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      participantIds: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      participantIds: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'participant_ids'
-          tableName: 'chat_conversation'
-          dataType: 'array'
-          columnType: 'PgArray'
-          data: string[]
-          driverParam: string | string[]
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: import('drizzle-orm').Column<
+          name: "participant_ids";
+          tableName: "chat_conversation";
+          dataType: "array";
+          columnType: "PgArray";
+          data: string[];
+          driverParam: string | string[];
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: import("drizzle-orm").Column<
             {
-              name: 'participant_ids'
-              tableName: 'chat_conversation'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              driverParam: string
-              notNull: false
-              hasDefault: false
-              isPrimaryKey: false
-              isAutoincrement: false
-              hasRuntimeDefault: false
-              enumValues: [string, ...string[]]
-              baseColumn: never
-              identity: undefined
-              generated: undefined
+              name: "participant_ids";
+              tableName: "chat_conversation";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              driverParam: string;
+              notNull: false;
+              hasDefault: false;
+              isPrimaryKey: false;
+              isAutoincrement: false;
+              hasRuntimeDefault: false;
+              enumValues: [string, ...string[]];
+              baseColumn: never;
+              identity: undefined;
+              generated: undefined;
             },
             {},
             {}
-          >
-          identity: undefined
-          generated: undefined
+          >;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {
-          size: undefined
-          baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+          size: undefined;
+          baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
             {
-              name: 'participant_ids'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              enumValues: [string, ...string[]]
-              driverParam: string
+              name: "participant_ids";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              enumValues: [string, ...string[]];
+              driverParam: string;
             },
             {},
             {},
-            import('drizzle-orm').ColumnBuilderExtraConfig
-          >
+            import("drizzle-orm").ColumnBuilderExtraConfig
+          >;
         }
-      >
-      agentIds: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      agentIds: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'agent_ids'
-          tableName: 'chat_conversation'
-          dataType: 'array'
-          columnType: 'PgArray'
-          data: string[]
-          driverParam: string | string[]
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: import('drizzle-orm').Column<
+          name: "agent_ids";
+          tableName: "chat_conversation";
+          dataType: "array";
+          columnType: "PgArray";
+          data: string[];
+          driverParam: string | string[];
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: import("drizzle-orm").Column<
             {
-              name: 'agent_ids'
-              tableName: 'chat_conversation'
-              dataType: 'string'
-              columnType: 'PgUUID'
-              data: string
-              driverParam: string
-              notNull: false
-              hasDefault: false
-              isPrimaryKey: false
-              isAutoincrement: false
-              hasRuntimeDefault: false
-              enumValues: undefined
-              baseColumn: never
-              identity: undefined
-              generated: undefined
+              name: "agent_ids";
+              tableName: "chat_conversation";
+              dataType: "string";
+              columnType: "PgUUID";
+              data: string;
+              driverParam: string;
+              notNull: false;
+              hasDefault: false;
+              isPrimaryKey: false;
+              isAutoincrement: false;
+              hasRuntimeDefault: false;
+              enumValues: undefined;
+              baseColumn: never;
+              identity: undefined;
+              generated: undefined;
             },
             {},
             {}
-          >
-          identity: undefined
-          generated: undefined
+          >;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {
-          size: undefined
-          baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+          size: undefined;
+          baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
             {
-              name: 'agent_ids'
-              dataType: 'string'
-              columnType: 'PgUUID'
-              data: string
-              driverParam: string
-              enumValues: undefined
+              name: "agent_ids";
+              dataType: "string";
+              columnType: "PgUUID";
+              data: string;
+              driverParam: string;
+              enumValues: undefined;
             },
             {},
             {},
-            import('drizzle-orm').ColumnBuilderExtraConfig
-          >
+            import("drizzle-orm").ColumnBuilderExtraConfig
+          >;
         }
-      >
-      createdBy: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      createdBy: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'created_by'
-          tableName: 'chat_conversation'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "created_by";
+          tableName: "chat_conversation";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      isActive: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      isActive: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'is_active'
-          tableName: 'chat_conversation'
-          dataType: 'boolean'
-          columnType: 'PgBoolean'
-          data: boolean
-          driverParam: boolean
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "is_active";
+          tableName: "chat_conversation";
+          dataType: "boolean";
+          columnType: "PgBoolean";
+          data: boolean;
+          driverParam: boolean;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      isArchived: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      isArchived: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'is_archived'
-          tableName: 'chat_conversation'
-          dataType: 'boolean'
-          columnType: 'PgBoolean'
-          data: boolean
-          driverParam: boolean
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "is_archived";
+          tableName: "chat_conversation";
+          dataType: "boolean";
+          columnType: "PgBoolean";
+          data: boolean;
+          driverParam: boolean;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      isPinned: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      isPinned: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'is_pinned'
-          tableName: 'chat_conversation'
-          dataType: 'boolean'
-          columnType: 'PgBoolean'
-          data: boolean
-          driverParam: boolean
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "is_pinned";
+          tableName: "chat_conversation";
+          dataType: "boolean";
+          columnType: "PgBoolean";
+          data: boolean;
+          driverParam: boolean;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      isPrivate: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      isPrivate: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'is_private'
-          tableName: 'chat_conversation'
-          dataType: 'boolean'
-          columnType: 'PgBoolean'
-          data: boolean
-          driverParam: boolean
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "is_private";
+          tableName: "chat_conversation";
+          dataType: "boolean";
+          columnType: "PgBoolean";
+          data: boolean;
+          driverParam: boolean;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      accessLevel: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      accessLevel: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'access_level'
-          tableName: 'chat_conversation'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "access_level";
+          tableName: "chat_conversation";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      messageCount: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      messageCount: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'message_count'
-          tableName: 'chat_conversation'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "message_count";
+          tableName: "chat_conversation";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      participantCount: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      participantCount: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'participant_count'
-          tableName: 'chat_conversation'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "participant_count";
+          tableName: "chat_conversation";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      lastMessageAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      lastMessageAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'last_message_at'
-          tableName: 'chat_conversation'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "last_message_at";
+          tableName: "chat_conversation";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      lastActivityAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      lastActivityAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'last_activity_at'
-          tableName: 'chat_conversation'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "last_activity_at";
+          tableName: "chat_conversation";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      currentSessionId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      currentSessionId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'current_session_id'
-          tableName: 'chat_conversation'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "current_session_id";
+          tableName: "chat_conversation";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      sessionIds: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      sessionIds: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'session_ids'
-          tableName: 'chat_conversation'
-          dataType: 'array'
-          columnType: 'PgArray'
-          data: string[]
-          driverParam: string | string[]
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: import('drizzle-orm').Column<
+          name: "session_ids";
+          tableName: "chat_conversation";
+          dataType: "array";
+          columnType: "PgArray";
+          data: string[];
+          driverParam: string | string[];
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: import("drizzle-orm").Column<
             {
-              name: 'session_ids'
-              tableName: 'chat_conversation'
-              dataType: 'string'
-              columnType: 'PgUUID'
-              data: string
-              driverParam: string
-              notNull: false
-              hasDefault: false
-              isPrimaryKey: false
-              isAutoincrement: false
-              hasRuntimeDefault: false
-              enumValues: undefined
-              baseColumn: never
-              identity: undefined
-              generated: undefined
+              name: "session_ids";
+              tableName: "chat_conversation";
+              dataType: "string";
+              columnType: "PgUUID";
+              data: string;
+              driverParam: string;
+              notNull: false;
+              hasDefault: false;
+              isPrimaryKey: false;
+              isAutoincrement: false;
+              hasRuntimeDefault: false;
+              enumValues: undefined;
+              baseColumn: never;
+              identity: undefined;
+              generated: undefined;
             },
             {},
             {}
-          >
-          identity: undefined
-          generated: undefined
+          >;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {
-          size: undefined
-          baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+          size: undefined;
+          baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
             {
-              name: 'session_ids'
-              dataType: 'string'
-              columnType: 'PgUUID'
-              data: string
-              driverParam: string
-              enumValues: undefined
+              name: "session_ids";
+              dataType: "string";
+              columnType: "PgUUID";
+              data: string;
+              driverParam: string;
+              enumValues: undefined;
             },
             {},
             {},
-            import('drizzle-orm').ColumnBuilderExtraConfig
-          >
+            import("drizzle-orm").ColumnBuilderExtraConfig
+          >;
         }
-      >
-      tags: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      tags: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'tags'
-          tableName: 'chat_conversation'
-          dataType: 'array'
-          columnType: 'PgArray'
-          data: string[]
-          driverParam: string | string[]
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: import('drizzle-orm').Column<
+          name: "tags";
+          tableName: "chat_conversation";
+          dataType: "array";
+          columnType: "PgArray";
+          data: string[];
+          driverParam: string | string[];
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: import("drizzle-orm").Column<
             {
-              name: 'tags'
-              tableName: 'chat_conversation'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              driverParam: string
-              notNull: false
-              hasDefault: false
-              isPrimaryKey: false
-              isAutoincrement: false
-              hasRuntimeDefault: false
-              enumValues: [string, ...string[]]
-              baseColumn: never
-              identity: undefined
-              generated: undefined
+              name: "tags";
+              tableName: "chat_conversation";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              driverParam: string;
+              notNull: false;
+              hasDefault: false;
+              isPrimaryKey: false;
+              isAutoincrement: false;
+              hasRuntimeDefault: false;
+              enumValues: [string, ...string[]];
+              baseColumn: never;
+              identity: undefined;
+              generated: undefined;
             },
             {},
             {}
-          >
-          identity: undefined
-          generated: undefined
+          >;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {
-          size: undefined
-          baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+          size: undefined;
+          baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
             {
-              name: 'tags'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              enumValues: [string, ...string[]]
-              driverParam: string
+              name: "tags";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              enumValues: [string, ...string[]];
+              driverParam: string;
             },
             {},
             {},
-            import('drizzle-orm').ColumnBuilderExtraConfig
-          >
+            import("drizzle-orm").ColumnBuilderExtraConfig
+          >;
         }
-      >
-      category: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      category: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'category'
-          tableName: 'chat_conversation'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "category";
+          tableName: "chat_conversation";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      priority: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      priority: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'priority'
-          tableName: 'chat_conversation'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "priority";
+          tableName: "chat_conversation";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      customData: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      customData: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'custom_data'
-          tableName: 'chat_conversation'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "custom_data";
+          tableName: "chat_conversation";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      totalTokens: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      totalTokens: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'total_tokens'
-          tableName: 'chat_conversation'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "total_tokens";
+          tableName: "chat_conversation";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      totalCost: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      totalCost: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'total_cost'
-          tableName: 'chat_conversation'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "total_cost";
+          tableName: "chat_conversation";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      averageResponseTime: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      averageResponseTime: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'average_response_time'
-          tableName: 'chat_conversation'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "average_response_time";
+          tableName: "chat_conversation";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      satisfactionScore: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      satisfactionScore: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'satisfaction_score'
-          tableName: 'chat_conversation'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "satisfaction_score";
+          tableName: "chat_conversation";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      createdAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      createdAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'created_at'
-          tableName: 'chat_conversation'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "created_at";
+          tableName: "chat_conversation";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      updatedAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      updatedAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'updated_at'
-          tableName: 'chat_conversation'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "updated_at";
+          tableName: "chat_conversation";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      archivedAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      archivedAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'archived_at'
-          tableName: 'chat_conversation'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "archived_at";
+          tableName: "chat_conversation";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      deletedAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      deletedAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'deleted_at'
-          tableName: 'chat_conversation'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "deleted_at";
+          tableName: "chat_conversation";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-    }
-    dialect: 'pg'
-  }>
-  chatBrowserSession: import('drizzle-orm/pg-core').PgTableWithColumns<{
-    name: 'chat_browser_session'
-    schema: undefined
+      >;
+    };
+    dialect: "pg";
+  }>;
+  chatBrowserSession: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "chat_browser_session";
+    schema: undefined;
     columns: {
-      id: import('drizzle-orm/pg-core').PgColumn<
+      id: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'id'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: true
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "id";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: true;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      sessionToken: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      sessionToken: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'session_token'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "session_token";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      workspaceId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      workspaceId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'workspace_id'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "workspace_id";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      userId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      userId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'user_id'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "user_id";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      conversationId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      conversationId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'conversation_id'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "conversation_id";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      parlantSessionId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      parlantSessionId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'parlant_session_id'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "parlant_session_id";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      chatState: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      chatState: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'chat_state'
-          tableName: 'chat_browser_session'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "chat_state";
+          tableName: "chat_browser_session";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      conversationState: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      conversationState: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'conversation_state'
-          tableName: 'chat_browser_session'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "conversation_state";
+          tableName: "chat_browser_session";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      uiState: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      uiState: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'ui_state'
-          tableName: 'chat_browser_session'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "ui_state";
+          tableName: "chat_browser_session";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      deviceInfo: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      deviceInfo: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'device_info'
-          tableName: 'chat_browser_session'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "device_info";
+          tableName: "chat_browser_session";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      lastActiveUrl: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      lastActiveUrl: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'last_active_url'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "last_active_url";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      scrollPosition: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      scrollPosition: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'scroll_position'
-          tableName: 'chat_browser_session'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "scroll_position";
+          tableName: "chat_browser_session";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      isActive: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      isActive: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'is_active'
-          tableName: 'chat_browser_session'
-          dataType: 'boolean'
-          columnType: 'PgBoolean'
-          data: boolean
-          driverParam: boolean
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "is_active";
+          tableName: "chat_browser_session";
+          dataType: "boolean";
+          columnType: "PgBoolean";
+          data: boolean;
+          driverParam: boolean;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      lastHeartbeat: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      lastHeartbeat: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'last_heartbeat'
-          tableName: 'chat_browser_session'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "last_heartbeat";
+          tableName: "chat_browser_session";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      heartbeatCount: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      heartbeatCount: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'heartbeat_count'
-          tableName: 'chat_browser_session'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "heartbeat_count";
+          tableName: "chat_browser_session";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      sessionDuration: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      sessionDuration: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'session_duration'
-          tableName: 'chat_browser_session'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "session_duration";
+          tableName: "chat_browser_session";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      messagesInSession: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      messagesInSession: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'messages_in_session'
-          tableName: 'chat_browser_session'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "messages_in_session";
+          tableName: "chat_browser_session";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      lastMessageAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      lastMessageAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'last_message_at'
-          tableName: 'chat_browser_session'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "last_message_at";
+          tableName: "chat_browser_session";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      userAgent: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      userAgent: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'user_agent'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "user_agent";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      ipAddress: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      ipAddress: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'ip_address'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "ip_address";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      referrer: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      referrer: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'referrer'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "referrer";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      locale: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      locale: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'locale'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "locale";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      timezone: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      timezone: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'timezone'
-          tableName: 'chat_browser_session'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "timezone";
+          tableName: "chat_browser_session";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      expiresAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      expiresAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'expires_at'
-          tableName: 'chat_browser_session'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "expires_at";
+          tableName: "chat_browser_session";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      createdAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      createdAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'created_at'
-          tableName: 'chat_browser_session'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "created_at";
+          tableName: "chat_browser_session";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      updatedAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      updatedAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'updated_at'
-          tableName: 'chat_browser_session'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "updated_at";
+          tableName: "chat_browser_session";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-    }
-    dialect: 'pg'
-  }>
-  chatSearchIndex: import('drizzle-orm/pg-core').PgTableWithColumns<{
-    name: 'chat_search_index'
-    schema: undefined
+      >;
+    };
+    dialect: "pg";
+  }>;
+  chatSearchIndex: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "chat_search_index";
+    schema: undefined;
     columns: {
-      id: import('drizzle-orm/pg-core').PgColumn<
+      id: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'id'
-          tableName: 'chat_search_index'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: true
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "id";
+          tableName: "chat_search_index";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: true;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      messageId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      messageId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'message_id'
-          tableName: 'chat_search_index'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "message_id";
+          tableName: "chat_search_index";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      workspaceId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      workspaceId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'workspace_id'
-          tableName: 'chat_search_index'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "workspace_id";
+          tableName: "chat_search_index";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      conversationId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      conversationId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'conversation_id'
-          tableName: 'chat_search_index'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "conversation_id";
+          tableName: "chat_search_index";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      sessionId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      sessionId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'session_id'
-          tableName: 'chat_search_index'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "session_id";
+          tableName: "chat_search_index";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      searchableContent: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      searchableContent: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'searchable_content'
-          tableName: 'chat_search_index'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "searchable_content";
+          tableName: "chat_search_index";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      keywords: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      keywords: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'keywords'
-          tableName: 'chat_search_index'
-          dataType: 'array'
-          columnType: 'PgArray'
-          data: string[]
-          driverParam: string | string[]
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: import('drizzle-orm').Column<
+          name: "keywords";
+          tableName: "chat_search_index";
+          dataType: "array";
+          columnType: "PgArray";
+          data: string[];
+          driverParam: string | string[];
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: import("drizzle-orm").Column<
             {
-              name: 'keywords'
-              tableName: 'chat_search_index'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              driverParam: string
-              notNull: false
-              hasDefault: false
-              isPrimaryKey: false
-              isAutoincrement: false
-              hasRuntimeDefault: false
-              enumValues: [string, ...string[]]
-              baseColumn: never
-              identity: undefined
-              generated: undefined
+              name: "keywords";
+              tableName: "chat_search_index";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              driverParam: string;
+              notNull: false;
+              hasDefault: false;
+              isPrimaryKey: false;
+              isAutoincrement: false;
+              hasRuntimeDefault: false;
+              enumValues: [string, ...string[]];
+              baseColumn: never;
+              identity: undefined;
+              generated: undefined;
             },
             {},
             {}
-          >
-          identity: undefined
-          generated: undefined
+          >;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {
-          size: undefined
-          baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+          size: undefined;
+          baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
             {
-              name: 'keywords'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              enumValues: [string, ...string[]]
-              driverParam: string
+              name: "keywords";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              enumValues: [string, ...string[]];
+              driverParam: string;
             },
             {},
             {},
-            import('drizzle-orm').ColumnBuilderExtraConfig
-          >
+            import("drizzle-orm").ColumnBuilderExtraConfig
+          >;
         }
-      >
-      entities: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      entities: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'entities'
-          tableName: 'chat_search_index'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "entities";
+          tableName: "chat_search_index";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      contentType: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      contentType: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'content_type'
-          tableName: 'chat_search_index'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "content_type";
+          tableName: "chat_search_index";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      language: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      language: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'language'
-          tableName: 'chat_search_index'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "language";
+          tableName: "chat_search_index";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      sentiment: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      sentiment: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'sentiment'
-          tableName: 'chat_search_index'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "sentiment";
+          tableName: "chat_search_index";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      wordCount: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      wordCount: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'word_count'
-          tableName: 'chat_search_index'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "word_count";
+          tableName: "chat_search_index";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      characterCount: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      characterCount: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'character_count'
-          tableName: 'chat_search_index'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "character_count";
+          tableName: "chat_search_index";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      searchableTerms: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      searchableTerms: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'searchable_terms'
-          tableName: 'chat_search_index'
-          dataType: 'array'
-          columnType: 'PgArray'
-          data: string[]
-          driverParam: string | string[]
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: import('drizzle-orm').Column<
+          name: "searchable_terms";
+          tableName: "chat_search_index";
+          dataType: "array";
+          columnType: "PgArray";
+          data: string[];
+          driverParam: string | string[];
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: import("drizzle-orm").Column<
             {
-              name: 'searchable_terms'
-              tableName: 'chat_search_index'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              driverParam: string
-              notNull: false
-              hasDefault: false
-              isPrimaryKey: false
-              isAutoincrement: false
-              hasRuntimeDefault: false
-              enumValues: [string, ...string[]]
-              baseColumn: never
-              identity: undefined
-              generated: undefined
+              name: "searchable_terms";
+              tableName: "chat_search_index";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              driverParam: string;
+              notNull: false;
+              hasDefault: false;
+              isPrimaryKey: false;
+              isAutoincrement: false;
+              hasRuntimeDefault: false;
+              enumValues: [string, ...string[]];
+              baseColumn: never;
+              identity: undefined;
+              generated: undefined;
             },
             {},
             {}
-          >
-          identity: undefined
-          generated: undefined
+          >;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {
-          size: undefined
-          baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+          size: undefined;
+          baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
             {
-              name: 'searchable_terms'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              enumValues: [string, ...string[]]
-              driverParam: string
+              name: "searchable_terms";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              enumValues: [string, ...string[]];
+              driverParam: string;
             },
             {},
             {},
-            import('drizzle-orm').ColumnBuilderExtraConfig
-          >
+            import("drizzle-orm").ColumnBuilderExtraConfig
+          >;
         }
-      >
-      messageImportance: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      messageImportance: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'message_importance'
-          tableName: 'chat_search_index'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "message_importance";
+          tableName: "chat_search_index";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      engagementScore: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      engagementScore: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'engagement_score'
-          tableName: 'chat_search_index'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "engagement_score";
+          tableName: "chat_search_index";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      lastIndexed: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      lastIndexed: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'last_indexed'
-          tableName: 'chat_search_index'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "last_indexed";
+          tableName: "chat_search_index";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      indexVersion: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      indexVersion: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'index_version'
-          tableName: 'chat_search_index'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "index_version";
+          tableName: "chat_search_index";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      createdAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      createdAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'created_at'
-          tableName: 'chat_search_index'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "created_at";
+          tableName: "chat_search_index";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      updatedAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      updatedAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'updated_at'
-          tableName: 'chat_search_index'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "updated_at";
+          tableName: "chat_search_index";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-    }
-    dialect: 'pg'
-  }>
-  chatExportRequest: import('drizzle-orm/pg-core').PgTableWithColumns<{
-    name: 'chat_export_request'
-    schema: undefined
+      >;
+    };
+    dialect: "pg";
+  }>;
+  chatExportRequest: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "chat_export_request";
+    schema: undefined;
     columns: {
-      id: import('drizzle-orm/pg-core').PgColumn<
+      id: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'id'
-          tableName: 'chat_export_request'
-          dataType: 'string'
-          columnType: 'PgUUID'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: true
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "id";
+          tableName: "chat_export_request";
+          dataType: "string";
+          columnType: "PgUUID";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: true;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      requestToken: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      requestToken: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'request_token'
-          tableName: 'chat_export_request'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "request_token";
+          tableName: "chat_export_request";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      workspaceId: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      workspaceId: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'workspace_id'
-          tableName: 'chat_export_request'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "workspace_id";
+          tableName: "chat_export_request";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      requestedBy: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      requestedBy: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'requested_by'
-          tableName: 'chat_export_request'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "requested_by";
+          tableName: "chat_export_request";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      exportScope: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      exportScope: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'export_scope'
-          tableName: 'chat_export_request'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "export_scope";
+          tableName: "chat_export_request";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      targetIds: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      targetIds: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'target_ids'
-          tableName: 'chat_export_request'
-          dataType: 'array'
-          columnType: 'PgArray'
-          data: string[]
-          driverParam: string | string[]
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: import('drizzle-orm').Column<
+          name: "target_ids";
+          tableName: "chat_export_request";
+          dataType: "array";
+          columnType: "PgArray";
+          data: string[];
+          driverParam: string | string[];
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: import("drizzle-orm").Column<
             {
-              name: 'target_ids'
-              tableName: 'chat_export_request'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              driverParam: string
-              notNull: false
-              hasDefault: false
-              isPrimaryKey: false
-              isAutoincrement: false
-              hasRuntimeDefault: false
-              enumValues: [string, ...string[]]
-              baseColumn: never
-              identity: undefined
-              generated: undefined
+              name: "target_ids";
+              tableName: "chat_export_request";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              driverParam: string;
+              notNull: false;
+              hasDefault: false;
+              isPrimaryKey: false;
+              isAutoincrement: false;
+              hasRuntimeDefault: false;
+              enumValues: [string, ...string[]];
+              baseColumn: never;
+              identity: undefined;
+              generated: undefined;
             },
             {},
             {}
-          >
-          identity: undefined
-          generated: undefined
+          >;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {
-          size: undefined
-          baseBuilder: import('drizzle-orm/pg-core').PgColumnBuilder<
+          size: undefined;
+          baseBuilder: import("drizzle-orm/pg-core").PgColumnBuilder<
             {
-              name: 'target_ids'
-              dataType: 'string'
-              columnType: 'PgText'
-              data: string
-              enumValues: [string, ...string[]]
-              driverParam: string
+              name: "target_ids";
+              dataType: "string";
+              columnType: "PgText";
+              data: string;
+              enumValues: [string, ...string[]];
+              driverParam: string;
             },
             {},
             {},
-            import('drizzle-orm').ColumnBuilderExtraConfig
-          >
+            import("drizzle-orm").ColumnBuilderExtraConfig
+          >;
         }
-      >
-      dateRange: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      dateRange: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'date_range'
-          tableName: 'chat_export_request'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "date_range";
+          tableName: "chat_export_request";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      includeMetadata: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      includeMetadata: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'include_metadata'
-          tableName: 'chat_export_request'
-          dataType: 'boolean'
-          columnType: 'PgBoolean'
-          data: boolean
-          driverParam: boolean
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "include_metadata";
+          tableName: "chat_export_request";
+          dataType: "boolean";
+          columnType: "PgBoolean";
+          data: boolean;
+          driverParam: boolean;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      includeAttachments: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      includeAttachments: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'include_attachments'
-          tableName: 'chat_export_request'
-          dataType: 'boolean'
-          columnType: 'PgBoolean'
-          data: boolean
-          driverParam: boolean
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "include_attachments";
+          tableName: "chat_export_request";
+          dataType: "boolean";
+          columnType: "PgBoolean";
+          data: boolean;
+          driverParam: boolean;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      exportFormat: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      exportFormat: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'export_format'
-          tableName: 'chat_export_request'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "export_format";
+          tableName: "chat_export_request";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      compressionType: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      compressionType: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'compression_type'
-          tableName: 'chat_export_request'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "compression_type";
+          tableName: "chat_export_request";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      status: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      status: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'status'
-          tableName: 'chat_export_request'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "status";
+          tableName: "chat_export_request";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      processingStartedAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      processingStartedAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'processing_started_at'
-          tableName: 'chat_export_request'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "processing_started_at";
+          tableName: "chat_export_request";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      processingCompletedAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      processingCompletedAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'processing_completed_at'
-          tableName: 'chat_export_request'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "processing_completed_at";
+          tableName: "chat_export_request";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      exportFilePath: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      exportFilePath: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'export_file_path'
-          tableName: 'chat_export_request'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "export_file_path";
+          tableName: "chat_export_request";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      exportFileSize: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      exportFileSize: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'export_file_size'
-          tableName: 'chat_export_request'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "export_file_size";
+          tableName: "chat_export_request";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      recordCount: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      recordCount: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'record_count'
-          tableName: 'chat_export_request'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "record_count";
+          tableName: "chat_export_request";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      errorMessage: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      errorMessage: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'error_message'
-          tableName: 'chat_export_request'
-          dataType: 'string'
-          columnType: 'PgText'
-          data: string
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: [string, ...string[]]
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "error_message";
+          tableName: "chat_export_request";
+          dataType: "string";
+          columnType: "PgText";
+          data: string;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: [string, ...string[]];
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      errorDetails: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      errorDetails: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'error_details'
-          tableName: 'chat_export_request'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "error_details";
+          tableName: "chat_export_request";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      downloadCount: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      downloadCount: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'download_count'
-          tableName: 'chat_export_request'
-          dataType: 'number'
-          columnType: 'PgInteger'
-          data: number
-          driverParam: string | number
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "download_count";
+          tableName: "chat_export_request";
+          dataType: "number";
+          columnType: "PgInteger";
+          data: number;
+          driverParam: string | number;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      lastDownloadAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      lastDownloadAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'last_download_at'
-          tableName: 'chat_export_request'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: false
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "last_download_at";
+          tableName: "chat_export_request";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: false;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      expiresAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      expiresAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'expires_at'
-          tableName: 'chat_export_request'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: false
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "expires_at";
+          tableName: "chat_export_request";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: false;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      requestMetadata: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      requestMetadata: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'request_metadata'
-          tableName: 'chat_export_request'
-          dataType: 'json'
-          columnType: 'PgJsonb'
-          data: unknown
-          driverParam: unknown
-          notNull: false
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "request_metadata";
+          tableName: "chat_export_request";
+          dataType: "json";
+          columnType: "PgJsonb";
+          data: unknown;
+          driverParam: unknown;
+          notNull: false;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      createdAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      createdAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'created_at'
-          tableName: 'chat_export_request'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "created_at";
+          tableName: "chat_export_request";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-      updatedAt: import('drizzle-orm/pg-core').PgColumn<
+      >;
+      updatedAt: import("drizzle-orm/pg-core").PgColumn<
         {
-          name: 'updated_at'
-          tableName: 'chat_export_request'
-          dataType: 'date'
-          columnType: 'PgTimestamp'
-          data: Date
-          driverParam: string
-          notNull: true
-          hasDefault: true
-          isPrimaryKey: false
-          isAutoincrement: false
-          hasRuntimeDefault: false
-          enumValues: undefined
-          baseColumn: never
-          identity: undefined
-          generated: undefined
+          name: "updated_at";
+          tableName: "chat_export_request";
+          dataType: "date";
+          columnType: "PgTimestamp";
+          data: Date;
+          driverParam: string;
+          notNull: true;
+          hasDefault: true;
+          isPrimaryKey: false;
+          isAutoincrement: false;
+          hasRuntimeDefault: false;
+          enumValues: undefined;
+          baseColumn: never;
+          identity: undefined;
+          generated: undefined;
         },
         {},
         {}
-      >
-    }
-    dialect: 'pg'
-  }>
-}
+      >;
+    };
+    dialect: "pg";
+  }>;
+};
 export declare const chatPersistenceEnums: {
-  messageStatusEnum: import('drizzle-orm/pg-core').PgEnum<
-    ['pending', 'sent', 'delivered', 'read', 'failed']
-  >
-  conversationTypeEnum: import('drizzle-orm/pg-core').PgEnum<
-    ['direct', 'group', 'workflow', 'support', 'onboarding']
-  >
-  messageTypeEnum: import('drizzle-orm/pg-core').PgEnum<
-    ['text', 'tool_call', 'tool_result', 'system', 'error', 'media', 'file']
-  >
-}
+  messageStatusEnum: import("drizzle-orm/pg-core").PgEnum<
+    ["pending", "sent", "delivered", "read", "failed"]
+  >;
+  conversationTypeEnum: import("drizzle-orm/pg-core").PgEnum<
+    ["direct", "group", "workflow", "support", "onboarding"]
+  >;
+  messageTypeEnum: import("drizzle-orm/pg-core").PgEnum<
+    ["text", "tool_call", "tool_result", "system", "error", "media", "file"]
+  >;
+};
 /**
  * Chat Persistence Query Helpers and Types
  * Type definitions for enhanced chat persistence functionality
  */
-export type ChatMessage = typeof chatMessage.$inferSelect
-export type ChatConversation = typeof chatConversation.$inferSelect
-export type ChatBrowserSession = typeof chatBrowserSession.$inferSelect
-export type ChatSearchIndex = typeof chatSearchIndex.$inferSelect
-export type ChatExportRequest = typeof chatExportRequest.$inferSelect
-export type NewChatMessage = typeof chatMessage.$inferInsert
-export type NewChatConversation = typeof chatConversation.$inferInsert
-export type NewChatBrowserSession = typeof chatBrowserSession.$inferInsert
-export type NewChatSearchIndex = typeof chatSearchIndex.$inferInsert
-export type NewChatExportRequest = typeof chatExportRequest.$inferInsert
+export type ChatMessage = typeof chatMessage.$inferSelect;
+export type ChatConversation = typeof chatConversation.$inferSelect;
+export type ChatBrowserSession = typeof chatBrowserSession.$inferSelect;
+export type ChatSearchIndex = typeof chatSearchIndex.$inferSelect;
+export type ChatExportRequest = typeof chatExportRequest.$inferSelect;
+export type NewChatMessage = typeof chatMessage.$inferInsert;
+export type NewChatConversation = typeof chatConversation.$inferInsert;
+export type NewChatBrowserSession = typeof chatBrowserSession.$inferInsert;
+export type NewChatSearchIndex = typeof chatSearchIndex.$inferInsert;
+export type NewChatExportRequest = typeof chatExportRequest.$inferInsert;

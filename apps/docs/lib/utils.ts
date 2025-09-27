@@ -1,11 +1,11 @@
-import { type ClassValue, clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 /**
  * Combines multiple class names into a single string, merging Tailwind classes properly
  */
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 /**
@@ -14,11 +14,11 @@ export function cn(...inputs: ClassValue[]) {
  * - Otherwise falls back to local static assets served from root path
  */
 export function getAssetUrl(filename: string) {
-  const cdnBaseUrl = process.env.NEXT_PUBLIC_BLOB_BASE_URL
+  const cdnBaseUrl = process.env.NEXT_PUBLIC_BLOB_BASE_URL;
   if (cdnBaseUrl) {
-    return `${cdnBaseUrl}/${filename}`
+    return `${cdnBaseUrl}/${filename}`;
   }
-  return `/${filename}`
+  return `/${filename}`;
 }
 
 /**
@@ -27,5 +27,5 @@ export function getAssetUrl(filename: string) {
  * - Otherwise falls back to local static assets served from root path
  */
 export function getVideoUrl(filename: string) {
-  return getAssetUrl(filename)
+  return getAssetUrl(filename);
 }

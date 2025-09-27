@@ -48,7 +48,7 @@ export {
   parlantVariable,
   sessionModeEnum,
   sessionStatusEnum,
-} from './parlant-schema'
+} from "./parlant-schema";
 export type {
   AgentFilters,
   AgentStats,
@@ -127,7 +127,7 @@ export type {
   SessionWithRelations,
   ToolWithIntegration,
   ValidationError,
-} from './parlant-types'
+} from "./parlant-types";
 export type {
   AgentMessageContent,
   AgentQueryResult,
@@ -161,7 +161,7 @@ export type {
   TypedParlantTool,
   VariableUpdateContent,
   WorkflowBlockIntegration,
-} from './parlant-unions'
+} from "./parlant-unions";
 export {
   isAgentMessageContent,
   isAnonymousSession,
@@ -178,8 +178,8 @@ export {
   isToolResultContent,
   isToolStateConfig,
   isWorkflowBlockIntegration,
-} from './parlant-unions'
-export type { ParlantQueries } from './parlant-queries'
+} from "./parlant-unions";
+export type { ParlantQueries } from "./parlant-queries";
 export {
   batchInsert,
   createParlantQueries,
@@ -188,7 +188,7 @@ export {
   ParlantSessionQueries,
   withErrorHandling,
   withWorkspaceScope,
-} from './parlant-queries'
+} from "./parlant-queries";
 export type {
   ValidatedAgentFilters,
   ValidatedCreateAgent,
@@ -196,7 +196,7 @@ export type {
   ValidatedCreateSession,
   ValidatedPagination,
   ValidatedSessionFilters,
-} from './parlant-validation'
+} from "./parlant-validation";
 export {
   agentFilterSchema,
   agentResponseSchema,
@@ -245,7 +245,7 @@ export {
   validatePagination,
   validateSessionFilters,
   variableResponseSchema,
-} from './parlant-validation'
+} from "./parlant-validation";
 /**
  * Common imports collection for easier consumption
  */
@@ -424,31 +424,31 @@ export {
 /**
  * Parlant database types package metadata
  */
-export declare const PARLANT_TYPES_VERSION = '1.0.0'
-export declare const PARLANT_TYPES_BUILD: string
+export declare const PARLANT_TYPES_VERSION = "1.0.0";
+export declare const PARLANT_TYPES_BUILD: string;
 /**
  * Feature flags and capabilities
  */
 export declare const PARLANT_FEATURES: {
-  readonly UNION_TYPES: true
-  readonly TYPE_GUARDS: true
-  readonly VALIDATION_SCHEMAS: true
-  readonly QUERY_HELPERS: true
-  readonly POLYMORPHIC_RELATIONSHIPS: true
-  readonly WORKSPACE_SCOPING: true
-  readonly BATCH_OPERATIONS: true
-  readonly ERROR_HANDLING: true
-  readonly ANALYTICS_SUPPORT: true
-  readonly INTEGRATION_SUPPORT: true
-}
+  readonly UNION_TYPES: true;
+  readonly TYPE_GUARDS: true;
+  readonly VALIDATION_SCHEMAS: true;
+  readonly QUERY_HELPERS: true;
+  readonly POLYMORPHIC_RELATIONSHIPS: true;
+  readonly WORKSPACE_SCOPING: true;
+  readonly BATCH_OPERATIONS: true;
+  readonly ERROR_HANDLING: true;
+  readonly ANALYTICS_SUPPORT: true;
+  readonly INTEGRATION_SUPPORT: true;
+};
 /**
  * Supported integrations and extensions
  */
 export declare const PARLANT_INTEGRATIONS: {
-  readonly SIM_WORKFLOWS: true
-  readonly SIM_KNOWLEDGE_BASES: true
-  readonly SIM_API_KEYS: true
-  readonly SIM_CUSTOM_TOOLS: true
-  readonly MCP_SERVERS: true
-  readonly EXTERNAL_APIS: true
-}
+  readonly SIM_WORKFLOWS: true;
+  readonly SIM_KNOWLEDGE_BASES: true;
+  readonly SIM_API_KEYS: true;
+  readonly SIM_CUSTOM_TOOLS: true;
+  readonly MCP_SERVERS: true;
+  readonly EXTERNAL_APIS: true;
+};

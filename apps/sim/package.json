@@ -12,7 +12,7 @@
     "dev:classic": "next dev",
     "dev:sockets": "bun run socket-server/index.ts",
     "dev:full": "concurrently -n \"NextJS,Realtime\" -c \"cyan,magenta\" \"bun run dev\" \"bun run dev:sockets\"",
-    "build": "node scripts/build-with-timeout.js",
+    "build": "node scripts/optimized-build.js",
     "build:classic": "TURBOPACK=0 next build --no-lint",
     "build:full": "next build",
     "build:prod": "next build --no-lint",
@@ -122,6 +122,7 @@
     "iconv-lite": "0.7.0",
     "input-otp": "^1.4.2",
     "ioredis": "^5.6.0",
+    "isomorphic-dompurify": "^2.18.0",
     "jose": "6.0.11",
     "js-yaml": "4.1.0",
     "jwt-decode": "^4.0.0",
@@ -200,7 +201,6 @@
   "overrides": {
     "next": "15.4.1",
     "@next/env": "15.4.1",
-    "drizzle-orm": "^0.41.0",
     "postgres": "^3.4.5"
   }
 }

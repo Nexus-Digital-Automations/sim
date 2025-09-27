@@ -1,0 +1,13 @@
+{
+  "authKey": "8769f33f484158483fa5e5d5be67fb63",
+  "failedCriteria": [
+    {
+      "criterion": "build-validation",
+      "error": "Building failed - no working commands found",
+      "timestamp": "2025-09-27T20:39:42.547Z",
+      "retryCount": 1
+    }
+  ],
+  "lastUpdate": "2025-09-27T20:39:42.548Z",
+  "totalFailures": 1
+}

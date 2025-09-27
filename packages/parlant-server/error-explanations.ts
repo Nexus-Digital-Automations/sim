@@ -6,36 +6,36 @@
  * understandable messages that help users resolve issues effectively.
  */
 
-import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import type { BaseToolError } from './error-handler'
+import { createLogger } from "../../apps/sim/lib/logs/console/logger";
+import type { BaseToolError } from "./error-handler";
 import {
   type ErrorCategory,
   type ErrorImpact,
   ErrorSeverity,
   RecoveryStrategy,
-} from './error-taxonomy'
-import type { ParlantLogContext } from './logging'
+} from "./error-taxonomy";
+import type { ParlantLogContext } from "./logging";
 
-const logger = createLogger('ErrorExplanations')
+const logger = createLogger("ErrorExplanations");
 
 /**
  * User skill levels for tailored explanations
  */
 export enum UserSkillLevel {
-  BEGINNER = 'beginner', // Non-technical users
-  INTERMEDIATE = 'intermediate', // Some technical knowledge
-  ADVANCED = 'advanced', // Technical users
-  DEVELOPER = 'developer', // Developers and system administrators
+  BEGINNER = "beginner", // Non-technical users
+  INTERMEDIATE = "intermediate", // Some technical knowledge
+  ADVANCED = "advanced", // Technical users
+  DEVELOPER = "developer", // Developers and system administrators
 }
 
 /**
  * Explanation formats for different presentation contexts
  */
 export enum ExplanationFormat {
-  BRIEF = 'brief', // Short, concise explanation
-  DETAILED = 'detailed', // Comprehensive explanation
-  INTERACTIVE = 'interactive', // Step-by-step guidance
-  TECHNICAL = 'technical', // Full technical details
+  BRIEF = "brief", // Short, concise explanation
+  DETAILED = "detailed", // Comprehensive explanation
+  INTERACTIVE = "interactive", // Step-by-step guidance
+  TECHNICAL = "technical", // Full technical details
 }
 
 /**
@@ -43,183 +43,183 @@ export enum ExplanationFormat {
  */
 export interface ErrorExplanation {
   // Core explanation
-  id: string
-  errorId: string
-  title: string
-  summary: string
+  id: string;
+  errorId: string;
+  title: string;
+  summary: string;
 
   // Skill-level specific messages
   messages: {
-    [UserSkillLevel.BEGINNER]: string
-    [UserSkillLevel.INTERMEDIATE]: string
-    [UserSkillLevel.ADVANCED]: string
-    [UserSkillLevel.DEVELOPER]: string
-  }
+    [UserSkillLevel.BEGINNER]: string;
+    [UserSkillLevel.INTERMEDIATE]: string;
+    [UserSkillLevel.ADVANCED]: string;
+    [UserSkillLevel.DEVELOPER]: string;
+  };
 
   // Resolution guidance
-  resolutionSteps: ResolutionStep[]
-  quickActions: QuickAction[]
-  preventionTips: PreventionTip[]
+  resolutionSteps: ResolutionStep[];
+  quickActions: QuickAction[];
+  preventionTips: PreventionTip[];
 
   // Context and metadata
-  category: ErrorCategory
-  severity: ErrorSeverity
-  impact: ErrorImpact
-  timeToResolve: string
-  relatedErrors: string[]
-  documentationLinks: DocumentationLink[]
+  category: ErrorCategory;
+  severity: ErrorSeverity;
+  impact: ErrorImpact;
+  timeToResolve: string;
+  relatedErrors: string[];
+  documentationLinks: DocumentationLink[];
 
   // Interactive elements
-  troubleshootingTree: TroubleshootingNode
-  diagnosticQuestions: DiagnosticQuestion[]
+  troubleshootingTree: TroubleshootingNode;
+  diagnosticQuestions: DiagnosticQuestion[];
 
   // System information
-  timestamp: string
-  context: ParlantLogContext
+  timestamp: string;
+  context: ParlantLogContext;
 }
 
 /**
  * Step-by-step resolution guidance
  */
 export interface ResolutionStep {
-  id: string
-  order: number
-  title: string
-  description: string
-  skillLevel: UserSkillLevel
-  estimatedTime: string
-  difficulty: 'easy' | 'medium' | 'hard'
+  id: string;
+  order: number;
+  title: string;
+  description: string;
+  skillLevel: UserSkillLevel;
+  estimatedTime: string;
+  difficulty: "easy" | "medium" | "hard";
 
   // Specific instructions
   instructions: {
-    [UserSkillLevel.BEGINNER]: string[]
-    [UserSkillLevel.INTERMEDIATE]: string[]
-    [UserSkillLevel.ADVANCED]: string[]
-    [UserSkillLevel.DEVELOPER]: string[]
-  }
+    [UserSkillLevel.BEGINNER]: string[];
+    [UserSkillLevel.INTERMEDIATE]: string[];
+    [UserSkillLevel.ADVANCED]: string[];
+    [UserSkillLevel.DEVELOPER]: string[];
+  };
 
   // Visual aids
-  screenshots?: string[]
-  codeExamples?: CodeExample[]
+  screenshots?: string[];
+  codeExamples?: CodeExample[];
 
   // Validation
-  successCriteria: string
-  commonMistakes: string[]
+  successCriteria: string;
+  commonMistakes: string[];
 
   // Dependencies
-  prerequisites: string[]
-  dependsOn: string[]
+  prerequisites: string[];
+  dependsOn: string[];
 }
 
 /**
  * Quick action buttons for immediate fixes
  */
 export interface QuickAction {
-  id: string
-  title: string
-  description: string
-  action: 'retry' | 'reset' | 'refresh' | 'contact_support' | 'custom'
-  customAction?: string
-  parameters?: Record<string, any>
-  skillLevel: UserSkillLevel
-  estimatedTime: string
+  id: string;
+  title: string;
+  description: string;
+  action: "retry" | "reset" | "refresh" | "contact_support" | "custom";
+  customAction?: string;
+  parameters?: Record<string, any>;
+  skillLevel: UserSkillLevel;
+  estimatedTime: string;
 
   // Execution context
-  requiresAuth: boolean
-  requiresElevation: boolean
-  reversible: boolean
+  requiresAuth: boolean;
+  requiresElevation: boolean;
+  reversible: boolean;
 
   // User guidance
-  warningMessage?: string
-  confirmationMessage?: string
-  successMessage: string
+  warningMessage?: string;
+  confirmationMessage?: string;
+  successMessage: string;
 }
 
 /**
  * Prevention tips to avoid future occurrences
  */
 export interface PreventionTip {
-  id: string
-  title: string
-  description: string
-  category: 'best_practice' | 'configuration' | 'monitoring' | 'training'
-  applicability: UserSkillLevel[]
+  id: string;
+  title: string;
+  description: string;
+  category: "best_practice" | "configuration" | "monitoring" | "training";
+  applicability: UserSkillLevel[];
 
   // Implementation guidance
-  implementationSteps: string[]
-  tools: string[]
-  resources: string[]
+  implementationSteps: string[];
+  tools: string[];
+  resources: string[];
 }
 
 /**
  * Documentation and help links
  */
 export interface DocumentationLink {
-  id: string
-  title: string
-  description: string
-  url: string
-  type: 'official_docs' | 'tutorial' | 'video' | 'forum' | 'blog'
-  skillLevel: UserSkillLevel
-  estimatedReadTime: string
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  type: "official_docs" | "tutorial" | "video" | "forum" | "blog";
+  skillLevel: UserSkillLevel;
+  estimatedReadTime: string;
 }
 
 /**
  * Code examples for technical resolutions
  */
 export interface CodeExample {
-  id: string
-  title: string
-  description: string
-  language: string
-  code: string
-  explanation: string
-  skillLevel: UserSkillLevel
+  id: string;
+  title: string;
+  description: string;
+  language: string;
+  code: string;
+  explanation: string;
+  skillLevel: UserSkillLevel;
 }
 
 /**
  * Interactive troubleshooting tree
  */
 export interface TroubleshootingNode {
-  id: string
-  question: string
-  answers: TroubleshootingAnswer[]
+  id: string;
+  question: string;
+  answers: TroubleshootingAnswer[];
 }
 
 export interface TroubleshootingAnswer {
-  id: string
-  text: string
-  nextNode?: TroubleshootingNode
-  resolution?: string
-  actions?: QuickAction[]
+  id: string;
+  text: string;
+  nextNode?: TroubleshootingNode;
+  resolution?: string;
+  actions?: QuickAction[];
 }
 
 /**
  * Diagnostic questions for context gathering
  */
 export interface DiagnosticQuestion {
-  id: string
-  question: string
-  type: 'yes_no' | 'multiple_choice' | 'text' | 'number'
-  options?: string[]
-  required: boolean
-  helpText: string
+  id: string;
+  question: string;
+  type: "yes_no" | "multiple_choice" | "text" | "number";
+  options?: string[];
+  required: boolean;
+  helpText: string;
 
   // Conditional logic
-  dependsOn?: string
-  showIf?: (answers: Record<string, any>) => boolean
+  dependsOn?: string;
+  showIf?: (answers: Record<string, any>) => boolean;
 }
 
 /**
  * Error explanation service
  */
 export class ErrorExplanationService {
-  private explanationTemplates = new Map<string, ErrorExplanationTemplate>()
+  private explanationTemplates = new Map<string, ErrorExplanationTemplate>();
 
   constructor() {
-    this.initializeExplanationTemplates()
-    this.initializeContextualModifiers()
-    logger.info('Error Explanation Service initialized')
+    this.initializeExplanationTemplates();
+    this.initializeContextualModifiers();
+    logger.info("Error Explanation Service initialized");
   }
 
   /**
@@ -229,45 +229,62 @@ export class ErrorExplanationService {
     error: BaseToolError,
     userSkillLevel: UserSkillLevel = UserSkillLevel.INTERMEDIATE,
     format: ExplanationFormat = ExplanationFormat.DETAILED,
-    userContext?: Record<string, any>
+    userContext?: Record<string, any>,
   ): ErrorExplanation {
-    const explanationId = `exp-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
+    const explanationId = `exp-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
 
     // Get base template for error category and subcategory
-    const templateKey = `${error.category}:${error.subcategory}`
+    const templateKey = `${error.category}:${error.subcategory}`;
     const template =
       this.explanationTemplates.get(templateKey) ||
       this.explanationTemplates.get(error.category) ||
-      this.getDefaultTemplate()
+      this.getDefaultTemplate();
 
     // Apply contextual modifications
     const modifiedTemplate = this.applyContextualModifications(
       template,
       error,
       userSkillLevel,
-      userContext
-    )
+      userContext,
+    );
 
     // Generate skill-level specific messages
-    const messages = this.generateSkillLevelMessages(error, modifiedTemplate)
+    const messages = this.generateSkillLevelMessages(error, modifiedTemplate);
 
     // Create resolution steps
-    const resolutionSteps = this.generateResolutionSteps(error, modifiedTemplate, userSkillLevel)
+    const resolutionSteps = this.generateResolutionSteps(
+      error,
+      modifiedTemplate,
+      userSkillLevel,
+    );
 
     // Create quick actions
-    const quickActions = this.generateQuickActions(error, modifiedTemplate, userSkillLevel)
+    const quickActions = this.generateQuickActions(
+      error,
+      modifiedTemplate,
+      userSkillLevel,
+    );
 
     // Generate prevention tips
-    const preventionTips = this.generatePreventionTips(error, modifiedTemplate)
+    const preventionTips = this.generatePreventionTips(error, modifiedTemplate);
 
     // Create troubleshooting tree
-    const troubleshootingTree = this.generateTroubleshootingTree(error, modifiedTemplate)
+    const troubleshootingTree = this.generateTroubleshootingTree(
+      error,
+      modifiedTemplate,
+    );
 
     // Generate diagnostic questions
-    const diagnosticQuestions = this.generateDiagnosticQuestions(error, modifiedTemplate)
+    const diagnosticQuestions = this.generateDiagnosticQuestions(
+      error,
+      modifiedTemplate,
+    );
 
     // Find documentation links
-    const documentationLinks = this.findDocumentationLinks(error, userSkillLevel)
+    const documentationLinks = this.findDocumentationLinks(
+      error,
+      userSkillLevel,
+    );
 
     const explanation: ErrorExplanation = {
       id: explanationId,
@@ -288,18 +305,18 @@ export class ErrorExplanationService {
       diagnosticQuestions,
       timestamp: new Date().toISOString(),
       context: error.context,
-    }
+    };
 
-    logger.debug('Error explanation generated', {
+    logger.debug("Error explanation generated", {
       explanationId,
       errorId: error.id,
       userSkillLevel,
       format,
       resolutionSteps: resolutionSteps.length,
       quickActions: quickActions.length,
-    })
+    });
 
-    return explanation
+    return explanation;
   }
 
   /**
@@ -307,24 +324,40 @@ export class ErrorExplanationService {
    */
   private generateSkillLevelMessages(
     error: BaseToolError,
-    template: ErrorExplanationTemplate
-  ): ErrorExplanation['messages'] {
-    const toolName = error.context.toolName || 'the tool'
+    template: ErrorExplanationTemplate,
+  ): ErrorExplanation["messages"] {
+    const toolName = error.context.toolName || "the tool";
 
     return {
-      [UserSkillLevel.BEGINNER]: this.interpolateTemplate(template.beginnerMessage, error, {
-        toolName,
-      }),
-      [UserSkillLevel.INTERMEDIATE]: this.interpolateTemplate(template.intermediateMessage, error, {
-        toolName,
-      }),
-      [UserSkillLevel.ADVANCED]: this.interpolateTemplate(template.advancedMessage, error, {
-        toolName,
-      }),
-      [UserSkillLevel.DEVELOPER]: this.interpolateTemplate(template.developerMessage, error, {
-        toolName,
-      }),
-    }
+      [UserSkillLevel.BEGINNER]: this.interpolateTemplate(
+        template.beginnerMessage,
+        error,
+        {
+          toolName,
+        },
+      ),
+      [UserSkillLevel.INTERMEDIATE]: this.interpolateTemplate(
+        template.intermediateMessage,
+        error,
+        {
+          toolName,
+        },
+      ),
+      [UserSkillLevel.ADVANCED]: this.interpolateTemplate(
+        template.advancedMessage,
+        error,
+        {
+          toolName,
+        },
+      ),
+      [UserSkillLevel.DEVELOPER]: this.interpolateTemplate(
+        template.developerMessage,
+        error,
+        {
+          toolName,
+        },
+      ),
+    };
   }
 
   /**
@@ -333,10 +366,10 @@ export class ErrorExplanationService {
   private generateResolutionSteps(
     error: BaseToolError,
     template: ErrorExplanationTemplate,
-    userSkillLevel: UserSkillLevel
+    userSkillLevel: UserSkillLevel,
   ): ResolutionStep[] {
-    const steps: ResolutionStep[] = []
-    let order = 1
+    const steps: ResolutionStep[] = [];
+    let order = 1;
 
     // Add general steps from template
     template.resolutionSteps.forEach((stepTemplate) => {
@@ -345,27 +378,34 @@ export class ErrorExplanationService {
           id: `step-${order}`,
           order: order++,
           title: stepTemplate.title,
-          description: this.interpolateTemplate(stepTemplate.description, error),
+          description: this.interpolateTemplate(
+            stepTemplate.description,
+            error,
+          ),
           skillLevel: stepTemplate.skillLevel,
           estimatedTime: stepTemplate.estimatedTime,
           difficulty: stepTemplate.difficulty,
           instructions: {
-            [UserSkillLevel.BEGINNER]: stepTemplate.instructions.beginner.map((inst: string) =>
-              this.interpolateTemplate(inst, error)
+            [UserSkillLevel.BEGINNER]: stepTemplate.instructions.beginner.map(
+              (inst: string) => this.interpolateTemplate(inst, error),
             ),
-            [UserSkillLevel.INTERMEDIATE]: stepTemplate.instructions.intermediate.map(
-              (inst: string) => this.interpolateTemplate(inst, error)
+            [UserSkillLevel.INTERMEDIATE]:
+              stepTemplate.instructions.intermediate.map((inst: string) =>
+                this.interpolateTemplate(inst, error),
+              ),
+            [UserSkillLevel.ADVANCED]: stepTemplate.instructions.advanced.map(
+              (inst: string) => this.interpolateTemplate(inst, error),
             ),
-            [UserSkillLevel.ADVANCED]: stepTemplate.instructions.advanced.map((inst: string) =>
-              this.interpolateTemplate(inst, error)
-            ),
-            [UserSkillLevel.DEVELOPER]: stepTemplate.instructions.developer.map((inst: string) =>
-              this.interpolateTemplate(inst, error)
+            [UserSkillLevel.DEVELOPER]: stepTemplate.instructions.developer.map(
+              (inst: string) => this.interpolateTemplate(inst, error),
             ),
           },
-          successCriteria: this.interpolateTemplate(stepTemplate.successCriteria, error),
+          successCriteria: this.interpolateTemplate(
+            stepTemplate.successCriteria,
+            error,
+          ),
           commonMistakes: stepTemplate.commonMistakes.map((mistake: string) =>
-            this.interpolateTemplate(mistake, error)
+            this.interpolateTemplate(mistake, error),
           ),
           prerequisites: stepTemplate.prerequisites,
           dependsOn: stepTemplate.dependsOn,
@@ -374,14 +414,14 @@ export class ErrorExplanationService {
             code: this.interpolateTemplate(example.code, error),
             explanation: this.interpolateTemplate(example.explanation, error),
           })),
-        })
+        });
       }
-    })
+    });
 
     // Add error-specific steps
-    this.addErrorSpecificSteps(steps, error)
+    this.addErrorSpecificSteps(steps, error);
 
-    return steps.sort((a, b) => a.order - b.order)
+    return steps.sort((a, b) => a.order - b.order);
   }
 
   /**
@@ -390,9 +430,9 @@ export class ErrorExplanationService {
   private generateQuickActions(
     error: BaseToolError,
     template: ErrorExplanationTemplate,
-    userSkillLevel: UserSkillLevel
+    userSkillLevel: UserSkillLevel,
   ): QuickAction[] {
-    const actions: QuickAction[] = []
+    const actions: QuickAction[] = [];
 
     // Add template-based actions
     template.quickActions.forEach((actionTemplate) => {
@@ -400,7 +440,10 @@ export class ErrorExplanationService {
         actions.push({
           id: `action-${actions.length + 1}`,
           title: actionTemplate.title,
-          description: this.interpolateTemplate(actionTemplate.description, error),
+          description: this.interpolateTemplate(
+            actionTemplate.description,
+            error,
+          ),
           action: actionTemplate.action,
           customAction: actionTemplate.customAction,
           parameters: actionTemplate.parameters,
@@ -411,28 +454,34 @@ export class ErrorExplanationService {
           reversible: actionTemplate.reversible,
           warningMessage: actionTemplate.warningMessage,
           confirmationMessage: actionTemplate.confirmationMessage,
-          successMessage: this.interpolateTemplate(actionTemplate.successMessage, error),
-        })
+          successMessage: this.interpolateTemplate(
+            actionTemplate.successMessage,
+            error,
+          ),
+        });
       }
-    })
+    });
 
     // Add universal actions
-    if (error.recoverable && error.recoveryStrategy === RecoveryStrategy.RETRY) {
+    if (
+      error.recoverable &&
+      error.recoveryStrategy === RecoveryStrategy.RETRY
+    ) {
       actions.push({
-        id: 'universal-retry',
-        title: 'Try Again',
-        description: 'Attempt the operation again',
-        action: 'retry',
+        id: "universal-retry",
+        title: "Try Again",
+        description: "Attempt the operation again",
+        action: "retry",
         skillLevel: UserSkillLevel.BEGINNER,
-        estimatedTime: '< 1 minute',
+        estimatedTime: "< 1 minute",
         requiresAuth: false,
         requiresElevation: false,
         reversible: true,
-        successMessage: 'Operation completed successfully',
-      })
+        successMessage: "Operation completed successfully",
+      });
     }
 
-    return actions
+    return actions;
   }
 
   /**
@@ -440,7 +489,7 @@ export class ErrorExplanationService {
    */
   private generatePreventionTips(
     error: BaseToolError,
-    template: ErrorExplanationTemplate
+    template: ErrorExplanationTemplate,
   ): PreventionTip[] {
     return template.preventionTips.map((tipTemplate, index) => ({
       id: `tip-${index + 1}`,
@@ -449,11 +498,11 @@ export class ErrorExplanationService {
       category: tipTemplate.category,
       applicability: tipTemplate.applicability,
       implementationSteps: tipTemplate.implementationSteps.map((step: string) =>
-        this.interpolateTemplate(step, error)
+        this.interpolateTemplate(step, error),
       ),
       tools: tipTemplate.tools,
       resources: tipTemplate.resources,
-    }))
+    }));
   }
 
   /**
@@ -461,9 +510,12 @@ export class ErrorExplanationService {
    */
   private generateTroubleshootingTree(
     error: BaseToolError,
-    template: ErrorExplanationTemplate
+    template: ErrorExplanationTemplate,
   ): TroubleshootingNode {
-    return this.interpolateTroubleshootingNode(template.troubleshootingTree, error)
+    return this.interpolateTroubleshootingNode(
+      template.troubleshootingTree,
+      error,
+    );
   }
 
   /**
@@ -471,7 +523,7 @@ export class ErrorExplanationService {
    */
   private generateDiagnosticQuestions(
     error: BaseToolError,
-    template: ErrorExplanationTemplate
+    template: ErrorExplanationTemplate,
   ): DiagnosticQuestion[] {
     return template.diagnosticQuestions.map((questionTemplate, index) => ({
       id: `question-${index + 1}`,
@@ -482,7 +534,7 @@ export class ErrorExplanationService {
       helpText: this.interpolateTemplate(questionTemplate.helpText, error),
       dependsOn: questionTemplate.dependsOn,
       showIf: questionTemplate.showIf,
-    }))
+    }));
   }
 
   /**
@@ -491,13 +543,13 @@ export class ErrorExplanationService {
   private interpolateTemplate(
     template: string,
     error: BaseToolError,
-    additionalContext: Record<string, any> = {}
+    additionalContext: Record<string, any> = {},
   ): string {
-    let result = template
+    let result = template;
 
     const context = {
       ...additionalContext,
-      toolName: error.context.toolName || 'the tool',
+      toolName: error.context.toolName || "the tool",
       errorMessage: error.message,
       component: error.component,
       severity: error.severity,
@@ -506,14 +558,14 @@ export class ErrorExplanationService {
       userId: error.context.userId,
       workspaceId: error.context.workspaceId,
       timestamp: new Date(error.timestamp).toLocaleString(),
-    }
+    };
 
     Object.entries(context).forEach(([key, value]) => {
-      const regex = new RegExp(`{{${key}}}`, 'g')
-      result = result.replace(regex, String(value || ''))
-    })
+      const regex = new RegExp(`{{${key}}}`, "g");
+      result = result.replace(regex, String(value || ""));
+    });
 
-    return result
+    return result;
   }
 
   /**
@@ -521,7 +573,7 @@ export class ErrorExplanationService {
    */
   private initializeExplanationTemplates(): void {
     // Tool Adapter Error Templates
-    this.explanationTemplates.set('tool_adapter:interface_mismatch', {
+    this.explanationTemplates.set("tool_adapter:interface_mismatch", {
       beginnerMessage:
         "{{toolName}} isn't working properly with the system. This usually means there's a version mismatch.",
       intermediateMessage:
@@ -529,42 +581,43 @@ export class ErrorExplanationService {
       advancedMessage:
         "Interface mismatch detected for {{toolName}}. The tool's API contract doesn't match the expected schema in the adapter layer.",
       developerMessage:
-        'Tool adapter interface mismatch for {{toolName}}: {{errorMessage}}. Check API versioning and schema compatibility.',
+        "Tool adapter interface mismatch for {{toolName}}: {{errorMessage}}. Check API versioning and schema compatibility.",
 
       resolutionSteps: [
         {
-          title: 'Check for Updates',
-          description: 'Verify if {{toolName}} or the system has available updates',
+          title: "Check for Updates",
+          description:
+            "Verify if {{toolName}} or the system has available updates",
           skillLevel: UserSkillLevel.BEGINNER,
-          difficulty: 'easy',
-          estimatedTime: '2-3 minutes',
+          difficulty: "easy",
+          estimatedTime: "2-3 minutes",
           instructions: {
             beginner: [
-              'Go to the settings or preferences section',
+              "Go to the settings or preferences section",
               "Look for an 'Updates' or 'Check for Updates' option",
-              'Install any available updates',
+              "Install any available updates",
             ],
             intermediate: [
               "Check {{toolName}}'s version in settings",
-              'Compare with the latest version on the official website',
-              'Update if necessary and restart the application',
+              "Compare with the latest version on the official website",
+              "Update if necessary and restart the application",
             ],
             advanced: [
-              'Run system update check: check for updates',
-              'Verify {{toolName}} API version compatibility',
-              'Update adapter configuration if needed',
+              "Run system update check: check for updates",
+              "Verify {{toolName}} API version compatibility",
+              "Update adapter configuration if needed",
             ],
             developer: [
-              'Check package.json or equivalent for {{toolName}} version',
-              'Compare API schema versions in adapter configuration',
-              'Update dependencies: npm update {{toolName}}',
-              'Regenerate adapter interface if schema changed',
+              "Check package.json or equivalent for {{toolName}} version",
+              "Compare API schema versions in adapter configuration",
+              "Update dependencies: npm update {{toolName}}",
+              "Regenerate adapter interface if schema changed",
             ],
           },
-          successCriteria: '{{toolName}} loads without errors',
+          successCriteria: "{{toolName}} loads without errors",
           commonMistakes: [
-            'Forgetting to restart after update',
-            'Not checking system compatibility',
+            "Forgetting to restart after update",
+            "Not checking system compatibility",
           ],
           prerequisites: [],
           dependsOn: [],
@@ -573,27 +626,27 @@ export class ErrorExplanationService {
 
       quickActions: [
         {
-          title: 'Refresh Connection',
-          description: 'Refresh the connection to {{toolName}}',
-          action: 'refresh',
+          title: "Refresh Connection",
+          description: "Refresh the connection to {{toolName}}",
+          action: "refresh",
           skillLevel: UserSkillLevel.BEGINNER,
-          estimatedTime: '30 seconds',
+          estimatedTime: "30 seconds",
           requiresAuth: false,
           requiresElevation: false,
           reversible: true,
-          successMessage: 'Connection to {{toolName}} refreshed successfully',
+          successMessage: "Connection to {{toolName}} refreshed successfully",
         },
       ],
 
       preventionTips: [
         {
-          title: 'Enable Automatic Updates',
-          description: 'Keep {{toolName}} and the system updated automatically',
-          category: 'configuration',
+          title: "Enable Automatic Updates",
+          description: "Keep {{toolName}} and the system updated automatically",
+          category: "configuration",
           applicability: [UserSkillLevel.BEGINNER, UserSkillLevel.INTERMEDIATE],
           implementationSteps: [
-            'Enable automatic updates in system settings',
-            'Subscribe to {{toolName}} update notifications',
+            "Enable automatic updates in system settings",
+            "Subscribe to {{toolName}} update notifications",
           ],
           tools: [],
           resources: [],
@@ -601,110 +654,110 @@ export class ErrorExplanationService {
       ],
 
       troubleshootingTree: {
-        id: 'root',
-        question: 'When did this error first occur?',
+        id: "root",
+        question: "When did this error first occur?",
         answers: [
           {
-            id: 'recent',
-            text: 'Just started happening recently',
+            id: "recent",
+            text: "Just started happening recently",
             nextNode: {
-              id: 'recent-changes',
-              question: 'Did you recently update anything?',
+              id: "recent-changes",
+              question: "Did you recently update anything?",
               answers: [
                 {
-                  id: 'updated-tool',
-                  text: 'Yes, I updated {{toolName}}',
+                  id: "updated-tool",
+                  text: "Yes, I updated {{toolName}}",
                   resolution:
-                    'This is likely a version compatibility issue. Try rolling back to the previous version or wait for a compatibility update.',
+                    "This is likely a version compatibility issue. Try rolling back to the previous version or wait for a compatibility update.",
                 },
                 {
-                  id: 'updated-system',
-                  text: 'Yes, I updated the system',
+                  id: "updated-system",
+                  text: "Yes, I updated the system",
                   resolution:
-                    'The system update may have changed compatibility requirements. Check for {{toolName}} updates or contact support.',
+                    "The system update may have changed compatibility requirements. Check for {{toolName}} updates or contact support.",
                 },
               ],
             },
           },
           {
-            id: 'always',
-            text: 'This has never worked',
+            id: "always",
+            text: "This has never worked",
             resolution:
-              '{{toolName}} may not be properly installed or configured. Check the installation guide.',
+              "{{toolName}} may not be properly installed or configured. Check the installation guide.",
           },
         ],
       },
 
       diagnosticQuestions: [
         {
-          question: 'What version of {{toolName}} are you using?',
-          type: 'text',
+          question: "What version of {{toolName}} are you using?",
+          type: "text",
           required: true,
-          helpText: 'You can usually find this in the About or Help menu',
+          helpText: "You can usually find this in the About or Help menu",
         },
         {
-          question: 'When did you last update {{toolName}}?',
-          type: 'text',
+          question: "When did you last update {{toolName}}?",
+          type: "text",
           required: false,
-          helpText: 'Help us understand if this is related to a recent change',
+          helpText: "Help us understand if this is related to a recent change",
         },
       ],
-    })
+    });
 
     // Add more templates for other error types...
-    this.addToolExecutionTemplates()
-    this.addAuthenticationTemplates()
-    this.addSystemResourceTemplates()
-    this.addUserInputTemplates()
+    this.addToolExecutionTemplates();
+    this.addAuthenticationTemplates();
+    this.addSystemResourceTemplates();
+    this.addUserInputTemplates();
   }
 
   /**
    * Add tool execution error templates
    */
   private addToolExecutionTemplates(): void {
-    this.explanationTemplates.set('tool_execution:timeout', {
+    this.explanationTemplates.set("tool_execution:timeout", {
       beginnerMessage:
         "{{toolName}} is taking too long to respond. This usually means it's busy or having connection issues.",
       intermediateMessage:
-        '{{toolName}} operation timed out. The tool may be overloaded or experiencing network issues.',
+        "{{toolName}} operation timed out. The tool may be overloaded or experiencing network issues.",
       advancedMessage:
-        '{{toolName}} execution timeout after waiting for response. Check tool performance and network connectivity.',
+        "{{toolName}} execution timeout after waiting for response. Check tool performance and network connectivity.",
       developerMessage:
-        'Tool execution timeout for {{toolName}}: {{errorMessage}}. Review timeout settings and tool performance metrics.',
+        "Tool execution timeout for {{toolName}}: {{errorMessage}}. Review timeout settings and tool performance metrics.",
 
       resolutionSteps: [
         {
-          title: 'Wait and Retry',
-          description: 'Wait a few moments and try the operation again',
+          title: "Wait and Retry",
+          description: "Wait a few moments and try the operation again",
           skillLevel: UserSkillLevel.BEGINNER,
-          difficulty: 'easy',
-          estimatedTime: '1-2 minutes',
+          difficulty: "easy",
+          estimatedTime: "1-2 minutes",
           instructions: {
             beginner: [
-              'Wait 30 seconds',
-              'Try the same operation again',
-              'If it fails again, wait longer before retrying',
+              "Wait 30 seconds",
+              "Try the same operation again",
+              "If it fails again, wait longer before retrying",
             ],
             intermediate: [
-              'Check {{toolName}} status',
-              'Wait for 1-2 minutes',
-              'Retry with simpler parameters if possible',
+              "Check {{toolName}} status",
+              "Wait for 1-2 minutes",
+              "Retry with simpler parameters if possible",
             ],
             advanced: [
-              'Check network connectivity',
-              'Monitor {{toolName}} performance',
-              'Consider increasing timeout settings',
+              "Check network connectivity",
+              "Monitor {{toolName}} performance",
+              "Consider increasing timeout settings",
             ],
             developer: [
-              'Check tool response times in monitoring',
-              'Review timeout configuration',
-              'Implement exponential backoff retry',
+              "Check tool response times in monitoring",
+              "Review timeout configuration",
+              "Implement exponential backoff retry",
             ],
           },
-          successCriteria: 'Operation completes within expected timeframe',
+          successCriteria: "Operation completes within expected timeframe",
           commonMistakes: [
-            'Retrying immediately without waiting',
-            'Not checking network connectivity',
+            "Retrying immediately without waiting",
+            "Not checking network connectivity",
           ],
           prerequisites: [],
           dependsOn: [],
@@ -713,28 +766,28 @@ export class ErrorExplanationService {
 
       quickActions: [
         {
-          title: 'Retry Now',
-          description: 'Try the operation again immediately',
-          action: 'retry',
+          title: "Retry Now",
+          description: "Try the operation again immediately",
+          action: "retry",
           skillLevel: UserSkillLevel.BEGINNER,
-          estimatedTime: '30 seconds',
+          estimatedTime: "30 seconds",
           requiresAuth: false,
           requiresElevation: false,
           reversible: true,
-          successMessage: 'Operation completed successfully',
+          successMessage: "Operation completed successfully",
         },
       ],
 
       preventionTips: [
         {
-          title: 'Optimize Request Size',
-          description: 'Break large operations into smaller chunks',
-          category: 'best_practice',
+          title: "Optimize Request Size",
+          description: "Break large operations into smaller chunks",
+          category: "best_practice",
           applicability: [UserSkillLevel.INTERMEDIATE, UserSkillLevel.ADVANCED],
           implementationSteps: [
-            'Identify operations that consistently timeout',
-            'Break them into smaller, manageable pieces',
-            'Process in batches with appropriate delays',
+            "Identify operations that consistently timeout",
+            "Break them into smaller, manageable pieces",
+            "Process in batches with appropriate delays",
           ],
           tools: [],
           resources: [],
@@ -742,31 +795,33 @@ export class ErrorExplanationService {
       ],
 
       troubleshootingTree: {
-        id: 'root',
-        question: 'How large or complex was the operation that timed out?',
+        id: "root",
+        question: "How large or complex was the operation that timed out?",
         answers: [
           {
-            id: 'large',
-            text: 'Large dataset or complex operation',
-            resolution: 'Try breaking the operation into smaller parts or use batch processing.',
+            id: "large",
+            text: "Large dataset or complex operation",
+            resolution:
+              "Try breaking the operation into smaller parts or use batch processing.",
           },
           {
-            id: 'simple',
-            text: 'Simple, small operation',
+            id: "simple",
+            text: "Simple, small operation",
             nextNode: {
-              id: 'frequency',
-              question: 'Does this happen frequently?',
+              id: "frequency",
+              question: "Does this happen frequently?",
               answers: [
                 {
-                  id: 'frequent',
-                  text: 'Yes, happens often',
+                  id: "frequent",
+                  text: "Yes, happens often",
                   resolution:
-                    '{{toolName}} may be experiencing performance issues. Contact support or check service status.',
+                    "{{toolName}} may be experiencing performance issues. Contact support or check service status.",
                 },
                 {
-                  id: 'rare',
-                  text: 'No, this is unusual',
-                  resolution: 'This may be a temporary issue. Try again in a few minutes.',
+                  id: "rare",
+                  text: "No, this is unusual",
+                  resolution:
+                    "This may be a temporary issue. Try again in a few minutes.",
                 },
               ],
             },
@@ -776,13 +831,14 @@ export class ErrorExplanationService {
 
       diagnosticQuestions: [
         {
-          question: 'How long did you wait before the timeout occurred?',
-          type: 'text',
+          question: "How long did you wait before the timeout occurred?",
+          type: "text",
           required: true,
-          helpText: 'This helps us understand if the timeout setting is appropriate',
+          helpText:
+            "This helps us understand if the timeout setting is appropriate",
         },
       ],
-    })
+    });
   }
 
   /**
@@ -820,10 +876,10 @@ export class ErrorExplanationService {
     template: ErrorExplanationTemplate,
     error: BaseToolError,
     userSkillLevel: UserSkillLevel,
-    userContext?: Record<string, any>
+    userContext?: Record<string, any>,
   ): ErrorExplanationTemplate {
     // Apply modifications based on context
-    return template // Simplified for now
+    return template; // Simplified for now
   }
 
   /**
@@ -832,66 +888,72 @@ export class ErrorExplanationService {
   private shouldIncludeStep(
     stepTemplate: any,
     userSkillLevel: UserSkillLevel,
-    error: BaseToolError
+    error: BaseToolError,
   ): boolean {
-    return true // Simplified logic
+    return true; // Simplified logic
   }
 
   private shouldIncludeAction(
     actionTemplate: any,
     userSkillLevel: UserSkillLevel,
-    error: BaseToolError
+    error: BaseToolError,
   ): boolean {
-    return true // Simplified logic
+    return true; // Simplified logic
   }
 
-  private addErrorSpecificSteps(steps: ResolutionStep[], error: BaseToolError): void {
+  private addErrorSpecificSteps(
+    steps: ResolutionStep[],
+    error: BaseToolError,
+  ): void {
     // Add steps specific to the error instance
   }
 
-  private generateTitle(error: BaseToolError, template: ErrorExplanationTemplate): string {
-    return `Issue with ${error.context.toolName || error.component}`
+  private generateTitle(
+    error: BaseToolError,
+    template: ErrorExplanationTemplate,
+  ): string {
+    return `Issue with ${error.context.toolName || error.component}`;
   }
 
   private generateSummary(
     error: BaseToolError,
     template: ErrorExplanationTemplate,
-    userSkillLevel: UserSkillLevel
+    userSkillLevel: UserSkillLevel,
   ): string {
-    return template[`${userSkillLevel}Message`] || error.getUserMessage()
+    return template[`${userSkillLevel}Message`] || error.getUserMessage();
   }
 
   private estimateTimeToResolve(error: BaseToolError): string {
     switch (error.severity) {
       case ErrorSeverity.WARNING:
-        return '1-2 minutes'
+        return "1-2 minutes";
       case ErrorSeverity.ERROR:
-        return '5-10 minutes'
+        return "5-10 minutes";
       case ErrorSeverity.CRITICAL:
-        return '15-30 minutes'
+        return "15-30 minutes";
       case ErrorSeverity.FATAL:
-        return '30+ minutes'
+        return "30+ minutes";
       default:
-        return '2-5 minutes'
+        return "2-5 minutes";
     }
   }
 
   private findRelatedErrors(error: BaseToolError): string[] {
     // Find related error patterns
-    return []
+    return [];
   }
 
   private findDocumentationLinks(
     error: BaseToolError,
-    userSkillLevel: UserSkillLevel
+    userSkillLevel: UserSkillLevel,
   ): DocumentationLink[] {
     // Generate relevant documentation links
-    return []
+    return [];
   }
 
   private interpolateTroubleshootingNode(
     node: TroubleshootingNode,
-    error: BaseToolError
+    error: BaseToolError,
   ): TroubleshootingNode {
     return {
       ...node,
@@ -906,28 +968,29 @@ export class ErrorExplanationService {
           ? this.interpolateTroubleshootingNode(answer.nextNode, error)
           : undefined,
       })),
-    }
+    };
   }
 
   private getDefaultTemplate(): ErrorExplanationTemplate {
     return {
       beginnerMessage:
-        'An error occurred while processing your request. Please try again or contact support if the issue persists.',
+        "An error occurred while processing your request. Please try again or contact support if the issue persists.",
       intermediateMessage:
-        'A technical issue has been encountered. Check your configuration and try again.',
-      advancedMessage: 'System error detected. Review logs and system status for more information.',
+        "A technical issue has been encountered. Check your configuration and try again.",
+      advancedMessage:
+        "System error detected. Review logs and system status for more information.",
       developerMessage:
-        'Error in component {{component}}: {{errorMessage}}. Check logs for detailed stack trace.',
+        "Error in component {{component}}: {{errorMessage}}. Check logs for detailed stack trace.",
       resolutionSteps: [],
       quickActions: [],
       preventionTips: [],
       troubleshootingTree: {
-        id: 'root',
-        question: 'What were you trying to do when this error occurred?',
+        id: "root",
+        question: "What were you trying to do when this error occurred?",
         answers: [],
       },
       diagnosticQuestions: [],
-    }
+    };
   }
 }
 
@@ -935,30 +998,30 @@ export class ErrorExplanationService {
  * Error explanation template interface
  */
 interface ErrorExplanationTemplate {
-  beginnerMessage: string
-  intermediateMessage: string
-  advancedMessage: string
-  developerMessage: string
-  resolutionSteps: any[]
-  quickActions: any[]
-  preventionTips: any[]
-  troubleshootingTree: TroubleshootingNode
-  diagnosticQuestions: any[]
+  beginnerMessage: string;
+  intermediateMessage: string;
+  advancedMessage: string;
+  developerMessage: string;
+  resolutionSteps: any[];
+  quickActions: any[];
+  preventionTips: any[];
+  troubleshootingTree: TroubleshootingNode;
+  diagnosticQuestions: any[];
 }
 
 /**
  * Contextual modifier interface
  */
 interface ContextualModifier {
-  id: string
-  condition: (error: BaseToolError, context?: Record<string, any>) => boolean
-  modify: (template: ErrorExplanationTemplate) => ErrorExplanationTemplate
+  id: string;
+  condition: (error: BaseToolError, context?: Record<string, any>) => boolean;
+  modify: (template: ErrorExplanationTemplate) => ErrorExplanationTemplate;
 }
 
 /**
  * Singleton error explanation service
  */
-export const errorExplanationService = new ErrorExplanationService()
+export const errorExplanationService = new ErrorExplanationService();
 
 /**
  * Convenience function for generating explanations
@@ -967,5 +1030,11 @@ export const explainError = (
   error: BaseToolError,
   userSkillLevel?: UserSkillLevel,
   format?: ExplanationFormat,
-  userContext?: Record<string, any>
-) => errorExplanationService.generateExplanation(error, userSkillLevel, format, userContext)
+  userContext?: Record<string, any>,
+) =>
+  errorExplanationService.generateExplanation(
+    error,
+    userSkillLevel,
+    format,
+    userContext,
+  );

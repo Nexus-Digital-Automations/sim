@@ -1,30 +1,30 @@
-import { useCallback, useEffect, useState } from 'react'
-import { DEFAULT_FREE_CREDITS } from '@/lib/billing/constants'
-import { createLogger } from '@/lib/logs/console/logger'
+import { useCallback, useEffect, useState } from "react";
+import { DEFAULT_FREE_CREDITS } from "@/lib/billing/constants";
+import { createLogger } from "@/lib/logs/console/logger";
 
-const logger = createLogger('useSubscriptionState')
+const logger = createLogger("useSubscriptionState");
 
 interface UsageData {
-  current: number
-  limit: number
-  percentUsed: number
-  isWarning: boolean
-  isExceeded: boolean
-  billingPeriodStart: Date | null
-  billingPeriodEnd: Date | null
-  lastPeriodCost: number
+  current: number;
+  limit: number;
+  percentUsed: number;
+  isWarning: boolean;
+  isExceeded: boolean;
+  billingPeriodStart: Date | null;
+  billingPeriodEnd: Date | null;
+  lastPeriodCost: number;
 }
 
 interface SubscriptionState {
-  isPaid: boolean
-  isPro: boolean
-  isTeam: boolean
-  isEnterprise: boolean
-  plan: string
-  status: string | null
-  seats: number | null
-  metadata: any | null
-  usage: UsageData
+  isPaid: boolean;
+  isPro: boolean;
+  isTeam: boolean;
+  isEnterprise: boolean;
+  plan: string;
+  status: string | null;
+  seats: number | null;
+  metadata: any | null;
+  usage: UsageData;
 }
 
 /**
@@ -32,40 +32,43 @@ interface SubscriptionState {
  * Combines subscription status, features, and usage data
  */
 export function useSubscriptionState() {
-  const [data, setData] = useState<SubscriptionState | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const [data, setData] = useState<SubscriptionState | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   const fetchSubscriptionState = useCallback(async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
-      const response = await fetch('/api/billing?context=user')
+      const response = await fetch("/api/billing?context=user");
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json()
-      const subscriptionData = result.data
-      setData(subscriptionData)
+      const result = await response.json();
+      const subscriptionData = result.data;
+      setData(subscriptionData);
     } catch (error) {
-      const err = error instanceof Error ? error : new Error('Failed to fetch subscription state')
-      logger.error('Failed to fetch subscription state', { error })
-      setError(err)
+      const err =
+        error instanceof Error
+          ? error
+          : new Error("Failed to fetch subscription state");
+      logger.error("Failed to fetch subscription state", { error });
+      setError(err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchSubscriptionState()
-  }, [fetchSubscriptionState])
+    fetchSubscriptionState();
+  }, [fetchSubscriptionState]);
 
   const refetch = useCallback(() => {
-    return fetchSubscriptionState()
-  }, [fetchSubscriptionState])
+    return fetchSubscriptionState();
+  }, [fetchSubscriptionState]);
 
   return {
     subscription: {
@@ -74,7 +77,7 @@ export function useSubscriptionState() {
       isTeam: data?.isTeam ?? false,
       isEnterprise: data?.isEnterprise ?? false,
       isFree: !(data?.isPaid ?? false),
-      plan: data?.plan ?? 'free',
+      plan: data?.plan ?? "free",
       status: data?.status,
       seats: data?.seats,
       metadata: data?.metadata,
@@ -100,118 +103,121 @@ export function useSubscriptionState() {
     refetch,
 
     isAtLeastPro: () => {
-      return data?.isPro || data?.isTeam || data?.isEnterprise || false
+      return data?.isPro || data?.isTeam || data?.isEnterprise || false;
     },
 
     isAtLeastTeam: () => {
-      return data?.isTeam || data?.isEnterprise || false
+      return data?.isTeam || data?.isEnterprise || false;
     },
 
     canUpgrade: () => {
-      return data?.plan === 'free' || data?.plan === 'pro'
+      return data?.plan === "free" || data?.plan === "pro";
     },
 
     getBillingStatus: () => {
-      const usage = data?.usage
-      if (!usage) return 'unknown'
+      const usage = data?.usage;
+      if (!usage) return "unknown";
 
-      if (usage.isExceeded) return 'exceeded'
-      if (usage.isWarning) return 'warning'
-      return 'ok'
+      if (usage.isExceeded) return "exceeded";
+      if (usage.isWarning) return "warning";
+      return "ok";
     },
 
     getRemainingBudget: () => {
-      const usage = data?.usage
-      if (!usage) return 0
-      return Math.max(0, usage.limit - usage.current)
+      const usage = data?.usage;
+      if (!usage) return 0;
+      return Math.max(0, usage.limit - usage.current);
     },
 
     getDaysRemainingInPeriod: () => {
-      const usage = data?.usage
-      if (!usage?.billingPeriodEnd) return null
+      const usage = data?.usage;
+      if (!usage?.billingPeriodEnd) return null;
 
-      const now = new Date()
-      const endDate = new Date(usage.billingPeriodEnd)
-      const diffTime = endDate.getTime() - now.getTime()
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      const now = new Date();
+      const endDate = new Date(usage.billingPeriodEnd);
+      const diffTime = endDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      return Math.max(0, diffDays)
+      return Math.max(0, diffDays);
     },
-  }
+  };
 }
 
 /**
  * Hook for usage limit information with editing capabilities
  */
 export function useUsageLimit() {
-  const [data, setData] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   const fetchUsageLimit = useCallback(async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
-      const response = await fetch('/api/usage?context=user')
+      const response = await fetch("/api/usage?context=user");
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const limitData = await response.json()
-      setData(limitData)
+      const limitData = await response.json();
+      setData(limitData);
     } catch (error) {
-      const err = error instanceof Error ? error : new Error('Failed to fetch usage limit')
-      logger.error('Failed to fetch usage limit', { error })
-      setError(err)
+      const err =
+        error instanceof Error
+          ? error
+          : new Error("Failed to fetch usage limit");
+      logger.error("Failed to fetch usage limit", { error });
+      setError(err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchUsageLimit()
-  }, [fetchUsageLimit])
+    fetchUsageLimit();
+  }, [fetchUsageLimit]);
 
   const refetch = useCallback(() => {
-    return fetchUsageLimit()
-  }, [fetchUsageLimit])
+    return fetchUsageLimit();
+  }, [fetchUsageLimit]);
 
   const updateLimit = async (newLimit: number) => {
     try {
-      const response = await fetch('/api/usage?context=user', {
-        method: 'PUT',
+      const response = await fetch("/api/usage?context=user", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ limit: newLimit }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to update usage limit')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update usage limit");
       }
 
-      await refetch()
+      await refetch();
 
-      return { success: true }
+      return { success: true };
     } catch (error) {
-      logger.error('Failed to update usage limit', { error, newLimit })
-      throw error
+      logger.error("Failed to update usage limit", { error, newLimit });
+      throw error;
     }
-  }
+  };
 
   return {
     currentLimit: data?.currentLimit ?? DEFAULT_FREE_CREDITS,
     canEdit: data?.canEdit ?? false,
     minimumLimit: data?.minimumLimit ?? DEFAULT_FREE_CREDITS,
-    plan: data?.plan ?? 'free',
+    plan: data?.plan ?? "free",
     setBy: data?.setBy,
     updatedAt: data?.updatedAt ? new Date(data.updatedAt) : null,
     updateLimit,
     isLoading,
     error,
     refetch,
-  }
+  };
 }

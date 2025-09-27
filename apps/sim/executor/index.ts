@@ -1,8 +1,8 @@
-import { BlockPathCalculator } from '@/lib/block-path-calculator'
-import { createLogger } from '@/lib/logs/console/logger'
-import type { TraceSpan } from '@/lib/logs/types'
-import type { BlockOutput } from '@/blocks/types'
-import { BlockType } from '@/executor/consts'
+import { BlockPathCalculator } from "@/lib/block-path-calculator";
+import { createLogger } from "@/lib/logs/console/logger";
+import type { TraceSpan } from "@/lib/logs/types";
+import type { BlockOutput } from "@/blocks/types";
+import { BlockType } from "@/executor/consts";
 import {
   AgentBlockHandler,
   ApiBlockHandler,
@@ -16,11 +16,11 @@ import {
   RouterBlockHandler,
   TriggerBlockHandler,
   WorkflowBlockHandler,
-} from '@/executor/handlers'
-import { LoopManager } from '@/executor/loops/loops'
-import { ParallelManager } from '@/executor/parallels/parallels'
-import { PathTracker } from '@/executor/path/path'
-import { InputResolver } from '@/executor/resolver/resolver'
+} from "@/executor/handlers";
+import { LoopManager } from "@/executor/loops/loops";
+import { ParallelManager } from "@/executor/parallels/parallels";
+import { PathTracker } from "@/executor/path/path";
+import { InputResolver } from "@/executor/resolver/resolver";
 import type {
   BlockHandler,
   BlockLog,
@@ -28,19 +28,22 @@ import type {
   ExecutionResult,
   NormalizedBlockOutput,
   StreamingExecution,
-} from '@/executor/types'
-import { streamingResponseFormatProcessor } from '@/executor/utils'
-import type { SerializedBlock, SerializedWorkflow } from '@/serializer/types'
-import { useExecutionStore } from '@/stores/execution/store'
-import { useConsoleStore } from '@/stores/panel/console/store'
-import { useGeneralStore } from '@/stores/settings/general/store'
+} from "@/executor/types";
+import { streamingResponseFormatProcessor } from "@/executor/utils";
+import type { SerializedBlock, SerializedWorkflow } from "@/serializer/types";
+import { useExecutionStore } from "@/stores/execution/store";
+import { useConsoleStore } from "@/stores/panel/console/store";
+import { useGeneralStore } from "@/stores/settings/general/store";
 
-const logger = createLogger('Executor')
+const logger = createLogger("Executor");
 
 declare global {
   interface Window {
-    __SIM_TELEMETRY_ENABLED?: boolean
-    __SIM_TRACK_EVENT?: (eventName: string, properties?: Record<string, any>) => void
+    __SIM_TELEMETRY_ENABLED?: boolean;
+    __SIM_TRACK_EVENT?: (
+      eventName: string,
+      properties?: Record<string, any>,
+    ) => void;
   }
 }
 
@@ -53,13 +56,13 @@ function trackWorkflowTelemetry(eventName: string, data: Record<string, any>) {
     const safeData = {
       ...data,
       timestamp: Date.now(),
-    }
+    };
 
     // Track the event through the global telemetry function
     window.__SIM_TRACK_EVENT(eventName, {
-      category: 'workflow',
+      category: "workflow",
       ...safeData,
-    })
+    });
   }
 }
 
@@ -70,84 +73,90 @@ function trackWorkflowTelemetry(eventName: string, data: Record<string, any>) {
  */
 export class Executor {
   // Core components are initialized once and remain immutable
-  private resolver: InputResolver
-  private loopManager: LoopManager
-  private parallelManager: ParallelManager
-  private pathTracker: PathTracker
-  private blockHandlers: BlockHandler[]
-  private workflowInput: any
-  private isDebugging = false
-  private contextExtensions: any = {}
-  private actualWorkflow: SerializedWorkflow
-  private isCancelled = false
-  private isChildExecution = false
+  private resolver: InputResolver;
+  private loopManager: LoopManager;
+  private parallelManager: ParallelManager;
+  private pathTracker: PathTracker;
+  private blockHandlers: BlockHandler[];
+  private workflowInput: any;
+  private isDebugging = false;
+  private contextExtensions: any = {};
+  private actualWorkflow: SerializedWorkflow;
+  private isCancelled = false;
+  private isChildExecution = false;
 
   constructor(
     workflowParam:
       | SerializedWorkflow
       | {
-          workflow: SerializedWorkflow
-          currentBlockStates?: Record<string, BlockOutput>
-          envVarValues?: Record<string, string>
-          workflowInput?: any
-          workflowVariables?: Record<string, any>
+          workflow: SerializedWorkflow;
+          currentBlockStates?: Record<string, BlockOutput>;
+          envVarValues?: Record<string, string>;
+          workflowInput?: any;
+          workflowVariables?: Record<string, any>;
           contextExtensions?: {
-            stream?: boolean
-            selectedOutputIds?: string[]
-            edges?: Array<{ source: string; target: string }>
-            onStream?: (streamingExecution: StreamingExecution) => Promise<void>
-            executionId?: string
-            workspaceId?: string
-            isChildExecution?: boolean
-          }
+            stream?: boolean;
+            selectedOutputIds?: string[];
+            edges?: Array<{ source: string; target: string }>;
+            onStream?: (
+              streamingExecution: StreamingExecution,
+            ) => Promise<void>;
+            executionId?: string;
+            workspaceId?: string;
+            isChildExecution?: boolean;
+          };
         },
     private initialBlockStates: Record<string, BlockOutput> = {},
     private environmentVariables: Record<string, string> = {},
     workflowInput?: any,
-    private workflowVariables: Record<string, any> = {}
+    private workflowVariables: Record<string, any> = {},
   ) {
     // Handle new constructor format with options object
-    if (typeof workflowParam === 'object' && 'workflow' in workflowParam) {
-      const options = workflowParam
-      this.actualWorkflow = options.workflow
-      this.initialBlockStates = options.currentBlockStates || {}
-      this.environmentVariables = options.envVarValues || {}
-      this.workflowInput = options.workflowInput || {}
-      this.workflowVariables = options.workflowVariables || {}
+    if (typeof workflowParam === "object" && "workflow" in workflowParam) {
+      const options = workflowParam;
+      this.actualWorkflow = options.workflow;
+      this.initialBlockStates = options.currentBlockStates || {};
+      this.environmentVariables = options.envVarValues || {};
+      this.workflowInput = options.workflowInput || {};
+      this.workflowVariables = options.workflowVariables || {};
 
       // Store context extensions for streaming and output selection
       if (options.contextExtensions) {
-        this.contextExtensions = options.contextExtensions
-        this.isChildExecution = options.contextExtensions.isChildExecution || false
+        this.contextExtensions = options.contextExtensions;
+        this.isChildExecution =
+          options.contextExtensions.isChildExecution || false;
       }
     } else {
-      this.actualWorkflow = workflowParam
+      this.actualWorkflow = workflowParam;
 
       if (workflowInput) {
-        this.workflowInput = workflowInput
+        this.workflowInput = workflowInput;
       } else {
-        this.workflowInput = {}
+        this.workflowInput = {};
       }
     }
 
-    this.validateWorkflow()
+    this.validateWorkflow();
 
-    this.loopManager = new LoopManager(this.actualWorkflow.loops || {})
-    this.parallelManager = new ParallelManager(this.actualWorkflow.parallels || {})
+    this.loopManager = new LoopManager(this.actualWorkflow.loops || {});
+    this.parallelManager = new ParallelManager(
+      this.actualWorkflow.parallels || {},
+    );
 
     // Calculate accessible blocks for consistent reference resolution
-    const accessibleBlocksMap = BlockPathCalculator.calculateAccessibleBlocksForWorkflow(
-      this.actualWorkflow
-    )
+    const accessibleBlocksMap =
+      BlockPathCalculator.calculateAccessibleBlocksForWorkflow(
+        this.actualWorkflow,
+      );
 
     this.resolver = new InputResolver(
       this.actualWorkflow,
       this.environmentVariables,
       this.workflowVariables,
       this.loopManager,
-      accessibleBlocksMap
-    )
-    this.pathTracker = new PathTracker(this.actualWorkflow)
+      accessibleBlocksMap,
+    );
+    this.pathTracker = new PathTracker(this.actualWorkflow);
 
     this.blockHandlers = [
       new TriggerBlockHandler(),
@@ -162,9 +171,9 @@ export class Executor {
       new ResponseBlockHandler(),
       new WorkflowBlockHandler(),
       new GenericBlockHandler(),
-    ]
+    ];
 
-    this.isDebugging = useGeneralStore.getState().isDebugModeEnabled
+    this.isDebugging = useGeneralStore.getState().isDebugModeEnabled;
   }
 
   /**
@@ -172,8 +181,8 @@ export class Executor {
    * Sets the cancellation flag to stop further execution.
    */
   public cancel(): void {
-    logger.info('Workflow execution cancelled')
-    this.isCancelled = true
+    logger.info("Workflow execution cancelled");
+    this.isCancelled = true;
   }
 
   /**
@@ -185,48 +194,53 @@ export class Executor {
    */
   async execute(
     workflowId: string,
-    startBlockId?: string
+    startBlockId?: string,
   ): Promise<ExecutionResult | StreamingExecution> {
-    const { setIsExecuting, setIsDebugging, setPendingBlocks, reset } = useExecutionStore.getState()
-    const startTime = new Date()
-    let finalOutput: NormalizedBlockOutput = {}
+    const { setIsExecuting, setIsDebugging, setPendingBlocks, reset } =
+      useExecutionStore.getState();
+    const startTime = new Date();
+    let finalOutput: NormalizedBlockOutput = {};
 
     // Track workflow execution start
-    trackWorkflowTelemetry('workflow_execution_started', {
+    trackWorkflowTelemetry("workflow_execution_started", {
       workflowId,
       blockCount: this.actualWorkflow.blocks.length,
       connectionCount: this.actualWorkflow.connections.length,
       startTime: startTime.toISOString(),
-    })
+    });
 
-    this.validateWorkflow(startBlockId)
+    this.validateWorkflow(startBlockId);
 
-    const context = this.createExecutionContext(workflowId, startTime, startBlockId)
+    const context = this.createExecutionContext(
+      workflowId,
+      startTime,
+      startBlockId,
+    );
 
     try {
       // Only manage global execution state for parent executions
       if (!this.isChildExecution) {
-        setIsExecuting(true)
+        setIsExecuting(true);
 
         if (this.isDebugging) {
-          setIsDebugging(true)
+          setIsDebugging(true);
         }
       }
 
-      let hasMoreLayers = true
-      let iteration = 0
-      const maxIterations = 500 // Safety limit for infinite loops
+      let hasMoreLayers = true;
+      let iteration = 0;
+      const maxIterations = 500; // Safety limit for infinite loops
 
       while (hasMoreLayers && iteration < maxIterations && !this.isCancelled) {
-        const nextLayer = this.getNextExecutionLayer(context)
+        const nextLayer = this.getNextExecutionLayer(context);
 
         if (this.isDebugging) {
           // In debug mode, update the pending blocks and wait for user interaction
-          setPendingBlocks(nextLayer)
+          setPendingBlocks(nextLayer);
 
           // If there are no more blocks, we're done
           if (nextLayer.length === 0) {
-            hasMoreLayers = false
+            hasMoreLayers = false;
           } else {
             // Return early to wait for manual stepping
             // The caller (useWorkflowExecution) will handle resumption
@@ -239,87 +253,96 @@ export class Executor {
                 pendingBlocks: nextLayer,
                 isDebugSession: true,
                 context: context, // Include context for resumption
-                workflowConnections: this.actualWorkflow.connections.map((conn: any) => ({
-                  source: conn.source,
-                  target: conn.target,
-                })),
+                workflowConnections: this.actualWorkflow.connections.map(
+                  (conn: any) => ({
+                    source: conn.source,
+                    target: conn.target,
+                  }),
+                ),
               },
               logs: context.blockLogs,
-            }
+            };
           }
         } else {
           // Normal execution without debug mode
           if (nextLayer.length === 0) {
-            hasMoreLayers = false
+            hasMoreLayers = false;
           } else {
-            const outputs = await this.executeLayer(nextLayer, context)
+            const outputs = await this.executeLayer(nextLayer, context);
 
             for (const output of outputs) {
               if (
                 output &&
-                typeof output === 'object' &&
-                'stream' in output &&
-                'execution' in output
+                typeof output === "object" &&
+                "stream" in output &&
+                "execution" in output
               ) {
                 if (context.onStream) {
-                  const streamingExec = output as StreamingExecution
-                  const [streamForClient, streamForExecutor] = streamingExec.stream.tee()
+                  const streamingExec = output as StreamingExecution;
+                  const [streamForClient, streamForExecutor] =
+                    streamingExec.stream.tee();
 
                   // Apply response format processing to the client stream if needed
-                  const blockId = (streamingExec.execution as any).blockId
+                  const blockId = (streamingExec.execution as any).blockId;
 
                   // Get response format from initial block states (passed from useWorkflowExecution)
                   // The initialBlockStates contain the subblock values including responseFormat
-                  let responseFormat: any
+                  let responseFormat: any;
                   if (this.initialBlockStates?.[blockId]) {
-                    const blockState = this.initialBlockStates[blockId] as any
-                    responseFormat = blockState.responseFormat
+                    const blockState = this.initialBlockStates[blockId] as any;
+                    responseFormat = blockState.responseFormat;
                   }
 
-                  const processedClientStream = streamingResponseFormatProcessor.processStream(
-                    streamForClient,
-                    blockId,
-                    context.selectedOutputIds || [],
-                    responseFormat
-                  )
+                  const processedClientStream =
+                    streamingResponseFormatProcessor.processStream(
+                      streamForClient,
+                      blockId,
+                      context.selectedOutputIds || [],
+                      responseFormat,
+                    );
 
-                  const clientStreamingExec = { ...streamingExec, stream: processedClientStream }
+                  const clientStreamingExec = {
+                    ...streamingExec,
+                    stream: processedClientStream,
+                  };
 
                   try {
                     // Handle client stream with proper error handling
-                    await context.onStream(clientStreamingExec)
+                    await context.onStream(clientStreamingExec);
                   } catch (streamError: any) {
-                    logger.error('Error in onStream callback:', streamError)
+                    logger.error("Error in onStream callback:", streamError);
                     // Continue execution even if stream callback fails
                   }
 
                   // Process executor stream with proper cleanup
-                  const reader = streamForExecutor.getReader()
-                  const decoder = new TextDecoder()
-                  let fullContent = ''
+                  const reader = streamForExecutor.getReader();
+                  const decoder = new TextDecoder();
+                  let fullContent = "";
 
                   try {
                     while (true) {
-                      const { done, value } = await reader.read()
-                      if (done) break
-                      fullContent += decoder.decode(value, { stream: true })
+                      const { done, value } = await reader.read();
+                      if (done) break;
+                      fullContent += decoder.decode(value, { stream: true });
                     }
 
-                    const blockId = (streamingExec.execution as any).blockId
-                    const blockState = context.blockStates.get(blockId)
+                    const blockId = (streamingExec.execution as any).blockId;
+                    const blockState = context.blockStates.get(blockId);
                     if (blockState?.output) {
                       // Check if we have response format - if so, preserve structured response
-                      let responseFormat: any
+                      let responseFormat: any;
                       if (this.initialBlockStates?.[blockId]) {
-                        const initialBlockState = this.initialBlockStates[blockId] as any
-                        responseFormat = initialBlockState.responseFormat
+                        const initialBlockState = this.initialBlockStates[
+                          blockId
+                        ] as any;
+                        responseFormat = initialBlockState.responseFormat;
                       }
 
                       if (responseFormat && fullContent) {
                         // For structured responses, always try to parse the raw streaming content
                         // The streamForExecutor contains the raw JSON response, not the processed display text
                         try {
-                          const parsedContent = JSON.parse(fullContent)
+                          const parsedContent = JSON.parse(fullContent);
                           // Preserve metadata but spread parsed fields at root level (same as manual execution)
                           const structuredOutput = {
                             ...parsedContent,
@@ -327,67 +350,76 @@ export class Executor {
                             toolCalls: blockState.output.toolCalls,
                             providerTiming: blockState.output.providerTiming,
                             cost: blockState.output.cost,
-                          }
-                          blockState.output = structuredOutput
+                          };
+                          blockState.output = structuredOutput;
 
                           // Also update the corresponding block log with the structured output
-                          const blockLog = context.blockLogs.find((log) => log.blockId === blockId)
+                          const blockLog = context.blockLogs.find(
+                            (log) => log.blockId === blockId,
+                          );
                           if (blockLog) {
-                            blockLog.output = structuredOutput
+                            blockLog.output = structuredOutput;
                           }
                         } catch (parseError) {
                           // If parsing fails, fall back to setting content
-                          blockState.output.content = fullContent
+                          blockState.output.content = fullContent;
                         }
                       } else {
                         // No response format, use standard content setting
-                        blockState.output.content = fullContent
+                        blockState.output.content = fullContent;
                       }
                     }
                   } catch (readerError: any) {
-                    logger.error('Error reading stream for executor:', readerError)
+                    logger.error(
+                      "Error reading stream for executor:",
+                      readerError,
+                    );
                     // Set partial content if available
-                    const blockId = (streamingExec.execution as any).blockId
-                    const blockState = context.blockStates.get(blockId)
+                    const blockId = (streamingExec.execution as any).blockId;
+                    const blockState = context.blockStates.get(blockId);
                     if (blockState?.output && fullContent) {
                       // Check if we have response format for error handling too
-                      let responseFormat: any
+                      let responseFormat: any;
                       if (this.initialBlockStates?.[blockId]) {
-                        const initialBlockState = this.initialBlockStates[blockId] as any
-                        responseFormat = initialBlockState.responseFormat
+                        const initialBlockState = this.initialBlockStates[
+                          blockId
+                        ] as any;
+                        responseFormat = initialBlockState.responseFormat;
                       }
 
                       if (responseFormat) {
                         // For structured responses, always try to parse the raw streaming content
                         // The streamForExecutor contains the raw JSON response, not the processed display text
                         try {
-                          const parsedContent = JSON.parse(fullContent)
+                          const parsedContent = JSON.parse(fullContent);
                           const structuredOutput = {
                             ...parsedContent,
                             tokens: blockState.output.tokens,
                             toolCalls: blockState.output.toolCalls,
                             providerTiming: blockState.output.providerTiming,
                             cost: blockState.output.cost,
-                          }
-                          blockState.output = structuredOutput
+                          };
+                          blockState.output = structuredOutput;
 
                           // Also update the corresponding block log with the structured output
-                          const blockLog = context.blockLogs.find((log) => log.blockId === blockId)
+                          const blockLog = context.blockLogs.find(
+                            (log) => log.blockId === blockId,
+                          );
                           if (blockLog) {
-                            blockLog.output = structuredOutput
+                            blockLog.output = structuredOutput;
                           }
                         } catch (parseError) {
                           // If parsing fails, fall back to setting content
-                          blockState.output.content = fullContent
+                          blockState.output.content = fullContent;
                         }
                       } else {
                         // No response format, use standard content setting
-                        blockState.output.content = fullContent
+                        blockState.output.content = fullContent;
                       }
                     }
                   } finally {
                     try {
-                      reader.releaseLock()
+                      reader.releaseLock();
                     } catch (releaseError: any) {
                       // Reader might already be released - this is expected and safe to ignore
                     }
@@ -400,66 +432,68 @@ export class Executor {
               .filter(
                 (output) =>
                   !(
-                    typeof output === 'object' &&
+                    typeof output === "object" &&
                     output !== null &&
-                    'stream' in output &&
-                    'execution' in output
-                  )
+                    "stream" in output &&
+                    "execution" in output
+                  ),
               )
-              .map((output) => output as NormalizedBlockOutput)
+              .map((output) => output as NormalizedBlockOutput);
 
             if (normalizedOutputs.length > 0) {
-              finalOutput = normalizedOutputs[normalizedOutputs.length - 1]
+              finalOutput = normalizedOutputs[normalizedOutputs.length - 1];
             }
             // Process loop iterations - this will activate external paths when loops complete
-            await this.loopManager.processLoopIterations(context)
+            await this.loopManager.processLoopIterations(context);
 
             // Process parallel iterations - similar to loops but conceptually for parallel execution
-            await this.parallelManager.processParallelIterations(context)
+            await this.parallelManager.processParallelIterations(context);
 
             // Continue execution for any newly activated paths
             // Only stop execution if there are no more blocks to execute
-            const updatedNextLayer = this.getNextExecutionLayer(context)
+            const updatedNextLayer = this.getNextExecutionLayer(context);
             if (updatedNextLayer.length === 0) {
-              hasMoreLayers = false
+              hasMoreLayers = false;
             }
           }
         }
 
-        iteration++
+        iteration++;
       }
 
       // Handle cancellation
       if (this.isCancelled) {
-        trackWorkflowTelemetry('workflow_execution_cancelled', {
+        trackWorkflowTelemetry("workflow_execution_cancelled", {
           workflowId,
           duration: Date.now() - startTime.getTime(),
           blockCount: this.actualWorkflow.blocks.length,
           executedBlockCount: context.executedBlocks.size,
           startTime: startTime.toISOString(),
-        })
+        });
 
         return {
           success: false,
           output: finalOutput,
-          error: 'Workflow execution was cancelled',
+          error: "Workflow execution was cancelled",
           metadata: {
             duration: Date.now() - startTime.getTime(),
             startTime: context.metadata.startTime!,
-            workflowConnections: this.actualWorkflow.connections.map((conn: any) => ({
-              source: conn.source,
-              target: conn.target,
-            })),
+            workflowConnections: this.actualWorkflow.connections.map(
+              (conn: any) => ({
+                source: conn.source,
+                target: conn.target,
+              }),
+            ),
           },
           logs: context.blockLogs,
-        }
+        };
       }
 
-      const endTime = new Date()
-      context.metadata.endTime = endTime.toISOString()
-      const duration = endTime.getTime() - startTime.getTime()
+      const endTime = new Date();
+      context.metadata.endTime = endTime.toISOString();
+      const duration = endTime.getTime() - startTime.getTime();
 
-      trackWorkflowTelemetry('workflow_execution_completed', {
+      trackWorkflowTelemetry("workflow_execution_completed", {
         workflowId,
         duration,
         blockCount: this.actualWorkflow.blocks.length,
@@ -467,7 +501,7 @@ export class Executor {
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString(),
         success: true,
-      })
+      });
 
       return {
         success: true,
@@ -476,24 +510,26 @@ export class Executor {
           duration: duration,
           startTime: context.metadata.startTime!,
           endTime: context.metadata.endTime!,
-          workflowConnections: this.actualWorkflow.connections.map((conn: any) => ({
-            source: conn.source,
-            target: conn.target,
-          })),
+          workflowConnections: this.actualWorkflow.connections.map(
+            (conn: any) => ({
+              source: conn.source,
+              target: conn.target,
+            }),
+          ),
         },
         logs: context.blockLogs,
-      }
+      };
     } catch (error: any) {
-      logger.error('Workflow execution failed:', this.sanitizeError(error))
+      logger.error("Workflow execution failed:", this.sanitizeError(error));
 
       // Track workflow execution failure
-      trackWorkflowTelemetry('workflow_execution_failed', {
+      trackWorkflowTelemetry("workflow_execution_failed", {
         workflowId,
         duration: Date.now() - startTime.getTime(),
         error: this.extractErrorMessage(error),
         executedBlockCount: context.executedBlocks.size,
         blockLogs: context.blockLogs.length,
-      })
+      });
 
       return {
         success: false,
@@ -502,17 +538,19 @@ export class Executor {
         metadata: {
           duration: Date.now() - startTime.getTime(),
           startTime: context.metadata.startTime!,
-          workflowConnections: this.actualWorkflow.connections.map((conn: any) => ({
-            source: conn.source,
-            target: conn.target,
-          })),
+          workflowConnections: this.actualWorkflow.connections.map(
+            (conn: any) => ({
+              source: conn.source,
+              target: conn.target,
+            }),
+          ),
         },
         logs: context.blockLogs,
-      }
+      };
     } finally {
       // Only reset global state for parent executions
       if (!this.isChildExecution && !this.isDebugging) {
-        reset()
+        reset();
       }
     }
   }
@@ -524,68 +562,78 @@ export class Executor {
    * @param context - The current execution context
    * @returns Updated execution result
    */
-  async continueExecution(blockIds: string[], context: ExecutionContext): Promise<ExecutionResult> {
-    const { setPendingBlocks } = useExecutionStore.getState()
-    let finalOutput: NormalizedBlockOutput = {}
+  async continueExecution(
+    blockIds: string[],
+    context: ExecutionContext,
+  ): Promise<ExecutionResult> {
+    const { setPendingBlocks } = useExecutionStore.getState();
+    let finalOutput: NormalizedBlockOutput = {};
 
     // Check for cancellation
     if (this.isCancelled) {
       return {
         success: false,
         output: finalOutput,
-        error: 'Workflow execution was cancelled',
+        error: "Workflow execution was cancelled",
         metadata: {
-          duration: Date.now() - new Date(context.metadata.startTime!).getTime(),
+          duration:
+            Date.now() - new Date(context.metadata.startTime!).getTime(),
           startTime: context.metadata.startTime!,
-          workflowConnections: this.actualWorkflow.connections.map((conn: any) => ({
-            source: conn.source,
-            target: conn.target,
-          })),
+          workflowConnections: this.actualWorkflow.connections.map(
+            (conn: any) => ({
+              source: conn.source,
+              target: conn.target,
+            }),
+          ),
         },
         logs: context.blockLogs,
-      }
+      };
     }
 
     try {
       // Execute the current layer - using the original context, not a clone
-      const outputs = await this.executeLayer(blockIds, context)
+      const outputs = await this.executeLayer(blockIds, context);
 
       if (outputs.length > 0) {
         const nonStreamingOutputs = outputs.filter(
-          (o) => !(o && typeof o === 'object' && 'stream' in o)
-        ) as NormalizedBlockOutput[]
+          (o) => !(o && typeof o === "object" && "stream" in o),
+        ) as NormalizedBlockOutput[];
         if (nonStreamingOutputs.length > 0) {
-          finalOutput = nonStreamingOutputs[nonStreamingOutputs.length - 1]
+          finalOutput = nonStreamingOutputs[nonStreamingOutputs.length - 1];
         }
       }
-      await this.loopManager.processLoopIterations(context)
-      await this.parallelManager.processParallelIterations(context)
-      const nextLayer = this.getNextExecutionLayer(context)
-      setPendingBlocks(nextLayer)
+      await this.loopManager.processLoopIterations(context);
+      await this.parallelManager.processParallelIterations(context);
+      const nextLayer = this.getNextExecutionLayer(context);
+      setPendingBlocks(nextLayer);
 
       // Check if we've completed execution
-      const isComplete = nextLayer.length === 0
+      const isComplete = nextLayer.length === 0;
 
       if (isComplete) {
-        const endTime = new Date()
-        context.metadata.endTime = endTime.toISOString()
+        const endTime = new Date();
+        context.metadata.endTime = endTime.toISOString();
 
         return {
           success: true,
           output: finalOutput,
           metadata: {
-            duration: endTime.getTime() - new Date(context.metadata.startTime!).getTime(),
+            duration:
+              endTime.getTime() -
+              new Date(context.metadata.startTime!).getTime(),
             startTime: context.metadata.startTime!,
             endTime: context.metadata.endTime!,
             pendingBlocks: [],
             isDebugSession: false,
-            workflowConnections: this.actualWorkflow.connections.map((conn) => ({
-              source: conn.source,
-              target: conn.target,
-            })),
+            workflowConnections: this.actualWorkflow.connections.map(
+              (conn) => ({
+                source: conn.source,
+                target: conn.target,
+              }),
+            ),
           },
           logs: context.blockLogs,
-        }
+        };
       }
 
       // Return the updated state for the next step
@@ -593,31 +641,35 @@ export class Executor {
         success: true,
         output: finalOutput,
         metadata: {
-          duration: Date.now() - new Date(context.metadata.startTime!).getTime(),
+          duration:
+            Date.now() - new Date(context.metadata.startTime!).getTime(),
           startTime: context.metadata.startTime!,
           pendingBlocks: nextLayer,
           isDebugSession: true,
           context: context, // Return the same context object for continuity
         },
         logs: context.blockLogs,
-      }
+      };
     } catch (error: any) {
-      logger.error('Debug step execution failed:', this.sanitizeError(error))
+      logger.error("Debug step execution failed:", this.sanitizeError(error));
 
       return {
         success: false,
         output: finalOutput,
         error: this.extractErrorMessage(error),
         metadata: {
-          duration: Date.now() - new Date(context.metadata.startTime!).getTime(),
+          duration:
+            Date.now() - new Date(context.metadata.startTime!).getTime(),
           startTime: context.metadata.startTime!,
-          workflowConnections: this.actualWorkflow.connections.map((conn: any) => ({
-            source: conn.source,
-            target: conn.target,
-          })),
+          workflowConnections: this.actualWorkflow.connections.map(
+            (conn: any) => ({
+              source: conn.source,
+              target: conn.target,
+            }),
+          ),
         },
         logs: context.blockLogs,
-      }
+      };
     }
   }
 
@@ -631,70 +683,90 @@ export class Executor {
   private validateWorkflow(startBlockId?: string): void {
     if (startBlockId) {
       // If starting from a specific block (webhook trigger or schedule trigger), validate that block exists
-      const startBlock = this.actualWorkflow.blocks.find((block) => block.id === startBlockId)
+      const startBlock = this.actualWorkflow.blocks.find(
+        (block) => block.id === startBlockId,
+      );
       if (!startBlock || !startBlock.enabled) {
-        throw new Error(`Start block ${startBlockId} not found or disabled`)
+        throw new Error(`Start block ${startBlockId} not found or disabled`);
       }
       // Trigger blocks (webhook and schedule) can have incoming connections, so no need to check that
     } else {
       // Default validation for starter block
       const starterBlock = this.actualWorkflow.blocks.find(
-        (block) => block.metadata?.id === BlockType.STARTER
-      )
+        (block) => block.metadata?.id === BlockType.STARTER,
+      );
       if (!starterBlock || !starterBlock.enabled) {
-        throw new Error('Workflow must have an enabled starter block')
+        throw new Error("Workflow must have an enabled starter block");
       }
 
       const incomingToStarter = this.actualWorkflow.connections.filter(
-        (conn) => conn.target === starterBlock.id
-      )
+        (conn) => conn.target === starterBlock.id,
+      );
       if (incomingToStarter.length > 0) {
-        throw new Error('Starter block cannot have incoming connections')
+        throw new Error("Starter block cannot have incoming connections");
       }
 
       // Check if there are any trigger blocks on the canvas
       const hasTriggerBlocks = this.actualWorkflow.blocks.some((block) => {
-        return block.metadata?.category === 'triggers' || block.config?.params?.triggerMode === true
-      })
+        return (
+          block.metadata?.category === "triggers" ||
+          block.config?.params?.triggerMode === true
+        );
+      });
 
       // Only check outgoing connections for starter blocks if there are no trigger blocks
       if (!hasTriggerBlocks) {
         const outgoingFromStarter = this.actualWorkflow.connections.filter(
-          (conn) => conn.source === starterBlock.id
-        )
+          (conn) => conn.source === starterBlock.id,
+        );
         if (outgoingFromStarter.length === 0) {
-          throw new Error('Starter block must have at least one outgoing connection')
+          throw new Error(
+            "Starter block must have at least one outgoing connection",
+          );
         }
       }
     }
 
-    const blockIds = new Set(this.actualWorkflow.blocks.map((block) => block.id))
+    const blockIds = new Set(
+      this.actualWorkflow.blocks.map((block) => block.id),
+    );
     for (const conn of this.actualWorkflow.connections) {
       if (!blockIds.has(conn.source)) {
-        throw new Error(`Connection references non-existent source block: ${conn.source}`)
+        throw new Error(
+          `Connection references non-existent source block: ${conn.source}`,
+        );
       }
       if (!blockIds.has(conn.target)) {
-        throw new Error(`Connection references non-existent target block: ${conn.target}`)
+        throw new Error(
+          `Connection references non-existent target block: ${conn.target}`,
+        );
       }
     }
 
-    for (const [loopId, loop] of Object.entries(this.actualWorkflow.loops || {})) {
+    for (const [loopId, loop] of Object.entries(
+      this.actualWorkflow.loops || {},
+    )) {
       for (const nodeId of loop.nodes) {
         if (!blockIds.has(nodeId)) {
-          throw new Error(`Loop ${loopId} references non-existent block: ${nodeId}`)
+          throw new Error(
+            `Loop ${loopId} references non-existent block: ${nodeId}`,
+          );
         }
       }
 
       if (loop.iterations <= 0) {
-        throw new Error(`Loop ${loopId} must have a positive iterations value`)
+        throw new Error(`Loop ${loopId} must have a positive iterations value`);
       }
 
-      if (loop.loopType === 'forEach') {
+      if (loop.loopType === "forEach") {
         if (
           !loop.forEachItems ||
-          (typeof loop.forEachItems === 'string' && loop.forEachItems.trim() === '')
+          (typeof loop.forEachItems === "string" &&
+            loop.forEachItems.trim() === "")
         ) {
-          throw new Error(`forEach loop ${loopId} requires a collection to iterate over`)
+          throw new Error(
+            `forEach loop ${loopId} requires a collection to iterate over`,
+          );
         }
       }
     }
@@ -712,7 +784,7 @@ export class Executor {
   private createExecutionContext(
     workflowId: string,
     startTime: Date,
-    startBlockId?: string
+    startBlockId?: string,
   ): ExecutionContext {
     const context: ExecutionContext = {
       workflowId,
@@ -741,46 +813,52 @@ export class Executor {
       selectedOutputIds: this.contextExtensions.selectedOutputIds || [],
       edges: this.contextExtensions.edges || [],
       onStream: this.contextExtensions.onStream,
-    }
+    };
 
     Object.entries(this.initialBlockStates).forEach(([blockId, output]) => {
       context.blockStates.set(blockId, {
         output: output as NormalizedBlockOutput,
         executed: true,
         executionTime: 0,
-      })
-    })
+      });
+    });
 
     // Initialize loop iterations
     if (this.actualWorkflow.loops) {
       for (const loopId of Object.keys(this.actualWorkflow.loops)) {
         // Start all loops at iteration 0
-        context.loopIterations.set(loopId, 0)
+        context.loopIterations.set(loopId, 0);
       }
     }
 
     // Determine which block to initialize as the starting point
-    let initBlock: SerializedBlock | undefined
+    let initBlock: SerializedBlock | undefined;
     if (startBlockId) {
       // Starting from a specific block (webhook trigger or schedule trigger)
-      initBlock = this.actualWorkflow.blocks.find((block) => block.id === startBlockId)
+      initBlock = this.actualWorkflow.blocks.find(
+        (block) => block.id === startBlockId,
+      );
     } else {
       // Default to starter block
       initBlock = this.actualWorkflow.blocks.find(
-        (block) => block.metadata?.id === BlockType.STARTER
-      )
+        (block) => block.metadata?.id === BlockType.STARTER,
+      );
     }
 
     if (initBlock) {
       // Initialize the starting block with the workflow input
       try {
-        const blockParams = initBlock.config.params
-        const inputFormat = blockParams?.inputFormat
+        const blockParams = initBlock.config.params;
+        const inputFormat = blockParams?.inputFormat;
 
         // If input format is defined, structure the input according to the schema
-        if (inputFormat && Array.isArray(inputFormat) && inputFormat.length > 0) {
+        if (
+          inputFormat &&
+          Array.isArray(inputFormat) &&
+          inputFormat.length > 0
+        ) {
           // Create structured input based on input format
-          const structuredInput: Record<string, any> = {}
+          const structuredInput: Record<string, any> = {};
 
           // Process each field in the input format
           for (const field of inputFormat) {
@@ -791,183 +869,207 @@ export class Executor {
               let inputValue =
                 this.workflowInput?.input?.[field.name] !== undefined
                   ? this.workflowInput.input[field.name] // Try to get from input.field
-                  : this.workflowInput?.[field.name] // Fallback to direct field access
+                  : this.workflowInput?.[field.name]; // Fallback to direct field access
 
               if (inputValue === undefined || inputValue === null) {
-                if (Object.hasOwn(field, 'value')) {
-                  inputValue = (field as any).value
+                if (Object.hasOwn(field, "value")) {
+                  inputValue = (field as any).value;
                 }
               }
 
-              let typedValue = inputValue
+              let typedValue = inputValue;
               if (inputValue !== undefined && inputValue !== null) {
-                if (field.type === 'string' && typeof inputValue !== 'string') {
-                  typedValue = String(inputValue)
-                } else if (field.type === 'number' && typeof inputValue !== 'number') {
-                  const num = Number(inputValue)
-                  typedValue = Number.isNaN(num) ? inputValue : num
-                } else if (field.type === 'boolean' && typeof inputValue !== 'boolean') {
+                if (field.type === "string" && typeof inputValue !== "string") {
+                  typedValue = String(inputValue);
+                } else if (
+                  field.type === "number" &&
+                  typeof inputValue !== "number"
+                ) {
+                  const num = Number(inputValue);
+                  typedValue = Number.isNaN(num) ? inputValue : num;
+                } else if (
+                  field.type === "boolean" &&
+                  typeof inputValue !== "boolean"
+                ) {
                   typedValue =
-                    inputValue === 'true' ||
+                    inputValue === "true" ||
                     inputValue === true ||
                     inputValue === 1 ||
-                    inputValue === '1'
+                    inputValue === "1";
                 } else if (
-                  (field.type === 'object' || field.type === 'array') &&
-                  typeof inputValue === 'string'
+                  (field.type === "object" || field.type === "array") &&
+                  typeof inputValue === "string"
                 ) {
                   try {
-                    typedValue = JSON.parse(inputValue)
+                    typedValue = JSON.parse(inputValue);
                   } catch (e) {
-                    logger.warn(`Failed to parse ${field.type} input for field ${field.name}:`, e)
+                    logger.warn(
+                      `Failed to parse ${field.type} input for field ${field.name}:`,
+                      e,
+                    );
                   }
                 }
               }
 
               // Add the field to structured input
-              structuredInput[field.name] = typedValue
+              structuredInput[field.name] = typedValue;
             }
           }
 
           // Check if we managed to process any fields - if not, use the raw input
-          const hasProcessedFields = Object.keys(structuredInput).length > 0
+          const hasProcessedFields = Object.keys(structuredInput).length > 0;
 
           // If no fields matched the input format, extract the raw input to use instead
           const rawInputData =
             this.workflowInput?.input !== undefined
               ? this.workflowInput.input // Use the input value
-              : this.workflowInput // Fallback to direct input
+              : this.workflowInput; // Fallback to direct input
 
           // Use the structured input if we processed fields, otherwise use raw input
-          const finalInput = hasProcessedFields ? structuredInput : rawInputData
+          const finalInput = hasProcessedFields
+            ? structuredInput
+            : rawInputData;
 
           // Initialize the starting block with structured input (flattened)
           const blockOutput = {
             input: finalInput,
             conversationId: this.workflowInput?.conversationId, // Add conversationId to root
             ...finalInput, // Add input fields directly at top level
-          }
+          };
 
           // Add files if present (for all trigger types)
-          if (this.workflowInput?.files && Array.isArray(this.workflowInput.files)) {
-            blockOutput.files = this.workflowInput.files
+          if (
+            this.workflowInput?.files &&
+            Array.isArray(this.workflowInput.files)
+          ) {
+            blockOutput.files = this.workflowInput.files;
           }
 
           context.blockStates.set(initBlock.id, {
             output: blockOutput,
             executed: true,
             executionTime: 0,
-          })
+          });
 
           // Create a block log for the starter block if it has files
           // This ensures files are captured in trace spans and execution logs
-          this.createStartedBlockWithFilesLog(initBlock, blockOutput, context)
+          this.createStartedBlockWithFilesLog(initBlock, blockOutput, context);
         } else {
           // Handle structured input (like API calls or chat messages)
-          if (this.workflowInput && typeof this.workflowInput === 'object') {
+          if (this.workflowInput && typeof this.workflowInput === "object") {
             // Check if this is a chat workflow input (has both input and conversationId)
             if (
-              Object.hasOwn(this.workflowInput, 'input') &&
-              Object.hasOwn(this.workflowInput, 'conversationId')
+              Object.hasOwn(this.workflowInput, "input") &&
+              Object.hasOwn(this.workflowInput, "conversationId")
             ) {
               // Chat workflow: extract input, conversationId, and files to root level
               const starterOutput: any = {
                 input: this.workflowInput.input,
                 conversationId: this.workflowInput.conversationId,
-              }
+              };
 
               // Add files if present
-              if (this.workflowInput.files && Array.isArray(this.workflowInput.files)) {
-                starterOutput.files = this.workflowInput.files
+              if (
+                this.workflowInput.files &&
+                Array.isArray(this.workflowInput.files)
+              ) {
+                starterOutput.files = this.workflowInput.files;
               }
 
               context.blockStates.set(initBlock.id, {
                 output: starterOutput,
                 executed: true,
                 executionTime: 0,
-              })
+              });
 
               // Create a block log for the starter block if it has files
               // This ensures files are captured in trace spans and execution logs
-              this.createStartedBlockWithFilesLog(initBlock, starterOutput, context)
+              this.createStartedBlockWithFilesLog(
+                initBlock,
+                starterOutput,
+                context,
+              );
             } else {
               // API workflow: spread the raw data directly (no wrapping)
-              const starterOutput = { ...this.workflowInput }
+              const starterOutput = { ...this.workflowInput };
 
               context.blockStates.set(initBlock.id, {
                 output: starterOutput,
                 executed: true,
                 executionTime: 0,
-              })
+              });
             }
           } else {
             // Fallback for primitive input values
             const starterOutput = {
               input: this.workflowInput,
-            }
+            };
 
             context.blockStates.set(initBlock.id, {
               output: starterOutput,
               executed: true,
               executionTime: 0,
-            })
+            });
           }
         }
       } catch (e) {
-        logger.warn('Error processing starter block input format:', e)
+        logger.warn("Error processing starter block input format:", e);
 
         // Error handler fallback - use appropriate structure
-        let blockOutput: any
-        if (this.workflowInput && typeof this.workflowInput === 'object') {
+        let blockOutput: any;
+        if (this.workflowInput && typeof this.workflowInput === "object") {
           // Check if this is a chat workflow input (has both input and conversationId)
           if (
-            Object.hasOwn(this.workflowInput, 'input') &&
-            Object.hasOwn(this.workflowInput, 'conversationId')
+            Object.hasOwn(this.workflowInput, "input") &&
+            Object.hasOwn(this.workflowInput, "conversationId")
           ) {
             // Chat workflow: extract input, conversationId, and files to root level
             blockOutput = {
               input: this.workflowInput.input,
               conversationId: this.workflowInput.conversationId,
-            }
+            };
 
             // Add files if present
-            if (this.workflowInput.files && Array.isArray(this.workflowInput.files)) {
-              blockOutput.files = this.workflowInput.files
+            if (
+              this.workflowInput.files &&
+              Array.isArray(this.workflowInput.files)
+            ) {
+              blockOutput.files = this.workflowInput.files;
             }
           } else {
             // API workflow: spread the raw data directly (no wrapping)
-            blockOutput = { ...this.workflowInput }
+            blockOutput = { ...this.workflowInput };
           }
         } else {
           // Primitive input
           blockOutput = {
             input: this.workflowInput,
-          }
+          };
         }
 
         context.blockStates.set(initBlock.id, {
           output: blockOutput,
           executed: true,
           executionTime: 0,
-        })
-        this.createStartedBlockWithFilesLog(initBlock, blockOutput, context)
+        });
+        this.createStartedBlockWithFilesLog(initBlock, blockOutput, context);
       }
       // Ensure the starting block is in the active execution path
-      context.activeExecutionPath.add(initBlock.id)
+      context.activeExecutionPath.add(initBlock.id);
       // Mark the starting block as executed
-      context.executedBlocks.add(initBlock.id)
+      context.executedBlocks.add(initBlock.id);
 
       // Add all blocks connected to the starting block to the active execution path
       const connectedToStartBlock = this.actualWorkflow.connections
         .filter((conn) => conn.source === initBlock.id)
-        .map((conn) => conn.target)
+        .map((conn) => conn.target);
 
       connectedToStartBlock.forEach((blockId) => {
-        context.activeExecutionPath.add(blockId)
-      })
+        context.activeExecutionPath.add(blockId);
+      });
     }
 
-    return context
+    return context;
   }
 
   /**
@@ -979,11 +1081,11 @@ export class Executor {
    * @returns Array of block IDs that are ready to be executed
    */
   private getNextExecutionLayer(context: ExecutionContext): string[] {
-    const executedBlocks = context.executedBlocks
-    const pendingBlocks = new Set<string>()
+    const executedBlocks = context.executedBlocks;
+    const pendingBlocks = new Set<string>();
 
     // Check if we have any active parallel executions
-    const activeParallels = new Map<string, any>()
+    const activeParallels = new Map<string, any>();
     if (context.parallelExecutions) {
       for (const [parallelId, state] of context.parallelExecutions) {
         if (
@@ -991,131 +1093,137 @@ export class Executor {
           state.currentIteration <= state.parallelCount &&
           !context.completedLoops.has(parallelId)
         ) {
-          activeParallels.set(parallelId, state)
+          activeParallels.set(parallelId, state);
         }
       }
     }
 
     for (const block of this.actualWorkflow.blocks) {
       if (executedBlocks.has(block.id) || block.enabled === false) {
-        continue
+        continue;
       }
 
       // Check if this block is inside an active parallel
-      let insideParallel: string | null = null
-      for (const [parallelId, parallel] of Object.entries(this.actualWorkflow.parallels || {})) {
+      let insideParallel: string | null = null;
+      for (const [parallelId, parallel] of Object.entries(
+        this.actualWorkflow.parallels || {},
+      )) {
         if (parallel.nodes.includes(block.id)) {
-          insideParallel = parallelId
-          break
+          insideParallel = parallelId;
+          break;
         }
       }
 
       // If block is inside a parallel, handle multiple instances
       if (insideParallel && activeParallels.has(insideParallel)) {
-        const parallelState = activeParallels.get(insideParallel)
+        const parallelState = activeParallels.get(insideParallel);
 
         // Create virtual instances for each unprocessed iteration
-        const virtualBlockIds = this.parallelManager.createVirtualBlockInstances(
-          block,
-          insideParallel,
-          parallelState,
-          executedBlocks,
-          context.activeExecutionPath
-        )
+        const virtualBlockIds =
+          this.parallelManager.createVirtualBlockInstances(
+            block,
+            insideParallel,
+            parallelState,
+            executedBlocks,
+            context.activeExecutionPath,
+          );
 
         for (const virtualBlockId of virtualBlockIds) {
           // Check dependencies for this virtual instance
           const incomingConnections = this.actualWorkflow.connections.filter(
-            (conn) => conn.target === block.id
-          )
+            (conn) => conn.target === block.id,
+          );
 
-          const iterationIndex = Number.parseInt(virtualBlockId.split('_iteration_')[1], 10)
+          const iterationIndex = Number.parseInt(
+            virtualBlockId.split("_iteration_")[1],
+            10,
+          );
           const allDependenciesMet = this.checkDependencies(
             incomingConnections,
             executedBlocks,
             context,
             insideParallel,
-            iterationIndex
-          )
+            iterationIndex,
+          );
 
           if (allDependenciesMet) {
-            pendingBlocks.add(virtualBlockId)
+            pendingBlocks.add(virtualBlockId);
 
             // Store mapping for virtual block
             if (!context.parallelBlockMapping) {
-              context.parallelBlockMapping = new Map()
+              context.parallelBlockMapping = new Map();
             }
             context.parallelBlockMapping.set(virtualBlockId, {
               originalBlockId: block.id,
               parallelId: insideParallel,
               iterationIndex: iterationIndex,
-            })
+            });
           }
         }
       } else if (insideParallel) {
         // Block is inside a parallel but the parallel is not active
         // Check if all virtual instances have been executed
-        const parallelState = context.parallelExecutions?.get(insideParallel)
+        const parallelState = context.parallelExecutions?.get(insideParallel);
         if (parallelState) {
-          let allVirtualInstancesExecuted = true
+          let allVirtualInstancesExecuted = true;
           for (let i = 0; i < parallelState.parallelCount; i++) {
-            const virtualBlockId = `${block.id}_parallel_${insideParallel}_iteration_${i}`
+            const virtualBlockId = `${block.id}_parallel_${insideParallel}_iteration_${i}`;
             if (!executedBlocks.has(virtualBlockId)) {
-              allVirtualInstancesExecuted = false
-              break
+              allVirtualInstancesExecuted = false;
+              break;
             }
           }
 
           // If all virtual instances have been executed, skip this block
           // It should not be executed as a regular block
           if (allVirtualInstancesExecuted) {
-            continue
+            continue;
           }
         }
 
         // If we reach here, the parallel hasn't been initialized yet
         // Allow normal execution flow
         if (!context.activeExecutionPath.has(block.id)) {
-          continue
+          continue;
         }
 
         const incomingConnections = this.actualWorkflow.connections.filter(
-          (conn) => conn.target === block.id
-        )
+          (conn) => conn.target === block.id,
+        );
 
         const allDependenciesMet = this.checkDependencies(
           incomingConnections,
           executedBlocks,
-          context
-        )
+          context,
+        );
 
         if (allDependenciesMet) {
-          pendingBlocks.add(block.id)
+          pendingBlocks.add(block.id);
         }
       } else {
         // Regular block handling (not inside a parallel)
         // Only consider blocks in the active execution path
         if (!context.activeExecutionPath.has(block.id)) {
-          continue
+          continue;
         }
 
         const incomingConnections = this.actualWorkflow.connections.filter(
-          (conn) => conn.target === block.id
-        )
+          (conn) => conn.target === block.id,
+        );
 
         const allDependenciesMet = this.checkDependencies(
           incomingConnections,
           executedBlocks,
-          context
-        )
+          context,
+        );
 
         if (allDependenciesMet) {
-          pendingBlocks.add(block.id)
+          pendingBlocks.add(block.id);
         }
       }
     }
 
-    return Array.from(pendingBlocks)
+    return Array.from(pendingBlocks);
   }
 
   /**
@@ -1134,144 +1242,165 @@ export class Executor {
     executedBlocks: Set<string>,
     context: ExecutionContext,
     insideParallel?: string,
-    iterationIndex?: number
+    iterationIndex?: number,
   ): boolean {
     if (incomingConnections.length === 0) {
-      return true
+      return true;
     }
     // Check if this is a loop block
     const isLoopBlock = incomingConnections.some((conn) => {
-      const sourceBlock = this.actualWorkflow.blocks.find((b) => b.id === conn.source)
-      return sourceBlock?.metadata?.id === BlockType.LOOP
-    })
+      const sourceBlock = this.actualWorkflow.blocks.find(
+        (b) => b.id === conn.source,
+      );
+      return sourceBlock?.metadata?.id === BlockType.LOOP;
+    });
 
     if (isLoopBlock) {
       // Loop blocks are treated as regular blocks with standard dependency checking
       return incomingConnections.every((conn) => {
-        const sourceExecuted = executedBlocks.has(conn.source)
-        const sourceBlockState = context.blockStates.get(conn.source)
-        const hasSourceError = sourceBlockState?.output?.error !== undefined
+        const sourceExecuted = executedBlocks.has(conn.source);
+        const sourceBlockState = context.blockStates.get(conn.source);
+        const hasSourceError = sourceBlockState?.output?.error !== undefined;
 
         // For error connections, check if the source had an error
-        if (conn.sourceHandle === 'error') {
-          return sourceExecuted && hasSourceError
+        if (conn.sourceHandle === "error") {
+          return sourceExecuted && hasSourceError;
         }
 
         // For regular connections, check if the source was executed without error
-        if (conn.sourceHandle === 'source' || !conn.sourceHandle) {
-          return sourceExecuted && !hasSourceError
+        if (conn.sourceHandle === "source" || !conn.sourceHandle) {
+          return sourceExecuted && !hasSourceError;
         }
 
         // If source is not in active path, consider this dependency met
         if (!context.activeExecutionPath.has(conn.source)) {
-          return true
+          return true;
         }
 
         // For regular blocks, dependency is met if source is executed
-        return sourceExecuted
-      })
+        return sourceExecuted;
+      });
     }
     // Regular non-loop block handling
     return incomingConnections.every((conn) => {
       // For virtual blocks inside parallels, check the source appropriately
-      let sourceId = conn.source
+      let sourceId = conn.source;
       if (insideParallel !== undefined && iterationIndex !== undefined) {
         // If the source is also inside the same parallel, use virtual ID
-        const sourceBlock = this.actualWorkflow.blocks.find((b) => b.id === conn.source)
+        const sourceBlock = this.actualWorkflow.blocks.find(
+          (b) => b.id === conn.source,
+        );
         if (
           sourceBlock &&
-          this.actualWorkflow.parallels?.[insideParallel]?.nodes.includes(conn.source)
+          this.actualWorkflow.parallels?.[insideParallel]?.nodes.includes(
+            conn.source,
+          )
         ) {
-          sourceId = `${conn.source}_parallel_${insideParallel}_iteration_${iterationIndex}`
+          sourceId = `${conn.source}_parallel_${insideParallel}_iteration_${iterationIndex}`;
         }
       }
 
-      const sourceExecuted = executedBlocks.has(sourceId)
-      const sourceBlock = this.actualWorkflow.blocks.find((b) => b.id === conn.source)
+      const sourceExecuted = executedBlocks.has(sourceId);
+      const sourceBlock = this.actualWorkflow.blocks.find(
+        (b) => b.id === conn.source,
+      );
       const sourceBlockState =
-        context.blockStates.get(sourceId) || context.blockStates.get(conn.source)
-      const hasSourceError = sourceBlockState?.output?.error !== undefined
+        context.blockStates.get(sourceId) ||
+        context.blockStates.get(conn.source);
+      const hasSourceError = sourceBlockState?.output?.error !== undefined;
 
       // Special handling for loop-start-source connections
-      if (conn.sourceHandle === 'loop-start-source') {
+      if (conn.sourceHandle === "loop-start-source") {
         // This block is connected to a loop's start output
         // It should be activated when the loop block executes
-        return sourceExecuted
+        return sourceExecuted;
       }
 
       // Special handling for loop-end-source connections
-      if (conn.sourceHandle === 'loop-end-source') {
+      if (conn.sourceHandle === "loop-end-source") {
         // This block is connected to a loop's end output
         // It should only be activated when the loop completes
-        const loopCompleted = context.completedLoops.has(conn.source)
-        return loopCompleted
+        const loopCompleted = context.completedLoops.has(conn.source);
+        return loopCompleted;
       }
 
       // Special handling for parallel-start-source connections
-      if (conn.sourceHandle === 'parallel-start-source') {
+      if (conn.sourceHandle === "parallel-start-source") {
         // This block is connected to a parallel's start output
         // It should be activated when the parallel block executes
-        return executedBlocks.has(conn.source)
+        return executedBlocks.has(conn.source);
       }
 
       // Special handling for parallel-end-source connections
-      if (conn.sourceHandle === 'parallel-end-source') {
+      if (conn.sourceHandle === "parallel-end-source") {
         // This block is connected to a parallel's end output
         // It should only be activated when the parallel completes
-        const parallelCompleted = context.completedLoops.has(conn.source)
-        return parallelCompleted
+        const parallelCompleted = context.completedLoops.has(conn.source);
+        return parallelCompleted;
       }
 
       // For condition blocks, check if this is the selected path
-      if (conn.sourceHandle?.startsWith('condition-')) {
-        const sourceBlock = this.actualWorkflow.blocks.find((b) => b.id === conn.source)
+      if (conn.sourceHandle?.startsWith("condition-")) {
+        const sourceBlock = this.actualWorkflow.blocks.find(
+          (b) => b.id === conn.source,
+        );
         if (sourceBlock?.metadata?.id === BlockType.CONDITION) {
-          const conditionId = conn.sourceHandle.replace('condition-', '')
-          const selectedCondition = context.decisions.condition.get(conn.source)
+          const conditionId = conn.sourceHandle.replace("condition-", "");
+          const selectedCondition = context.decisions.condition.get(
+            conn.source,
+          );
 
           // If source is executed and this is not the selected path, treat as "not applicable"
           // This allows blocks with multiple condition paths to execute via any selected path
-          if (sourceExecuted && selectedCondition && conditionId !== selectedCondition) {
-            return true // Changed from false to true - unselected paths don't block execution
+          if (
+            sourceExecuted &&
+            selectedCondition &&
+            conditionId !== selectedCondition
+          ) {
+            return true; // Changed from false to true - unselected paths don't block execution
           }
 
           // This dependency is met only if source is executed and this is the selected path
-          return sourceExecuted && conditionId === selectedCondition
+          return sourceExecuted && conditionId === selectedCondition;
         }
       }
 
       // For router blocks, check if this is the selected target
       if (sourceBlock?.metadata?.id === BlockType.ROUTER) {
-        const selectedTarget = context.decisions.router.get(conn.source)
+        const selectedTarget = context.decisions.router.get(conn.source);
 
         // If source is executed and this is not the selected target, dependency is NOT met
-        if (sourceExecuted && selectedTarget && conn.target !== selectedTarget) {
-          return false
+        if (
+          sourceExecuted &&
+          selectedTarget &&
+          conn.target !== selectedTarget
+        ) {
+          return false;
         }
 
         // Otherwise, this dependency is met only if source is executed and this is the selected target
-        return sourceExecuted && conn.target === selectedTarget
+        return sourceExecuted && conn.target === selectedTarget;
       }
 
       // If source is not in active path, consider this dependency met
       // This allows blocks with multiple inputs to execute even if some inputs are from inactive paths
       if (!context.activeExecutionPath.has(conn.source)) {
-        return true
+        return true;
       }
 
       // For error connections, check if the source had an error
-      if (conn.sourceHandle === 'error') {
-        return sourceExecuted && hasSourceError
+      if (conn.sourceHandle === "error") {
+        return sourceExecuted && hasSourceError;
       }
 
       // For regular connections, check if the source was executed without error
-      if (conn.sourceHandle === 'source' || !conn.sourceHandle) {
-        return sourceExecuted && !hasSourceError
+      if (conn.sourceHandle === "source" || !conn.sourceHandle) {
+        return sourceExecuted && !hasSourceError;
       }
 
       // For regular blocks, dependency is met if source is executed
-      return sourceExecuted
-    })
+      return sourceExecuted;
+    });
   }
 
   /**
@@ -1284,78 +1413,78 @@ export class Executor {
    */
   private async executeLayer(
     blockIds: string[],
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<(NormalizedBlockOutput | StreamingExecution)[]> {
-    const { setActiveBlocks } = useExecutionStore.getState()
+    const { setActiveBlocks } = useExecutionStore.getState();
 
     try {
       // Set all blocks in this layer as active
-      const activeBlockIds = new Set(blockIds)
+      const activeBlockIds = new Set(blockIds);
 
       // For virtual block IDs (parallel execution), also add the actual block ID so it appears as executing as well in the UI
       blockIds.forEach((blockId) => {
         if (context.parallelBlockMapping?.has(blockId)) {
-          const parallelInfo = context.parallelBlockMapping.get(blockId)
+          const parallelInfo = context.parallelBlockMapping.get(blockId);
           if (parallelInfo) {
-            activeBlockIds.add(parallelInfo.originalBlockId)
+            activeBlockIds.add(parallelInfo.originalBlockId);
           }
         }
-      })
+      });
 
       // Only manage active blocks for parent executions
       if (!this.isChildExecution) {
-        setActiveBlocks(activeBlockIds)
+        setActiveBlocks(activeBlockIds);
       }
 
       const settledResults = await Promise.allSettled(
-        blockIds.map((blockId) => this.executeBlock(blockId, context))
-      )
+        blockIds.map((blockId) => this.executeBlock(blockId, context)),
+      );
 
       // Extract successful results and collect any errors
-      const results: (NormalizedBlockOutput | StreamingExecution)[] = []
-      const errors: Error[] = []
+      const results: (NormalizedBlockOutput | StreamingExecution)[] = [];
+      const errors: Error[] = [];
 
       settledResults.forEach((result) => {
-        if (result.status === 'fulfilled') {
-          results.push(result.value)
+        if (result.status === "fulfilled") {
+          results.push(result.value);
         } else {
-          errors.push(result.reason)
+          errors.push(result.reason);
           // For failed blocks, we still need to add a placeholder result
           // so the results array matches the blockIds array length
           results.push({
-            error: result.reason?.message || 'Block execution failed',
+            error: result.reason?.message || "Block execution failed",
             status: 500,
-          })
+          });
         }
-      })
+      });
 
       // If there were any errors, log them but don't throw immediately
       // This allows successful blocks to complete their streaming
       if (errors.length > 0) {
         logger.warn(
-          `Layer execution completed with ${errors.length} failed blocks out of ${blockIds.length} total`
-        )
+          `Layer execution completed with ${errors.length} failed blocks out of ${blockIds.length} total`,
+        );
 
         // Only throw if ALL blocks failed
         if (errors.length === blockIds.length) {
-          throw errors[0] // Throw the first error if all blocks failed
+          throw errors[0]; // Throw the first error if all blocks failed
         }
       }
 
       blockIds.forEach((blockId) => {
-        context.executedBlocks.add(blockId)
-      })
+        context.executedBlocks.add(blockId);
+      });
 
-      this.pathTracker.updateExecutionPaths(blockIds, context)
+      this.pathTracker.updateExecutionPaths(blockIds, context);
 
-      return results
+      return results;
     } catch (error) {
       // If there's an uncaught error, clear all active blocks as a safety measure
       // Only manage active blocks for parent executions
       if (!this.isChildExecution) {
-        setActiveBlocks(new Set())
+        setActiveBlocks(new Set());
       }
-      throw error
+      throw error;
     }
   }
 
@@ -1370,145 +1499,157 @@ export class Executor {
    */
   private async executeBlock(
     blockId: string,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<NormalizedBlockOutput | StreamingExecution> {
     // Check if this is a virtual block ID for parallel execution
-    let actualBlockId = blockId
+    let actualBlockId = blockId;
     let parallelInfo:
       | { originalBlockId: string; parallelId: string; iterationIndex: number }
-      | undefined
+      | undefined;
 
     if (context.parallelBlockMapping?.has(blockId)) {
-      parallelInfo = context.parallelBlockMapping.get(blockId)
-      actualBlockId = parallelInfo!.originalBlockId
+      parallelInfo = context.parallelBlockMapping.get(blockId);
+      actualBlockId = parallelInfo!.originalBlockId;
 
       // Set the current virtual block ID in context so resolver can access it
-      context.currentVirtualBlockId = blockId
+      context.currentVirtualBlockId = blockId;
 
       // Set up iteration-specific context BEFORE resolving inputs
       if (parallelInfo) {
-        this.parallelManager.setupIterationContext(context, parallelInfo)
+        this.parallelManager.setupIterationContext(context, parallelInfo);
       }
     } else {
       // Clear currentVirtualBlockId for non-virtual blocks
-      context.currentVirtualBlockId = undefined
+      context.currentVirtualBlockId = undefined;
     }
 
-    const block = this.actualWorkflow.blocks.find((b) => b.id === actualBlockId)
+    const block = this.actualWorkflow.blocks.find(
+      (b) => b.id === actualBlockId,
+    );
     if (!block) {
-      throw new Error(`Block ${actualBlockId} not found`)
+      throw new Error(`Block ${actualBlockId} not found`);
     }
 
     // Special case for starter block - it's already been initialized in createExecutionContext
     // This ensures we don't re-execute the starter block and just return its existing state
     if (block.metadata?.id === BlockType.STARTER) {
-      const starterState = context.blockStates.get(actualBlockId)
+      const starterState = context.blockStates.get(actualBlockId);
       if (starterState) {
-        return starterState.output as NormalizedBlockOutput
+        return starterState.output as NormalizedBlockOutput;
       }
     }
 
-    const blockLog = this.createBlockLog(block)
+    const blockLog = this.createBlockLog(block);
     // Use virtual block ID in logs if applicable
     if (parallelInfo) {
-      blockLog.blockId = blockId
-      blockLog.blockName = `${block.metadata?.name || ''} (iteration ${parallelInfo.iterationIndex + 1})`
+      blockLog.blockId = blockId;
+      blockLog.blockName = `${block.metadata?.name || ""} (iteration ${parallelInfo.iterationIndex + 1})`;
     }
 
-    const addConsole = useConsoleStore.getState().addConsole
+    const addConsole = useConsoleStore.getState().addConsole;
 
     try {
       if (block.enabled === false) {
-        throw new Error(`Cannot execute disabled block: ${block.metadata?.name || block.id}`)
+        throw new Error(
+          `Cannot execute disabled block: ${block.metadata?.name || block.id}`,
+        );
       }
 
       // Check if this block needs the starter block's output
       // This is especially relevant for API, function, and conditions that might reference <start.input>
       const starterBlock = this.actualWorkflow.blocks.find(
-        (b) => b.metadata?.id === BlockType.STARTER
-      )
+        (b) => b.metadata?.id === BlockType.STARTER,
+      );
       if (starterBlock) {
-        const starterState = context.blockStates.get(starterBlock.id)
+        const starterState = context.blockStates.get(starterBlock.id);
         if (!starterState) {
           logger.warn(
-            `Starter block state not found when executing ${block.metadata?.name || actualBlockId}. This may cause reference errors.`
-          )
+            `Starter block state not found when executing ${block.metadata?.name || actualBlockId}. This may cause reference errors.`,
+          );
         }
       }
 
       // Store raw input configuration first for error debugging
-      blockLog.input = block.config.params
+      blockLog.input = block.config.params;
 
       // Resolve inputs (which will look up references to other blocks including starter)
-      const inputs = this.resolver.resolveInputs(block, context)
+      const inputs = this.resolver.resolveInputs(block, context);
 
       // Store input data in the block log
-      blockLog.input = inputs
+      blockLog.input = inputs;
 
       // Track block execution start
-      trackWorkflowTelemetry('block_execution_start', {
+      trackWorkflowTelemetry("block_execution_start", {
         workflowId: context.workflowId,
         blockId: block.id,
         virtualBlockId: parallelInfo ? blockId : undefined,
         iterationIndex: parallelInfo?.iterationIndex,
-        blockType: block.metadata?.id || 'unknown',
-        blockName: block.metadata?.name || 'Unnamed Block',
+        blockType: block.metadata?.id || "unknown",
+        blockName: block.metadata?.name || "Unnamed Block",
         inputSize: Object.keys(inputs).length,
         startTime: new Date().toISOString(),
-      })
+      });
 
       // Find the appropriate handler
-      const handler = this.blockHandlers.find((h) => h.canHandle(block))
+      const handler = this.blockHandlers.find((h) => h.canHandle(block));
       if (!handler) {
-        throw new Error(`No handler found for block type: ${block.metadata?.id}`)
+        throw new Error(
+          `No handler found for block type: ${block.metadata?.id}`,
+        );
       }
 
       // Execute the block
-      const startTime = performance.now()
-      const rawOutput = await handler.execute(block, inputs, context)
-      const executionTime = performance.now() - startTime
+      const startTime = performance.now();
+      const rawOutput = await handler.execute(block, inputs, context);
+      const executionTime = performance.now() - startTime;
 
       // Remove this block from active blocks immediately after execution
       // This ensures the pulse effect stops as soon as the block completes
       // Only manage active blocks for parent executions
       if (!this.isChildExecution) {
         useExecutionStore.setState((state) => {
-          const updatedActiveBlockIds = new Set(state.activeBlockIds)
-          updatedActiveBlockIds.delete(blockId)
+          const updatedActiveBlockIds = new Set(state.activeBlockIds);
+          updatedActiveBlockIds.delete(blockId);
 
           // For virtual blocks, also check if we should remove the actual block ID
           if (parallelInfo) {
             // Check if there are any other virtual blocks for the same actual block still active
-            const hasOtherVirtualBlocks = Array.from(state.activeBlockIds).some((activeId) => {
-              if (activeId === blockId) return false // Skip the current block we're removing
-              const mapping = context.parallelBlockMapping?.get(activeId)
-              return mapping && mapping.originalBlockId === parallelInfo.originalBlockId
-            })
+            const hasOtherVirtualBlocks = Array.from(state.activeBlockIds).some(
+              (activeId) => {
+                if (activeId === blockId) return false; // Skip the current block we're removing
+                const mapping = context.parallelBlockMapping?.get(activeId);
+                return (
+                  mapping &&
+                  mapping.originalBlockId === parallelInfo.originalBlockId
+                );
+              },
+            );
 
             // If no other virtual blocks are active for this actual block, remove the actual block ID too
             if (!hasOtherVirtualBlocks) {
-              updatedActiveBlockIds.delete(parallelInfo.originalBlockId)
+              updatedActiveBlockIds.delete(parallelInfo.originalBlockId);
             }
           }
 
-          return { activeBlockIds: updatedActiveBlockIds }
-        })
+          return { activeBlockIds: updatedActiveBlockIds };
+        });
       }
 
       if (
         rawOutput &&
-        typeof rawOutput === 'object' &&
-        'stream' in rawOutput &&
-        'execution' in rawOutput
+        typeof rawOutput === "object" &&
+        "stream" in rawOutput &&
+        "execution" in rawOutput
       ) {
-        const streamingExec = rawOutput as StreamingExecution
-        const output = (streamingExec.execution as any).output as NormalizedBlockOutput
+        const streamingExec = rawOutput as StreamingExecution;
+        const output = (streamingExec.execution as any)
+          .output as NormalizedBlockOutput;
 
         context.blockStates.set(blockId, {
           output,
           executed: true,
           executionTime,
-        })
+        });
 
         // Also store under the actual block ID for reference
         if (parallelInfo) {
@@ -1517,57 +1658,67 @@ export class Executor {
             context,
             parallelInfo.parallelId,
             parallelInfo.iterationIndex,
-            output
-          )
+            output,
+          );
         }
 
         // Update the execution log
-        blockLog.success = true
-        blockLog.output = output
-        blockLog.durationMs = Math.round(executionTime)
-        blockLog.endedAt = new Date().toISOString()
+        blockLog.success = true;
+        blockLog.output = output;
+        blockLog.durationMs = Math.round(executionTime);
+        blockLog.endedAt = new Date().toISOString();
 
         // Handle child workflow logs integration
-        this.integrateChildWorkflowLogs(block, output)
+        this.integrateChildWorkflowLogs(block, output);
 
-        context.blockLogs.push(blockLog)
+        context.blockLogs.push(blockLog);
 
         // Skip console logging for infrastructure blocks like loops and parallels
         // For streaming blocks, we'll add the console entry after stream processing
-        if (block.metadata?.id !== BlockType.LOOP && block.metadata?.id !== BlockType.PARALLEL) {
+        if (
+          block.metadata?.id !== BlockType.LOOP &&
+          block.metadata?.id !== BlockType.PARALLEL
+        ) {
           // Determine iteration context for this block
-          let iterationCurrent: number | undefined
-          let iterationTotal: number | undefined
-          let iterationType: 'loop' | 'parallel' | undefined
-          const blockName = block.metadata?.name || 'Unnamed Block'
+          let iterationCurrent: number | undefined;
+          let iterationTotal: number | undefined;
+          let iterationType: "loop" | "parallel" | undefined;
+          const blockName = block.metadata?.name || "Unnamed Block";
 
           if (parallelInfo) {
             // This is a parallel iteration
-            const parallelState = context.parallelExecutions?.get(parallelInfo.parallelId)
-            iterationCurrent = parallelInfo.iterationIndex + 1
-            iterationTotal = parallelState?.parallelCount
-            iterationType = 'parallel'
+            const parallelState = context.parallelExecutions?.get(
+              parallelInfo.parallelId,
+            );
+            iterationCurrent = parallelInfo.iterationIndex + 1;
+            iterationTotal = parallelState?.parallelCount;
+            iterationType = "parallel";
           } else {
             // Check if this block is inside a loop
-            const containingLoopId = this.resolver.getContainingLoopId(block.id)
+            const containingLoopId = this.resolver.getContainingLoopId(
+              block.id,
+            );
             if (containingLoopId) {
-              const currentIteration = context.loopIterations.get(containingLoopId)
-              const loop = context.workflow?.loops?.[containingLoopId]
+              const currentIteration =
+                context.loopIterations.get(containingLoopId);
+              const loop = context.workflow?.loops?.[containingLoopId];
               if (currentIteration !== undefined && loop) {
-                iterationCurrent = currentIteration
-                if (loop.loopType === 'forEach') {
+                iterationCurrent = currentIteration;
+                if (loop.loopType === "forEach") {
                   // For forEach loops, get the total from the items
-                  const forEachItems = context.loopItems.get(`${containingLoopId}_items`)
+                  const forEachItems = context.loopItems.get(
+                    `${containingLoopId}_items`,
+                  );
                   if (forEachItems) {
                     iterationTotal = Array.isArray(forEachItems)
                       ? forEachItems.length
-                      : Object.keys(forEachItems).length
+                      : Object.keys(forEachItems).length;
                   }
                 } else {
                   // For regular loops, use the iterations count
-                  iterationTotal = loop.iterations || 5
+                  iterationTotal = loop.iterations || 5;
                 }
-                iterationType = 'loop'
+                iterationType = "loop";
               }
             }
           }
@@ -1583,34 +1734,34 @@ export class Executor {
             blockId: parallelInfo ? blockId : block.id,
             executionId: this.contextExtensions.executionId,
             blockName,
-            blockType: block.metadata?.id || 'unknown',
+            blockType: block.metadata?.id || "unknown",
             iterationCurrent,
             iterationTotal,
             iterationType,
-          })
+          });
         }
 
-        trackWorkflowTelemetry('block_execution', {
+        trackWorkflowTelemetry("block_execution", {
           workflowId: context.workflowId,
           blockId: block.id,
           virtualBlockId: parallelInfo ? blockId : undefined,
           iterationIndex: parallelInfo?.iterationIndex,
-          blockType: block.metadata?.id || 'unknown',
-          blockName: block.metadata?.name || 'Unnamed Block',
+          blockType: block.metadata?.id || "unknown",
+          blockName: block.metadata?.name || "Unnamed Block",
           durationMs: Math.round(executionTime),
           success: true,
-        })
+        });
 
-        return streamingExec
+        return streamingExec;
       }
 
       // Handle error outputs and ensure object structure
       const output: NormalizedBlockOutput =
-        rawOutput && typeof rawOutput === 'object' && rawOutput.error
+        rawOutput && typeof rawOutput === "object" && rawOutput.error
           ? { error: rawOutput.error, status: rawOutput.status || 500 }
-          : typeof rawOutput === 'object' && rawOutput !== null
+          : typeof rawOutput === "object" && rawOutput !== null
             ? rawOutput
-            : { result: rawOutput }
+            : { result: rawOutput };
 
       // Update the context with the execution result
       // Use virtual block ID for parallel executions
@@ -1618,7 +1769,7 @@ export class Executor {
         output,
         executed: true,
         executionTime,
-      })
+      });
 
       // Also store under the actual block ID for reference
       if (parallelInfo) {
@@ -1627,56 +1778,64 @@ export class Executor {
           context,
           parallelInfo.parallelId,
           parallelInfo.iterationIndex,
-          output
-        )
+          output,
+        );
       }
 
       // Update the execution log
-      blockLog.success = true
-      blockLog.output = output
-      blockLog.durationMs = Math.round(executionTime)
-      blockLog.endedAt = new Date().toISOString()
+      blockLog.success = true;
+      blockLog.output = output;
+      blockLog.durationMs = Math.round(executionTime);
+      blockLog.endedAt = new Date().toISOString();
 
       // Handle child workflow logs integration
-      this.integrateChildWorkflowLogs(block, output)
+      this.integrateChildWorkflowLogs(block, output);
 
-      context.blockLogs.push(blockLog)
+      context.blockLogs.push(blockLog);
 
       // Skip console logging for infrastructure blocks like loops and parallels
-      if (block.metadata?.id !== BlockType.LOOP && block.metadata?.id !== BlockType.PARALLEL) {
+      if (
+        block.metadata?.id !== BlockType.LOOP &&
+        block.metadata?.id !== BlockType.PARALLEL
+      ) {
         // Determine iteration context for this block
-        let iterationCurrent: number | undefined
-        let iterationTotal: number | undefined
-        let iterationType: 'loop' | 'parallel' | undefined
-        const blockName = block.metadata?.name || 'Unnamed Block'
+        let iterationCurrent: number | undefined;
+        let iterationTotal: number | undefined;
+        let iterationType: "loop" | "parallel" | undefined;
+        const blockName = block.metadata?.name || "Unnamed Block";
 
         if (parallelInfo) {
           // This is a parallel iteration
-          const parallelState = context.parallelExecutions?.get(parallelInfo.parallelId)
-          iterationCurrent = parallelInfo.iterationIndex + 1
-          iterationTotal = parallelState?.parallelCount
-          iterationType = 'parallel'
+          const parallelState = context.parallelExecutions?.get(
+            parallelInfo.parallelId,
+          );
+          iterationCurrent = parallelInfo.iterationIndex + 1;
+          iterationTotal = parallelState?.parallelCount;
+          iterationType = "parallel";
         } else {
           // Check if this block is inside a loop
-          const containingLoopId = this.resolver.getContainingLoopId(block.id)
+          const containingLoopId = this.resolver.getContainingLoopId(block.id);
           if (containingLoopId) {
-            const currentIteration = context.loopIterations.get(containingLoopId)
-            const loop = context.workflow?.loops?.[containingLoopId]
+            const currentIteration =
+              context.loopIterations.get(containingLoopId);
+            const loop = context.workflow?.loops?.[containingLoopId];
             if (currentIteration !== undefined && loop) {
-              iterationCurrent = currentIteration
-              if (loop.loopType === 'forEach') {
+              iterationCurrent = currentIteration;
+              if (loop.loopType === "forEach") {
                 // For forEach loops, get the total from the items
-                const forEachItems = context.loopItems.get(`${containingLoopId}_items`)
+                const forEachItems = context.loopItems.get(
+                  `${containingLoopId}_items`,
+                );
                 if (forEachItems) {
                   iterationTotal = Array.isArray(forEachItems)
                     ? forEachItems.length
-                    : Object.keys(forEachItems).length
+                    : Object.keys(forEachItems).length;
                 }
               } else {
                 // For regular loops, use the iterations count
-                iterationTotal = loop.iterations || 5
+                iterationTotal = loop.iterations || 5;
               }
-              iterationType = 'loop'
+              iterationType = "loop";
             }
           }
         }
@@ -1692,103 +1851,117 @@ export class Executor {
           blockId: parallelInfo ? blockId : block.id,
           executionId: this.contextExtensions.executionId,
           blockName,
-          blockType: block.metadata?.id || 'unknown',
+          blockType: block.metadata?.id || "unknown",
           iterationCurrent,
           iterationTotal,
           iterationType,
-        })
+        });
       }
 
-      trackWorkflowTelemetry('block_execution', {
+      trackWorkflowTelemetry("block_execution", {
         workflowId: context.workflowId,
         blockId: block.id,
         virtualBlockId: parallelInfo ? blockId : undefined,
         iterationIndex: parallelInfo?.iterationIndex,
-        blockType: block.metadata?.id || 'unknown',
-        blockName: block.metadata?.name || 'Unnamed Block',
+        blockType: block.metadata?.id || "unknown",
+        blockName: block.metadata?.name || "Unnamed Block",
         durationMs: Math.round(executionTime),
         success: true,
-      })
+      });
 
-      return output
+      return output;
     } catch (error: any) {
       // Remove this block from active blocks if there's an error
       // Only manage active blocks for parent executions
       if (!this.isChildExecution) {
         useExecutionStore.setState((state) => {
-          const updatedActiveBlockIds = new Set(state.activeBlockIds)
-          updatedActiveBlockIds.delete(blockId)
+          const updatedActiveBlockIds = new Set(state.activeBlockIds);
+          updatedActiveBlockIds.delete(blockId);
 
           // For virtual blocks, also check if we should remove the actual block ID
           if (parallelInfo) {
             // Check if there are any other virtual blocks for the same actual block still active
-            const hasOtherVirtualBlocks = Array.from(state.activeBlockIds).some((activeId) => {
-              if (activeId === blockId) return false // Skip the current block we're removing
-              const mapping = context.parallelBlockMapping?.get(activeId)
-              return mapping && mapping.originalBlockId === parallelInfo.originalBlockId
-            })
+            const hasOtherVirtualBlocks = Array.from(state.activeBlockIds).some(
+              (activeId) => {
+                if (activeId === blockId) return false; // Skip the current block we're removing
+                const mapping = context.parallelBlockMapping?.get(activeId);
+                return (
+                  mapping &&
+                  mapping.originalBlockId === parallelInfo.originalBlockId
+                );
+              },
+            );
 
             // If no other virtual blocks are active for this actual block, remove the actual block ID too
             if (!hasOtherVirtualBlocks) {
-              updatedActiveBlockIds.delete(parallelInfo.originalBlockId)
+              updatedActiveBlockIds.delete(parallelInfo.originalBlockId);
             }
           }
 
-          return { activeBlockIds: updatedActiveBlockIds }
-        })
+          return { activeBlockIds: updatedActiveBlockIds };
+        });
       }
 
-      blockLog.success = false
+      blockLog.success = false;
       blockLog.error =
         error.message ||
-        `Error executing ${block.metadata?.id || 'unknown'} block: ${String(error)}`
-      blockLog.endedAt = new Date().toISOString()
+        `Error executing ${block.metadata?.id || "unknown"} block: ${String(error)}`;
+      blockLog.endedAt = new Date().toISOString();
       blockLog.durationMs =
-        new Date(blockLog.endedAt).getTime() - new Date(blockLog.startedAt).getTime()
+        new Date(blockLog.endedAt).getTime() -
+        new Date(blockLog.startedAt).getTime();
 
       // If this error came from a child workflow execution, persist its trace spans on the log
       if (block.metadata?.id === BlockType.WORKFLOW) {
-        this.attachChildWorkflowSpansToLog(blockLog, error)
+        this.attachChildWorkflowSpansToLog(blockLog, error);
       }
 
       // Log the error even if we'll continue execution through error path
-      context.blockLogs.push(blockLog)
+      context.blockLogs.push(blockLog);
 
       // Skip console logging for infrastructure blocks like loops and parallels
-      if (block.metadata?.id !== BlockType.LOOP && block.metadata?.id !== BlockType.PARALLEL) {
+      if (
+        block.metadata?.id !== BlockType.LOOP &&
+        block.metadata?.id !== BlockType.PARALLEL
+      ) {
         // Determine iteration context for this block
-        let iterationCurrent: number | undefined
-        let iterationTotal: number | undefined
-        let iterationType: 'loop' | 'parallel' | undefined
-        const blockName = block.metadata?.name || 'Unnamed Block'
+        let iterationCurrent: number | undefined;
+        let iterationTotal: number | undefined;
+        let iterationType: "loop" | "parallel" | undefined;
+        const blockName = block.metadata?.name || "Unnamed Block";
 
         if (parallelInfo) {
           // This is a parallel iteration
-          const parallelState = context.parallelExecutions?.get(parallelInfo.parallelId)
-          iterationCurrent = parallelInfo.iterationIndex + 1
-          iterationTotal = parallelState?.parallelCount
-          iterationType = 'parallel'
+          const parallelState = context.parallelExecutions?.get(
+            parallelInfo.parallelId,
+          );
+          iterationCurrent = parallelInfo.iterationIndex + 1;
+          iterationTotal = parallelState?.parallelCount;
+          iterationType = "parallel";
         } else {
           // Check if this block is inside a loop
-          const containingLoopId = this.resolver.getContainingLoopId(block.id)
+          const containingLoopId = this.resolver.getContainingLoopId(block.id);
           if (containingLoopId) {
-            const currentIteration = context.loopIterations.get(containingLoopId)
-            const loop = context.workflow?.loops?.[containingLoopId]
+            const currentIteration =
+              context.loopIterations.get(containingLoopId);
+            const loop = context.workflow?.loops?.[containingLoopId];
             if (currentIteration !== undefined && loop) {
-              iterationCurrent = currentIteration
-              if (loop.loopType === 'forEach') {
+              iterationCurrent = currentIteration;
+              if (loop.loopType === "forEach") {
                 // For forEach loops, get the total from the items
-                const forEachItems = context.loopItems.get(`${containingLoopId}_items`)
+                const forEachItems = context.loopItems.get(
+                  `${containingLoopId}_items`,
+                );
                 if (forEachItems) {
                   iterationTotal = Array.isArray(forEachItems)
                     ? forEachItems.length
-                    : Object.keys(forEachItems).length
+                    : Object.keys(forEachItems).length;
                 }
               } else {
                 // For regular loops, use the iterations count
-                iterationTotal = loop.iterations || 5
+                iterationTotal = loop.iterations || 5;
               }
-              iterationType = 'loop'
+              iterationType = "loop";
             }
           }
         }
@@ -1799,7 +1972,7 @@ export class Executor {
           success: false,
           error:
             error.message ||
-            `Error executing ${block.metadata?.id || 'unknown'} block: ${String(error)}`,
+            `Error executing ${block.metadata?.id || "unknown"} block: ${String(error)}`,
           durationMs: blockLog.durationMs,
           startedAt: blockLog.startedAt,
           endedAt: blockLog.endedAt,
@@ -1807,31 +1980,31 @@ export class Executor {
           blockId: parallelInfo ? blockId : block.id,
           executionId: this.contextExtensions.executionId,
           blockName,
-          blockType: block.metadata?.id || 'unknown',
+          blockType: block.metadata?.id || "unknown",
           iterationCurrent,
           iterationTotal,
           iterationType,
-        })
+        });
       }
 
       // Check for error connections and follow them if they exist
-      const hasErrorPath = this.activateErrorPath(actualBlockId, context)
+      const hasErrorPath = this.activateErrorPath(actualBlockId, context);
 
       // Log the error for visibility
       logger.error(
         `Error executing block ${block.metadata?.name || actualBlockId}:`,
-        this.sanitizeError(error)
-      )
+        this.sanitizeError(error),
+      );
 
       // Create error output with appropriate structure
       const errorOutput: NormalizedBlockOutput = {
         error: this.extractErrorMessage(error),
         status: error.status || 500,
-      }
+      };
 
       // Preserve child workflow spans on the block state so downstream logging can render them
       if (block.metadata?.id === BlockType.WORKFLOW) {
-        this.attachChildWorkflowSpansToOutput(errorOutput, error)
+        this.attachChildWorkflowSpansToOutput(errorOutput, error);
       }
 
       // Set block state with error output
@@ -1839,42 +2012,42 @@ export class Executor {
         output: errorOutput,
         executed: true,
         executionTime: blockLog.durationMs,
-      })
+      });
 
       // If there are error paths to follow, return error output instead of throwing
       if (hasErrorPath) {
         // Return the error output to allow execution to continue along error path
-        return errorOutput
+        return errorOutput;
       }
 
       // Create a proper error message that is never undefined
-      let errorMessage = error.message
+      let errorMessage = error.message;
 
       // Handle the specific "undefined (undefined)" case
-      if (!errorMessage || errorMessage === 'undefined (undefined)') {
-        errorMessage = `Error executing ${block.metadata?.id || 'unknown'} block: ${block.metadata?.name || 'Unnamed Block'}`
+      if (!errorMessage || errorMessage === "undefined (undefined)") {
+        errorMessage = `Error executing ${block.metadata?.id || "unknown"} block: ${block.metadata?.name || "Unnamed Block"}`;
 
         // Try to get more details if possible
-        if (error && typeof error === 'object') {
-          if (error.code) errorMessage += ` (code: ${error.code})`
-          if (error.status) errorMessage += ` (status: ${error.status})`
-          if (error.type) errorMessage += ` (type: ${error.type})`
+        if (error && typeof error === "object") {
+          if (error.code) errorMessage += ` (code: ${error.code})`;
+          if (error.status) errorMessage += ` (status: ${error.status})`;
+          if (error.type) errorMessage += ` (type: ${error.type})`;
         }
       }
 
-      trackWorkflowTelemetry('block_execution_error', {
+      trackWorkflowTelemetry("block_execution_error", {
         workflowId: context.workflowId,
         blockId: block.id,
         virtualBlockId: parallelInfo ? blockId : undefined,
         iterationIndex: parallelInfo?.iterationIndex,
-        blockType: block.metadata?.id || 'unknown',
-        blockName: block.metadata?.name || 'Unnamed Block',
+        blockType: block.metadata?.id || "unknown",
+        blockName: block.metadata?.name || "Unnamed Block",
         durationMs: blockLog.durationMs,
-        errorType: error.name || 'Error',
+        errorType: error.name || "Error",
         errorMessage: this.extractErrorMessage(error),
-      })
+      });
 
-      throw new Error(errorMessage)
+      throw new Error(errorMessage);
     }
   }
 
@@ -1882,32 +2055,45 @@ export class Executor {
    * Copies child workflow trace spans from an error object into a block log.
    * Ensures consistent structure and avoids duplication of inline guards.
    */
-  private attachChildWorkflowSpansToLog(blockLog: BlockLog, error: unknown): void {
+  private attachChildWorkflowSpansToLog(
+    blockLog: BlockLog,
+    error: unknown,
+  ): void {
     const spans = (
-      error as { childTraceSpans?: TraceSpan[]; childWorkflowName?: string } | null | undefined
-    )?.childTraceSpans
+      error as
+        | { childTraceSpans?: TraceSpan[]; childWorkflowName?: string }
+        | null
+        | undefined
+    )?.childTraceSpans;
     if (Array.isArray(spans) && spans.length > 0) {
       blockLog.output = {
         ...(blockLog.output || {}),
         childTraceSpans: spans,
-        childWorkflowName: (error as { childWorkflowName?: string } | null | undefined)
-          ?.childWorkflowName,
-      }
+        childWorkflowName: (
+          error as { childWorkflowName?: string } | null | undefined
+        )?.childWorkflowName,
+      };
     }
   }
 
   /**
    * Copies child workflow trace spans from an error object into a normalized output.
    */
-  private attachChildWorkflowSpansToOutput(output: NormalizedBlockOutput, error: unknown): void {
+  private attachChildWorkflowSpansToOutput(
+    output: NormalizedBlockOutput,
+    error: unknown,
+  ): void {
     const spans = (
-      error as { childTraceSpans?: TraceSpan[]; childWorkflowName?: string } | null | undefined
-    )?.childTraceSpans
+      error as
+        | { childTraceSpans?: TraceSpan[]; childWorkflowName?: string }
+        | null
+        | undefined
+    )?.childTraceSpans;
     if (Array.isArray(spans) && spans.length > 0) {
-      output.childTraceSpans = spans
+      output.childTraceSpans = spans;
       output.childWorkflowName = (
         error as { childWorkflowName?: string } | null | undefined
-      )?.childWorkflowName
+      )?.childWorkflowName;
     }
   }
 
@@ -1919,34 +2105,37 @@ export class Executor {
    * @param context - Current execution context
    * @returns Whether there was an error path to follow
    */
-  private activateErrorPath(blockId: string, context: ExecutionContext): boolean {
+  private activateErrorPath(
+    blockId: string,
+    context: ExecutionContext,
+  ): boolean {
     // Skip for starter blocks which don't have error handles
-    const block = this.actualWorkflow.blocks.find((b) => b.id === blockId)
+    const block = this.actualWorkflow.blocks.find((b) => b.id === blockId);
     if (
       block?.metadata?.id === BlockType.STARTER ||
       block?.metadata?.id === BlockType.CONDITION ||
       block?.metadata?.id === BlockType.LOOP ||
       block?.metadata?.id === BlockType.PARALLEL
     ) {
-      return false
+      return false;
     }
 
     // Look for connections from this block's error handle
     const errorConnections = this.actualWorkflow.connections.filter(
-      (conn) => conn.source === blockId && conn.sourceHandle === 'error'
-    )
+      (conn) => conn.source === blockId && conn.sourceHandle === "error",
+    );
 
     if (errorConnections.length === 0) {
-      return false
+      return false;
     }
 
     // Add all error connection targets to the active execution path
     for (const conn of errorConnections) {
-      context.activeExecutionPath.add(conn.target)
-      logger.info(`Activated error path from ${blockId} to ${conn.target}`)
+      context.activeExecutionPath.add(conn.target);
+      logger.info(`Activated error path from ${blockId} to ${conn.target}`);
     }
 
-    return true
+    return true;
   }
 
   /**
@@ -1958,13 +2147,13 @@ export class Executor {
   private createBlockLog(block: SerializedBlock): BlockLog {
     return {
       blockId: block.id,
-      blockName: block.metadata?.name || '',
-      blockType: block.metadata?.id || '',
+      blockName: block.metadata?.name || "",
+      blockType: block.metadata?.id || "",
       startedAt: new Date().toISOString(),
-      endedAt: '',
+      endedAt: "",
       durationMs: 0,
       success: false,
-    }
+    };
   }
 
   /**
@@ -1976,34 +2165,34 @@ export class Executor {
    */
   private extractErrorMessage(error: any): string {
     // If it's already a string, return it
-    if (typeof error === 'string') {
-      return error
+    if (typeof error === "string") {
+      return error;
     }
 
     // If it has a message property, use that
     if (error.message) {
-      return error.message
+      return error.message;
     }
 
     // If it's an object with response data, include that
     if (error.response?.data) {
-      const data = error.response.data
-      if (typeof data === 'string') {
-        return data
+      const data = error.response.data;
+      if (typeof data === "string") {
+        return data;
       }
       if (data.message) {
-        return data.message
+        return data.message;
       }
-      return JSON.stringify(data)
+      return JSON.stringify(data);
     }
 
     // If it's an object, stringify it
-    if (typeof error === 'object') {
-      return JSON.stringify(error)
+    if (typeof error === "object") {
+      return JSON.stringify(error);
     }
 
     // Fallback to string conversion
-    return String(error)
+    return String(error);
   }
 
   /**
@@ -2015,34 +2204,34 @@ export class Executor {
    */
   private sanitizeError(error: any): any {
     // If it's already a string, return it
-    if (typeof error === 'string') {
-      return error
+    if (typeof error === "string") {
+      return error;
     }
 
     // If it has a message property, return that
     if (error.message) {
-      return error.message
+      return error.message;
     }
 
     // If it's an object with response data, include that
     if (error.response?.data) {
-      const data = error.response.data
-      if (typeof data === 'string') {
-        return data
+      const data = error.response.data;
+      if (typeof data === "string") {
+        return data;
       }
       if (data.message) {
-        return data.message
+        return data.message;
       }
-      return JSON.stringify(data)
+      return JSON.stringify(data);
     }
 
     // If it's an object, stringify it
-    if (typeof error === 'object') {
-      return JSON.stringify(error)
+    if (typeof error === "object") {
+      return JSON.stringify(error);
     }
 
     // Fallback to string conversion
-    return String(error)
+    return String(error);
   }
 
   /**
@@ -2052,39 +2241,46 @@ export class Executor {
   private createStartedBlockWithFilesLog(
     initBlock: SerializedBlock,
     blockOutput: any,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): void {
-    if (blockOutput.files && Array.isArray(blockOutput.files) && blockOutput.files.length > 0) {
+    if (
+      blockOutput.files &&
+      Array.isArray(blockOutput.files) &&
+      blockOutput.files.length > 0
+    ) {
       const starterBlockLog: BlockLog = {
         blockId: initBlock.id,
-        blockName: initBlock.metadata?.name || 'Start',
-        blockType: initBlock.metadata?.id || 'start',
+        blockName: initBlock.metadata?.name || "Start",
+        blockType: initBlock.metadata?.id || "start",
         startedAt: new Date().toISOString(),
         endedAt: new Date().toISOString(),
         success: true,
         input: this.workflowInput,
         output: blockOutput,
         durationMs: 0,
-      }
-      context.blockLogs.push(starterBlockLog)
+      };
+      context.blockLogs.push(starterBlockLog);
     }
   }
 
   /**
    * Preserves child workflow trace spans for proper nesting
    */
-  private integrateChildWorkflowLogs(block: SerializedBlock, output: NormalizedBlockOutput): void {
+  private integrateChildWorkflowLogs(
+    block: SerializedBlock,
+    output: NormalizedBlockOutput,
+  ): void {
     if (block.metadata?.id !== BlockType.WORKFLOW) {
-      return
+      return;
     }
 
-    if (!output || typeof output !== 'object' || !output.childTraceSpans) {
-      return
+    if (!output || typeof output !== "object" || !output.childTraceSpans) {
+      return;
     }
 
-    const childTraceSpans = output.childTraceSpans as TraceSpan[]
+    const childTraceSpans = output.childTraceSpans as TraceSpan[];
     if (!Array.isArray(childTraceSpans) || childTraceSpans.length === 0) {
-      return
+      return;
     }
   }
 }

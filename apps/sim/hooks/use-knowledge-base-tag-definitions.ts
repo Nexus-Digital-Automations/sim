@@ -1,18 +1,18 @@
-'use client'
+"use client";
 
-import { useCallback, useEffect, useState } from 'react'
-import type { TagSlot } from '@/lib/knowledge/consts'
-import { createLogger } from '@/lib/logs/console/logger'
+import { useCallback, useEffect, useState } from "react";
+import type { TagSlot } from "@/lib/knowledge/consts";
+import { createLogger } from "@/lib/logs/console/logger";
 
-const logger = createLogger('useKnowledgeBaseTagDefinitions')
+const logger = createLogger("useKnowledgeBaseTagDefinitions");
 
 export interface TagDefinition {
-  id: string
-  tagSlot: TagSlot
-  displayName: string
-  fieldType: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  tagSlot: TagSlot;
+  displayName: string;
+  fieldType: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**
@@ -20,62 +20,67 @@ export interface TagDefinition {
  * @param knowledgeBaseId - The knowledge base ID
  */
 export function useKnowledgeBaseTagDefinitions(knowledgeBaseId: string | null) {
-  const [tagDefinitions, setTagDefinitions] = useState<TagDefinition[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [tagDefinitions, setTagDefinitions] = useState<TagDefinition[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTagDefinitions = useCallback(async () => {
     if (!knowledgeBaseId) {
-      setTagDefinitions([])
-      return
+      setTagDefinitions([]);
+      return;
     }
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const response = await fetch(`/api/knowledge/${knowledgeBaseId}/tag-definitions`)
+      const response = await fetch(
+        `/api/knowledge/${knowledgeBaseId}/tag-definitions`,
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch tag definitions: ${response.statusText}`)
+        throw new Error(
+          `Failed to fetch tag definitions: ${response.statusText}`,
+        );
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (data.success && Array.isArray(data.data)) {
-        setTagDefinitions(data.data)
+        setTagDefinitions(data.data);
       } else {
-        throw new Error('Invalid response format')
+        throw new Error("Invalid response format");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
-      logger.error('Error fetching tag definitions:', err)
-      setError(errorMessage)
-      setTagDefinitions([])
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      logger.error("Error fetching tag definitions:", err);
+      setError(errorMessage);
+      setTagDefinitions([]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [knowledgeBaseId])
+  }, [knowledgeBaseId]);
 
   const getTagLabel = useCallback(
     (tagSlot: string): string => {
-      const definition = tagDefinitions.find((def) => def.tagSlot === tagSlot)
-      return definition?.displayName || tagSlot
+      const definition = tagDefinitions.find((def) => def.tagSlot === tagSlot);
+      return definition?.displayName || tagSlot;
     },
-    [tagDefinitions]
-  )
+    [tagDefinitions],
+  );
 
   const getTagDefinition = useCallback(
     (tagSlot: string): TagDefinition | undefined => {
-      return tagDefinitions.find((def) => def.tagSlot === tagSlot)
+      return tagDefinitions.find((def) => def.tagSlot === tagSlot);
     },
-    [tagDefinitions]
-  )
+    [tagDefinitions],
+  );
 
   // Auto-fetch on mount and when dependencies change
   useEffect(() => {
-    fetchTagDefinitions()
-  }, [fetchTagDefinitions])
+    fetchTagDefinitions();
+  }, [fetchTagDefinitions]);
 
   return {
     tagDefinitions,
@@ -84,5 +89,5 @@ export function useKnowledgeBaseTagDefinitions(knowledgeBaseId: string | null) {
     fetchTagDefinitions,
     getTagLabel,
     getTagDefinition,
-  }
+  };
 }

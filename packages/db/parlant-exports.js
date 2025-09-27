@@ -36,7 +36,7 @@ export {
   // Utility functions
   withErrorHandling,
   withWorkspaceScope,
-} from './parlant-queries'
+} from "./parlant-queries";
 export {
   agentStatusEnum,
   compositionModeEnum,
@@ -69,7 +69,7 @@ export {
   parlantVariable,
   sessionModeEnum,
   sessionStatusEnum,
-} from './parlant-schema'
+} from "./parlant-schema";
 // Re-export type guard functions
 export {
   isAgentMessageContent,
@@ -91,7 +91,7 @@ export {
   isToolResultContent,
   isToolStateConfig,
   isWorkflowBlockIntegration,
-} from './parlant-unions'
+} from "./parlant-unions";
 export {
   // Filter schemas
   agentFilterSchema,
@@ -150,7 +150,7 @@ export {
   validatePagination,
   validateSessionFilters,
   variableResponseSchema,
-} from './parlant-validation'
+} from "./parlant-validation";
 // =============================================================================
 // Convenience Re-exports for Common Patterns
 // =============================================================================
@@ -393,8 +393,8 @@ export {
 /**
  * Parlant database types package metadata
  */
-export const PARLANT_TYPES_VERSION = '1.0.0'
-export const PARLANT_TYPES_BUILD = new Date().toISOString()
+export const PARLANT_TYPES_VERSION = "1.0.0";
+export const PARLANT_TYPES_BUILD = new Date().toISOString();
 /**
  * Feature flags and capabilities
  */
@@ -409,7 +409,7 @@ export const PARLANT_FEATURES = {
   ERROR_HANDLING: true,
   ANALYTICS_SUPPORT: true,
   INTEGRATION_SUPPORT: true,
-}
+};
 /**
  * Supported integrations and extensions
  */
@@ -420,4 +420,4 @@ export const PARLANT_INTEGRATIONS = {
   SIM_CUSTOM_TOOLS: true,
   MCP_SERVERS: true,
   EXTERNAL_APIS: true,
-}
+};

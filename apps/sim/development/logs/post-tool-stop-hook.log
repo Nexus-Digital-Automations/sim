@@ -214,3 +214,21 @@
 [2025-09-27T19:50:44.238Z] [INFO] Stop control state updated: {"stopAllowed":false,"singleUseFlag":false,"lastEndpointTrigger":null,"totalStopsBlocked":54}
 [2025-09-27T19:50:44.239Z] [INFO] Blocking stop #54 - infinite continue mode active
 [2025-09-27T19:50:44.946Z] [INFO] Stop blocked with task guidance. Total stops blocked: 54
+[2025-09-27T19:55:03.745Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T19:55:03.763Z] [INFO] Provided linter feedback and API guide
+[2025-09-27T19:55:15.971Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T19:55:15.989Z] [INFO] Provided linter feedback and API guide
+[2025-09-27T19:55:23.105Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T19:55:23.126Z] [INFO] Provided linter feedback and API guide
+[2025-09-27T19:55:28.547Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T19:55:28.565Z] [INFO] Provided linter feedback and API guide
+[2025-09-27T19:55:34.563Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T19:55:34.580Z] [INFO] Provided linter feedback and API guide
+[2025-09-27T19:55:39.383Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T19:55:39.418Z] [INFO] Provided linter feedback and API guide
+[2025-09-27T19:56:28.340Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T19:56:28.359Z] [INFO] Provided linter feedback and API guide
+[2025-09-27T19:56:33.126Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T19:56:33.146Z] [INFO] Provided linter feedback and API guide
+[2025-09-27T19:56:40.855Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T19:56:40.871Z] [INFO] Provided linter feedback and API guide

@@ -10,32 +10,35 @@
  */
 
 // Internal imports for the UniversalToolAdapterSystem class
-import { AutoDiscoverySystem } from './config/auto-discovery-system'
+import { AutoDiscoverySystem } from "./config/auto-discovery-system";
 import {
   type BlockConfigAdapter,
   EnhancedAdapterFramework,
-} from './core/enhanced-adapter-framework'
+} from "./core/enhanced-adapter-framework";
 import {
   type IntelligenceConfiguration,
   IntelligenceIntegrationLayer,
-} from './enhanced-intelligence/intelligence-integration-layer'
-import { AnalyticsSystem } from './monitoring/analytics-system'
-import { PerformanceOptimizationEngine } from './performance/optimization-engine'
-import { PluginSystem } from './plugins/plugin-system'
-import { EnhancedAdapterRegistry } from './registry/enhanced-adapter-registry'
-import { AdapterTestFramework } from './testing/test-framework'
-import type { AdapterExecutionResult } from './types/adapter-interfaces'
-import { EnhancedValidationEngine } from './validation/enhanced-validation-engine'
+} from "./enhanced-intelligence/intelligence-integration-layer";
+import { AnalyticsSystem } from "./monitoring/analytics-system";
+import { PerformanceOptimizationEngine } from "./performance/optimization-engine";
+import { PluginSystem } from "./plugins/plugin-system";
+import { EnhancedAdapterRegistry } from "./registry/enhanced-adapter-registry";
+import { AdapterTestFramework } from "./testing/test-framework";
+import type { AdapterExecutionResult } from "./types/adapter-interfaces";
+import { EnhancedValidationEngine } from "./validation/enhanced-validation-engine";
 
 export {
   AutoDiscoverySystem,
   createAutoDiscoverySystem,
   extractBlockConfigFromFile,
   validateBlockConfig,
-} from './config/auto-discovery-system'
-export { BaseAdapter } from './core/base-adapter'
+} from "./config/auto-discovery-system";
+export { BaseAdapter } from "./core/base-adapter";
 // Core framework components
-export { BlockConfigAdapter, EnhancedAdapterFramework } from './core/enhanced-adapter-framework'
+export {
+  BlockConfigAdapter,
+  EnhancedAdapterFramework,
+} from "./core/enhanced-adapter-framework";
 export {
   adaptSchemaToContext,
   BaseContextualAdapter,
@@ -44,14 +47,14 @@ export {
   DomainSpecificAdapter,
   RoleBasedAdapter,
   SkillLevelAdapter,
-} from './enhanced-intelligence/contextual-adapters'
-export { ContextualRecommendationEngine } from './enhanced-intelligence/contextual-recommendation-engine'
+} from "./enhanced-intelligence/contextual-adapters";
+export { ContextualRecommendationEngine } from "./enhanced-intelligence/contextual-recommendation-engine";
 export {
   createEnhancedRegistryWrapper,
   DEFAULT_ENHANCED_WRAPPER_CONFIG,
   EnhancedRegistryWrapper,
   type EnhancedRegistryWrapperConfig,
-} from './enhanced-intelligence/enhanced-registry-wrapper'
+} from "./enhanced-intelligence/enhanced-registry-wrapper";
 // Enhanced Intelligence Components
 export {
   checkIntelligenceCapabilities,
@@ -59,10 +62,10 @@ export {
   createIntelligenceEnhancedAdapter,
   type IntelligenceConfiguration,
   IntelligenceIntegrationLayer,
-} from './enhanced-intelligence/intelligence-integration-layer'
-export { IntelligentTemplateEngine } from './enhanced-intelligence/intelligent-template-engine'
-export { NaturalLanguageDescriptionFramework } from './enhanced-intelligence/natural-language-description-framework'
-export { NLPProcessor } from './enhanced-intelligence/nlp-processor'
+} from "./enhanced-intelligence/intelligence-integration-layer";
+export { IntelligentTemplateEngine } from "./enhanced-intelligence/intelligent-template-engine";
+export { NaturalLanguageDescriptionFramework } from "./enhanced-intelligence/natural-language-description-framework";
+export { NLPProcessor } from "./enhanced-intelligence/nlp-processor";
 // Natural Language Framework Integration
 export {
   DEFAULT_REGISTRY_INTEGRATION_CONFIG,
@@ -71,7 +74,7 @@ export {
   NaturalLanguageRegistryIntegration,
   type RegistryIntegrationConfig,
   type SemanticSearchResult,
-} from './enhanced-intelligence/registry-integration'
+} from "./enhanced-intelligence/registry-integration";
 export {
   createSemanticSearchEngine,
   DEFAULT_SEMANTIC_SEARCH_CONFIG,
@@ -80,31 +83,35 @@ export {
   type SearchFeedback,
   type SemanticSearchConfig,
   SemanticSearchEngine,
-} from './enhanced-intelligence/semantic-search-engine'
-export { EnhancedToolIntelligenceEngine } from './enhanced-intelligence/tool-intelligence-engine'
-export { ComprehensiveToolErrorManager } from './error-handling/comprehensive-error-manager'
+} from "./enhanced-intelligence/semantic-search-engine";
+export { EnhancedToolIntelligenceEngine } from "./enhanced-intelligence/tool-intelligence-engine";
+export { ComprehensiveToolErrorManager } from "./error-handling/comprehensive-error-manager";
 // Error types
-export { AdapterError, ExecutionError, ValidationError } from './errors/adapter-errors'
-export { ResultFormatter } from './formatting/result-formatter'
-export { ParameterMapper } from './mapping/parameter-mapper'
+export {
+  AdapterError,
+  ExecutionError,
+  ValidationError,
+} from "./errors/adapter-errors";
+export { ResultFormatter } from "./formatting/result-formatter";
+export { ParameterMapper } from "./mapping/parameter-mapper";
 // Monitoring and analytics
-export { AnalyticsSystem } from './monitoring/analytics-system'
+export { AnalyticsSystem } from "./monitoring/analytics-system";
 // Performance optimization
-export { PerformanceOptimizationEngine } from './performance/optimization-engine'
+export { PerformanceOptimizationEngine } from "./performance/optimization-engine";
 // Plugin system
-export { PluginSystem } from './plugins/plugin-system'
+export { PluginSystem } from "./plugins/plugin-system";
 // Registry and discovery
-export { EnhancedAdapterRegistry } from './registry/enhanced-adapter-registry'
+export { EnhancedAdapterRegistry } from "./registry/enhanced-adapter-registry";
 // Testing framework
-export { AdapterTestFramework } from './testing/test-framework'
+export { AdapterTestFramework } from "./testing/test-framework";
 // Types and interfaces
-export type * from './types/adapter-interfaces'
-export type * from './types/parlant-interfaces'
+export type * from "./types/adapter-interfaces";
+export type * from "./types/parlant-interfaces";
 // Utilities
-export { createLogger } from './utils/logger'
+export { createLogger } from "./utils/logger";
 // Validation and parameter processing
-export { EnhancedValidationEngine } from './validation/enhanced-validation-engine'
-export { ValidationEngine } from './validation/validation-engine'
+export { EnhancedValidationEngine } from "./validation/enhanced-validation-engine";
+export { ValidationEngine } from "./validation/validation-engine";
 
 /**
  * Complete Universal Tool Adapter System
@@ -114,44 +121,51 @@ export { ValidationEngine } from './validation/validation-engine'
  */
 export class UniversalToolAdapterSystem {
   // Core components
-  public readonly framework: EnhancedAdapterFramework
-  public readonly registry: EnhancedAdapterRegistry
-  public readonly discovery: AutoDiscoverySystem
-  public readonly validation: EnhancedValidationEngine
-  public readonly performance: PerformanceOptimizationEngine
-  public readonly plugins: PluginSystem
-  public readonly analytics: AnalyticsSystem
-  public readonly testing: AdapterTestFramework
+  public readonly framework: EnhancedAdapterFramework;
+  public readonly registry: EnhancedAdapterRegistry;
+  public readonly discovery: AutoDiscoverySystem;
+  public readonly validation: EnhancedValidationEngine;
+  public readonly performance: PerformanceOptimizationEngine;
+  public readonly plugins: PluginSystem;
+  public readonly analytics: AnalyticsSystem;
+  public readonly testing: AdapterTestFramework;
 
   // Enhanced Intelligence layer (optional)
-  public readonly intelligence?: IntelligenceIntegrationLayer
+  public readonly intelligence?: IntelligenceIntegrationLayer;
 
   constructor(config: UniversalAdapterConfig = {}) {
     // Initialize core framework
-    this.framework = new EnhancedAdapterFramework(config.framework)
-    this.registry = new EnhancedAdapterRegistry(config.registry)
+    this.framework = new EnhancedAdapterFramework(config.framework);
+    this.registry = new EnhancedAdapterRegistry(config.registry);
 
     // Initialize validation engine
-    this.validation = new EnhancedValidationEngine(config.validation)
+    this.validation = new EnhancedValidationEngine(config.validation);
 
     // Initialize performance optimization
-    this.performance = new PerformanceOptimizationEngine(config.performance)
+    this.performance = new PerformanceOptimizationEngine(config.performance);
 
     // Initialize plugin system
-    this.plugins = new PluginSystem(config.plugins)
+    this.plugins = new PluginSystem(config.plugins);
 
     // Initialize analytics
-    this.analytics = new AnalyticsSystem(config.analytics)
+    this.analytics = new AnalyticsSystem(config.analytics);
 
     // Initialize auto-discovery
-    this.discovery = new AutoDiscoverySystem(this.framework, this.registry, config.discovery)
+    this.discovery = new AutoDiscoverySystem(
+      this.framework,
+      this.registry,
+      config.discovery,
+    );
 
     // Initialize testing framework
-    this.testing = new AdapterTestFramework(this.framework, config.testing)
+    this.testing = new AdapterTestFramework(this.framework, config.testing);
 
     // Initialize intelligence layer if configured
     if (config.enableIntelligence !== false) {
-      this.intelligence = new IntelligenceIntegrationLayer(this.registry, config.intelligence)
+      this.intelligence = new IntelligenceIntegrationLayer(
+        this.registry,
+        config.intelligence,
+      );
     }
   }
 
@@ -160,27 +174,33 @@ export class UniversalToolAdapterSystem {
    */
   async initialize(): Promise<void> {
     // Initialize plugins first (they might be needed by other systems)
-    await this.plugins.initialize()
+    await this.plugins.initialize();
 
     // Initialize intelligence layer if available
     if (this.intelligence) {
-      await this.intelligence.initialize()
+      await this.intelligence.initialize();
     }
 
     // Initialize auto-discovery
-    await this.discovery.performFullDiscovery()
+    await this.discovery.performFullDiscovery();
 
     // System is ready
-    console.log('Universal Tool Adapter System initialized successfully', {
+    console.log("Universal Tool Adapter System initialized successfully", {
       intelligenceEnabled: !!this.intelligence,
-    })
+    });
   }
 
   /**
    * Create adapter from BlockConfig with full system integration
    */
-  async createAdapter(blockConfig: any, customConfig?: any): Promise<BlockConfigAdapter> {
-    const adapter = await this.framework.createAdapterFromBlockConfig(blockConfig, customConfig)
+  async createAdapter(
+    blockConfig: any,
+    customConfig?: any,
+  ): Promise<BlockConfigAdapter> {
+    const adapter = await this.framework.createAdapterFromBlockConfig(
+      blockConfig,
+      customConfig,
+    );
 
     // Record in analytics
     this.analytics.recordAdapterRegistration({
@@ -190,9 +210,9 @@ export class UniversalToolAdapterSystem {
       adapter,
       metadata: {
         registeredAt: new Date(),
-        version: '2.0.0',
-        source: 'api',
-        category: blockConfig.category || 'utility',
+        version: "2.0.0",
+        source: "api",
+        category: blockConfig.category || "utility",
         tags: [blockConfig.type, blockConfig.category],
       },
       statistics: {
@@ -202,13 +222,13 @@ export class UniversalToolAdapterSystem {
         errorCount: 0,
       },
       health: {
-        status: 'healthy' as const,
+        status: "healthy" as const,
         lastCheckAt: new Date(),
         issues: [],
       },
-    })
+    });
 
-    return adapter
+    return adapter;
   }
 
   /**
@@ -218,11 +238,16 @@ export class UniversalToolAdapterSystem {
     adapterId: string,
     context: any,
     args: any,
-    userContext?: any
+    userContext?: any,
   ): Promise<any> {
     // Use intelligence-enhanced execution if available
     if (this.intelligence) {
-      return this.intelligence.executeWithIntelligence(adapterId, context, args, userContext)
+      return this.intelligence.executeWithIntelligence(
+        adapterId,
+        context,
+        args,
+        userContext,
+      );
     }
 
     // Execute with performance optimization
@@ -230,21 +255,25 @@ export class UniversalToolAdapterSystem {
       adapterId,
       context,
       args,
-      async (id: string, ctx: any, params: any): Promise<AdapterExecutionResult> => {
-        const startedAt = new Date()
-        const adapter = await this.registry.get(id)
+      async (
+        id: string,
+        ctx: any,
+        params: any,
+      ): Promise<AdapterExecutionResult> => {
+        const startedAt = new Date();
+        const adapter = await this.registry.get(id);
         if (!adapter) {
-          throw new Error(`Adapter not found: ${id}`)
+          throw new Error(`Adapter not found: ${id}`);
         }
 
         try {
           // Execute the adapter and get ParlantToolResult
-          const parlantResult = await adapter.execute(ctx, params)
-          const completedAt = new Date()
+          const parlantResult = await adapter.execute(ctx, params);
+          const completedAt = new Date();
 
           // Transform ParlantToolResult to AdapterExecutionResult
           const adapterResult: AdapterExecutionResult = {
-            success: parlantResult.type === 'success',
+            success: parlantResult.type === "success",
             executionId: ctx.executionId || `${id}_${Date.now()}`,
             toolId: id,
             startedAt,
@@ -254,33 +283,37 @@ export class UniversalToolAdapterSystem {
             metadata: parlantResult.metadata || {},
             warnings: parlantResult.warnings,
             notices: parlantResult.notices,
-          }
+          };
 
           // Handle errors
-          if (parlantResult.type === 'error' || parlantResult.error) {
-            adapterResult.success = false
+          if (parlantResult.type === "error" || parlantResult.error) {
+            adapterResult.success = false;
             adapterResult.error = {
-              type: parlantResult.error?.type || 'execution_error',
-              message: parlantResult.error?.message || parlantResult.message || 'Unknown error',
+              type: parlantResult.error?.type || "execution_error",
+              message:
+                parlantResult.error?.message ||
+                parlantResult.message ||
+                "Unknown error",
               code: parlantResult.error?.code,
               details: parlantResult.error?.details,
               recoverable: parlantResult.error?.recoverable ?? false,
-            }
+            };
           }
 
           // Transform follow-up suggestions
           if (parlantResult.followUp?.suggestedActions) {
-            adapterResult.suggestions = parlantResult.followUp.suggestedActions.map((action) => ({
-              type: action.type,
-              message: action.description || action.label,
-              action: action.id,
-              priority: action.priority || 'medium',
-            }))
+            adapterResult.suggestions =
+              parlantResult.followUp.suggestedActions.map((action) => ({
+                type: action.type,
+                message: action.description || action.label,
+                action: action.id,
+                priority: action.priority || "medium",
+              }));
           }
 
-          return adapterResult
+          return adapterResult;
         } catch (error: any) {
-          const completedAt = new Date()
+          const completedAt = new Date();
           return {
             success: false,
             executionId: ctx.executionId || `${id}_${Date.now()}`,
@@ -289,20 +322,20 @@ export class UniversalToolAdapterSystem {
             completedAt,
             durationMs: completedAt.getTime() - startedAt.getTime(),
             error: {
-              type: 'execution_error',
-              message: error.message || 'Adapter execution failed',
+              type: "execution_error",
+              message: error.message || "Adapter execution failed",
               details: error.stack || error,
               recoverable: false,
             },
-          }
+          };
         }
-      }
-    )
+      },
+    );
 
     // Record in analytics
-    this.analytics.recordExecution(adapterId, context, args, result)
+    this.analytics.recordExecution(adapterId, context, args, result);
 
-    return result
+    return result;
   }
 
   /**
@@ -310,10 +343,10 @@ export class UniversalToolAdapterSystem {
    */
   async discoverTools(query: any, userContext?: any): Promise<any> {
     if (this.intelligence) {
-      return this.intelligence.discoverWithIntelligence(query, userContext)
+      return this.intelligence.discoverWithIntelligence(query, userContext);
     }
 
-    return this.registry.discover(query)
+    return this.registry.discover(query);
   }
 
   /**
@@ -322,13 +355,17 @@ export class UniversalToolAdapterSystem {
   async getToolDescription(
     toolId: string,
     userContext?: any,
-    complexityLevel?: 'brief' | 'detailed' | 'expert'
+    complexityLevel?: "brief" | "detailed" | "expert",
   ): Promise<any> {
     if (this.intelligence) {
-      return this.intelligence.getToolDescription(toolId, userContext, complexityLevel)
+      return this.intelligence.getToolDescription(
+        toolId,
+        userContext,
+        complexityLevel,
+      );
     }
 
-    return null
+    return null;
   }
 
   /**
@@ -336,10 +373,10 @@ export class UniversalToolAdapterSystem {
    */
   async getRecommendations(request: any): Promise<any> {
     if (this.intelligence) {
-      return this.intelligence.getContextualRecommendations(request)
+      return this.intelligence.getContextualRecommendations(request);
     }
 
-    return []
+    return [];
   }
 
   /**
@@ -347,7 +384,7 @@ export class UniversalToolAdapterSystem {
    */
   async recordFeedback(toolId: string, feedback: any): Promise<void> {
     if (this.intelligence) {
-      await this.intelligence.recordIntelligenceFeedback(toolId, feedback)
+      await this.intelligence.recordIntelligenceFeedback(toolId, feedback);
     }
   }
 
@@ -364,31 +401,31 @@ export class UniversalToolAdapterSystem {
       testing: this.testing.getTestStatistics(),
       discovery: this.discovery.getDiscoveryStats(),
       intelligence: this.intelligence?.getIntelligenceMetrics(),
-    }
+    };
   }
 
   /**
    * Graceful system shutdown
    */
   async shutdown(): Promise<void> {
-    console.log('Shutting down Universal Tool Adapter System...')
+    console.log("Shutting down Universal Tool Adapter System...");
 
     // Shutdown in reverse order
-    await this.testing.cleanup()
-    await this.discovery.shutdown()
-    await this.analytics.shutdown()
+    await this.testing.cleanup();
+    await this.discovery.shutdown();
+    await this.analytics.shutdown();
 
     // Shutdown intelligence layer if available
     if (this.intelligence) {
-      await this.intelligence.shutdown()
+      await this.intelligence.shutdown();
     }
 
-    await this.plugins.shutdown()
-    await this.performance.shutdown()
-    await this.registry.shutdown()
-    await this.framework.shutdown()
+    await this.plugins.shutdown();
+    await this.performance.shutdown();
+    await this.registry.shutdown();
+    await this.framework.shutdown();
 
-    console.log('Universal Tool Adapter System shutdown complete')
+    console.log("Universal Tool Adapter System shutdown complete");
   }
 }
 
@@ -396,16 +433,16 @@ export class UniversalToolAdapterSystem {
  * Factory function to create a pre-configured system
  */
 export function createUniversalAdapterSystem(
-  config?: UniversalAdapterConfig
+  config?: UniversalAdapterConfig,
 ): UniversalToolAdapterSystem {
-  return new UniversalToolAdapterSystem(config)
+  return new UniversalToolAdapterSystem(config);
 }
 
 /**
  * Quick setup function for common use cases
  */
 export async function quickSetup(
-  options: QuickSetupOptions = {}
+  options: QuickSetupOptions = {},
 ): Promise<UniversalToolAdapterSystem> {
   const system = new UniversalToolAdapterSystem({
     framework: {
@@ -429,70 +466,71 @@ export async function quickSetup(
     },
     discovery: {
       enabled: options.enableAutoDiscovery ?? true,
-      scanPaths: options.scanPaths || ['./blocks', './adapters'],
+      scanPaths: options.scanPaths || ["./blocks", "./adapters"],
     },
     // Intelligence configuration
     enableIntelligence: options.enableIntelligence ?? true,
     intelligence: {
-      enableNaturalLanguageDescriptions: options.intelligenceFeatures?.naturalLanguage ?? true,
+      enableNaturalLanguageDescriptions:
+        options.intelligenceFeatures?.naturalLanguage ?? true,
       enableContextualRecommendations:
         options.intelligenceFeatures?.contextualRecommendations ?? true,
       enableIntelligentErrorHandling:
         options.intelligenceFeatures?.intelligentErrorHandling ?? true,
       enablePerformanceOptimization: true,
     },
-  })
+  });
 
   if (options.initialize !== false) {
-    await system.initialize()
+    await system.initialize();
   }
 
-  return system
+  return system;
 }
 
 // Configuration interfaces
 interface UniversalAdapterConfig {
-  framework?: any
-  registry?: any
-  validation?: any
-  performance?: any
-  plugins?: any
-  analytics?: any
-  discovery?: any
-  testing?: any
+  framework?: any;
+  registry?: any;
+  validation?: any;
+  performance?: any;
+  plugins?: any;
+  analytics?: any;
+  discovery?: any;
+  testing?: any;
   // Intelligence integration
-  enableIntelligence?: boolean
-  intelligence?: IntelligenceConfiguration
+  enableIntelligence?: boolean;
+  intelligence?: IntelligenceConfiguration;
 }
 
 interface QuickSetupOptions {
-  enableCaching?: boolean
-  enableMonitoring?: boolean
-  enableAutoDiscovery?: boolean
-  enablePlugins?: boolean
-  enableAlerting?: boolean
-  healthCheckInterval?: number
-  scanPaths?: string[]
-  initialize?: boolean
+  enableCaching?: boolean;
+  enableMonitoring?: boolean;
+  enableAutoDiscovery?: boolean;
+  enablePlugins?: boolean;
+  enableAlerting?: boolean;
+  healthCheckInterval?: number;
+  scanPaths?: string[];
+  initialize?: boolean;
   // Intelligence features
-  enableIntelligence?: boolean
+  enableIntelligence?: boolean;
   intelligenceFeatures?: {
-    naturalLanguage?: boolean
-    contextualRecommendations?: boolean
-    intelligentErrorHandling?: boolean
-  }
+    naturalLanguage?: boolean;
+    contextualRecommendations?: boolean;
+    intelligentErrorHandling?: boolean;
+  };
 }
 
 interface SystemStatus {
-  framework: any
-  registry: any
-  performance: any
-  analytics: any
-  plugins: any
-  testing: any
-  discovery: any
-  intelligence?: any
+  framework: any;
+  registry: any;
+  performance: any;
+  analytics: any;
+  plugins: any;
+  testing: any;
+  discovery: any;
+  intelligence?: any;
 }
 
 // Default export for convenience
-export default UniversalToolAdapterSystem
+export default UniversalToolAdapterSystem;

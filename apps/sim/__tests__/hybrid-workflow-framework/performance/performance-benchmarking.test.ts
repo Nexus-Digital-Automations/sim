@@ -720,7 +720,8 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
       expect(peakIncrease).toBeGreaterThan(0)
 
       // Calculate cleanup efficiency (should be better than 20% remaining)
-      const cleanupEfficiency = peakIncrease > 0 ? Math.max(0, (peakIncrease - finalIncrease) / peakIncrease) : 1
+      const cleanupEfficiency =
+        peakIncrease > 0 ? Math.max(0, (peakIncrease - finalIncrease) / peakIncrease) : 1
       expect(cleanupEfficiency).toBeGreaterThan(0.2) // At least 20% cleanup efficiency (more realistic)
 
       console.log(`Resource usage - Peak: ${(peakIncrease / 1024 / 1024).toFixed(2)}MB`)

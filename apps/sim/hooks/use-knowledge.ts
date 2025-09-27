@@ -1,105 +1,124 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import Fuse from 'fuse.js'
-import { createLogger } from '@/lib/logs/console/logger'
-import { type ChunkData, type DocumentData, useKnowledgeStore } from '@/stores/knowledge/store'
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Fuse from "fuse.js";
+import { createLogger } from "@/lib/logs/console/logger";
+import {
+  type ChunkData,
+  type DocumentData,
+  useKnowledgeStore,
+} from "@/stores/knowledge/store";
 
-const logger = createLogger('UseKnowledgeBase')
+const logger = createLogger("UseKnowledgeBase");
 
 export function useKnowledgeBase(id: string) {
-  const { getKnowledgeBase, getCachedKnowledgeBase, loadingKnowledgeBases } = useKnowledgeStore()
+  const { getKnowledgeBase, getCachedKnowledgeBase, loadingKnowledgeBases } =
+    useKnowledgeStore();
 
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
 
-  const knowledgeBase = getCachedKnowledgeBase(id)
-  const isLoading = loadingKnowledgeBases.has(id)
+  const knowledgeBase = getCachedKnowledgeBase(id);
+  const isLoading = loadingKnowledgeBases.has(id);
 
   useEffect(() => {
-    if (!id || knowledgeBase || isLoading) return
+    if (!id || knowledgeBase || isLoading) return;
 
-    let isMounted = true
+    let isMounted = true;
 
     const loadData = async () => {
       try {
-        setError(null)
-        await getKnowledgeBase(id)
+        setError(null);
+        await getKnowledgeBase(id);
       } catch (err) {
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load knowledge base')
-          logger.error(`Failed to load knowledge base ${id}:`, err)
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load knowledge base",
+          );
+          logger.error(`Failed to load knowledge base ${id}:`, err);
         }
       }
-    }
+    };
 
-    loadData()
+    loadData();
 
     return () => {
-      isMounted = false
-    }
-  }, [id, knowledgeBase, isLoading]) // Removed getKnowledgeBase from dependencies
+      isMounted = false;
+    };
+  }, [id, knowledgeBase, isLoading]); // Removed getKnowledgeBase from dependencies
 
   return {
     knowledgeBase,
     isLoading,
     error,
-  }
+  };
 }
 
 // Constants
-const DEFAULT_PAGE_SIZE = 50
+const DEFAULT_PAGE_SIZE = 50;
 
 export function useKnowledgeBaseDocuments(
   knowledgeBaseId: string,
   options?: {
-    search?: string
-    limit?: number
-    offset?: number
-    sortBy?: string
-    sortOrder?: string
-  }
+    search?: string;
+    limit?: number;
+    offset?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  },
 ) {
-  const { getDocuments, getCachedDocuments, loadingDocuments, updateDocument, refreshDocuments } =
-    useKnowledgeStore()
+  const {
+    getDocuments,
+    getCachedDocuments,
+    loadingDocuments,
+    updateDocument,
+    refreshDocuments,
+  } = useKnowledgeStore();
 
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
 
-  const documentsCache = getCachedDocuments(knowledgeBaseId)
-  const isLoading = loadingDocuments.has(knowledgeBaseId)
+  const documentsCache = getCachedDocuments(knowledgeBaseId);
+  const isLoading = loadingDocuments.has(knowledgeBaseId);
 
   // Load documents with server-side pagination, search, and sorting
-  const requestLimit = options?.limit || DEFAULT_PAGE_SIZE
-  const requestOffset = options?.offset || 0
-  const requestSearch = options?.search
-  const requestSortBy = options?.sortBy
-  const requestSortOrder = options?.sortOrder
+  const requestLimit = options?.limit || DEFAULT_PAGE_SIZE;
+  const requestOffset = options?.offset || 0;
+  const requestSearch = options?.search;
+  const requestSortBy = options?.sortBy;
+  const requestSortOrder = options?.sortOrder;
 
   useEffect(() => {
-    if (!knowledgeBaseId || isLoading) return
+    if (!knowledgeBaseId || isLoading) return;
 
-    let isMounted = true
+    let isMounted = true;
 
     const loadDocuments = async () => {
       try {
-        setError(null)
+        setError(null);
         await getDocuments(knowledgeBaseId, {
           search: requestSearch,
           limit: requestLimit,
           offset: requestOffset,
           sortBy: requestSortBy,
           sortOrder: requestSortOrder,
-        })
+        });
       } catch (err) {
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load documents')
-          logger.error(`Failed to load documents for knowledge base ${knowledgeBaseId}:`, err)
+          setError(
+            err instanceof Error ? err.message : "Failed to load documents",
+          );
+          logger.error(
+            `Failed to load documents for knowledge base ${knowledgeBaseId}:`,
+            err,
+          );
         }
       }
-    }
+    };
 
-    loadDocuments()
+    loadDocuments();
 
     return () => {
-      isMounted = false
-    }
+      isMounted = false;
+    };
   }, [
     knowledgeBaseId,
     isLoading,
@@ -109,30 +128,35 @@ export function useKnowledgeBaseDocuments(
     requestOffset,
     requestSortBy,
     requestSortOrder,
-  ])
+  ]);
 
   // Use server-side filtered and paginated results directly
-  const documents = documentsCache?.documents || []
+  const documents = documentsCache?.documents || [];
   const pagination = documentsCache?.pagination || {
     total: 0,
     limit: requestLimit,
     offset: requestOffset,
     hasMore: false,
-  }
+  };
 
   const refreshDocumentsData = useCallback(async () => {
     try {
-      setError(null)
+      setError(null);
       await refreshDocuments(knowledgeBaseId, {
         search: requestSearch,
         limit: requestLimit,
         offset: requestOffset,
         sortBy: requestSortBy,
         sortOrder: requestSortOrder,
-      })
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh documents')
-      logger.error(`Failed to refresh documents for knowledge base ${knowledgeBaseId}:`, err)
+      setError(
+        err instanceof Error ? err.message : "Failed to refresh documents",
+      );
+      logger.error(
+        `Failed to refresh documents for knowledge base ${knowledgeBaseId}:`,
+        err,
+      );
     }
   }, [
     knowledgeBaseId,
@@ -142,15 +166,17 @@ export function useKnowledgeBaseDocuments(
     requestOffset,
     requestSortBy,
     requestSortOrder,
-  ])
+  ]);
 
   const updateDocumentLocal = useCallback(
     (documentId: string, updates: Partial<DocumentData>) => {
-      updateDocument(knowledgeBaseId, documentId, updates)
-      logger.info(`Updated document ${documentId} for knowledge base ${knowledgeBaseId}`)
+      updateDocument(knowledgeBaseId, documentId, updates);
+      logger.info(
+        `Updated document ${documentId} for knowledge base ${knowledgeBaseId}`,
+      );
     },
-    [knowledgeBaseId, updateDocument]
-  )
+    [knowledgeBaseId, updateDocument],
+  );
 
   return {
     documents,
@@ -159,7 +185,7 @@ export function useKnowledgeBaseDocuments(
     error,
     refreshDocuments: refreshDocumentsData,
     updateDocument: updateDocumentLocal,
-  }
+  };
 }
 
 export function useKnowledgeBasesList(workspaceId?: string) {
@@ -171,103 +197,123 @@ export function useKnowledgeBasesList(workspaceId?: string) {
     addKnowledgeBase,
     removeKnowledgeBase,
     clearKnowledgeBasesList,
-  } = useKnowledgeStore()
+  } = useKnowledgeStore();
 
-  const [error, setError] = useState<string | null>(null)
-  const [retryCount, setRetryCount] = useState(0)
-  const maxRetries = 3
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
 
   useEffect(() => {
     // Only load if we haven't loaded before AND we're not currently loading
-    if (knowledgeBasesListLoaded || loadingKnowledgeBasesList) return
+    if (knowledgeBasesListLoaded || loadingKnowledgeBasesList) return;
 
-    let isMounted = true
-    let retryTimeoutId: NodeJS.Timeout | null = null
+    let isMounted = true;
+    let retryTimeoutId: NodeJS.Timeout | null = null;
 
     const loadData = async (attempt = 0) => {
       // Don't proceed if component is unmounted
-      if (!isMounted) return
+      if (!isMounted) return;
 
       try {
-        setError(null)
-        await getKnowledgeBasesList(workspaceId)
+        setError(null);
+        await getKnowledgeBasesList(workspaceId);
 
         // Reset retry count on success
         if (isMounted) {
-          setRetryCount(0)
+          setRetryCount(0);
         }
       } catch (err) {
-        if (!isMounted) return
+        if (!isMounted) return;
 
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load knowledge bases'
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load knowledge bases";
 
         // Only set error and retry if we haven't exceeded max retries
         if (attempt < maxRetries) {
-          console.warn(`Knowledge bases load attempt ${attempt + 1} failed, retrying...`, err)
-          setRetryCount(attempt + 1)
+          console.warn(
+            `Knowledge bases load attempt ${attempt + 1} failed, retrying...`,
+            err,
+          );
+          setRetryCount(attempt + 1);
 
           // Exponential backoff: 1s, 2s, 4s
-          const delay = 2 ** attempt * 1000
+          const delay = 2 ** attempt * 1000;
           retryTimeoutId = setTimeout(() => {
             if (isMounted) {
-              loadData(attempt + 1)
-              logger.warn(`Failed to load knowledge bases list, retrying... ${attempt + 1}`)
+              loadData(attempt + 1);
+              logger.warn(
+                `Failed to load knowledge bases list, retrying... ${attempt + 1}`,
+              );
             }
-          }, delay)
+          }, delay);
         } else {
-          logger.error('All retry attempts failed for knowledge bases list:', err)
-          setError(errorMessage)
-          setRetryCount(maxRetries)
+          logger.error(
+            "All retry attempts failed for knowledge bases list:",
+            err,
+          );
+          setError(errorMessage);
+          setRetryCount(maxRetries);
         }
       }
-    }
+    };
 
     // Always start from attempt 0
-    loadData(0)
+    loadData(0);
 
     // Cleanup function
     return () => {
-      isMounted = false
+      isMounted = false;
       if (retryTimeoutId) {
-        clearTimeout(retryTimeoutId)
+        clearTimeout(retryTimeoutId);
       }
-    }
-  }, [knowledgeBasesListLoaded, loadingKnowledgeBasesList, getKnowledgeBasesList, workspaceId])
+    };
+  }, [
+    knowledgeBasesListLoaded,
+    loadingKnowledgeBasesList,
+    getKnowledgeBasesList,
+    workspaceId,
+  ]);
 
   const refreshList = async () => {
     try {
-      setError(null)
-      setRetryCount(0)
-      clearKnowledgeBasesList()
-      await getKnowledgeBasesList(workspaceId)
+      setError(null);
+      setRetryCount(0);
+      clearKnowledgeBasesList();
+      await getKnowledgeBasesList(workspaceId);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to refresh knowledge bases'
-      setError(errorMessage)
-      logger.error('Error refreshing knowledge bases list:', err)
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to refresh knowledge bases";
+      setError(errorMessage);
+      logger.error("Error refreshing knowledge bases list:", err);
     }
-  }
+  };
 
   // Force refresh function that bypasses cache and resets everything
   const forceRefresh = async () => {
-    setError(null)
-    setRetryCount(0)
-    clearKnowledgeBasesList()
+    setError(null);
+    setRetryCount(0);
+    clearKnowledgeBasesList();
 
     // Force reload by clearing cache and loading state
     useKnowledgeStore.setState({
       knowledgeBasesList: [],
       loadingKnowledgeBasesList: false,
       knowledgeBasesListLoaded: false, // Reset store's loaded state
-    })
+    });
 
     try {
-      await getKnowledgeBasesList(workspaceId)
+      await getKnowledgeBasesList(workspaceId);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to refresh knowledge bases'
-      setError(errorMessage)
-      logger.error('Error force refreshing knowledge bases list:', err)
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to refresh knowledge bases";
+      setError(errorMessage);
+      logger.error("Error force refreshing knowledge bases list:", err);
     }
-  }
+  };
 
   return {
     knowledgeBases: knowledgeBasesList,
@@ -279,7 +325,7 @@ export function useKnowledgeBasesList(workspaceId?: string) {
     removeKnowledgeBase,
     retryCount,
     maxRetries,
-  }
+  };
 }
 
 /**
@@ -289,211 +335,223 @@ export function useDocumentChunks(
   knowledgeBaseId: string,
   documentId: string,
   urlPage = 1,
-  urlSearch = '',
-  options: { enableClientSearch?: boolean } = {}
+  urlSearch = "",
+  options: { enableClientSearch?: boolean } = {},
 ) {
-  const { getChunks, refreshChunks, updateChunk, getCachedChunks, clearChunks, isChunksLoading } =
-    useKnowledgeStore()
+  const {
+    getChunks,
+    refreshChunks,
+    updateChunk,
+    getCachedChunks,
+    clearChunks,
+    isChunksLoading,
+  } = useKnowledgeStore();
 
-  const { enableClientSearch = false } = options
+  const { enableClientSearch = false } = options;
 
   // State for both modes
-  const [chunks, setChunks] = useState<ChunkData[]>([])
-  const [allChunks, setAllChunks] = useState<ChunkData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [chunks, setChunks] = useState<ChunkData[]>([]);
+  const [allChunks, setAllChunks] = useState<ChunkData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
     total: 0,
     limit: 50,
     offset: 0,
     hasMore: false,
-  })
-  const [initialLoadDone, setInitialLoadDone] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
+  });
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Client-side search state
-  const [searchQuery, setSearchQuery] = useState('')
-  const [currentPage, setCurrentPage] = useState(urlPage)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(urlPage);
 
   // Handle mounting state
   useEffect(() => {
-    setIsMounted(true)
-    return () => setIsMounted(false)
-  }, [])
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
 
   // Sync with URL page changes
   useEffect(() => {
-    setCurrentPage(urlPage)
-  }, [urlPage])
+    setCurrentPage(urlPage);
+  }, [urlPage]);
 
-  const isStoreLoading = isChunksLoading(documentId)
-  const combinedIsLoading = isLoading || isStoreLoading
+  const isStoreLoading = isChunksLoading(documentId);
+  const combinedIsLoading = isLoading || isStoreLoading;
 
   // Always call hooks unconditionally, use enableClientSearch flag inside hook logic
   const loadAllChunks = useCallback(async () => {
-    if (!enableClientSearch || !knowledgeBaseId || !documentId || !isMounted) return
+    if (!enableClientSearch || !knowledgeBaseId || !documentId || !isMounted)
+      return;
 
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
-      const allChunksData: ChunkData[] = []
-      let hasMore = true
-      let offset = 0
-      const limit = 50
+      const allChunksData: ChunkData[] = [];
+      let hasMore = true;
+      let offset = 0;
+      const limit = 50;
 
       while (hasMore && isMounted) {
         const response = await fetch(
-          `/api/knowledge/${knowledgeBaseId}/documents/${documentId}/chunks?limit=${limit}&offset=${offset}`
-        )
+          `/api/knowledge/${knowledgeBaseId}/documents/${documentId}/chunks?limit=${limit}&offset=${offset}`,
+        );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch chunks')
+          throw new Error("Failed to fetch chunks");
         }
 
-        const result = await response.json()
+        const result = await response.json();
 
         if (result.success) {
-          allChunksData.push(...result.data)
-          hasMore = result.pagination.hasMore
-          offset += limit
+          allChunksData.push(...result.data);
+          hasMore = result.pagination.hasMore;
+          offset += limit;
         } else {
-          throw new Error(result.error || 'Failed to fetch chunks')
+          throw new Error(result.error || "Failed to fetch chunks");
         }
       }
 
       if (isMounted) {
-        setAllChunks(allChunksData)
-        setChunks(allChunksData) // For compatibility
+        setAllChunks(allChunksData);
+        setChunks(allChunksData); // For compatibility
       }
     } catch (err) {
       if (isMounted) {
-        setError(err instanceof Error ? err.message : 'Failed to load chunks')
-        logger.error(`Failed to load chunks for document ${documentId}:`, err)
+        setError(err instanceof Error ? err.message : "Failed to load chunks");
+        logger.error(`Failed to load chunks for document ${documentId}:`, err);
       }
     } finally {
       if (isMounted) {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
-  }, [knowledgeBaseId, documentId, isMounted])
+  }, [knowledgeBaseId, documentId, isMounted]);
 
   // Load chunks on mount
   useEffect(() => {
     if (enableClientSearch && isMounted) {
-      loadAllChunks()
+      loadAllChunks();
     }
-  }, [enableClientSearch, isMounted, loadAllChunks])
+  }, [enableClientSearch, isMounted, loadAllChunks]);
 
   // Client-side filtering with fuzzy search
   const filteredChunks = useMemo(() => {
-    if (!enableClientSearch || !isMounted || !searchQuery.trim()) return allChunks
+    if (!enableClientSearch || !isMounted || !searchQuery.trim())
+      return allChunks;
 
     const fuse = new Fuse(allChunks, {
-      keys: ['content'],
+      keys: ["content"],
       threshold: 0.3, // Lower = more strict matching
       includeScore: true,
       includeMatches: true,
       minMatchCharLength: 2,
       ignoreLocation: true,
-    })
+    });
 
-    const results = fuse.search(searchQuery)
-    return results.map((result) => result.item)
-  }, [allChunks, searchQuery, isMounted])
+    const results = fuse.search(searchQuery);
+    return results.map((result) => result.item);
+  }, [allChunks, searchQuery, isMounted]);
 
   // Client-side pagination
-  const CHUNKS_PER_PAGE = 50
+  const CHUNKS_PER_PAGE = 50;
   const totalPages = enableClientSearch
     ? Math.max(1, Math.ceil(filteredChunks.length / CHUNKS_PER_PAGE))
-    : 1
-  const hasNextPage = enableClientSearch ? currentPage < totalPages : false
-  const hasPrevPage = enableClientSearch ? currentPage > 1 : false
+    : 1;
+  const hasNextPage = enableClientSearch ? currentPage < totalPages : false;
+  const hasPrevPage = enableClientSearch ? currentPage > 1 : false;
 
   const paginatedChunks = useMemo(() => {
-    if (!enableClientSearch) return []
-    const startIndex = (currentPage - 1) * CHUNKS_PER_PAGE
-    const endIndex = startIndex + CHUNKS_PER_PAGE
-    return filteredChunks.slice(startIndex, endIndex)
-  }, [enableClientSearch, filteredChunks, currentPage])
+    if (!enableClientSearch) return [];
+    const startIndex = (currentPage - 1) * CHUNKS_PER_PAGE;
+    const endIndex = startIndex + CHUNKS_PER_PAGE;
+    return filteredChunks.slice(startIndex, endIndex);
+  }, [enableClientSearch, filteredChunks, currentPage]);
 
   // Reset to page 1 when search changes
   useEffect(() => {
     if (enableClientSearch && currentPage > 1) {
-      setCurrentPage(1)
+      setCurrentPage(1);
     }
-  }, [enableClientSearch, searchQuery, currentPage])
+  }, [enableClientSearch, searchQuery, currentPage]);
 
   // Reset to valid page if current page exceeds total
   useEffect(() => {
     if (enableClientSearch && currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages)
+      setCurrentPage(totalPages);
     }
-  }, [enableClientSearch, currentPage, totalPages])
+  }, [enableClientSearch, currentPage, totalPages]);
 
   // Navigation functions
   const goToPage = useCallback(
     (page: number) => {
       if (enableClientSearch && page >= 1 && page <= totalPages) {
-        setCurrentPage(page)
+        setCurrentPage(page);
       }
     },
-    [enableClientSearch, totalPages]
-  )
+    [enableClientSearch, totalPages],
+  );
 
   const nextPage = useCallback(() => {
     if (enableClientSearch && hasNextPage) {
-      setCurrentPage((prev) => prev + 1)
+      setCurrentPage((prev) => prev + 1);
     }
-  }, [enableClientSearch, hasNextPage])
+  }, [enableClientSearch, hasNextPage]);
 
   const prevPage = useCallback(() => {
     if (enableClientSearch && hasPrevPage) {
-      setCurrentPage((prev) => prev - 1)
+      setCurrentPage((prev) => prev - 1);
     }
-  }, [enableClientSearch, hasPrevPage])
+  }, [enableClientSearch, hasPrevPage]);
 
   // Operations
   const refreshChunksData = useCallback(async () => {
     if (enableClientSearch) {
-      await loadAllChunks()
+      await loadAllChunks();
     }
-  }, [enableClientSearch, loadAllChunks])
+  }, [enableClientSearch, loadAllChunks]);
 
   const updateChunkLocal = useCallback(
     (chunkId: string, updates: Partial<ChunkData>) => {
       if (enableClientSearch) {
         setAllChunks((prev) =>
-          prev.map((chunk) => (chunk.id === chunkId ? { ...chunk, ...updates } : chunk))
-        )
+          prev.map((chunk) =>
+            chunk.id === chunkId ? { ...chunk, ...updates } : chunk,
+          ),
+        );
         setChunks((prev) =>
-          prev.map((chunk) => (chunk.id === chunkId ? { ...chunk, ...updates } : chunk))
-        )
+          prev.map((chunk) =>
+            chunk.id === chunkId ? { ...chunk, ...updates } : chunk,
+          ),
+        );
       }
     },
-    [enableClientSearch]
-  )
+    [enableClientSearch],
+  );
 
   // Server-side hooks - must be called before any returns
-  const serverCurrentPage = urlPage
-  const serverSearchQuery = urlSearch
+  const serverCurrentPage = urlPage;
+  const serverSearchQuery = urlSearch;
 
   // Computed pagination properties
-  const serverTotalPages = Math.ceil(pagination.total / pagination.limit)
-  const serverHasNextPage = serverCurrentPage < serverTotalPages
-  const serverHasPrevPage = serverCurrentPage > 1
+  const serverTotalPages = Math.ceil(pagination.total / pagination.limit);
+  const serverHasNextPage = serverCurrentPage < serverTotalPages;
+  const serverHasPrevPage = serverCurrentPage > 1;
 
   // Single effect to handle all data loading and syncing
   useEffect(() => {
-    if (!knowledgeBaseId || !documentId) return
+    if (!knowledgeBaseId || !documentId) return;
 
-    let isMounted = true
+    let isMounted = true;
 
     const loadAndSyncData = async () => {
       try {
         // Check cache first
-        const cached = getCachedChunks(documentId)
-        const expectedOffset = (serverCurrentPage - 1) * 50 // Use hardcoded limit
+        const cached = getCachedChunks(documentId);
+        const expectedOffset = (serverCurrentPage - 1) * 50; // Use hardcoded limit
 
         if (
           cached &&
@@ -501,58 +559,60 @@ export function useDocumentChunks(
           cached.pagination.offset === expectedOffset
         ) {
           if (isMounted) {
-            setChunks(cached.chunks)
-            setPagination(cached.pagination)
-            setIsLoading(false)
-            setInitialLoadDone(true)
+            setChunks(cached.chunks);
+            setPagination(cached.pagination);
+            setIsLoading(false);
+            setInitialLoadDone(true);
           }
-          return
+          return;
         }
 
         // Fetch from API
         if (isMounted) {
-          setIsLoading(true)
-          setError(null)
+          setIsLoading(true);
+          setError(null);
         }
 
-        const limit = 50
-        const offset = (serverCurrentPage - 1) * limit
+        const limit = 50;
+        const offset = (serverCurrentPage - 1) * limit;
 
         const fetchedChunks = await getChunks(knowledgeBaseId, documentId, {
           limit,
           offset,
           search: serverSearchQuery || undefined,
-        })
+        });
 
         if (isMounted) {
-          setChunks(fetchedChunks.chunks)
-          setPagination(fetchedChunks.pagination)
-          setInitialLoadDone(true)
+          setChunks(fetchedChunks.chunks);
+          setPagination(fetchedChunks.pagination);
+          setInitialLoadDone(true);
 
           // Cache the result
           cacheChunks(documentId, {
             chunks: fetchedChunks.chunks,
             pagination: fetchedChunks.pagination,
             searchQuery: serverSearchQuery,
-          })
+          });
         }
       } catch (error) {
         if (isMounted) {
-          setError(error instanceof Error ? error.message : 'Failed to load chunks')
-          logger.error('Failed to load chunks:', error)
+          setError(
+            error instanceof Error ? error.message : "Failed to load chunks",
+          );
+          logger.error("Failed to load chunks:", error);
         }
       } finally {
         if (isMounted) {
-          setIsLoading(false)
+          setIsLoading(false);
         }
       }
-    }
+    };
 
-    loadAndSyncData()
+    loadAndSyncData();
 
     return () => {
-      isMounted = false
-    }
+      isMounted = false;
+    };
   }, [
     knowledgeBaseId,
     documentId,
@@ -560,30 +620,37 @@ export function useDocumentChunks(
     serverSearchQuery,
     isStoreLoading,
     initialLoadDone,
-  ])
+  ]);
 
   // Separate effect to sync with store state changes (no API calls)
   useEffect(() => {
-    if (!documentId || !initialLoadDone) return
+    if (!documentId || !initialLoadDone) return;
 
-    const cached = getCachedChunks(documentId)
-    const expectedOffset = (serverCurrentPage - 1) * 50
+    const cached = getCachedChunks(documentId);
+    const expectedOffset = (serverCurrentPage - 1) * 50;
 
     if (
       cached &&
       cached.searchQuery === serverSearchQuery &&
       cached.pagination.offset === expectedOffset
     ) {
-      setChunks(cached.chunks)
-      setPagination(cached.pagination)
+      setChunks(cached.chunks);
+      setPagination(cached.pagination);
     }
 
     // Update loading state based on store
     if (!isStoreLoading && isLoading) {
-      logger.info(`Chunks loaded for document ${documentId}`)
-      setIsLoading(false)
+      logger.info(`Chunks loaded for document ${documentId}`);
+      setIsLoading(false);
     }
-  }, [documentId, isStoreLoading, isLoading, initialLoadDone, serverSearchQuery, serverCurrentPage])
+  }, [
+    documentId,
+    isStoreLoading,
+    isLoading,
+    initialLoadDone,
+    serverSearchQuery,
+    serverCurrentPage,
+  ]);
 
   // Return client search results if enabled
   if (enableClientSearch) {
@@ -624,10 +691,10 @@ export function useDocumentChunks(
 
       // Legacy compatibility
       searchChunks: async (newSearchQuery: string) => {
-        setSearchQuery(newSearchQuery)
-        return paginatedChunks
+        setSearchQuery(newSearchQuery);
+        return paginatedChunks;
       },
-    }
+    };
   }
 
   // Server-side return (when client search is disabled)
@@ -654,11 +721,13 @@ export function useDocumentChunks(
     refreshChunks: async () => {}, // No-op in server mode for now
     searchChunks: async () => chunks, // Return current chunks in server mode
     updateChunk: (chunkId: string, updates: Partial<ChunkData>) => {
-      updateChunk(documentId, chunkId, updates)
+      updateChunk(documentId, chunkId, updates);
       setChunks((prevChunks) =>
-        prevChunks.map((chunk) => (chunk.id === chunkId ? { ...chunk, ...updates } : chunk))
-      )
+        prevChunks.map((chunk) =>
+          chunk.id === chunkId ? { ...chunk, ...updates } : chunk,
+        ),
+      );
     },
     clearChunks: () => clearChunks(documentId),
-  }
+  };
 }
