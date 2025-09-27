@@ -4,8 +4,12 @@ import { isDev, isHosted, isProd } from './lib/environment'
 import { getMainCSPPolicy, getWorkflowExecutionCSPPolicy } from './lib/security/csp'
 
 const nextConfig: NextConfig = {
-  // RADICAL OPTIMIZATION BYPASS - Minimal Configuration
+  // EXTREME OPTIMIZATION BYPASS - Static Export Mode
   devIndicators: false,
+
+  // Force static export to completely bypass server optimization
+  output: 'export',
+  trailingSlash: true,
 
   // Basic images config only
   images: {
@@ -26,16 +30,16 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // Force standalone output to bypass optimization issues
-  output: 'standalone',
-
-  // Minimal experimental config (Next.js 15 compatible)
+  // Minimal experimental config with MAXIMUM bypass flags
   experimental: {
     optimizeCss: false,
     turbopackSourceMaps: false,
     optimizePackageImports: [],
     forceSwcTransforms: false,
     fullySpecified: false,
+    staticPageGenerationTimeout: 5, // Reduce timeout to prevent hangs
+    disableOptimizedLoading: true,
+    gzipSize: false,
     // Removed esmExternals per Next.js recommendation
     // Remove invalid Next.js 15 properties (appDir is default, serverComponentsExternalPackages moved to serverExternalPackages)
   },
@@ -43,12 +47,15 @@ const nextConfig: NextConfig = {
   // Minimal server external packages
   serverExternalPackages: ['pdf-parse', 'parlant-server', 'fs', 'fs/promises', 'path'],
 
-  // RADICAL WEBPACK BYPASS - Development-like settings for production
+  // EXTREME WEBPACK BYPASS - Maximum optimization disable
   webpack: (config, { isServer, dev }) => {
-    // DISABLE ALL OPTIMIZATIONS - treat production like development (Webpack 5 compatible)
+    // FORCE DEVELOPMENT MODE SETTINGS - completely bypass all optimizations
+    config.mode = 'development'
     config.optimization = {
-      minimize: false, // Completely disable minification
-      splitChunks: false, // Disable chunk splitting
+      minimize: false,
+      minimizer: [],
+      splitChunks: false,
+      runtimeChunk: false,
       sideEffects: false,
       usedExports: false,
       concatenateModules: false,
@@ -57,15 +64,24 @@ const nextConfig: NextConfig = {
       removeAvailableModules: false,
       removeEmptyChunks: false,
       mergeDuplicateChunks: false,
-      // Remove invalid webpack 5 properties (occurrenceOrder)
+      mangleExports: false,
+      innerGraph: false,
+      realContentHash: false,
+      emitOnErrors: true,
+      checkWasmTypes: false,
+      nodeEnv: 'development',
     }
+
+    // Disable all caching to prevent hangs
+    config.cache = false
+    config.snapshot = undefined
 
     // Minimal resolve configuration
     config.resolve = {
       ...config.resolve,
       symlinks: false,
       cacheWithContext: false,
-      // Simplified extensions
+      cache: false,
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     }
 
@@ -83,16 +99,36 @@ const nextConfig: NextConfig = {
       }
     }
 
-    // Disable problematic plugins that can cause hangs
+    // Remove ALL optimization-related plugins
     config.plugins = config.plugins.filter((plugin) => {
       const name = plugin.constructor.name
-      // Keep only essential plugins
+      // Remove ANY plugin that could cause optimization hangs
       return ![
         'OptimizeCSSAssetsPlugin',
         'TerserPlugin',
         'CompressionPlugin',
         'BundleAnalyzerPlugin',
+        'MiniCssExtractPlugin',
+        'CssMinimizerPlugin',
+        'OptimizeCssAssetsWebpackPlugin',
+        'UglifyJsPlugin',
+        'AggressiveMergingPlugin',
+        'ModuleConcatenationPlugin',
       ].includes(name)
+    })
+
+    // Force module rules to be minimal
+    config.module.rules = config.module.rules.map((rule) => {
+      if (rule.use && Array.isArray(rule.use)) {
+        rule.use = rule.use.filter((use) => {
+          if (typeof use === 'object' && use.loader) {
+            // Remove optimization loaders
+            return !use.loader.includes('optimize')
+          }
+          return true
+        })
+      }
+      return rule
     })
 
     return config
@@ -113,142 +149,11 @@ const nextConfig: NextConfig = {
     ],
   }),
 
-  // Minimal transpile packages
+  // Minimal transpile packages - removed to prevent optimization hangs
+  transpilePackages: [],
 
-  transpilePackages: [
-    'prettier',
-    '@react-email/components',
-    '@react-email/render',
-    '@t3-oss/env-nextjs',
-    '@t3-oss/env-core',
-    '@sim/db',
-  ],
-  async headers() {
-    return [
-      {
-        // API routes CORS headers
-        source: '/api/:path*',
-        headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001',
-          },
-          {
-            key: 'Access-Control-Allow-Methods',
-            value: 'GET,POST,OPTIONS,PUT,DELETE',
-          },
-          {
-            key: 'Access-Control-Allow-Headers',
-            value:
-              'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-API-Key',
-          },
-        ],
-      },
-      // For workflow execution API endpoints
-      {
-        source: '/api/workflows/:id/execute',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          {
-            key: 'Access-Control-Allow-Methods',
-            value: 'GET,POST,OPTIONS,PUT',
-          },
-          {
-            key: 'Access-Control-Allow-Headers',
-            value:
-              'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-API-Key',
-          },
-          { key: 'Cross-Origin-Embedder-Policy', value: 'unsafe-none' },
-          { key: 'Cross-Origin-Opener-Policy', value: 'unsafe-none' },
-          {
-            key: 'Content-Security-Policy',
-            value: getWorkflowExecutionCSPPolicy(),
-          },
-        ],
-      },
-      {
-        // Exclude Vercel internal resources and static assets from strict COEP, Google Drive Picker to prevent 'refused to connect' issue
-        source: '/((?!_next|_vercel|api|favicon.ico|w/.*|workspace/.*|api/tools/drive).*)',
-        headers: [
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'credentialless',
-          },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
-          },
-        ],
-      },
-      {
-        // For main app routes, Google Drive Picker, and Vercel resources - use permissive policies
-        source: '/(w/.*|workspace/.*|api/tools/drive|_next/.*|_vercel/.*)',
-        headers: [
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'unsafe-none',
-          },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups',
-          },
-        ],
-      },
-      // Block access to sourcemap files (defense in depth)
-      {
-        source: '/(.*)\\.map$',
-        headers: [
-          {
-            key: 'x-robots-tag',
-            value: 'noindex',
-          },
-        ],
-      },
-      // Apply security headers to routes not handled by middleware runtime CSP
-      // Middleware handles: /, /workspace/*, /chat/*
-      {
-        source: '/((?!workspace|chat$).*)',
-        headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
-          },
-          {
-            key: 'Content-Security-Policy',
-            value: getMainCSPPolicy(),
-          },
-        ],
-      },
-    ]
-  },
-  async redirects() {
-    const redirects = []
-
-    // Only enable domain redirects for the hosted version
-    if (isHosted) {
-      redirects.push(
-        {
-          source: '/((?!api|_next|_vercel|favicon|static|.*\\..*).*)',
-          destination: 'https://www.sim.ai/$1',
-          permanent: true,
-          has: [{ type: 'host' as const, value: 'simstudio.ai' }],
-        },
-        {
-          source: '/((?!api|_next|_vercel|favicon|static|.*\\..*).*)',
-          destination: 'https://www.sim.ai/$1',
-          permanent: true,
-          has: [{ type: 'host' as const, value: 'www.simstudio.ai' }],
-        }
-      )
-    }
-
-    return redirects
-  },
+  // Static export mode - remove headers and redirects that cause optimization hangs
+  // Headers and redirects are not supported in static export mode
 }
 
 const sentryConfig = {
