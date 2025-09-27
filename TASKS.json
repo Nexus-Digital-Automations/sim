@@ -105,12 +105,12 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 54,
+      "total_reinitializations": 55,
       "current_day": "2025-09-27",
       "time_buckets": {
         "11:00-15:59": {
           "init": 0,
-          "reinit": 10
+          "reinit": 11
         },
         "16:00-20:59": {
           "init": 0,
@@ -159,17 +159,10 @@
         }
       ],
       "last_reset": "2025-09-27T05:02:22.444Z",
-      "last_updated": "2025-09-27T18:13:03.896Z"
+      "last_updated": "2025-09-27T18:16:51.643Z"
     }
   },
   "agents": {
-    "agent_nextjs_build_fix": {
-      "lastHeartbeat": "2025-09-27T17:45:45.033Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T17:45:45.033Z",
-      "sessionId": "58eb92b36efc916f",
-      "previousSessions": []
-    },
     "AGENT_BUILD_FIX_01": {
       "lastHeartbeat": "2025-09-27T17:49:11.237Z",
       "status": "active",
@@ -188,12 +181,13 @@
       ]
     },
     "AGENT_MAIN": {
-      "lastHeartbeat": "2025-09-27T18:13:03.886Z",
+      "lastHeartbeat": "2025-09-27T18:16:51.642Z",
       "status": "active",
-      "reinitialized": "2025-09-27T18:13:03.886Z",
-      "sessionId": "ef4413e55f2a6b35",
+      "reinitialized": "2025-09-27T18:16:51.642Z",
+      "sessionId": "a4868e884950e1e5",
       "previousSessions": [
-        "ca9a1647c9f05de9"
+        "ca9a1647c9f05de9",
+        "ef4413e55f2a6b35"
       ]
     }
   },

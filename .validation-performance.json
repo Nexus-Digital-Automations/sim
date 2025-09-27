@@ -1033,27 +1033,71 @@
       },
       "success": false,
       "error": "Invalid authorization key. Cannot skip validation steps."
+    },
+    {
+      "criterion": "focused-codebase",
+      "startTime": "2025-09-27T18:14:54.307Z",
+      "endTime": "2025-09-27T18:14:54.319Z",
+      "durationMs": 12,
+      "memoryUsageBefore": {
+        "rss": 101531648,
+        "heapTotal": 21118976,
+        "heapUsed": 14414056,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 102334464,
+        "heapTotal": 21381120,
+        "heapUsed": 14832264,
+        "external": 2450820,
+        "arrayBuffers": 345547
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "criterion": "linter-validation",
+      "startTime": "2025-09-27T18:15:24.499Z",
+      "endTime": "2025-09-27T18:15:24.500Z",
+      "durationMs": 1,
+      "memoryUsageBefore": {
+        "rss": 98795520,
+        "heapTotal": 20856832,
+        "heapUsed": 14462656,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 98959360,
+        "heapTotal": 20856832,
+        "heapUsed": 14504744,
+        "external": 2427185,
+        "arrayBuffers": 323048
+      },
+      "success": false,
+      "error": "Must validate steps sequentially. Expected: security-validation, Got: linter-validation"
     }
   ],
   "statistics": {
-    "lastUpdated": "2025-09-27T18:07:24.617Z",
-    "totalMeasurements": 47,
-    "averageDurationMs": 11686.659574468085,
-    "successRate": 78.72340425531915,
+    "lastUpdated": "2025-09-27T18:15:24.500Z",
+    "totalMeasurements": 49,
+    "averageDurationMs": 11209.918367346938,
+    "successRate": 77.55102040816327,
     "bycriterion": {
       "focused-codebase": {
-        "count": 8,
-        "totalDuration": 340,
-        "successCount": 8,
-        "avgDuration": 42.5,
+        "count": 9,
+        "totalDuration": 352,
+        "successCount": 9,
+        "avgDuration": 39.111111111111114,
         "successRate": 100
       },
       "linter-validation": {
-        "count": 13,
-        "totalDuration": 36478,
+        "count": 14,
+        "totalDuration": 36479,
         "successCount": 6,
-        "avgDuration": 2806,
-        "successRate": 46.15384615384615
+        "avgDuration": 2605.6428571428573,
+        "successRate": 42.857142857142854
       },
       "type-validation": {
         "count": 8,
