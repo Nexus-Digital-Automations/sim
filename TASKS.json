@@ -69,7 +69,7 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 21,
+      "total_reinitializations": 24,
       "current_day": "2025-09-27",
       "time_buckets": {
         "10:00-14:59": {
@@ -82,7 +82,7 @@
         },
         "20:00-00:59": {
           "init": 0,
-          "reinit": 3
+          "reinit": 6
         },
         "01:00-05:59": {
           "init": 0,
@@ -123,20 +123,21 @@
         }
       ],
       "last_reset": "2025-09-27T03:12:58.705Z",
-      "last_updated": "2025-09-27T03:14:27.344Z"
+      "last_updated": "2025-09-27T03:22:02.194Z"
     }
   },
   "agents": {
     "LOCALHOST_CONNECTION_DEBUG_AGENT": {
-      "lastHeartbeat": "2025-09-27T03:12:58.704Z",
+      "lastHeartbeat": "2025-09-27T03:20:33.394Z",
       "status": "active",
-      "reinitialized": "2025-09-27T03:12:58.704Z",
-      "sessionId": "e44c7796c11f9d94",
+      "reinitialized": "2025-09-27T03:20:33.394Z",
+      "sessionId": "00b48eda403b11f4",
       "previousSessions": [
         "48f83455b735363d",
         "b5f0c2322ec2bcb1",
         "bc088a5535c6ac13",
-        "d98671aa43451aaa"
+        "d98671aa43451aaa",
+        "e44c7796c11f9d94"
       ]
     },
     "LINTING_AGENT_3": {
@@ -249,6 +250,20 @@
       "status": "active",
       "reinitialized": "2025-09-27T03:14:27.343Z",
       "sessionId": "81188182b013da7f",
+      "previousSessions": []
+    },
+    "AGENT_32": {
+      "lastHeartbeat": "2025-09-27T03:22:01.257Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T03:22:01.257Z",
+      "sessionId": "96a8b5fdb700f7bc",
+      "previousSessions": []
+    },
+    "AGENT_31": {
+      "lastHeartbeat": "2025-09-27T03:22:02.193Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T03:22:02.193Z",
+      "sessionId": "d24ff6cacb19d2f8",
       "previousSessions": []
     }
   }

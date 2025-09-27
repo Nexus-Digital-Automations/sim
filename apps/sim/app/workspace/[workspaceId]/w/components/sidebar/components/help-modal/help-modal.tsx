@@ -124,7 +124,9 @@ export function HelpModal({ open, onOpenChange }: HelpModalProps) {
    */
   useEffect(() => {
     return () => {
-      images.forEach((image) => URL.revokeObjectURL(image.preview))
+      for (const image of images) {
+        URL.revokeObjectURL(image.preview)
+      }
     }
   }, [images])
 
@@ -341,7 +343,9 @@ export function HelpModal({ open, onOpenChange }: HelpModalProps) {
         reset()
 
         // Clean up resources
-        images.forEach((image) => URL.revokeObjectURL(image.preview))
+        for (const image of images) {
+          URL.revokeObjectURL(image.preview)
+        }
         setImages([])
       } catch (error) {
         logger.error('Error submitting help request:', { error })

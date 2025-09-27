@@ -208,7 +208,9 @@ export function WorkflowBlock({ id, data }: NodeProps<WorkflowBlockProps>) {
       prevCredRef.current = cred
       const keys = Object.keys(current)
       const dependentKeys = keys.filter((k) => k !== 'credential')
-      dependentKeys.forEach((k) => collaborativeSetSubblockValue(id, k, ''))
+      for (const k of dependentKeys) {
+        collaborativeSetSubblockValue(id, k, '')
+      }
     }
   }, [id, collaborativeSetSubblockValue])
 
