@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Trash2, X } from 'lucide-react'
 import {
   Alert,
@@ -65,6 +65,16 @@ export function ScheduleModal({
 
   // Get the startWorkflow value at the component level
   const [startWorkflow, setStartWorkflow] = useSubBlockValue(blockId, 'startWorkflow')
+
+  // Generate unique IDs for form elements
+  const minutesIntervalId = useId()
+  const hourlyMinuteId = useId()
+  const dailyTimeId = useId()
+  const weeklyDayTimeId = useId()
+  const monthlyDayId = useId()
+  const monthlyTimeId = useId()
+  const cronExpressionId = useId()
+  const timezoneId = useId()
 
   // UI states
   const [isSaving, setIsSaving] = useState(false)
@@ -363,11 +373,11 @@ export function ScheduleModal({
             {/* Minutes schedule options */}
             {scheduleType === 'minutes' && (
               <div className='space-y-1'>
-                <label htmlFor='minutesInterval' className='font-medium text-sm'>
+                <label htmlFor={minutesIntervalId} className='font-medium text-sm'>
                   Run Every (minutes)
                 </label>
                 <Input
-                  id='minutesInterval'
+                  id={minutesIntervalId}
                   value={minutesInterval || ''}
                   onChange={(e) => setMinutesInterval(e.target.value)}
                   placeholder='15'
@@ -384,11 +394,11 @@ export function ScheduleModal({
             {/* Hourly schedule options */}
             {scheduleType === 'hourly' && (
               <div className='space-y-1'>
-                <label htmlFor='hourlyMinute' className='font-medium text-sm'>
+                <label htmlFor={hourlyMinuteId} className='font-medium text-sm'>
                   Minute of the Hour
                 </label>
                 <Input
-                  id='hourlyMinute'
+                  id={hourlyMinuteId}
                   value={hourlyMinute || ''}
                   onChange={(e) => setHourlyMinute(e.target.value)}
                   placeholder='0'
@@ -462,11 +472,11 @@ export function ScheduleModal({
             {scheduleType === 'monthly' && (
               <div className='space-y-4'>
                 <div className='space-y-1'>
-                  <label htmlFor='monthlyDay' className='font-medium text-sm'>
+                  <label htmlFor={monthlyDayId} className='font-medium text-sm'>
                     Day of Month
                   </label>
                   <Input
-                    id='monthlyDay'
+                    id={monthlyDayId}
                     value={monthlyDay || ''}
                     onChange={(e) => setMonthlyDay(e.target.value)}
                     placeholder='1'
@@ -500,11 +510,11 @@ export function ScheduleModal({
             {/* Custom cron options */}
             {scheduleType === 'custom' && (
               <div className='space-y-1'>
-                <label htmlFor='cronExpression' className='font-medium text-sm'>
+                <label htmlFor={cronExpressionId} className='font-medium text-sm'>
                   Cron Expression
                 </label>
                 <Input
-                  id='cronExpression'
+                  id={cronExpressionId}
                   value={cronExpression || ''}
                   onChange={(e) => setCronExpression(e.target.value)}
                   placeholder='*/15 * * * *'

@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import {
   Select,
   SelectContent,
@@ -43,16 +44,20 @@ export function GithubConfig({
   copied,
   copyToClipboard,
 }: GithubConfigProps) {
+  const githubContentTypeId = useId()
+  const webhookSecretId = useId()
+  const githubSslVerificationId = useId()
+
   return (
     <div className='space-y-4'>
       <ConfigSection title='GitHub Webhook Settings'>
         <ConfigField
-          id='github-content-type'
+          id={githubContentTypeId}
           label='Content Type'
           description='Format GitHub will use when sending the webhook payload.'
         >
           <Select value={contentType} onValueChange={setContentType} disabled={isLoadingToken}>
-            <SelectTrigger id='github-content-type'>
+            <SelectTrigger id={githubContentTypeId}>
               <SelectValue placeholder='Select content type' />
             </SelectTrigger>
             <SelectContent>
@@ -64,9 +69,9 @@ export function GithubConfig({
           </Select>
         </ConfigField>
 
-        <ConfigField id='webhook-secret' label='Webhook Secret (Recommended)'>
+        <ConfigField id={webhookSecretId} label='Webhook Secret (Recommended)'>
           <CopyableField
-            id='webhook-secret'
+            id={webhookSecretId}
             value={webhookSecret}
             onChange={setWebhookSecret}
             placeholder='Generate or enter a strong secret'
@@ -79,7 +84,7 @@ export function GithubConfig({
         </ConfigField>
 
         <ConfigField
-          id='github-ssl-verification'
+          id={githubSslVerificationId}
           label='SSL Verification'
           description='GitHub verifies SSL certificates when delivering webhooks.'
         >
@@ -88,7 +93,7 @@ export function GithubConfig({
             onValueChange={setSslVerification}
             disabled={isLoadingToken}
           >
-            <SelectTrigger id='github-ssl-verification'>
+            <SelectTrigger id={githubSslVerificationId}>
               <SelectValue placeholder='Select SSL verification option' />
             </SelectTrigger>
             <SelectContent>
