@@ -46,7 +46,9 @@ export function createMockFetch(
     headers: {
       get: (key: string) => headers[key.toLowerCase()],
       forEach: (callback: (value: string, key: string) => void) => {
-        Object.entries(headers).forEach(([key, value]) => callback(value, key))
+        for (const [key, value] of Object.entries(headers)) {
+          callback(value, key)
+        }
       },
     },
     json: vi.fn().mockResolvedValue(responseData),

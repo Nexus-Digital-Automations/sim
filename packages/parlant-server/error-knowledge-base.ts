@@ -1197,13 +1197,17 @@ export class ErrorKnowledgeBase extends EventEmitter {
   private generateRelatedTopics(matchingIds: Set<string>, userContext?: UserContext): string[] {
     const topics = new Set<string>()
 
-    matchingIds.forEach((id) => {
+    for (const id of matchingIds) {
       const article = this.articles.get(id)
       if (article) {
-        article.tags.forEach((tag) => topics.add(tag))
-        article.subcategories.forEach((sub) => topics.add(sub))
+        for (const tag of article.tags) {
+          topics.add(tag)
+        }
+        for (const sub of article.subcategories) {
+          topics.add(sub)
+        }
       }
-    })
+    }
 
     return Array.from(topics).slice(0, 10)
   }

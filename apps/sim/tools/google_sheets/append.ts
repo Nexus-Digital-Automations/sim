@@ -128,11 +128,13 @@ export const appendTool: ToolConfig<GoogleSheetsToolParams, GoogleSheetsAppendRe
 
         // First, extract all unique keys from all objects to create headers
         const allKeys = new Set<string>()
-        processedValues.forEach((obj: any) => {
+        for (const obj of processedValues) {
           if (obj && typeof obj === 'object') {
-            Object.keys(obj).forEach((key) => allKeys.add(key))
+            for (const key of Object.keys(obj)) {
+              allKeys.add(key)
+            }
           }
-        })
+        }
         const headers = Array.from(allKeys)
 
         // Then create rows with object values in the order of headers

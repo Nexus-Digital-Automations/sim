@@ -66,11 +66,13 @@ export const tableAddTool: ToolConfig<
         !Array.isArray(processedValues[0])
       ) {
         const allKeys = new Set<string>()
-        processedValues.forEach((obj: any) => {
+        for (const obj of processedValues) {
           if (obj && typeof obj === 'object') {
-            Object.keys(obj).forEach((key) => allKeys.add(key))
+            for (const key of Object.keys(obj)) {
+              allKeys.add(key)
+            }
           }
-        })
+        }
         const headers = Array.from(allKeys)
 
         processedValues = processedValues.map((obj: any) => {

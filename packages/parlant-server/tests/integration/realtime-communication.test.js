@@ -648,7 +648,9 @@ describe('Real-Time Communication Integration Tests', () => {
               console.log('  ✅ Broadcast received by concurrent connection')
 
               // Disconnect all sockets
-              sockets.forEach((s) => s.disconnect())
+              for (const s of sockets) {
+                s.disconnect()
+              }
 
               resolve({
                 concurrent_connections: concurrentConnections,
@@ -660,7 +662,9 @@ describe('Real-Time Communication Integration Tests', () => {
 
           socket.on('connect_error', (error) => {
             console.log(`  ❌ Connection ${i} failed: ${error.message}`)
-            sockets.forEach((s) => s.disconnect())
+            for (const s of sockets) {
+              s.disconnect()
+            }
             reject(error)
           })
         }
@@ -670,7 +674,9 @@ describe('Real-Time Communication Integration Tests', () => {
             console.log(
               `  ⚠️  Performance test partial success: ${connectionsEstablished}/${concurrentConnections} connections`
             )
-            sockets.forEach((s) => s.disconnect())
+            for (const s of sockets) {
+              s.disconnect()
+            }
 
             resolve({
               concurrent_connections: connectionsEstablished,
@@ -678,7 +684,9 @@ describe('Real-Time Communication Integration Tests', () => {
               status: 'partial_success',
             })
           } else if (!allConnectionsReady) {
-            sockets.forEach((s) => s.disconnect())
+            for (const s of sockets) {
+              s.disconnect()
+            }
             reject(new Error('Performance test timeout'))
           }
         }, 15000)

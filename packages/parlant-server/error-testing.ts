@@ -841,7 +841,9 @@ export class ErrorTestingSystem extends EventEmitter {
       this.createKnowledgeBaseTest(),
     ]
 
-    defaultTests.forEach((test) => this.registerTestCase(test))
+    for (const test of defaultTests) {
+      this.registerTestCase(test)
+    }
   }
 
   private createErrorClassificationTest(): TestCase {
