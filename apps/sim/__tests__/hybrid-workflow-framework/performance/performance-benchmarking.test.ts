@@ -230,25 +230,33 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
     // Generate 20 blocks for realistic performance testing
     for (let i = 0; i < 20; i++) {
       const blockId = `perf-block-${i}`
+      const isStarter = i % 4 === 0
       mockWorkflowState.blocks[blockId] = {
         id: blockId,
-        type:
-          i % 4 === 0
-            ? 'starter'
-            : i % 4 === 1
-              ? 'condition'
-              : i % 4 === 2
-                ? 'webhook'
-                : 'notification',
+        type: isStarter
+          ? 'starter'
+          : i % 4 === 1
+            ? 'condition'
+            : i % 4 === 2
+              ? 'webhook'
+              : 'notification',
         name: `Performance Block ${i}`,
         position: { x: (i % 5) * 200, y: Math.floor(i / 5) * 150 },
         enabled: true,
-        config: {
-          data: `config-${i}`,
-          complexProperty: {
-            nested: { value: i, array: Array(10).fill(i) },
-          },
-        },
+        // For starter blocks, ensure they have proper starter configuration
+        config: isStarter
+          ? {
+              data: `starter-config-${i}`,
+              isStarterBlock: true,
+              autoStart: true,
+              triggerType: 'manual',
+            }
+          : {
+              data: `config-${i}`,
+              complexProperty: {
+                nested: { value: i, array: Array(10).fill(i) },
+              },
+            },
       } as BlockState
 
       // Create edges between consecutive blocks

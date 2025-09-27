@@ -13,80 +13,89 @@ describe('Basic Parlant Server Health Tests', () => {
   const TEST_TIMEOUT = 10000
 
   describe('Settings and Configuration', () => {
-    test('Settings can be loaded without errors', async () => {
-      const { exec } = require('child_process')
-      const { promisify } = require('util')
-      const execAsync = promisify(exec)
+    test(
+      'Settings can be loaded without errors',
+      async () => {
+        const { exec } = require('child_process')
+        const { promisify } = require('util')
+        const execAsync = promisify(exec)
 
-      try {
-        const result = await execAsync(
-          'python -c "from config.settings import get_settings; print(\'success\')"',
-          {
-            cwd: path.join(__dirname, '../..'),
-            timeout: 5000
-          }
-        )
-        expect(result.stdout.trim()).toBe('success')
-      } catch (error) {
-        console.error('Settings loading error:', error.stderr || error.message)
-        throw error
-      }
-    }, TEST_TIMEOUT)
-
-    test('Environment variables are properly parsed', async () => {
-      const { exec } = require('child_process')
-      const { promisify } = require('util')
-      const execAsync = promisify(exec)
-
-      try {
-        const result = await execAsync(
-          'python -c "from config.settings import get_settings; s = get_settings(); print(len(s.get_allowed_origins()))"',
-          {
-            cwd: path.join(__dirname, '../..'),
-            timeout: 5000,
-            env: {
-              ...process.env,
-              ALLOWED_ORIGINS: 'http://localhost:3000,http://localhost:3001',
-              DATABASE_URL: process.env.DATABASE_URL || 'postgresql://test:test@localhost:5432/test_db'
+        try {
+          const result = await execAsync(
+            'python -c "from config.settings import get_settings; print(\'success\')"',
+            {
+              cwd: path.join(__dirname, '../..'),
+              timeout: 5000,
             }
-          }
-        )
-        const originsCount = parseInt(result.stdout.trim())
-        expect(originsCount).toBeGreaterThan(0)
-      } catch (error) {
-        console.error('Environment parsing error:', error.stderr || error.message)
-        throw error
-      }
-    }, TEST_TIMEOUT)
+          )
+          expect(result.stdout.trim()).toBe('success')
+        } catch (error) {
+          console.error('Settings loading error:', error.stderr || error.message)
+          throw error
+        }
+      },
+      TEST_TIMEOUT
+    )
+
+    test(
+      'Environment variables are properly parsed',
+      async () => {
+        const { exec } = require('child_process')
+        const { promisify } = require('util')
+        const execAsync = promisify(exec)
+
+        try {
+          const result = await execAsync(
+            'python -c "from config.settings import get_settings; s = get_settings(); print(len(s.get_allowed_origins()))"',
+            {
+              cwd: path.join(__dirname, '../..'),
+              timeout: 5000,
+              env: {
+                ...process.env,
+                ALLOWED_ORIGINS: 'http://localhost:3000,http://localhost:3001',
+                DATABASE_URL:
+                  process.env.DATABASE_URL || 'postgresql://test:test@localhost:5432/test_db',
+              },
+            }
+          )
+          const originsCount = Number.parseInt(result.stdout.trim(), 10)
+          expect(originsCount).toBeGreaterThan(0)
+        } catch (error) {
+          console.error('Environment parsing error:', error.stderr || error.message)
+          throw error
+        }
+      },
+      TEST_TIMEOUT
+    )
   })
 
   describe('Module Imports', () => {
-    test('Core modules can be imported', async () => {
-      const { exec } = require('child_process')
-      const { promisify } = require('util')
-      const execAsync = promisify(exec)
+    test(
+      'Core modules can be imported',
+      async () => {
+        const { exec } = require('child_process')
+        const { promisify } = require('util')
+        const execAsync = promisify(exec)
 
-      const modules = [
-        'config.settings',
-        'auth.sim_auth_bridge',
-        'workspace_isolation'
-      ]
+        const modules = ['config.settings', 'auth.sim_auth_bridge', 'workspace_isolation']
 
-      for (const module of modules) {
-        try {
-          await execAsync(
-            `python -c "import ${module}; print('${module} imported successfully')"`,
-            {
-              cwd: path.join(__dirname, '../..'),
-              timeout: 3000
-            }
-          )
-        } catch (error) {
-          console.warn(`Module ${module} import failed:`, error.stderr || error.message)
-          // Don't fail the test for optional modules
+        for (const module of modules) {
+          try {
+            await execAsync(
+              `python -c "import ${module}; print('${module} imported successfully')"`,
+              {
+                cwd: path.join(__dirname, '../..'),
+                timeout: 3000,
+              }
+            )
+          } catch (error) {
+            console.warn(`Module ${module} import failed:`, error.stderr || error.message)
+            // Don't fail the test for optional modules
+          }
         }
-      }
-    }, TEST_TIMEOUT)
+      },
+      TEST_TIMEOUT
+    )
   })
 
   describe('Basic Functionality', () => {
@@ -113,7 +122,7 @@ describe('Basic Parlant Server Health Tests', () => {
       const requiredDirs = [
         path.join(__dirname, '../../config'),
         path.join(__dirname, '../../auth'),
-        path.join(__dirname, '../../tests')
+        path.join(__dirname, '../../tests'),
       ]
 
       for (const dir of requiredDirs) {
@@ -123,30 +132,34 @@ describe('Basic Parlant Server Health Tests', () => {
   })
 
   describe('Error Handling', () => {
-    test('Graceful handling of missing environment variables', async () => {
-      const { exec } = require('child_process')
-      const { promisify } = require('util')
-      const execAsync = promisify(exec)
+    test(
+      'Graceful handling of missing environment variables',
+      async () => {
+        const { exec } = require('child_process')
+        const { promisify } = require('util')
+        const execAsync = promisify(exec)
 
-      try {
-        // Test with minimal environment
-        const result = await execAsync(
-          'python -c "from config.settings import Settings; s = Settings(); print(s.host)"',
-          {
-            cwd: path.join(__dirname, '../..'),
-            timeout: 5000,
-            env: {
-              DATABASE_URL: 'postgresql://test:test@localhost:5432/test_db',
-              PATH: process.env.PATH,
-              PYTHONPATH: process.env.PYTHONPATH || ''
+        try {
+          // Test with minimal environment
+          const result = await execAsync(
+            'python -c "from config.settings import Settings; s = Settings(); print(s.host)"',
+            {
+              cwd: path.join(__dirname, '../..'),
+              timeout: 5000,
+              env: {
+                DATABASE_URL: 'postgresql://test:test@localhost:5432/test_db',
+                PATH: process.env.PATH,
+                PYTHONPATH: process.env.PYTHONPATH || '',
+              },
             }
-          }
-        )
-        expect(result.stdout.trim()).toBeTruthy()
-      } catch (error) {
-        console.error('Error handling test failed:', error.stderr || error.message)
-        throw error
-      }
-    }, TEST_TIMEOUT)
+          )
+          expect(result.stdout.trim()).toBeTruthy()
+        } catch (error) {
+          console.error('Error handling test failed:', error.stderr || error.message)
+          throw error
+        }
+      },
+      TEST_TIMEOUT
+    )
   })
 })

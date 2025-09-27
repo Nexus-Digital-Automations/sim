@@ -20,9 +20,6 @@ class AnalyticsFeedbackSystem {
   private feedbackCollector: FeedbackCollector
   private usageAnalyzer: UsageAnalyzer
   private insightGenerator: InsightGenerator
-  private engine: any
-  private reportGenerator: ReportGenerator
-  private dataStore: AnalyticsDataStore
 
   constructor() {
     this.engine = createEnhancedToolIntelligenceEngine()

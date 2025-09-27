@@ -105,12 +105,12 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 58,
+      "total_reinitializations": 59,
       "current_day": "2025-09-27",
       "time_buckets": {
         "11:00-15:59": {
           "init": 0,
-          "reinit": 14
+          "reinit": 15
         },
         "16:00-20:59": {
           "init": 0,
@@ -159,40 +159,9 @@
         }
       ],
       "last_reset": "2025-09-27T05:02:22.444Z",
-      "last_updated": "2025-09-27T18:34:11.080Z"
+      "last_updated": "2025-09-27T18:47:19.982Z"
     }
   },
-  "agents": {
-    "agent_continue_1758974732": {
-      "lastHeartbeat": "2025-09-27T18:08:36.907Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T18:08:36.907Z",
-      "sessionId": "864c9e0480f9aefe",
-      "previousSessions": [
-        "46bf32df27cadb10",
-        "e2a4d548d79313b4"
-      ]
-    },
-    "AGENT_MAIN": {
-      "lastHeartbeat": "2025-09-27T18:26:37.397Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T18:26:37.397Z",
-      "sessionId": "d95c6dedca2644d0",
-      "previousSessions": [
-        "ca9a1647c9f05de9",
-        "ef4413e55f2a6b35",
-        "a4868e884950e1e5"
-      ]
-    },
-    "build-fix-agent": {
-      "lastHeartbeat": "2025-09-27T18:34:11.079Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T18:34:11.079Z",
-      "sessionId": "77c8c331bd4c84dc",
-      "previousSessions": [
-        "6eefe30412d26f26"
-      ]
-    }
-  },
+  "agents": {},
   "features": []
 }
