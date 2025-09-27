@@ -1,187 +1,187 @@
-import type { TraceSpan } from "@/lib/logs/types";
-import type { BlockOutput } from "@/blocks/types";
-import type { SerializedBlock, SerializedWorkflow } from "@/serializer/types";
+import type { TraceSpan } from '@/lib/logs/types'
+import type { BlockOutput } from '@/blocks/types'
+import type { SerializedBlock, SerializedWorkflow } from '@/serializer/types'
 
 /**
  * User-facing file object with simplified interface
  */
 export interface UserFile {
-  id: string;
-  name: string;
-  url: string;
-  size: number;
-  type: string;
-  key: string;
-  uploadedAt: string;
-  expiresAt: string;
+  id: string
+  name: string
+  url: string
+  size: number
+  type: string
+  key: string
+  uploadedAt: string
+  expiresAt: string
 }
 
 /**
  * Standardized block output format that ensures compatibility with the execution engine.
  */
 export interface NormalizedBlockOutput {
-  [key: string]: any;
+  [key: string]: any
   // Content fields
-  content?: string; // Text content from LLM responses
-  model?: string; // Model identifier used for generation
+  content?: string // Text content from LLM responses
+  model?: string // Model identifier used for generation
   tokens?: {
-    prompt?: number;
-    completion?: number;
-    total?: number;
-  };
+    prompt?: number
+    completion?: number
+    total?: number
+  }
   toolCalls?: {
-    list: any[];
-    count: number;
-  };
+    list: any[]
+    count: number
+  }
   // File fields
-  files?: UserFile[]; // Binary files/attachments from this block
+  files?: UserFile[] // Binary files/attachments from this block
   // Path selection fields
   selectedPath?: {
-    blockId: string;
-    blockType?: string;
-    blockTitle?: string;
-  };
-  selectedConditionId?: string; // ID of selected condition
-  conditionResult?: boolean; // Whether condition evaluated to true
+    blockId: string
+    blockType?: string
+    blockTitle?: string
+  }
+  selectedConditionId?: string // ID of selected condition
+  conditionResult?: boolean // Whether condition evaluated to true
   // Generic result fields
-  result?: any; // Generic result value
-  stdout?: string; // Standard output from function execution
-  executionTime?: number; // Time taken to execute
+  result?: any // Generic result value
+  stdout?: string // Standard output from function execution
+  executionTime?: number // Time taken to execute
   // API response fields
-  data?: any; // Response data from API calls
-  status?: number; // HTTP status code
-  headers?: Record<string, string>; // HTTP headers
+  data?: any // Response data from API calls
+  status?: number // HTTP status code
+  headers?: Record<string, string> // HTTP headers
   // Error handling
-  error?: string; // Error message if block execution failed
+  error?: string // Error message if block execution failed
   // Child workflow introspection (for workflow blocks)
-  childTraceSpans?: TraceSpan[];
-  childWorkflowName?: string;
+  childTraceSpans?: TraceSpan[]
+  childWorkflowName?: string
 }
 
 /**
  * Execution log entry for a single block.
  */
 export interface BlockLog {
-  blockId: string; // Unique identifier of the executed block
-  blockName?: string; // Display name of the block
-  blockType?: string; // Type of the block (agent, router, etc.)
-  startedAt: string; // ISO timestamp when execution started
-  endedAt: string; // ISO timestamp when execution completed
-  durationMs: number; // Duration of execution in milliseconds
-  success: boolean; // Whether execution completed successfully
-  output?: any; // Output data from successful execution
-  input?: any; // Input data for the block execution
-  error?: string; // Error message if execution failed
+  blockId: string // Unique identifier of the executed block
+  blockName?: string // Display name of the block
+  blockType?: string // Type of the block (agent, router, etc.)
+  startedAt: string // ISO timestamp when execution started
+  endedAt: string // ISO timestamp when execution completed
+  durationMs: number // Duration of execution in milliseconds
+  success: boolean // Whether execution completed successfully
+  output?: any // Output data from successful execution
+  input?: any // Input data for the block execution
+  error?: string // Error message if execution failed
 }
 
 /**
  * Timing metadata for workflow execution.
  */
 export interface ExecutionMetadata {
-  startTime?: string; // ISO timestamp when workflow execution started
-  endTime?: string; // ISO timestamp when workflow execution completed
-  duration: number; // Duration of workflow execution in milliseconds
-  pendingBlocks?: string[]; // List of block IDs that are pending execution
-  isDebugSession?: boolean; // Whether the workflow is running in debug mode
-  context?: ExecutionContext; // Runtime context for the workflow
-  workflowConnections?: Array<{ source: string; target: string }>; // Connections between workflow blocks
+  startTime?: string // ISO timestamp when workflow execution started
+  endTime?: string // ISO timestamp when workflow execution completed
+  duration: number // Duration of workflow execution in milliseconds
+  pendingBlocks?: string[] // List of block IDs that are pending execution
+  isDebugSession?: boolean // Whether the workflow is running in debug mode
+  context?: ExecutionContext // Runtime context for the workflow
+  workflowConnections?: Array<{ source: string; target: string }> // Connections between workflow blocks
 }
 
 /**
  * Current state of a block during workflow execution.
  */
 export interface BlockState {
-  output: NormalizedBlockOutput; // Current output data from the block
-  executed: boolean; // Whether the block has been executed
-  executionTime: number; // Time taken to execute in milliseconds
+  output: NormalizedBlockOutput // Current output data from the block
+  executed: boolean // Whether the block has been executed
+  executionTime: number // Time taken to execute in milliseconds
 }
 
 /**
  * Runtime context for workflow execution.
  */
 export interface ExecutionContext {
-  workflowId: string; // Unique identifier for this workflow execution
-  workspaceId?: string; // Workspace ID for file storage scoping
-  executionId?: string; // Unique execution ID for file storage scoping
-  blockStates: Map<string, BlockState>;
-  blockLogs: BlockLog[]; // Chronological log of block executions
-  metadata: ExecutionMetadata; // Timing metadata for the execution
-  environmentVariables: Record<string, string>; // Environment variables available during execution
-  workflowVariables?: Record<string, any>; // Workflow variables available during execution
+  workflowId: string // Unique identifier for this workflow execution
+  workspaceId?: string // Workspace ID for file storage scoping
+  executionId?: string // Unique execution ID for file storage scoping
+  blockStates: Map<string, BlockState>
+  blockLogs: BlockLog[] // Chronological log of block executions
+  metadata: ExecutionMetadata // Timing metadata for the execution
+  environmentVariables: Record<string, string> // Environment variables available during execution
+  workflowVariables?: Record<string, any> // Workflow variables available during execution
 
   // Routing decisions for path determination
   decisions: {
-    router: Map<string, string>; // Router block ID -> Target block ID
-    condition: Map<string, string>; // Condition block ID -> Selected condition ID
-  };
+    router: Map<string, string> // Router block ID -> Target block ID
+    condition: Map<string, string> // Condition block ID -> Selected condition ID
+  }
 
-  loopIterations: Map<string, number>; // Tracks current iteration count for each loop
-  loopItems: Map<string, any>; // Tracks current item for forEach loops and parallel distribution
-  completedLoops: Set<string>; // Tracks which loops have completed all iterations
+  loopIterations: Map<string, number> // Tracks current iteration count for each loop
+  loopItems: Map<string, any> // Tracks current item for forEach loops and parallel distribution
+  completedLoops: Set<string> // Tracks which loops have completed all iterations
 
   // Parallel execution tracking
   parallelExecutions?: Map<
     string,
     {
-      parallelCount: number;
-      distributionItems: any[] | Record<string, any> | null;
-      completedExecutions: number;
-      executionResults: Map<string, any>;
-      activeIterations: Set<number>;
-      currentIteration: number;
-      parallelType?: "count" | "collection";
+      parallelCount: number
+      distributionItems: any[] | Record<string, any> | null
+      completedExecutions: number
+      executionResults: Map<string, any>
+      activeIterations: Set<number>
+      currentIteration: number
+      parallelType?: 'count' | 'collection'
     }
-  >;
+  >
 
   // Loop execution tracking
   loopExecutions?: Map<
     string,
     {
-      maxIterations: number;
-      loopType: "for" | "forEach";
-      forEachItems?: any[] | Record<string, any> | null;
-      executionResults: Map<string, any>; // iteration_0, iteration_1, etc.
-      currentIteration: number;
+      maxIterations: number
+      loopType: 'for' | 'forEach'
+      forEachItems?: any[] | Record<string, any> | null
+      executionResults: Map<string, any> // iteration_0, iteration_1, etc.
+      currentIteration: number
     }
-  >;
+  >
 
   // Mapping for virtual parallel block IDs to their original blocks
   parallelBlockMapping?: Map<
     string,
     {
-      originalBlockId: string;
-      parallelId: string;
-      iterationIndex: number;
+      originalBlockId: string
+      parallelId: string
+      iterationIndex: number
     }
-  >;
+  >
 
   // Current virtual block being executed (for parallel iterations)
-  currentVirtualBlockId?: string;
+  currentVirtualBlockId?: string
 
   // Execution tracking
-  executedBlocks: Set<string>; // Set of block IDs that have been executed
-  activeExecutionPath: Set<string>; // Set of block IDs in the current execution path
+  executedBlocks: Set<string> // Set of block IDs that have been executed
+  activeExecutionPath: Set<string> // Set of block IDs in the current execution path
 
-  workflow?: SerializedWorkflow; // Reference to the workflow being executed
+  workflow?: SerializedWorkflow // Reference to the workflow being executed
 
   // Streaming support and output selection
-  stream?: boolean; // Whether to use streaming responses when available
-  selectedOutputIds?: string[]; // IDs of blocks selected for streaming output
-  edges?: Array<{ source: string; target: string }>; // Workflow edge connections
+  stream?: boolean // Whether to use streaming responses when available
+  selectedOutputIds?: string[] // IDs of blocks selected for streaming output
+  edges?: Array<{ source: string; target: string }> // Workflow edge connections
 
   // New context extensions
-  onStream?: (streamingExecution: StreamingExecution) => Promise<string>;
+  onStream?: (streamingExecution: StreamingExecution) => Promise<string>
 }
 
 /**
  * Complete result from executing a workflow.
  */
 export interface ExecutionResult {
-  success: boolean; // Whether the workflow executed successfully
-  output: NormalizedBlockOutput; // Final output data from the workflow
-  error?: string; // Error message if execution failed
-  logs?: BlockLog[]; // Execution logs for all blocks
-  metadata?: ExecutionMetadata;
+  success: boolean // Whether the workflow executed successfully
+  output: NormalizedBlockOutput // Final output data from the workflow
+  error?: string // Error message if execution failed
+  logs?: BlockLog[] // Execution logs for all blocks
+  metadata?: ExecutionMetadata
 }
 
 /**
@@ -189,8 +189,8 @@ export interface ExecutionResult {
  * This allows us to stream content to the UI while still capturing all execution logs.
  */
 export interface StreamingExecution {
-  stream: ReadableStream; // The streaming response for the UI to consume
-  execution: ExecutionResult & { isStreaming?: boolean }; // The complete execution data for logging purposes
+  stream: ReadableStream // The streaming response for the UI to consume
+  execution: ExecutionResult & { isStreaming?: boolean } // The complete execution data for logging purposes
 }
 
 /**
@@ -200,7 +200,7 @@ export interface BlockExecutor {
   /**
    * Determines if this executor can process the given block.
    */
-  canExecute(block: SerializedBlock): boolean;
+  canExecute(block: SerializedBlock): boolean
 
   /**
    * Executes the block with the given inputs and context.
@@ -208,8 +208,8 @@ export interface BlockExecutor {
   execute(
     block: SerializedBlock,
     inputs: Record<string, any>,
-    context: ExecutionContext,
-  ): Promise<BlockOutput>;
+    context: ExecutionContext
+  ): Promise<BlockOutput>
 }
 
 /**
@@ -223,7 +223,7 @@ export interface BlockHandler {
    * @param block - Block to check
    * @returns True if this handler can process the block
    */
-  canHandle(block: SerializedBlock): boolean;
+  canHandle(block: SerializedBlock): boolean
 
   /**
    * Executes the block with the given inputs and context.
@@ -236,8 +236,8 @@ export interface BlockHandler {
   execute(
     block: SerializedBlock,
     inputs: Record<string, any>,
-    context: ExecutionContext,
-  ): Promise<BlockOutput | StreamingExecution>;
+    context: ExecutionContext
+  ): Promise<BlockOutput | StreamingExecution>
 }
 
 /**
@@ -247,42 +247,42 @@ export interface BlockHandler {
  * @template O - Output type from the tool
  */
 export interface Tool<P = any, O = Record<string, any>> {
-  id: string; // Unique identifier for the tool
-  name: string; // Display name of the tool
-  description: string; // Description of what the tool does
-  version: string; // Version string for the tool
+  id: string // Unique identifier for the tool
+  name: string // Display name of the tool
+  description: string // Description of what the tool does
+  version: string // Version string for the tool
 
   // Parameter definitions for the tool
   params: {
     [key: string]: {
-      type: string; // Data type of the parameter
-      required?: boolean; // Whether the parameter is required
-      description?: string; // Description of the parameter
-      default?: any; // Default value if not provided
-    };
-  };
+      type: string // Data type of the parameter
+      required?: boolean // Whether the parameter is required
+      description?: string // Description of the parameter
+      default?: any // Default value if not provided
+    }
+  }
 
   // HTTP request configuration for API tools
   request?: {
-    url?: string | ((params: P) => string); // URL or function to generate URL
-    method?: string; // HTTP method to use
-    headers?: (params: P) => Record<string, string>; // Function to generate request headers
-    body?: (params: P) => Record<string, any>; // Function to generate request body
-  };
+    url?: string | ((params: P) => string) // URL or function to generate URL
+    method?: string // HTTP method to use
+    headers?: (params: P) => Record<string, string> // Function to generate request headers
+    body?: (params: P) => Record<string, any> // Function to generate request body
+  }
 
   // Function to transform API response to tool output
   transformResponse?: (response: any) => Promise<{
-    success: boolean;
-    output: O;
-    error?: string;
-  }>;
+    success: boolean
+    output: O
+    error?: string
+  }>
 }
 
 /**
  * Registry of available tools indexed by ID.
  */
 export interface ToolRegistry {
-  [key: string]: Tool;
+  [key: string]: Tool
 }
 
 /**
@@ -293,6 +293,6 @@ export interface ResponseFormatStreamProcessor {
     originalStream: ReadableStream,
     blockId: string,
     selectedOutputIds: string[],
-    responseFormat?: any,
-  ): ReadableStream;
+    responseFormat?: any
+  ): ReadableStream
 }

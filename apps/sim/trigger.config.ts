@@ -1,9 +1,9 @@
-import { defineConfig } from "@trigger.dev/sdk";
+import { defineConfig } from '@trigger.dev/sdk'
 
 export default defineConfig({
-  project: "proj_kufttkwzywcydwtccqhx",
-  runtime: "node",
-  logLevel: "log",
+  project: 'proj_kufttkwzywcydwtccqhx',
+  runtime: 'node',
+  logLevel: 'log',
   maxDuration: 180,
   retries: {
     enabledInDev: false,
@@ -11,5 +11,5 @@ export default defineConfig({
       maxAttempts: 1,
     },
   },
-  dirs: ["./background"],
-});
+  dirs: ['./background'],
+})

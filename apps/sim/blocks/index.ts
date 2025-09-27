@@ -5,15 +5,8 @@ import {
   getBlocksByCategory,
   isValidBlockType,
   registry,
-} from "@/blocks/registry";
+} from '@/blocks/registry'
 
-export {
-  registry,
-  getBlock,
-  getBlocksByCategory,
-  getAllBlockTypes,
-  isValidBlockType,
-  getAllBlocks,
-};
+export { registry, getBlock, getBlocksByCategory, getAllBlockTypes, isValidBlockType, getAllBlocks }
 
-export type { BlockConfig } from "@/blocks/types";
+export type { BlockConfig } from '@/blocks/types'

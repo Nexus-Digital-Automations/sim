@@ -17,19 +17,8 @@
       "blocked",
       "rejected"
     ],
-    "allowed_task_types": [
-      "error",
-      "feature",
-      "test",
-      "audit"
-    ],
-    "required_fields": [
-      "title",
-      "description",
-      "business_value",
-      "category",
-      "type"
-    ],
+    "allowed_task_types": ["error", "feature", "test", "audit"],
+    "required_fields": ["title", "description", "business_value", "category", "type"],
     "auto_generation_enabled": true,
     "mandatory_test_gate": true,
     "security_validation_required": true
@@ -39,9 +28,7 @@
       "title_pattern": "Implement comprehensive tests for {feature_title}",
       "description_pattern": "Create unit tests, integration tests, and E2E tests to achieve >{coverage}% coverage for {feature_title}. Must validate all functionality, edge cases, and error conditions.",
       "priority": "high",
-      "required_capabilities": [
-        "testing"
-      ],
+      "required_capabilities": ["testing"],
       "validation_requirements": {
         "test_coverage": true,
         "linter_pass": true
@@ -51,10 +38,7 @@
       "title_pattern": "Security and quality audit for {feature_title}",
       "description_pattern": "Run semgrep security scan, dependency vulnerability check, code quality analysis, and compliance validation for {feature_title}. Zero tolerance for security vulnerabilities.",
       "priority": "high",
-      "required_capabilities": [
-        "security",
-        "analysis"
-      ],
+      "required_capabilities": ["security", "analysis"],
       "validation_requirements": {
         "security_scan": true,
         "linter_pass": true,
@@ -63,32 +47,12 @@
     }
   },
   "priority_system": {
-    "order": [
-      "USER_REQUESTS",
-      "ERROR",
-      "AUDIT",
-      "FEATURE",
-      "TEST"
-    ],
+    "order": ["USER_REQUESTS", "ERROR", "AUDIT", "FEATURE", "TEST"],
     "error_priorities": {
-      "critical": [
-        "build-breaking",
-        "security-vulnerability",
-        "production-down"
-      ],
-      "high": [
-        "linter-errors",
-        "type-errors",
-        "test-failures"
-      ],
-      "normal": [
-        "warnings",
-        "optimization-opportunities"
-      ],
-      "low": [
-        "documentation-improvements",
-        "code-style"
-      ]
+      "critical": ["build-breaking", "security-vulnerability", "production-down"],
+      "high": ["linter-errors", "type-errors", "test-failures"],
+      "normal": ["warnings", "optimization-opportunities"],
+      "low": ["documentation-improvements", "code-style"]
     }
   },
   "metadata": {
@@ -105,7 +69,7 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 72,
+      "total_reinitializations": 75,
       "current_day": "2025-09-27",
       "time_buckets": {
         "11:00-15:59": {
@@ -114,7 +78,7 @@
         },
         "16:00-20:59": {
           "init": 0,
-          "reinit": 1
+          "reinit": 4
         },
         "21:00-01:59": {
           "init": 0,
@@ -159,9 +123,24 @@
         }
       ],
       "last_reset": "2025-09-27T05:02:22.444Z",
-      "last_updated": "2025-09-27T21:05:25.170Z"
+      "last_updated": "2025-09-27T21:42:36.765Z"
     }
   },
-  "agents": {},
+  "agents": {
+    "claude-recovery-agent-001": {
+      "lastHeartbeat": "2025-09-27T21:42:32.121Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T21:42:32.121Z",
+      "sessionId": "4d8e210dffad1224",
+      "previousSessions": ["fcbc934b9463dfdf"]
+    },
+    "AGENT_001": {
+      "lastHeartbeat": "2025-09-27T21:42:36.764Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T21:42:36.764Z",
+      "sessionId": "f931d328c15768eb",
+      "previousSessions": []
+    }
+  },
   "features": []
 }

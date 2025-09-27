@@ -4,11 +4,11 @@
  * This module provides comprehensive monitoring capabilities for Parlant server
  * operations, including performance metrics, usage statistics, and operational insights.
  */
-import { sql } from "drizzle-orm";
-import { createLogger } from "../../apps/sim/lib/logs/console/logger";
-import { db } from "../db";
+import { sql } from 'drizzle-orm'
+import { createLogger } from '../../apps/sim/lib/logs/console/logger'
+import { db } from '../db'
 
-const logger = createLogger("ParlantMonitoring");
+const logger = createLogger('ParlantMonitoring')
 /**
  * Default alert thresholds for Parlant server monitoring
  */
@@ -28,31 +28,31 @@ export const DEFAULT_ALERT_THRESHOLDS = {
     responseTime: 30000, // Alert when response time > 30s
     sessionFailureRate: 15, // Alert when session failure rate > 15%
   },
-};
+}
 /**
  * Parlant Server Monitoring Service
  */
 export class ParlantMonitoringService {
-  queryTimes = [];
-  maxQueryTimeHistory = 1000;
-  alertThresholds;
+  queryTimes = []
+  maxQueryTimeHistory = 1000
+  alertThresholds
   constructor(alertThresholds = DEFAULT_ALERT_THRESHOLDS) {
-    this.alertThresholds = alertThresholds;
+    this.alertThresholds = alertThresholds
   }
   /**
    * Record database query performance
    */
   recordQueryTime(duration) {
-    this.queryTimes.push(duration);
+    this.queryTimes.push(duration)
     if (this.queryTimes.length > this.maxQueryTimeHistory) {
-      this.queryTimes.shift();
+      this.queryTimes.shift()
     }
   }
   /**
    * Get system performance metrics
    */
   async getSystemMetrics() {
-    const startTime = performance.now();
+    const startTime = performance.now()
     try {
       // Get database connection info
       const [connectionResult] = await Promise.allSettled([
@@ -64,7 +64,7 @@ export class ParlantMonitoringService {
           FROM pg_stat_activity
           WHERE datname = current_database()
         `),
-      ]);
+      ])
       // Get slow query count
       const [slowQueryResult] = await Promise.allSettled([
         db.execute(sql`
@@ -73,48 +73,38 @@ export class ParlantMonitoringService {
           WHERE mean_exec_time > 1000
           AND calls > 10
         `),
-      ]);
+      ])
       // Record this query time
-      const queryTime = performance.now() - startTime;
-      this.recordQueryTime(queryTime);
+      const queryTime = performance.now() - startTime
+      this.recordQueryTime(queryTime)
       // Calculate query time statistics
-      const sortedTimes = [...this.queryTimes].sort((a, b) => a - b);
-      const p95Index = Math.floor(sortedTimes.length * 0.95);
-      const p99Index = Math.floor(sortedTimes.length * 0.99);
-      const memoryUsage = process.memoryUsage();
-      const cpuUsage = process.cpuUsage();
+      const sortedTimes = [...this.queryTimes].sort((a, b) => a - b)
+      const p95Index = Math.floor(sortedTimes.length * 0.95)
+      const p99Index = Math.floor(sortedTimes.length * 0.99)
+      const memoryUsage = process.memoryUsage()
+      const cpuUsage = process.cpuUsage()
       return {
         timestamp: new Date().toISOString(),
         database: {
           connectionCount:
-            connectionResult.status === "fulfilled"
-              ? Number.parseInt(
-                  connectionResult.value[0]?.total_connections || "0",
-                  10,
-                )
+            connectionResult.status === 'fulfilled'
+              ? Number.parseInt(connectionResult.value[0]?.total_connections || '0', 10)
               : 0,
           queryTime: {
             average:
               sortedTimes.length > 0
-                ? sortedTimes.reduce((sum, time) => sum + time, 0) /
-                  sortedTimes.length
+                ? sortedTimes.reduce((sum, time) => sum + time, 0) / sortedTimes.length
                 : 0,
             p95: sortedTimes[p95Index] || 0,
             p99: sortedTimes[p99Index] || 0,
           },
           activeQueries:
-            connectionResult.status === "fulfilled"
-              ? Number.parseInt(
-                  connectionResult.value[0]?.active_connections || "0",
-                  10,
-                )
+            connectionResult.status === 'fulfilled'
+              ? Number.parseInt(connectionResult.value[0]?.active_connections || '0', 10)
               : 0,
           slowQueries:
-            slowQueryResult.status === "fulfilled"
-              ? Number.parseInt(
-                  slowQueryResult.value[0]?.slow_queries || "0",
-                  10,
-                )
+            slowQueryResult.status === 'fulfilled'
+              ? Number.parseInt(slowQueryResult.value[0]?.slow_queries || '0', 10)
               : 0,
         },
         memory: {
@@ -128,10 +118,10 @@ export class ParlantMonitoringService {
           system: cpuUsage.system,
         },
         uptime: process.uptime(),
-      };
+      }
     } catch (error) {
-      logger.error("Failed to collect system metrics", { error });
-      throw error;
+      logger.error('Failed to collect system metrics', { error })
+      throw error
     }
   }
   /**
@@ -139,20 +129,20 @@ export class ParlantMonitoringService {
    */
   async getAgentPerformanceMetrics(timeWindowMinutes, agentId) {
     try {
-      logger.debug("Collecting agent performance metrics", {
+      logger.debug('Collecting agent performance metrics', {
         timeWindowMinutes,
         agentId,
-      });
-      const windowStart = new Date(Date.now() - timeWindowMinutes * 60 * 1000);
-      const windowEnd = new Date();
+      })
+      const windowStart = new Date(Date.now() - timeWindowMinutes * 60 * 1000)
+      const windowEnd = new Date()
       // For now, return placeholder data since Parlant tables don't exist yet
       // This will be replaced with actual queries once the Parlant schema is implemented
-      const placeholderMetrics = [];
+      const placeholderMetrics = []
       if (agentId) {
         placeholderMetrics.push({
           agentId,
           agentName: `Agent ${agentId}`,
-          workspaceId: "placeholder-workspace",
+          workspaceId: 'placeholder-workspace',
           metrics: {
             totalSessions: 0,
             totalMessages: 0,
@@ -166,16 +156,16 @@ export class ParlantMonitoringService {
             end: windowEnd.toISOString(),
             duration: `${timeWindowMinutes} minutes`,
           },
-        });
+        })
       }
-      logger.debug("Agent performance metrics collected", {
+      logger.debug('Agent performance metrics collected', {
         agentCount: placeholderMetrics.length,
         timeWindow: { start: windowStart, end: windowEnd },
-      });
-      return placeholderMetrics;
+      })
+      return placeholderMetrics
     } catch (error) {
-      logger.error("Failed to collect agent performance metrics", { error });
-      throw error;
+      logger.error('Failed to collect agent performance metrics', { error })
+      throw error
     }
   }
   /**
@@ -183,9 +173,9 @@ export class ParlantMonitoringService {
    */
   async getUsageMetrics(periodHours = 24) {
     try {
-      const periodStart = new Date(Date.now() - periodHours * 60 * 60 * 1000);
-      const periodEnd = new Date();
-      logger.debug("Collecting usage metrics", { periodHours });
+      const periodStart = new Date(Date.now() - periodHours * 60 * 60 * 1000)
+      const periodEnd = new Date()
+      logger.debug('Collecting usage metrics', { periodHours })
       // Placeholder implementation - will be replaced with actual Parlant data queries
       return {
         period: {
@@ -215,10 +205,10 @@ export class ParlantMonitoringService {
           successRate: 100,
           mostUsed: [],
         },
-      };
+      }
     } catch (error) {
-      logger.error("Failed to collect usage metrics", { error });
-      throw error;
+      logger.error('Failed to collect usage metrics', { error })
+      throw error
     }
   }
   /**
@@ -226,81 +216,71 @@ export class ParlantMonitoringService {
    */
   async checkAlertConditions() {
     try {
-      const alerts = [];
-      const metrics = await this.getSystemMetrics();
+      const alerts = []
+      const metrics = await this.getSystemMetrics()
       // Database alerts
-      if (
-        metrics.database.connectionCount >
-        this.alertThresholds.database.connectionCount
-      ) {
+      if (metrics.database.connectionCount > this.alertThresholds.database.connectionCount) {
         alerts.push({
-          severity: "warning",
-          category: "database",
-          message: "High database connection count",
+          severity: 'warning',
+          category: 'database',
+          message: 'High database connection count',
           value: metrics.database.connectionCount,
           threshold: this.alertThresholds.database.connectionCount,
           timestamp: metrics.timestamp,
-        });
+        })
       }
-      if (
-        metrics.database.queryTime.p95 >
-        this.alertThresholds.database.queryTimeP95
-      ) {
+      if (metrics.database.queryTime.p95 > this.alertThresholds.database.queryTimeP95) {
         alerts.push({
-          severity: "warning",
-          category: "database",
-          message: "High P95 query response time",
+          severity: 'warning',
+          category: 'database',
+          message: 'High P95 query response time',
           value: metrics.database.queryTime.p95,
           threshold: this.alertThresholds.database.queryTimeP95,
           timestamp: metrics.timestamp,
-        });
+        })
       }
-      if (
-        metrics.database.queryTime.p99 >
-        this.alertThresholds.database.queryTimeP99
-      ) {
+      if (metrics.database.queryTime.p99 > this.alertThresholds.database.queryTimeP99) {
         alerts.push({
-          severity: "critical",
-          category: "database",
-          message: "Critical P99 query response time",
+          severity: 'critical',
+          category: 'database',
+          message: 'Critical P99 query response time',
           value: metrics.database.queryTime.p99,
           threshold: this.alertThresholds.database.queryTimeP99,
           timestamp: metrics.timestamp,
-        });
+        })
       }
       // Memory alerts
-      const heapUsagePercent =
-        (metrics.memory.heapUsed / metrics.memory.heapTotal) * 100;
+      const heapUsagePercent = (metrics.memory.heapUsed / metrics.memory.heapTotal) * 100
       if (heapUsagePercent > this.alertThresholds.memory.heapUsagePercent) {
         alerts.push({
-          severity: heapUsagePercent > 90 ? "critical" : "warning",
-          category: "memory",
-          message: "High heap memory usage",
+          severity: heapUsagePercent > 90 ? 'critical' : 'warning',
+          category: 'memory',
+          message: 'High heap memory usage',
           value: heapUsagePercent,
           threshold: this.alertThresholds.memory.heapUsagePercent,
           timestamp: metrics.timestamp,
-        });
+        })
       }
       // Determine overall system health
-      let systemHealth = "healthy";
-      if (alerts.some((alert) => alert.severity === "critical")) {
-        systemHealth = "critical";
+      let systemHealth = 'healthy'
+      if (alerts.some((alert) => alert.severity === 'critical')) {
+        systemHealth = 'critical'
       } else if (alerts.length > 0) {
-        systemHealth = "degraded";
+        systemHealth = 'degraded'
       }
       if (alerts.length > 0) {
-        logger.warn("Alert conditions detected", {
+        logger.warn('Alert conditions detected', {
           alertCount: alerts.length,
           systemHealth,
-        });
+        })
       }
-      return { alerts, systemHealth };
+      return { alerts, systemHealth }
     } catch (error) {
-      logger.error("Failed to check alert conditions", { error });
+      logger.error('Failed to check alert conditions', { error })
       return {
         alerts: [],
-        systemHealth: "healthy",
-      };
+        systemHealth: 'healthy',
+      }
     }
   }
   /**
@@ -312,7 +292,7 @@ export class ParlantMonitoringService {
         this.getSystemMetrics(),
         this.getUsageMetrics(24), // Last 24 hours
         this.checkAlertConditions(),
-      ]);
+      ])
       return {
         summary: {
           status: alertCheck.systemHealth,
@@ -322,17 +302,17 @@ export class ParlantMonitoringService {
         metrics: systemMetrics,
         usage: usageMetrics,
         alerts: alertCheck.alerts,
-      };
+      }
     } catch (error) {
-      logger.error("Failed to generate dashboard data", { error });
-      throw error;
+      logger.error('Failed to generate dashboard data', { error })
+      throw error
     }
   }
 }
 /**
  * Singleton monitoring service instance
  */
-export const parlantMonitoring = new ParlantMonitoringService();
+export const parlantMonitoring = new ParlantMonitoringService()
 /**
  * Export monitoring utilities
  */
@@ -344,4 +324,4 @@ export const monitoring = {
   alerts: () => parlantMonitoring.checkAlertConditions(),
   dashboard: () => parlantMonitoring.generateDashboardData(),
   recordQuery: (duration) => parlantMonitoring.recordQueryTime(duration),
-};
+}

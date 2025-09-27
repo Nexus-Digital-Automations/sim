@@ -1,13 +1,13 @@
-import { useId } from "react";
-import Script from "next/script";
+import { useId } from 'react'
+import Script from 'next/script'
 
 interface StructuredDataProps {
-  title: string;
-  description: string;
-  url: string;
-  lang: string;
-  dateModified?: string;
-  breadcrumb?: Array<{ name: string; url: string }>;
+  title: string
+  description: string
+  url: string
+  lang: string
+  dateModified?: string
+  breadcrumb?: Array<{ name: string; url: string }>
 }
 
 export function StructuredData({
@@ -18,124 +18,124 @@ export function StructuredData({
   dateModified,
   breadcrumb,
 }: StructuredDataProps) {
-  const articleId = useId();
-  const breadcrumbId = useId();
-  const websiteId = useId();
-  const faqId = useId();
-  const softwareId = useId();
+  const articleId = useId()
+  const breadcrumbId = useId()
+  const websiteId = useId()
+  const faqId = useId()
+  const softwareId = useId()
 
-  const baseUrl = "https://docs.sim.ai";
+  const baseUrl = 'https://docs.sim.ai'
 
   const articleStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "TechArticle",
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
     headline: title,
     description: description,
     url: url,
     datePublished: dateModified || new Date().toISOString(),
     dateModified: dateModified || new Date().toISOString(),
     author: {
-      "@type": "Organization",
-      name: "Sim Team",
+      '@type': 'Organization',
+      name: 'Sim Team',
       url: baseUrl,
     },
     publisher: {
-      "@type": "Organization",
-      name: "Sim",
+      '@type': 'Organization',
+      name: 'Sim',
       url: baseUrl,
       logo: {
-        "@type": "ImageObject",
+        '@type': 'ImageObject',
         url: `${baseUrl}/static/logo.png`,
       },
     },
     mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": url,
+      '@type': 'WebPage',
+      '@id': url,
     },
     inLanguage: lang,
     isPartOf: {
-      "@type": "WebSite",
-      name: "Sim Documentation",
+      '@type': 'WebSite',
+      name: 'Sim Documentation',
       url: baseUrl,
     },
     potentialAction: {
-      "@type": "ReadAction",
+      '@type': 'ReadAction',
       target: url,
     },
-  };
+  }
 
   const breadcrumbStructuredData = breadcrumb && {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
     itemListElement: breadcrumb.map((item, index) => ({
-      "@type": "ListItem",
+      '@type': 'ListItem',
       position: index + 1,
       name: item.name,
       item: item.url,
     })),
-  };
+  }
 
   const websiteStructuredData = url === baseUrl && {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Sim Documentation",
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Sim Documentation',
     url: baseUrl,
     description:
-      "Comprehensive documentation for Sim visual workflow builder for AI applications. Create powerful AI agents, automation workflows, and data processing pipelines.",
+      'Comprehensive documentation for Sim visual workflow builder for AI applications. Create powerful AI agents, automation workflows, and data processing pipelines.',
     publisher: {
-      "@type": "Organization",
-      name: "Sim",
+      '@type': 'Organization',
+      name: 'Sim',
       url: baseUrl,
     },
     potentialAction: {
-      "@type": "SearchAction",
+      '@type': 'SearchAction',
       target: {
-        "@type": "EntryPoint",
+        '@type': 'EntryPoint',
         urlTemplate: `${baseUrl}/search?q={search_term_string}`,
       },
-      "query-input": "required name=search_term_string",
+      'query-input': 'required name=search_term_string',
     },
-    inLanguage: ["en", "fr"],
-  };
+    inLanguage: ['en', 'fr'],
+  }
 
-  const faqStructuredData = title.toLowerCase().includes("faq") && {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
+  const faqStructuredData = title.toLowerCase().includes('faq') && {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
     mainEntity: [],
-  };
+  }
 
   const softwareStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "Sim",
-    applicationCategory: "DeveloperApplication",
-    operatingSystem: "Any",
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Sim',
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Any',
     description:
-      "Visual workflow builder for AI applications. Create powerful AI agents, automation workflows, and data processing pipelines by connecting blocks on a canvas—no coding required.",
+      'Visual workflow builder for AI applications. Create powerful AI agents, automation workflows, and data processing pipelines by connecting blocks on a canvas—no coding required.',
     url: baseUrl,
     author: {
-      "@type": "Organization",
-      name: "Sim Team",
+      '@type': 'Organization',
+      name: 'Sim Team',
     },
     offers: {
-      "@type": "Offer",
-      category: "Developer Tools",
+      '@type': 'Offer',
+      category: 'Developer Tools',
     },
     featureList: [
-      "Visual workflow builder with drag-and-drop interface",
-      "AI agent creation and automation",
-      "80+ built-in integrations",
-      "Real-time team collaboration",
-      "Multiple deployment options",
-      "Custom integrations via MCP protocol",
+      'Visual workflow builder with drag-and-drop interface',
+      'AI agent creation and automation',
+      '80+ built-in integrations',
+      'Real-time team collaboration',
+      'Multiple deployment options',
+      'Custom integrations via MCP protocol',
     ],
-  };
+  }
 
   return (
     <>
       <Script
         id={articleId}
-        type="application/ld+json"
+        type='application/ld+json'
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(articleStructuredData),
         }}
@@ -143,7 +143,7 @@ export function StructuredData({
       {breadcrumbStructuredData && (
         <Script
           id={breadcrumbId}
-          type="application/ld+json"
+          type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(breadcrumbStructuredData),
           }}
@@ -152,7 +152,7 @@ export function StructuredData({
       {websiteStructuredData && (
         <Script
           id={websiteId}
-          type="application/ld+json"
+          type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(websiteStructuredData),
           }}
@@ -161,7 +161,7 @@ export function StructuredData({
       {faqStructuredData && (
         <Script
           id={faqId}
-          type="application/ld+json"
+          type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(faqStructuredData),
           }}
@@ -170,12 +170,12 @@ export function StructuredData({
       {url === baseUrl && (
         <Script
           id={softwareId}
-          type="application/ld+json"
+          type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(softwareStructuredData),
           }}
         />
       )}
     </>
-  );
+  )
 }

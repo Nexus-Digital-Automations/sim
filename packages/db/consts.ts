@@ -6,22 +6,14 @@
 /**
  * Default free credits (in dollars) for new users
  */
-export const DEFAULT_FREE_CREDITS = 10;
+export const DEFAULT_FREE_CREDITS = 10
 
 /**
  * Tag slots available for knowledge base documents and embeddings
  */
-export const TAG_SLOTS = [
-  "tag1",
-  "tag2",
-  "tag3",
-  "tag4",
-  "tag5",
-  "tag6",
-  "tag7",
-] as const;
+export const TAG_SLOTS = ['tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6', 'tag7'] as const
 
 /**
  * Type for tag slot names
  */
-export type TagSlot = (typeof TAG_SLOTS)[number];
+export type TagSlot = (typeof TAG_SLOTS)[number]

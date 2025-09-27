@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 /**
  * Parlant Validation Schemas
  *
@@ -11,70 +11,61 @@ import { z } from "zod";
 /**
  * Common UUID schema
  */
-export const uuidSchema = z.string().uuid("Invalid UUID format");
+export const uuidSchema = z.string().uuid('Invalid UUID format')
 /**
  * Common timestamp schema
  */
-export const timestampSchema = z.union([
-  z.string().datetime("Invalid datetime format"),
-  z.date(),
-]);
+export const timestampSchema = z.union([z.string().datetime('Invalid datetime format'), z.date()])
 /**
  * JSON object schema
  */
-export const jsonObjectSchema = z.record(z.unknown());
+export const jsonObjectSchema = z.record(z.unknown())
 /**
  * JSON array schema
  */
-export const jsonArraySchema = z.array(z.unknown());
+export const jsonArraySchema = z.array(z.unknown())
 /**
  * Flexible JSON schema (object or array)
  */
-export const jsonSchema = z.union([jsonObjectSchema, jsonArraySchema]);
+export const jsonSchema = z.union([jsonObjectSchema, jsonArraySchema])
 // =============================================================================
 // Enum Schemas
 // =============================================================================
-export const agentStatusSchema = z.enum(["active", "inactive", "archived"], {
+export const agentStatusSchema = z.enum(['active', 'inactive', 'archived'], {
   errorMap: () => ({
-    message: "Agent status must be active, inactive, or archived",
+    message: 'Agent status must be active, inactive, or archived',
   }),
-});
-export const sessionModeSchema = z.enum(["auto", "manual", "paused"], {
-  errorMap: () => ({ message: "Session mode must be auto, manual, or paused" }),
-});
-export const sessionStatusSchema = z.enum(
-  ["active", "completed", "abandoned"],
-  {
-    errorMap: () => ({
-      message: "Session status must be active, completed, or abandoned",
-    }),
-  },
-);
+})
+export const sessionModeSchema = z.enum(['auto', 'manual', 'paused'], {
+  errorMap: () => ({ message: 'Session mode must be auto, manual, or paused' }),
+})
+export const sessionStatusSchema = z.enum(['active', 'completed', 'abandoned'], {
+  errorMap: () => ({
+    message: 'Session status must be active, completed, or abandoned',
+  }),
+})
 export const eventTypeSchema = z.enum(
   [
-    "customer_message",
-    "agent_message",
-    "tool_call",
-    "tool_result",
-    "status_update",
-    "journey_transition",
-    "variable_update",
+    'customer_message',
+    'agent_message',
+    'tool_call',
+    'tool_result',
+    'status_update',
+    'journey_transition',
+    'variable_update',
   ],
   {
-    errorMap: () => ({ message: "Invalid event type" }),
-  },
-);
-export const journeyStateTypeSchema = z.enum(
-  ["chat", "tool", "decision", "final"],
-  {
-    errorMap: () => ({
-      message: "Journey state type must be chat, tool, decision, or final",
-    }),
-  },
-);
-export const compositionModeSchema = z.enum(["fluid", "strict"], {
-  errorMap: () => ({ message: "Composition mode must be fluid or strict" }),
-});
+    errorMap: () => ({ message: 'Invalid event type' }),
+  }
+)
+export const journeyStateTypeSchema = z.enum(['chat', 'tool', 'decision', 'final'], {
+  errorMap: () => ({
+    message: 'Journey state type must be chat, tool, decision, or final',
+  }),
+})
+export const compositionModeSchema = z.enum(['fluid', 'strict'], {
+  errorMap: () => ({ message: 'Composition mode must be fluid or strict' }),
+})
 // =============================================================================
 // Agent Validation Schemas
 // =============================================================================
@@ -82,78 +73,67 @@ export const compositionModeSchema = z.enum(["fluid", "strict"], {
  * Agent creation schema
  */
 export const createAgentSchema = z.object({
-  workspaceId: z.string().min(1, "Workspace ID is required"),
-  createdBy: z.string().min(1, "Created by is required"),
-  name: z
-    .string()
-    .min(1, "Agent name is required")
-    .max(255, "Agent name is too long"),
-  description: z.string().max(2000, "Description is too long").optional(),
+  workspaceId: z.string().min(1, 'Workspace ID is required'),
+  createdBy: z.string().min(1, 'Created by is required'),
+  name: z.string().min(1, 'Agent name is required').max(255, 'Agent name is too long'),
+  description: z.string().max(2000, 'Description is too long').optional(),
   // Behavior configuration
-  compositionMode: compositionModeSchema.default("fluid"),
-  systemPrompt: z.string().max(10000, "System prompt is too long").optional(),
+  compositionMode: compositionModeSchema.default('fluid'),
+  systemPrompt: z.string().max(10000, 'System prompt is too long').optional(),
   // AI Model configuration
-  modelProvider: z
-    .string()
-    .min(1, "Model provider is required")
-    .default("openai"),
-  modelName: z.string().min(1, "Model name is required").default("gpt-4"),
+  modelProvider: z.string().min(1, 'Model provider is required').default('openai'),
+  modelName: z.string().min(1, 'Model name is required').default('gpt-4'),
   temperature: z
     .number()
     .int()
     .min(0)
-    .max(100, "Temperature must be between 0 and 100")
+    .max(100, 'Temperature must be between 0 and 100')
     .default(70),
   maxTokens: z
     .number()
     .int()
     .min(1)
-    .max(100000, "Max tokens must be between 1 and 100,000")
+    .max(100000, 'Max tokens must be between 1 and 100,000')
     .default(2000),
   // Advanced configuration
   responseTimeoutMs: z
     .number()
     .int()
     .min(1000)
-    .max(300000, "Response timeout must be between 1-300 seconds")
+    .max(300000, 'Response timeout must be between 1-300 seconds')
     .default(30000),
   maxContextLength: z
     .number()
     .int()
     .min(100)
-    .max(200000, "Max context length must be between 100-200,000")
+    .max(200000, 'Max context length must be between 100-200,000')
     .default(8000),
-  systemInstructions: z
-    .string()
-    .max(5000, "System instructions are too long")
-    .optional(),
+  systemInstructions: z.string().max(5000, 'System instructions are too long').optional(),
   // Behavior controls
   allowInterruption: z.boolean().default(true),
   allowProactiveMessages: z.boolean().default(false),
   conversationStyle: z
-    .enum(["casual", "professional", "technical", "friendly"])
-    .default("professional"),
+    .enum(['casual', 'professional', 'technical', 'friendly'])
+    .default('professional'),
   // Privacy and security
   dataRetentionDays: z
     .number()
     .int()
     .min(1)
-    .max(365, "Data retention must be between 1-365 days")
+    .max(365, 'Data retention must be between 1-365 days')
     .default(30),
   allowDataExport: z.boolean().default(true),
-  piiHandlingMode: z
-    .enum(["strict", "standard", "relaxed"])
-    .default("standard"),
+  piiHandlingMode: z.enum(['strict', 'standard', 'relaxed']).default('standard'),
   // Metadata
   integrationMetadata: jsonObjectSchema.default({}),
   customConfig: jsonObjectSchema.default({}),
-});
+})
 /**
  * Agent update schema - all fields optional except validation requirements
  */
 export const updateAgentSchema = createAgentSchema.partial().extend({
   id: uuidSchema,
-});
+})
 /**
  * Agent response schema (what comes back from database)
  */
@@ -169,7 +149,7 @@ export const agentResponseSchema = createAgentSchema.extend({
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
   deletedAt: timestampSchema.nullable(),
-});
+})
 // =============================================================================
 // Session Validation Schemas
 // =============================================================================
@@ -178,23 +158,23 @@ export const agentResponseSchema = createAgentSchema.extend({
  */
 export const createSessionSchema = z.object({
   agentId: uuidSchema,
-  workspaceId: z.string().min(1, "Workspace ID is required"),
+  workspaceId: z.string().min(1, 'Workspace ID is required'),
   userId: z.string().min(1).optional(), // Optional for anonymous sessions
-  customerId: z.string().max(255, "Customer ID is too long").optional(),
-  mode: sessionModeSchema.default("auto"),
-  title: z.string().max(255, "Session title is too long").optional(),
+  customerId: z.string().max(255, 'Customer ID is too long').optional(),
+  mode: sessionModeSchema.default('auto'),
+  title: z.string().max(255, 'Session title is too long').optional(),
   metadata: jsonObjectSchema.default({}),
   variables: jsonObjectSchema.default({}),
   // User context
-  userAgent: z.string().max(500, "User agent is too long").optional(),
+  userAgent: z.string().max(500, 'User agent is too long').optional(),
   ipAddress: z.string().ip().optional(),
   referrer: z.string().url().optional(),
   locale: z
     .string()
-    .regex(/^[a-z]{2}(-[A-Z]{2})?$/, "Invalid locale format")
-    .default("en"),
-  timezone: z.string().max(50, "Timezone is too long").default("UTC"),
-});
+    .regex(/^[a-z]{2}(-[A-Z]{2})?$/, 'Invalid locale format')
+    .default('en'),
+  timezone: z.string().max(50, 'Timezone is too long').default('UTC'),
+})
 /**
  * Session update schema
  */
@@ -204,7 +184,7 @@ export const updateSessionSchema = createSessionSchema.partial().extend({
   currentJourneyId: uuidSchema.optional(),
   currentStateId: uuidSchema.optional(),
   satisfactionScore: z.number().int().min(1).max(5).optional(),
-});
+})
 /**
  * Session response schema
  */
@@ -221,9 +201,7 @@ export const sessionResponseSchema = createSessionSchema.extend({
   averageResponseTime: z.number().int().min(0).nullable(),
   satisfactionScore: z.number().int().min(1).max(5).nullable(),
   // Session categorization
-  sessionType: z
-    .enum(["conversation", "support", "onboarding", "survey"])
-    .default("conversation"),
+  sessionType: z.enum(['conversation', 'support', 'onboarding', 'survey']).default('conversation'),
   tags: z.array(z.string()).default([]),
   // Timing
   startedAt: timestampSchema,
@@ -231,7 +209,7 @@ export const sessionResponseSchema = createSessionSchema.extend({
   endedAt: timestampSchema.nullable(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
-});
+})
 // =============================================================================
 // Event Validation Schemas
 // =============================================================================
@@ -240,7 +218,7 @@ export const sessionResponseSchema = createSessionSchema.extend({
  */
 export const createEventSchema = z.object({
   sessionId: uuidSchema,
-  offset: z.number().int().min(0, "Offset must be non-negative"),
+  offset: z.number().int().min(0, 'Offset must be non-negative'),
   eventType: eventTypeSchema,
   content: jsonObjectSchema,
   metadata: jsonObjectSchema.default({}),
@@ -248,14 +226,14 @@ export const createEventSchema = z.object({
   toolCallId: z.string().max(255).optional(),
   journeyId: uuidSchema.optional(),
   stateId: uuidSchema.optional(),
-});
+})
 /**
  * Event response schema
  */
 export const eventResponseSchema = createEventSchema.extend({
   id: uuidSchema,
   createdAt: timestampSchema,
-});
+})
 // =============================================================================
 // Guideline Validation Schemas
 // =============================================================================
@@ -264,24 +242,18 @@ export const eventResponseSchema = createEventSchema.extend({
  */
 export const createGuidelineSchema = z.object({
   agentId: uuidSchema,
-  condition: z
-    .string()
-    .min(1, "Condition is required")
-    .max(2000, "Condition is too long"),
-  action: z
-    .string()
-    .min(1, "Action is required")
-    .max(2000, "Action is too long"),
+  condition: z.string().min(1, 'Condition is required').max(2000, 'Condition is too long'),
+  action: z.string().min(1, 'Action is required').max(2000, 'Action is too long'),
   priority: z.number().int().min(1).max(1000).default(100),
   enabled: z.boolean().default(true),
   toolIds: z.array(z.string()).default([]),
-});
+})
 /**
  * Guideline update schema
  */
 export const updateGuidelineSchema = createGuidelineSchema.partial().extend({
   id: uuidSchema,
-});
+})
 /**
  * Guideline response schema
  */
@@ -291,7 +263,7 @@ export const guidelineResponseSchema = createGuidelineSchema.extend({
   lastMatchedAt: timestampSchema.nullable(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
-});
+})
 // =============================================================================
 // Journey Validation Schemas
 // =============================================================================
@@ -300,27 +272,21 @@ export const guidelineResponseSchema = createGuidelineSchema.extend({
  */
 export const createJourneySchema = z.object({
   agentId: uuidSchema,
-  title: z
-    .string()
-    .min(1, "Journey title is required")
-    .max(255, "Journey title is too long"),
-  description: z
-    .string()
-    .max(2000, "Journey description is too long")
-    .optional(),
+  title: z.string().min(1, 'Journey title is required').max(255, 'Journey title is too long'),
+  description: z.string().max(2000, 'Journey description is too long').optional(),
   conditions: z
-    .array(z.string().min(1, "Condition cannot be empty"))
-    .min(1, "At least one condition is required"),
+    .array(z.string().min(1, 'Condition cannot be empty'))
+    .min(1, 'At least one condition is required'),
   enabled: z.boolean().default(true),
   allowSkipping: z.boolean().default(true),
   allowRevisiting: z.boolean().default(true),
-});
+})
 /**
  * Journey update schema
  */
 export const updateJourneySchema = createJourneySchema.partial().extend({
   id: uuidSchema,
-});
+})
 /**
  * Journey response schema
  */
@@ -331,7 +297,7 @@ export const journeyResponseSchema = createJourneySchema.extend({
   lastUsedAt: timestampSchema.nullable(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
-});
+})
 // =============================================================================
 // Journey State Validation Schemas
 // =============================================================================
@@ -340,43 +306,40 @@ export const journeyResponseSchema = createJourneySchema.extend({
  */
 const journeyStateBaseSchema = z.object({
   journeyId: uuidSchema,
-  name: z
-    .string()
-    .min(1, "State name is required")
-    .max(255, "State name is too long"),
+  name: z.string().min(1, 'State name is required').max(255, 'State name is too long'),
   stateType: journeyStateTypeSchema,
   // State content based on type
-  chatPrompt: z.string().max(5000, "Chat prompt is too long").optional(),
+  chatPrompt: z.string().max(5000, 'Chat prompt is too long').optional(),
   toolId: z.string().max(255).optional(),
   toolConfig: jsonObjectSchema.default({}),
-  condition: z.string().max(2000, "Condition is too long").optional(),
+  condition: z.string().max(2000, 'Condition is too long').optional(),
   // State behavior
   isInitial: z.boolean().default(false),
   isFinal: z.boolean().default(false),
   allowSkip: z.boolean().default(true),
   metadata: jsonObjectSchema.default({}),
-});
+})
 /**
  * Journey state creation schema (with validation refinements)
  */
 export const createJourneyStateSchema = journeyStateBaseSchema.refine(
   (data) => {
     // Validate state type requirements
-    if (data.stateType === "chat" && !data.chatPrompt) {
-      return false;
+    if (data.stateType === 'chat' && !data.chatPrompt) {
+      return false
     }
-    if (data.stateType === "tool" && !data.toolId) {
-      return false;
+    if (data.stateType === 'tool' && !data.toolId) {
+      return false
     }
-    if (data.stateType === "decision" && !data.condition) {
-      return false;
+    if (data.stateType === 'decision' && !data.condition) {
+      return false
     }
-    return true;
+    return true
   },
   {
-    message: "State content must match state type requirements",
-  },
-);
+    message: 'State content must match state type requirements',
+  }
+)
 /**
  * Journey state response schema
  */
@@ -384,7 +347,7 @@ export const journeyStateResponseSchema = journeyStateBaseSchema.extend({
   id: uuidSchema,
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
-});
+})
 // =============================================================================
 // Tool Validation Schemas
 // =============================================================================
@@ -392,33 +355,21 @@ export const journeyStateResponseSchema = journeyStateBaseSchema.extend({
  * Tool creation schema
  */
 export const createToolSchema = z.object({
-  workspaceId: z.string().min(1, "Workspace ID is required"),
-  name: z
-    .string()
-    .min(1, "Tool name is required")
-    .max(255, "Tool name is too long"),
-  displayName: z
-    .string()
-    .min(1, "Display name is required")
-    .max(255, "Display name is too long"),
-  description: z
-    .string()
-    .min(1, "Description is required")
-    .max(2000, "Description is too long"),
+  workspaceId: z.string().min(1, 'Workspace ID is required'),
+  name: z.string().min(1, 'Tool name is required').max(255, 'Tool name is too long'),
+  displayName: z.string().min(1, 'Display name is required').max(255, 'Display name is too long'),
+  description: z.string().min(1, 'Description is required').max(2000, 'Description is too long'),
   simToolId: z.string().max(255).optional(),
-  toolType: z.enum(["sim_native", "custom", "external"], {
+  toolType: z.enum(['sim_native', 'custom', 'external'], {
     errorMap: () => ({
-      message: "Tool type must be sim_native, custom, or external",
+      message: 'Tool type must be sim_native, custom, or external',
     }),
   }),
   // Function signature
   parameters: jsonObjectSchema,
   returnSchema: jsonObjectSchema.optional(),
   // Behavior configuration
-  usageGuidelines: z
-    .string()
-    .max(5000, "Usage guidelines are too long")
-    .optional(),
+  usageGuidelines: z.string().max(5000, 'Usage guidelines are too long').optional(),
   errorHandling: jsonObjectSchema.default({}),
   executionTimeout: z.number().int().min(1000).max(300000).default(30000),
   retryPolicy: jsonObjectSchema.default({ max_attempts: 3, backoff_ms: 1000 }),
@@ -427,12 +378,12 @@ export const createToolSchema = z.object({
   rateLimitPerHour: z.number().int().min(1).max(100000).default(1000),
   // Authentication
   requiresAuth: z.boolean().default(false),
-  authType: z.enum(["api_key", "oauth", "basic", "none"]).optional(),
+  authType: z.enum(['api_key', 'oauth', 'basic', 'none']).optional(),
   authConfig: jsonObjectSchema.default({}),
   // Status
   enabled: z.boolean().default(true),
   isPublic: z.boolean().default(false),
-});
+})
 /**
  * Tool response schema
  */
@@ -444,7 +395,7 @@ export const toolResponseSchema = createToolSchema.extend({
   lastUsedAt: timestampSchema.nullable(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
-});
+})
 // =============================================================================
 // Variable Validation Schemas
 // =============================================================================
@@ -456,46 +407,41 @@ const variableBaseSchema = z.object({
   sessionId: uuidSchema.optional(),
   key: z
     .string()
-    .min(1, "Variable key is required")
-    .max(255, "Variable key is too long")
-    .regex(
-      /^[a-zA-Z][a-zA-Z0-9_]*$/,
-      "Variable key must be a valid identifier",
-    ),
-  scope: z.enum(["session", "customer", "global"]).default("session"),
+    .min(1, 'Variable key is required')
+    .max(255, 'Variable key is too long')
+    .regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, 'Variable key must be a valid identifier'),
+  scope: z.enum(['session', 'customer', 'global']).default('session'),
   value: jsonSchema,
-  valueType: z.enum(["string", "number", "boolean", "object", "array"]),
+  valueType: z.enum(['string', 'number', 'boolean', 'object', 'array']),
   isPrivate: z.boolean().default(false),
-  description: z.string().max(500, "Description is too long").optional(),
-});
+  description: z.string().max(500, 'Description is too long').optional(),
+})
 /**
  * Variable creation schema (with validation refinements)
  */
 export const createVariableSchema = variableBaseSchema.refine(
   (data) => {
     // Validate value matches valueType
-    const value = data.value;
+    const value = data.value
     switch (data.valueType) {
-      case "string":
-        return typeof value === "string";
-      case "number":
-        return typeof value === "number";
-      case "boolean":
-        return typeof value === "boolean";
-      case "object":
-        return (
-          typeof value === "object" && !Array.isArray(value) && value !== null
-        );
-      case "array":
-        return Array.isArray(value);
+      case 'string':
+        return typeof value === 'string'
+      case 'number':
+        return typeof value === 'number'
+      case 'boolean':
+        return typeof value === 'boolean'
+      case 'object':
+        return typeof value === 'object' && !Array.isArray(value) && value !== null
+      case 'array':
+        return Array.isArray(value)
       default:
-        return false;
+        return false
     }
   },
   {
-    message: "Variable value must match the specified value type",
-  },
-);
+    message: 'Variable value must match the specified value type',
+  }
+)
 /**
  * Variable response schema
  */
@@ -503,7 +449,7 @@ export const variableResponseSchema = variableBaseSchema.extend({
   id: uuidSchema,
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
-});
+})
 // =============================================================================
 // Filter Schemas
 // =============================================================================
@@ -513,9 +459,7 @@ export const variableResponseSchema = variableBaseSchema.extend({
 export const agentFilterSchema = z.object({
   workspaceId: z.string().optional(),
   status: z.union([agentStatusSchema, z.array(agentStatusSchema)]).optional(),
-  compositionMode: z
-    .union([compositionModeSchema, z.array(compositionModeSchema)])
-    .optional(),
+  compositionMode: z.union([compositionModeSchema, z.array(compositionModeSchema)]).optional(),
   modelProvider: z.union([z.string(), z.array(z.string())]).optional(),
   conversationStyle: z.union([z.string(), z.array(z.string())]).optional(),
   createdBy: z.string().optional(),
@@ -523,7 +467,7 @@ export const agentFilterSchema = z.object({
   lastActiveBefore: timestampSchema.optional(),
   hasActiveSessions: z.boolean().optional(),
   search: z.string().max(255).optional(),
-});
+})
 /**
  * Session filter schema
  */
@@ -532,9 +476,7 @@ export const sessionFilterSchema = z.object({
   workspaceId: z.string().optional(),
   userId: z.string().optional(),
   customerId: z.string().optional(),
-  status: z
-    .union([sessionStatusSchema, z.array(sessionStatusSchema)])
-    .optional(),
+  status: z.union([sessionStatusSchema, z.array(sessionStatusSchema)]).optional(),
   mode: z.union([sessionModeSchema, z.array(sessionModeSchema)]).optional(),
   hasEvents: z.boolean().optional(),
   startedAfter: timestampSchema.optional(),
@@ -543,21 +485,16 @@ export const sessionFilterSchema = z.object({
   endedBefore: timestampSchema.optional(),
   currentJourneyId: uuidSchema.optional(),
   search: z.string().max(255).optional(),
-});
+})
 /**
  * Pagination schema
  */
 export const paginationSchema = z.object({
-  page: z.number().int().min(1, "Page must be at least 1").default(1),
-  pageSize: z
-    .number()
-    .int()
-    .min(1)
-    .max(100, "Page size must be between 1 and 100")
-    .default(10),
+  page: z.number().int().min(1, 'Page must be at least 1').default(1),
+  pageSize: z.number().int().min(1).max(100, 'Page size must be between 1 and 100').default(10),
   sortBy: z.string().optional(),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
-});
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+})
 // =============================================================================
 // Bulk Operation Schemas
 // =============================================================================
@@ -567,18 +504,18 @@ export const paginationSchema = z.object({
 export const bulkCreateAgentSchema = z.object({
   agents: z
     .array(createAgentSchema)
-    .min(1, "At least one agent is required")
-    .max(50, "Cannot create more than 50 agents at once"),
-});
+    .min(1, 'At least one agent is required')
+    .max(50, 'Cannot create more than 50 agents at once'),
+})
 /**
  * Bulk session creation schema
  */
 export const bulkCreateSessionSchema = z.object({
   sessions: z
     .array(createSessionSchema)
-    .min(1, "At least one session is required")
-    .max(100, "Cannot create more than 100 sessions at once"),
-});
+    .min(1, 'At least one session is required')
+    .max(100, 'Cannot create more than 100 sessions at once'),
+})
 // =============================================================================
 // API Request/Response Schemas
 // =============================================================================
@@ -598,7 +535,7 @@ export const apiResponseSchema = (dataSchema) =>
       })
       .optional(),
     timestamp: timestampSchema,
-  });
+  })
 /**
  * Paginated API response schema
  */
@@ -613,7 +550,7 @@ export const paginatedResponseSchema = (dataSchema) =>
       hasNext: z.boolean(),
       hasPrevious: z.boolean(),
     }),
-  });
+  })
 // =============================================================================
 // Utility Validation Functions
 // =============================================================================
@@ -621,58 +558,58 @@ export const paginatedResponseSchema = (dataSchema) =>
  * Validate and transform create agent data
  */
 export function validateCreateAgent(data) {
-  return createAgentSchema.parse(data);
+  return createAgentSchema.parse(data)
 }
 /**
  * Validate and transform create session data
  */
 export function validateCreateSession(data) {
-  return createSessionSchema.parse(data);
+  return createSessionSchema.parse(data)
 }
 /**
  * Validate and transform create event data
  */
 export function validateCreateEvent(data) {
-  return createEventSchema.parse(data);
+  return createEventSchema.parse(data)
 }
 /**
  * Validate pagination parameters
  */
 export function validatePagination(data) {
-  return paginationSchema.parse(data);
+  return paginationSchema.parse(data)
 }
 /**
  * Validate agent filters
  */
 export function validateAgentFilters(data) {
-  return agentFilterSchema.parse(data);
+  return agentFilterSchema.parse(data)
 }
 /**
  * Validate session filters
  */
 export function validateSessionFilters(data) {
-  return sessionFilterSchema.parse(data);
+  return sessionFilterSchema.parse(data)
 }
 /**
  * Safe validation with error handling
  */
 export function safeValidate(schema, data) {
-  const result = schema.safeParse(data);
+  const result = schema.safeParse(data)
   if (result.success) {
-    return { success: true, data: result.data };
+    return { success: true, data: result.data }
   }
-  return { success: false, errors: result.error };
+  return { success: false, errors: result.error }
 }
 /**
  * Transform Zod errors to API-friendly format
  */
 export function formatValidationErrors(zodError) {
   return zodError.errors.map((error) => ({
-    field: error.path.join("."),
+    field: error.path.join('.'),
     message: error.message,
     code: error.code,
     value: error.received,
-  }));
+  }))
 }
 // =============================================================================
 // Export all schemas
@@ -724,4 +661,4 @@ export const parlantSchemas = {
   // API schemas
   apiResponse: apiResponseSchema,
   paginatedResponse: paginatedResponseSchema,
-};
+}

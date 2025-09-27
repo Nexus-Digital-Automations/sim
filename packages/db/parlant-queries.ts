@@ -1,15 +1,5 @@
-import {
-  and,
-  desc,
-  eq,
-  gte,
-  inArray as inOp,
-  isNull,
-  lte,
-  or,
-  sql,
-} from "drizzle-orm";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { and, desc, eq, gte, inArray as inOp, isNull, lte, or, sql } from 'drizzle-orm'
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import {
   parlantAgent,
   parlantAgentKnowledgeBase,
@@ -21,7 +11,7 @@ import {
   parlantSession,
   parlantTool,
   parlantVariable,
-} from "./parlant-schema";
+} from './parlant-schema'
 import type {
   AgentFilters,
   AgentWithRelations,
@@ -41,8 +31,8 @@ import type {
   ParlantTool,
   SessionFilters,
   SessionWithRelations,
-} from "./parlant-types";
-import * as schema from "./schema";
+} from './parlant-types'
+import * as schema from './schema'
 
 /**
  * Parlant Query Helpers
@@ -51,7 +41,7 @@ import * as schema from "./schema";
  * All queries are optimized for performance and include proper error handling.
  */
 
-type Database = PostgresJsDatabase<typeof schema>;
+type Database = PostgresJsDatabase<typeof schema>
 
 // =============================================================================
 // Agent Query Helpers
@@ -63,30 +53,26 @@ export class ParlantAgentQueries {
   /**
    * Get agent by ID with optional related data
    */
-  async getById(
-    id: string,
-    includeRelations = false,
-  ): Promise<AgentWithRelations | null> {
+  async getById(id: string, includeRelations = false): Promise<AgentWithRelations | null> {
     const agent = await this.db
       .select()
       .from(parlantAgent)
       .where(and(eq(parlantAgent.id, id), isNull(parlantAgent.deletedAt)))
       .limit(1)
-      .then((rows) => rows[0] || null);
+      .then((rows) => rows[0] || null)
 
     if (!agent || !includeRelations) {
-      return agent as AgentWithRelations | null;
+      return agent as AgentWithRelations | null
     }
 
     // Load relations if requested
-    const [tools, guidelines, journeys, knowledgeBases, sessions] =
-      await Promise.all([
-        this.getAgentTools(id),
-        this.getAgentGuidelines(id),
-        this.getAgentJourneys(id),
-        this.getAgentKnowledgeBases(id),
-        this.getAgentActiveSessions(id),
-      ]);
+    const [tools, guidelines, journeys, knowledgeBases, sessions] = await Promise.all([
+      this.getAgentTools(id),
+      this.getAgentGuidelines(id),
+      this.getAgentJourneys(id),
+      this.getAgentKnowledgeBases(id),
+      this.getAgentActiveSessions(id),
+    ])
 
     return {
       ...agent,
@@ -95,7 +81,7 @@ export class ParlantAgentQueries {
       journeys,
       knowledgeBases,
       sessions,
-    };
+    }
   }
 
   /**
@@ -103,24 +89,21 @@ export class ParlantAgentQueries {
    */
   async getMany(
     filters: AgentFilters = {},
-    pagination: PaginationParams = { page: 1, pageSize: 10 },
+    pagination: PaginationParams = { page: 1, pageSize: 10 }
   ): Promise<PaginatedResponse<ParlantAgent>> {
-    const conditions = this.buildAgentFilters(filters);
+    const conditions = this.buildAgentFilters(filters)
 
     // Get total count
     const totalQuery = await this.db
       .select({ count: sql<number>`count(*)` })
       .from(parlantAgent)
-      .where(conditions);
+      .where(conditions)
 
-    const total = totalQuery[0]?.count || 0;
+    const total = totalQuery[0]?.count || 0
 
     // Get paginated results
-    const offset = (pagination.page - 1) * pagination.pageSize;
-    const orderBy = this.buildAgentOrderBy(
-      pagination.sortBy,
-      pagination.sortOrder,
-    );
+    const offset = (pagination.page - 1) * pagination.pageSize
+    const orderBy = this.buildAgentOrderBy(pagination.sortBy, pagination.sortOrder)
 
     const agents = await this.db
       .select()
@@ -128,7 +111,7 @@ export class ParlantAgentQueries {
       .where(conditions)
       .orderBy(...orderBy)
       .limit(pagination.pageSize)
-      .offset(offset);
+      .offset(offset)
 
     return {
       data: agents,
@@ -140,7 +123,7 @@ export class ParlantAgentQueries {
         hasNext: pagination.page < Math.ceil(total / pagination.pageSize),
         hasPrevious: pagination.page > 1,
       },
-    };
+    }
   }
 
   /**
@@ -154,10 +137,10 @@ export class ParlantAgentQueries {
         createdBy: params.createdBy,
         name: params.name,
         description: params.description,
-        compositionMode: params.compositionMode || "fluid",
+        compositionMode: params.compositionMode || 'fluid',
         systemPrompt: params.systemPrompt,
-        modelProvider: params.modelProvider || "openai",
-        modelName: params.modelName || "gpt-4",
+        modelProvider: params.modelProvider || 'openai',
+        modelName: params.modelName || 'gpt-4',
         temperature: params.temperature || 70,
         maxTokens: params.maxTokens || 2000,
         responseTimeoutMs: params.responseTimeoutMs || 30000,
@@ -165,25 +148,22 @@ export class ParlantAgentQueries {
         systemInstructions: params.systemInstructions,
         allowInterruption: params.allowInterruption ?? true,
         allowProactiveMessages: params.allowProactiveMessages ?? false,
-        conversationStyle: params.conversationStyle || "professional",
+        conversationStyle: params.conversationStyle || 'professional',
         dataRetentionDays: params.dataRetentionDays || 30,
         allowDataExport: params.allowDataExport ?? true,
-        piiHandlingMode: params.piiHandlingMode || "standard",
+        piiHandlingMode: params.piiHandlingMode || 'standard',
         integrationMetadata: params.integrationMetadata || {},
         customConfig: params.customConfig || {},
       })
-      .returning();
+      .returning()
 
-    return agent;
+    return agent
   }
 
   /**
    * Update agent
    */
-  async update(
-    id: string,
-    updates: Partial<CreateAgentParams>,
-  ): Promise<ParlantAgent | null> {
+  async update(id: string, updates: Partial<CreateAgentParams>): Promise<ParlantAgent | null> {
     const [agent] = await this.db
       .update(parlantAgent)
       .set({
@@ -191,9 +171,9 @@ export class ParlantAgentQueries {
         updatedAt: sql`NOW()`,
       })
       .where(and(eq(parlantAgent.id, id), isNull(parlantAgent.deletedAt)))
-      .returning();
+      .returning()
 
-    return agent || null;
+    return agent || null
   }
 
   /**
@@ -206,16 +186,16 @@ export class ParlantAgentQueries {
         deletedAt: sql`NOW()`,
         updatedAt: sql`NOW()`,
       })
-      .where(and(eq(parlantAgent.id, id), isNull(parlantAgent.deletedAt)));
+      .where(and(eq(parlantAgent.id, id), isNull(parlantAgent.deletedAt)))
 
-    return result.count > 0;
+    return result.count > 0
   }
 
   /**
    * Get agent tools with configurations
    */
   private async getAgentTools(
-    agentId: string,
+    agentId: string
   ): Promise<(ParlantAgentTool & { tool: ParlantTool })[]> {
     return this.db
       .select({
@@ -264,10 +244,10 @@ export class ParlantAgentQueries {
         and(
           eq(parlantAgentTool.agentId, agentId),
           eq(parlantAgentTool.enabled, true),
-          eq(parlantTool.enabled, true),
-        ),
+          eq(parlantTool.enabled, true)
+        )
       )
-      .orderBy(desc(parlantAgentTool.priority));
+      .orderBy(desc(parlantAgentTool.priority))
   }
 
   /**
@@ -277,13 +257,8 @@ export class ParlantAgentQueries {
     return this.db
       .select()
       .from(parlantGuideline)
-      .where(
-        and(
-          eq(parlantGuideline.agentId, agentId),
-          eq(parlantGuideline.enabled, true),
-        ),
-      )
-      .orderBy(desc(parlantGuideline.priority));
+      .where(and(eq(parlantGuideline.agentId, agentId), eq(parlantGuideline.enabled, true)))
+      .orderBy(desc(parlantGuideline.priority))
   }
 
   /**
@@ -293,13 +268,8 @@ export class ParlantAgentQueries {
     return this.db
       .select()
       .from(parlantJourney)
-      .where(
-        and(
-          eq(parlantJourney.agentId, agentId),
-          eq(parlantJourney.enabled, true),
-        ),
-      )
-      .orderBy(desc(parlantJourney.lastUsedAt));
+      .where(and(eq(parlantJourney.agentId, agentId), eq(parlantJourney.enabled, true)))
+      .orderBy(desc(parlantJourney.lastUsedAt))
   }
 
   /**
@@ -307,7 +277,7 @@ export class ParlantAgentQueries {
    */
   private async getAgentKnowledgeBases(agentId: string): Promise<
     (ParlantAgentKnowledgeBase & {
-      knowledgeBase: { id: string; name: string };
+      knowledgeBase: { id: string; name: string }
     })[]
   > {
     return this.db
@@ -331,15 +301,15 @@ export class ParlantAgentQueries {
       .from(parlantAgentKnowledgeBase)
       .innerJoin(
         schema.knowledgeBase,
-        eq(parlantAgentKnowledgeBase.knowledgeBaseId, schema.knowledgeBase.id),
+        eq(parlantAgentKnowledgeBase.knowledgeBaseId, schema.knowledgeBase.id)
       )
       .where(
         and(
           eq(parlantAgentKnowledgeBase.agentId, agentId),
-          eq(parlantAgentKnowledgeBase.enabled, true),
-        ),
+          eq(parlantAgentKnowledgeBase.enabled, true)
+        )
       )
-      .orderBy(desc(parlantAgentKnowledgeBase.priority));
+      .orderBy(desc(parlantAgentKnowledgeBase.priority))
   }
 
   /**
@@ -349,106 +319,88 @@ export class ParlantAgentQueries {
     return this.db
       .select()
       .from(parlantSession)
-      .where(
-        and(
-          eq(parlantSession.agentId, agentId),
-          eq(parlantSession.status, "active"),
-        ),
-      )
+      .where(and(eq(parlantSession.agentId, agentId), eq(parlantSession.status, 'active')))
       .orderBy(desc(parlantSession.lastActivityAt))
-      .limit(10); // Limit to recent active sessions
+      .limit(10) // Limit to recent active sessions
   }
 
   /**
    * Build filter conditions for agents
    */
   private buildAgentFilters(filters: AgentFilters) {
-    const conditions = [isNull(parlantAgent.deletedAt)];
+    const conditions = [isNull(parlantAgent.deletedAt)]
 
     if (filters.workspaceId) {
-      conditions.push(eq(parlantAgent.workspaceId, filters.workspaceId));
+      conditions.push(eq(parlantAgent.workspaceId, filters.workspaceId))
     }
 
     if (filters.status) {
       if (Array.isArray(filters.status)) {
-        conditions.push(inOp(parlantAgent.status, filters.status));
+        conditions.push(inOp(parlantAgent.status, filters.status))
       } else {
-        conditions.push(eq(parlantAgent.status, filters.status));
+        conditions.push(eq(parlantAgent.status, filters.status))
       }
     }
 
     if (filters.compositionMode) {
       if (Array.isArray(filters.compositionMode)) {
-        conditions.push(
-          inOp(parlantAgent.compositionMode, filters.compositionMode),
-        );
+        conditions.push(inOp(parlantAgent.compositionMode, filters.compositionMode))
       } else {
-        conditions.push(
-          eq(parlantAgent.compositionMode, filters.compositionMode),
-        );
+        conditions.push(eq(parlantAgent.compositionMode, filters.compositionMode))
       }
     }
 
     if (filters.modelProvider) {
       if (Array.isArray(filters.modelProvider)) {
-        conditions.push(
-          inOp(parlantAgent.modelProvider, filters.modelProvider),
-        );
+        conditions.push(inOp(parlantAgent.modelProvider, filters.modelProvider))
       } else {
-        conditions.push(eq(parlantAgent.modelProvider, filters.modelProvider));
+        conditions.push(eq(parlantAgent.modelProvider, filters.modelProvider))
       }
     }
 
     if (filters.conversationStyle) {
       if (Array.isArray(filters.conversationStyle)) {
-        conditions.push(
-          inOp(parlantAgent.conversationStyle, filters.conversationStyle),
-        );
+        conditions.push(inOp(parlantAgent.conversationStyle, filters.conversationStyle))
       } else {
-        conditions.push(
-          eq(parlantAgent.conversationStyle, filters.conversationStyle),
-        );
+        conditions.push(eq(parlantAgent.conversationStyle, filters.conversationStyle))
       }
     }
 
     if (filters.createdBy) {
-      conditions.push(eq(parlantAgent.createdBy, filters.createdBy));
+      conditions.push(eq(parlantAgent.createdBy, filters.createdBy))
     }
 
     if (filters.lastActiveAfter) {
-      conditions.push(gte(parlantAgent.lastActiveAt, filters.lastActiveAfter));
+      conditions.push(gte(parlantAgent.lastActiveAt, filters.lastActiveAfter))
     }
 
     if (filters.lastActiveBefore) {
-      conditions.push(lte(parlantAgent.lastActiveAt, filters.lastActiveBefore));
+      conditions.push(lte(parlantAgent.lastActiveAt, filters.lastActiveBefore))
     }
 
     if (filters.hasActiveSessions) {
       // This would require a subquery - simplified for now
-      conditions.push(gte(parlantAgent.totalSessions, 1));
+      conditions.push(gte(parlantAgent.totalSessions, 1))
     }
 
     if (filters.search && filters.search.trim().length > 0) {
-      const searchTerm = `%${filters.search}%`;
+      const searchTerm = `%${filters.search}%`
       const searchCondition = or(
         sql`${parlantAgent.name} ILIKE ${searchTerm}`,
-        sql`${parlantAgent.description} ILIKE ${searchTerm}`,
-      );
+        sql`${parlantAgent.description} ILIKE ${searchTerm}`
+      )
       if (searchCondition) {
-        conditions.push(searchCondition);
+        conditions.push(searchCondition)
       }
     }
 
-    return conditions.length > 0 ? and(...conditions) : undefined;
+    return conditions.length > 0 ? and(...conditions) : undefined
   }
 
   /**
    * Build order by clause for agents
    */
-  private buildAgentOrderBy(
-    sortBy = "createdAt",
-    sortOrder: "asc" | "desc" = "desc",
-  ) {
+  private buildAgentOrderBy(sortBy = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc') {
     const column =
       {
         createdAt: parlantAgent.createdAt,
@@ -457,9 +409,9 @@ export class ParlantAgentQueries {
         lastActiveAt: parlantAgent.lastActiveAt,
         totalSessions: parlantAgent.totalSessions,
         totalMessages: parlantAgent.totalMessages,
-      }[sortBy] || parlantAgent.createdAt;
+      }[sortBy] || parlantAgent.createdAt
 
-    return sortOrder === "asc" ? [column] : [desc(column)];
+    return sortOrder === 'asc' ? [column] : [desc(column)]
   }
 }
 
@@ -473,38 +425,30 @@ export class ParlantSessionQueries {
   /**
    * Get session by ID with optional related data
    */
-  async getById(
-    id: string,
-    includeRelations = false,
-  ): Promise<SessionWithRelations | null> {
+  async getById(id: string, includeRelations = false): Promise<SessionWithRelations | null> {
     const session = await this.db
       .select()
       .from(parlantSession)
       .where(eq(parlantSession.id, id))
       .limit(1)
-      .then((rows) => rows[0] || null);
+      .then((rows) => rows[0] || null)
 
     if (!session || !includeRelations) {
-      return session as SessionWithRelations | null;
+      return session as SessionWithRelations | null
     }
 
     // Load relations if requested
-    const [agent, events, currentJourney, currentState, variables] =
-      await Promise.all([
-        this.getSessionAgent(session.agentId),
-        this.getSessionEvents(id),
-        session.currentJourneyId
-          ? this.getJourneyById(session.currentJourneyId).then(
-              (result) => result || undefined,
-            )
-          : Promise.resolve(undefined),
-        session.currentStateId
-          ? this.getJourneyStateById(session.currentStateId).then(
-              (result) => result || undefined,
-            )
-          : Promise.resolve(undefined),
-        this.getSessionVariables(id),
-      ]);
+    const [agent, events, currentJourney, currentState, variables] = await Promise.all([
+      this.getSessionAgent(session.agentId),
+      this.getSessionEvents(id),
+      session.currentJourneyId
+        ? this.getJourneyById(session.currentJourneyId).then((result) => result || undefined)
+        : Promise.resolve(undefined),
+      session.currentStateId
+        ? this.getJourneyStateById(session.currentStateId).then((result) => result || undefined)
+        : Promise.resolve(undefined),
+      this.getSessionVariables(id),
+    ])
 
     return {
       ...session,
@@ -513,7 +457,7 @@ export class ParlantSessionQueries {
       currentJourney,
       currentState,
       variables,
-    };
+    }
   }
 
   /**
@@ -521,24 +465,21 @@ export class ParlantSessionQueries {
    */
   async getMany(
     filters: SessionFilters = {},
-    pagination: PaginationParams = { page: 1, pageSize: 10 },
+    pagination: PaginationParams = { page: 1, pageSize: 10 }
   ): Promise<PaginatedResponse<ParlantSession>> {
-    const conditions = this.buildSessionFilters(filters);
+    const conditions = this.buildSessionFilters(filters)
 
     // Get total count
     const totalQuery = await this.db
       .select({ count: sql<number>`count(*)` })
       .from(parlantSession)
-      .where(conditions);
+      .where(conditions)
 
-    const total = totalQuery[0]?.count || 0;
+    const total = totalQuery[0]?.count || 0
 
     // Get paginated results
-    const offset = (pagination.page - 1) * pagination.pageSize;
-    const orderBy = this.buildSessionOrderBy(
-      pagination.sortBy,
-      pagination.sortOrder,
-    );
+    const offset = (pagination.page - 1) * pagination.pageSize
+    const orderBy = this.buildSessionOrderBy(pagination.sortBy, pagination.sortOrder)
 
     const sessions = await this.db
       .select()
@@ -546,7 +487,7 @@ export class ParlantSessionQueries {
       .where(conditions)
       .orderBy(...orderBy)
       .limit(pagination.pageSize)
-      .offset(offset);
+      .offset(offset)
 
     return {
       data: sessions,
@@ -558,7 +499,7 @@ export class ParlantSessionQueries {
         hasNext: pagination.page < Math.ceil(total / pagination.pageSize),
         hasPrevious: pagination.page > 1,
       },
-    };
+    }
   }
 
   /**
@@ -572,23 +513,20 @@ export class ParlantSessionQueries {
         workspaceId: params.workspaceId,
         userId: params.userId,
         customerId: params.customerId,
-        mode: params.mode || "auto",
+        mode: params.mode || 'auto',
         title: params.title,
         metadata: params.metadata || {},
         variables: params.variables || {},
       })
-      .returning();
+      .returning()
 
-    return session;
+    return session
   }
 
   /**
    * Update session
    */
-  async update(
-    id: string,
-    updates: Partial<CreateSessionParams>,
-  ): Promise<ParlantSession | null> {
+  async update(id: string, updates: Partial<CreateSessionParams>): Promise<ParlantSession | null> {
     const [session] = await this.db
       .update(parlantSession)
       .set({
@@ -596,9 +534,9 @@ export class ParlantSessionQueries {
         updatedAt: sql`NOW()`,
       })
       .where(eq(parlantSession.id, id))
-      .returning();
+      .returning()
 
-    return session || null;
+    return session || null
   }
 
   /**
@@ -608,13 +546,13 @@ export class ParlantSessionQueries {
     const result = await this.db
       .update(parlantSession)
       .set({
-        status: "completed",
+        status: 'completed',
         endedAt: sql`NOW()`,
         updatedAt: sql`NOW()`,
       })
-      .where(eq(parlantSession.id, id));
+      .where(eq(parlantSession.id, id))
 
-    return result.count > 0;
+    return result.count > 0
   }
 
   private async getSessionAgent(agentId: string) {
@@ -623,7 +561,7 @@ export class ParlantSessionQueries {
       .from(parlantAgent)
       .where(eq(parlantAgent.id, agentId))
       .limit(1)
-      .then((rows) => rows[0] || null);
+      .then((rows) => rows[0] || null)
   }
 
   private async getSessionEvents(sessionId: string) {
@@ -632,7 +570,7 @@ export class ParlantSessionQueries {
       .from(parlantEvent)
       .where(eq(parlantEvent.sessionId, sessionId))
       .orderBy(parlantEvent.offset)
-      .limit(100); // Limit to recent events
+      .limit(100) // Limit to recent events
   }
 
   private async getJourneyById(journeyId: string) {
@@ -641,7 +579,7 @@ export class ParlantSessionQueries {
       .from(parlantJourney)
       .where(eq(parlantJourney.id, journeyId))
       .limit(1)
-      .then((rows) => rows[0] || null);
+      .then((rows) => rows[0] || null)
   }
 
   private async getJourneyStateById(stateId: string) {
@@ -650,7 +588,7 @@ export class ParlantSessionQueries {
       .from(parlantJourneyState)
       .where(eq(parlantJourneyState.id, stateId))
       .limit(1)
-      .then((rows) => rows[0] || null);
+      .then((rows) => rows[0] || null)
   }
 
   private async getSessionVariables(sessionId: string) {
@@ -658,79 +596,74 @@ export class ParlantSessionQueries {
       .select()
       .from(parlantVariable)
       .where(eq(parlantVariable.sessionId, sessionId))
-      .orderBy(parlantVariable.key);
+      .orderBy(parlantVariable.key)
   }
 
   private buildSessionFilters(filters: SessionFilters) {
-    const conditions = [];
+    const conditions = []
 
     if (filters.agentId) {
       if (Array.isArray(filters.agentId)) {
-        conditions.push(inOp(parlantSession.agentId, filters.agentId));
+        conditions.push(inOp(parlantSession.agentId, filters.agentId))
       } else {
-        conditions.push(eq(parlantSession.agentId, filters.agentId));
+        conditions.push(eq(parlantSession.agentId, filters.agentId))
       }
     }
 
     if (filters.workspaceId) {
-      conditions.push(eq(parlantSession.workspaceId, filters.workspaceId));
+      conditions.push(eq(parlantSession.workspaceId, filters.workspaceId))
     }
 
     if (filters.userId) {
-      conditions.push(eq(parlantSession.userId, filters.userId));
+      conditions.push(eq(parlantSession.userId, filters.userId))
     }
 
     if (filters.customerId) {
-      conditions.push(eq(parlantSession.customerId, filters.customerId));
+      conditions.push(eq(parlantSession.customerId, filters.customerId))
     }
 
     if (filters.status) {
       if (Array.isArray(filters.status)) {
-        conditions.push(inOp(parlantSession.status, filters.status));
+        conditions.push(inOp(parlantSession.status, filters.status))
       } else {
-        conditions.push(eq(parlantSession.status, filters.status));
+        conditions.push(eq(parlantSession.status, filters.status))
       }
     }
 
     if (filters.mode) {
       if (Array.isArray(filters.mode)) {
-        conditions.push(inOp(parlantSession.mode, filters.mode));
+        conditions.push(inOp(parlantSession.mode, filters.mode))
       } else {
-        conditions.push(eq(parlantSession.mode, filters.mode));
+        conditions.push(eq(parlantSession.mode, filters.mode))
       }
     }
 
     if (filters.startedAfter) {
-      conditions.push(gte(parlantSession.startedAt, filters.startedAfter));
+      conditions.push(gte(parlantSession.startedAt, filters.startedAfter))
     }
 
     if (filters.startedBefore) {
-      conditions.push(lte(parlantSession.startedAt, filters.startedBefore));
+      conditions.push(lte(parlantSession.startedAt, filters.startedBefore))
     }
 
     if (filters.currentJourneyId) {
-      conditions.push(
-        eq(parlantSession.currentJourneyId, filters.currentJourneyId),
-      );
+      conditions.push(eq(parlantSession.currentJourneyId, filters.currentJourneyId))
     }
 
     if (filters.search) {
-      const searchTerm = `%${filters.search}%`;
+      const searchTerm = `%${filters.search}%`
       conditions.push(
         or(
           sql`${parlantSession.title} ILIKE ${searchTerm}`,
-          sql`${parlantSession.metadata}::text ILIKE ${searchTerm}`,
-        ),
-      );
+          sql`${parlantSession.metadata}::text ILIKE ${searchTerm}`
+        )
+      )
     }
 
-    return conditions.length > 0 ? and(...conditions) : undefined;
+    return conditions.length > 0 ? and(...conditions) : undefined
   }
 
-  private buildSessionOrderBy(
-    sortBy = "startedAt",
-    sortOrder: "asc" | "desc" = "desc",
-  ) {
+  private buildSessionOrderBy(sortBy = 'startedAt', sortOrder: 'asc' | 'desc' = 'desc') {
     const column =
       {
         startedAt: parlantSession.startedAt,
@@ -738,9 +671,9 @@ export class ParlantSessionQueries {
         endedAt: parlantSession.endedAt,
         messageCount: parlantSession.messageCount,
         eventCount: parlantSession.eventCount,
-      }[sortBy] || parlantSession.startedAt;
+      }[sortBy] || parlantSession.startedAt
 
-    return sortOrder === "asc" ? [column] : [desc(column)];
+    return sortOrder === 'asc' ? [column] : [desc(column)]
   }
 }
 
@@ -756,21 +689,21 @@ export class ParlantEventQueries {
    */
   async getBySession(
     sessionId: string,
-    filters: Omit<EventFilters, "sessionId"> = {},
-    pagination: PaginationParams = { page: 1, pageSize: 50 },
+    filters: Omit<EventFilters, 'sessionId'> = {},
+    pagination: PaginationParams = { page: 1, pageSize: 50 }
   ): Promise<PaginatedResponse<ParlantEvent>> {
-    const conditions = this.buildEventFilters({ ...filters, sessionId });
+    const conditions = this.buildEventFilters({ ...filters, sessionId })
 
     // Get total count
     const totalQuery = await this.db
       .select({ count: sql<number>`count(*)` })
       .from(parlantEvent)
-      .where(conditions);
+      .where(conditions)
 
-    const total = totalQuery[0]?.count || 0;
+    const total = totalQuery[0]?.count || 0
 
     // Get paginated results
-    const offset = (pagination.page - 1) * pagination.pageSize;
+    const offset = (pagination.page - 1) * pagination.pageSize
 
     const events = await this.db
       .select()
@@ -778,7 +711,7 @@ export class ParlantEventQueries {
       .where(conditions)
       .orderBy(parlantEvent.offset)
       .limit(pagination.pageSize)
-      .offset(offset);
+      .offset(offset)
 
     return {
       data: events,
@@ -790,7 +723,7 @@ export class ParlantEventQueries {
         hasNext: pagination.page < Math.ceil(total / pagination.pageSize),
         hasPrevious: pagination.page > 1,
       },
-    };
+    }
   }
 
   /**
@@ -809,9 +742,9 @@ export class ParlantEventQueries {
         journeyId: params.journeyId,
         stateId: params.stateId,
       })
-      .returning();
+      .returning()
 
-    return event;
+    return event
   }
 
   /**
@@ -821,51 +754,51 @@ export class ParlantEventQueries {
     const result = await this.db
       .select({ maxOffset: sql<number>`COALESCE(MAX(offset), -1)` })
       .from(parlantEvent)
-      .where(eq(parlantEvent.sessionId, sessionId));
+      .where(eq(parlantEvent.sessionId, sessionId))
 
-    return (result[0]?.maxOffset || -1) + 1;
+    return (result[0]?.maxOffset || -1) + 1
   }
 
   private buildEventFilters(filters: EventFilters) {
-    const conditions = [];
+    const conditions = []
 
     if (filters.sessionId) {
       if (Array.isArray(filters.sessionId)) {
-        conditions.push(inOp(parlantEvent.sessionId, filters.sessionId));
+        conditions.push(inOp(parlantEvent.sessionId, filters.sessionId))
       } else {
-        conditions.push(eq(parlantEvent.sessionId, filters.sessionId));
+        conditions.push(eq(parlantEvent.sessionId, filters.sessionId))
       }
     }
 
     if (filters.eventType) {
       if (Array.isArray(filters.eventType)) {
-        conditions.push(inOp(parlantEvent.eventType, filters.eventType));
+        conditions.push(inOp(parlantEvent.eventType, filters.eventType))
       } else {
-        conditions.push(eq(parlantEvent.eventType, filters.eventType));
+        conditions.push(eq(parlantEvent.eventType, filters.eventType))
       }
     }
 
     if (filters.journeyId) {
-      conditions.push(eq(parlantEvent.journeyId, filters.journeyId));
+      conditions.push(eq(parlantEvent.journeyId, filters.journeyId))
     }
 
     if (filters.stateId) {
-      conditions.push(eq(parlantEvent.stateId, filters.stateId));
+      conditions.push(eq(parlantEvent.stateId, filters.stateId))
     }
 
     if (filters.toolCallId) {
-      conditions.push(eq(parlantEvent.toolCallId, filters.toolCallId));
+      conditions.push(eq(parlantEvent.toolCallId, filters.toolCallId))
     }
 
     if (filters.createdAfter) {
-      conditions.push(gte(parlantEvent.createdAt, filters.createdAfter));
+      conditions.push(gte(parlantEvent.createdAt, filters.createdAfter))
     }
 
     if (filters.createdBefore) {
-      conditions.push(lte(parlantEvent.createdAt, filters.createdBefore));
+      conditions.push(lte(parlantEvent.createdAt, filters.createdBefore))
     }
 
-    return conditions.length > 0 ? and(...conditions) : undefined;
+    return conditions.length > 0 ? and(...conditions) : undefined
   }
 }
 
@@ -881,13 +814,13 @@ export function createParlantQueries(db: Database) {
     agents: new ParlantAgentQueries(db),
     sessions: new ParlantSessionQueries(db),
     events: new ParlantEventQueries(db),
-  };
+  }
 }
 
 /**
  * Type-safe query builder for Parlant entities
  */
-export type ParlantQueries = ReturnType<typeof createParlantQueries>;
+export type ParlantQueries = ReturnType<typeof createParlantQueries>
 
 // =============================================================================
 // Utility Functions
@@ -898,24 +831,21 @@ export type ParlantQueries = ReturnType<typeof createParlantQueries>;
  */
 export async function withErrorHandling<T>(
   operation: () => Promise<T>,
-  context: string,
-): Promise<
-  { success: true; data: T } | { success: false; error: ParlantError }
-> {
+  context: string
+): Promise<{ success: true; data: T } | { success: false; error: ParlantError }> {
   try {
-    const data = await operation();
-    return { success: true, data };
+    const data = await operation()
+    return { success: true, data }
   } catch (error) {
-    console.error(`Error in ${context}:`, error);
+    console.error(`Error in ${context}:`, error)
 
     const parlantError: ParlantError = {
-      code: "VALIDATION_ERROR",
-      message:
-        error instanceof Error ? error.message : "Unknown error occurred",
+      code: 'VALIDATION_ERROR',
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
       details: { context, originalError: error },
-    };
+    }
 
-    return { success: false, error: parlantError };
+    return { success: false, error: parlantError }
   }
 }
 
@@ -926,7 +856,7 @@ export async function batchInsert<T extends Record<string, any>>(
   db: Database,
   table: any,
   items: T[],
-  batchSize = 100,
+  batchSize = 100
 ): Promise<BatchOperationResult<T>> {
   const result: BatchOperationResult<T> = {
     successful: [],
@@ -934,45 +864,39 @@ export async function batchInsert<T extends Record<string, any>>(
     totalAttempted: items.length,
     totalSuccessful: 0,
     totalFailed: 0,
-  };
+  }
 
   // Process items in batches
   for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
+    const batch = items.slice(i, i + batchSize)
 
     try {
-      const inserted = await db.insert(table).values(batch).returning();
-      result.successful.push(...inserted);
-      result.totalSuccessful += inserted.length;
+      const inserted = await db.insert(table).values(batch).returning()
+      result.successful.push(...inserted)
+      result.totalSuccessful += inserted.length
     } catch (error) {
       // If batch fails, try individual inserts to identify specific failures
       for (const item of batch) {
         try {
-          const [inserted] = (await db
-            .insert(table)
-            .values(item)
-            .returning()) as T[];
-          result.successful.push(inserted);
-          result.totalSuccessful++;
+          const [inserted] = (await db.insert(table).values(item).returning()) as T[]
+          result.successful.push(inserted)
+          result.totalSuccessful++
         } catch (itemError) {
           result.failed.push({
             item,
             error: {
-              code: "VALIDATION_ERROR",
-              message:
-                itemError instanceof Error
-                  ? itemError.message
-                  : "Unknown error",
+              code: 'VALIDATION_ERROR',
+              message: itemError instanceof Error ? itemError.message : 'Unknown error',
               details: { item },
             },
-          });
-          result.totalFailed++;
+          })
+          result.totalFailed++
         }
       }
     }
   }
 
-  return result;
+  return result
 }
 
 /**
@@ -983,5 +907,5 @@ export function withWorkspaceScope(workspaceId: string) {
     agents: eq(parlantAgent.workspaceId, workspaceId),
     sessions: eq(parlantSession.workspaceId, workspaceId),
     tools: eq(parlantTool.workspaceId, workspaceId),
-  };
+  }
 }
