@@ -69,7 +69,7 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 32,
+      "total_reinitializations": 34,
       "current_day": "2025-09-27",
       "time_buckets": {
         "10:00-14:59": {
@@ -82,7 +82,7 @@
         },
         "20:00-00:59": {
           "init": 0,
-          "reinit": 14
+          "reinit": 16
         },
         "01:00-05:59": {
           "init": 0,
@@ -123,191 +123,10 @@
         }
       ],
       "last_reset": "2025-09-27T03:12:58.705Z",
-      "last_updated": "2025-09-27T04:17:39.698Z"
+      "last_updated": "2025-09-27T04:38:02.349Z"
     }
   },
   "agents": {
-    "LOCALHOST_CONNECTION_DEBUG_AGENT": {
-      "lastHeartbeat": "2025-09-27T03:20:33.394Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:20:33.394Z",
-      "sessionId": "00b48eda403b11f4",
-      "previousSessions": [
-        "48f83455b735363d",
-        "b5f0c2322ec2bcb1",
-        "bc088a5535c6ac13",
-        "d98671aa43451aaa",
-        "e44c7796c11f9d94"
-      ]
-    },
-    "LINTING_AGENT_3": {
-      "lastHeartbeat": "2025-09-26T21:29:41.684Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:29:41.684Z",
-      "sessionId": "2590eba527e72a11",
-      "previousSessions": []
-    },
-    "LINTING_AGENT_4": {
-      "lastHeartbeat": "2025-09-26T21:29:41.808Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:29:41.808Z",
-      "sessionId": "ed255ebce9e050e6",
-      "previousSessions": []
-    },
-    "AGENT_6": {
-      "lastHeartbeat": "2025-09-26T21:29:41.934Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:29:41.934Z",
-      "sessionId": "d1f405f95431d20b",
-      "previousSessions": []
-    },
-    "LINT_AGENT_5": {
-      "lastHeartbeat": "2025-09-26T21:29:41.961Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:29:41.961Z",
-      "sessionId": "4554cd35d8df8512",
-      "previousSessions": []
-    },
-    "AGENT_8": {
-      "lastHeartbeat": "2025-09-26T21:29:41.992Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:29:41.992Z",
-      "sessionId": "406a0e183b048535",
-      "previousSessions": []
-    },
-    "agent-7-docs-linting": {
-      "lastHeartbeat": "2025-09-26T21:29:42.342Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:29:42.342Z",
-      "sessionId": "8170f06b438ef813",
-      "previousSessions": []
-    },
-    "agent-10-linting-coordination": {
-      "lastHeartbeat": "2025-09-26T21:29:42.602Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:29:42.602Z",
-      "sessionId": "0170a743df45c490",
-      "previousSessions": []
-    },
-    "LINTING_AGENT_11": {
-      "lastHeartbeat": "2025-09-26T21:41:42.080Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:41:42.080Z",
-      "sessionId": "bc8555da38622da9",
-      "previousSessions": []
-    },
-    "agent-15": {
-      "lastHeartbeat": "2025-09-26T21:41:42.168Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:41:42.168Z",
-      "sessionId": "28ada58f089c76e8",
-      "previousSessions": []
-    },
-    "AGENT_16": {
-      "lastHeartbeat": "2025-09-26T21:41:42.219Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:41:42.219Z",
-      "sessionId": "66c752579d8a79b7",
-      "previousSessions": []
-    },
-    "AGENT_LINTING_FINAL_VALIDATION_20": {
-      "lastHeartbeat": "2025-09-26T21:41:42.556Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:41:42.556Z",
-      "sessionId": "0e2f407983cd7806",
-      "previousSessions": []
-    },
-    "AGENT_18": {
-      "lastHeartbeat": "2025-09-26T21:41:42.801Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:41:42.801Z",
-      "sessionId": "2dd330e2ad6533ed",
-      "previousSessions": []
-    },
-    "AGENT_17": {
-      "lastHeartbeat": "2025-09-26T21:41:43.537Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:41:43.537Z",
-      "sessionId": "17f78d939181a53e",
-      "previousSessions": []
-    },
-    "LINTING_AGENT_19": {
-      "lastHeartbeat": "2025-09-26T21:41:43.604Z",
-      "status": "active",
-      "reinitialized": "2025-09-26T21:41:43.604Z",
-      "sessionId": "01a5867b0fac373d",
-      "previousSessions": []
-    },
-    "AGENT_27": {
-      "lastHeartbeat": "2025-09-27T03:14:27.337Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:14:27.337Z",
-      "sessionId": "476cb6cd3429a916",
-      "previousSessions": []
-    },
-    "LINT_COORDINATION_AGENT_28": {
-      "lastHeartbeat": "2025-09-27T03:14:27.343Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:14:27.343Z",
-      "sessionId": "81188182b013da7f",
-      "previousSessions": []
-    },
-    "AGENT_32": {
-      "lastHeartbeat": "2025-09-27T03:22:01.257Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:22:01.257Z",
-      "sessionId": "96a8b5fdb700f7bc",
-      "previousSessions": []
-    },
-    "AGENT_31": {
-      "lastHeartbeat": "2025-09-27T03:22:02.193Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:22:02.193Z",
-      "sessionId": "d24ff6cacb19d2f8",
-      "previousSessions": []
-    },
-    "agent-35": {
-      "lastHeartbeat": "2025-09-27T03:32:33.508Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:32:33.508Z",
-      "sessionId": "9c937da8331fb50a",
-      "previousSessions": []
-    },
-    "agent-36": {
-      "lastHeartbeat": "2025-09-27T03:32:36.066Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:32:36.066Z",
-      "sessionId": "f6bbc10f122b45a5",
-      "previousSessions": []
-    },
-    "AGENT-34": {
-      "lastHeartbeat": "2025-09-27T03:32:36.174Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:32:36.174Z",
-      "sessionId": "58099212e2f4effa",
-      "previousSessions": []
-    },
-    "STALE_RECOVERY_AGENT": {
-      "lastHeartbeat": "2025-09-27T03:45:09.375Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:45:09.375Z",
-      "sessionId": "d24b9348548f59b6",
-      "previousSessions": []
-    },
-    "RECOVERY_AGENT_5": {
-      "lastHeartbeat": "2025-09-27T03:46:48.673Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:46:48.673Z",
-      "sessionId": "ffd555f9bc7a9dfd",
-      "previousSessions": []
-    },
-    "AGENT_FINAL_CLEANUP": {
-      "lastHeartbeat": "2025-09-27T03:53:59.980Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T03:53:59.980Z",
-      "sessionId": "aa22ac9090ecddd9",
-      "previousSessions": []
-    },
     "universal-tool-adapter-typescript-errors": {
       "lastHeartbeat": "2025-09-27T04:11:04.189Z",
       "status": "active",
@@ -321,6 +140,21 @@
       "reinitialized": "2025-09-27T04:17:39.698Z",
       "sessionId": "b7fb9adc902eaef3",
       "previousSessions": []
+    },
+    "AGENT_PERFECTION_FINAL": {
+      "lastHeartbeat": "2025-09-27T04:36:54.627Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T04:36:54.627Z",
+      "sessionId": "d62cf7f2392ca16e",
+      "previousSessions": []
+    },
+    "claude-code-agent": {
+      "lastHeartbeat": "2025-09-27T04:38:02.348Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T04:38:02.348Z",
+      "sessionId": "c9f97a57b5ac690d",
+      "previousSessions": []
     }
-  }
+  },
+  "features": []
 }

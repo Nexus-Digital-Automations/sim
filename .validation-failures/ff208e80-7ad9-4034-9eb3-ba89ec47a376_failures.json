@@ -1,0 +1,13 @@
+{
+  "authKey": "ff208e80-7ad9-4034-9eb3-ba89ec47a376",
+  "failedCriteria": [
+    {
+      "criterion": "focused-codebase",
+      "error": "Cannot read properties of undefined (reading 'filter')",
+      "timestamp": "2025-09-27T04:36:07.113Z",
+      "retryCount": 1
+    }
+  ],
+  "lastUpdate": "2025-09-27T04:36:07.113Z",
+  "totalFailures": 1
+}
