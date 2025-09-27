@@ -2,9 +2,9 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import * as schema from './schema'
 
-// Re-export Parlant types and utilities
+// Re-export Parlant types and utilities (comprehensive exports)
 export * from './parlant-exports'
-// Re-export everything from schema for type consistency
+// Re-export non-Parlant schema items only
 export * from './schema'
 
 // In production, use the Vercel-generated POSTGRES_URL

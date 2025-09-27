@@ -36,7 +36,7 @@ import type {
 const ParlantChatbox = dynamic(() => import('parlant-chat-react'), {
   ssr: false,
   loading: () => <ChatLoadingSpinner />,
-})
+}) as any
 
 const logger = createLogger('SimChatWidget')
 

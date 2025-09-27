@@ -616,6 +616,67 @@ function processData(userId, data) {
 - **SAFE FORMATTING**: Use simple quoted strings: `'"Task completed successfully"'`
 - **NO SPECIAL CHARACTERS**: Avoid emojis, !, ✅ in completion messages
 
+### ERROR TASK CREATION & MANAGEMENT
+**🚨 UNIFIED TASK CREATION ENDPOINT - SINGLE COMMAND FOR ALL TASK TYPES**
+
+**TASK CREATION PROTOCOL:**
+- **SINGLE ENDPOINT**: Use `create-task` command for ALL task types (error, feature, test, audit)
+- **TYPE PARAMETER**: Specify task type via `"type":"error|feature|test|audit"` parameter
+- **PRIORITY SYSTEM**: Use `"priority":"low|normal|high|urgent"` for task prioritization
+- **MANDATORY TIMEOUT**: ALWAYS use 10-second timeout for TaskManager API calls
+
+**ERROR TASK CREATION EXAMPLES:**
+```bash
+# Linter error task
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" create-task '{"title":"Fix ESLint errors in auth.js", "description":"Resolve 5 ESLint violations: unused imports, missing semicolons, inconsistent quotes", "type":"error", "priority":"high"}'
+
+# Build error task
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" create-task '{"title":"Fix TypeScript compilation errors", "description":"Resolve type errors in UserService.ts and AuthManager.ts", "type":"error", "priority":"high"}'
+
+# Runtime error task
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" create-task '{"title":"Fix null pointer exception in login", "description":"Handle undefined user object in authentication flow", "type":"error", "priority":"urgent"}'
+```
+
+**OTHER TASK TYPE EXAMPLES:**
+```bash
+# Feature task
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" create-task '{"title":"Implement user registration", "description":"Create user registration form with validation", "type":"feature", "priority":"normal"}'
+
+# Test task
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" create-task '{"title":"Add unit tests for auth module", "description":"Create comprehensive test coverage for authentication functions", "type":"test", "priority":"normal"}'
+
+# Audit task
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" create-task '{"title":"Security audit for payment processing", "description":"Review payment flow for security vulnerabilities", "type":"audit", "priority":"high"}'
+```
+
+**TASK MANAGEMENT COMMANDS:**
+```bash
+# Get specific task
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" get-task <taskId>
+
+# Update task status
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" update-task <taskId> '{"status":"in-progress", "progress_percentage":50}'
+
+# Get tasks by status
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" get-tasks-by-status queued
+
+# Get tasks by priority
+timeout 10s node "/Users/jeremyparker/infinite-continue-stop-hook/taskmanager-api.js" get-tasks-by-priority high
+```
+
+**REQUIRED FIELDS:**
+- `title` (string): Clear, specific task title
+- `description` (string): Detailed task description
+
+**OPTIONAL FIELDS:**
+- `type` (string): error|feature|test|audit (defaults to 'implementation')
+- `priority` (string): low|normal|high|urgent (defaults to 'normal')
+- `feature_id` (string): Link to related feature
+- `dependencies` (array): List of dependency task IDs
+- `estimated_effort` (number): Effort estimate in hours (defaults to 5)
+- `required_capabilities` (array): Required agent capabilities (defaults to ['general'])
+- `metadata` (object): Additional task metadata
+
 ### GIT WORKFLOW - MANDATORY COMMIT/PUSH
 **🚨 ALL WORK MUST BE COMMITTED AND PUSHED BEFORE COMPLETION**
 
