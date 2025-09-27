@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { highlight, languages } from 'prismjs'
 import 'prismjs/components/prism-javascript'
 import 'prismjs/themes/prism.css'
+import DOMPurify from 'isomorphic-dompurify'
 
 // Add dark mode fix for Prism.js
 if (typeof document !== 'undefined') {
@@ -148,7 +149,7 @@ export const CodeDisplay = ({ code, language = 'javascript' }: CodeDisplayProps)
         >
           <code
             dangerouslySetInnerHTML={{
-              __html: highlight(code, languages[language], language),
+              __html: DOMPurify.sanitize(highlight(code, languages[language], language)),
             }}
           />
         </pre>

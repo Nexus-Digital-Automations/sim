@@ -835,27 +835,71 @@
       },
       "success": true,
       "error": null
+    },
+    {
+      "criterion": "linter-validation",
+      "startTime": "2025-09-27T17:55:30.661Z",
+      "endTime": "2025-09-27T17:55:30.661Z",
+      "durationMs": 0,
+      "memoryUsageBefore": {
+        "rss": 102711296,
+        "heapTotal": 20840448,
+        "heapUsed": 14664880,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 102825984,
+        "heapTotal": 20840448,
+        "heapUsed": 14682520,
+        "external": 2426081,
+        "arrayBuffers": 321944
+      },
+      "success": false,
+      "error": "No active authorization session found. Start with start-authorization command."
+    },
+    {
+      "criterion": "focused-codebase",
+      "startTime": "2025-09-27T17:55:41.909Z",
+      "endTime": "2025-09-27T17:55:41.929Z",
+      "durationMs": 20,
+      "memoryUsageBefore": {
+        "rss": 102006784,
+        "heapTotal": 20578304,
+        "heapUsed": 14408368,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 103464960,
+        "heapTotal": 21102592,
+        "heapUsed": 14825224,
+        "external": 2449958,
+        "arrayBuffers": 344685
+      },
+      "success": true,
+      "error": null
     }
   ],
   "statistics": {
-    "lastUpdated": "2025-09-27T12:19:54.245Z",
-    "totalMeasurements": 38,
-    "averageDurationMs": 11719.5,
-    "successRate": 84.21052631578947,
+    "lastUpdated": "2025-09-27T17:55:41.929Z",
+    "totalMeasurements": 40,
+    "averageDurationMs": 11134.025,
+    "successRate": 82.5,
     "bycriterion": {
       "focused-codebase": {
-        "count": 6,
-        "totalDuration": 307,
-        "successCount": 6,
-        "avgDuration": 51.166666666666664,
+        "count": 7,
+        "totalDuration": 327,
+        "successCount": 7,
+        "avgDuration": 46.714285714285715,
         "successRate": 100
       },
       "linter-validation": {
-        "count": 8,
+        "count": 9,
         "totalDuration": 27589,
         "successCount": 5,
-        "avgDuration": 3448.625,
-        "successRate": 62.5
+        "avgDuration": 3065.4444444444443,
+        "successRate": 55.55555555555556
       },
       "type-validation": {
         "count": 7,

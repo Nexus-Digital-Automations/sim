@@ -6,11 +6,6 @@
     "totalSessions": 0,
     "totalValidations": 0,
     "retentionPolicy": 2555,
-    "complianceStandards": [
-      "SOX",
-      "GDPR",
-      "ISO27001",
-      "HIPAA"
-    ]
+    "complianceStandards": ["SOX", "GDPR", "ISO27001", "HIPAA"]
   }
 }

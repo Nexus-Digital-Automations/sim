@@ -17,19 +17,8 @@
       "blocked",
       "rejected"
     ],
-    "allowed_task_types": [
-      "error",
-      "feature",
-      "test",
-      "audit"
-    ],
-    "required_fields": [
-      "title",
-      "description",
-      "business_value",
-      "category",
-      "type"
-    ],
+    "allowed_task_types": ["error", "feature", "test", "audit"],
+    "required_fields": ["title", "description", "business_value", "category", "type"],
     "auto_generation_enabled": true,
     "mandatory_test_gate": true,
     "security_validation_required": true
@@ -39,9 +28,7 @@
       "title_pattern": "Implement comprehensive tests for {feature_title}",
       "description_pattern": "Create unit tests, integration tests, and E2E tests to achieve >{coverage}% coverage for {feature_title}. Must validate all functionality, edge cases, and error conditions.",
       "priority": "high",
-      "required_capabilities": [
-        "testing"
-      ],
+      "required_capabilities": ["testing"],
       "validation_requirements": {
         "test_coverage": true,
         "linter_pass": true
@@ -51,10 +38,7 @@
       "title_pattern": "Security and quality audit for {feature_title}",
       "description_pattern": "Run semgrep security scan, dependency vulnerability check, code quality analysis, and compliance validation for {feature_title}. Zero tolerance for security vulnerabilities.",
       "priority": "high",
-      "required_capabilities": [
-        "security",
-        "analysis"
-      ],
+      "required_capabilities": ["security", "analysis"],
       "validation_requirements": {
         "security_scan": true,
         "linter_pass": true,
@@ -63,32 +47,12 @@
     }
   },
   "priority_system": {
-    "order": [
-      "USER_REQUESTS",
-      "ERROR",
-      "AUDIT",
-      "FEATURE",
-      "TEST"
-    ],
+    "order": ["USER_REQUESTS", "ERROR", "AUDIT", "FEATURE", "TEST"],
     "error_priorities": {
-      "critical": [
-        "build-breaking",
-        "security-vulnerability",
-        "production-down"
-      ],
-      "high": [
-        "linter-errors",
-        "type-errors",
-        "test-failures"
-      ],
-      "normal": [
-        "warnings",
-        "optimization-opportunities"
-      ],
-      "low": [
-        "documentation-improvements",
-        "code-style"
-      ]
+      "critical": ["build-breaking", "security-vulnerability", "production-down"],
+      "high": ["linter-errors", "type-errors", "test-failures"],
+      "normal": ["warnings", "optimization-opportunities"],
+      "low": ["documentation-improvements", "code-style"]
     }
   },
   "metadata": {
@@ -105,12 +69,12 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 48,
+      "total_reinitializations": 49,
       "current_day": "2025-09-27",
       "time_buckets": {
         "11:00-15:59": {
           "init": 0,
-          "reinit": 4
+          "reinit": 5
         },
         "16:00-20:59": {
           "init": 0,
@@ -159,21 +123,10 @@
         }
       ],
       "last_reset": "2025-09-27T05:02:22.444Z",
-      "last_updated": "2025-09-27T17:45:45.034Z"
+      "last_updated": "2025-09-27T17:49:11.245Z"
     }
   },
   "agents": {
-    "agent_continue_1758974732": {
-      "lastHeartbeat": "2025-09-27T17:17:15.353Z",
-      "status": "active",
-      "reinitialized": "2025-09-27T17:17:15.353Z",
-      "sessionId": "caf4d992ab27b6f8",
-      "previousSessions": [
-        "d757f4c178cf770f",
-        "bf63ff46114dfd59",
-        "3eb04ed1dca22ae1"
-      ]
-    },
     "UNIVERSAL_TOOL_ADAPTER_TEST_FIXER": {
       "lastHeartbeat": "2025-09-27T17:40:03.455Z",
       "status": "active",
@@ -186,6 +139,13 @@
       "status": "active",
       "reinitialized": "2025-09-27T17:45:45.033Z",
       "sessionId": "58eb92b36efc916f",
+      "previousSessions": []
+    },
+    "AGENT_BUILD_FIX_01": {
+      "lastHeartbeat": "2025-09-27T17:49:11.237Z",
+      "status": "active",
+      "reinitialized": "2025-09-27T17:49:11.237Z",
+      "sessionId": "2cda27630f6fe4c1",
       "previousSessions": []
     }
   },

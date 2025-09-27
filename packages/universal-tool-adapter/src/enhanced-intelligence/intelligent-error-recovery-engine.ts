@@ -1820,7 +1820,7 @@ export class IntelligentErrorRecoveryEngine {
       confidence: 0.85,
       severity,
       requiresUserAction: category === 'validation' || category === 'input_validation',
-      requiresEscalation
+      requiresEscalation,
     }
   }
 }
