@@ -11,6 +11,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "start": "turbo run dev",
     "dev:sockets": "cd apps/sim && bun run dev:sockets",
     "dev:full": "cd apps/sim && bun run dev:full",
     "test": "turbo run test",
@@ -23,7 +24,8 @@
     "check": "bunx biome check --files-ignore-unknown=true",
     "prepare": "bun husky",
     "prebuild": "bun run lint:check",
-    "type-check": "turbo run type-check"
+    "type-check": "turbo run type-check",
+    "typecheck": "turbo run type-check"
   },
   "overrides": {
     "react": "19.1.0",

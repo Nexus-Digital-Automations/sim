@@ -680,7 +680,7 @@ export class GuidelinesManagementPlatform {
       permissions: this.getRolePermissions(collaboratorConfig.role),
       addedAt: new Date(),
       addedBy: inviterId,
-      status: 'pending',
+      status: 'active',
     }
 
     workspace.collaborators.push(collaborator)
@@ -1284,9 +1284,13 @@ export class GuidelinesManagementPlatform {
       return false
     }
 
+    const [requestedAction, requestedResource] = permission.split(':')
+
     // Check if user has the specific permission
     return collaborator.permissions.some(
-      (p) => p.action === permission.split(':')[0] && p.resource === permission.split(':')[1]
+      (p) =>
+        (p.action === '*' || p.action === requestedAction) &&
+        (p.resource === '*' || p.resource === requestedResource)
     )
   }
 

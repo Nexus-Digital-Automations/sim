@@ -512,6 +512,46 @@ describe('Error-Aware Integration Components', () => {
 })
 
 describe('Edge Cases and Stress Testing', () => {
+  let mockContext: AdapterExecutionContext
+  let mockConfig: AdapterConfiguration
+
+  beforeEach(() => {
+    mockContext = {
+      executionId: 'test-exec-123',
+      toolId: 'test-tool',
+      adapterVersion: '1.0.0',
+      startedAt: new Date(),
+      userId: 'user-123',
+      workspaceId: 'workspace-456',
+      requestSource: 'api',
+      logger: jest.fn(),
+      metrics: jest.fn(),
+    }
+
+    mockConfig = {
+      parlantId: 'test-tool-adapter',
+      displayName: 'Test Tool',
+      description: 'Test tool for error handling validation',
+      errorHandling: {
+        strategies: {
+          validation: 'strict',
+          execution: 'retry',
+          timeout: 'partial',
+        },
+        retry: {
+          maxAttempts: 3,
+          backoffMs: 1000,
+          retryableErrorCodes: [408, 429, 500, 502, 503],
+        },
+        userFriendlyMessages: {
+          timeout: 'The operation took too long to complete',
+          authentication: 'Please check your credentials',
+          validation: 'The provided parameters are not valid',
+        },
+      },
+    }
+  })
+
   test('should handle concurrent error scenarios', async () => {
     const errors = Array.from({ length: 10 }, (_, i) => new Error(`Concurrent error ${i}`))
 
@@ -567,6 +607,46 @@ describe('Edge Cases and Stress Testing', () => {
 })
 
 describe('Performance and Memory Tests', () => {
+  let mockContext: AdapterExecutionContext
+  let mockConfig: AdapterConfiguration
+
+  beforeEach(() => {
+    mockContext = {
+      executionId: 'test-exec-123',
+      toolId: 'test-tool',
+      adapterVersion: '1.0.0',
+      startedAt: new Date(),
+      userId: 'user-123',
+      workspaceId: 'workspace-456',
+      requestSource: 'api',
+      logger: jest.fn(),
+      metrics: jest.fn(),
+    }
+
+    mockConfig = {
+      parlantId: 'test-tool-adapter',
+      displayName: 'Test Tool',
+      description: 'Test tool for error handling validation',
+      errorHandling: {
+        strategies: {
+          validation: 'strict',
+          execution: 'retry',
+          timeout: 'partial',
+        },
+        retry: {
+          maxAttempts: 3,
+          backoffMs: 1000,
+          retryableErrorCodes: [408, 429, 500, 502, 503],
+        },
+        userFriendlyMessages: {
+          timeout: 'The operation took too long to complete',
+          authentication: 'Please check your credentials',
+          validation: 'The provided parameters are not valid',
+        },
+      },
+    }
+  })
+
   test('should complete error handling within reasonable time', async () => {
     const error = new Error('Performance test error')
     const startTime = Date.now()

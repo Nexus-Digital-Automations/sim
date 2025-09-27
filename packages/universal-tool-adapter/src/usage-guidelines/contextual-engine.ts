@@ -224,7 +224,7 @@ export class ContextAnalysisEngine {
   private analyzeUserProfile(context: EnhancedUsageContext): UserProfileAnalysis {
     return {
       expertiseLevel: this.assessOverallExpertise(context),
-      learningStyle: context.expertise.learningStyle,
+      learningStyle: context.expertise?.learningStyle || 'visual',
       preferredInteractionStyle: this.determineInteractionStyle(context),
       strengthAreas: this.identifyStrengthAreas(context),
       improvementAreas: this.identifyImprovementAreas(context),
@@ -235,8 +235,8 @@ export class ContextAnalysisEngine {
 
   private analyzeSituationalFactors(context: EnhancedUsageContext): SituationalAnalysis {
     return {
-      urgency: context.situation.urgency,
-      complexity: context.situation.complexity,
+      urgency: context.situation?.urgency || 'medium',
+      complexity: context.situation?.complexity || 'moderate',
       timeConstraints: this.analyzeTimeConstraints(context),
       collaborationContext: this.analyzeCollaborationContext(context),
       environmentalFactors: this.analyzeEnvironmentalFactors(context),
@@ -246,7 +246,7 @@ export class ContextAnalysisEngine {
 
   private analyzeWorkflowStage(context: EnhancedUsageContext): WorkflowStageAnalysis {
     return {
-      currentPhase: context.workflow.currentPhase,
+      currentPhase: context.workflow?.currentPhase || 'planning',
       progressIndicators: this.identifyProgressIndicators(context),
       blockers: this.identifyPotentialBlockers(context),
       nextLogicalSteps: this.predictNextSteps(context),
@@ -365,6 +365,11 @@ export class ContextAnalysisEngine {
   private assessOverallExpertise(
     context: EnhancedUsageContext
   ): 'novice' | 'beginner' | 'intermediate' | 'advanced' | 'expert' {
+    // Add safety check for undefined expertise
+    if (!context.expertise) {
+      return 'novice'
+    }
+
     const factors = [
       context.expertise.overallLevel,
       this.calculateToolExperienceLevel(context),
@@ -372,7 +377,7 @@ export class ContextAnalysisEngine {
     ]
 
     // Logic to combine factors and determine overall expertise
-    return context.expertise.overallLevel
+    return context.expertise.overallLevel || 'novice'
   }
 
   private calculateToolExperienceLevel(
@@ -425,23 +430,23 @@ export class ContextAnalysisEngine {
   }
 
   private assessCognitiveLoad(context: EnhancedUsageContext): 'low' | 'medium' | 'high' {
-    return context.situation.complexity === 'complex' ? 'high' : 'medium'
+    return context.situation?.complexity === 'complex' ? 'high' : 'medium'
   }
 
   private analyzeTimeConstraints(context: EnhancedUsageContext): any {
-    return { hasDeadline: context.situation.timeConstraint !== undefined }
+    return { hasDeadline: context.situation?.timeConstraint !== undefined }
   }
 
   private analyzeCollaborationContext(context: EnhancedUsageContext): any {
-    return { teamSize: context.situation.stakeholderCount }
+    return { teamSize: context.situation?.stakeholderCount || 1 }
   }
 
   private analyzeEnvironmentalFactors(context: EnhancedUsageContext): any {
-    return { platform: context.environment.platform }
+    return { platform: context.environment?.platform || 'unknown' }
   }
 
   private analyzeBusinessContext(context: EnhancedUsageContext): any {
-    return { criticality: context.situation.businessCriticality }
+    return { criticality: context.situation?.businessCriticality || 'low' }
   }
 
   private identifyProgressIndicators(context: EnhancedUsageContext): string[] {
