@@ -322,10 +322,6 @@ export class IntegrationBridge {
   private eventHandlers: Map<RecommendationEventType, EventHandler[]> = new Map()
   private eventQueue: RecommendationEvent[] = []
 
-  // Performance monitoring
-  private metricsCollector: MetricsCollector
-  private analyticsEngine: AnalyticsEngine
-
   constructor(config: IntegrationBridgeConfig = {}) {
     this.recommendationEngine = {} // TODO: Implement ContextualRecommendationEngine
     this.explanationEngine = {} // TODO: Implement RecommendationExplanationEngine

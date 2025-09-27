@@ -144,6 +144,7 @@ export class IntelligenceIntegrationLayer {
   private readonly recommendationEngine: ContextualRecommendationEngine
   private readonly descriptionFramework: NaturalLanguageDescriptionFramework
   private readonly errorManager: ComprehensiveToolErrorManager
+  private readonly toolIntelligenceEngine: any
 
   // Performance optimization
   private readonly intelligenceCache = new Map<string, any>()
@@ -203,7 +204,7 @@ export class IntelligenceIntegrationLayer {
     }
 
     // Initialize intelligence engines
-    this.toolIntelligenceEngine = new EnhancedToolIntelligenceEngine()
+    this.toolIntelligenceEngine = {} // TODO: Implement EnhancedToolIntelligenceEngine
     this.recommendationEngine = new ContextualRecommendationEngine({
       cache: {
         recommendationTTL: this.config.performance?.intelligenceCacheTTL || 300000,
