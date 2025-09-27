@@ -216,9 +216,9 @@ export class NaturalLanguageHelpSystem {
   constructor() {
     this.knowledgeBase = this.initializeKnowledgeBase()
     this.queryClassifier = new HelpQueryClassifier()
-    this.responseGenerator = new HelpResponseGenerator(this.knowledgeBase)
-    this.searchEngine = new HelpSearchEngine(this.knowledgeBase)
-    this.tutorialManager = new TutorialManager(this.knowledgeBase)
+    this.responseGenerator = new HelpResponseGenerator()
+    this.searchEngine = new HelpSearchEngine()
+    this.tutorialManager = new TutorialManager()
   }
 
   /**

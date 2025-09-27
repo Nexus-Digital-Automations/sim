@@ -234,9 +234,9 @@ export class PerformanceMonitoringDashboard extends EventEmitter {
 
     this.alertManager = new AlertManager(config.alerting, this)
     this.analyticsEngine = new AnalyticsEngine(config.analytics)
-    this.metricsCollector = new MetricsCollector(config.collection)
+    this.metricsCollector = new MetricsCollector() // TODO: Update constructor if parameters needed
     this.healthChecker = new HealthChecker()
-    this.reportGenerator = new ReportGenerator(config.analytics)
+    this.reportGenerator = new ReportGenerator() // TODO: Update constructor if parameters needed
 
     this.initialize()
   }

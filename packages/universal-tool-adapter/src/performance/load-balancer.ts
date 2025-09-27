@@ -192,6 +192,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
   private healthCheckInterval: NodeJS.Timeout | null = null
   private cleanupInterval: NodeJS.Timeout | null = null
   private roundRobinIndex = 0
+  private requestCounter: number = 0 // TODO: Track total requests processed
 
   constructor(private config: LoadBalancerConfig) {
     super()
@@ -880,6 +881,7 @@ class MetricsCollector {
   private totalFailures = 0
   private selectionTimes: number[] = []
   private requestDistribution = new Map<string, number>()
+  private lastMetricsReset: number = Date.now() // TODO: Track last metrics reset timestamp
 
   recordSelection(decision: LoadBalancingDecision): void {
     this.totalSelections++

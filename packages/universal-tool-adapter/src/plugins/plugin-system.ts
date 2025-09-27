@@ -37,6 +37,7 @@ export class PluginSystem extends EventEmitter {
 
   // Runtime state
   private isInitialized = false
+  private loadingInProgress: boolean = false // TODO: Track plugin loading state
 
   constructor(config: PluginSystemConfig = {}) {
     super()

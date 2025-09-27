@@ -197,17 +197,19 @@ class SimToolCatalog {
 
 export class ToolSelectionIntelligenceEngine {
   private simToolCatalog: SimToolCatalog
+  private toolClassifier: any // TODO: Add proper SimToolClassifier type
   private contextAnalyzer: ContextAnalyzer
   private userProfiler: UserProfiler
+  private recommendationEngine: any // TODO: Add proper RecommendationEngine type
   private reasoningEngine: ReasoningEngine
 
   constructor(config?: ToolSelectionConfig) {
     this.simToolCatalog = new SimToolCatalog()
     this.toolClassifier = new SimToolClassifier()
-    this.contextAnalyzer = new ContextAnalyzer(config?.contextSettings)
-    this.userProfiler = new UserProfiler(config?.userProfilingSettings)
+    this.contextAnalyzer = new ContextAnalyzer() // TODO: Add proper contextSettings configuration
+    this.userProfiler = new UserProfiler() // TODO: Add proper userProfilingSettings configuration
     this.recommendationEngine = new RecommendationEngine()
-    this.reasoningEngine = new ReasoningEngine(config?.reasoningSettings)
+    this.reasoningEngine = new ReasoningEngine() // TODO: Add proper reasoningSettings configuration
 
     logger.info('Tool Selection Intelligence Engine initialized')
   }

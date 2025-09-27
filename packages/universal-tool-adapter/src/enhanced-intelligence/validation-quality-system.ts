@@ -360,7 +360,7 @@ export class ValidationQualitySystem {
     this.complianceChecker = new ComplianceChecker()
     this.performanceMonitor = new PerformanceMonitor()
     this.improvementEngine = new ImprovementEngine()
-    this.reportingService = new ReportingService(config.reporting)
+    this.reportingService = new ReportingService() // TODO: Add proper reporting configuration
 
     logger.info('Validation and Quality System initialized')
   }

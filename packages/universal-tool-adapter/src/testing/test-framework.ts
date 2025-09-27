@@ -28,6 +28,7 @@ export class AdapterTestFramework extends EventEmitter {
   private readonly mockGenerator: MockGenerator
   private readonly fixtureManager: FixtureManager
   private readonly performanceTester: PerformanceTester
+  private readonly assertionEngine: any // TODO: Add proper AssertionEngine type
 
   // Test management
   private readonly testSuites = new Map<string, TestSuite>()
@@ -87,11 +88,11 @@ export class AdapterTestFramework extends EventEmitter {
     }
 
     // Initialize subsystems
-    this.testRunner = new TestRunner(this.config, this)
-    this.mockGenerator = new MockGenerator(this.config, this)
-    this.fixtureManager = new FixtureManager(this.config)
-    this.assertionEngine = new AssertionEngine(this.config)
-    this.performanceTester = new PerformanceTester(this.config, this)
+    this.testRunner = new TestRunner()
+    this.mockGenerator = new MockGenerator()
+    this.fixtureManager = new FixtureManager()
+    this.assertionEngine = new AssertionEngine()
+    this.performanceTester = new PerformanceTester()
 
     logger.info('Adapter Test Framework initialized', {
       parallelism: this.config.parallelism,
@@ -393,7 +394,7 @@ export class AdapterTestFramework extends EventEmitter {
       description: 'Verify adapter has required properties and methods',
       category: 'functionality',
       run: async () => {
-        const assertions = new AssertionEngine({})
+        const assertions = new AssertionEngine()
 
         assertions.assert(!!adapter.id, 'Adapter should have ID')
         assertions.assert(!!adapter.name, 'Adapter should have name')
@@ -421,7 +422,7 @@ export class AdapterTestFramework extends EventEmitter {
           try {
             const result = await adapter.execute(mockContext, mockArgs)
 
-            const assertions = new AssertionEngine({})
+            const assertions = new AssertionEngine()
             assertions.assert(!!result, 'Execution should return a result')
             assertions.assert(typeof result.type === 'string', 'Result should have a type')
 
@@ -496,7 +497,7 @@ export class AdapterTestFramework extends EventEmitter {
             const result = await adapter.execute(mockContext, mockArgs)
 
             // Should handle invalid type gracefully
-            const assertions = new AssertionEngine({})
+            const assertions = new AssertionEngine()
             assertions.assert(!!result, 'Should return a result even with invalid type')
 
             return { passed: true, result, assertions: assertions.getResults() }
@@ -533,7 +534,7 @@ export class AdapterTestFramework extends EventEmitter {
         try {
           const result = await adapter.execute(mockContext, malformedArgs)
 
-          const assertions = new AssertionEngine({})
+          const assertions = new AssertionEngine()
           assertions.assert(!!result, 'Should return result for malformed params')
           assertions.assert(
             result.type === 'error' || result.type === 'partial',
@@ -562,7 +563,7 @@ export class AdapterTestFramework extends EventEmitter {
         try {
           const result = await adapter.execute(mockContext, null as any)
 
-          const assertions = new AssertionEngine({})
+          const assertions = new AssertionEngine()
           assertions.assert(!!result, 'Should handle null parameters')
 
           return { passed: true, result, assertions: assertions.getResults() }
@@ -600,7 +601,7 @@ export class AdapterTestFramework extends EventEmitter {
           const result = await adapter.execute(mockContext, mockArgs)
           const duration = Date.now() - startTime
 
-          const assertions = new AssertionEngine({})
+          const assertions = new AssertionEngine()
           const thresholdTime = this.config.performanceThresholds?.executionTime || 5000
           assertions.assert(
             duration < thresholdTime,
@@ -645,7 +646,7 @@ export class AdapterTestFramework extends EventEmitter {
           const metadata = adapter.metadata
           const config = adapter.getConfiguration()
 
-          const assertions = new AssertionEngine({})
+          const assertions = new AssertionEngine()
           assertions.assert(!!metadata, 'Adapter should have metadata')
           assertions.assert(!!config, 'Adapter should have configuration')
           assertions.assert(typeof config === 'object', 'Configuration should be object')
@@ -678,7 +679,7 @@ export class AdapterTestFramework extends EventEmitter {
         try {
           const result = await adapter.execute(mockContext, {})
 
-          const assertions = new AssertionEngine({})
+          const assertions = new AssertionEngine()
           assertions.assert(!!result, 'Should handle empty parameters')
 
           return { passed: true, result, assertions: assertions.getResults() }

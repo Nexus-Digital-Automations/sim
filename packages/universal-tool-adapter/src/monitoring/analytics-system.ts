@@ -91,10 +91,10 @@ export class AnalyticsSystem extends EventEmitter {
 
     // Initialize subsystems
     this.alertManager = new AlertManager(this.config, this)
-    this.healthChecker = new HealthChecker(this.config, this)
+    this.healthChecker = new HealthChecker() // TODO: Update constructor if parameters needed
     this.trendAnalyzer = new TrendAnalyzer()
     this.aggregationEngine = new AggregationEngine()
-    this.reportGenerator = new ReportGenerator(this.config, this)
+    this.reportGenerator = new ReportGenerator() // TODO: Update constructor if parameters needed
 
     // Start monitoring
     this.startMonitoring()

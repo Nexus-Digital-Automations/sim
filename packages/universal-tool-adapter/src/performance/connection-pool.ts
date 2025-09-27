@@ -668,6 +668,7 @@ class CircuitBreaker {
   private failures = 0
   private nextAttemptTime = 0
   private halfOpenRequests = 0
+  private lastFailureTime: number = 0 // TODO: Track last failure timestamp
 
   constructor(
     private config: ConnectionPoolConfig['circuitBreaker'],

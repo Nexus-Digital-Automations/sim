@@ -684,7 +684,7 @@ export class ABTestingFramework {
         statisticalSignificance: this.assessStatisticalSignificance(statisticalTests),
         practicalSignificance: this.assessPracticalSignificance(treatmentEffects, test),
         confidenceLevel: test.significanceLevel,
-        pValue: Math.min(...statisticalTests.map((t) => t.pValue)),
+        pValue: Math.min(...statisticalTests.map((t: any) => t.pValue)),
         businessImpact,
         recommendations: this.generateRecommendations(treatmentEffects, businessImpact),
       }

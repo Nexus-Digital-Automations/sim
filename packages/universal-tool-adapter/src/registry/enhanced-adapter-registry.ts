@@ -48,6 +48,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
   // Caching and optimization
   private readonly discoveryCache = new Map<string, DiscoveredTool[]>()
   private readonly executionCache = new Map<string, any>()
+  private readonly loadBalancer: any // TODO: Add proper LoadBalancer type
 
   // Lifecycle management
   private isShuttingDown = false
