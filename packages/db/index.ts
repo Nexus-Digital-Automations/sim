@@ -1,16 +1,16 @@
-import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
-import * as schema from './schema'
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "./schema";
 
 // =============================================================================
 // Database Schema Exports (Main Schema)
 // =============================================================================
 
 // Re-export core database types and utilities
-export type { PostgresJsDatabase }
+export type { PostgresJsDatabase };
 
 // Constants (from consts.ts)
-export { DEFAULT_FREE_CREDITS, TAG_SLOTS, type TagSlot } from './consts'
+export { DEFAULT_FREE_CREDITS, TAG_SLOTS, type TagSlot } from "./consts";
 // Parlant types (only export what actually exists)
 // Parlant query helpers
 // Parlant validation schemas
@@ -192,7 +192,7 @@ export {
   type WorkflowBlockIntegration,
   withErrorHandling,
   withWorkspaceScope,
-} from './parlant-exports'
+} from "./parlant-exports";
 // Core database schema tables and enums (from main schema.ts)
 // Chat persistence schema exports (with chatPersistence prefix to avoid conflicts)
 // Parlant schema exports (with parlant prefix to avoid conflicts)
@@ -298,13 +298,14 @@ export {
   workspaceEnvironment,
   workspaceInvitation,
   workspaceInvitationStatusEnum,
-} from './schema'
+} from "./schema";
 
 // In production, use the Vercel-generated POSTGRES_URL
 // In development, use the direct DATABASE_URL
-const connectionString = process.env.POSTGRES_URL ?? process.env.DATABASE_URL ?? ''
+const connectionString =
+  process.env.POSTGRES_URL ?? process.env.DATABASE_URL ?? "";
 if (!connectionString) {
-  throw new Error('Missing POSTGRES_URL or DATABASE_URL environment variable')
+  throw new Error("Missing POSTGRES_URL or DATABASE_URL environment variable");
 }
 
 /**
@@ -327,14 +328,14 @@ const postgresClient = postgres(connectionString, {
   connect_timeout: 30,
   max: 60,
   onnotice: () => {},
-})
+});
 
-const drizzleClient = drizzle(postgresClient, { schema })
+const drizzleClient = drizzle(postgresClient, { schema });
 
 declare global {
   // eslint-disable-next-line no-var
-  var database: PostgresJsDatabase<typeof schema> | undefined
+  var database: PostgresJsDatabase<typeof schema> | undefined;
 }
 
-export const db = globalThis.database || drizzleClient
-if (process.env.NODE_ENV !== 'production') globalThis.database = db
+export const db = globalThis.database || drizzleClient;
+if (process.env.NODE_ENV !== "production") globalThis.database = db;

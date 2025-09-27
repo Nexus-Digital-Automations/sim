@@ -5,49 +5,49 @@
  * Provides success, error, warning, and info toast variants.
  */
 
-'use client'
+"use client";
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef } from "react";
 
 export interface ToastOptions {
-  title: string
-  description?: string
-  variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info'
-  duration?: number
+  title: string;
+  description?: string;
+  variant?: "default" | "destructive" | "success" | "warning" | "info";
+  duration?: number;
 }
 
 export interface Toast extends ToastOptions {
-  id: string
-  timestamp: number
+  id: string;
+  timestamp: number;
 }
 
-let toastIdCounter = 0
+let toastIdCounter = 0;
 
 export function toast(options: ToastOptions): string {
-  const id = `toast-${++toastIdCounter}`
-  const toastElement = createToastElement(id, options)
+  const id = `toast-${++toastIdCounter}`;
+  const toastElement = createToastElement(id, options);
 
   // Add to DOM
-  let toastContainer = document.getElementById('toast-container')
+  let toastContainer = document.getElementById("toast-container");
   if (!toastContainer) {
-    toastContainer = createToastContainer()
-    document.body.appendChild(toastContainer)
+    toastContainer = createToastContainer();
+    document.body.appendChild(toastContainer);
   }
 
-  toastContainer.appendChild(toastElement)
+  toastContainer.appendChild(toastElement);
 
   // Auto-remove after duration
-  const duration = options.duration || 5000
+  const duration = options.duration || 5000;
   setTimeout(() => {
-    removeToast(id)
-  }, duration)
+    removeToast(id);
+  }, duration);
 
-  return id
+  return id;
 }
 
 function createToastContainer(): HTMLElement {
-  const container = document.createElement('div')
-  container.id = 'toast-container'
+  const container = document.createElement("div");
+  container.id = "toast-container";
   container.style.cssText = `
     position: fixed;
     top: 20px;
@@ -58,13 +58,13 @@ function createToastContainer(): HTMLElement {
     gap: 12px;
     max-width: 420px;
     pointer-events: none;
-  `
-  return container
+  `;
+  return container;
 }
 
 function createToastElement(id: string, options: ToastOptions): HTMLElement {
-  const toast = document.createElement('div')
-  toast.id = id
+  const toast = document.createElement("div");
+  toast.id = id;
   toast.style.cssText = `
     pointer-events: auto;
     border-radius: 8px;
@@ -77,14 +77,14 @@ function createToastElement(id: string, options: ToastOptions): HTMLElement {
     transition: all 0.3s ease;
     max-width: 100%;
     word-wrap: break-word;
-  `
+  `;
 
   // Apply variant styles
-  const variantStyles = getVariantStyles(options.variant || 'default')
-  Object.assign(toast.style, variantStyles)
+  const variantStyles = getVariantStyles(options.variant || "default");
+  Object.assign(toast.style, variantStyles);
 
   // Create content
-  const content = document.createElement('div')
+  const content = document.createElement("div");
   content.innerHTML = `
     <div style="font-weight: 600; margin-bottom: 4px; color: inherit;">
       ${options.title}
@@ -96,14 +96,14 @@ function createToastElement(id: string, options: ToastOptions): HTMLElement {
         ${options.description}
       </div>
     `
-        : ''
+        : ""
     }
-  `
-  toast.appendChild(content)
+  `;
+  toast.appendChild(content);
 
   // Create close button
-  const closeButton = document.createElement('button')
-  closeButton.innerHTML = '×'
+  const closeButton = document.createElement("button");
+  closeButton.innerHTML = "×";
   closeButton.style.cssText = `
     position: absolute;
     top: 8px;
@@ -120,83 +120,83 @@ function createToastElement(id: string, options: ToastOptions): HTMLElement {
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-  `
-  closeButton.addEventListener('click', () => removeToast(id))
-  toast.appendChild(closeButton)
+  `;
+  closeButton.addEventListener("click", () => removeToast(id));
+  toast.appendChild(closeButton);
 
   // Animate in
   requestAnimationFrame(() => {
-    toast.style.opacity = '1'
-    toast.style.transform = 'translateX(0)'
-  })
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  });
 
-  return toast
+  return toast;
 }
 
 function getVariantStyles(variant: string): Record<string, string> {
   switch (variant) {
-    case 'destructive':
+    case "destructive":
       return {
-        background: '#fef2f2',
-        border: '1px solid #fecaca',
-        color: '#dc2626',
-      }
-    case 'success':
+        background: "#fef2f2",
+        border: "1px solid #fecaca",
+        color: "#dc2626",
+      };
+    case "success":
       return {
-        background: '#f0fdf4',
-        border: '1px solid #bbf7d0',
-        color: '#16a34a',
-      }
-    case 'warning':
+        background: "#f0fdf4",
+        border: "1px solid #bbf7d0",
+        color: "#16a34a",
+      };
+    case "warning":
       return {
-        background: '#fffbeb',
-        border: '1px solid #fed7aa',
-        color: '#d97706',
-      }
-    case 'info':
+        background: "#fffbeb",
+        border: "1px solid #fed7aa",
+        color: "#d97706",
+      };
+    case "info":
       return {
-        background: '#eff6ff',
-        border: '1px solid #bfdbfe',
-        color: '#2563eb',
-      }
+        background: "#eff6ff",
+        border: "1px solid #bfdbfe",
+        color: "#2563eb",
+      };
     default:
       return {
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        color: '#374151',
-      }
+        background: "#ffffff",
+        border: "1px solid #e2e8f0",
+        color: "#374151",
+      };
   }
 }
 
 function removeToast(id: string): void {
-  const toastElement = document.getElementById(id)
+  const toastElement = document.getElementById(id);
   if (toastElement) {
-    toastElement.style.opacity = '0'
-    toastElement.style.transform = 'translateX(100%)'
+    toastElement.style.opacity = "0";
+    toastElement.style.transform = "translateX(100%)";
     setTimeout(() => {
-      toastElement.remove()
+      toastElement.remove();
 
       // Remove container if empty
-      const container = document.getElementById('toast-container')
+      const container = document.getElementById("toast-container");
       if (container && container.children.length === 0) {
-        container.remove()
+        container.remove();
       }
-    }, 300)
+    }, 300);
   }
 }
 
 export function useToast() {
-  const toastRef = useRef<(options: ToastOptions) => string>(toast)
+  const toastRef = useRef<(options: ToastOptions) => string>(toast);
 
   const showToast = useCallback((options: ToastOptions) => {
-    return toastRef.current(options)
-  }, [])
+    return toastRef.current(options);
+  }, []);
 
   return {
     toast: showToast,
     dismiss: useCallback((id: string) => removeToast(id), []),
-  }
+  };
 }
 
 // Default export for compatibility
-export default useToast
+export default useToast;

@@ -1,26 +1,26 @@
-'use client'
+"use client";
 
-import { useCallback, useEffect, useState } from 'react'
-import type { TagSlot } from '@/lib/knowledge/consts'
-import { createLogger } from '@/lib/logs/console/logger'
+import { useCallback, useEffect, useState } from "react";
+import type { TagSlot } from "@/lib/knowledge/consts";
+import { createLogger } from "@/lib/logs/console/logger";
 
-const logger = createLogger('useTagDefinitions')
+const logger = createLogger("useTagDefinitions");
 
 export interface TagDefinition {
-  id: string
-  tagSlot: TagSlot
-  displayName: string
-  fieldType: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  tagSlot: TagSlot;
+  displayName: string;
+  fieldType: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TagDefinitionInput {
-  tagSlot: TagSlot
-  displayName: string
-  fieldType: string
+  tagSlot: TagSlot;
+  displayName: string;
+  fieldType: string;
   // Optional: for editing existing definitions
-  _originalDisplayName?: string
+  _originalDisplayName?: string;
 }
 
 /**
@@ -30,136 +30,143 @@ export interface TagDefinitionInput {
  */
 export function useTagDefinitions(
   knowledgeBaseId: string | null,
-  documentId: string | null = null
+  documentId: string | null = null,
 ) {
-  const [tagDefinitions, setTagDefinitions] = useState<TagDefinition[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [tagDefinitions, setTagDefinitions] = useState<TagDefinition[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTagDefinitions = useCallback(async () => {
     if (!knowledgeBaseId || !documentId) {
-      setTagDefinitions([])
-      return
+      setTagDefinitions([]);
+      return;
     }
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
       const response = await fetch(
-        `/api/knowledge/${knowledgeBaseId}/documents/${documentId}/tag-definitions`
-      )
+        `/api/knowledge/${knowledgeBaseId}/documents/${documentId}/tag-definitions`,
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch tag definitions: ${response.statusText}`)
+        throw new Error(
+          `Failed to fetch tag definitions: ${response.statusText}`,
+        );
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (data.success && Array.isArray(data.data)) {
-        setTagDefinitions(data.data)
+        setTagDefinitions(data.data);
       } else {
-        throw new Error('Invalid response format')
+        throw new Error("Invalid response format");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
-      logger.error('Error fetching tag definitions:', err)
-      setError(errorMessage)
-      setTagDefinitions([])
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      logger.error("Error fetching tag definitions:", err);
+      setError(errorMessage);
+      setTagDefinitions([]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [knowledgeBaseId, documentId])
+  }, [knowledgeBaseId, documentId]);
 
   const saveTagDefinitions = useCallback(
     async (definitions: TagDefinitionInput[]) => {
       if (!knowledgeBaseId || !documentId) {
-        throw new Error('Knowledge base ID and document ID are required')
+        throw new Error("Knowledge base ID and document ID are required");
       }
 
       // Simple validation
       const validDefinitions = (definitions || []).filter(
-        (def) => def?.tagSlot && def.displayName && def.displayName.trim()
-      )
+        (def) => def?.tagSlot && def.displayName && def.displayName.trim(),
+      );
 
       try {
         const response = await fetch(
           `/api/knowledge/${knowledgeBaseId}/documents/${documentId}/tag-definitions`,
           {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({ definitions: validDefinitions }),
-          }
-        )
+          },
+        );
 
         if (!response.ok) {
-          throw new Error(`Failed to save tag definitions: ${response.statusText}`)
+          throw new Error(
+            `Failed to save tag definitions: ${response.statusText}`,
+          );
         }
 
-        const data = await response.json()
+        const data = await response.json();
 
         if (!data.success) {
-          throw new Error(data.error || 'Failed to save tag definitions')
+          throw new Error(data.error || "Failed to save tag definitions");
         }
 
         // Refresh the definitions after saving
-        await fetchTagDefinitions()
+        await fetchTagDefinitions();
 
-        return data.data
+        return data.data;
       } catch (err) {
-        logger.error('Error saving tag definitions:', err)
-        throw err
+        logger.error("Error saving tag definitions:", err);
+        throw err;
       }
     },
-    [knowledgeBaseId, documentId, fetchTagDefinitions]
-  )
+    [knowledgeBaseId, documentId, fetchTagDefinitions],
+  );
 
   const deleteTagDefinitions = useCallback(async () => {
     if (!knowledgeBaseId || !documentId) {
-      throw new Error('Knowledge base ID and document ID are required')
+      throw new Error("Knowledge base ID and document ID are required");
     }
 
     try {
       const response = await fetch(
         `/api/knowledge/${knowledgeBaseId}/documents/${documentId}/tag-definitions`,
         {
-          method: 'DELETE',
-        }
-      )
+          method: "DELETE",
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to delete tag definitions: ${response.statusText}`)
+        throw new Error(
+          `Failed to delete tag definitions: ${response.statusText}`,
+        );
       }
 
       // Refresh the definitions after deleting
-      await fetchTagDefinitions()
+      await fetchTagDefinitions();
     } catch (err) {
-      logger.error('Error deleting tag definitions:', err)
-      throw err
+      logger.error("Error deleting tag definitions:", err);
+      throw err;
     }
-  }, [knowledgeBaseId, documentId, fetchTagDefinitions])
+  }, [knowledgeBaseId, documentId, fetchTagDefinitions]);
 
   const getTagLabel = useCallback(
     (tagSlot: string): string => {
-      const definition = tagDefinitions.find((def) => def.tagSlot === tagSlot)
-      return definition?.displayName || tagSlot
+      const definition = tagDefinitions.find((def) => def.tagSlot === tagSlot);
+      return definition?.displayName || tagSlot;
     },
-    [tagDefinitions]
-  )
+    [tagDefinitions],
+  );
 
   const getTagDefinition = useCallback(
     (tagSlot: string): TagDefinition | undefined => {
-      return tagDefinitions.find((def) => def.tagSlot === tagSlot)
+      return tagDefinitions.find((def) => def.tagSlot === tagSlot);
     },
-    [tagDefinitions]
-  )
+    [tagDefinitions],
+  );
 
   // Auto-fetch on mount and when dependencies change
   useEffect(() => {
-    fetchTagDefinitions()
-  }, [fetchTagDefinitions])
+    fetchTagDefinitions();
+  }, [fetchTagDefinitions]);
 
   return {
     tagDefinitions,
@@ -170,5 +177,5 @@ export function useTagDefinitions(
     deleteTagDefinitions,
     getTagLabel,
     getTagDefinition,
-  }
+  };
 }
