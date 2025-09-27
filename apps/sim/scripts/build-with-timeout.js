@@ -33,7 +33,7 @@ class NextJSBuilder {
   validateStrategy(strategy) {
     // Security: Only allow predefined safe commands
     const ALLOWED_COMMANDS = ['npx']
-    const ALLOWED_ARGS = ['next', 'build', '--no-lint']
+    const ALLOWED_ARGS = ['next', 'build']
 
     if (!ALLOWED_COMMANDS.includes(strategy.cmd)) {
       throw new Error(`Security: Command '${strategy.cmd}' not in allowlist`)
@@ -187,7 +187,7 @@ class NextJSBuilder {
       {
         name: 'High Memory + No Telemetry',
         cmd: 'npx',
-        args: ['next', 'build', '--no-lint'],
+        args: ['next', 'build'],
         env: {
           NODE_OPTIONS: '--max-old-space-size=8192',
           NEXT_TELEMETRY_DISABLED: '1',
@@ -196,7 +196,7 @@ class NextJSBuilder {
       {
         name: 'Classic Webpack (No Turbo)',
         cmd: 'npx',
-        args: ['next', 'build', '--no-lint'],
+        args: ['next', 'build'],
         env: {
           NODE_OPTIONS: '--max-old-space-size=8192',
           TURBOPACK: '0',
@@ -206,7 +206,7 @@ class NextJSBuilder {
       {
         name: 'Minimal Configuration',
         cmd: 'npx',
-        args: ['next', 'build', '--no-lint'],
+        args: ['next', 'build'],
         env: {
           NODE_OPTIONS: '--max-old-space-size=4096',
           NODE_ENV: 'production',

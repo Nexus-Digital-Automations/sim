@@ -14,13 +14,13 @@ const STRATEGIES = [
   {
     name: 'Standard Build',
     cmd: 'next',
-    args: ['build', '--no-lint'],
+    args: ['build'],
     env: { NODE_OPTIONS: '--max-old-space-size=8192' },
   },
   {
     name: 'Classic Webpack Build',
     cmd: 'next',
-    args: ['build', '--no-lint'],
+    args: ['build'],
     env: {
       NODE_OPTIONS: '--max-old-space-size=8192',
       TURBOPACK: '0',
@@ -29,7 +29,7 @@ const STRATEGIES = [
   {
     name: 'Minimal Build',
     cmd: 'next',
-    args: ['build', '--no-lint'],
+    args: ['build'],
     env: {
       NODE_OPTIONS: '--max-old-space-size=8192',
       NEXT_TELEMETRY_DISABLED: '1',
@@ -41,7 +41,7 @@ const STRATEGIES = [
 function validateStrategy(strategy) {
   // Security: Only allow predefined safe commands
   const ALLOWED_COMMANDS = ['next']
-  const ALLOWED_ARGS = ['build', '--no-lint']
+  const ALLOWED_ARGS = ['build']
 
   if (!ALLOWED_COMMANDS.includes(strategy.cmd)) {
     throw new Error(`Security: Command '${strategy.cmd}' not in allowlist`)

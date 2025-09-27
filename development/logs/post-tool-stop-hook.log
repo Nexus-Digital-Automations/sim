@@ -138,3 +138,31 @@
 [2025-09-27T18:08:41.774Z] [INFO] Stop control state updated: {"stopAllowed":false,"singleUseFlag":false,"lastEndpointTrigger":null,"totalStopsBlocked":35}
 [2025-09-27T18:08:41.774Z] [INFO] Blocking stop #35 - infinite continue mode active
 [2025-09-27T18:08:41.774Z] [INFO] Stop blocked with task guidance. Total stops blocked: 35
+[2025-09-27T18:08:51.707Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T18:08:51.709Z] [INFO] Stop control state updated: {"stopAllowed":false,"singleUseFlag":false,"lastEndpointTrigger":null,"totalStopsBlocked":36}
+[2025-09-27T18:08:51.709Z] [INFO] Blocking stop #36 - infinite continue mode active
+[2025-09-27T18:08:51.709Z] [INFO] Stop blocked with task guidance. Total stops blocked: 36
+[2025-09-27T18:09:03.737Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T18:09:03.739Z] [INFO] Stop control state updated: {"stopAllowed":false,"singleUseFlag":false,"lastEndpointTrigger":null,"totalStopsBlocked":37}
+[2025-09-27T18:09:03.739Z] [INFO] Blocking stop #37 - infinite continue mode active
+[2025-09-27T18:09:03.740Z] [INFO] Stop blocked with task guidance. Total stops blocked: 37
+[2025-09-27T18:09:11.836Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T18:09:11.838Z] [INFO] Stop control state updated: {"stopAllowed":false,"singleUseFlag":false,"lastEndpointTrigger":null,"totalStopsBlocked":38}
+[2025-09-27T18:09:11.839Z] [INFO] Blocking stop #38 - infinite continue mode active
+[2025-09-27T18:09:11.839Z] [INFO] Stop blocked with task guidance. Total stops blocked: 38
+[2025-09-27T18:09:47.263Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T18:09:47.267Z] [INFO] Stop control state updated: {"stopAllowed":false,"singleUseFlag":false,"lastEndpointTrigger":null,"totalStopsBlocked":39}
+[2025-09-27T18:09:47.269Z] [INFO] Blocking stop #39 - infinite continue mode active
+[2025-09-27T18:09:47.274Z] [INFO] Stop blocked with task guidance. Total stops blocked: 39
+[2025-09-27T18:09:56.005Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T18:09:56.006Z] [INFO] Stop control state updated: {"stopAllowed":false,"singleUseFlag":false,"lastEndpointTrigger":null,"totalStopsBlocked":40}
+[2025-09-27T18:09:56.006Z] [INFO] Blocking stop #40 - infinite continue mode active
+[2025-09-27T18:09:56.007Z] [INFO] Stop blocked with task guidance. Total stops blocked: 40
+[2025-09-27T18:10:09.281Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T18:10:09.283Z] [INFO] Stop control state updated: {"stopAllowed":false,"singleUseFlag":false,"lastEndpointTrigger":null,"totalStopsBlocked":41}
+[2025-09-27T18:10:09.284Z] [INFO] Blocking stop #41 - infinite continue mode active
+[2025-09-27T18:10:09.284Z] [INFO] Stop blocked with task guidance. Total stops blocked: 41
+[2025-09-27T18:10:17.334Z] [INFO] Post-tool infinite continue hook started
+[2025-09-27T18:10:17.341Z] [INFO] Stop control state updated: {"stopAllowed":false,"singleUseFlag":false,"lastEndpointTrigger":null,"totalStopsBlocked":42}
+[2025-09-27T18:10:17.341Z] [INFO] Blocking stop #42 - infinite continue mode active
+[2025-09-27T18:10:17.341Z] [INFO] Stop blocked with task guidance. Total stops blocked: 42
