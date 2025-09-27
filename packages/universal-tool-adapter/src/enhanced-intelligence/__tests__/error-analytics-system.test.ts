@@ -64,7 +64,6 @@ describe('ErrorAnalyticsSystem', () => {
     it('should record error events successfully', async () => {
       const error = new Error('Test error for analytics')
       const context: ErrorRecoveryContext = {
-        toolName: 'test_tool',
         operation: 'test_operation',
         parameters: { testParam: 'value' },
         timestamp: new Date(),
@@ -77,7 +76,6 @@ describe('ErrorAnalyticsSystem', () => {
       const classification: ErrorClassification = {
         category: 'network',
         severity: 'medium',
-        isRetryable: true,
         requiresUserAction: false,
         requiresEscalation: false,
         confidence: 0.85,
@@ -103,7 +101,6 @@ describe('ErrorAnalyticsSystem', () => {
       const classification: ErrorClassification = {
         category: 'unknown',
         severity: 'low',
-        isRetryable: false,
         requiresUserAction: false,
         requiresEscalation: false,
         confidence: 0.5,
@@ -131,7 +128,7 @@ describe('ErrorAnalyticsSystem', () => {
 
       const error = new Error('Event emission test error')
       const context: ErrorRecoveryContext = {
-        toolName: 'event_tool',
+        toolId: 'event_tool',
         operation: 'emit_test',
         parameters: {},
         timestamp: new Date(),
@@ -144,7 +141,6 @@ describe('ErrorAnalyticsSystem', () => {
       const classification: ErrorClassification = {
         category: 'test',
         severity: 'low',
-        isRetryable: true,
         requiresUserAction: false,
         requiresEscalation: false,
         confidence: 0.9,
@@ -164,7 +160,7 @@ describe('ErrorAnalyticsSystem', () => {
     beforeEach(async () => {
       const error = new Error('Recovery tracking test')
       const context: ErrorRecoveryContext = {
-        toolName: 'recovery_tool',
+        toolId: 'recovery_tool',
         operation: 'recovery_test',
         parameters: {},
         timestamp: new Date(),
@@ -177,7 +173,6 @@ describe('ErrorAnalyticsSystem', () => {
       const classification: ErrorClassification = {
         category: 'network',
         severity: 'medium',
-        isRetryable: true,
         requiresUserAction: false,
         requiresEscalation: false,
         confidence: 0.8,
@@ -192,7 +187,7 @@ describe('ErrorAnalyticsSystem', () => {
 
     it('should record recovery plans', async () => {
       const recoveryPlan: IntelligentRecoveryPlan = {
-        id: 'plan_123',
+        planId: 'plan_123',
         timestamp: new Date(),
         classification: {
           category: 'network',
@@ -200,7 +195,6 @@ describe('ErrorAnalyticsSystem', () => {
           type: 'testing',
           domain: 'validation',
           confidence: 0.8,
-          patterns: [],
           suggestedActions: [],
           estimatedRecoveryTime: 2000,
           metadata: {},
@@ -319,7 +313,7 @@ describe('ErrorAnalyticsSystem', () => {
         ;(error as any).name = errorData.type
 
         const context: ErrorRecoveryContext = {
-          toolName: 'analytics_tool',
+          toolId: 'analytics_tool',
           operation: 'analytics_test',
           parameters: {},
           timestamp: errorData.timestamp,
@@ -333,7 +327,6 @@ describe('ErrorAnalyticsSystem', () => {
           category: 'test',
           severity: 'low',
           confidence: 0.8,
-          patterns: [],
           suggestedActions: [],
           estimatedRecoveryTime: 1000,
           metadata: {},
@@ -415,7 +408,7 @@ describe('ErrorAnalyticsSystem', () => {
             success: true,
             resolutionTimeMs: 3000,
             attemptCount: 2,
-            resolutionMethod: 'user_guided',
+            resolutionMethod: 'user_guided' as const,
             alternativeToolUsed: true,
             successfulTool: 'backup_tool',
           },
@@ -427,8 +420,12 @@ describe('ErrorAnalyticsSystem', () => {
         ;(data.error as any).name = data.type
 
         const context: ErrorRecoveryContext = {
-          toolName: 'effectiveness_tool',
-          operation: 'effectiveness_test',
+          executionId: 'exec_effectiveness',
+          toolId: 'effectiveness_tool',
+          adapterVersion: '1.0.0',
+          startedAt: new Date(),
+          userId: 'test-user',
+          workspaceId: 'test-workspace',
           parameters: {},
           timestamp: new Date(),
           sessionId: 'effectiveness_session',
@@ -443,10 +440,6 @@ describe('ErrorAnalyticsSystem', () => {
           type: 'testing',
           domain: 'validation',
           confidence: 0.8,
-          patterns: [],
-          suggestedActions: [],
-          estimatedRecoveryTime: 2000,
-          metadata: {},
         }
 
         const eventId = await analyticsSystem.recordErrorEvent(data.error, context, classification)
@@ -524,7 +517,7 @@ describe('ErrorAnalyticsSystem', () => {
       for (let i = 0; i < feedbackData.length; i++) {
         const error = new Error(`UX test error ${i}`)
         const context: ErrorRecoveryContext = {
-          toolName: 'ux_tool',
+          toolId: 'ux_tool',
           operation: 'ux_test',
           parameters: {},
           timestamp: new Date(),
@@ -538,7 +531,6 @@ describe('ErrorAnalyticsSystem', () => {
           category: 'test',
           severity: 'low',
           confidence: 0.8,
-          patterns: [],
           suggestedActions: [],
           estimatedRecoveryTime: 1000,
           metadata: {},
@@ -632,7 +624,7 @@ describe('ErrorAnalyticsSystem', () => {
       for (let i = 0; i < 10; i++) {
         const error = new Error(`Alert test error ${i}`)
         const context: ErrorRecoveryContext = {
-          toolName: 'alert_tool',
+          toolId: 'alert_tool',
           operation: 'alert_test',
           parameters: {},
           timestamp: new Date(),
@@ -646,7 +638,6 @@ describe('ErrorAnalyticsSystem', () => {
           category: 'test',
           severity: 'high',
           confidence: 0.8,
-          patterns: [],
           suggestedActions: [],
           estimatedRecoveryTime: 1000,
           metadata: {},
@@ -670,7 +661,7 @@ describe('ErrorAnalyticsSystem', () => {
       // Create a low satisfaction alert first
       const error = new Error('Satisfaction test error')
       const context: ErrorRecoveryContext = {
-        toolName: 'satisfaction_tool',
+        toolId: 'satisfaction_tool',
         operation: 'satisfaction_test',
         parameters: {},
         timestamp: new Date(),
@@ -683,7 +674,6 @@ describe('ErrorAnalyticsSystem', () => {
       const classification: ErrorClassification = {
         category: 'test',
         severity: 'low',
-        isRetryable: true,
         requiresUserAction: false,
         requiresEscalation: false,
         confidence: 0.8,
@@ -739,7 +729,7 @@ describe('ErrorAnalyticsSystem', () => {
       // Create some sample data
       const error = new Error('Export test error')
       const context: ErrorRecoveryContext = {
-        toolName: 'export_tool',
+        toolId: 'export_tool',
         operation: 'export_test',
         parameters: {},
         timestamp: new Date(),
@@ -752,7 +742,6 @@ describe('ErrorAnalyticsSystem', () => {
       const classification: ErrorClassification = {
         category: 'test',
         severity: 'low',
-        isRetryable: true,
         requiresUserAction: false,
         requiresEscalation: false,
         confidence: 0.8,
@@ -858,7 +847,7 @@ describe('ErrorAnalyticsSystem', () => {
       const error = new Error('Malformed data test')
       const malformedContext = {
         // Missing required fields
-        toolName: undefined,
+        toolId: undefined,
         operation: null,
         parameters: 'not-an-object',
         timestamp: 'invalid-date',
@@ -867,7 +856,6 @@ describe('ErrorAnalyticsSystem', () => {
       const classification: ErrorClassification = {
         category: 'test',
         severity: 'low',
-        isRetryable: true,
         requiresUserAction: false,
         requiresEscalation: false,
         confidence: 0.8,
@@ -896,7 +884,7 @@ describe('ErrorAnalyticsSystem', () => {
       const promises = Array.from({ length: eventCount }, async (_, i) => {
         const error = new Error(`Large dataset error ${i}`)
         const context: ErrorRecoveryContext = {
-          toolName: `tool_${i}`,
+          toolId: `tool_${i}`,
           operation: 'large_dataset_test',
           parameters: { index: i, data: 'x'.repeat(1000) }, // 1KB of data per event
           timestamp: new Date(),
@@ -910,7 +898,6 @@ describe('ErrorAnalyticsSystem', () => {
           category: 'test',
           severity: 'low',
           confidence: 0.8,
-          patterns: [],
           suggestedActions: [],
           estimatedRecoveryTime: 1000,
           metadata: {},
@@ -938,7 +925,6 @@ describe('ErrorAnalyticsSystem', () => {
           userId: `user_${i}`,
           sessionId: `concurrent_session_${i}`,
           workspaceId: `workspace_${i}`,
-          operationId: `operation_${i}`,
           timestamp: new Date(),
           userAgent: 'Test/1.0',
           previousAttempts: 0,
@@ -951,7 +937,6 @@ describe('ErrorAnalyticsSystem', () => {
           type: 'testing',
           domain: 'validation',
           confidence: 0.8,
-          patterns: [],
           suggestedActions: [],
           estimatedRecoveryTime: 1000,
           metadata: {},

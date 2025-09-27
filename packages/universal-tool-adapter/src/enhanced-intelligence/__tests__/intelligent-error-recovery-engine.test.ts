@@ -9,6 +9,7 @@
 
 import { EventEmitter } from 'events'
 import {
+  createIntelligentErrorRecoveryEngine,
   type ErrorRecoveryContext,
   IntelligentErrorRecoveryEngine,
   type RecoveryAction,
@@ -619,8 +620,12 @@ describe('IntelligentErrorRecoveryEngine', () => {
   describe('Edge Cases and Error Handling', () => {
     it('should handle null or undefined errors gracefully', async () => {
       const context: ErrorRecoveryContext = {
+        executionId: 'exec_001',
         toolId: 'test_tool',
-        operation: 'test_op',
+        adapterVersion: '1.0.0',
+        startedAt: new Date(),
+        userId: 'test-user',
+        workspaceId: 'test-workspace',
         parameters: {},
         timestamp: new Date(),
         sessionId: 'test_session',
@@ -658,8 +663,12 @@ describe('IntelligentErrorRecoveryEngine', () => {
 
       const error = new Error('Test error')
       const context: ErrorRecoveryContext = {
+        executionId: 'exec_002',
         toolId: 'test_tool',
-        operation: 'test_op',
+        adapterVersion: '1.0.0',
+        startedAt: new Date(),
+        userId: 'test-user',
+        workspaceId: 'test-workspace',
         parameters: {},
         timestamp: new Date(),
         sessionId: 'test_session',
@@ -672,8 +681,8 @@ describe('IntelligentErrorRecoveryEngine', () => {
       const plan = await recoveryEngine.generateRecoveryPlan(error, context)
 
       expect(plan).toBeDefined()
-      expect(plan.classification.category).toBe('unknown')
-      expect(plan.recoveryActions.length).toBeGreaterThan(0)
+      expect(plan.errorAnalysis.classification.category).toBe('unknown')
+      expect(plan.immediateActions.length).toBeGreaterThan(0)
     })
 
     it('should handle extremely long error messages', async () => {
@@ -681,8 +690,12 @@ describe('IntelligentErrorRecoveryEngine', () => {
       const error = new Error(longMessage)
 
       const context: ErrorRecoveryContext = {
+        executionId: 'exec_003',
         toolId: 'test_tool',
-        operation: 'test_op',
+        adapterVersion: '1.0.0',
+        startedAt: new Date(),
+        userId: 'test-user',
+        workspaceId: 'test-workspace',
         parameters: {},
         timestamp: new Date(),
         sessionId: 'test_session',
@@ -695,7 +708,7 @@ describe('IntelligentErrorRecoveryEngine', () => {
 
       expect(plan).toBeDefined()
       // Verify message is truncated in user-friendly explanation
-      expect(plan.userFriendlyExplanation.length).toBeLessThan(1000)
+      expect(plan.explanation.userFriendlyExplanation.length).toBeLessThan(1000)
     })
   })
 
@@ -740,7 +753,6 @@ describe('IntelligentErrorRecoveryEngine', () => {
           startedAt: new Date(),
           userId: 'test-user',
           workspaceId: 'test-workspace',
-          parameters: { index: i },
           timestamp: new Date(),
           sessionId: `load_session_${i}`,
           userAgent: 'Test/1.0',
