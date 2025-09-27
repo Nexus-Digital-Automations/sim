@@ -16,35 +16,8 @@ import { ZoomPrevention } from '@/app/zoom-prevention'
 
 const logger = createLogger('RootLayout')
 
-const BROWSER_EXTENSION_ATTRIBUTES = [
-  'data-new-gr-c-s-check-loaded',
-  'data-gr-ext-installed',
-  'data-gr-ext-disabled',
-  'data-grammarly',
-  'data-fgm',
-  'data-lt-installed',
-]
-
-if (typeof window !== 'undefined') {
-  const originalError = console.error
-  console.error = (...args) => {
-    if (args[0].includes('Hydration')) {
-      const isExtensionError = BROWSER_EXTENSION_ATTRIBUTES.some((attr) =>
-        args.some((arg) => typeof arg === 'string' && arg.includes(attr))
-      )
-
-      if (!isExtensionError) {
-        logger.error('Hydration Error', {
-          details: args,
-          componentStack: args.find(
-            (arg) => typeof arg === 'string' && arg.includes('component stack')
-          ),
-        })
-      }
-    }
-    originalError.apply(console, args)
-  }
-}
+// Browser extension attributes moved to client-side component
+// This prevents build-time execution that can cause optimization hangs
 
 export const viewport: Viewport = {
   width: 'device-width',
