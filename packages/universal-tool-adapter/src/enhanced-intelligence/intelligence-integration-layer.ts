@@ -142,6 +142,7 @@ export class IntelligenceIntegrationLayer {
   private readonly recommendationEngine: ContextualRecommendationEngine
   private readonly descriptionFramework: NaturalLanguageDescriptionFramework
   private readonly errorManager: ComprehensiveToolErrorManager
+  private toolIntelligenceEngine: any
 
   // Performance optimization
   private readonly intelligenceCache = new Map<string, any>()

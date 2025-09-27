@@ -256,6 +256,7 @@ export interface ErrorAnalytics {
 export class ComprehensiveToolErrorManager {
   private errorAnalytics: ErrorAnalytics
   private proactiveValidationConfig: ProactiveValidationConfig
+  private errorExplanationService: any
   private userSkillProfiles = new Map<string, UserSkillLevel>()
   private errorRecoveryAttempts = new Map<string, number>()
 

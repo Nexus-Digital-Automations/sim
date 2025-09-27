@@ -47,6 +47,11 @@ export class EnhancedAdapterFramework {
   // Framework configuration
   private readonly config: FrameworkConfiguration
 
+  // Core subsystems
+  private parameterMapper!: ParameterMapper
+  private validationEngine!: ValidationEngine
+  private resultFormatter!: ResultFormatter
+
   // Performance optimization
   private readonly performanceOptimizer: any
   private readonly connectionPool: any

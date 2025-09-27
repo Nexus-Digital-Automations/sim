@@ -27,6 +27,7 @@ export class AdapterTestFramework extends EventEmitter {
   private readonly testRunner: TestRunner
   private readonly mockGenerator: MockGenerator
   private readonly fixtureManager: FixtureManager
+  private assertionEngine: any
   private readonly performanceTester: PerformanceTester
 
   // Test management

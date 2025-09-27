@@ -307,6 +307,7 @@ export interface UsageAnalytics {
 export class IntegrationBridge {
   private recommendationEngine: any
   private explanationEngine: any
+  private recommendationAPI: any
   private metricsCollector: any
   private analyticsEngine: any
 

@@ -426,6 +426,7 @@ export interface TutorialReference {
 
 export class IntelligentErrorRecoveryEngine {
   private recommendationEngine: ReturnType<typeof createContextualRecommendationEngine>
+  private nlpFramework: any
   private recoveryPlans: Map<string, IntelligentRecoveryPlan> = new Map()
   private recoveryMetrics: Map<string, RecoveryMetric[]> = new Map()
 

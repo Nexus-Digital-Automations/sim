@@ -323,6 +323,9 @@ export class NLPEnhancementEngine {
   private config: NLPEnhancementConfig
   private semanticAnalyzer: SemanticAnalysisService
   private qualityAssessor: QualityAssessmentService
+  private textGenerator: any
+  private knowledgeBase: any
+  private cacheService: any
   private enhancementStrategies: Map<string, EnhancementStrategy> = new Map()
 
   constructor(config: NLPEnhancementConfig) {

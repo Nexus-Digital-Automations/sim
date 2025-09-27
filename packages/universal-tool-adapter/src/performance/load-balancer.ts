@@ -183,6 +183,7 @@ export class AdvancedLoadBalancer extends EventEmitter {
   private instances = new Map<string, LoadBalancerInstance>()
   private sessionMap = new Map<string, string>() // sessionId -> instanceId
   private customStrategy?: LoadBalancingStrategy
+  private requestCounter = 0
 
   private metricsCollector: MetricsCollector
   private healthChecker: HealthChecker
@@ -880,6 +881,7 @@ class MetricsCollector {
   private totalFailures = 0
   private selectionTimes: number[] = []
   private requestDistribution = new Map<string, number>()
+  private lastMetricsReset = Date.now()
 
   recordSelection(decision: LoadBalancingDecision): void {
     this.totalSelections++

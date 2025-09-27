@@ -961,6 +961,7 @@ class CircuitBreaker {
   private failures = 0
   private nextAttemptTime?: Date
   private halfOpenRequests = 0
+  private lastFailureTime?: Date
 
   constructor(
     private componentId: string,

@@ -542,6 +542,8 @@ export class GuidelinesManagementPlatform {
   private logger: Logger
   private workspaces: Map<string, AuthoringWorkspace> = new Map()
   private templateRegistry: GuidelineTemplateRegistry
+  private knowledgeBase: any
+  private tutorialEngine: any
   private eventEmitter: PlatformEventEmitter
 
   constructor() {

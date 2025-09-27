@@ -44,6 +44,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
   private readonly config: RegistryConfiguration
   private readonly metrics: RegistryMetrics
   private readonly analytics: RegistryAnalytics
+  private loadBalancer: any
 
   // Caching and optimization
   private readonly discoveryCache = new Map<string, DiscoveredTool[]>()

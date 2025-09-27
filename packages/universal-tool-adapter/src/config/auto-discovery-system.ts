@@ -26,6 +26,7 @@ const logger = createLogger('AutoDiscoverySystem')
 export class AutoDiscoverySystem extends EventEmitter {
   // Core dependencies
   private readonly framework: EnhancedAdapterFramework
+  private readonly registry: EnhancedAdapterRegistry
 
   // Configuration
   private readonly config: AutoDiscoveryConfig

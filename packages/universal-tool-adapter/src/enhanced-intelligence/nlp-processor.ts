@@ -87,8 +87,10 @@ export interface NLPSettings {
  */
 export class NLPProcessor {
   private settings: NLPSettings
+  private vocabularyEnhancer: any
   private semanticAnalyzer: any
   private contentGenerator: any
+  private qualityAssessor: any
 
   constructor(settings: NLPSettings = {}) {
     this.settings = {
