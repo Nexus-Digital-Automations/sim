@@ -687,7 +687,9 @@ export class BidirectionalSyncEngine {
     this.operationBuffer.clear()
 
     // Clear debounce timers
-    this.debounceTimers.forEach((timer) => clearTimeout(timer))
+    for (const timer of this.debounceTimers.values()) {
+      clearTimeout(timer)
+    }
     this.debounceTimers.clear()
 
     this.syncState = {

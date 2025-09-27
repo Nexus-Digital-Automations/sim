@@ -246,7 +246,9 @@ export function useBidirectionalSync(
   // Cleanup system and subscriptions
   const cleanupSystem = useCallback(() => {
     // Clean up subscriptions
-    subscriptionsRef.current.forEach((unsubscribe) => unsubscribe())
+    for (const unsubscribe of subscriptionsRef.current) {
+      unsubscribe()
+    }
     subscriptionsRef.current.clear()
 
     // Destroy sync system

@@ -3297,11 +3297,18 @@ export function MicrosoftSharepointIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function MicrosoftPlannerIcon(props: SVGProps<SVGSVGElement>) {
+  const gradient0Id = useId()
+  const gradient1Id = useId()
+  const gradient2Id = useId()
+  const gradient3Id = useId()
+  const gradient4Id = useId()
+  const gradient5Id = useId()
+
   return (
     <svg {...props} fill='currentColor' viewBox='-1 -1 27 27' xmlns='http://www.w3.org/2000/svg'>
       <defs>
         <linearGradient
-          id='paint0_linear_3984_11038'
+          id={gradient0Id}
           x1='6.38724'
           y1='3.74167'
           x2='2.15779'
@@ -3312,7 +3319,7 @@ export function MicrosoftPlannerIcon(props: SVGProps<SVGSVGElement>) {
           <stop offset='1' stopColor='#541278' />
         </linearGradient>
         <linearGradient
-          id='paint1_linear_3984_11038'
+          id={gradient1Id}
           x1='8.38032'
           y1='11.0696'
           x2='4.94062'
@@ -3323,7 +3330,7 @@ export function MicrosoftPlannerIcon(props: SVGProps<SVGSVGElement>) {
           <stop offset='1' stopColor='#7034B0' stopOpacity='0' />
         </linearGradient>
         <linearGradient
-          id='paint2_linear_3984_11038'
+          id={gradient2Id}
           x1='18.3701'
           y1='-3.33385e-05'
           x2='9.85717'
@@ -3334,7 +3341,7 @@ export function MicrosoftPlannerIcon(props: SVGProps<SVGSVGElement>) {
           <stop offset='1' stopColor='#6C0F71' />
         </linearGradient>
         <linearGradient
-          id='paint3_linear_3984_11038'
+          id={gradient3Id}
           x1='18.3701'
           y1='-3.33385e-05'
           x2='9.85717'
@@ -3346,7 +3353,7 @@ export function MicrosoftPlannerIcon(props: SVGProps<SVGSVGElement>) {
           <stop offset='1' stopColor='#8F28B3' />
         </linearGradient>
         <linearGradient
-          id='paint4_linear_3984_11038'
+          id={gradient4Id}
           x1='18.0002'
           y1='7.49958'
           x2='14.0004'
@@ -3357,7 +3364,7 @@ export function MicrosoftPlannerIcon(props: SVGProps<SVGSVGElement>) {
           <stop offset='1' stopColor='#00479E' />
         </linearGradient>
         <linearGradient
-          id='paint5_linear_3984_11038'
+          id={gradient5Id}
           x1='18.2164'
           y1='7.92626'
           x2='10.5237'
@@ -3370,27 +3377,27 @@ export function MicrosoftPlannerIcon(props: SVGProps<SVGSVGElement>) {
       </defs>
       <path
         d='M8.25809 15.7412C7.22488 16.7744 5.54971 16.7744 4.5165 15.7412L0.774909 11.9996C-0.258303 10.9664 -0.258303 9.29129 0.774908 8.25809L4.5165 4.51655C5.54971 3.48335 7.22488 3.48335 8.25809 4.51655L11.9997 8.2581C13.0329 9.29129 13.0329 10.9664 11.9997 11.9996L8.25809 15.7412Z'
-        fill='url(#paint0_linear_3984_11038)'
+        fill={`url(#${gradient0Id})`}
       />
       <path
         d='M8.25809 15.7412C7.22488 16.7744 5.54971 16.7744 4.5165 15.7412L0.774909 11.9996C-0.258303 10.9664 -0.258303 9.29129 0.774908 8.25809L4.5165 4.51655C5.54971 3.48335 7.22488 3.48335 8.25809 4.51655L11.9997 8.2581C13.0329 9.29129 13.0329 10.9664 11.9997 11.9996L8.25809 15.7412Z'
-        fill='url(#paint1_linear_3984_11038)'
+        fill={`url(#${gradient1Id})`}
       />
       <path
         d='M0.774857 11.9999C1.80809 13.0331 3.48331 13.0331 4.51655 11.9999L15.7417 0.774926C16.7749 -0.258304 18.4501 -0.258309 19.4834 0.774914L23.225 4.51655C24.2583 5.54977 24.2583 7.22496 23.225 8.25819L11.9999 19.4832C10.9667 20.5164 9.29146 20.5164 8.25822 19.4832L0.774857 11.9999Z'
-        fill='url(#paint2_linear_3984_11038)'
+        fill={`url(#${gradient2Id})`}
       />
       <path
         d='M0.774857 11.9999C1.80809 13.0331 3.48331 13.0331 4.51655 11.9999L15.7417 0.774926C16.7749 -0.258304 18.4501 -0.258309 19.4834 0.774914L23.225 4.51655C24.2583 5.54977 24.2583 7.22496 23.225 8.25819L11.9999 19.4832C10.9667 20.5164 9.29146 20.5164 8.25822 19.4832L0.774857 11.9999Z'
-        fill='url(#paint3_linear_3984_11038)'
+        fill={`url(#${gradient3Id})`}
       />
       <path
         d='M4.51642 15.7413C5.54966 16.7746 7.22487 16.7746 8.25812 15.7413L15.7415 8.25803C16.7748 7.2248 18.45 7.2248 19.4832 8.25803L23.2249 11.9997C24.2582 13.0329 24.2582 14.7081 23.2249 15.7413L15.7415 23.2246C14.7083 24.2579 13.033 24.2579 11.9998 23.2246L4.51642 15.7413Z'
-        fill='url(#paint4_linear_3984_11038)'
+        fill={`url(#${gradient4Id})`}
       />
       <path
         d='M4.51642 15.7413C5.54966 16.7746 7.22487 16.7746 8.25812 15.7413L15.7415 8.25803C16.7748 7.2248 18.45 7.2248 19.4832 8.25803L23.2249 11.9997C24.2582 13.0329 24.2582 14.7081 23.2249 15.7413L15.7415 23.2246C14.7083 24.2579 13.033 24.2579 11.9998 23.2246L4.51642 15.7413Z'
-        fill='url(#paint5_linear_3984_11038)'
+        fill={`url(#${gradient5Id})`}
       />
     </svg>
   )

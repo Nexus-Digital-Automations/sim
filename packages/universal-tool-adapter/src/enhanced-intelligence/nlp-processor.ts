@@ -464,10 +464,14 @@ export class NLPProcessor {
     tags.add(category)
 
     // Technical tags from content
-    content.technicalTerms.forEach((term) => tags.add(term.toLowerCase()))
+    for (const term of content.technicalTerms) {
+      tags.add(term.toLowerCase())
+    }
 
     // Action-based tags
-    content.actionWords.forEach((action) => tags.add(action))
+    for (const action of content.actionWords) {
+      tags.add(action)
+    }
 
     // Platform tags
     const platform = this.extractPlatform(

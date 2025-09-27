@@ -1252,11 +1252,15 @@ describe('Comprehensive Universal Tool Adapter System Integration Tests', () => 
 
       if (report.productionReadiness.blockers.length > 0) {
         console.log(`\n⚠️  Blockers:`)
-        report.productionReadiness.blockers.forEach((blocker) => console.log(`   • ${blocker}`))
+        for (const blocker of report.productionReadiness.blockers) {
+          console.log(`   • ${blocker}`)
+        }
       }
 
       console.log(`\n💡 Recommendations:`)
-      report.productionReadiness.recommendations.forEach((rec) => console.log(`   • ${rec}`))
+      for (const rec of report.productionReadiness.recommendations) {
+        console.log(`   • ${rec}`)
+      }
 
       // Assertions for report structure
       expect(report.summary.implementedAdapters).toBeGreaterThanOrEqual(5)

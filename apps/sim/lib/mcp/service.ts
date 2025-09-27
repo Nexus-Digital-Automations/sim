@@ -88,7 +88,9 @@ class McpService {
       }
     })
 
-    expiredKeys.forEach((key) => this.toolCache.delete(key))
+    for (const key of expiredKeys) {
+      this.toolCache.delete(key)
+    }
 
     if (expiredKeys.length > 0) {
       logger.debug(`Cleaned up ${expiredKeys.length} expired cache entries`)

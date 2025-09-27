@@ -538,11 +538,13 @@ export class ExecutionLogger implements IExecutionLoggerService {
 
       // Recursively check nested objects and arrays
       if (Array.isArray(obj)) {
-        obj.forEach((item, index) => extractFilesFromObject(item, `${source}[${index}]`))
+        for (const [index, item] of obj.entries()) {
+          extractFilesFromObject(item, `${source}[${index}]`)
+        }
       } else if (typeof obj === 'object') {
-        Object.entries(obj).forEach(([key, value]) => {
+        for (const [key, value] of Object.entries(obj)) {
           extractFilesFromObject(value, `${source}.${key}`)
-        })
+        }
       }
     }
 

@@ -892,7 +892,9 @@ export class InteractiveGuidance {
     const tutorialElements = document.querySelectorAll(
       '.tutorial-highlight, .tutorial-tooltip, .tutorial-overlay'
     )
-    tutorialElements.forEach((element) => element.remove())
+    for (const element of tutorialElements) {
+      element.remove()
+    }
   }
 
   private initializeSessionAnalytics(sessionId: string, tutorial: GuidanceTutorial): void {

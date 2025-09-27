@@ -83,7 +83,9 @@ export class BlockPathCalculator {
 
       // Find all blocks along paths leading to this block
       const pathNodes = BlockPathCalculator.findAllPathNodes(workflow.connections, block.id)
-      pathNodes.forEach((nodeId) => accessibleBlocks.add(nodeId))
+      for (const nodeId of pathNodes) {
+        accessibleBlocks.add(nodeId)
+      }
 
       // Always allow referencing the starter block (special case)
       const starterBlock = workflow.blocks.find((b) => b.metadata?.id === 'starter')

@@ -80,7 +80,9 @@ async function applyOperationsToYaml(
             if (child.parentId === block_id) childBlocksToRemove.push(childId)
           })
           delete workflowData.blocks[block_id]
-          childBlocksToRemove.forEach((childId) => delete workflowData.blocks[childId])
+          for (const childId of childBlocksToRemove) {
+            delete workflowData.blocks[childId]
+          }
           const allDeleted = [block_id, ...childBlocksToRemove]
           Object.values(workflowData.blocks).forEach((block: any) => {
             if (!block.connections) return
