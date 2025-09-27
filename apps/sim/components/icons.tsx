@@ -1,4 +1,5 @@
 import type { SVGProps } from 'react'
+import { useId } from 'react'
 
 export function UsersIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -1710,15 +1711,18 @@ export function GoogleCalendarIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function SupabaseIcon(props: SVGProps<SVGSVGElement>) {
+  const paint0Id = useId()
+  const paint1Id = useId()
+
   return (
     <svg {...props} width='24' height='24' viewBox='0 0 27 27' xmlns='http://www.w3.org/2000/svg'>
       <path
         d='M15.4057 26.2606C14.7241 27.1195 13.3394 26.649 13.3242 25.5519L13.083 9.50684H23.8724C25.8262 9.50684 26.9157 11.7636 25.7006 13.2933L15.4057 26.2606Z'
-        fill='url(#paint0_linear)'
+        fill={`url(#${paint0Id})`}
       />
       <path
         d='M15.4057 26.2606C14.7241 27.1195 13.3394 26.649 13.3242 25.5519L13.083 9.50684H23.8724C25.8262 9.50684 26.9157 11.7636 25.7006 13.2933L15.4057 26.2606Z'
-        fill='url(#paint1_linear)'
+        fill={`url(#${paint1Id})`}
         fillOpacity='0.2'
       />
       <path
@@ -1727,7 +1731,7 @@ export function SupabaseIcon(props: SVGProps<SVGSVGElement>) {
       />
       <defs>
         <linearGradient
-          id='paint0_linear'
+          id={paint0Id}
           x1='13.084'
           y1='13.0655'
           x2='22.6727'
@@ -1738,7 +1742,7 @@ export function SupabaseIcon(props: SVGProps<SVGSVGElement>) {
           <stop offset='1' stopColor='#3ECF8E' />
         </linearGradient>
         <linearGradient
-          id='paint1_linear'
+          id={paint1Id}
           x1='8.83277'
           y1='7.24485'
           x2='13.2057'
@@ -1863,11 +1867,13 @@ export function ImageIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function TypeformIcon(props: SVGProps<SVGSVGElement>) {
+  const layerId = useId()
+
   return (
     <svg
       {...props}
       version='1.1'
-      id='Layer_1'
+      id={layerId}
       xmlns='http://www.w3.org/2000/svg'
       xmlnsXlink='http://www.w3.org/1999/xlink'
       x='0px'
@@ -1915,6 +1921,8 @@ export function DocumentIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function MistralIcon(props: SVGProps<SVGSVGElement>) {
+  const clipPathId = useId()
+
   return (
     <svg
       {...props}
@@ -1925,7 +1933,7 @@ export function MistralIcon(props: SVGProps<SVGSVGElement>) {
       xmlns='http://www.w3.org/2000/svg'
       preserveAspectRatio='xMidYMid meet'
     >
-      <g clipPath='url(#clip0_1621_58)'>
+      <g clipPath={`url(#${clipPathId})`}>
         <path d='M17.4541 0H21.8177V4.39481H17.4541V0Z' fill='black' />
         <path d='M19.6367 0H24.0003V4.39481H19.6367V0Z' fill='#F7D046' />
         <path
@@ -1962,7 +1970,7 @@ export function MistralIcon(props: SVGProps<SVGSVGElement>) {
         />
       </g>
       <defs>
-        <clipPath id='clip0_1621_58'>
+        <clipPath id={clipPathId}>
           <rect width='24' height='22' fill='white' />
         </clipPath>
       </defs>
@@ -2492,6 +2500,8 @@ export function MicrosoftIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function MicrosoftTeamsIcon(props: SVGProps<SVGSVGElement>) {
+  const gradientId = useId()
+
   return (
     <svg {...props} xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2228.833 2073.333'>
       <path
@@ -2537,7 +2547,7 @@ export function MicrosoftTeamsIcon(props: SVGProps<SVGSVGElement>) {
         d='M1140.333,561.355v103.148c-104.963-24.857-191.679-98.469-233.25-198.003 h138.395C1097.783,466.699,1140.134,509.051,1140.333,561.355z'
       />
       <linearGradient
-        id='a'
+        id={gradientId}
         gradientUnits='userSpaceOnUse'
         x1='198.099'
         y1='1683.0726'
@@ -2553,7 +2563,7 @@ export function MicrosoftTeamsIcon(props: SVGProps<SVGSVGElement>) {
         <stop offset='1' stopColor='#3940ab' />
       </linearGradient>
       <path
-        fill='url(#a)'
+        fill={`url(#${gradientId})`}
         d='M95.01,466.5h950.312c52.473,0,95.01,42.538,95.01,95.01v950.312c0,52.473-42.538,95.01-95.01,95.01 H95.01c-52.473,0-95.01-42.538-95.01-95.01V561.51C0,509.038,42.538,466.5,95.01,466.5z'
       />
       <path
@@ -2565,12 +2575,16 @@ export function MicrosoftTeamsIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function OutlookIcon(props: SVGProps<SVGSVGElement>) {
+  const svgId = useId()
+  const gradientId = useId()
+  const gradientId2 = useId()
+
   return (
     <svg
       {...props}
       xmlns='http://www.w3.org/2000/svg'
       version='1.1'
-      id='Livello_1'
+      id={svgId}
       x='0px'
       y='0px'
       viewBox='0 0 1831.085 1703.335'
@@ -2594,7 +2608,7 @@ export function OutlookIcon(props: SVGProps<SVGSVGElement>) {
       <path fill='#14447D' d='M520.453,1025.151h416.38v346.969h-416.38V1025.151z' />
       <path fill='#0078D4' d='M1362.667,1022h383.25v383.25h-383.25V1022z' />
       <linearGradient
-        id='SVGID_1_'
+        id={gradientId}
         gradientUnits='userSpaceOnUse'
         x1='1128.4584'
         y1='811.0833'
@@ -2606,7 +2620,7 @@ export function OutlookIcon(props: SVGProps<SVGSVGElement>) {
         <stop offset='1' style={{ stopColor: '#28A8EA' }} />
       </linearGradient>
       <path
-        fill='url(#SVGID_1_)'
+        fill={`url(#${gradientId})`}
         d='M1811.58,927.593l-0.809,0.426l-634.492,356.848c-2.768,1.703-5.578,3.321-8.517,4.769  c-10.777,5.132-22.481,8.029-34.407,8.517l-34.663-20.27c-2.929-1.47-5.773-3.105-8.517-4.897L447.167,906.003h-0.298  l-21.036-11.753v722.384c0.328,48.196,39.653,87.006,87.849,86.7h1230.914c0.724,0,1.363-0.341,2.129-0.341  c10.18-0.651,20.216-2.745,29.808-6.217c4.145-1.756,8.146-3.835,11.966-6.217c2.853-1.618,7.75-5.152,7.75-5.152  c21.814-16.142,34.726-41.635,34.833-68.772V894.25C1831.068,908.067,1823.616,920.807,1811.58,927.593z'
       />
       <path
@@ -2654,7 +2668,7 @@ export function OutlookIcon(props: SVGProps<SVGSVGElement>) {
         d='M936.833,461.305v823.136c-0.046,43.067-34.861,78.015-77.927,78.225H425.833  V383.25h433.072c43.062,0.023,77.951,34.951,77.927,78.013C936.833,461.277,936.833,461.291,936.833,461.305z'
       />
       <linearGradient
-        id='SVGID_2_'
+        id={gradientId2}
         gradientUnits='userSpaceOnUse'
         x1='162.7469'
         y1='1383.0741'
@@ -2667,7 +2681,7 @@ export function OutlookIcon(props: SVGProps<SVGSVGElement>) {
         <stop offset='1' style={{ stopColor: '#0A63C9' }} />
       </linearGradient>
       <path
-        fill='url(#SVGID_2_)'
+        fill={`url(#${gradientId2})`}
         d='M78.055,383.25h780.723c43.109,0,78.055,34.947,78.055,78.055v780.723  c0,43.109-34.946,78.055-78.055,78.055H78.055c-43.109,0-78.055-34.947-78.055-78.055V461.305  C0,418.197,34.947,383.25,78.055,383.25z'
       />
       <path
@@ -2680,12 +2694,15 @@ export function OutlookIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function MicrosoftExcelIcon(props: SVGProps<SVGSVGElement>) {
+  const svgId = useId()
+  const gradientId = useId()
+
   return (
     <svg
       {...props}
       xmlns='http://www.w3.org/2000/svg'
       version='1.1'
-      id='Livello_1'
+      id={svgId}
       x='0px'
       y='0px'
       viewBox='0 0 2289.75 2130'
@@ -2721,7 +2738,7 @@ export function MicrosoftExcelIcon(props: SVGProps<SVGSVGElement>) {
         d='M1073.893,479.25H532.5V1704h541.393c53.834-0.175,97.432-43.773,97.607-97.607  V576.857C1171.325,523.023,1127.727,479.425,1073.893,479.25z'
       />
       <linearGradient
-        id='SVGID_1_'
+        id={gradientId}
         gradientUnits='userSpaceOnUse'
         x1='203.5132'
         y1='1729.0183'
@@ -2734,7 +2751,7 @@ export function MicrosoftExcelIcon(props: SVGProps<SVGSVGElement>) {
         <stop offset='1' style={{ stopColor: '#0B6631' }} />
       </linearGradient>
       <path
-        fill='url(#SVGID_1_)'
+        fill={`url(#${gradientId})`}
         d='M97.607,479.25h976.285c53.907,0,97.607,43.7,97.607,97.607v976.285  c0,53.907-43.7,97.607-97.607,97.607H97.607C43.7,1650.75,0,1607.05,0,1553.143V576.857C0,522.95,43.7,479.25,97.607,479.25z'
       />
       <path
@@ -2848,71 +2865,77 @@ export const AnthropicIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 )
 
-export const AzureIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg
-    {...props}
-    width='18'
-    height='18'
-    viewBox='0 0 18 18'
-    fill='none'
-    xmlns='http://www.w3.org/2000/svg'
-  >
-    <path
-      d='M5.33492 1.37491C5.44717 1.04229 5.75909 0.818359 6.11014 0.818359H11.25L5.91513 16.6255C5.80287 16.9581 5.49095 17.182 5.13991 17.182H1.13968C0.579936 17.182 0.185466 16.6325 0.364461 16.1022L5.33492 1.37491Z'
-      fill='url(#paint0_linear_6102_134469)'
-    />
-    <path
-      d='M13.5517 11.4546H5.45126C5.1109 11.4546 4.94657 11.8715 5.19539 12.1037L10.4005 16.9618C10.552 17.1032 10.7515 17.1819 10.9587 17.1819H15.5453L13.5517 11.4546Z'
-      fill='#0078D4'
-    />
-    <path
-      d='M6.11014 0.818359C5.75909 0.818359 5.44717 1.04229 5.33492 1.37491L0.364461 16.1022C0.185466 16.6325 0.579936 17.182 1.13968 17.182H5.13991C5.49095 17.182 5.80287 16.9581 5.91513 16.6255L6.90327 13.6976L10.4005 16.9617C10.552 17.1032 10.7515 17.1818 10.9588 17.1818H15.5454L13.5517 11.4545H7.66032L11.25 0.818359H6.11014Z'
-      fill='url(#paint1_linear_6102_134469)'
-    />
-    <path
-      d='M12.665 1.37478C12.5528 1.04217 12.2409 0.818237 11.8898 0.818237H6.13629H6.16254C6.51358 0.818237 6.82551 1.04217 6.93776 1.37478L11.9082 16.1021C12.0872 16.6324 11.6927 17.1819 11.133 17.1819H11.0454H16.8603C17.42 17.1819 17.8145 16.6324 17.6355 16.1021L12.665 1.37478Z'
-      fill='url(#paint2_linear_6102_134469)'
-    />
-    <defs>
-      <linearGradient
-        id='paint0_linear_6102_134469'
-        x1='6.07512'
-        y1='1.38476'
-        x2='0.738178'
-        y2='17.1514'
-        gradientUnits='userSpaceOnUse'
-      >
-        <stop stopColor='#114A8B' />
-        <stop offset='1' stopColor='#0669BC' />
-      </linearGradient>
-      <linearGradient
-        id='paint1_linear_6102_134469'
-        x1='10.3402'
-        y1='11.4564'
-        x2='9.107'
-        y2='11.8734'
-        gradientUnits='userSpaceOnUse'
-      >
-        <stop stopOpacity='0.3' />
-        <stop offset='0.0711768' stopOpacity='0.2' />
-        <stop offset='0.321031' stopOpacity='0.1' />
-        <stop offset='0.623053' stopOpacity='0.05' />
-        <stop offset='1' stopOpacity='0' />
-      </linearGradient>
-      <linearGradient
-        id='paint2_linear_6102_134469'
-        x1='9.45858'
-        y1='1.38467'
-        x2='15.3168'
-        y2='16.9926'
-        gradientUnits='userSpaceOnUse'
-      >
-        <stop stopColor='#3CCBF4' />
-        <stop offset='1' stopColor='#2892DF' />
-      </linearGradient>
-    </defs>
-  </svg>
-)
+export const AzureIcon = (props: SVGProps<SVGSVGElement>) => {
+  const gradient1Id = useId()
+  const gradient2Id = useId()
+  const gradient3Id = useId()
+
+  return (
+    <svg
+      {...props}
+      width='18'
+      height='18'
+      viewBox='0 0 18 18'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <path
+        d='M5.33492 1.37491C5.44717 1.04229 5.75909 0.818359 6.11014 0.818359H11.25L5.91513 16.6255C5.80287 16.9581 5.49095 17.182 5.13991 17.182H1.13968C0.579936 17.182 0.185466 16.6325 0.364461 16.1022L5.33492 1.37491Z'
+        fill={`url(#${gradient1Id})`}
+      />
+      <path
+        d='M13.5517 11.4546H5.45126C5.1109 11.4546 4.94657 11.8715 5.19539 12.1037L10.4005 16.9618C10.552 17.1032 10.7515 17.1819 10.9587 17.1819H15.5453L13.5517 11.4546Z'
+        fill='#0078D4'
+      />
+      <path
+        d='M6.11014 0.818359C5.75909 0.818359 5.44717 1.04229 5.33492 1.37491L0.364461 16.1022C0.185466 16.6325 0.579936 17.182 1.13968 17.182H5.13991C5.49095 17.182 5.80287 16.9581 5.91513 16.6255L6.90327 13.6976L10.4005 16.9617C10.552 17.1032 10.7515 17.1818 10.9588 17.1818H15.5454L13.5517 11.4545H7.66032L11.25 0.818359H6.11014Z'
+        fill={`url(#${gradient2Id})`}
+      />
+      <path
+        d='M12.665 1.37478C12.5528 1.04217 12.2409 0.818237 11.8898 0.818237H6.13629H6.16254C6.51358 0.818237 6.82551 1.04217 6.93776 1.37478L11.9082 16.1021C12.0872 16.6324 11.6927 17.1819 11.133 17.1819H11.0454H16.8603C17.42 17.1819 17.8145 16.6324 17.6355 16.1021L12.665 1.37478Z'
+        fill={`url(#${gradient3Id})`}
+      />
+      <defs>
+        <linearGradient
+          id={gradient1Id}
+          x1='6.07512'
+          y1='1.38476'
+          x2='0.738178'
+          y2='17.1514'
+          gradientUnits='userSpaceOnUse'
+        >
+          <stop stopColor='#114A8B' />
+          <stop offset='1' stopColor='#0669BC' />
+        </linearGradient>
+        <linearGradient
+          id={gradient2Id}
+          x1='10.3402'
+          y1='11.4564'
+          x2='9.107'
+          y2='11.8734'
+          gradientUnits='userSpaceOnUse'
+        >
+          <stop stopOpacity='0.3' />
+          <stop offset='0.0711768' stopOpacity='0.2' />
+          <stop offset='0.321031' stopOpacity='0.1' />
+          <stop offset='0.623053' stopOpacity='0.05' />
+          <stop offset='1' stopOpacity='0' />
+        </linearGradient>
+        <linearGradient
+          id={gradient3Id}
+          x1='9.45858'
+          y1='1.38467'
+          x2='15.3168'
+          y2='16.9926'
+          gradientUnits='userSpaceOnUse'
+        >
+          <stop stopColor='#3CCBF4' />
+          <stop offset='1' stopColor='#2892DF' />
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}
 
 export const GroqIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -2939,23 +2962,27 @@ export const DeepseekIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 )
 
-export const GeminiIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg {...props} height='1em' viewBox='0 0 24 24' width='1em' xmlns='http://www.w3.org/2000/svg'>
-    <title>Gemini</title>
-    <defs>
-      <linearGradient id='lobe-icons-gemini-fill' x1='0%' x2='68.73%' y1='100%' y2='30.395%'>
-        <stop offset='0%' stopColor='#1C7DFF' />
-        <stop offset='52.021%' stopColor='#1C69FF' />
-        <stop offset='100%' stopColor='#F0DCD6' />
-      </linearGradient>
-    </defs>
-    <path
-      d='M12 24A14.304 14.304 0 000 12 14.304 14.304 0 0012 0a14.305 14.305 0 0012 12 14.305 14.305 0 00-12 12'
-      fill='url(#lobe-icons-gemini-fill)'
-      fillRule='nonzero'
-    />
-  </svg>
-)
+export const GeminiIcon = (props: SVGProps<SVGSVGElement>) => {
+  const gradientId = useId()
+
+  return (
+    <svg {...props} height='1em' viewBox='0 0 24 24' width='1em' xmlns='http://www.w3.org/2000/svg'>
+      <title>Gemini</title>
+      <defs>
+        <linearGradient id={gradientId} x1='0%' x2='68.73%' y1='100%' y2='30.395%'>
+          <stop offset='0%' stopColor='#1C7DFF' />
+          <stop offset='52.021%' stopColor='#1C69FF' />
+          <stop offset='100%' stopColor='#F0DCD6' />
+        </linearGradient>
+      </defs>
+      <path
+        d='M12 24A14.304 14.304 0 000 12 14.304 14.304 0 0012 0a14.305 14.305 0 0012 12 14.305 14.305 0 00-12 12'
+        fill={`url(#${gradientId})`}
+        fillRule='nonzero'
+      />
+    </svg>
+  )
+}
 
 export const CerebrasIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -3048,9 +3075,12 @@ export function ScheduleIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function QdrantIcon(props: SVGProps<SVGSVGElement>) {
+  const gradientId = useId()
+  const clipPathId = useId()
+
   return (
     <svg {...props} fill='none' viewBox='0 0 49 56' xmlns='http://www.w3.org/2000/svg'>
-      <g clipPath='url(#b)'>
+      <g clipPath={`url(#${clipPathId})`}>
         <path
           d='m38.489 51.477-1.1167-30.787-2.0223-8.1167 13.498 1.429v37.242l-8.2456 4.7589-2.1138-4.5259z'
           clipRule='evenodd'
@@ -3099,11 +3129,14 @@ export function QdrantIcon(props: SVGProps<SVGSVGElement>) {
           fill='#DC244C'
           fillRule='evenodd'
         />
-        <path d='m24.603 46.483v-9.5222l-7.7166-4.4411v9.5064l7.7166 4.4569z' fill='url(#a)' />
+        <path
+          d='m24.603 46.483v-9.5222l-7.7166-4.4411v9.5064l7.7166 4.4569z'
+          fill={`url(#${gradientId})`}
+        />
       </g>
       <defs>
         <linearGradient
-          id='a'
+          id={gradientId}
           x1='23.18'
           x2='15.491'
           y1='38.781'
@@ -3113,7 +3146,7 @@ export function QdrantIcon(props: SVGProps<SVGSVGElement>) {
           <stop stopColor='#FF3364' offset='0' />
           <stop stopColor='#C91540' stopOpacity='0' offset='1' />
         </linearGradient>
-        <clipPath id='b'>
+        <clipPath id={clipPathId}>
           <rect transform='translate(.34961)' width='48.3' height='56' fill='#fff' />
         </clipPath>
       </defs>
@@ -3122,9 +3155,12 @@ export function QdrantIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function ArxivIcon(props: SVGProps<SVGSVGElement>) {
+  const svgId = useId()
+  const groupId = useId()
+
   return (
-    <svg {...props} id='logomark' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17.732 24.269'>
-      <g id='tiny'>
+    <svg {...props} id={svgId} xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17.732 24.269'>
+      <g id={groupId}>
         <path
           d='M573.549,280.916l2.266,2.738,6.674-7.84c.353-.47.52-.717.353-1.117a1.218,1.218,0,0,0-1.061-.748h0a.953.953,0,0,0-.712.262Z'
           transform='translate(-566.984 -271.548)'
@@ -3146,12 +3182,14 @@ export function ArxivIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function WikipediaIcon(props: SVGProps<SVGSVGElement>) {
+  const svgId = useId()
+
   return (
     <svg
       {...props}
       fill='currentColor'
       version='1.1'
-      id='Capa_1'
+      id={svgId}
       xmlns='http://www.w3.org/2000/svg'
       xmlnsXlink='http://www.w3.org/1999/xlink'
       width='800px'

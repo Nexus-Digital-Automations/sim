@@ -247,6 +247,8 @@ const HelpModal: React.FC<ContextualHelpProps> = ({
   onFeedback,
   className,
 }) => {
+  const titleId = useId()
+  const descriptionId = useId()
   const [isOpen, setIsOpen] = useState(true)
   const modalRef = useRef<HTMLDivElement>(null)
   const [feedbackRating, setFeedbackRating] = useState<number | null>(null)
@@ -324,8 +326,8 @@ const HelpModal: React.FC<ContextualHelpProps> = ({
       className='fixed inset-0 z-50 flex items-center justify-center'
       role='dialog'
       aria-modal='true'
-      aria-labelledby='help-modal-title'
-      aria-describedby='help-modal-description'
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
     >
       {/* Backdrop */}
       <div
@@ -344,11 +346,11 @@ const HelpModal: React.FC<ContextualHelpProps> = ({
       >
         <CardHeader className='flex flex-row items-start justify-between space-y-0 pb-4'>
           <div className='flex-1'>
-            <CardTitle id='help-modal-title' className='text-lg'>
+            <CardTitle id={titleId} className='text-lg'>
               {content.title}
             </CardTitle>
             {content.description && (
-              <CardDescription id='help-modal-description' className='mt-1'>
+              <CardDescription id={descriptionId} className='mt-1'>
                 {content.description}
               </CardDescription>
             )}
