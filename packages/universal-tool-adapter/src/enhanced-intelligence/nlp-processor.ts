@@ -89,8 +89,6 @@ export class NLPProcessor {
   private settings: NLPSettings
   private semanticAnalyzer: any
   private contentGenerator: any
-  private vocabularyEnhancer: any
-  private qualityAssessor: any
 
   constructor(settings: NLPSettings = {}) {
     this.settings = {

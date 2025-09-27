@@ -668,7 +668,6 @@ class CircuitBreaker {
   private failures = 0
   private nextAttemptTime = 0
   private halfOpenRequests = 0
-  private lastFailureTime: number = 0 // TODO: Track last failure timestamp
 
   constructor(
     private config: ConnectionPoolConfig['circuitBreaker'],
@@ -717,7 +716,6 @@ class CircuitBreaker {
     if (!this.config.enabled) return
 
     this.failures++
-    this.lastFailureTime = Date.now()
 
     if (this.state === 'half-open') {
       this.state = 'open'

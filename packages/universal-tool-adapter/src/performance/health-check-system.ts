@@ -961,7 +961,6 @@ class CircuitBreaker {
   private failures = 0
   private nextAttemptTime?: Date
   private halfOpenRequests = 0
-  private lastFailureTime: Date | null = null // TODO: Track last failure timestamp
 
   constructor(
     private componentId: string,

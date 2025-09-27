@@ -28,7 +28,6 @@ export class AdapterTestFramework extends EventEmitter {
   private readonly mockGenerator: MockGenerator
   private readonly fixtureManager: FixtureManager
   private readonly performanceTester: PerformanceTester
-  private readonly assertionEngine: any // TODO: Add proper AssertionEngine type
 
   // Test management
   private readonly testSuites = new Map<string, TestSuite>()

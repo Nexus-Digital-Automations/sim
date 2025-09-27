@@ -27,12 +27,7 @@ import type {
   ToolCategory,
   UserRole,
 } from './natural-language-description-framework'
-import {
-  SIM_TOOL_CATALOG,
-  type SimToolCategory,
-  SimToolClassifier,
-  type SimToolMetadata,
-} from './sim-tool-catalog'
+import { SIM_TOOL_CATALOG, type SimToolCategory, type SimToolMetadata } from './sim-tool-catalog'
 
 const logger = createLogger('ToolSelectionIntelligence')
 
@@ -197,18 +192,14 @@ class SimToolCatalog {
 
 export class ToolSelectionIntelligenceEngine {
   private simToolCatalog: SimToolCatalog
-  private toolClassifier: any // TODO: Add proper SimToolClassifier type
   private contextAnalyzer: ContextAnalyzer
   private userProfiler: UserProfiler
-  private recommendationEngine: any // TODO: Add proper RecommendationEngine type
   private reasoningEngine: ReasoningEngine
 
   constructor(config?: ToolSelectionConfig) {
     this.simToolCatalog = new SimToolCatalog()
-    this.toolClassifier = new SimToolClassifier()
     this.contextAnalyzer = new ContextAnalyzer() // TODO: Add proper contextSettings configuration
     this.userProfiler = new UserProfiler() // TODO: Add proper userProfilingSettings configuration
-    this.recommendationEngine = new RecommendationEngine()
     this.reasoningEngine = new ReasoningEngine() // TODO: Add proper reasoningSettings configuration
 
     logger.info('Tool Selection Intelligence Engine initialized')

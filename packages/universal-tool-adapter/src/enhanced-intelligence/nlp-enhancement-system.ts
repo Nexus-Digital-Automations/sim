@@ -321,11 +321,8 @@ export interface ProcessingMetadata {
  */
 export class NLPEnhancementEngine {
   private config: NLPEnhancementConfig
-  private textGenerator: any // TODO: Add proper TextGenerationService type
   private semanticAnalyzer: SemanticAnalysisService
   private qualityAssessor: QualityAssessmentService
-  private knowledgeBase: any // TODO: Add proper KnowledgeBaseService type
-  private cacheService: any // TODO: Add proper CacheService type
   private enhancementStrategies: Map<string, EnhancementStrategy> = new Map()
 
   constructor(config: NLPEnhancementConfig) {

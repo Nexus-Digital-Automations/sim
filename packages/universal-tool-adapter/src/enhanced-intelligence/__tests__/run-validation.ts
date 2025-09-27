@@ -22,8 +22,6 @@
 // =============================================================================
 
 class EnhancedToolValidationRunner {
-  private reportGenerator: any
-
   constructor() {
     // Commented out due to lint rule against exports from test files
     // this.validationSuite = new IntegrationValidationSuite()

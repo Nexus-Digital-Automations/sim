@@ -44,8 +44,6 @@ import {
   NaturalLanguageDescriptionFramework,
 } from './natural-language-description-framework'
 import IntelligencePerformanceMonitor from './performance-monitoring'
-// Intelligence Components
-import { EnhancedToolIntelligenceEngine } from './tool-intelligence-engine'
 
 const logger = createLogger('IntelligenceIntegrationLayer')
 
@@ -144,7 +142,6 @@ export class IntelligenceIntegrationLayer {
   private readonly recommendationEngine: ContextualRecommendationEngine
   private readonly descriptionFramework: NaturalLanguageDescriptionFramework
   private readonly errorManager: ComprehensiveToolErrorManager
-  private readonly toolIntelligenceEngine: any
 
   // Performance optimization
   private readonly intelligenceCache = new Map<string, any>()

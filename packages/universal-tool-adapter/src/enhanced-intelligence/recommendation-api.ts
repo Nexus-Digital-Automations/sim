@@ -381,7 +381,6 @@ export class RecommendationAPI {
   // Request processing
   private requestQueue: Map<string, Promise<RecommendationAPIResponse>> = new Map()
   private batchProcessor!: BatchProcessor
-  private alertManager: any // TODO: Add proper AlertManager type
 
   // Metrics and monitoring
   private metrics!: PerformanceMetrics
@@ -682,7 +681,6 @@ export class RecommendationAPI {
     this.circuitBreaker = new CircuitBreaker()
     this.abTesting = new ABTestingManager()
     this.batchProcessor = new BatchProcessor()
-    this.alertManager = new AlertManager()
 
     this.metrics = this.initializeMetrics()
     this.initializeTime = Date.now()

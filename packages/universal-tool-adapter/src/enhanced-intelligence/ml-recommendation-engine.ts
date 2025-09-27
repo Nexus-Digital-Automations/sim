@@ -359,8 +359,6 @@ export class MLRecommendationEngine {
   private config: MLRecommendationConfig
   private collaborativeModel: CollaborativeFilteringModel | null = null
   private sequentialModel: SequentialModel | null = null
-  private contentBasedModel: any = null
-  private hybridModel: any = null
 
   private userProfiles: Map<string, UserProfile> = new Map()
   private interactionHistory: InteractionData[] = []

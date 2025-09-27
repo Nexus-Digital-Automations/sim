@@ -25,10 +25,7 @@ import type {
   ContextualRecommendation,
   ContextualRecommendationRequest,
 } from './contextual-recommendation-engine'
-import { ContextualRecommendationEngine } from './contextual-recommendation-engine'
-import { RecommendationAPI } from './recommendation-api'
 import type { RecommendationExplanation } from './recommendation-explanation-engine'
-import { RecommendationExplanationEngine } from './recommendation-explanation-engine'
 
 const logger = createLogger('IntegrationBridge')
 
@@ -310,7 +307,6 @@ export interface UsageAnalytics {
 export class IntegrationBridge {
   private recommendationEngine: any
   private explanationEngine: any
-  private recommendationAPI: any
   private metricsCollector: any
   private analyticsEngine: any
 

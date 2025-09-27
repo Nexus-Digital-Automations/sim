@@ -414,7 +414,6 @@ export class ContextAnalysisEngine {
   private workflowAnalyzer: any
   private intentRecognizer: any
   private environmentalProcessor: any
-  private patternMatcher: any
   private contextHistory: Map<string, ContextAnalysisResult[]> = new Map()
 
   constructor() {

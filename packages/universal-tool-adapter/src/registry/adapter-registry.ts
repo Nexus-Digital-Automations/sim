@@ -593,7 +593,6 @@ export class AdapterRegistry implements ToolDiscovery {
   private adapters: Map<string, AdapterRegistryEntry> = new Map()
   private pluginManager: PluginManager
   private healthMonitor: HealthMonitor
-  private migrationManager: any // TODO: Add proper MigrationManager type
   private cache?: Map<string, { data: any; timestamp: Date }>
 
   constructor(private config: RegistryConfig) {
