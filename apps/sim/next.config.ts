@@ -36,9 +36,19 @@ const nextConfig: NextConfig = {
 
   // External packages that should not be bundled
   serverExternalPackages: [
-    'fs', 'path', 'crypto', 'stream', 'util', 'os',
-    'sharp', 'canvas', 'better-sqlite3', 'fsevents',
-    'mysql2', 'pg', 'sqlite3',
+    'fs',
+    'path',
+    'crypto',
+    'stream',
+    'util',
+    'os',
+    'sharp',
+    'canvas',
+    'better-sqlite3',
+    'fsevents',
+    'mysql2',
+    'pg',
+    'sqlite3',
   ],
 
   // HYBRID OPTIMIZATION CONFIG - MAXIMUM PERFORMANCE WITHOUT HANGS
