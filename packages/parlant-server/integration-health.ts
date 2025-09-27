@@ -6,53 +6,53 @@
  * data flow validation, and integration point monitoring.
  */
 
-import { sql } from 'drizzle-orm'
-import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import { db } from '../db'
-import { errorTracker } from './error-tracking'
-import { parlantLoggers } from './logging'
+import { sql } from "drizzle-orm";
+import { createLogger } from "../../apps/sim/lib/logs/console/logger";
+import { db } from "../db";
+import { errorTracker } from "./error-tracking";
+import { parlantLoggers } from "./logging";
 
-const logger = createLogger('ParlantIntegrationHealth')
+const logger = createLogger("ParlantIntegrationHealth");
 
 export interface IntegrationHealthResult {
-  status: 'healthy' | 'degraded' | 'unhealthy'
-  timestamp: string
-  component: string
-  details: Record<string, any>
-  duration: number
+  status: "healthy" | "degraded" | "unhealthy";
+  timestamp: string;
+  component: string;
+  details: Record<string, any>;
+  duration: number;
   dependencies?: {
     [key: string]: {
-      status: 'available' | 'unavailable' | 'degraded'
-      responseTime?: number
-      version?: string
-      lastCheck?: string
-    }
-  }
+      status: "available" | "unavailable" | "degraded";
+      responseTime?: number;
+      version?: string;
+      lastCheck?: string;
+    };
+  };
 }
 
 export interface DependencyCheckResult {
-  name: string
-  type: 'database_table' | 'api_endpoint' | 'service' | 'configuration'
-  status: 'available' | 'unavailable' | 'degraded'
-  responseTime?: number
-  details?: Record<string, any>
-  error?: string
+  name: string;
+  type: "database_table" | "api_endpoint" | "service" | "configuration";
+  status: "available" | "unavailable" | "degraded";
+  responseTime?: number;
+  details?: Record<string, any>;
+  error?: string;
 }
 
 /**
  * Integration Health Monitor for Parlant-Sim ecosystem
  */
 export class ParlantIntegrationHealthMonitor {
-  private lastCheckResults = new Map<string, IntegrationHealthResult>()
+  private lastCheckResults = new Map<string, IntegrationHealthResult>();
 
   /**
    * Check core Sim table accessibility required for Parlant integration
    */
   async checkSimTableAccess(): Promise<IntegrationHealthResult> {
-    const startTime = performance.now()
+    const startTime = performance.now();
 
     try {
-      logger.debug('Checking Sim table accessibility')
+      logger.debug("Checking Sim table accessibility");
 
       // Core tables required for Parlant integration
       const tableChecks = await Promise.allSettled([
@@ -76,43 +76,46 @@ export class ParlantIntegrationHealthMonitor {
           FROM information_schema.tables
           WHERE table_name = 'session'
         `),
-      ])
+      ]);
 
-      const duration = performance.now() - startTime
+      const duration = performance.now() - startTime;
 
       const tableStatus = {
-        user: tableChecks[0].status === 'fulfilled',
-        workspace: tableChecks[1].status === 'fulfilled',
-        workflow: tableChecks[2].status === 'fulfilled',
+        user: tableChecks[0].status === "fulfilled",
+        workspace: tableChecks[1].status === "fulfilled",
+        workflow: tableChecks[2].status === "fulfilled",
         subscription:
-          tableChecks[3].status === 'fulfilled' &&
-          Number.parseInt((tableChecks[3].value as any)[0]?.count || '0', 10) > 0,
+          tableChecks[3].status === "fulfilled" &&
+          Number.parseInt((tableChecks[3].value as any)[0]?.count || "0", 10) >
+            0,
         session:
-          tableChecks[4].status === 'fulfilled' &&
-          Number.parseInt((tableChecks[4].value as any)[0]?.count || '0', 10) > 0,
-      }
+          tableChecks[4].status === "fulfilled" &&
+          Number.parseInt((tableChecks[4].value as any)[0]?.count || "0", 10) >
+            0,
+      };
 
       // Determine status - core tables must be accessible
-      const coreTablesHealthy = tableStatus.user && tableStatus.workspace && tableStatus.workflow
-      const status = coreTablesHealthy ? 'healthy' : 'unhealthy'
+      const coreTablesHealthy =
+        tableStatus.user && tableStatus.workspace && tableStatus.workflow;
+      const status = coreTablesHealthy ? "healthy" : "unhealthy";
 
       if (!coreTablesHealthy) {
         await errorTracker.trackError(
-          'integration',
-          'sim-table-access',
-          'Core Sim tables not accessible for Parlant integration',
-          new Error('Table access validation failed'),
+          "integration",
+          "sim-table-access",
+          "Core Sim tables not accessible for Parlant integration",
+          new Error("Table access validation failed"),
           {
-            operation: 'sim_table_access_check',
+            operation: "sim_table_access_check",
             duration,
-          }
-        )
+          },
+        );
       }
 
       const result: IntegrationHealthResult = {
         status,
         timestamp: new Date().toISOString(),
-        component: 'sim-table-access',
+        component: "sim-table-access",
         duration,
         details: {
           tables: tableStatus,
@@ -123,58 +126,67 @@ export class ParlantIntegrationHealthMonitor {
           },
           accessValidation: {
             userTableRecords:
-              tableChecks[0].status === 'fulfilled'
-                ? Number.parseInt((tableChecks[0].value as any)[0]?.count || '0', 10)
+              tableChecks[0].status === "fulfilled"
+                ? Number.parseInt(
+                    (tableChecks[0].value as any)[0]?.count || "0",
+                    10,
+                  )
                 : 0,
             workspaceTableRecords:
-              tableChecks[1].status === 'fulfilled'
-                ? Number.parseInt((tableChecks[1].value as any)[0]?.count || '0', 10)
+              tableChecks[1].status === "fulfilled"
+                ? Number.parseInt(
+                    (tableChecks[1].value as any)[0]?.count || "0",
+                    10,
+                  )
                 : 0,
             workflowTableRecords:
-              tableChecks[2].status === 'fulfilled'
-                ? Number.parseInt((tableChecks[2].value as any)[0]?.count || '0', 10)
+              tableChecks[2].status === "fulfilled"
+                ? Number.parseInt(
+                    (tableChecks[2].value as any)[0]?.count || "0",
+                    10,
+                  )
                 : 0,
           },
         },
-      }
+      };
 
-      this.lastCheckResults.set('sim-table-access', result)
+      this.lastCheckResults.set("sim-table-access", result);
 
-      parlantLoggers.integration.info('Sim table access check completed', {
-        operation: 'sim_table_access_check',
+      parlantLoggers.integration.info("Sim table access check completed", {
+        operation: "sim_table_access_check",
         status,
         duration,
         coreTablesHealthy,
         tablesChecked: Object.keys(tableStatus).length,
-      })
+      });
 
-      return result
+      return result;
     } catch (error) {
-      const duration = performance.now() - startTime
+      const duration = performance.now() - startTime;
 
       await errorTracker.trackError(
-        'integration',
-        'sim-table-access',
-        'Failed to check Sim table accessibility',
-        error instanceof Error ? error : new Error('Unknown error'),
+        "integration",
+        "sim-table-access",
+        "Failed to check Sim table accessibility",
+        error instanceof Error ? error : new Error("Unknown error"),
         {
-          operation: 'sim_table_access_check',
+          operation: "sim_table_access_check",
           duration,
-          errorType: 'integration',
-        }
-      )
+          errorType: "integration",
+        },
+      );
 
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date().toISOString(),
-        component: 'sim-table-access',
+        component: "sim-table-access",
         duration,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
           tables: {},
           coreTablesAccessible: false,
         },
-      }
+      };
     }
   }
 
@@ -182,10 +194,10 @@ export class ParlantIntegrationHealthMonitor {
    * Check Parlant-specific schema readiness
    */
   async checkParlantSchemaReadiness(): Promise<IntegrationHealthResult> {
-    const startTime = performance.now()
+    const startTime = performance.now();
 
     try {
-      logger.debug('Checking Parlant schema readiness')
+      logger.debug("Checking Parlant schema readiness");
 
       // Check for Parlant-specific tables
       const parlantTableChecks = await Promise.allSettled([
@@ -203,40 +215,45 @@ export class ParlantIntegrationHealthMonitor {
           WHERE tc.constraint_type = 'FOREIGN KEY'
           AND kcu.table_name LIKE 'parlant_%'
         `),
-      ])
+      ]);
 
-      const duration = performance.now() - startTime
+      const duration = performance.now() - startTime;
 
       const parlantTables =
-        parlantTableChecks[0].status === 'fulfilled'
+        parlantTableChecks[0].status === "fulfilled"
           ? (parlantTableChecks[0].value as any[]).map((row) => row.table_name)
-          : []
+          : [];
 
       const foreignKeyCount =
-        parlantTableChecks[1].status === 'fulfilled'
-          ? Number.parseInt((parlantTableChecks[1].value as any)[0]?.count || '0', 10)
-          : 0
+        parlantTableChecks[1].status === "fulfilled"
+          ? Number.parseInt(
+              (parlantTableChecks[1].value as any)[0]?.count || "0",
+              10,
+            )
+          : 0;
 
       // Expected Parlant tables
       const expectedTables = [
-        'parlant_agents',
-        'parlant_sessions',
-        'parlant_guidelines',
-        'parlant_journeys',
-      ]
-      const hasRequiredTables = expectedTables.every((table) => parlantTables.includes(table))
+        "parlant_agents",
+        "parlant_sessions",
+        "parlant_guidelines",
+        "parlant_journeys",
+      ];
+      const hasRequiredTables = expectedTables.every((table) =>
+        parlantTables.includes(table),
+      );
 
       const status =
         hasRequiredTables && foreignKeyCount > 0
-          ? 'healthy'
+          ? "healthy"
           : parlantTables.length > 0
-            ? 'degraded'
-            : 'unhealthy'
+            ? "degraded"
+            : "unhealthy";
 
       const result: IntegrationHealthResult = {
         status,
         timestamp: new Date().toISOString(),
-        component: 'parlant-schema',
+        component: "parlant-schema",
         duration,
         details: {
           schema: {
@@ -251,63 +268,66 @@ export class ParlantIntegrationHealthMonitor {
             fullIntegrationReady: hasRequiredTables && foreignKeyCount > 0,
           },
         },
-      }
+      };
 
-      if (status === 'unhealthy') {
+      if (status === "unhealthy") {
         await errorTracker.trackWarning(
-          'integration',
-          'parlant-schema',
-          'Parlant schema not fully ready for integration',
+          "integration",
+          "parlant-schema",
+          "Parlant schema not fully ready for integration",
           undefined,
           {
-            operation: 'parlant_schema_check',
+            operation: "parlant_schema_check",
             duration,
             tablesFound: parlantTables.length,
             expectedTables: expectedTables.length,
-          }
-        )
+          },
+        );
       }
 
-      this.lastCheckResults.set('parlant-schema', result)
+      this.lastCheckResults.set("parlant-schema", result);
 
-      parlantLoggers.integration.info('Parlant schema readiness check completed', {
-        operation: 'parlant_schema_check',
-        status,
-        duration,
-        tablesFound: parlantTables.length,
-        foreignKeyCount,
-      })
+      parlantLoggers.integration.info(
+        "Parlant schema readiness check completed",
+        {
+          operation: "parlant_schema_check",
+          status,
+          duration,
+          tablesFound: parlantTables.length,
+          foreignKeyCount,
+        },
+      );
 
-      return result
+      return result;
     } catch (error) {
-      const duration = performance.now() - startTime
+      const duration = performance.now() - startTime;
 
       await errorTracker.trackError(
-        'integration',
-        'parlant-schema',
-        'Failed to check Parlant schema readiness',
-        error instanceof Error ? error : new Error('Unknown error'),
+        "integration",
+        "parlant-schema",
+        "Failed to check Parlant schema readiness",
+        error instanceof Error ? error : new Error("Unknown error"),
         {
-          operation: 'parlant_schema_check',
+          operation: "parlant_schema_check",
           duration,
-          errorType: 'integration',
-        }
-      )
+          errorType: "integration",
+        },
+      );
 
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date().toISOString(),
-        component: 'parlant-schema',
+        component: "parlant-schema",
         duration,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
           schema: {
             tablesFound: [],
             expectedTables: [],
             hasRequiredTables: false,
           },
         },
-      }
+      };
     }
   }
 
@@ -315,10 +335,10 @@ export class ParlantIntegrationHealthMonitor {
    * Check workspace isolation and multi-tenancy readiness
    */
   async checkWorkspaceIsolation(): Promise<IntegrationHealthResult> {
-    const startTime = performance.now()
+    const startTime = performance.now();
 
     try {
-      logger.debug('Checking workspace isolation readiness')
+      logger.debug("Checking workspace isolation readiness");
 
       // Check workspace table structure and sample data
       const workspaceChecks = await Promise.allSettled([
@@ -346,41 +366,45 @@ export class ParlantIntegrationHealthMonitor {
           AND kcu.column_name LIKE '%workspace%'
           AND kcu.table_name LIKE 'parlant_%'
         `),
-      ])
+      ]);
 
-      const duration = performance.now() - startTime
+      const duration = performance.now() - startTime;
 
       const workspaceColumns =
-        workspaceChecks[0].status === 'fulfilled'
+        workspaceChecks[0].status === "fulfilled"
           ? (workspaceChecks[0].value as any[]).map((col) => ({
               name: col.column_name,
               type: col.data_type,
             }))
-          : []
+          : [];
 
       const sampleWorkspaces =
-        workspaceChecks[1].status === 'fulfilled' ? (workspaceChecks[1].value as any[]) : []
+        workspaceChecks[1].status === "fulfilled"
+          ? (workspaceChecks[1].value as any[])
+          : [];
 
       const parlantWorkspaceKeys =
-        workspaceChecks[2].status === 'fulfilled' ? (workspaceChecks[2].value as any[]) : []
+        workspaceChecks[2].status === "fulfilled"
+          ? (workspaceChecks[2].value as any[])
+          : [];
 
       // Check if workspace table has required fields for isolation
-      const requiredColumns = ['id', 'name']
+      const requiredColumns = ["id", "name"];
       const hasRequiredColumns = requiredColumns.every((col) =>
-        workspaceColumns.some((wCol) => wCol.name === col)
-      )
+        workspaceColumns.some((wCol) => wCol.name === col),
+      );
 
       const status =
         hasRequiredColumns && sampleWorkspaces.length > 0
-          ? 'healthy'
+          ? "healthy"
           : hasRequiredColumns
-            ? 'degraded'
-            : 'unhealthy'
+            ? "degraded"
+            : "unhealthy";
 
       const result: IntegrationHealthResult = {
         status,
         timestamp: new Date().toISOString(),
-        component: 'workspace-isolation',
+        component: "workspace-isolation",
         duration,
         details: {
           workspace: {
@@ -396,44 +420,44 @@ export class ParlantIntegrationHealthMonitor {
           },
           sampleWorkspaces: sampleWorkspaces.slice(0, 3), // Include sample data for debugging
         },
-      }
+      };
 
-      this.lastCheckResults.set('workspace-isolation', result)
+      this.lastCheckResults.set("workspace-isolation", result);
 
-      parlantLoggers.integration.info('Workspace isolation check completed', {
-        operation: 'workspace_isolation_check',
+      parlantLoggers.integration.info("Workspace isolation check completed", {
+        operation: "workspace_isolation_check",
         status,
         duration,
         workspaceCount: sampleWorkspaces.length,
         parlantKeys: parlantWorkspaceKeys.length,
-      })
+      });
 
-      return result
+      return result;
     } catch (error) {
-      const duration = performance.now() - startTime
+      const duration = performance.now() - startTime;
 
       await errorTracker.trackError(
-        'integration',
-        'workspace-isolation',
-        'Failed to check workspace isolation readiness',
-        error instanceof Error ? error : new Error('Unknown error'),
+        "integration",
+        "workspace-isolation",
+        "Failed to check workspace isolation readiness",
+        error instanceof Error ? error : new Error("Unknown error"),
         {
-          operation: 'workspace_isolation_check',
+          operation: "workspace_isolation_check",
           duration,
-          errorType: 'integration',
-        }
-      )
+          errorType: "integration",
+        },
+      );
 
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date().toISOString(),
-        component: 'workspace-isolation',
+        component: "workspace-isolation",
         duration,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
           workspace: { hasRequiredColumns: false, sampleCount: 0 },
         },
-      }
+      };
     }
   }
 
@@ -441,43 +465,44 @@ export class ParlantIntegrationHealthMonitor {
    * Check API integration readiness and connectivity
    */
   async checkApiIntegrationHealth(): Promise<IntegrationHealthResult> {
-    const startTime = performance.now()
+    const startTime = performance.now();
 
     try {
-      logger.debug('Checking API integration health')
+      logger.debug("Checking API integration health");
 
       // Check if essential API endpoints are accessible (mock check for now)
       const apiChecks = {
         healthEndpoint: true, // We know this works since we're running
-        authEndpoint: await this.checkEndpointAccessibility('/api/v1/auth'),
-        logsEndpoint: await this.checkEndpointAccessibility('/api/v1/logs'),
+        authEndpoint: await this.checkEndpointAccessibility("/api/v1/auth"),
+        logsEndpoint: await this.checkEndpointAccessibility("/api/v1/logs"),
         webhookEndpoint: !!process.env.WEBHOOK_URL,
-      }
+      };
 
       // Check environment configuration
       const envConfig = {
         databaseUrl: !!process.env.DATABASE_URL || !!process.env.POSTGRES_URL,
         nextAuthSecret: !!process.env.NEXTAUTH_SECRET,
         nextAuthUrl: !!process.env.NEXTAUTH_URL,
-        parlantConfig: !!process.env.PARLANT_API_KEY || !!process.env.PARLANT_SERVER_URL,
-      }
+        parlantConfig:
+          !!process.env.PARLANT_API_KEY || !!process.env.PARLANT_SERVER_URL,
+      };
 
-      const duration = performance.now() - startTime
+      const duration = performance.now() - startTime;
 
-      const endpointsHealthy = Object.values(apiChecks).filter(Boolean).length
-      const configHealthy = Object.values(envConfig).filter(Boolean).length
+      const endpointsHealthy = Object.values(apiChecks).filter(Boolean).length;
+      const configHealthy = Object.values(envConfig).filter(Boolean).length;
 
       const status =
         endpointsHealthy >= 3 && configHealthy >= 3
-          ? 'healthy'
+          ? "healthy"
           : endpointsHealthy >= 2 && configHealthy >= 2
-            ? 'degraded'
-            : 'unhealthy'
+            ? "degraded"
+            : "unhealthy";
 
       const result: IntegrationHealthResult = {
         status,
         timestamp: new Date().toISOString(),
-        component: 'api-integration',
+        component: "api-integration",
         duration,
         details: {
           endpoints: apiChecks,
@@ -489,43 +514,46 @@ export class ParlantIntegrationHealthMonitor {
             totalConfigItems: Object.keys(envConfig).length,
           },
         },
-      }
+      };
 
-      this.lastCheckResults.set('api-integration', result)
+      this.lastCheckResults.set("api-integration", result);
 
-      parlantLoggers.integration.info('API integration health check completed', {
-        operation: 'api_integration_check',
-        status,
-        duration,
-        endpointsHealthy,
-        configHealthy,
-      })
+      parlantLoggers.integration.info(
+        "API integration health check completed",
+        {
+          operation: "api_integration_check",
+          status,
+          duration,
+          endpointsHealthy,
+          configHealthy,
+        },
+      );
 
-      return result
+      return result;
     } catch (error) {
-      const duration = performance.now() - startTime
+      const duration = performance.now() - startTime;
 
       await errorTracker.trackError(
-        'integration',
-        'api-integration',
-        'Failed to check API integration health',
-        error instanceof Error ? error : new Error('Unknown error'),
+        "integration",
+        "api-integration",
+        "Failed to check API integration health",
+        error instanceof Error ? error : new Error("Unknown error"),
         {
-          operation: 'api_integration_check',
+          operation: "api_integration_check",
           duration,
-          errorType: 'integration',
-        }
-      )
+          errorType: "integration",
+        },
+      );
 
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date().toISOString(),
-        component: 'api-integration',
+        component: "api-integration",
         duration,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         },
-      }
+      };
     }
   }
 
@@ -536,9 +564,9 @@ export class ParlantIntegrationHealthMonitor {
     try {
       // For now, we'll assume endpoints are accessible if the basic routing works
       // In a full implementation, this could make actual HTTP requests
-      return true
+      return true;
     } catch {
-      return false
+      return false;
     }
   }
 
@@ -546,105 +574,113 @@ export class ParlantIntegrationHealthMonitor {
    * Run comprehensive integration health check
    */
   async checkComprehensiveIntegrationHealth(): Promise<{
-    overallStatus: 'healthy' | 'degraded' | 'unhealthy'
-    timestamp: string
-    components: Record<string, IntegrationHealthResult>
+    overallStatus: "healthy" | "degraded" | "unhealthy";
+    timestamp: string;
+    components: Record<string, IntegrationHealthResult>;
     summary: {
-      totalChecks: number
-      healthyChecks: number
-      degradedChecks: number
-      unhealthyChecks: number
-      criticalIssues: string[]
-      recommendations: string[]
-    }
-    duration: number
+      totalChecks: number;
+      healthyChecks: number;
+      degradedChecks: number;
+      unhealthyChecks: number;
+      criticalIssues: string[];
+      recommendations: string[];
+    };
+    duration: number;
   }> {
-    const startTime = performance.now()
+    const startTime = performance.now();
 
     try {
-      logger.info('Running comprehensive integration health check')
+      logger.info("Running comprehensive integration health check");
 
       // Run all integration checks in parallel
-      const [simTableAccess, parlantSchema, workspaceIsolation, apiIntegration] =
-        await Promise.allSettled([
-          this.checkSimTableAccess(),
-          this.checkParlantSchemaReadiness(),
-          this.checkWorkspaceIsolation(),
-          this.checkApiIntegrationHealth(),
-        ])
+      const [
+        simTableAccess,
+        parlantSchema,
+        workspaceIsolation,
+        apiIntegration,
+      ] = await Promise.allSettled([
+        this.checkSimTableAccess(),
+        this.checkParlantSchemaReadiness(),
+        this.checkWorkspaceIsolation(),
+        this.checkApiIntegrationHealth(),
+      ]);
 
       const components = {
-        'sim-table-access':
-          simTableAccess.status === 'fulfilled'
+        "sim-table-access":
+          simTableAccess.status === "fulfilled"
             ? simTableAccess.value
             : {
-                status: 'unhealthy' as const,
+                status: "unhealthy" as const,
                 timestamp: new Date().toISOString(),
-                component: 'sim-table-access',
+                component: "sim-table-access",
                 duration: 0,
                 details: {},
               },
-        'parlant-schema':
-          parlantSchema.status === 'fulfilled'
+        "parlant-schema":
+          parlantSchema.status === "fulfilled"
             ? parlantSchema.value
             : {
-                status: 'unhealthy' as const,
+                status: "unhealthy" as const,
                 timestamp: new Date().toISOString(),
-                component: 'parlant-schema',
+                component: "parlant-schema",
                 duration: 0,
                 details: {},
               },
-        'workspace-isolation':
-          workspaceIsolation.status === 'fulfilled'
+        "workspace-isolation":
+          workspaceIsolation.status === "fulfilled"
             ? workspaceIsolation.value
             : {
-                status: 'unhealthy' as const,
+                status: "unhealthy" as const,
                 timestamp: new Date().toISOString(),
-                component: 'workspace-isolation',
+                component: "workspace-isolation",
                 duration: 0,
                 details: {},
               },
-        'api-integration':
-          apiIntegration.status === 'fulfilled'
+        "api-integration":
+          apiIntegration.status === "fulfilled"
             ? apiIntegration.value
             : {
-                status: 'unhealthy' as const,
+                status: "unhealthy" as const,
                 timestamp: new Date().toISOString(),
-                component: 'api-integration',
+                component: "api-integration",
                 duration: 0,
                 details: {},
               },
-      }
+      };
 
       // Calculate summary statistics
-      const statuses = Object.values(components).map((c) => c.status)
-      const totalChecks = statuses.length
-      const healthyChecks = statuses.filter((s) => s === 'healthy').length
-      const degradedChecks = statuses.filter((s) => s === 'degraded').length
-      const unhealthyChecks = statuses.filter((s) => s === 'unhealthy').length
+      const statuses = Object.values(components).map((c) => c.status);
+      const totalChecks = statuses.length;
+      const healthyChecks = statuses.filter((s) => s === "healthy").length;
+      const degradedChecks = statuses.filter((s) => s === "degraded").length;
+      const unhealthyChecks = statuses.filter((s) => s === "unhealthy").length;
 
       // Determine overall status
-      let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy'
+      let overallStatus: "healthy" | "degraded" | "unhealthy" = "healthy";
       if (unhealthyChecks > 0) {
-        overallStatus = 'unhealthy'
+        overallStatus = "unhealthy";
       } else if (degradedChecks > 0) {
-        overallStatus = 'degraded'
+        overallStatus = "degraded";
       }
 
       // Generate recommendations
-      const criticalIssues: string[] = []
-      const recommendations: string[] = []
+      const criticalIssues: string[] = [];
+      const recommendations: string[] = [];
 
       Object.entries(components).forEach(([name, result]) => {
-        if (result.status === 'unhealthy') {
-          criticalIssues.push(`${name}: ${result.details.error || 'Critical failure'}`)
+        if (result.status === "unhealthy") {
+          criticalIssues.push(
+            `${name}: ${result.details.error || "Critical failure"}`,
+          );
         }
-        if (result.status === 'degraded') {
-          recommendations.push(`${name}: Review and optimize for better performance`)
+        if (result.status === "degraded") {
+          recommendations.push(
+            `${name}: Review and optimize for better performance`,
+          );
         }
-      })
+      });
 
-      const duration = performance.now() - startTime
+      const duration = performance.now() - startTime;
 
       const result = {
         overallStatus,
@@ -659,52 +695,55 @@ export class ParlantIntegrationHealthMonitor {
           recommendations,
         },
         duration,
-      }
+      };
 
       // Log comprehensive results
-      parlantLoggers.integration.info('Comprehensive integration health check completed', {
-        operation: 'comprehensive_integration_check',
-        overallStatus,
-        duration,
-        healthyChecks,
-        degradedChecks,
-        unhealthyChecks,
-        criticalIssues: criticalIssues.length,
-      })
+      parlantLoggers.integration.info(
+        "Comprehensive integration health check completed",
+        {
+          operation: "comprehensive_integration_check",
+          overallStatus,
+          duration,
+          healthyChecks,
+          degradedChecks,
+          unhealthyChecks,
+          criticalIssues: criticalIssues.length,
+        },
+      );
 
       // Track critical issues
       if (unhealthyChecks > 0) {
         await errorTracker.trackError(
-          'integration',
-          'comprehensive-health',
+          "integration",
+          "comprehensive-health",
           `Integration health check failed: ${unhealthyChecks} unhealthy components`,
           new Error(`Critical integration issues detected`),
           {
-            operation: 'comprehensive_integration_check',
+            operation: "comprehensive_integration_check",
             duration,
             unhealthyChecks,
             criticalIssues: criticalIssues.length,
-          }
-        )
+          },
+        );
       }
 
-      return result
+      return result;
     } catch (error) {
-      const duration = performance.now() - startTime
+      const duration = performance.now() - startTime;
 
       await errorTracker.trackCritical(
-        'integration',
-        'comprehensive-health',
-        'Comprehensive integration health check failed completely',
-        error instanceof Error ? error : new Error('Unknown error'),
+        "integration",
+        "comprehensive-health",
+        "Comprehensive integration health check failed completely",
+        error instanceof Error ? error : new Error("Unknown error"),
         {
-          operation: 'comprehensive_integration_check',
+          operation: "comprehensive_integration_check",
           duration,
-          errorType: 'system',
-        }
-      )
+          errorType: "system",
+        },
+      );
 
-      throw error
+      throw error;
     }
   }
 
@@ -712,32 +751,37 @@ export class ParlantIntegrationHealthMonitor {
    * Get cached check results
    */
   getLastCheckResults(): Map<string, IntegrationHealthResult> {
-    return new Map(this.lastCheckResults)
+    return new Map(this.lastCheckResults);
   }
 
   /**
    * Clear cached results
    */
   clearCache(): void {
-    this.lastCheckResults.clear()
-    logger.info('Integration health check cache cleared')
+    this.lastCheckResults.clear();
+    logger.info("Integration health check cache cleared");
   }
 }
 
 /**
  * Singleton integration health monitor
  */
-export const parlantIntegrationHealthMonitor = new ParlantIntegrationHealthMonitor()
+export const parlantIntegrationHealthMonitor =
+  new ParlantIntegrationHealthMonitor();
 
 /**
  * Convenience functions for integration health checking
  */
 export const integrationHealth = {
   checkSimTables: () => parlantIntegrationHealthMonitor.checkSimTableAccess(),
-  checkParlantSchema: () => parlantIntegrationHealthMonitor.checkParlantSchemaReadiness(),
-  checkWorkspaceIsolation: () => parlantIntegrationHealthMonitor.checkWorkspaceIsolation(),
-  checkApiIntegration: () => parlantIntegrationHealthMonitor.checkApiIntegrationHealth(),
-  checkComprehensive: () => parlantIntegrationHealthMonitor.checkComprehensiveIntegrationHealth(),
+  checkParlantSchema: () =>
+    parlantIntegrationHealthMonitor.checkParlantSchemaReadiness(),
+  checkWorkspaceIsolation: () =>
+    parlantIntegrationHealthMonitor.checkWorkspaceIsolation(),
+  checkApiIntegration: () =>
+    parlantIntegrationHealthMonitor.checkApiIntegrationHealth(),
+  checkComprehensive: () =>
+    parlantIntegrationHealthMonitor.checkComprehensiveIntegrationHealth(),
   getLastResults: () => parlantIntegrationHealthMonitor.getLastCheckResults(),
   clearCache: () => parlantIntegrationHealthMonitor.clearCache(),
-}
+};
