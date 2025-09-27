@@ -3,13 +3,18 @@ import { env } from './lib/env'
 import { isProd } from './lib/environment'
 
 const nextConfig: NextConfig = {
-  // STATIC EXPORT TO BYPASS SSR OPTIMIZATION HANGS
-  output: 'export',
-  distDir: '.next',
-  trailingSlash: true,
-  // Disable image optimization for static export
+  // Standard production configuration with full optimization enabled
+  output: 'standalone',
+
+  // Enable optimized images with basic configuration
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+    formats: ['image/webp', 'image/avif'],
   },
 
   // Enable TypeScript and ESLint for production builds
@@ -20,8 +25,10 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: false,
   },
 
-  // Disable experimental features to prevent optimization hangs
-  experimental: {},
+  // Use default experimental features (Next.js handles these safely)
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+  },
 
   // External packages that should not be bundled
   serverExternalPackages: [
@@ -40,57 +47,14 @@ const nextConfig: NextConfig = {
     'sqlite3',
   ],
 
-  // ANTI-HANG WEBPACK CONFIG - DISABLE PROBLEMATIC OPTIMIZATIONS
-  webpack: (config, { dev, isServer }) => {
-    // Disable all optimizations that cause hangs
-    if (!dev) {
-      config.optimization = {
-        ...config.optimization,
-        // Completely disable minification to prevent hangs
-        minimize: false,
-        // Disable complex chunking strategies
-        splitChunks: false,
-        // Disable other optimization features that can cause hangs
-        usedExports: false,
-        sideEffects: false,
-        providedExports: false,
-        concatenateModules: false,
-        flagIncludedChunks: false,
-        removeAvailableModules: false,
-        removeEmptyChunks: false,
-        mergeDuplicateChunks: false,
-      }
-
-      // Disable caching to prevent cache-related hangs
-      config.cache = false
-
-      // Performance settings to prevent size-based hangs
-      config.performance = false
-    }
-
-    // Development optimizations
-    if (dev) {
-      config.watchOptions = {
-        poll: false,
-        ignored: ['**/node_modules/**', '**/.next/**'],
-        aggregateTimeout: 300,
-      }
-    }
-
-    return config
-  },
+  // Let Next.js handle webpack optimization completely
+  // No custom webpack configuration
 
   // Performance optimizations
   poweredByHeader: false,
   generateEtags: true,
   compress: true,
   trailingSlash: false,
-
-  // Build performance optimization
-  onDemandEntries: {
-    maxInactiveAge: 60 * 1000,
-    pagesBufferLength: 5,
-  },
 }
 
 const sentryConfig = {
