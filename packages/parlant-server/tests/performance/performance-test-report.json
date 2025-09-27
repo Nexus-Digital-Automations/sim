@@ -18,15 +18,15 @@
       "successful_authentications": 0,
       "failed_authentications": 50,
       "success_rate": "0.00%",
-      "total_time": "159.17ms",
+      "total_time": "366.64ms",
       "average_response_time": "NaNms",
       "throughput": "0.00 req/sec",
       "jwt_validation": {
         "total_validations": 1000,
         "successful_validations": 0,
-        "total_time": "1281.97ms",
+        "total_time": "2965.31ms",
         "validations_per_second": "0.00 val/sec",
-        "average_validation_time": "1.28ms"
+        "average_validation_time": "2.97ms"
       }
     },
     "agent_management": {
@@ -34,7 +34,7 @@
         "concurrent_creations": 25,
         "successful_creations": 0,
         "failed_creations": 25,
-        "total_time": "59.53ms",
+        "total_time": "131.39ms",
         "average_creation_time": "NaNms",
         "creations_per_second": "0.00 agents/sec"
       }
@@ -44,7 +44,7 @@
       "successful_connections": 0,
       "failed_connections": 25,
       "success_rate": "0.00%",
-      "total_setup_time": "48.81ms",
+      "total_setup_time": "124.35ms",
       "average_connection_time": "NaNms",
       "connections_per_second": "0.00 conn/sec"
     },
@@ -52,7 +52,7 @@
       "concurrent_operations": 50,
       "successful_operations": 0,
       "failed_operations": 50,
-      "total_time": "59.04ms",
+      "total_time": "68.10ms",
       "operations_per_second": "0.00 ops/sec",
       "operation_breakdown": {
         "create_operations": 0,
@@ -63,7 +63,7 @@
     "resource_usage": {},
     "breaking_points": {}
   },
-  "generated_at": "2025-09-27T18:37:29.107Z",
+  "generated_at": "2025-09-27T18:43:50.782Z",
   "summary": {
     "authentication_performance": "0.00%",
     "agent_crud_performance": "N/A",

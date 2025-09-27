@@ -19,15 +19,16 @@ from typing import Dict, List, Any
 from unittest.mock import Mock, AsyncMock, patch
 import base64
 
-from packages.parlant_server.messaging.workspace_messaging_system import (
-    workspace_messaging_system,
-    WorkspaceMessage,
-    MessageType,
-    PresenceStatus
-)
-from packages.parlant_server.messaging.multitenant_queue_manager import (
-    multitenant_queue_manager,
-    QueuePriority,
+try:
+    from messaging.workspace_messaging_system import (
+        workspace_messaging_system,
+        WorkspaceMessage,
+        MessageType,
+        PresenceStatus
+    )
+    from messaging.multitenant_queue_manager import (
+        multitenant_queue_manager,
+        QueuePriority,
     DeliveryMode,
     TenantConfiguration
 )

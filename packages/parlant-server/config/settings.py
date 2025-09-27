@@ -52,36 +52,13 @@ class Settings(BaseSettings):
     redis_key_prefix: str = Field(default="parlant:", env="REDIS_KEY_PREFIX")
 
     # CORS configuration
-    allowed_origins: List[str] = Field(
-        default_factory=lambda: [
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "https://localhost:3000",
-            "https://localhost:3001"
-        ],
-        env="ALLOWED_ORIGINS"
-    )
+    allowed_origins: Optional[str] = Field(default=None, env="ALLOWED_ORIGINS")
 
-    @field_validator('allowed_origins', mode='before')
-    @classmethod
-    def parse_allowed_origins(cls, v):
-        """Parse ALLOWED_ORIGINS from comma-separated string or JSON."""
-        if isinstance(v, str):
-            # Handle comma-separated string format
-            if v.strip():
-                return [origin.strip() for origin in v.split(',') if origin.strip()]
-            else:
-                # Empty string - return default
-                return [
-                    "http://localhost:3000",
-                    "http://localhost:3001",
-                    "https://localhost:3000",
-                    "https://localhost:3001"
-                ]
-        elif isinstance(v, list):
-            return v
+    def get_allowed_origins(self) -> List[str]:
+        """Parse ALLOWED_ORIGINS from comma-separated string."""
+        if self.allowed_origins:
+            return [origin.strip() for origin in self.allowed_origins.split(',') if origin.strip()]
         else:
-            # Use default
             return [
                 "http://localhost:3000",
                 "http://localhost:3001",
@@ -114,7 +91,7 @@ class Settings(BaseSettings):
 
     def get_cors_origins(self) -> List[str]:
         """Get CORS origins including Sim app URL."""
-        origins = self.allowed_origins.copy()
+        origins = self.get_allowed_origins()
 
         # Add Sim app URLs to CORS origins
         sim_url = self.sim_app_url
