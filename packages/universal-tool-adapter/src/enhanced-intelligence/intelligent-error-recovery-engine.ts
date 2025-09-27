@@ -131,6 +131,9 @@ export interface ErrorClassification {
   type: string
   domain: string
   confidence: number
+  severity?: 'low' | 'medium' | 'high' | 'critical'
+  requiresUserAction?: boolean
+  requiresEscalation?: boolean
 }
 
 export interface RootCause {
@@ -1789,6 +1792,36 @@ export class IntelligentErrorRecoveryEngine {
       'Improve success rate for network-related errors',
       'Reduce average resolution time through better guidance',
     ]
+  }
+
+  /**
+   * Classify error for analytics and testing purposes
+   */
+  async classifyError(error: Error, context: ErrorRecoveryContext): Promise<ErrorClassification> {
+    const category = this.classifyErrorCategory(error)
+    const message = error instanceof Error ? error.message : String(error).toLowerCase()
+
+    // Determine severity based on error type
+    let severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'
+    let requiresEscalation = false
+
+    if (message.includes('system') || message.includes('critical') || message.includes('server')) {
+      severity = 'critical'
+      requiresEscalation = true
+    } else if (message.includes('network') || message.includes('connection')) {
+      severity = 'high'
+    }
+
+    return {
+      category,
+      subcategory: this.classifyErrorSubcategory(error),
+      type: error.constructor.name,
+      domain: this.identifyErrorDomain(error, context),
+      confidence: 0.85,
+      severity,
+      requiresUserAction: category === 'validation' || category === 'input_validation',
+      requiresEscalation
+    }
   }
 }
 

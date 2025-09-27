@@ -154,13 +154,13 @@ class MockContextualRecommendationEngine extends EventEmitter {
   async getToolRecommendations(context: any, options: any = {}) {
     await this.simulateDelay(80)
 
-    const { toolName, operation, parameters } = context
+    const { toolId, operation, parameters } = context
     const relevantTools = this.toolDatabase.filter(
-      (tool) => !toolName?.includes(tool.name) // Don't recommend the same tool
+      (tool) => !toolId?.includes(tool.name) // Don't recommend the same tool
     )
 
     const recommendations = relevantTools.slice(0, 3).map((tool) => ({
-      toolName: tool.name,
+      toolId: tool.name,
       confidence: tool.reliability * 0.9, // Slight reduction for uncertainty
       reasoning: `${tool.name} has ${(tool.reliability * 100).toFixed(0)}% reliability for similar operations`,
       estimatedSuccess: tool.reliability,
@@ -302,7 +302,7 @@ describe('Error Handling System Integration', () => {
       ;(networkError as any).name = 'NetworkError'
 
       const context: ErrorRecoveryContext = {
-        toolName: 'api_client',
+        toolId: 'api_client',
         operation: 'fetchUserData',
         parameters: { userId: '12345', endpoint: 'https://api.example.com/users' },
         timestamp: new Date(),
@@ -324,12 +324,12 @@ describe('Error Handling System Integration', () => {
       await analyticsSystem.recordRecoveryPlan(eventId, recoveryPlan)
 
       expect(recoveryPlan).toBeDefined()
-      expect(recoveryPlan.recoveryActions.length).toBeGreaterThan(0)
+      expect(recoveryPlan.immediateActions.length).toBeGreaterThan(0)
       expect(recoveryPlan.alternativeTools.length).toBeGreaterThan(0)
-      expect(recoveryPlan.userFriendlyExplanation).toContain('network')
+      expect(recoveryPlan.explanation).toContain('network')
 
       // 4. Simulate user selecting a recovery action
-      const selectedAction = recoveryPlan.recoveryActions[0]
+      const selectedAction = recoveryPlan.immediateActions[0]
       await analyticsSystem.recordSelectedAction(eventId, selectedAction)
 
       // 5. Execute recovery action (simulate execution)
@@ -394,7 +394,7 @@ describe('Error Handling System Integration', () => {
       ;(validationError as any).name = 'ValidationError'
 
       const context: ErrorRecoveryContext = {
-        toolName: 'user_validator',
+        toolId: 'user_validator',
         operation: 'validateUserRegistration',
         parameters: {
           email: 'invalid-email-format',
@@ -423,18 +423,18 @@ describe('Error Handling System Integration', () => {
       await analyticsSystem.recordRecoveryPlan(eventId, recoveryPlan)
 
       // Validation errors should have specific user-action focused recovery steps
-      const userActionSteps = recoveryPlan.recoveryActions.filter(
+      const userActionSteps = recoveryPlan.immediateActions.filter(
         (action) => action.type === 'user_action' || action.type === 'input_correction'
       )
       expect(userActionSteps.length).toBeGreaterThan(0)
 
       // 3. Simulate user correcting input
       const correctionAction =
-        recoveryPlan.recoveryActions.find(
+        recoveryPlan.immediateActions.find(
           (action) =>
             action.description.toLowerCase().includes('correct') ||
             action.description.toLowerCase().includes('input')
-        ) || recoveryPlan.recoveryActions[0]
+        ) || recoveryPlan.immediateActions[0]
 
       await analyticsSystem.recordSelectedAction(eventId, correctionAction)
 
@@ -491,7 +491,7 @@ describe('Error Handling System Integration', () => {
       ;(systemError as any).code = 'ERR_MEMORY_ALLOCATION_FAILED'
 
       const context: ErrorRecoveryContext = {
-        toolName: 'data_processor',
+        toolId: 'data_processor',
         operation: 'processLargeDataset',
         parameters: {
           dataSize: 1000000000, // 1GB dataset
@@ -516,7 +516,7 @@ describe('Error Handling System Integration', () => {
       await analyticsSystem.recordRecoveryPlan(eventId, recoveryPlan)
 
       // System errors should suggest escalation or alternative approaches
-      const escalationActions = recoveryPlan.recoveryActions.filter(
+      const escalationActions = recoveryPlan.immediateActions.filter(
         (action) => action.type === 'escalation' || action.type === 'manual_intervention'
       )
       expect(escalationActions.length).toBeGreaterThan(0)
@@ -579,7 +579,7 @@ describe('Error Handling System Integration', () => {
         ;(errorData.error as any).name = errorData.type
 
         const context: ErrorRecoveryContext = {
-          toolName: `concurrent_tool_${index}`,
+          toolId: `concurrent_tool_${index}`,
           operation: `concurrent_operation_${index}`,
           parameters: { index },
           timestamp: new Date(),
@@ -634,7 +634,7 @@ describe('Error Handling System Integration', () => {
         ;(errorData.error as any).name = 'RateLimitError'
 
         const context: ErrorRecoveryContext = {
-          toolName: 'rate_limited_api',
+          toolId: 'rate_limited_api',
           operation: 'api_call',
           parameters: { apiKey: 'test_key', endpoint: '/api/data' },
           timestamp: errorData.timestamp,
@@ -672,7 +672,7 @@ describe('Error Handling System Integration', () => {
       const learningPromises = testScenarios.map(async (scenario, index) => {
         const error = new Error(`Learning test error ${index}`)
         const context: ErrorRecoveryContext = {
-          toolName: 'learning_tool',
+          toolId: 'learning_tool',
           operation: 'learning_test',
           parameters: { scenario: index },
           timestamp: new Date(),
@@ -754,7 +754,7 @@ describe('Error Handling System Integration', () => {
       const highVolumePromises = Array.from({ length: errorCount }, async (_, i) => {
         const error = new Error(`High volume error ${i}`)
         const context: ErrorRecoveryContext = {
-          toolName: `volume_tool_${i % 10}`, // 10 different tools
+          toolId: `volume_tool_${i % 10}`, // 10 different tools
           operation: 'volume_test',
           parameters: { index: i },
           timestamp: new Date(),
@@ -803,7 +803,7 @@ describe('Error Handling System Integration', () => {
       const largeDataPromises = Array.from({ length: 50 }, async (_, i) => {
         const error = new Error(`Large data error ${i}`)
         const largeContext: ErrorRecoveryContext = {
-          toolName: 'memory_test_tool',
+          toolId: 'memory_test_tool',
           operation: 'memory_test',
           parameters: {
             largeData: 'x'.repeat(10000), // 10KB of data
@@ -839,7 +839,7 @@ describe('Error Handling System Integration', () => {
       // System should still be responsive
       const quickError = new Error('Quick response test')
       const quickContext: ErrorRecoveryContext = {
-        toolName: 'quick_tool',
+        toolId: 'quick_tool',
         operation: 'response_test',
         parameters: {},
         timestamp: new Date(),
@@ -867,7 +867,7 @@ describe('Error Handling System Integration', () => {
 
       const error = new Error('Test error during service failure')
       const context: ErrorRecoveryContext = {
-        toolName: 'resilience_tool',
+        toolId: 'resilience_tool',
         operation: 'service_failure_test',
         parameters: {},
         timestamp: new Date(),
@@ -881,15 +881,15 @@ describe('Error Handling System Integration', () => {
       const recoveryPlan = await recoveryEngine.generateRecoveryPlan(error, context)
 
       expect(recoveryPlan).toBeDefined()
-      expect(recoveryPlan.classification.category).toBe('unknown') // Fallback classification
-      expect(recoveryPlan.recoveryActions.length).toBeGreaterThan(0) // Should have fallback actions
-      expect(recoveryPlan.userFriendlyExplanation).toBeDefined()
+      expect(recoveryPlan.errorAnalysis.classification.category).toBe('unknown') // Fallback classification
+      expect(recoveryPlan.immediateActions.length).toBeGreaterThan(0) // Should have fallback actions
+      expect(recoveryPlan.explanation).toBeDefined()
 
       // Analytics should still work
       const eventId = await analyticsSystem.recordErrorEvent(
         error,
         context,
-        recoveryPlan.classification
+        recoveryPlan.errorAnalysis.classification
       )
       expect(eventId).toBeDefined()
     })
@@ -900,7 +900,7 @@ describe('Error Handling System Integration', () => {
 
       const promises = errors.map(async (error, i) => {
         const context: ErrorRecoveryContext = {
-          toolName: `integrity_tool_${i}`,
+          toolId: `integrity_tool_${i}`,
           operation: 'integrity_test',
           parameters: { index: i },
           timestamp: new Date(),

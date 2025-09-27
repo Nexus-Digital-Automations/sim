@@ -105,7 +105,7 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 43,
+      "total_reinitializations": 44,
       "current_day": "2025-09-27",
       "time_buckets": {
         "11:00-15:59": {
@@ -126,7 +126,7 @@
         },
         "07:00-11:59": {
           "init": 0,
-          "reinit": 1
+          "reinit": 2
         }
       },
       "daily_history": [
@@ -159,7 +159,7 @@
         }
       ],
       "last_reset": "2025-09-27T05:02:22.444Z",
-      "last_updated": "2025-09-27T12:05:33.349Z"
+      "last_updated": "2025-09-27T12:13:12.152Z"
     }
   },
   "agents": {
@@ -171,11 +171,13 @@
       "previousSessions": []
     },
     "agent_continue_1758974732": {
-      "lastHeartbeat": "2025-09-27T12:05:33.341Z",
+      "lastHeartbeat": "2025-09-27T12:13:12.149Z",
       "status": "active",
-      "reinitialized": "2025-09-27T12:05:33.341Z",
-      "sessionId": "d757f4c178cf770f",
-      "previousSessions": []
+      "reinitialized": "2025-09-27T12:13:12.149Z",
+      "sessionId": "bf63ff46114dfd59",
+      "previousSessions": [
+        "d757f4c178cf770f"
+      ]
     }
   },
   "features": []
