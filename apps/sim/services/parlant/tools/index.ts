@@ -274,7 +274,9 @@ export async function validateUniversalToolAdapterSystem(): Promise<{
     console.log(`[UniversalToolAdapter] Validation complete: ${isValid ? 'PASSED' : 'FAILED'}`)
     if (issues.length > 0) {
       console.log(`[UniversalToolAdapter] Issues found: ${issues.length}`)
-      issues.forEach((issue) => console.log(`[UniversalToolAdapter] - ${issue}`))
+      issues.forEach((issue) => {
+        console.log(`[UniversalToolAdapter] - ${issue}`)
+      })
     }
 
     return {

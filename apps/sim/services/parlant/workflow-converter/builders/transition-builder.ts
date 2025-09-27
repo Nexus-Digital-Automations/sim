@@ -45,8 +45,12 @@ export class TransitionBuilder {
       // Validate edge
       const validation = this.validateEdge(edge, context)
       if (!validation.valid) {
-        validation.errors.forEach((error) => context.errors.push(error))
-        validation.warnings.forEach((warning) => context.warnings.push(warning))
+        validation.errors.forEach((error) => {
+          context.errors.push(error)
+        })
+        validation.warnings.forEach((warning) => {
+          context.warnings.push(warning)
+        })
 
         if (validation.errors.some((e) => e.severity === 'critical' || e.severity === 'error')) {
           return null

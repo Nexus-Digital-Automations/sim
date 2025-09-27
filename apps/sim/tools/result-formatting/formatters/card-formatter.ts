@@ -478,7 +478,11 @@ export class CardFormatter implements ResultFormatter {
     if (data.length === 0) return []
 
     const allKeys = new Set<string>()
-    data.forEach((item) => Object.keys(item).forEach((key) => allKeys.add(key)))
+    data.forEach((item) => {
+      Object.keys(item).forEach((key) => {
+        allKeys.add(key)
+      })
+    })
 
     return Array.from(allKeys)
       .slice(0, 6)
@@ -507,7 +511,11 @@ export class CardFormatter implements ResultFormatter {
     if (data.length === 0) return 'no fields'
 
     const allKeys = new Set<string>()
-    data.forEach((item) => Object.keys(item).forEach((key) => allKeys.add(key)))
+    data.forEach((item) => {
+      Object.keys(item).forEach((key) => {
+        allKeys.add(key)
+      })
+    })
 
     const avgFields = Math.round(
       data.reduce((sum, item) => sum + Object.keys(item).length, 0) / data.length

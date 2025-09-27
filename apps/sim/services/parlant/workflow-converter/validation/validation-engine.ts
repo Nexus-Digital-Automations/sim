@@ -870,7 +870,9 @@ export class ValidationEngine {
 
     const buildAdjacencyList = () => {
       const adj = new Map<string, string[]>()
-      nodes.forEach((node) => adj.set(node.id, []))
+      nodes.forEach((node) => {
+        adj.set(node.id, [])
+      })
       edges.forEach((edge) => {
         if (adj.has(edge.source)) {
           adj.get(edge.source)!.push(edge.target)

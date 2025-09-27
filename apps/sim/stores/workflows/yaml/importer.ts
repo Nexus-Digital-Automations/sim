@@ -251,7 +251,9 @@ function sortBlocksByParentChildOrder(blocks: ImportedBlock[]): ImportedBlock[] 
 
   // Create a map for quick lookup
   const blockMap = new Map<string, ImportedBlock>()
-  blocks.forEach((block) => blockMap.set(block.id, block))
+  blocks.forEach((block) => {
+    blockMap.set(block.id, block)
+  })
 
   // Process blocks recursively, ensuring parents are added first
   function processBlock(block: ImportedBlock) {
@@ -284,7 +286,9 @@ function sortBlocksByParentChildOrder(blocks: ImportedBlock[]): ImportedBlock[] 
   }
 
   // Process all blocks
-  blocks.forEach((block) => processBlock(block))
+  blocks.forEach((block) => {
+    processBlock(block)
+  })
 
   return sorted
 }

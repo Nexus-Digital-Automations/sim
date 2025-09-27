@@ -315,12 +315,16 @@ class MasterTestRunner {
 
     if (report.qualityGate.blockers.length > 0) {
       console.log(`   • Blockers:`)
-      report.qualityGate.blockers.forEach((blocker) => console.log(`     - ${blocker}`))
+      report.qualityGate.blockers.forEach((blocker) => {
+        console.log(`     - ${blocker}`)
+      })
     }
 
     if (report.qualityGate.warnings.length > 0) {
       console.log(`   • Warnings:`)
-      report.qualityGate.warnings.forEach((warning) => console.log(`     - ${warning}`))
+      report.qualityGate.warnings.forEach((warning) => {
+        console.log(`     - ${warning}`)
+      })
     }
 
     console.log(`\n📈 PHASE RESULTS:`)

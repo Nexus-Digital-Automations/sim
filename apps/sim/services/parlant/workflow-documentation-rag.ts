@@ -429,12 +429,16 @@ export class WorkflowDocumentationRAGService {
     ragContext.retrievedChunks.forEach((chunk) => {
       // Extract potential topics from metadata
       if (chunk.metadata?.tags) {
-        chunk.metadata.tags.forEach((tag: string) => topics.add(tag))
+        chunk.metadata.tags.forEach((tag: string) => {
+          topics.add(tag)
+        })
       }
 
       // Extract topics from content (simple keyword extraction)
       const keywords = chunk.content.match(/\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\b/g) || []
-      keywords.slice(0, 3).forEach((keyword) => topics.add(keyword))
+      keywords.slice(0, 3).forEach((keyword) => {
+        topics.add(keyword)
+      })
     })
 
     return Array.from(topics).slice(0, 5)

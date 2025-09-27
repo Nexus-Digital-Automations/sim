@@ -499,9 +499,13 @@ export const useOperationQueueStore = create<OperationQueueState>((set, get) => 
   triggerOfflineMode: () => {
     logger.error('Operation failed after retries - triggering offline mode')
 
-    retryTimeouts.forEach((timeout) => clearTimeout(timeout))
+    retryTimeouts.forEach((timeout) => {
+      clearTimeout(timeout)
+    })
     retryTimeouts.clear()
-    operationTimeouts.forEach((timeout) => clearTimeout(timeout))
+    operationTimeouts.forEach((timeout) => {
+      clearTimeout(timeout)
+    })
     operationTimeouts.clear()
 
     set({

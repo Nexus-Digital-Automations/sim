@@ -641,7 +641,9 @@ export class JsonFormatter implements ResultFormatter {
       const allProps = new Set()
       schemas.forEach((schema) => {
         if (schema.properties) {
-          Object.keys(schema.properties).forEach((prop) => allProps.add(prop))
+          Object.keys(schema.properties).forEach((prop) => {
+            allProps.add(prop)
+          })
         }
       })
 

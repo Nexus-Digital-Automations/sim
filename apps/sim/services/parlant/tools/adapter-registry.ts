@@ -166,7 +166,9 @@ export class UniversalToolAdapterRegistry {
       key.startsWith(`${adapterId}:`)
     )
 
-    cacheKeysToRemove.forEach((key) => this.cache.delete(key))
+    cacheKeysToRemove.forEach((key) => {
+      this.cache.delete(key)
+    })
 
     if (this.config.enableLogging && removed) {
       console.log(`[AdapterRegistry] Unregistered adapter: ${adapterId}`)

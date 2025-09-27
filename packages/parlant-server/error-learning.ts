@@ -870,7 +870,9 @@ export class ErrorLearningEngine extends EventEmitter {
     const ranges = ['0.0-0.2', '0.2-0.4', '0.4-0.6', '0.6-0.8', '0.8-1.0']
     const distribution: Record<string, number> = {}
 
-    ranges.forEach((range) => (distribution[range] = 0))
+    for (const range of ranges) {
+      distribution[range] = 0
+    }
 
     this.learningData.forEach((dp) => {
       const effectiveness = dp.effectiveness

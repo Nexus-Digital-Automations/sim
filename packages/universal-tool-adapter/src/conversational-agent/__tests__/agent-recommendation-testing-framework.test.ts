@@ -1117,7 +1117,9 @@ class AgentRecommendationTestingFramework {
 
     if (results.recommendations.length > 0) {
       console.log('\n💡 Recommendations:')
-      results.recommendations.forEach((rec) => console.log(`  • ${rec}`))
+      results.recommendations.forEach((rec) => {
+        console.log(`  • ${rec}`)
+      })
     }
 
     console.log('\n✅ Test suite completed successfully!')

@@ -946,13 +946,17 @@ export class ErrorKnowledgeBase extends EventEmitter {
       // Exact matches
       const exactMatches = this.searchIndex.get(term)
       if (exactMatches) {
-        exactMatches.forEach((id) => results.add(id))
+        for (const id of exactMatches) {
+          results.add(id)
+        }
       }
 
       // Partial matches
       for (const [keyword, articleIds] of this.searchIndex.entries()) {
         if (keyword.includes(term) || term.includes(keyword)) {
-          articleIds.forEach((id) => results.add(id))
+          for (const id of articleIds) {
+            results.add(id)
+          }
         }
       }
     })

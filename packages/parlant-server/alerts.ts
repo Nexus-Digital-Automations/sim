@@ -232,7 +232,9 @@ export class AlertManager {
       },
     ]
 
-    defaultRules.forEach((rule) => this.rules.set(rule.id, rule))
+    for (const rule of defaultRules) {
+      this.rules.set(rule.id, rule)
+    }
     logger.info('Default alert rules initialized', { ruleCount: defaultRules.length })
   }
 
@@ -290,9 +292,9 @@ export class AlertManager {
       ],
     ]
 
-    classifications.forEach(([errorType, classification]) =>
+    for (const [errorType, classification] of classifications) {
       this.errorClassifications.set(errorType, classification)
-    )
+    }
 
     logger.info('Error classifications initialized', {
       classificationCount: classifications.length,
@@ -740,7 +742,9 @@ export class AlertManager {
       }
     })
 
-    alertsToRemove.forEach((id) => this.alerts.delete(id))
+    for (const id of alertsToRemove) {
+      this.alerts.delete(id)
+    }
 
     if (alertsToRemove.length > 0) {
       logger.debug('Cleaned up old alerts', { removedCount: alertsToRemove.length })

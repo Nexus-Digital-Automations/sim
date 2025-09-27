@@ -481,13 +481,19 @@ export class TemplateEngine {
         )
 
         if (shouldActivate) {
-          conditionalBlock.blocksToShow?.forEach((blockId: string) => activeBlocks.add(blockId))
-          conditionalBlock.edgesToActivate?.forEach((edgeId: string) => activeEdges.add(edgeId))
+          conditionalBlock.blocksToShow?.forEach((blockId: string) => {
+            activeBlocks.add(blockId)
+          })
+          conditionalBlock.edgesToActivate?.forEach((edgeId: string) => {
+            activeEdges.add(edgeId)
+          })
         } else {
-          conditionalBlock.blocksToHide?.forEach((blockId: string) => activeBlocks.delete(blockId))
-          conditionalBlock.edgesToDeactivate?.forEach((edgeId: string) =>
+          conditionalBlock.blocksToHide?.forEach((blockId: string) => {
+            activeBlocks.delete(blockId)
+          })
+          conditionalBlock.edgesToDeactivate?.forEach((edgeId: string) => {
             activeEdges.delete(edgeId)
-          )
+          })
         }
       }
 

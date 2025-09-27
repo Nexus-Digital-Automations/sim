@@ -338,7 +338,9 @@ export class WorkflowBatchOperations {
     this.syncStore.setSyncState('syncing')
 
     try {
-      this.operations.forEach((operation) => operation())
+      this.operations.forEach((operation) => {
+        operation()
+      })
       this.syncStore.setSyncState('idle')
       logger.info('Batch operations completed successfully')
     } catch (error) {
