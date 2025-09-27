@@ -661,10 +661,7 @@ export class DualModeExecutionArchitecture {
           source: 'reactflow',
           data: edge,
         })
-      } else if (
-        edge.source !== journeyTransition.from ||
-        edge.target !== journeyTransition.to
-      ) {
+      } else if (edge.source !== journeyTransition.from || edge.target !== journeyTransition.to) {
         changes.push({
           type: 'EDGE_MODIFIED',
           entityId: edge.id,
@@ -702,8 +699,8 @@ export class DualModeExecutionArchitecture {
     // Detect conflicts for entities with multiple changes
     for (const [entityId, entityChanges] of changesByEntity) {
       if (entityChanges.length > 1) {
-        const reactFlowChanges = entityChanges.filter(c => c.source === 'reactflow')
-        const journeyChanges = entityChanges.filter(c => c.source === 'journey')
+        const reactFlowChanges = entityChanges.filter((c) => c.source === 'reactflow')
+        const journeyChanges = entityChanges.filter((c) => c.source === 'journey')
 
         if (reactFlowChanges.length > 0 && journeyChanges.length > 0) {
           conflicts.push({
@@ -717,9 +714,10 @@ export class DualModeExecutionArchitecture {
       }
 
       // Detect state inconsistencies
-      if (entityChanges.some(c => c.type === 'BLOCK_MODIFIED')) {
-        const modifiedChange = entityChanges.find(c => c.type === 'BLOCK_MODIFIED')
-        if (modifiedChange && Math.random() < 0.1) { // 10% chance for testing
+      if (entityChanges.some((c) => c.type === 'BLOCK_MODIFIED')) {
+        const modifiedChange = entityChanges.find((c) => c.type === 'BLOCK_MODIFIED')
+        if (modifiedChange && Math.random() < 0.1) {
+          // 10% chance for testing
           conflicts.push({
             type: 'STATE_INCONSISTENCY',
             description: `State inconsistency detected for block ${entityId}`,
@@ -818,7 +816,10 @@ export class DualModeExecutionArchitecture {
                   metadata: { reactFlowBlockId: change.entityId },
                 })
               } catch (error) {
-                this.logger.warn('Failed to add block to journey state', { error, entityId: change.entityId })
+                this.logger.warn('Failed to add block to journey state', {
+                  error,
+                  entityId: change.entityId,
+                })
               }
             }
             break
@@ -834,7 +835,10 @@ export class DualModeExecutionArchitecture {
                   context.journeyState.states[stateIndex].config.originalBlock = change.data
                 }
               } catch (error) {
-                this.logger.warn('Failed to modify block in journey state', { error, entityId: change.entityId })
+                this.logger.warn('Failed to modify block in journey state', {
+                  error,
+                  entityId: change.entityId,
+                })
               }
             }
             break
@@ -843,11 +847,13 @@ export class DualModeExecutionArchitecture {
             if (context.journeyState) {
               try {
                 // Remove block from journey state
-                context.journeyState.states = context.journeyState.states?.filter(
-                  (s: any) => s.id !== change.entityId
-                ) || []
+                context.journeyState.states =
+                  context.journeyState.states?.filter((s: any) => s.id !== change.entityId) || []
               } catch (error) {
-                this.logger.warn('Failed to remove block from journey state', { error, entityId: change.entityId })
+                this.logger.warn('Failed to remove block from journey state', {
+                  error,
+                  entityId: change.entityId,
+                })
               }
             }
             break
@@ -866,7 +872,10 @@ export class DualModeExecutionArchitecture {
                   metadata: { reactFlowEdgeId: change.entityId },
                 })
               } catch (error) {
-                this.logger.warn('Failed to add edge to journey state', { error, entityId: change.entityId })
+                this.logger.warn('Failed to add edge to journey state', {
+                  error,
+                  entityId: change.entityId,
+                })
               }
             }
             break
@@ -883,7 +892,10 @@ export class DualModeExecutionArchitecture {
                   context.journeyState.transitions[transitionIndex].to = change.data.target
                 }
               } catch (error) {
-                this.logger.warn('Failed to modify edge in journey state', { error, entityId: change.entityId })
+                this.logger.warn('Failed to modify edge in journey state', {
+                  error,
+                  entityId: change.entityId,
+                })
               }
             }
             break
@@ -892,11 +904,14 @@ export class DualModeExecutionArchitecture {
             if (context.journeyState) {
               try {
                 // Remove edge from journey state
-                context.journeyState.transitions = context.journeyState.transitions?.filter(
-                  (t: any) => t.id !== change.entityId
-                ) || []
+                context.journeyState.transitions =
+                  context.journeyState.transitions?.filter((t: any) => t.id !== change.entityId) ||
+                  []
               } catch (error) {
-                this.logger.warn('Failed to remove edge from journey state', { error, entityId: change.entityId })
+                this.logger.warn('Failed to remove edge from journey state', {
+                  error,
+                  entityId: change.entityId,
+                })
               }
             }
             break

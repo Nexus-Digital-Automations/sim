@@ -1,0 +1,41 @@
+{
+  "metrics": [
+    {
+      "criterion": "focused-codebase",
+      "startTime": "2025-09-27T17:52:49.109Z",
+      "endTime": "2025-09-27T17:52:49.121Z",
+      "durationMs": 12,
+      "memoryUsageBefore": {
+        "rss": 99745792,
+        "heapTotal": 20840448,
+        "heapUsed": 14457616,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 100597760,
+        "heapTotal": 21102592,
+        "heapUsed": 14890552,
+        "external": 2441823,
+        "arrayBuffers": 336550
+      },
+      "success": true,
+      "error": null
+    }
+  ],
+  "statistics": {
+    "lastUpdated": "2025-09-27T17:52:49.121Z",
+    "totalMeasurements": 1,
+    "averageDurationMs": 12,
+    "successRate": 100,
+    "bycriterion": {
+      "focused-codebase": {
+        "count": 1,
+        "totalDuration": 12,
+        "successCount": 1,
+        "avgDuration": 12,
+        "successRate": 100
+      }
+    }
+  }
+}

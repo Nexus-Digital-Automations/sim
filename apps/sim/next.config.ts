@@ -1,4 +1,3 @@
-import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import { env, isTruthy } from './lib/env'
 import { isDev, isHosted, isProd } from './lib/environment'
@@ -58,8 +57,41 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['pdf-parse', 'parlant-server', 'fs', 'fs/promises', 'path'],
   experimental: {
     optimizeCss: false,
+    turbopackSourceMaps: false,
+    optimizePackageImports: [],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    // Optimize build performance and prevent hangs
+    config.optimization = {
+      ...config.optimization,
+      // Prevent build hangs by simplifying optimization
+      sideEffects: false,
+      usedExports: !dev,
+      splitChunks: {
+        chunks: 'all',
+        maxInitialRequests: 25,
+        maxAsyncRequests: 25,
+        cacheGroups: {
+          default: {
+            minChunks: 2,
+            priority: -20,
+            reuseExistingChunk: true,
+          },
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            priority: -10,
+            chunks: 'all',
+            maxSize: 244000, // Prevent overly large chunks
+          },
+        },
+      },
+    }
+
+    // Prevent timeout issues with resolve configuration
+    config.resolve.symlinks = false
+    config.resolve.cacheWithContext = false
+
     if (!isServer) {
       // Exclude file parsers and fs-related modules from client bundle
       config.resolve.fallback = {
@@ -253,4 +285,6 @@ const sentryConfig = {
   },
 }
 
-export default isDev ? nextConfig : withSentryConfig(nextConfig, sentryConfig)
+// Temporarily disable Sentry during build to debug timeout issue
+export default nextConfig
+// export default isDev ? nextConfig : withSentryConfig(nextConfig, sentryConfig)

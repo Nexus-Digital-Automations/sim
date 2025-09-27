@@ -1,0 +1,13 @@
+{
+  "authKey": "2689098105368caa1cd3728c5e5cf34c",
+  "failedCriteria": [
+    {
+      "criterion": "security-validation",
+      "error": "Security vulnerabilities detected",
+      "timestamp": "2025-09-27T17:53:39.447Z",
+      "retryCount": 1
+    }
+  ],
+  "lastUpdate": "2025-09-27T17:53:39.448Z",
+  "totalFailures": 1
+}

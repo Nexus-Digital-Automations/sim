@@ -102,7 +102,8 @@ let currentExecutingWorkflow: string | null = null
 vi.mock('@/stores/workflows/registry/store', () => ({
   useWorkflowRegistry: {
     getState: vi.fn(() => ({
-      activeWorkflowId: currentExecutingWorkflow || Array.from(activeWorkflows)[0] || 'test-workflow',
+      activeWorkflowId:
+        currentExecutingWorkflow || Array.from(activeWorkflows)[0] || 'test-workflow',
     })),
   },
 }))
@@ -583,17 +584,21 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
       performanceMonitor.end()
 
       // Check that at least some executions were attempted (performance testing focus)
-      const attemptedResults = results.filter(r => r.status === 'fulfilled')
+      const attemptedResults = results.filter((r) => r.status === 'fulfilled')
       expect(attemptedResults.length).toBeGreaterThan(0) // At least some should be attempted
 
       // Count successful executions separately for reporting
-      const successfulResults = results.filter(r => r.status === 'fulfilled' && r.value.success)
-      console.log(`Execution results: ${successfulResults.length}/${parallelWorkflows.length} successful, ${attemptedResults.length}/${parallelWorkflows.length} attempted`)
+      const successfulResults = results.filter((r) => r.status === 'fulfilled' && r.value.success)
+      console.log(
+        `Execution results: ${successfulResults.length}/${parallelWorkflows.length} successful, ${attemptedResults.length}/${parallelWorkflows.length} attempted`
+      )
 
       const totalDuration = performanceMonitor.getDuration()
       expect(totalDuration).toBeLessThan(2000) // Parallel execution should be efficient
 
-      console.log(`Parallel execution time (${parallelWorkflows.length} workflows): ${totalDuration.toFixed(2)}ms`)
+      console.log(
+        `Parallel execution time (${parallelWorkflows.length} workflows): ${totalDuration.toFixed(2)}ms`
+      )
 
       // Cleanup
       for (const id of parallelWorkflows) {
@@ -932,7 +937,7 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
         workflowIds.push(id)
         registerActiveWorkflow(id)
         initPromises.push(
-          initializeDualMode(id, mockWorkflowState).catch(error => {
+          initializeDualMode(id, mockWorkflowState).catch((error) => {
             console.warn(`Failed to initialize concurrent workflow ${id}:`, error)
             unregisterActiveWorkflow(id)
             return null
@@ -979,12 +984,14 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
       const operationTime = performance.now() - operationStart
 
       // Check that at least some operations were attempted (performance testing focus)
-      const attemptedResults = results.filter(r => r.status === 'fulfilled')
+      const attemptedResults = results.filter((r) => r.status === 'fulfilled')
       expect(attemptedResults.length).toBeGreaterThan(0) // At least some should be attempted
 
       // Count successful operations separately for reporting
-      const successfulResults = results.filter(r => r.status === 'fulfilled' && r.value.success)
-      console.log(`Concurrent operation results: ${successfulResults.length}/${validWorkflowIds.length} successful, ${attemptedResults.length}/${validWorkflowIds.length} attempted`)
+      const successfulResults = results.filter((r) => r.status === 'fulfilled' && r.value.success)
+      console.log(
+        `Concurrent operation results: ${successfulResults.length}/${validWorkflowIds.length} successful, ${attemptedResults.length}/${validWorkflowIds.length} attempted`
+      )
 
       // Should handle concurrency efficiently
       expect(initTime).toBeLessThan(5000) // < 5s to initialize all
@@ -992,7 +999,9 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
 
       console.log(`Concurrent init time: ${initTime.toFixed(2)}ms`)
       console.log(`Concurrent operations time: ${operationTime.toFixed(2)}ms`)
-      console.log(`Success rate: ${successfulResults.length}/${validWorkflowIds.length} (${((successfulResults.length / validWorkflowIds.length) * 100).toFixed(1)}%)`)
+      console.log(
+        `Success rate: ${successfulResults.length}/${validWorkflowIds.length} (${((successfulResults.length / validWorkflowIds.length) * 100).toFixed(1)}%)`
+      )
 
       // Cleanup
       for (const id of validWorkflowIds) {

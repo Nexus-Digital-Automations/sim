@@ -468,7 +468,9 @@ describe('Hybrid Workflow Synchronization Framework', () => {
       await expect(async () => {
         await Promise.race([
           dualModeArchitecture.executeWorkflow(testWorkflowId, {}),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Data corruption detected')), 100))
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Data corruption detected')), 100)
+          ),
         ])
       }).rejects.toThrow('Data corruption detected')
     }, 1000)
