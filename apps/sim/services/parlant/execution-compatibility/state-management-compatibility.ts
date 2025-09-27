@@ -655,12 +655,12 @@ export class StateManagementCompatibilityLayer {
     // Synchronize active tools
     if (direction === 'bidirectional') {
       const allTools = new Map()
-      workflowContext.activeTools.forEach((tool) => {
+      for (const tool of workflowContext.activeTools) {
         allTools.set(tool.name, tool)
-      })
-      journeyContext.activeTools.forEach((tool) => {
+      }
+      for (const tool of journeyContext.activeTools) {
         allTools.set(tool.name, tool)
-      })
+      }
 
       const mergedTools = Array.from(allTools.values())
       workflowContext.activeTools = mergedTools

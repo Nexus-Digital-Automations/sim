@@ -610,9 +610,8 @@ describe('Agent Lifecycle Management - Integration Tests', () => {
       // Create a session to trigger events
       agentLifecycleOrchestrator
         .createAgentSession(mockAgentId, mockAuth)
-        .then((result) => {
-          testSessionId = result.data?.session.sessionId || ''
-        })
+        .then((result) => 
+          testSessionId = result.data?.session.sessionId || '')
         .catch(done)
     })
   })

@@ -426,7 +426,9 @@ export class RealtimeSuggester extends EventEmitter {
 
     for (const message of recentMessages) {
       if (message.metadata?.toolsUsed) {
-        message.metadata.toolsUsed.forEach((tool) => toolMentions.add(tool))
+        for (const tool of message.metadata.toolsUsed) {
+          toolMentions.add(tool)
+        }
       }
     }
 

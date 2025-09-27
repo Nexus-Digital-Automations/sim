@@ -325,9 +325,11 @@ export class MLRecommendationEngine {
     const allTools = new Set<string>()
 
     // Collect all tools
-    Object.values(scores).forEach((scoreMap) => {
-      scoreMap.forEach((_, toolId) => allTools.add(toolId))
-    })
+    for (const scoreMap of Object.values(scores)) {
+      for (const [_, toolId] of scoreMap) {
+        allTools.add(toolId)
+      }
+    }
 
     // Calculate weighted combination
     for (const toolId of allTools) {
