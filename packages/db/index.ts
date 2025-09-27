@@ -15,6 +15,7 @@ export { DEFAULT_FREE_CREDITS, TAG_SLOTS, type TagSlot } from './consts'
 // Parlant query helpers
 // Parlant validation schemas
 // Parlant union types and type guards
+// Parlant schema exports with unique prefixes to avoid conflicts
 export {
   // Utility types
   type AgentFilters,
@@ -30,6 +31,7 @@ export {
   agentFilterSchema,
   // Response schemas
   agentResponseSchema,
+  agentStatusEnum as parlantAgentStatusEnum,
   // Enum schemas
   agentStatusSchema,
   // API schemas
@@ -51,6 +53,7 @@ export {
   type CustomerMessageContent,
   type CustomerSessionContext,
   type CustomToolIntegration,
+  compositionModeEnum as parlantCompositionModeEnum,
   compositionModeSchema,
   // Entity creation schemas
   createAgentSchema,
@@ -67,6 +70,7 @@ export {
   type EventType as ParlantEventType,
   type ExternalApiIntegration,
   eventResponseSchema,
+  eventTypeEnum as parlantEventTypeEnum,
   eventTypeSchema,
   type FinalStateConfig,
   formatValidationErrors,
@@ -98,6 +102,7 @@ export {
   type JourneyTransitionContent,
   journeyResponseSchema,
   journeyStateResponseSchema,
+  journeyStateTypeEnum as parlantJourneyStateTypeEnum,
   journeyStateTypeSchema,
   jsonArraySchema,
   jsonObjectSchema,
@@ -158,8 +163,31 @@ export {
   type ParlantVariableUpdate,
   paginatedResponseSchema,
   paginationSchema,
+  parlantAgent,
+  parlantAgentApiKey,
+  parlantAgentKnowledgeBase,
+  parlantAgentTool,
+  parlantAgentWorkflow,
+  parlantCannedResponse,
+  parlantConversionCache,
+  parlantConversionHistory,
+  parlantEvent,
+  parlantGuideline,
+  parlantJourney,
+  parlantJourneyGenerationHistory,
+  parlantJourneyGuideline,
+  parlantJourneyState,
+  parlantJourneyTransition,
   // Schema collections
   parlantSchemas,
+  parlantSession,
+  parlantSessionWorkflow,
+  parlantTemplateParameter,
+  parlantTerm,
+  parlantTool,
+  parlantToolIntegration,
+  parlantVariable,
+  parlantWorkflowTemplate,
   type SessionContext,
   type SessionFilters,
   type SessionMode as ParlantSessionMode,
@@ -168,8 +196,10 @@ export {
   type StatusUpdateContent,
   safeValidate,
   sessionFilterSchema,
+  sessionModeEnum as parlantSessionModeEnum,
   sessionModeSchema,
   sessionResponseSchema,
+  sessionStatusEnum as parlantSessionStatusEnum,
   sessionStatusSchema,
   type ToolCallContent,
   // Tool integration union types
@@ -193,40 +223,6 @@ export {
   withErrorHandling,
   withWorkspaceScope,
 } from './parlant-exports'
-
-// Parlant schema exports with unique prefixes to avoid conflicts
-export {
-  agentStatusEnum as parlantAgentStatusEnum,
-  compositionModeEnum as parlantCompositionModeEnum,
-  eventTypeEnum as parlantEventTypeEnum,
-  journeyStateTypeEnum as parlantJourneyStateTypeEnum,
-  parlantAgent,
-  parlantAgentApiKey,
-  parlantAgentKnowledgeBase,
-  parlantAgentTool,
-  parlantAgentWorkflow,
-  parlantCannedResponse,
-  parlantConversionCache,
-  parlantConversionHistory,
-  parlantEvent,
-  parlantGuideline,
-  parlantJourney,
-  parlantJourneyGenerationHistory,
-  parlantJourneyGuideline,
-  parlantJourneyState,
-  parlantJourneyTransition,
-  parlantSession,
-  parlantSessionWorkflow,
-  parlantTemplateParameter,
-  parlantTerm,
-  parlantTool,
-  parlantToolIntegration,
-  parlantVariable,
-  parlantWorkflowTemplate,
-  sessionModeEnum as parlantSessionModeEnum,
-  sessionStatusEnum as parlantSessionStatusEnum,
-} from './parlant-exports'
-
 // Core database schema tables and enums (from main schema.ts)
 // Chat persistence schema exports (with chatPersistence prefix to avoid conflicts)
 export {

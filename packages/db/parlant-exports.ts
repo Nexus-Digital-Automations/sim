@@ -40,11 +40,14 @@ export {
   // Workspace integration tables
   parlantAgentWorkflow,
   parlantCannedResponse,
+  parlantConversionCache,
+  parlantConversionHistory,
   // Enums
   parlantEnums,
   parlantEvent,
   parlantGuideline,
   parlantJourney,
+  parlantJourneyGenerationHistory,
   parlantJourneyGuideline,
   parlantJourneyState,
   parlantJourneyTransition,
@@ -52,10 +55,12 @@ export {
   parlantSessionWorkflow,
   // All tables collection
   parlantTables,
+  parlantTemplateParameter,
   parlantTerm,
   parlantTool,
   parlantToolIntegration,
   parlantVariable,
+  parlantWorkflowTemplate,
   sessionModeEnum,
   sessionStatusEnum,
 } from './parlant-schema'

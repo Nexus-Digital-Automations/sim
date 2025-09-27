@@ -12059,7 +12059,7 @@ export declare const copilotFeedback: import("drizzle-orm/pg-core").PgTableWithC
   };
   dialect: "pg";
 }>;
-export * from "./parlant-schema";
+// Parlant schema is exported via parlant-exports.d.ts to avoid conflicts
 export declare const workflowDeploymentVersion: import("drizzle-orm/pg-core").PgTableWithColumns<{
   name: "workflow_deployment_version";
   schema: undefined;
