@@ -12,7 +12,7 @@
     "dev:classic": "next dev",
     "dev:sockets": "bun run socket-server/index.ts",
     "dev:full": "concurrently -n \"NextJS,Realtime\" -c \"cyan,magenta\" \"bun run dev\" \"bun run dev:sockets\"",
-    "build": "echo 'Sim build temporarily bypassed due to Next.js optimization timeout - functionality preserved'",
+    "build": "next build --no-lint",
     "build:classic": "TURBOPACK=0 next build --no-lint",
     "build:full": "next build",
     "build:prod": "next build --no-lint",
