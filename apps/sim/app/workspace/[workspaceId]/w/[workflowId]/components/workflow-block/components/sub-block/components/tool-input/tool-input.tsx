@@ -54,6 +54,12 @@ import {
 
 const logger = createLogger('ToolInput')
 
+// Icon component for rendering tool icons
+const IconComponent = ({ icon: Icon, className }: { icon: any; className?: string }) => {
+  if (!Icon) return null
+  return <Icon className={className} />
+}
+
 interface ToolInputProps {
   blockId: string
   subBlockId: string
@@ -852,11 +858,6 @@ export function ToolInput({
     setStoreValue(newTools)
     setDraggedIndex(null)
     setDragOverIndex(null)
-  }
-
-  const IconComponent = ({ icon: Icon, className }: { icon: any; className?: string }) => {
-    if (!Icon) return null
-    return <Icon className={className} />
   }
 
   // Check if tool has OAuth requirements
