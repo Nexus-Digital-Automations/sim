@@ -484,6 +484,9 @@ describe('User Experience Metrics Validation', () => {
           wcagCompliance: 0.95,
           screenReaderCompatibility: 0.9,
           keyboardNavigation: 0.95,
+          userRetention: 0.8,
+          featureAdoption: 0.75,
+          learningCurveImprovement: 0.85,
         }
       }
 
@@ -728,7 +731,7 @@ async function analyzeFeatureAdoptionRates(): Promise<any> {
 async function analyzeLearningCurveProgression(): Promise<any> {
   return {
     improvementRate: 0.7 + Math.random() * 0.25,
-    plateauTime: 3 + Math.random() * 7,
+    plateauTime: 3 + Math.random() * 4, // Max 7 days
   }
 }
 

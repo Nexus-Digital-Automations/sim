@@ -6,14 +6,14 @@
         failures="1"
         errors="0"
         skipped="0"
-        time="27.603"
-        timestamp="2025-09-27T17:25:18.091Z"
+        time="28.282"
+        timestamp="2025-09-27T18:38:45.957Z"
     >
         
         <testcase
             name="WebSocket Connection Establishment"
             classname="WorkflowJourneyTest"
-            time="0.086"
+            time="0.120"
         >
             
             
@@ -23,7 +23,7 @@
         <testcase
             name="WebSocket Concurrent Connections"
             classname="WorkflowJourneyTest"
-            time="0.289"
+            time="0.725"
         >
             
             
@@ -33,7 +33,7 @@
         <testcase
             name="WebSocket Connection Authentication"
             classname="WorkflowJourneyTest"
-            time="0.036"
+            time="0.039"
         >
             
             
@@ -43,7 +43,7 @@
         <testcase
             name="Message Queuing During Disconnection"
             classname="WorkflowJourneyTest"
-            time="0.217"
+            time="0.221"
         >
             
             <failure message="Test failed">
@@ -67,7 +67,7 @@
         <testcase
             name="Exponential Backoff Reconnection"
             classname="WorkflowJourneyTest"
-            time="3.007"
+            time="3.012"
         >
             
             
@@ -77,7 +77,7 @@
         <testcase
             name="Server Overload Handling"
             classname="WorkflowJourneyTest"
-            time="1.133"
+            time="1.470"
         >
             
             

@@ -12,8 +12,8 @@ import {
   executeDualModeWorkflow,
   initializeDualMode,
   switchWorkflowMode,
-} from '@/lib/workflow-journey-mapping/dual-mode-architecture'
-import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
+} from '../../../lib/workflow-journey-mapping/dual-mode-architecture'
+import type { BlockState, WorkflowState } from '../../../stores/workflows/workflow/types'
 
 // Performance monitoring utilities
 const createPerformanceMonitor = () => {
@@ -70,7 +70,7 @@ Object.defineProperty(performance, 'memory', {
 })
 
 // Mock dependencies
-vi.mock('@/lib/logs/console/logger', () => ({
+vi.mock('../../../lib/logs/console/logger', () => ({
   createLogger: vi.fn(() => ({
     info: vi.fn(),
     error: vi.fn(),
@@ -79,7 +79,7 @@ vi.mock('@/lib/logs/console/logger', () => ({
   })),
 }))
 
-vi.mock('@/blocks', () => ({
+vi.mock('../../../blocks', () => ({
   getBlock: vi.fn((type: string) => ({
     type,
     name: `Mock ${type} block`,
@@ -99,7 +99,7 @@ const activeWorkflows = new Set<string>()
 let currentExecutingWorkflow: string | null = null
 
 // Mock the stores that workflow-execution-utils depends on
-vi.mock('@/stores/workflows/registry/store', () => ({
+vi.mock('../../../stores/workflows/registry/store', () => ({
   useWorkflowRegistry: {
     getState: vi.fn(() => ({
       activeWorkflowId:
@@ -108,7 +108,7 @@ vi.mock('@/stores/workflows/registry/store', () => ({
   },
 }))
 
-vi.mock('@/stores/workflows/workflow/store', () => ({
+vi.mock('../../../stores/workflows/workflow/store', () => ({
   useWorkflowStore: {
     getState: vi.fn(() => ({
       getWorkflowState: vi.fn(() => ({
@@ -123,7 +123,7 @@ vi.mock('@/stores/workflows/workflow/store', () => ({
   },
 }))
 
-vi.mock('@/stores/workflow-diff/store', () => ({
+vi.mock('../../../stores/workflow-diff/store', () => ({
   useWorkflowDiffStore: {
     getState: vi.fn(() => ({
       isShowingDiff: false,
@@ -133,7 +133,7 @@ vi.mock('@/stores/workflow-diff/store', () => ({
   },
 }))
 
-vi.mock('@/stores/execution/store', () => ({
+vi.mock('../../../stores/execution/store', () => ({
   useExecutionStore: {
     getState: vi.fn(() => ({
       executions: new Map(),
@@ -143,7 +143,7 @@ vi.mock('@/stores/execution/store', () => ({
   },
 }))
 
-vi.mock('@/stores/panel/variables/store', () => ({
+vi.mock('../../../stores/panel/variables/store', () => ({
   useVariablesStore: {
     getState: vi.fn(() => ({
       variables: {},
@@ -152,7 +152,7 @@ vi.mock('@/stores/panel/variables/store', () => ({
   },
 }))
 
-vi.mock('@/stores/settings/environment/store', () => ({
+vi.mock('../../../stores/settings/environment/store', () => ({
   useEnvironmentStore: {
     getState: vi.fn(() => ({
       environment: 'development',
@@ -162,7 +162,7 @@ vi.mock('@/stores/settings/environment/store', () => ({
 }))
 
 // Mock workflow execution with performance simulation
-vi.mock('@/app/workspace/[workspaceId]/w/[workflowId]/lib/workflow-execution-utils', () => ({
+vi.mock('../../../app/workspace/[workspaceId]/w/[workflowId]/lib/workflow-execution-utils', () => ({
   executeWorkflowWithLogging: vi.fn().mockImplementation(async (context: any) => {
     // Simulate workflow execution time
     await new Promise((resolve) => setTimeout(resolve, 50))

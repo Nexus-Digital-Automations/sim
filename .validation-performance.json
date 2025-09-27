@@ -1077,19 +1077,85 @@
       },
       "success": false,
       "error": "Must validate steps sequentially. Expected: security-validation, Got: linter-validation"
+    },
+    {
+      "criterion": "security-validation",
+      "startTime": "2025-09-27T18:24:07.375Z",
+      "endTime": "2025-09-27T18:24:07.378Z",
+      "durationMs": 3,
+      "memoryUsageBefore": {
+        "rss": 102268928,
+        "heapTotal": 20594688,
+        "heapUsed": 14428592,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 102416384,
+        "heapTotal": 20594688,
+        "heapUsed": 14470392,
+        "external": 2427185,
+        "arrayBuffers": 323048
+      },
+      "success": false,
+      "error": "Invalid authorization key. Cannot skip validation steps."
+    },
+    {
+      "criterion": "focused-codebase",
+      "startTime": "2025-09-27T18:24:21.671Z",
+      "endTime": "2025-09-27T18:24:21.708Z",
+      "durationMs": 37,
+      "memoryUsageBefore": {
+        "rss": 101384192,
+        "heapTotal": 20594688,
+        "heapUsed": 14476824,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 102547456,
+        "heapTotal": 21118976,
+        "heapUsed": 14894104,
+        "external": 2450406,
+        "arrayBuffers": 345133
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "criterion": "build-validation",
+      "startTime": "2025-09-27T18:24:59.495Z",
+      "endTime": "2025-09-27T18:24:59.496Z",
+      "durationMs": 1,
+      "memoryUsageBefore": {
+        "rss": 99762176,
+        "heapTotal": 20856832,
+        "heapUsed": 14684952,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 99942400,
+        "heapTotal": 20856832,
+        "heapUsed": 14727016,
+        "external": 2427185,
+        "arrayBuffers": 323048
+      },
+      "success": false,
+      "error": "Must validate steps sequentially. Expected: security-validation, Got: build-validation"
     }
   ],
   "statistics": {
-    "lastUpdated": "2025-09-27T18:15:24.500Z",
-    "totalMeasurements": 49,
-    "averageDurationMs": 11209.918367346938,
-    "successRate": 77.55102040816327,
+    "lastUpdated": "2025-09-27T18:24:59.497Z",
+    "totalMeasurements": 52,
+    "averageDurationMs": 10563.98076923077,
+    "successRate": 75,
     "bycriterion": {
       "focused-codebase": {
-        "count": 9,
-        "totalDuration": 352,
-        "successCount": 9,
-        "avgDuration": 39.111111111111114,
+        "count": 10,
+        "totalDuration": 389,
+        "successCount": 10,
+        "avgDuration": 38.9,
         "successRate": 100
       },
       "linter-validation": {
@@ -1107,18 +1173,18 @@
         "successRate": 75
       },
       "security-validation": {
-        "count": 6,
-        "totalDuration": 453072,
+        "count": 7,
+        "totalDuration": 453075,
         "successCount": 6,
-        "avgDuration": 75512,
-        "successRate": 100
+        "avgDuration": 64725,
+        "successRate": 85.71428571428571
       },
       "build-validation": {
-        "count": 6,
-        "totalDuration": 16640,
+        "count": 7,
+        "totalDuration": 16641,
         "successCount": 5,
-        "avgDuration": 2773.3333333333335,
-        "successRate": 83.33333333333334
+        "avgDuration": 2377.285714285714,
+        "successRate": 71.42857142857143
       },
       "start-validation": {
         "count": 5,

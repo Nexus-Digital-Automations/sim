@@ -1,6 +1,6 @@
 {
   "test_suite": "Comprehensive Sim-Parlant Integration Bridge Tests",
-  "started_at": "2025-09-27T12:11:08.036Z",
+  "started_at": "2025-09-27T18:36:27.427Z",
   "acceptance_criteria": {},
   "performance_metrics": {},
   "security_validation": {},
@@ -13,8 +13,8 @@
     "node_version": "v22.20.0",
     "platform": "darwin"
   },
-  "completed_at": "2025-09-27T12:11:38.073Z",
-  "total_duration": 30037,
+  "completed_at": "2025-09-27T18:36:57.376Z",
+  "total_duration": 29949,
   "summary": {
     "total_acceptance_criteria": 0,
     "acceptance_criteria_passed": 0,

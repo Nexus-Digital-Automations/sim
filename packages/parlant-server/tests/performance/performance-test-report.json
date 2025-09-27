@@ -1,0 +1,73 @@
+{
+  "test_suite": "Sim-Parlant Integration Performance and Load Testing",
+  "test_configuration": {
+    "parlant_server_url": "http://localhost:8800",
+    "socket_server_url": "http://localhost:3001",
+    "jwt_secret": "dev_secret_key_12345678901234567890123456789012",
+    "max_response_time": 2000,
+    "max_concurrent_users": 100,
+    "max_agents_per_workspace": 50,
+    "target_throughput": 1000,
+    "ramp_up_time": 30000,
+    "load_test_duration": 120000,
+    "cooldown_time": 10000
+  },
+  "test_results": {
+    "authentication": {
+      "concurrent_users": 50,
+      "successful_authentications": 0,
+      "failed_authentications": 50,
+      "success_rate": "0.00%",
+      "total_time": "159.17ms",
+      "average_response_time": "NaNms",
+      "throughput": "0.00 req/sec",
+      "jwt_validation": {
+        "total_validations": 1000,
+        "successful_validations": 0,
+        "total_time": "1281.97ms",
+        "validations_per_second": "0.00 val/sec",
+        "average_validation_time": "1.28ms"
+      }
+    },
+    "agent_management": {
+      "creation": {
+        "concurrent_creations": 25,
+        "successful_creations": 0,
+        "failed_creations": 25,
+        "total_time": "59.53ms",
+        "average_creation_time": "NaNms",
+        "creations_per_second": "0.00 agents/sec"
+      }
+    },
+    "real_time_communication": {
+      "concurrent_connections": 25,
+      "successful_connections": 0,
+      "failed_connections": 25,
+      "success_rate": "0.00%",
+      "total_setup_time": "48.81ms",
+      "average_connection_time": "NaNms",
+      "connections_per_second": "0.00 conn/sec"
+    },
+    "database_performance": {
+      "concurrent_operations": 50,
+      "successful_operations": 0,
+      "failed_operations": 50,
+      "total_time": "59.04ms",
+      "operations_per_second": "0.00 ops/sec",
+      "operation_breakdown": {
+        "create_operations": 0,
+        "read_operations": 0,
+        "health_operations": 0
+      }
+    },
+    "resource_usage": {},
+    "breaking_points": {}
+  },
+  "generated_at": "2025-09-27T18:37:29.107Z",
+  "summary": {
+    "authentication_performance": "0.00%",
+    "agent_crud_performance": "N/A",
+    "realtime_performance": "0.00%",
+    "database_performance": "0.00 ops/sec"
+  }
+}

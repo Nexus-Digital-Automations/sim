@@ -6,7 +6,7 @@ Configuration management for Sim integration
 import os
 from pathlib import Path
 from typing import List, Optional
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
@@ -61,6 +61,33 @@ class Settings(BaseSettings):
         ],
         env="ALLOWED_ORIGINS"
     )
+
+    @field_validator('allowed_origins', mode='before')
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        """Parse ALLOWED_ORIGINS from comma-separated string or JSON."""
+        if isinstance(v, str):
+            # Handle comma-separated string format
+            if v.strip():
+                return [origin.strip() for origin in v.split(',') if origin.strip()]
+            else:
+                # Empty string - return default
+                return [
+                    "http://localhost:3000",
+                    "http://localhost:3001",
+                    "https://localhost:3000",
+                    "https://localhost:3001"
+                ]
+        elif isinstance(v, list):
+            return v
+        else:
+            # Use default
+            return [
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "https://localhost:3000",
+                "https://localhost:3001"
+            ]
 
     # Parlant-specific configuration
     parlant_log_level: str = Field(default="INFO", env="PARLANT_LOG_LEVEL")
