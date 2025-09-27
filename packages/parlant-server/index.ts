@@ -17,7 +17,7 @@ export {
   alerts,
   type ErrorClassification,
   type Incident,
-} from "./alerts";
+} from './alerts'
 // Universal Tool Adapter Error Handling System
 export {
   AlertLevel,
@@ -93,7 +93,7 @@ export {
   UserSkillLevel,
   // Decorators
   WithRetry,
-} from "./error-system";
+} from './error-system'
 // Core monitoring components
 export {
   type DatabaseHealthDetails,
@@ -103,7 +103,7 @@ export {
   type ParlantHealthDetails,
   parlantHealthChecker,
   type ServiceMetrics,
-} from "./health";
+} from './health'
 // Structured logging
 export {
   createParlantLogger,
@@ -113,7 +113,7 @@ export {
   type ParlantLogEntry,
   ParlantLogger,
   parlantLoggers,
-} from "./logging";
+} from './logging'
 // Performance metrics
 export {
   type AgentMetrics,
@@ -122,7 +122,7 @@ export {
   SystemMetricsCollector,
   systemMetrics,
   type WorkspaceMetrics,
-} from "./metrics";
+} from './metrics'
 // Monitoring and metrics
 export {
   type AgentPerformanceMetrics,
@@ -133,48 +133,48 @@ export {
   parlantMonitoring,
   type SystemMetrics,
   type UsageMetrics,
-} from "./monitoring";
+} from './monitoring'
 
 /**
  * Initialize all monitoring systems
  */
 export async function initializeParlantMonitoring(): Promise<{
-  health: ParlantHealthChecker;
-  monitoring: ParlantMonitoringService;
-  metrics: SystemMetricsCollector;
-  alerts: AlertManager;
-  status: "healthy" | "degraded" | "unhealthy";
+  health: ParlantHealthChecker
+  monitoring: ParlantMonitoringService
+  metrics: SystemMetricsCollector
+  alerts: AlertManager
+  status: 'healthy' | 'degraded' | 'unhealthy'
 }> {
-  const logger = createParlantLogger("Initialization");
+  const logger = createParlantLogger('Initialization')
 
-  logger.info("Initializing Parlant monitoring systems", {
-    operation: "system_init",
-  });
+  logger.info('Initializing Parlant monitoring systems', {
+    operation: 'system_init',
+  })
 
   try {
     // Run initial health check
-    const healthStatus = await parlantHealthChecker.checkHealth();
+    const healthStatus = await parlantHealthChecker.checkHealth()
 
     // Initialize metrics collection
-    const metricsStatus = await systemMetrics.collectSystemMetrics();
+    const metricsStatus = await systemMetrics.collectSystemMetrics()
 
     // Check for any initialization alerts
-    const alertCheck = await parlantMonitoring.checkAlertConditions();
+    const alertCheck = await parlantMonitoring.checkAlertConditions()
 
     const overallStatus =
-      healthStatus.status === "unhealthy"
-        ? "unhealthy"
-        : alertCheck.systemHealth === "degraded"
-          ? "degraded"
-          : "healthy";
+      healthStatus.status === 'unhealthy'
+        ? 'unhealthy'
+        : alertCheck.systemHealth === 'degraded'
+          ? 'degraded'
+          : 'healthy'
 
-    logger.info("Parlant monitoring initialization complete", {
-      operation: "system_init",
+    logger.info('Parlant monitoring initialization complete', {
+      operation: 'system_init',
       status: overallStatus,
       healthStatus: healthStatus.status,
       alertCount: alertCheck.alerts.length,
       agentCount: metricsStatus.agents.total,
-    });
+    })
 
     return {
       health: parlantHealthChecker,
@@ -182,25 +182,25 @@ export async function initializeParlantMonitoring(): Promise<{
       metrics: systemMetrics,
       alerts: alertManager,
       status: overallStatus,
-    };
+    }
   } catch (error) {
-    logger.error("Failed to initialize Parlant monitoring", {
-      operation: "system_init",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+    logger.error('Failed to initialize Parlant monitoring', {
+      operation: 'system_init',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
 
     // Create initialization failure alert
     await alertManager.createAlert(
-      "critical",
-      "system",
-      "Monitoring Initialization Failed",
-      "Failed to initialize Parlant monitoring systems",
-      "parlant-server",
-      { operation: "system_init" },
-      { error: error instanceof Error ? error.message : "Unknown error" },
-    );
+      'critical',
+      'system',
+      'Monitoring Initialization Failed',
+      'Failed to initialize Parlant monitoring systems',
+      'parlant-server',
+      { operation: 'system_init' },
+      { error: error instanceof Error ? error.message : 'Unknown error' }
+    )
 
-    throw error;
+    throw error
   }
 }
 
@@ -208,38 +208,38 @@ export async function initializeParlantMonitoring(): Promise<{
  * Get comprehensive system status
  */
 export async function getSystemStatus(): Promise<{
-  timestamp: string;
-  status: "healthy" | "degraded" | "unhealthy";
-  uptime: number;
-  health: any;
-  metrics: any;
-  alerts: any;
+  timestamp: string
+  status: 'healthy' | 'degraded' | 'unhealthy'
+  uptime: number
+  health: any
+  metrics: any
+  alerts: any
   summary: {
-    totalAgents: number;
-    activeSessions: number;
-    errorRate: number;
-    averageResponseTime: number;
+    totalAgents: number
+    activeSessions: number
+    errorRate: number
+    averageResponseTime: number
     systemLoad: {
-      cpu: number;
-      memory: number;
-      database: number;
-    };
-  };
+      cpu: number
+      memory: number
+      database: number
+    }
+  }
 }> {
   const [healthStatus, metricsData, alertData] = await Promise.all([
     parlantHealthChecker.checkHealth(),
     systemMetrics.generateMetricsDashboard(),
     alertManager.getAlertMetrics(),
-  ]);
+  ])
 
   const overallStatus =
-    healthStatus.status === "unhealthy"
-      ? "unhealthy"
+    healthStatus.status === 'unhealthy'
+      ? 'unhealthy'
       : alertData.critical > 0
-        ? "degraded"
-        : healthStatus.status === "degraded"
-          ? "degraded"
-          : "healthy";
+        ? 'degraded'
+        : healthStatus.status === 'degraded'
+          ? 'degraded'
+          : 'healthy'
 
   return {
     timestamp: new Date().toISOString(),
@@ -252,18 +252,14 @@ export async function getSystemStatus(): Promise<{
       totalAgents: metricsData.systemMetrics.agents.total,
       activeSessions: metricsData.systemMetrics.sessions.active,
       errorRate: metricsData.systemMetrics.reliability.errorRate,
-      averageResponseTime:
-        metricsData.systemMetrics.performance.averageResponseTime,
+      averageResponseTime: metricsData.systemMetrics.performance.averageResponseTime,
       systemLoad: {
         cpu: metricsData.systemMetrics.performance.resourceUtilization.cpu,
-        memory:
-          metricsData.systemMetrics.performance.resourceUtilization.memory,
-        database:
-          metricsData.systemMetrics.performance.resourceUtilization.database
-            .connections,
+        memory: metricsData.systemMetrics.performance.resourceUtilization.memory,
+        database: metricsData.systemMetrics.performance.resourceUtilization.database.connections,
       },
     },
-  };
+  }
 }
 
 /**
@@ -271,9 +267,9 @@ export async function getSystemStatus(): Promise<{
  */
 export async function quickHealthCheck(): Promise<boolean> {
   try {
-    return await healthChecks.quick();
+    return await healthChecks.quick()
   } catch (error) {
-    return false;
+    return false
   }
 }
 
@@ -283,21 +279,17 @@ export async function quickHealthCheck(): Promise<boolean> {
 export function trackAgentSession(
   agentId: string,
   workspaceId: string,
-  sessionId: string,
+  sessionId: string
 ): {
-  start: () => void;
+  start: () => void
   recordMessage: (
     responseTime: number,
     tokenCount?: number,
     toolCalls?: number,
-    hasError?: boolean,
-  ) => void;
-  recordTool: (
-    toolName: string,
-    executionTime: number,
-    success: boolean,
-  ) => void;
-  end: (status?: "completed" | "failed") => void;
+    hasError?: boolean
+  ) => void
+  recordTool: (toolName: string, executionTime: number, success: boolean) => void
+  end: (status?: 'completed' | 'failed') => void
 } {
   return {
     start: () => metricsUtils.startSession(agentId, workspaceId, sessionId),
@@ -309,37 +301,33 @@ export function trackAgentSession(
         responseTime,
         tokenCount,
         toolCalls,
-        hasError,
+        hasError
       ),
     recordTool: (toolName, executionTime, success) =>
       systemMetrics
         .getAgentTracker(agentId, workspaceId)
         .recordToolExecution(sessionId, toolName, executionTime, success),
-    end: (status) =>
-      metricsUtils.endSession(agentId, workspaceId, sessionId, status),
-  };
+    end: (status) => metricsUtils.endSession(agentId, workspaceId, sessionId, status),
+  }
 }
 
 /**
  * Create standardized error handler for Parlant operations
  */
-export function createErrorHandler(
-  source: string,
-  context: ParlantLogContext = {},
-) {
+export function createErrorHandler(source: string, context: ParlantLogContext = {}) {
   return async (error: Error, additionalContext?: ParlantLogContext) => {
-    const fullContext = { ...context, ...additionalContext };
+    const fullContext = { ...context, ...additionalContext }
 
     // Log the error
-    const logger = createParlantLogger(source);
-    logger.error(`Error in ${source}`, fullContext);
+    const logger = createParlantLogger(source)
+    logger.error(`Error in ${source}`, fullContext)
 
     // Create alert
-    await alerts.handleError(error, fullContext, source);
+    await alerts.handleError(error, fullContext, source)
 
     // Record metrics
-    monitoring.recordQuery(0); // Record error occurrence
-  };
+    monitoring.recordQuery(0) // Record error occurrence
+  }
 }
 
 /**
@@ -348,34 +336,34 @@ export function createErrorHandler(
 export function monitorPerformance<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   operationName: string,
-  context: ParlantLogContext = {},
+  context: ParlantLogContext = {}
 ): T {
   return (async (...args: any[]) => {
-    const startTime = performance.now();
-    const logger = createParlantLogger("Performance");
+    const startTime = performance.now()
+    const logger = createParlantLogger('Performance')
 
     try {
-      const result = await fn(...args);
-      const duration = performance.now() - startTime;
+      const result = await fn(...args)
+      const duration = performance.now() - startTime
 
       logger.logPerformance(operationName, startTime, {
         ...context,
         success: true,
-      });
+      })
 
-      return result;
+      return result
     } catch (error) {
-      const duration = performance.now() - startTime;
+      const duration = performance.now() - startTime
 
       logger.logPerformance(operationName, startTime, {
         ...context,
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
 
-      throw error;
+      throw error
     }
-  }) as T;
+  }) as T
 }
 
 /**
@@ -401,4 +389,4 @@ export default {
     logging: logUtils,
     metrics: metricsUtils,
   },
-};
+}

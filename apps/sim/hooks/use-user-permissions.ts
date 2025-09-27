@@ -1,23 +1,20 @@
-import { useMemo } from "react";
-import { useSession } from "@/lib/auth-client";
-import { createLogger } from "@/lib/logs/console/logger";
-import type {
-  PermissionType,
-  WorkspacePermissions,
-} from "@/hooks/use-workspace-permissions";
+import { useMemo } from 'react'
+import { useSession } from '@/lib/auth-client'
+import { createLogger } from '@/lib/logs/console/logger'
+import type { PermissionType, WorkspacePermissions } from '@/hooks/use-workspace-permissions'
 
-const logger = createLogger("useUserPermissions");
+const logger = createLogger('useUserPermissions')
 
 export interface WorkspaceUserPermissions {
   // Core permission checks
-  canRead: boolean;
-  canEdit: boolean;
-  canAdmin: boolean;
+  canRead: boolean
+  canEdit: boolean
+  canAdmin: boolean
 
   // Utility properties
-  userPermissions: PermissionType;
-  isLoading: boolean;
-  error: string | null;
+  userPermissions: PermissionType
+  isLoading: boolean
+  error: string | null
 }
 
 /**
@@ -32,52 +29,52 @@ export interface WorkspaceUserPermissions {
 export function useUserPermissions(
   workspacePermissions: WorkspacePermissions | null,
   permissionsLoading = false,
-  permissionsError: string | null = null,
+  permissionsError: string | null = null
 ): WorkspaceUserPermissions {
-  const { data: session } = useSession();
+  const { data: session } = useSession()
 
   const userPermissions = useMemo((): WorkspaceUserPermissions => {
-    const sessionEmail = session?.user?.email;
+    const sessionEmail = session?.user?.email
     if (permissionsLoading || !sessionEmail) {
       return {
         canRead: false,
         canEdit: false,
         canAdmin: false,
-        userPermissions: "read",
+        userPermissions: 'read',
         isLoading: permissionsLoading,
         error: permissionsError,
-      };
+      }
     }
 
     // Find current user in workspace permissions (case-insensitive)
     const currentUser = workspacePermissions?.users?.find(
-      (user) => user.email.toLowerCase() === sessionEmail.toLowerCase(),
-    );
+      (user) => user.email.toLowerCase() === sessionEmail.toLowerCase()
+    )
 
     // If user not found in workspace, they have no permissions
     if (!currentUser) {
-      logger.warn("User not found in workspace permissions", {
+      logger.warn('User not found in workspace permissions', {
         userEmail: sessionEmail,
         hasPermissions: !!workspacePermissions,
         userCount: workspacePermissions?.users?.length || 0,
-      });
+      })
 
       return {
         canRead: false,
         canEdit: false,
         canAdmin: false,
-        userPermissions: "read",
+        userPermissions: 'read',
         isLoading: false,
-        error: permissionsError || "User not found in workspace",
-      };
+        error: permissionsError || 'User not found in workspace',
+      }
     }
 
-    const userPerms = currentUser.permissionType || "read";
+    const userPerms = currentUser.permissionType || 'read'
 
     // Core permission checks
-    const canAdmin = userPerms === "admin";
-    const canEdit = userPerms === "write" || userPerms === "admin";
-    const canRead = true; // If user is found in workspace permissions, they have read access
+    const canAdmin = userPerms === 'admin'
+    const canEdit = userPerms === 'write' || userPerms === 'admin'
+    const canRead = true // If user is found in workspace permissions, they have read access
 
     return {
       canRead,
@@ -86,8 +83,8 @@ export function useUserPermissions(
       userPermissions: userPerms,
       isLoading: false,
       error: permissionsError,
-    };
-  }, [session, workspacePermissions, permissionsLoading, permissionsError]);
+    }
+  }, [session, workspacePermissions, permissionsLoading, permissionsError])
 
-  return userPermissions;
+  return userPermissions
 }

@@ -1,10 +1,10 @@
 {
   "criterion": "type-validation",
-  "cacheKey": "d4c59e4a28fa6e4a",
+  "cacheKey": "a5aba763e252f4e4",
   "result": {
     "success": true,
     "details": "JavaScript-only project - no type checking required"
   },
-  "timestamp": 1759003780215,
-  "originalDuration": 395052
+  "timestamp": 1759006209117,
+  "originalDuration": 65019
 }

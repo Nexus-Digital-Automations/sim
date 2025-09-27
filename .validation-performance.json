@@ -1847,41 +1847,129 @@
       },
       "success": false,
       "error": "Must validate steps sequentially. Expected: build-validation, Got: test-validation"
+    },
+    {
+      "criterion": "focused-codebase",
+      "startTime": "2025-09-27T20:45:04.243Z",
+      "endTime": "2025-09-27T20:45:04.442Z",
+      "durationMs": 199,
+      "memoryUsageBefore": {
+        "rss": 106971136,
+        "heapTotal": 20856832,
+        "heapUsed": 14476192,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 108281856,
+        "heapTotal": 21118976,
+        "heapUsed": 14893112,
+        "external": 2449303,
+        "arrayBuffers": 344030
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "criterion": "security-validation",
+      "startTime": "2025-09-27T20:45:40.646Z",
+      "endTime": "2025-09-27T20:47:12.938Z",
+      "durationMs": 92292,
+      "memoryUsageBefore": {
+        "rss": 104955904,
+        "heapTotal": 20856832,
+        "heapUsed": 14523376,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 62504960,
+        "heapTotal": 15351808,
+        "heapUsed": 12676280,
+        "external": 2131112,
+        "arrayBuffers": 25839
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "criterion": "linter-validation",
+      "startTime": "2025-09-27T20:47:54.128Z",
+      "endTime": "2025-09-27T20:48:24.082Z",
+      "durationMs": 29954,
+      "memoryUsageBefore": {
+        "rss": 113721344,
+        "heapTotal": 21118976,
+        "heapUsed": 14570008,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 111132672,
+        "heapTotal": 14827520,
+        "heapUsed": 12774976,
+        "external": 2131112,
+        "arrayBuffers": 25839
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "criterion": "type-validation",
+      "startTime": "2025-09-27T20:49:04.086Z",
+      "endTime": "2025-09-27T20:50:09.131Z",
+      "durationMs": 65045,
+      "memoryUsageBefore": {
+        "rss": 108609536,
+        "heapTotal": 21118976,
+        "heapUsed": 14528680,
+        "external": 2425841,
+        "arrayBuffers": 321744
+      },
+      "memoryUsageAfter": {
+        "rss": 80330752,
+        "heapTotal": 15351808,
+        "heapUsed": 12703576,
+        "external": 2131112,
+        "arrayBuffers": 25839
+      },
+      "success": true,
+      "error": null
     }
   ],
   "statistics": {
-    "lastUpdated": "2025-09-27T20:38:01.362Z",
-    "totalMeasurements": 84,
-    "averageDurationMs": 15304.25,
-    "successRate": 70.23809523809523,
+    "lastUpdated": "2025-09-27T20:50:09.132Z",
+    "totalMeasurements": 88,
+    "averageDurationMs": 16739.170454545456,
+    "successRate": 71.5909090909091,
     "bycriterion": {
       "focused-codebase": {
-        "count": 18,
-        "totalDuration": 803,
-        "successCount": 18,
-        "avgDuration": 44.611111111111114,
+        "count": 19,
+        "totalDuration": 1002,
+        "successCount": 19,
+        "avgDuration": 52.73684210526316,
         "successRate": 100
       },
       "linter-validation": {
-        "count": 19,
-        "totalDuration": 78605,
-        "successCount": 9,
-        "avgDuration": 4137.105263157895,
-        "successRate": 47.368421052631575
+        "count": 20,
+        "totalDuration": 108559,
+        "successCount": 10,
+        "avgDuration": 5427.95,
+        "successRate": 50
       },
       "type-validation": {
-        "count": 13,
-        "totalDuration": 420413,
-        "successCount": 9,
-        "avgDuration": 32339.46153846154,
-        "successRate": 69.23076923076923
+        "count": 14,
+        "totalDuration": 485458,
+        "successCount": 10,
+        "avgDuration": 34675.57142857143,
+        "successRate": 71.42857142857143
       },
       "security-validation": {
-        "count": 13,
-        "totalDuration": 726252,
-        "successCount": 11,
-        "avgDuration": 55865.53846153846,
-        "successRate": 84.61538461538461
+        "count": 14,
+        "totalDuration": 818544,
+        "successCount": 12,
+        "avgDuration": 58467.42857142857,
+        "successRate": 85.71428571428571
       },
       "build-validation": {
         "count": 12,

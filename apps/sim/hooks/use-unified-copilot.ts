@@ -6,40 +6,37 @@
  * external and local copilot systems.
  */
 
-import { useCallback, useEffect, useState } from "react";
-import { createLogger } from "@/lib/logs/console/logger";
-import type { Agent } from "@/services/parlant/types";
-import { useLocalCopilotStore } from "@/stores/local-copilot";
+import { useCallback, useEffect, useState } from 'react'
+import { createLogger } from '@/lib/logs/console/logger'
+import type { Agent } from '@/services/parlant/types'
+import { useLocalCopilotStore } from '@/stores/local-copilot'
 
-const logger = createLogger("UnifiedCopilotHook");
+const logger = createLogger('UnifiedCopilotHook')
 
 // Persistent preferences key
-const COPILOT_PREFERENCES_KEY = "unified-copilot-preferences";
+const COPILOT_PREFERENCES_KEY = 'unified-copilot-preferences'
 
 interface UnifiedCopilotPreferences {
-  defaultMode: "local" | "external";
-  autoSwitchToLocal: boolean;
-  rememberModeSelection: boolean;
-  preferredAgentId?: string;
-  lastUsedMode?: "local" | "external";
+  defaultMode: 'local' | 'external'
+  autoSwitchToLocal: boolean
+  rememberModeSelection: boolean
+  preferredAgentId?: string
+  lastUsedMode?: 'local' | 'external'
 }
 
 const DEFAULT_PREFERENCES: UnifiedCopilotPreferences = {
-  defaultMode: "external",
+  defaultMode: 'external',
   autoSwitchToLocal: false,
   rememberModeSelection: true,
-};
+}
 
 /**
  * Hook for managing unified copilot functionality
  */
 export function useUnifiedCopilot(workspaceId: string) {
-  const [preferences, setPreferences] =
-    useState<UnifiedCopilotPreferences>(DEFAULT_PREFERENCES);
-  const [currentMode, setCurrentMode] = useState<"local" | "external">(
-    preferences.defaultMode,
-  );
-  const [isLoading, setIsLoading] = useState(true);
+  const [preferences, setPreferences] = useState<UnifiedCopilotPreferences>(DEFAULT_PREFERENCES)
+  const [currentMode, setCurrentMode] = useState<'local' | 'external'>(preferences.defaultMode)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Local copilot store
   const {
@@ -50,124 +47,102 @@ export function useUnifiedCopilot(workspaceId: string) {
     selectAgent: localSelectAgent,
     mode: localMode,
     setMode: setLocalMode,
-  } = useLocalCopilotStore();
+  } = useLocalCopilotStore()
 
   // Load preferences on mount
   useEffect(() => {
     const loadPreferences = () => {
       try {
-        const stored = localStorage.getItem(COPILOT_PREFERENCES_KEY);
+        const stored = localStorage.getItem(COPILOT_PREFERENCES_KEY)
         if (stored) {
-          const parsed = JSON.parse(stored) as UnifiedCopilotPreferences;
-          setPreferences({ ...DEFAULT_PREFERENCES, ...parsed });
+          const parsed = JSON.parse(stored) as UnifiedCopilotPreferences
+          setPreferences({ ...DEFAULT_PREFERENCES, ...parsed })
 
           // Set mode based on preferences
           if (parsed.rememberModeSelection && parsed.lastUsedMode) {
-            setCurrentMode(parsed.lastUsedMode);
+            setCurrentMode(parsed.lastUsedMode)
           } else {
-            setCurrentMode(parsed.defaultMode);
+            setCurrentMode(parsed.defaultMode)
           }
         }
       } catch (error) {
-        logger.error("Failed to load copilot preferences", { error });
+        logger.error('Failed to load copilot preferences', { error })
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    loadPreferences();
-  }, []);
+    loadPreferences()
+  }, [])
 
   // Save preferences when they change
-  const updatePreferences = useCallback(
-    (updates: Partial<UnifiedCopilotPreferences>) => {
-      setPreferences((prev) => {
-        const newPrefs = { ...prev, ...updates };
-        try {
-          localStorage.setItem(
-            COPILOT_PREFERENCES_KEY,
-            JSON.stringify(newPrefs),
-          );
-        } catch (error) {
-          logger.error("Failed to save copilot preferences", { error });
-        }
-        return newPrefs;
-      });
-    },
-    [],
-  );
+  const updatePreferences = useCallback((updates: Partial<UnifiedCopilotPreferences>) => {
+    setPreferences((prev) => {
+      const newPrefs = { ...prev, ...updates }
+      try {
+        localStorage.setItem(COPILOT_PREFERENCES_KEY, JSON.stringify(newPrefs))
+      } catch (error) {
+        logger.error('Failed to save copilot preferences', { error })
+      }
+      return newPrefs
+    })
+  }, [])
 
   // Mode switching
   const switchMode = useCallback(
-    (mode: "local" | "external") => {
-      logger.info("Switching copilot mode", { from: currentMode, to: mode });
+    (mode: 'local' | 'external') => {
+      logger.info('Switching copilot mode', { from: currentMode, to: mode })
 
-      setCurrentMode(mode);
-      setLocalMode(mode);
+      setCurrentMode(mode)
+      setLocalMode(mode)
 
       // Update preferences
       if (preferences.rememberModeSelection) {
-        updatePreferences({ lastUsedMode: mode });
+        updatePreferences({ lastUsedMode: mode })
       }
     },
-    [
-      currentMode,
-      preferences.rememberModeSelection,
-      updatePreferences,
-      setLocalMode,
-    ],
-  );
+    [currentMode, preferences.rememberModeSelection, updatePreferences, setLocalMode]
+  )
 
-  const switchToLocal = useCallback(() => switchMode("local"), [switchMode]);
-  const switchToExternal = useCallback(
-    () => switchMode("external"),
-    [switchMode],
-  );
+  const switchToLocal = useCallback(() => switchMode('local'), [switchMode])
+  const switchToExternal = useCallback(() => switchMode('external'), [switchMode])
 
   // Agent management
   const selectAgent = useCallback(
     async (agent: Agent) => {
-      logger.info("Selecting agent via unified hook", {
+      logger.info('Selecting agent via unified hook', {
         agentId: agent.id,
         agentName: agent.name,
-      });
+      })
 
-      await localSelectAgent(agent);
+      await localSelectAgent(agent)
 
       // Update preferred agent in preferences
-      updatePreferences({ preferredAgentId: agent.id });
+      updatePreferences({ preferredAgentId: agent.id })
 
       // Auto-switch to local mode if configured
-      if (preferences.autoSwitchToLocal && currentMode !== "local") {
-        switchToLocal();
+      if (preferences.autoSwitchToLocal && currentMode !== 'local') {
+        switchToLocal()
       }
     },
-    [
-      localSelectAgent,
-      updatePreferences,
-      preferences.autoSwitchToLocal,
-      currentMode,
-      switchToLocal,
-    ],
-  );
+    [localSelectAgent, updatePreferences, preferences.autoSwitchToLocal, currentMode, switchToLocal]
+  )
 
   // Auto-selection logic
   useEffect(() => {
     if (
       localInitialized &&
-      currentMode === "local" &&
+      currentMode === 'local' &&
       !selectedAgent &&
       preferences.preferredAgentId &&
       availableAgents.length > 0
     ) {
-      const preferredAgent = availableAgents.find(
-        (a) => a.id === preferences.preferredAgentId,
-      );
+      const preferredAgent = availableAgents.find((a) => a.id === preferences.preferredAgentId)
       if (preferredAgent) {
-        logger.info("Auto-selecting preferred agent", {
+        logger.info('Auto-selecting preferred agent', {
           agentId: preferredAgent.id,
-        });
-        localSelectAgent(preferredAgent);
+        })
+        localSelectAgent(preferredAgent)
       }
     }
   }, [
@@ -177,24 +152,19 @@ export function useUnifiedCopilot(workspaceId: string) {
     preferences.preferredAgentId,
     availableAgents,
     localSelectAgent,
-  ]);
+  ])
 
   // Availability checks
-  const isLocalAvailable =
-    availableAgents.length > 0 && !isLoadingAgents && localInitialized;
-  const isExternalAvailable = true; // Always available
+  const isLocalAvailable = availableAgents.length > 0 && !isLoadingAgents && localInitialized
+  const isExternalAvailable = true // Always available
 
   // Mode recommendations
   const getRecommendedMode = useCallback(() => {
     if (preferences.autoSwitchToLocal && isLocalAvailable) {
-      return "local";
+      return 'local'
     }
-    return preferences.defaultMode;
-  }, [
-    preferences.autoSwitchToLocal,
-    preferences.defaultMode,
-    isLocalAvailable,
-  ]);
+    return preferences.defaultMode
+  }, [preferences.autoSwitchToLocal, preferences.defaultMode, isLocalAvailable])
 
   // Statistics
   const getStats = useCallback(() => {
@@ -205,7 +175,7 @@ export function useUnifiedCopilot(workspaceId: string) {
       isLocalAvailable,
       isExternalAvailable,
       lastUsedMode: preferences.lastUsedMode,
-    };
+    }
   }, [
     availableAgents.length,
     selectedAgent?.name,
@@ -213,7 +183,7 @@ export function useUnifiedCopilot(workspaceId: string) {
     isLocalAvailable,
     isExternalAvailable,
     preferences.lastUsedMode,
-  ]);
+  ])
 
   return {
     // Current state
@@ -241,7 +211,7 @@ export function useUnifiedCopilot(workspaceId: string) {
     // Utilities
     getRecommendedMode,
     getStats,
-  };
+  }
 }
 
 /**
@@ -257,25 +227,25 @@ export function useWorkspaceCopilotConfig(workspaceId: string) {
 
   return {
     allowModeSwitch: true, // TODO: Make configurable
-    defaultMode: "external" as const, // TODO: Make configurable
-    allowedModes: ["local", "external"] as const, // TODO: Make configurable
-  };
+    defaultMode: 'external' as const, // TODO: Make configurable
+    allowedModes: ['local', 'external'] as const, // TODO: Make configurable
+  }
 }
 
 /**
  * Simple hook for components that just need mode switching
  */
 export function useCopilotModeSwitch() {
-  const { mode: localMode, setMode } = useLocalCopilotStore();
+  const { mode: localMode, setMode } = useLocalCopilotStore()
 
-  const switchToLocal = useCallback(() => setMode("local"), [setMode]);
-  const switchToExternal = useCallback(() => setMode("external"), [setMode]);
+  const switchToLocal = useCallback(() => setMode('local'), [setMode])
+  const switchToExternal = useCallback(() => setMode('external'), [setMode])
 
   return {
     currentMode: localMode,
     switchToLocal,
     switchToExternal,
-    isLocal: localMode === "local",
-    isExternal: localMode === "external",
-  };
+    isLocal: localMode === 'local',
+    isExternal: localMode === 'external',
+  }
 }
