@@ -1,4 +1,4 @@
-import { type MutableRefObject, useEffect, useRef } from 'react'
+import { type MutableRefObject, useEffect, useRef } from "react";
 
 /**
  * A hook that handles forwarded refs and returns a mutable ref object
@@ -7,19 +7,19 @@ import { type MutableRefObject, useEffect, useRef } from 'react'
  * @returns A mutable ref object that can be used locally
  */
 export function useForwardedRef<T>(
-  forwardedRef: React.ForwardedRef<T>
+  forwardedRef: React.ForwardedRef<T>,
 ): MutableRefObject<T | null> {
-  const innerRef = useRef<T | null>(null)
+  const innerRef = useRef<T | null>(null);
 
   useEffect(() => {
-    if (!forwardedRef) return
+    if (!forwardedRef) return;
 
-    if (typeof forwardedRef === 'function') {
-      forwardedRef(innerRef.current)
+    if (typeof forwardedRef === "function") {
+      forwardedRef(innerRef.current);
     } else {
-      forwardedRef.current = innerRef.current
+      forwardedRef.current = innerRef.current;
     }
-  }, [forwardedRef])
+  }, [forwardedRef]);
 
-  return innerRef
+  return innerRef;
 }

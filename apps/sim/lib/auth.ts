@@ -1,9 +1,9 @@
-import { stripe } from '@better-auth/stripe'
-import { db } from '@sim/db'
-import * as schema from '@sim/db/schema'
-import { betterAuth } from 'better-auth'
-import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { nextCookies } from 'better-auth/next-js'
+import { stripe } from "@better-auth/stripe";
+import { db } from "@sim/db";
+import * as schema from "@sim/db/schema";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { nextCookies } from "better-auth/next-js";
 import {
   createAuthMiddleware,
   customSession,
@@ -11,56 +11,61 @@ import {
   genericOAuth,
   oneTimeToken,
   organization,
-} from 'better-auth/plugins'
-import { and, eq } from 'drizzle-orm'
-import { headers } from 'next/headers'
-import Stripe from 'stripe'
+} from "better-auth/plugins";
+import { and, eq } from "drizzle-orm";
+import { headers } from "next/headers";
+import Stripe from "stripe";
 import {
   getEmailSubject,
   renderInvitationEmail,
   renderOTPEmail,
   renderPasswordResetEmail,
-} from '@/components/emails/render-email'
-import { getBaseURL } from '@/lib/auth-client'
-import { authorizeSubscriptionReference } from '@/lib/billing/authorization'
-import { handleNewUser } from '@/lib/billing/core/usage'
-import { syncSubscriptionUsageLimits } from '@/lib/billing/organization'
-import { getPlans } from '@/lib/billing/plans'
-import { handleManualEnterpriseSubscription } from '@/lib/billing/webhooks/enterprise'
+} from "@/components/emails/render-email";
+import { getBaseURL } from "@/lib/auth-client";
+import { authorizeSubscriptionReference } from "@/lib/billing/authorization";
+import { handleNewUser } from "@/lib/billing/core/usage";
+import { syncSubscriptionUsageLimits } from "@/lib/billing/organization";
+import { getPlans } from "@/lib/billing/plans";
+import { handleManualEnterpriseSubscription } from "@/lib/billing/webhooks/enterprise";
 import {
   handleInvoiceFinalized,
   handleInvoicePaymentFailed,
   handleInvoicePaymentSucceeded,
-} from '@/lib/billing/webhooks/invoices'
-import { sendEmail } from '@/lib/email/mailer'
-import { getFromEmailAddress } from '@/lib/email/utils'
-import { quickValidateEmail } from '@/lib/email/validation'
-import { env, isTruthy } from '@/lib/env'
-import { isBillingEnabled, isEmailVerificationEnabled } from '@/lib/environment'
-import { createLogger } from '@/lib/logs/console/logger'
+} from "@/lib/billing/webhooks/invoices";
+import { sendEmail } from "@/lib/email/mailer";
+import { getFromEmailAddress } from "@/lib/email/utils";
+import { quickValidateEmail } from "@/lib/email/validation";
+import { env, isTruthy } from "@/lib/env";
+import {
+  isBillingEnabled,
+  isEmailVerificationEnabled,
+} from "@/lib/environment";
+import { createLogger } from "@/lib/logs/console/logger";
 
-const logger = createLogger('Auth')
+const logger = createLogger("Auth");
 
 // Only initialize Stripe if the key is provided
 // This allows local development without a Stripe account
-const validStripeKey = env.STRIPE_SECRET_KEY
+const validStripeKey = env.STRIPE_SECRET_KEY;
 
-let stripeClient = null
+let stripeClient = null;
 if (validStripeKey) {
-  stripeClient = new Stripe(env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2025-08-27.basil',
-  })
+  stripeClient = new Stripe(env.STRIPE_SECRET_KEY || "", {
+    apiVersion: "2025-08-27.basil",
+  });
 }
 
 export const auth = betterAuth({
   baseURL: getBaseURL(),
   trustedOrigins: [
     env.NEXT_PUBLIC_APP_URL,
-    ...(env.NEXT_PUBLIC_VERCEL_URL ? [`https://${env.NEXT_PUBLIC_VERCEL_URL}`] : []),
+    ...(env.NEXT_PUBLIC_VERCEL_URL
+      ? [`https://${env.NEXT_PUBLIC_VERCEL_URL}`]
+      : []),
     ...(env.NEXT_PUBLIC_SOCKET_URL ? [env.NEXT_PUBLIC_SOCKET_URL] : []),
   ].filter(Boolean),
   database: drizzleAdapter(db, {
-    provider: 'pg',
+    provider: "pg",
     schema,
   }),
   session: {
@@ -76,17 +81,23 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          logger.info('[databaseHooks.user.create.after] User created, initializing stats', {
-            userId: user.id,
-          })
+          logger.info(
+            "[databaseHooks.user.create.after] User created, initializing stats",
+            {
+              userId: user.id,
+            },
+          );
 
           try {
-            await handleNewUser(user.id)
+            await handleNewUser(user.id);
           } catch (error) {
-            logger.error('[databaseHooks.user.create.after] Failed to initialize user stats', {
-              userId: user.id,
-              error,
-            })
+            logger.error(
+              "[databaseHooks.user.create.after] Failed to initialize user stats",
+              {
+                userId: user.id,
+                error,
+              },
+            );
           }
         },
       },
@@ -100,31 +111,31 @@ export const auth = betterAuth({
               .select()
               .from(schema.member)
               .where(eq(schema.member.userId, session.userId))
-              .limit(1)
+              .limit(1);
 
             if (members.length > 0) {
-              logger.info('Found organization for user', {
+              logger.info("Found organization for user", {
                 userId: session.userId,
                 organizationId: members[0].organizationId,
-              })
+              });
 
               return {
                 data: {
                   ...session,
                   activeOrganizationId: members[0].organizationId,
                 },
-              }
+              };
             }
-            logger.info('No organizations found for user', {
+            logger.info("No organizations found for user", {
               userId: session.userId,
-            })
-            return { data: session }
+            });
+            return { data: session };
           } catch (error) {
-            logger.error('Error setting active organization', {
+            logger.error("Error setting active organization", {
               error,
               userId: session.userId,
-            })
-            return { data: session }
+            });
+            return { data: session };
           }
         },
       },
@@ -135,16 +146,16 @@ export const auth = betterAuth({
       enabled: true,
       allowDifferentEmails: true,
       trustedProviders: [
-        'google',
-        'github',
-        'email-password',
-        'confluence',
-        'supabase',
-        'x',
-        'notion',
-        'microsoft',
-        'slack',
-        'reddit',
+        "google",
+        "github",
+        "email-password",
+        "confluence",
+        "supabase",
+        "x",
+        "notion",
+        "microsoft",
+        "slack",
+        "reddit",
       ],
     },
   },
@@ -152,14 +163,14 @@ export const auth = betterAuth({
     github: {
       clientId: env.GITHUB_CLIENT_ID as string,
       clientSecret: env.GITHUB_CLIENT_SECRET as string,
-      scopes: ['user:email', 'repo'],
+      scopes: ["user:email", "repo"],
     },
     google: {
       clientId: env.GOOGLE_CLIENT_ID as string,
       clientSecret: env.GOOGLE_CLIENT_SECRET as string,
       scopes: [
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile',
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
       ],
     },
   },
@@ -170,59 +181,63 @@ export const auth = betterAuth({
     throwOnMissingCredentials: true,
     throwOnInvalidCredentials: true,
     sendResetPassword: async ({ user, url, token }, request) => {
-      const username = user.name || ''
+      const username = user.name || "";
 
-      const html = await renderPasswordResetEmail(username, url)
+      const html = await renderPasswordResetEmail(username, url);
 
       const result = await sendEmail({
         to: user.email,
-        subject: getEmailSubject('reset-password'),
+        subject: getEmailSubject("reset-password"),
         html,
         from: getFromEmailAddress(),
-        emailType: 'transactional',
-      })
+        emailType: "transactional",
+      });
 
       if (!result.success) {
-        throw new Error(`Failed to send reset password email: ${result.message}`)
+        throw new Error(
+          `Failed to send reset password email: ${result.message}`,
+        );
       }
     },
   },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
-      if (ctx.path.startsWith('/sign-up') && isTruthy(env.DISABLE_REGISTRATION))
-        throw new Error('Registration is disabled, please contact your admin.')
+      if (ctx.path.startsWith("/sign-up") && isTruthy(env.DISABLE_REGISTRATION))
+        throw new Error("Registration is disabled, please contact your admin.");
 
       if (
-        (ctx.path.startsWith('/sign-in') || ctx.path.startsWith('/sign-up')) &&
+        (ctx.path.startsWith("/sign-in") || ctx.path.startsWith("/sign-up")) &&
         (env.ALLOWED_LOGIN_EMAILS || env.ALLOWED_LOGIN_DOMAINS)
       ) {
-        const requestEmail = ctx.body?.email?.toLowerCase()
+        const requestEmail = ctx.body?.email?.toLowerCase();
 
         if (requestEmail) {
-          let isAllowed = false
+          let isAllowed = false;
 
           if (env.ALLOWED_LOGIN_EMAILS) {
-            const allowedEmails = env.ALLOWED_LOGIN_EMAILS.split(',').map((email) =>
-              email.trim().toLowerCase()
-            )
-            isAllowed = allowedEmails.includes(requestEmail)
+            const allowedEmails = env.ALLOWED_LOGIN_EMAILS.split(",").map(
+              (email) => email.trim().toLowerCase(),
+            );
+            isAllowed = allowedEmails.includes(requestEmail);
           }
 
           if (!isAllowed && env.ALLOWED_LOGIN_DOMAINS) {
-            const allowedDomains = env.ALLOWED_LOGIN_DOMAINS.split(',').map((domain) =>
-              domain.trim().toLowerCase()
-            )
-            const emailDomain = requestEmail.split('@')[1]
-            isAllowed = emailDomain && allowedDomains.includes(emailDomain)
+            const allowedDomains = env.ALLOWED_LOGIN_DOMAINS.split(",").map(
+              (domain) => domain.trim().toLowerCase(),
+            );
+            const emailDomain = requestEmail.split("@")[1];
+            isAllowed = emailDomain && allowedDomains.includes(emailDomain);
           }
 
           if (!isAllowed) {
-            throw new Error('Access restricted. Please contact your administrator.')
+            throw new Error(
+              "Access restricted. Please contact your administrator.",
+            );
           }
         }
       }
 
-      return
+      return;
     }),
   },
   plugins: [
@@ -236,61 +251,66 @@ export const auth = betterAuth({
     })),
     emailOTP({
       sendVerificationOTP: async (data: {
-        email: string
-        otp: string
-        type: 'sign-in' | 'email-verification' | 'forget-password'
+        email: string;
+        otp: string;
+        type: "sign-in" | "email-verification" | "forget-password";
       }) => {
         if (!isEmailVerificationEnabled) {
-          logger.info('Skipping email verification')
-          return
+          logger.info("Skipping email verification");
+          return;
         }
         try {
           if (!data.email) {
-            throw new Error('Email is required')
+            throw new Error("Email is required");
           }
 
-          const validation = quickValidateEmail(data.email)
+          const validation = quickValidateEmail(data.email);
           if (!validation.isValid) {
-            logger.warn('Email validation failed', {
+            logger.warn("Email validation failed", {
               email: data.email,
               reason: validation.reason,
               checks: validation.checks,
-            })
+            });
             throw new Error(
               validation.reason ||
-                "We are unable to deliver the verification email to that address. Please make sure it's valid and able to receive emails."
-            )
+                "We are unable to deliver the verification email to that address. Please make sure it's valid and able to receive emails.",
+            );
           }
 
-          const html = await renderOTPEmail(data.otp, data.email, data.type)
+          const html = await renderOTPEmail(data.otp, data.email, data.type);
 
           const result = await sendEmail({
             to: data.email,
             subject: getEmailSubject(data.type),
             html,
             from: getFromEmailAddress(),
-            emailType: 'transactional',
-          })
+            emailType: "transactional",
+          });
 
-          if (!result.success && result.message.includes('no email service configured')) {
-            logger.info('🔑 VERIFICATION CODE FOR LOGIN/SIGNUP', {
+          if (
+            !result.success &&
+            result.message.includes("no email service configured")
+          ) {
+            logger.info("🔑 VERIFICATION CODE FOR LOGIN/SIGNUP", {
               email: data.email,
               otp: data.otp,
               type: data.type,
               validation: validation.checks,
-            })
-            return
+            });
+            return;
           }
 
           if (!result.success) {
-            throw new Error(`Failed to send verification code: ${result.message}`)
+            throw new Error(
+              `Failed to send verification code: ${result.message}`,
+            );
           }
         } catch (error) {
-          logger.error('Error sending verification code:', {
+          logger.error("Error sending verification code:", {
             error,
             email: data.email,
-          })
-          throw error
+          });
+          throw error;
         }
       },
       sendVerificationOnSignUp: false,
@@ -300,64 +320,75 @@ export const auth = betterAuth({
     genericOAuth({
       config: [
         {
-          providerId: 'github-repo',
+          providerId: "github-repo",
           clientId: env.GITHUB_REPO_CLIENT_ID as string,
           clientSecret: env.GITHUB_REPO_CLIENT_SECRET as string,
-          authorizationUrl: 'https://github.com/login/oauth/authorize',
-          accessType: 'offline',
-          prompt: 'consent',
-          tokenUrl: 'https://github.com/login/oauth/access_token',
-          userInfoUrl: 'https://api.github.com/user',
-          scopes: ['user:email', 'repo', 'read:user', 'workflow'],
+          authorizationUrl: "https://github.com/login/oauth/authorize",
+          accessType: "offline",
+          prompt: "consent",
+          tokenUrl: "https://github.com/login/oauth/access_token",
+          userInfoUrl: "https://api.github.com/user",
+          scopes: ["user:email", "repo", "read:user", "workflow"],
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/github-repo`,
           getUserInfo: async (tokens) => {
             try {
-              const profileResponse = await fetch('https://api.github.com/user', {
-                headers: {
-                  Authorization: `Bearer ${tokens.accessToken}`,
-                  'User-Agent': 'sim-studio',
-                },
-              })
-
-              if (!profileResponse.ok) {
-                logger.error('Failed to fetch GitHub profile', {
-                  status: profileResponse.status,
-                  statusText: profileResponse.statusText,
-                })
-                throw new Error(`Failed to fetch GitHub profile: ${profileResponse.statusText}`)
-              }
-
-              const profile = await profileResponse.json()
-
-              if (!profile.email) {
-                const emailsResponse = await fetch('https://api.github.com/user/emails', {
+              const profileResponse = await fetch(
+                "https://api.github.com/user",
+                {
                   headers: {
                     Authorization: `Bearer ${tokens.accessToken}`,
-                    'User-Agent': 'sim-studio',
+                    "User-Agent": "sim-studio",
                   },
-                })
+                },
+              );
+
+              if (!profileResponse.ok) {
+                logger.error("Failed to fetch GitHub profile", {
+                  status: profileResponse.status,
+                  statusText: profileResponse.statusText,
+                });
+                throw new Error(
+                  `Failed to fetch GitHub profile: ${profileResponse.statusText}`,
+                );
+              }
+
+              const profile = await profileResponse.json();
+
+              if (!profile.email) {
+                const emailsResponse = await fetch(
+                  "https://api.github.com/user/emails",
+                  {
+                    headers: {
+                      Authorization: `Bearer ${tokens.accessToken}`,
+                      "User-Agent": "sim-studio",
+                    },
+                  },
+                );
 
                 if (emailsResponse.ok) {
-                  const emails = await emailsResponse.json()
+                  const emails = await emailsResponse.json();
 
                   const primaryEmail =
                     emails.find(
-                      (email: { primary: boolean; email: string; verified: boolean }) =>
-                        email.primary
-                    ) || emails[0]
+                      (email: {
+                        primary: boolean;
+                        email: string;
+                        verified: boolean;
+                      }) => email.primary,
+                    ) || emails[0];
                   if (primaryEmail) {
-                    profile.email = primaryEmail.email
-                    profile.emailVerified = primaryEmail.verified || false
+                    profile.email = primaryEmail.email;
+                    profile.emailVerified = primaryEmail.verified || false;
                   }
                 } else {
-                  logger.warn('Failed to fetch GitHub emails', {
+                  logger.warn("Failed to fetch GitHub emails", {
                     status: emailsResponse.status,
                     statusText: emailsResponse.statusText,
-                  })
+                  });
                 }
               }
 
-              const now = new Date()
+              const now = new Date();
 
               return {
                 id: profile.id.toString(),
@@ -367,460 +398,509 @@ export const auth = betterAuth({
                 emailVerified: profile.emailVerified || false,
                 createdAt: now,
                 updatedAt: now,
-              }
+              };
             } catch (error) {
-              logger.error('Error in GitHub getUserInfo', { error })
-              throw error
+              logger.error("Error in GitHub getUserInfo", { error });
+              throw error;
             }
           },
         },
 
         // Google providers
         {
-          providerId: 'google-email',
+          providerId: "google-email",
           clientId: env.GOOGLE_CLIENT_ID as string,
           clientSecret: env.GOOGLE_CLIENT_SECRET as string,
-          discoveryUrl: 'https://accounts.google.com/.well-known/openid-configuration',
-          accessType: 'offline',
+          discoveryUrl:
+            "https://accounts.google.com/.well-known/openid-configuration",
+          accessType: "offline",
           scopes: [
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-            'https://www.googleapis.com/auth/gmail.send',
-            'https://www.googleapis.com/auth/gmail.modify',
-            'https://www.googleapis.com/auth/gmail.labels',
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/gmail.send",
+            "https://www.googleapis.com/auth/gmail.modify",
+            "https://www.googleapis.com/auth/gmail.labels",
           ],
-          prompt: 'consent',
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/google-email`,
         },
         {
-          providerId: 'google-calendar',
+          providerId: "google-calendar",
           clientId: env.GOOGLE_CLIENT_ID as string,
           clientSecret: env.GOOGLE_CLIENT_SECRET as string,
-          discoveryUrl: 'https://accounts.google.com/.well-known/openid-configuration',
-          accessType: 'offline',
+          discoveryUrl:
+            "https://accounts.google.com/.well-known/openid-configuration",
+          accessType: "offline",
           scopes: [
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-            'https://www.googleapis.com/auth/calendar',
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/calendar",
           ],
-          prompt: 'consent',
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/google-calendar`,
         },
         {
-          providerId: 'google-drive',
+          providerId: "google-drive",
           clientId: env.GOOGLE_CLIENT_ID as string,
           clientSecret: env.GOOGLE_CLIENT_SECRET as string,
-          discoveryUrl: 'https://accounts.google.com/.well-known/openid-configuration',
-          accessType: 'offline',
+          discoveryUrl:
+            "https://accounts.google.com/.well-known/openid-configuration",
+          accessType: "offline",
           scopes: [
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-            'https://www.googleapis.com/auth/drive.file',
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/drive.file",
           ],
-          prompt: 'consent',
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/google-drive`,
         },
         {
-          providerId: 'google-docs',
+          providerId: "google-docs",
           clientId: env.GOOGLE_CLIENT_ID as string,
           clientSecret: env.GOOGLE_CLIENT_SECRET as string,
-          discoveryUrl: 'https://accounts.google.com/.well-known/openid-configuration',
-          accessType: 'offline',
+          discoveryUrl:
+            "https://accounts.google.com/.well-known/openid-configuration",
+          accessType: "offline",
           scopes: [
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-            'https://www.googleapis.com/auth/drive.file',
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/drive.file",
           ],
-          prompt: 'consent',
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/google-docs`,
         },
         {
-          providerId: 'google-sheets',
+          providerId: "google-sheets",
           clientId: env.GOOGLE_CLIENT_ID as string,
           clientSecret: env.GOOGLE_CLIENT_SECRET as string,
-          discoveryUrl: 'https://accounts.google.com/.well-known/openid-configuration',
-          accessType: 'offline',
+          discoveryUrl:
+            "https://accounts.google.com/.well-known/openid-configuration",
+          accessType: "offline",
           scopes: [
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-            'https://www.googleapis.com/auth/drive.file',
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/drive.file",
           ],
-          prompt: 'consent',
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/google-sheets`,
         },
 
         {
-          providerId: 'google-forms',
+          providerId: "google-forms",
           clientId: env.GOOGLE_CLIENT_ID as string,
           clientSecret: env.GOOGLE_CLIENT_SECRET as string,
-          discoveryUrl: 'https://accounts.google.com/.well-known/openid-configuration',
-          accessType: 'offline',
+          discoveryUrl:
+            "https://accounts.google.com/.well-known/openid-configuration",
+          accessType: "offline",
           scopes: [
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-            'https://www.googleapis.com/auth/forms.responses.readonly',
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/forms.responses.readonly",
           ],
-          prompt: 'consent',
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/google-forms`,
         },
 
         {
-          providerId: 'microsoft-teams',
+          providerId: "microsoft-teams",
           clientId: env.MICROSOFT_CLIENT_ID as string,
           clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
-          authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-          tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-          userInfoUrl: 'https://graph.microsoft.com/v1.0/me',
+          authorizationUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+          tokenUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+          userInfoUrl: "https://graph.microsoft.com/v1.0/me",
           scopes: [
-            'openid',
-            'profile',
-            'email',
-            'User.Read',
-            'Chat.Read',
-            'Chat.ReadWrite',
-            'Chat.ReadBasic',
-            'Channel.ReadBasic.All',
-            'ChannelMessage.Send',
-            'ChannelMessage.Read.All',
-            'Group.Read.All',
-            'Group.ReadWrite.All',
-            'Team.ReadBasic.All',
-            'offline_access',
+            "openid",
+            "profile",
+            "email",
+            "User.Read",
+            "Chat.Read",
+            "Chat.ReadWrite",
+            "Chat.ReadBasic",
+            "Channel.ReadBasic.All",
+            "ChannelMessage.Send",
+            "ChannelMessage.Read.All",
+            "Group.Read.All",
+            "Group.ReadWrite.All",
+            "Team.ReadBasic.All",
+            "offline_access",
           ],
-          responseType: 'code',
-          accessType: 'offline',
-          authentication: 'basic',
+          responseType: "code",
+          accessType: "offline",
+          authentication: "basic",
           pkce: true,
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/microsoft-teams`,
         },
 
         {
-          providerId: 'microsoft-excel',
+          providerId: "microsoft-excel",
           clientId: env.MICROSOFT_CLIENT_ID as string,
           clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
-          authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-          tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-          userInfoUrl: 'https://graph.microsoft.com/v1.0/me',
-          scopes: ['openid', 'profile', 'email', 'Files.Read', 'Files.ReadWrite', 'offline_access'],
-          responseType: 'code',
-          accessType: 'offline',
-          authentication: 'basic',
+          authorizationUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+          tokenUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+          userInfoUrl: "https://graph.microsoft.com/v1.0/me",
+          scopes: [
+            "openid",
+            "profile",
+            "email",
+            "Files.Read",
+            "Files.ReadWrite",
+            "offline_access",
+          ],
+          responseType: "code",
+          accessType: "offline",
+          authentication: "basic",
           pkce: true,
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/microsoft-excel`,
         },
         {
-          providerId: 'microsoft-planner',
+          providerId: "microsoft-planner",
           clientId: env.MICROSOFT_CLIENT_ID as string,
           clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
-          authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-          tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-          userInfoUrl: 'https://graph.microsoft.com/v1.0/me',
+          authorizationUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+          tokenUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+          userInfoUrl: "https://graph.microsoft.com/v1.0/me",
           scopes: [
-            'openid',
-            'profile',
-            'email',
-            'Group.ReadWrite.All',
-            'Group.Read.All',
-            'Tasks.ReadWrite',
-            'offline_access',
+            "openid",
+            "profile",
+            "email",
+            "Group.ReadWrite.All",
+            "Group.Read.All",
+            "Tasks.ReadWrite",
+            "offline_access",
           ],
-          responseType: 'code',
-          accessType: 'offline',
-          authentication: 'basic',
+          responseType: "code",
+          accessType: "offline",
+          authentication: "basic",
           pkce: true,
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/microsoft-planner`,
         },
 
         {
-          providerId: 'outlook',
+          providerId: "outlook",
           clientId: env.MICROSOFT_CLIENT_ID as string,
           clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
-          authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-          tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-          userInfoUrl: 'https://graph.microsoft.com/v1.0/me',
+          authorizationUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+          tokenUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+          userInfoUrl: "https://graph.microsoft.com/v1.0/me",
           scopes: [
-            'openid',
-            'profile',
-            'email',
-            'Mail.ReadWrite',
-            'Mail.ReadBasic',
-            'Mail.Read',
-            'Mail.Send',
-            'offline_access',
+            "openid",
+            "profile",
+            "email",
+            "Mail.ReadWrite",
+            "Mail.ReadBasic",
+            "Mail.Read",
+            "Mail.Send",
+            "offline_access",
           ],
-          responseType: 'code',
-          accessType: 'offline',
-          authentication: 'basic',
+          responseType: "code",
+          accessType: "offline",
+          authentication: "basic",
           pkce: true,
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/outlook`,
         },
 
         {
-          providerId: 'onedrive',
+          providerId: "onedrive",
           clientId: env.MICROSOFT_CLIENT_ID as string,
           clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
-          authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-          tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-          userInfoUrl: 'https://graph.microsoft.com/v1.0/me',
-          scopes: ['openid', 'profile', 'email', 'Files.Read', 'Files.ReadWrite', 'offline_access'],
-          responseType: 'code',
-          accessType: 'offline',
-          authentication: 'basic',
+          authorizationUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+          tokenUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+          userInfoUrl: "https://graph.microsoft.com/v1.0/me",
+          scopes: [
+            "openid",
+            "profile",
+            "email",
+            "Files.Read",
+            "Files.ReadWrite",
+            "offline_access",
+          ],
+          responseType: "code",
+          accessType: "offline",
+          authentication: "basic",
           pkce: true,
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/onedrive`,
         },
 
         {
-          providerId: 'sharepoint',
+          providerId: "sharepoint",
           clientId: env.MICROSOFT_CLIENT_ID as string,
           clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
-          authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-          tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-          userInfoUrl: 'https://graph.microsoft.com/v1.0/me',
+          authorizationUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+          tokenUrl:
+            "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+          userInfoUrl: "https://graph.microsoft.com/v1.0/me",
           scopes: [
-            'openid',
-            'profile',
-            'email',
-            'Sites.Read.All',
-            'Sites.ReadWrite.All',
-            'Sites.Manage.All',
-            'offline_access',
+            "openid",
+            "profile",
+            "email",
+            "Sites.Read.All",
+            "Sites.ReadWrite.All",
+            "Sites.Manage.All",
+            "offline_access",
           ],
-          responseType: 'code',
-          accessType: 'offline',
-          authentication: 'basic',
+          responseType: "code",
+          accessType: "offline",
+          authentication: "basic",
           pkce: true,
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/sharepoint`,
         },
 
         {
-          providerId: 'wealthbox',
+          providerId: "wealthbox",
           clientId: env.WEALTHBOX_CLIENT_ID as string,
           clientSecret: env.WEALTHBOX_CLIENT_SECRET as string,
-          authorizationUrl: 'https://app.crmworkspace.com/oauth/authorize',
-          tokenUrl: 'https://app.crmworkspace.com/oauth/token',
-          userInfoUrl: 'https://dummy-not-used.wealthbox.com', // Dummy URL since no user info endpoint exists
-          scopes: ['login', 'data'],
-          responseType: 'code',
+          authorizationUrl: "https://app.crmworkspace.com/oauth/authorize",
+          tokenUrl: "https://app.crmworkspace.com/oauth/token",
+          userInfoUrl: "https://dummy-not-used.wealthbox.com", // Dummy URL since no user info endpoint exists
+          scopes: ["login", "data"],
+          responseType: "code",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/wealthbox`,
           getUserInfo: async (tokens) => {
             try {
-              logger.info('Creating Wealthbox user profile from token data')
+              logger.info("Creating Wealthbox user profile from token data");
 
-              const uniqueId = `wealthbox-${Date.now()}`
-              const now = new Date()
+              const uniqueId = `wealthbox-${Date.now()}`;
+              const now = new Date();
 
               return {
                 id: uniqueId,
-                name: 'Wealthbox User',
-                email: `${uniqueId.replace(/[^a-zA-Z0-9]/g, '')}@wealthbox.user`,
+                name: "Wealthbox User",
+                email: `${uniqueId.replace(/[^a-zA-Z0-9]/g, "")}@wealthbox.user`,
                 emailVerified: false,
                 createdAt: now,
                 updatedAt: now,
-              }
+              };
             } catch (error) {
-              logger.error('Error creating Wealthbox user profile:', { error })
-              return null
+              logger.error("Error creating Wealthbox user profile:", { error });
+              return null;
             }
           },
         },
 
         // Supabase provider
         {
-          providerId: 'supabase',
+          providerId: "supabase",
           clientId: env.SUPABASE_CLIENT_ID as string,
           clientSecret: env.SUPABASE_CLIENT_SECRET as string,
-          authorizationUrl: 'https://api.supabase.com/v1/oauth/authorize',
-          tokenUrl: 'https://api.supabase.com/v1/oauth/token',
-          userInfoUrl: 'https://dummy-not-used.supabase.co',
-          scopes: ['database.read', 'database.write', 'projects.read'],
-          responseType: 'code',
+          authorizationUrl: "https://api.supabase.com/v1/oauth/authorize",
+          tokenUrl: "https://api.supabase.com/v1/oauth/token",
+          userInfoUrl: "https://dummy-not-used.supabase.co",
+          scopes: ["database.read", "database.write", "projects.read"],
+          responseType: "code",
           pkce: true,
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/supabase`,
           getUserInfo: async (tokens) => {
             try {
-              logger.info('Creating Supabase user profile from token data')
+              logger.info("Creating Supabase user profile from token data");
 
-              let userId = 'supabase-user'
+              let userId = "supabase-user";
               if (tokens.idToken) {
                 try {
                   const decodedToken = JSON.parse(
-                    Buffer.from(tokens.idToken.split('.')[1], 'base64').toString()
-                  )
+                    Buffer.from(
+                      tokens.idToken.split(".")[1],
+                      "base64",
+                    ).toString(),
+                  );
                   if (decodedToken.sub) {
-                    userId = decodedToken.sub
+                    userId = decodedToken.sub;
                   }
                 } catch (e) {
-                  logger.warn('Failed to decode Supabase ID token', {
+                  logger.warn("Failed to decode Supabase ID token", {
                     error: e,
-                  })
+                  });
                 }
               }
 
-              const uniqueId = `${userId}-${Date.now()}`
-              const now = new Date()
+              const uniqueId = `${userId}-${Date.now()}`;
+              const now = new Date();
 
               return {
                 id: uniqueId,
-                name: 'Supabase User',
-                email: `${uniqueId.replace(/[^a-zA-Z0-9]/g, '')}@supabase.user`,
+                name: "Supabase User",
+                email: `${uniqueId.replace(/[^a-zA-Z0-9]/g, "")}@supabase.user`,
                 emailVerified: false,
                 createdAt: now,
                 updatedAt: now,
-              }
+              };
             } catch (error) {
-              logger.error('Error creating Supabase user profile:', { error })
-              return null
+              logger.error("Error creating Supabase user profile:", { error });
+              return null;
             }
           },
         },
 
         // X provider
         {
-          providerId: 'x',
+          providerId: "x",
           clientId: env.X_CLIENT_ID as string,
           clientSecret: env.X_CLIENT_SECRET as string,
-          authorizationUrl: 'https://x.com/i/oauth2/authorize',
-          tokenUrl: 'https://api.x.com/2/oauth2/token',
-          userInfoUrl: 'https://api.x.com/2/users/me',
-          accessType: 'offline',
-          scopes: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
+          authorizationUrl: "https://x.com/i/oauth2/authorize",
+          tokenUrl: "https://api.x.com/2/oauth2/token",
+          userInfoUrl: "https://api.x.com/2/users/me",
+          accessType: "offline",
+          scopes: ["tweet.read", "tweet.write", "users.read", "offline.access"],
           pkce: true,
-          responseType: 'code',
-          prompt: 'consent',
-          authentication: 'basic',
+          responseType: "code",
+          prompt: "consent",
+          authentication: "basic",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/x`,
           getUserInfo: async (tokens) => {
             try {
               const response = await fetch(
-                'https://api.x.com/2/users/me?user.fields=profile_image_url,username,name,verified',
+                "https://api.x.com/2/users/me?user.fields=profile_image_url,username,name,verified",
                 {
                   headers: {
                     Authorization: `Bearer ${tokens.accessToken}`,
                   },
-                }
-              )
+                },
+              );
 
               if (!response.ok) {
-                logger.error('Error fetching X user info:', {
+                logger.error("Error fetching X user info:", {
                   status: response.status,
                   statusText: response.statusText,
-                })
-                return null
+                });
+                return null;
               }
 
-              const profile = await response.json()
+              const profile = await response.json();
 
               if (!profile.data) {
-                logger.error('Invalid X profile response:', profile)
-                return null
+                logger.error("Invalid X profile response:", profile);
+                return null;
               }
 
-              const now = new Date()
+              const now = new Date();
 
               return {
                 id: profile.data.id,
-                name: profile.data.name || 'X User',
+                name: profile.data.name || "X User",
                 email: `${profile.data.username}@x.com`,
                 image: profile.data.profile_image_url,
                 emailVerified: profile.data.verified || false,
                 createdAt: now,
                 updatedAt: now,
-              }
+              };
             } catch (error) {
-              logger.error('Error in X getUserInfo:', { error })
-              return null
+              logger.error("Error in X getUserInfo:", { error });
+              return null;
             }
           },
         },
 
         // Confluence provider
         {
-          providerId: 'confluence',
+          providerId: "confluence",
           clientId: env.CONFLUENCE_CLIENT_ID as string,
           clientSecret: env.CONFLUENCE_CLIENT_SECRET as string,
-          authorizationUrl: 'https://auth.atlassian.com/authorize',
-          tokenUrl: 'https://auth.atlassian.com/oauth/token',
-          userInfoUrl: 'https://api.atlassian.com/me',
-          scopes: ['read:page:confluence', 'write:page:confluence', 'read:me', 'offline_access'],
-          responseType: 'code',
+          authorizationUrl: "https://auth.atlassian.com/authorize",
+          tokenUrl: "https://auth.atlassian.com/oauth/token",
+          userInfoUrl: "https://api.atlassian.com/me",
+          scopes: [
+            "read:page:confluence",
+            "write:page:confluence",
+            "read:me",
+            "offline_access",
+          ],
+          responseType: "code",
           pkce: true,
-          accessType: 'offline',
-          authentication: 'basic',
-          prompt: 'consent',
+          accessType: "offline",
+          authentication: "basic",
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/confluence`,
           getUserInfo: async (tokens) => {
             try {
-              const response = await fetch('https://api.atlassian.com/me', {
+              const response = await fetch("https://api.atlassian.com/me", {
                 headers: {
                   Authorization: `Bearer ${tokens.accessToken}`,
                 },
-              })
+              });
 
               if (!response.ok) {
-                logger.error('Error fetching Confluence user info:', {
+                logger.error("Error fetching Confluence user info:", {
                   status: response.status,
                   statusText: response.statusText,
-                })
-                return null
+                });
+                return null;
               }
 
-              const profile = await response.json()
+              const profile = await response.json();
 
-              const now = new Date()
+              const now = new Date();
 
               return {
                 id: profile.account_id,
-                name: profile.name || profile.display_name || 'Confluence User',
+                name: profile.name || profile.display_name || "Confluence User",
                 email: profile.email || `${profile.account_id}@atlassian.com`,
                 image: profile.picture || undefined,
                 emailVerified: true,
                 createdAt: now,
                 updatedAt: now,
-              }
+              };
             } catch (error) {
-              logger.error('Error in Confluence getUserInfo:', { error })
-              return null
+              logger.error("Error in Confluence getUserInfo:", { error });
+              return null;
             }
           },
         },
 
         // Discord provider
         {
-          providerId: 'discord',
+          providerId: "discord",
           clientId: env.DISCORD_CLIENT_ID as string,
           clientSecret: env.DISCORD_CLIENT_SECRET as string,
-          authorizationUrl: 'https://discord.com/api/oauth2/authorize',
-          tokenUrl: 'https://discord.com/api/oauth2/token',
-          userInfoUrl: 'https://discord.com/api/users/@me',
-          scopes: ['identify', 'bot', 'messages.read', 'guilds', 'guilds.members.read'],
-          responseType: 'code',
-          accessType: 'offline',
-          authentication: 'basic',
-          prompt: 'consent',
+          authorizationUrl: "https://discord.com/api/oauth2/authorize",
+          tokenUrl: "https://discord.com/api/oauth2/token",
+          userInfoUrl: "https://discord.com/api/users/@me",
+          scopes: [
+            "identify",
+            "bot",
+            "messages.read",
+            "guilds",
+            "guilds.members.read",
+          ],
+          responseType: "code",
+          accessType: "offline",
+          authentication: "basic",
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/discord`,
           getUserInfo: async (tokens) => {
             try {
-              const response = await fetch('https://discord.com/api/users/@me', {
-                headers: {
-                  Authorization: `Bearer ${tokens.accessToken}`,
+              const response = await fetch(
+                "https://discord.com/api/users/@me",
+                {
+                  headers: {
+                    Authorization: `Bearer ${tokens.accessToken}`,
+                  },
                 },
-              })
+              );
 
               if (!response.ok) {
-                logger.error('Error fetching Discord user info:', {
+                logger.error("Error fetching Discord user info:", {
                   status: response.status,
                   statusText: response.statusText,
-                })
-                return null
+                });
+                return null;
               }
 
-              const profile = await response.json()
-              const now = new Date()
+              const profile = await response.json();
+              const now = new Date();
 
               return {
                 id: profile.id,
-                name: profile.username || 'Discord User',
+                name: profile.username || "Discord User",
                 email: profile.email || `${profile.id}@discord.user`,
                 image: profile.avatar
                   ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
@@ -828,220 +908,240 @@ export const auth = betterAuth({
                 emailVerified: profile.verified || false,
                 createdAt: now,
                 updatedAt: now,
-              }
+              };
             } catch (error) {
-              logger.error('Error in Discord getUserInfo:', { error })
-              return null
+              logger.error("Error in Discord getUserInfo:", { error });
+              return null;
             }
           },
         },
 
         // Jira provider
         {
-          providerId: 'jira',
+          providerId: "jira",
           clientId: env.JIRA_CLIENT_ID as string,
           clientSecret: env.JIRA_CLIENT_SECRET as string,
-          authorizationUrl: 'https://auth.atlassian.com/authorize',
-          tokenUrl: 'https://auth.atlassian.com/oauth/token',
-          userInfoUrl: 'https://api.atlassian.com/me',
+          authorizationUrl: "https://auth.atlassian.com/authorize",
+          tokenUrl: "https://auth.atlassian.com/oauth/token",
+          userInfoUrl: "https://api.atlassian.com/me",
           scopes: [
-            'read:jira-user',
-            'read:jira-work',
-            'write:jira-work',
-            'write:issue:jira',
-            'read:project:jira',
-            'read:issue-type:jira',
-            'read:me',
-            'offline_access',
-            'read:issue-meta:jira',
-            'read:issue-security-level:jira',
-            'read:issue.vote:jira',
-            'read:issue.changelog:jira',
-            'read:avatar:jira',
-            'read:issue:jira',
-            'read:status:jira',
-            'read:user:jira',
-            'read:field-configuration:jira',
-            'read:issue-details:jira',
+            "read:jira-user",
+            "read:jira-work",
+            "write:jira-work",
+            "write:issue:jira",
+            "read:project:jira",
+            "read:issue-type:jira",
+            "read:me",
+            "offline_access",
+            "read:issue-meta:jira",
+            "read:issue-security-level:jira",
+            "read:issue.vote:jira",
+            "read:issue.changelog:jira",
+            "read:avatar:jira",
+            "read:issue:jira",
+            "read:status:jira",
+            "read:user:jira",
+            "read:field-configuration:jira",
+            "read:issue-details:jira",
           ],
-          responseType: 'code',
+          responseType: "code",
           pkce: true,
-          accessType: 'offline',
-          authentication: 'basic',
-          prompt: 'consent',
+          accessType: "offline",
+          authentication: "basic",
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/jira`,
           getUserInfo: async (tokens) => {
             try {
-              const response = await fetch('https://api.atlassian.com/me', {
+              const response = await fetch("https://api.atlassian.com/me", {
                 headers: {
                   Authorization: `Bearer ${tokens.accessToken}`,
                 },
-              })
+              });
 
               if (!response.ok) {
-                logger.error('Error fetching Jira user info:', {
+                logger.error("Error fetching Jira user info:", {
                   status: response.status,
                   statusText: response.statusText,
-                })
-                return null
+                });
+                return null;
               }
 
-              const profile = await response.json()
+              const profile = await response.json();
 
-              const now = new Date()
+              const now = new Date();
 
               return {
                 id: profile.account_id,
-                name: profile.name || profile.display_name || 'Jira User',
+                name: profile.name || profile.display_name || "Jira User",
                 email: profile.email || `${profile.account_id}@atlassian.com`,
                 image: profile.picture || undefined,
                 emailVerified: true,
                 createdAt: now,
                 updatedAt: now,
-              }
+              };
             } catch (error) {
-              logger.error('Error in Jira getUserInfo:', { error })
-              return null
+              logger.error("Error in Jira getUserInfo:", { error });
+              return null;
             }
           },
         },
 
         // Airtable provider
         {
-          providerId: 'airtable',
+          providerId: "airtable",
           clientId: env.AIRTABLE_CLIENT_ID as string,
           clientSecret: env.AIRTABLE_CLIENT_SECRET as string,
-          authorizationUrl: 'https://airtable.com/oauth2/v1/authorize',
-          tokenUrl: 'https://airtable.com/oauth2/v1/token',
-          userInfoUrl: 'https://api.airtable.com/v0/meta/whoami',
-          scopes: ['data.records:read', 'data.records:write', 'user.email:read', 'webhook:manage'],
-          responseType: 'code',
+          authorizationUrl: "https://airtable.com/oauth2/v1/authorize",
+          tokenUrl: "https://airtable.com/oauth2/v1/token",
+          userInfoUrl: "https://api.airtable.com/v0/meta/whoami",
+          scopes: [
+            "data.records:read",
+            "data.records:write",
+            "user.email:read",
+            "webhook:manage",
+          ],
+          responseType: "code",
           pkce: true,
-          accessType: 'offline',
-          authentication: 'basic',
-          prompt: 'consent',
+          accessType: "offline",
+          authentication: "basic",
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/airtable`,
         },
 
         // Notion provider
         {
-          providerId: 'notion',
+          providerId: "notion",
           clientId: env.NOTION_CLIENT_ID as string,
           clientSecret: env.NOTION_CLIENT_SECRET as string,
-          authorizationUrl: 'https://api.notion.com/v1/oauth/authorize',
-          tokenUrl: 'https://api.notion.com/v1/oauth/token',
-          userInfoUrl: 'https://api.notion.com/v1/users/me',
-          scopes: ['workspace.content', 'workspace.name', 'page.read', 'page.write'],
-          responseType: 'code',
+          authorizationUrl: "https://api.notion.com/v1/oauth/authorize",
+          tokenUrl: "https://api.notion.com/v1/oauth/token",
+          userInfoUrl: "https://api.notion.com/v1/users/me",
+          scopes: [
+            "workspace.content",
+            "workspace.name",
+            "page.read",
+            "page.write",
+          ],
+          responseType: "code",
           pkce: false,
-          accessType: 'offline',
-          authentication: 'basic',
-          prompt: 'consent',
+          accessType: "offline",
+          authentication: "basic",
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/notion`,
           getUserInfo: async (tokens) => {
             try {
-              const response = await fetch('https://api.notion.com/v1/users/me', {
-                headers: {
-                  Authorization: `Bearer ${tokens.accessToken}`,
-                  'Notion-Version': '2022-06-28',
+              const response = await fetch(
+                "https://api.notion.com/v1/users/me",
+                {
+                  headers: {
+                    Authorization: `Bearer ${tokens.accessToken}`,
+                    "Notion-Version": "2022-06-28",
+                  },
                 },
-              })
+              );
 
               if (!response.ok) {
-                logger.error('Error fetching Notion user info:', {
+                logger.error("Error fetching Notion user info:", {
                   status: response.status,
                   statusText: response.statusText,
-                })
-                return null
+                });
+                return null;
               }
 
-              const profile = await response.json()
-              const now = new Date()
+              const profile = await response.json();
+              const now = new Date();
 
               return {
                 id: profile.bot?.owner?.user?.id || profile.id,
-                name: profile.name || profile.bot?.owner?.user?.name || 'Notion User',
+                name:
+                  profile.name ||
+                  profile.bot?.owner?.user?.name ||
+                  "Notion User",
                 email: profile.person?.email || `${profile.id}@notion.user`,
                 emailVerified: !!profile.person?.email,
                 createdAt: now,
                 updatedAt: now,
-              }
+              };
             } catch (error) {
-              logger.error('Error in Notion getUserInfo:', { error })
-              return null
+              logger.error("Error in Notion getUserInfo:", { error });
+              return null;
             }
           },
         },
 
         // Reddit provider
         {
-          providerId: 'reddit',
+          providerId: "reddit",
           clientId: env.REDDIT_CLIENT_ID as string,
           clientSecret: env.REDDIT_CLIENT_SECRET as string,
-          authorizationUrl: 'https://www.reddit.com/api/v1/authorize?duration=permanent',
-          tokenUrl: 'https://www.reddit.com/api/v1/access_token',
-          userInfoUrl: 'https://oauth.reddit.com/api/v1/me',
-          scopes: ['identity', 'read'],
-          responseType: 'code',
+          authorizationUrl:
+            "https://www.reddit.com/api/v1/authorize?duration=permanent",
+          tokenUrl: "https://www.reddit.com/api/v1/access_token",
+          userInfoUrl: "https://oauth.reddit.com/api/v1/me",
+          scopes: ["identity", "read"],
+          responseType: "code",
           pkce: false,
-          accessType: 'offline',
-          authentication: 'basic',
-          prompt: 'consent',
+          accessType: "offline",
+          authentication: "basic",
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/reddit`,
           getUserInfo: async (tokens) => {
             try {
-              const response = await fetch('https://oauth.reddit.com/api/v1/me', {
-                headers: {
-                  Authorization: `Bearer ${tokens.accessToken}`,
-                  'User-Agent': 'sim-studio/1.0',
+              const response = await fetch(
+                "https://oauth.reddit.com/api/v1/me",
+                {
+                  headers: {
+                    Authorization: `Bearer ${tokens.accessToken}`,
+                    "User-Agent": "sim-studio/1.0",
+                  },
                 },
-              })
+              );
 
               if (!response.ok) {
-                logger.error('Error fetching Reddit user info:', {
+                logger.error("Error fetching Reddit user info:", {
                   status: response.status,
                   statusText: response.statusText,
-                })
-                return null
+                });
+                return null;
               }
 
-              const data = await response.json()
-              const now = new Date()
+              const data = await response.json();
+              const now = new Date();
 
               return {
                 id: data.id,
-                name: data.name || 'Reddit User',
+                name: data.name || "Reddit User",
                 email: `${data.name}@reddit.user`,
                 image: data.icon_img || undefined,
                 emailVerified: false,
                 createdAt: now,
                 updatedAt: now,
-              }
+              };
             } catch (error) {
-              logger.error('Error in Reddit getUserInfo:', { error })
-              return null
+              logger.error("Error in Reddit getUserInfo:", { error });
+              return null;
             }
           },
         },
 
         {
-          providerId: 'linear',
+          providerId: "linear",
           clientId: env.LINEAR_CLIENT_ID as string,
           clientSecret: env.LINEAR_CLIENT_SECRET as string,
-          authorizationUrl: 'https://linear.app/oauth/authorize',
-          tokenUrl: 'https://api.linear.app/oauth/token',
-          scopes: ['read', 'write'],
-          responseType: 'code',
+          authorizationUrl: "https://linear.app/oauth/authorize",
+          tokenUrl: "https://api.linear.app/oauth/token",
+          scopes: ["read", "write"],
+          responseType: "code",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/linear`,
           pkce: true,
-          prompt: 'consent',
-          accessType: 'offline',
+          prompt: "consent",
+          accessType: "offline",
           getUserInfo: async (tokens) => {
             try {
-              const response = await fetch('https://api.linear.app/graphql', {
-                method: 'POST',
+              const response = await fetch("https://api.linear.app/graphql", {
+                method: "POST",
                 headers: {
-                  'Content-Type': 'application/json',
+                  "Content-Type": "application/json",
                   Authorization: `Bearer ${tokens.accessToken}`,
                 },
                 body: JSON.stringify({
@@ -1054,31 +1154,33 @@ export const auth = betterAuth({
                     }
                   }`,
                 }),
-              })
+              });
 
               if (!response.ok) {
-                const errorText = await response.text()
-                logger.error('Linear API error:', {
+                const errorText = await response.text();
+                logger.error("Linear API error:", {
                   status: response.status,
                   statusText: response.statusText,
                   body: errorText,
-                })
-                throw new Error(`Linear API error: ${response.status} ${response.statusText}`)
+                });
+                throw new Error(
+                  `Linear API error: ${response.status} ${response.statusText}`,
+                );
               }
 
-              const { data, errors } = await response.json()
+              const { data, errors } = await response.json();
 
               if (errors) {
-                logger.error('GraphQL errors:', errors)
-                throw new Error(`GraphQL errors: ${JSON.stringify(errors)}`)
+                logger.error("GraphQL errors:", errors);
+                throw new Error(`GraphQL errors: ${JSON.stringify(errors)}`);
               }
 
               if (!data?.viewer) {
-                logger.error('No viewer data in response:', data)
-                throw new Error('No viewer data in response')
+                logger.error("No viewer data in response:", data);
+                throw new Error("No viewer data in response");
               }
 
-              const viewer = data.viewer
+              const viewer = data.viewer;
 
               return {
                 id: viewer.id,
@@ -1088,71 +1190,74 @@ export const auth = betterAuth({
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 image: viewer.avatarUrl || undefined,
-              }
+              };
             } catch (error) {
-              logger.error('Error in getUserInfo:', error)
-              throw error
+              logger.error("Error in getUserInfo:", error);
+              throw error;
             }
           },
         },
 
         // Slack provider
         {
-          providerId: 'slack',
+          providerId: "slack",
           clientId: env.SLACK_CLIENT_ID as string,
           clientSecret: env.SLACK_CLIENT_SECRET as string,
-          authorizationUrl: 'https://slack.com/oauth/v2/authorize',
-          tokenUrl: 'https://slack.com/api/oauth.v2.access',
-          userInfoUrl: 'https://slack.com/api/users.identity',
+          authorizationUrl: "https://slack.com/oauth/v2/authorize",
+          tokenUrl: "https://slack.com/api/oauth.v2.access",
+          userInfoUrl: "https://slack.com/api/users.identity",
           scopes: [
             // Bot token scopes only - app acts as a bot user
-            'channels:read',
-            'channels:history',
-            'groups:read',
-            'groups:history',
-            'chat:write',
-            'chat:write.public',
-            'users:read',
-            'files:write',
-            'canvases:write',
+            "channels:read",
+            "channels:history",
+            "groups:read",
+            "groups:history",
+            "chat:write",
+            "chat:write.public",
+            "users:read",
+            "files:write",
+            "canvases:write",
           ],
-          responseType: 'code',
-          accessType: 'offline',
-          prompt: 'consent',
+          responseType: "code",
+          accessType: "offline",
+          prompt: "consent",
           redirectURI: `${env.NEXT_PUBLIC_APP_URL}/api/auth/oauth2/callback/slack`,
           getUserInfo: async (tokens) => {
             try {
-              logger.info('Creating Slack bot profile from token data')
+              logger.info("Creating Slack bot profile from token data");
 
               // Extract user identifier from tokens if possible
-              let userId = 'slack-bot'
+              let userId = "slack-bot";
               if (tokens.idToken) {
                 try {
                   const decodedToken = JSON.parse(
-                    Buffer.from(tokens.idToken.split('.')[1], 'base64').toString()
-                  )
+                    Buffer.from(
+                      tokens.idToken.split(".")[1],
+                      "base64",
+                    ).toString(),
+                  );
                   if (decodedToken.sub) {
-                    userId = decodedToken.sub
+                    userId = decodedToken.sub;
                   }
                 } catch (e) {
-                  logger.warn('Failed to decode Slack ID token', { error: e })
+                  logger.warn("Failed to decode Slack ID token", { error: e });
                 }
               }
 
-              const uniqueId = `${userId}-${Date.now()}`
-              const now = new Date()
+              const uniqueId = `${userId}-${Date.now()}`;
+              const now = new Date();
 
               return {
                 id: uniqueId,
-                name: 'Slack Bot',
-                email: `${uniqueId.replace(/[^a-zA-Z0-9]/g, '')}@slack.bot`,
+                name: "Slack Bot",
+                email: `${uniqueId.replace(/[^a-zA-Z0-9]/g, "")}@slack.bot`,
                 emailVerified: false,
                 createdAt: now,
                 updatedAt: now,
-              }
+              };
             } catch (error) {
-              logger.error('Error creating Slack bot profile:', { error })
-              return null
+              logger.error("Error creating Slack bot profile:", { error });
+              return null;
             }
           },
         },
@@ -1163,22 +1268,25 @@ export const auth = betterAuth({
       ? [
           stripe({
             stripeClient,
-            stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET || '',
+            stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET || "",
             createCustomerOnSignUp: true,
             onCustomerCreate: async ({ stripeCustomer, user }) => {
-              logger.info('[onCustomerCreate] Stripe customer created', {
+              logger.info("[onCustomerCreate] Stripe customer created", {
                 stripeCustomerId: stripeCustomer.id,
                 userId: user.id,
-              })
+              });
             },
             subscription: {
               enabled: true,
               plans: getPlans(),
               authorizeReference: async ({ user, referenceId }) => {
-                return await authorizeSubscriptionReference(user.id, referenceId)
+                return await authorizeSubscriptionReference(
+                  user.id,
+                  referenceId,
+                );
               },
               getCheckoutSessionParams: async ({ plan, subscription }) => {
-                if (plan.name === 'team') {
+                if (plan.name === "team") {
                   return {
                     params: {
                       allow_promotion_codes: true,
@@ -1194,142 +1302,162 @@ export const auth = betterAuth({
                         },
                       ],
                     },
-                  }
+                  };
                 }
 
                 return {
                   params: {
                     allow_promotion_codes: true,
                   },
-                }
+                };
               },
               onSubscriptionComplete: async ({
                 subscription,
               }: {
-                event: Stripe.Event
-                stripeSubscription: Stripe.Subscription
-                subscription: any
+                event: Stripe.Event;
+                stripeSubscription: Stripe.Subscription;
+                subscription: any;
               }) => {
-                logger.info('[onSubscriptionComplete] Subscription created', {
+                logger.info("[onSubscriptionComplete] Subscription created", {
                   subscriptionId: subscription.id,
                   referenceId: subscription.referenceId,
                   plan: subscription.plan,
                   status: subscription.status,
-                })
+                });
 
                 try {
-                  await syncSubscriptionUsageLimits(subscription)
+                  await syncSubscriptionUsageLimits(subscription);
                 } catch (error) {
-                  logger.error('[onSubscriptionComplete] Failed to sync usage limits', {
-                    subscriptionId: subscription.id,
-                    referenceId: subscription.referenceId,
-                    error,
-                  })
+                  logger.error(
+                    "[onSubscriptionComplete] Failed to sync usage limits",
+                    {
+                      subscriptionId: subscription.id,
+                      referenceId: subscription.referenceId,
+                      error,
+                    },
+                  );
                 }
 
                 try {
-                  const { sendPlanWelcomeEmail } = await import('@/lib/billing')
-                  await sendPlanWelcomeEmail(subscription)
+                  const { sendPlanWelcomeEmail } = await import(
+                    "@/lib/billing"
+                  );
+                  await sendPlanWelcomeEmail(subscription);
                 } catch (error) {
-                  logger.error('[onSubscriptionComplete] Failed to send plan welcome email', {
-                    error,
-                    subscriptionId: subscription.id,
-                  })
+                  logger.error(
+                    "[onSubscriptionComplete] Failed to send plan welcome email",
+                    {
+                      error,
+                      subscriptionId: subscription.id,
+                    },
+                  );
                 }
               },
               onSubscriptionUpdate: async ({
                 subscription,
               }: {
-                event: Stripe.Event
-                subscription: any
+                event: Stripe.Event;
+                subscription: any;
               }) => {
-                logger.info('[onSubscriptionUpdate] Subscription updated', {
+                logger.info("[onSubscriptionUpdate] Subscription updated", {
                   subscriptionId: subscription.id,
                   status: subscription.status,
                   plan: subscription.plan,
-                })
+                });
 
                 try {
-                  await syncSubscriptionUsageLimits(subscription)
+                  await syncSubscriptionUsageLimits(subscription);
                 } catch (error) {
-                  logger.error('[onSubscriptionUpdate] Failed to sync usage limits', {
-                    subscriptionId: subscription.id,
-                    referenceId: subscription.referenceId,
-                    error,
-                  })
+                  logger.error(
+                    "[onSubscriptionUpdate] Failed to sync usage limits",
+                    {
+                      subscriptionId: subscription.id,
+                      referenceId: subscription.referenceId,
+                      error,
+                    },
+                  );
                 }
               },
               onSubscriptionDeleted: async ({
                 subscription,
               }: {
-                event: Stripe.Event
-                stripeSubscription: Stripe.Subscription
-                subscription: any
+                event: Stripe.Event;
+                stripeSubscription: Stripe.Subscription;
+                subscription: any;
               }) => {
-                logger.info('[onSubscriptionDeleted] Subscription deleted', {
+                logger.info("[onSubscriptionDeleted] Subscription deleted", {
                   subscriptionId: subscription.id,
                   referenceId: subscription.referenceId,
-                })
+                });
 
                 try {
-                  await syncSubscriptionUsageLimits(subscription)
+                  await syncSubscriptionUsageLimits(subscription);
 
-                  logger.info('[onSubscriptionDeleted] Reset usage limits to free tier', {
-                    subscriptionId: subscription.id,
-                    referenceId: subscription.referenceId,
-                  })
+                  logger.info(
+                    "[onSubscriptionDeleted] Reset usage limits to free tier",
+                    {
+                      subscriptionId: subscription.id,
+                      referenceId: subscription.referenceId,
+                    },
+                  );
                 } catch (error) {
-                  logger.error('[onSubscriptionDeleted] Failed to reset usage limits', {
-                    subscriptionId: subscription.id,
-                    referenceId: subscription.referenceId,
-                    error,
-                  })
+                  logger.error(
+                    "[onSubscriptionDeleted] Failed to reset usage limits",
+                    {
+                      subscriptionId: subscription.id,
+                      referenceId: subscription.referenceId,
+                      error,
+                    },
+                  );
                 }
               },
             },
             onEvent: async (event: Stripe.Event) => {
-              logger.info('[onEvent] Received Stripe webhook', {
+              logger.info("[onEvent] Received Stripe webhook", {
                 eventId: event.id,
                 eventType: event.type,
-              })
+              });
 
               try {
                 switch (event.type) {
-                  case 'invoice.payment_succeeded': {
-                    await handleInvoicePaymentSucceeded(event)
-                    break
+                  case "invoice.payment_succeeded": {
+                    await handleInvoicePaymentSucceeded(event);
+                    break;
                   }
-                  case 'invoice.payment_failed': {
-                    await handleInvoicePaymentFailed(event)
-                    break
+                  case "invoice.payment_failed": {
+                    await handleInvoicePaymentFailed(event);
+                    break;
                   }
-                  case 'invoice.finalized': {
-                    await handleInvoiceFinalized(event)
-                    break
+                  case "invoice.finalized": {
+                    await handleInvoiceFinalized(event);
+                    break;
                   }
-                  case 'customer.subscription.created': {
-                    await handleManualEnterpriseSubscription(event)
-                    break
+                  case "customer.subscription.created": {
+                    await handleManualEnterpriseSubscription(event);
+                    break;
                   }
                   default:
-                    logger.info('[onEvent] Ignoring unsupported webhook event', {
-                      eventId: event.id,
-                      eventType: event.type,
-                    })
-                    break
+                    logger.info(
+                      "[onEvent] Ignoring unsupported webhook event",
+                      {
+                        eventId: event.id,
+                        eventType: event.type,
+                      },
+                    );
+                    break;
                 }
 
-                logger.info('[onEvent] Successfully processed webhook', {
+                logger.info("[onEvent] Successfully processed webhook", {
                   eventId: event.id,
                   eventType: event.type,
-                })
+                });
               } catch (error) {
-                logger.error('[onEvent] Failed to process webhook', {
+                logger.error("[onEvent] Failed to process webhook", {
                   eventId: event.id,
                   eventType: event.type,
                   error,
-                })
-                throw error
+                });
+                throw error;
               }
             },
           }),
@@ -1338,41 +1466,48 @@ export const auth = betterAuth({
               const dbSubscriptions = await db
                 .select()
                 .from(schema.subscription)
-                .where(eq(schema.subscription.referenceId, user.id))
+                .where(eq(schema.subscription.referenceId, user.id));
 
               const hasTeamPlan = dbSubscriptions.some(
                 (sub) =>
-                  sub.status === 'active' && (sub.plan === 'team' || sub.plan === 'enterprise')
-              )
+                  sub.status === "active" &&
+                  (sub.plan === "team" || sub.plan === "enterprise"),
+              );
 
-              return hasTeamPlan
+              return hasTeamPlan;
             },
             // Set a fixed membership limit of 50, but the actual limit will be enforced in the invitation flow
             membershipLimit: 50,
             // Validate seat limits before sending invitations
-            beforeInvite: async ({ organization }: { organization: { id: string } }) => {
+            beforeInvite: async ({
+              organization,
+            }: {
+              organization: { id: string };
+            }) => {
               const subscriptions = await db
                 .select()
                 .from(schema.subscription)
                 .where(
                   and(
                     eq(schema.subscription.referenceId, organization.id),
-                    eq(schema.subscription.status, 'active')
-                  )
-                )
+                    eq(schema.subscription.status, "active"),
+                  ),
+                );
 
               const teamOrEnterpriseSubscription = subscriptions.find(
-                (sub) => sub.plan === 'team' || sub.plan === 'enterprise'
-              )
+                (sub) => sub.plan === "team" || sub.plan === "enterprise",
+              );
 
               if (!teamOrEnterpriseSubscription) {
-                throw new Error('No active team or enterprise subscription for this organization')
+                throw new Error(
+                  "No active team or enterprise subscription for this organization",
+                );
               }
 
               const members = await db
                 .select()
                 .from(schema.member)
-                .where(eq(schema.member.organizationId, organization.id))
+                .where(eq(schema.member.organizationId, organization.id));
 
               const pendingInvites = await db
                 .select()
@@ -1380,52 +1515,60 @@ export const auth = betterAuth({
                 .where(
                   and(
                     eq(schema.invitation.organizationId, organization.id),
-                    eq(schema.invitation.status, 'pending')
-                  )
-                )
+                    eq(schema.invitation.status, "pending"),
+                  ),
+                );
 
-              const totalCount = members.length + pendingInvites.length
-              const seatLimit = teamOrEnterpriseSubscription.seats || 1
+              const totalCount = members.length + pendingInvites.length;
+              const seatLimit = teamOrEnterpriseSubscription.seats || 1;
 
               if (totalCount >= seatLimit) {
-                throw new Error(`Organization has reached its seat limit of ${seatLimit}`)
+                throw new Error(
+                  `Organization has reached its seat limit of ${seatLimit}`,
+                );
               }
             },
             sendInvitationEmail: async (data: any) => {
               try {
-                const { invitation, organization, inviter } = data
+                const { invitation, organization, inviter } = data;
 
-                const inviteUrl = `${env.NEXT_PUBLIC_APP_URL}/invite/${invitation.id}`
-                const inviterName = inviter.user?.name || 'A team member'
+                const inviteUrl = `${env.NEXT_PUBLIC_APP_URL}/invite/${invitation.id}`;
+                const inviterName = inviter.user?.name || "A team member";
 
                 const html = await renderInvitationEmail(
                   inviterName,
                   organization.name,
                   inviteUrl,
-                  invitation.email
-                )
+                  invitation.email,
+                );
 
                 const result = await sendEmail({
                   to: invitation.email,
                   subject: `${inviterName} has invited you to join ${organization.name} on Sim`,
                   html,
                   from: getFromEmailAddress(),
-                  emailType: 'transactional',
-                })
+                  emailType: "transactional",
+                });
 
                 if (!result.success) {
-                  logger.error('Failed to send organization invitation email:', result.message)
+                  logger.error(
+                    "Failed to send organization invitation email:",
+                    result.message,
+                  );
                 }
               } catch (error) {
-                logger.error('Error sending invitation email', { error })
+                logger.error("Error sending invitation email", { error });
               }
             },
             organizationCreation: {
               afterCreate: async ({ organization, user }) => {
-                logger.info('[organizationCreation.afterCreate] Organization created', {
-                  organizationId: organization.id,
-                  creatorId: user.id,
-                })
+                logger.info(
+                  "[organizationCreation.afterCreate] Organization created",
+                  {
+                    organizationId: organization.id,
+                    creatorId: user.id,
+                  },
+                );
               },
             },
           }),
@@ -1433,19 +1576,19 @@ export const auth = betterAuth({
       : []),
   ],
   pages: {
-    signIn: '/login',
-    signUp: '/signup',
-    error: '/error',
-    verify: '/verify',
+    signIn: "/login",
+    signUp: "/signup",
+    error: "/error",
+    verify: "/verify",
   },
-})
+});
 
 export async function getSession() {
-  const hdrs = await headers()
+  const hdrs = await headers();
   return await auth.api.getSession({
     headers: hdrs,
-  })
+  });
 }
 
-export const signIn = auth.api.signInEmail
-export const signUp = auth.api.signUpEmail
+export const signIn = auth.api.signInEmail;
+export const signUp = auth.api.signUpEmail;

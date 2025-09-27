@@ -3,9 +3,9 @@
  * Provides clean error handling and type safety for browser storage operations
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
+import { createLogger } from "@/lib/logs/console/logger";
 
-const logger = createLogger('BrowserStorage')
+const logger = createLogger("BrowserStorage");
 
 /**
  * Safe localStorage operations with fallbacks
@@ -18,24 +18,24 @@ export class BrowserStorage {
    * @returns The stored value or default value
    */
   static getItem<T = string>(key: string, defaultValue: T): T {
-    if (typeof window === 'undefined') {
-      return defaultValue
+    if (typeof window === "undefined") {
+      return defaultValue;
     }
 
     try {
-      const item = window.localStorage.getItem(key)
+      const item = window.localStorage.getItem(key);
       if (item === null) {
-        return defaultValue
+        return defaultValue;
       }
 
       try {
-        return JSON.parse(item) as T
+        return JSON.parse(item) as T;
       } catch {
-        return item as T
+        return item as T;
       }
     } catch (error) {
-      logger.warn(`Failed to get localStorage item "${key}":`, error)
-      return defaultValue
+      logger.warn(`Failed to get localStorage item "${key}":`, error);
+      return defaultValue;
     }
   }
 
@@ -46,17 +46,18 @@ export class BrowserStorage {
    * @returns True if successful, false otherwise
    */
   static setItem<T>(key: string, value: T): boolean {
-    if (typeof window === 'undefined') {
-      return false
+    if (typeof window === "undefined") {
+      return false;
     }
 
     try {
-      const serializedValue = typeof value === 'string' ? value : JSON.stringify(value)
-      window.localStorage.setItem(key, serializedValue)
-      return true
+      const serializedValue =
+        typeof value === "string" ? value : JSON.stringify(value);
+      window.localStorage.setItem(key, serializedValue);
+      return true;
     } catch (error) {
-      logger.warn(`Failed to set localStorage item "${key}":`, error)
-      return false
+      logger.warn(`Failed to set localStorage item "${key}":`, error);
+      return false;
     }
   }
 
@@ -66,16 +67,16 @@ export class BrowserStorage {
    * @returns True if successful, false otherwise
    */
   static removeItem(key: string): boolean {
-    if (typeof window === 'undefined') {
-      return false
+    if (typeof window === "undefined") {
+      return false;
     }
 
     try {
-      window.localStorage.removeItem(key)
-      return true
+      window.localStorage.removeItem(key);
+      return true;
     } catch (error) {
-      logger.warn(`Failed to remove localStorage item "${key}":`, error)
-      return false
+      logger.warn(`Failed to remove localStorage item "${key}":`, error);
+      return false;
     }
   }
 
@@ -84,17 +85,17 @@ export class BrowserStorage {
    * @returns True if localStorage is available and accessible
    */
   static isAvailable(): boolean {
-    if (typeof window === 'undefined') {
-      return false
+    if (typeof window === "undefined") {
+      return false;
     }
 
     try {
-      const testKey = '__test_localStorage_availability__'
-      window.localStorage.setItem(testKey, 'test')
-      window.localStorage.removeItem(testKey)
-      return true
+      const testKey = "__test_localStorage_availability__";
+      window.localStorage.setItem(testKey, "test");
+      window.localStorage.removeItem(testKey);
+      return true;
     } catch {
-      return false
+      return false;
     }
   }
 }
@@ -103,14 +104,14 @@ export class BrowserStorage {
  * Constants for localStorage keys to avoid typos and provide centralized management
  */
 export const STORAGE_KEYS = {
-  LANDING_PAGE_PROMPT: 'sim_landing_page_prompt',
-} as const
+  LANDING_PAGE_PROMPT: "sim_landing_page_prompt",
+} as const;
 
 /**
  * Specialized utility for managing the landing page prompt
  */
 export class LandingPromptStorage {
-  private static readonly KEY = STORAGE_KEYS.LANDING_PAGE_PROMPT
+  private static readonly KEY = STORAGE_KEYS.LANDING_PAGE_PROMPT;
 
   /**
    * Store a prompt from the landing page
@@ -119,15 +120,15 @@ export class LandingPromptStorage {
    */
   static store(prompt: string): boolean {
     if (!prompt || prompt.trim().length === 0) {
-      return false
+      return false;
     }
 
     const data = {
       prompt: prompt.trim(),
       timestamp: Date.now(),
-    }
+    };
 
-    return BrowserStorage.setItem(LandingPromptStorage.KEY, data)
+    return BrowserStorage.setItem(LandingPromptStorage.KEY, data);
   }
 
   /**
@@ -137,22 +138,22 @@ export class LandingPromptStorage {
    */
   static consume(maxAge: number = 24 * 60 * 60 * 1000): string | null {
     const data = BrowserStorage.getItem<{
-      prompt: string
-      timestamp: number
-    } | null>(LandingPromptStorage.KEY, null)
+      prompt: string;
+      timestamp: number;
+    } | null>(LandingPromptStorage.KEY, null);
 
     if (!data || !data.prompt || !data.timestamp) {
-      return null
+      return null;
     }
 
-    const age = Date.now() - data.timestamp
+    const age = Date.now() - data.timestamp;
     if (age > maxAge) {
-      LandingPromptStorage.clear()
-      return null
+      LandingPromptStorage.clear();
+      return null;
     }
 
-    LandingPromptStorage.clear()
-    return data.prompt
+    LandingPromptStorage.clear();
+    return data.prompt;
   }
 
   /**
@@ -162,21 +163,21 @@ export class LandingPromptStorage {
    */
   static hasPrompt(maxAge: number = 24 * 60 * 60 * 1000): boolean {
     const data = BrowserStorage.getItem<{
-      prompt: string
-      timestamp: number
-    } | null>(LandingPromptStorage.KEY, null)
+      prompt: string;
+      timestamp: number;
+    } | null>(LandingPromptStorage.KEY, null);
 
     if (!data || !data.prompt || !data.timestamp) {
-      return false
+      return false;
     }
 
-    const age = Date.now() - data.timestamp
+    const age = Date.now() - data.timestamp;
     if (age > maxAge) {
-      LandingPromptStorage.clear()
-      return false
+      LandingPromptStorage.clear();
+      return false;
     }
 
-    return true
+    return true;
   }
 
   /**
@@ -184,6 +185,6 @@ export class LandingPromptStorage {
    * @returns True if successful, false otherwise
    */
   static clear(): boolean {
-    return BrowserStorage.removeItem(LandingPromptStorage.KEY)
+    return BrowserStorage.removeItem(LandingPromptStorage.KEY);
   }
 }
