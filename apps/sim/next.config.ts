@@ -59,30 +59,29 @@ const nextConfig: NextConfig = {
     optimizeCss: false,
     turbopackSourceMaps: false,
     optimizePackageImports: [],
+    esmExternals: false,
+    forceSwcTransforms: false,
+    fullySpecified: false,
   },
   webpack: (config, { isServer, dev }) => {
     // Optimize build performance and prevent hangs
     config.optimization = {
       ...config.optimization,
-      // Prevent build hangs by simplifying optimization
+      // Aggressive optimization disabling to prevent hangs
       sideEffects: false,
-      usedExports: !dev,
-      splitChunks: {
-        chunks: 'all',
-        maxInitialRequests: 25,
-        maxAsyncRequests: 25,
+      usedExports: false, // Disable tree shaking that can cause hangs
+      minimize: !dev && !process.env.DISABLE_MINIMIZE, // Allow disabling minification
+      splitChunks: dev ? false : {
+        chunks: 'async', // More conservative chunk splitting
+        maxInitialRequests: 10, // Reduced complexity
+        maxAsyncRequests: 10,
+        maxSize: 244000,
         cacheGroups: {
-          default: {
-            minChunks: 2,
-            priority: -20,
-            reuseExistingChunk: true,
-          },
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
-            priority: -10,
             chunks: 'all',
-            maxSize: 244000, // Prevent overly large chunks
+            maxSize: 244000,
           },
         },
       },

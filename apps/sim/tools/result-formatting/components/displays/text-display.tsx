@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import DOMPurify from 'isomorphic-dompurify'
 import type { TextContent } from '../../types'
 
 interface TextDisplayProps {
@@ -85,7 +86,7 @@ export function TextDisplay({ content, onAction, compact = false, className }: T
             )}
           >
             {content.format === 'html' ? (
-              <div dangerouslySetInnerHTML={{ __html: displayText }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayText) }} />
             ) : (
               <div className='whitespace-pre-wrap font-geist-sans text-gray-800 leading-relaxed dark:text-gray-200'>
                 {displayText}

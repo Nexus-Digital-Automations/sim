@@ -30,8 +30,54 @@ function checkFileExists(filePath: string): boolean {
   return existsSync(fullPath)
 }
 
+function validateCommand(command: string): boolean {
+  // Security: Only allow predefined safe commands
+  const ALLOWED_COMMAND_PREFIXES = ['npx tsc', 'npx eslint', 'npm test']
+
+  const DANGEROUS_PATTERNS = [
+    ';',
+    '&&',
+    '||',
+    '`',
+    '$(',
+    '>',
+    '<',
+    '|',
+    '&',
+    'rm ',
+    'del ',
+    'curl ',
+    'wget ',
+    'sudo ',
+    'su ',
+    'chmod ',
+    'chown ',
+  ]
+
+  // Check if command starts with allowed prefix
+  const hasAllowedPrefix = ALLOWED_COMMAND_PREFIXES.some((prefix) =>
+    command.trim().startsWith(prefix)
+  )
+
+  if (!hasAllowedPrefix) {
+    throw new Error(`Security: Command '${command}' not in allowlist`)
+  }
+
+  // Check for dangerous patterns
+  for (const pattern of DANGEROUS_PATTERNS) {
+    if (command.includes(pattern)) {
+      throw new Error(`Security: Command contains dangerous pattern '${pattern}'`)
+    }
+  }
+
+  return true
+}
+
 function runCommand(command: string): { success: boolean; output: string } {
   try {
+    // Security validation before execution
+    validateCommand(command)
+
     const output = execSync(command, { encoding: 'utf-8', stdio: 'pipe' })
     return { success: true, output }
   } catch (error: any) {

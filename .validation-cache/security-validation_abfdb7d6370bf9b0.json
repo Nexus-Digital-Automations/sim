@@ -1,0 +1,10 @@
+{
+  "criterion": "security-validation",
+  "cacheKey": "abfdb7d6370bf9b0",
+  "result": {
+    "success": true,
+    "details": "No security vulnerabilities detected"
+  },
+  "timestamp": 1758995858310,
+  "originalDuration": 90541
+}
