@@ -41,7 +41,7 @@ describe('LoopManager', () => {
       {
         id: 'starter',
         position: { x: 0, y: 0 },
-        metadata: { id: BlockType.STARTER, name: 'Start' },
+        metadata: { id: BlockType.STARTER, Name: 'Start' },
         config: { tool: BlockType.STARTER, params: {} },
         inputs: {},
         outputs: {},
@@ -50,7 +50,7 @@ describe('LoopManager', () => {
       {
         id: 'loop-1',
         position: { x: 100, y: 0 },
-        metadata: { id: BlockType.LOOP, name: 'Test Loop' },
+        metadata: { id: BlockType.LOOP, Name: 'Test Loop' },
         config: { tool: BlockType.LOOP, params: {} },
         inputs: {},
         outputs: {},
@@ -59,7 +59,7 @@ describe('LoopManager', () => {
       {
         id: 'block-1',
         position: { x: 200, y: 0 },
-        metadata: { id: BlockType.FUNCTION, name: 'Block 1' },
+        metadata: { id: BlockType.FUNCTION, Name: 'Block 1' },
         config: { tool: BlockType.FUNCTION, params: {} },
         inputs: {},
         outputs: {},
@@ -68,7 +68,7 @@ describe('LoopManager', () => {
       {
         id: 'block-2',
         position: { x: 300, y: 0 },
-        metadata: { id: BlockType.FUNCTION, name: 'Block 2' },
+        metadata: { id: BlockType.FUNCTION, Name: 'Block 2' },
         config: { tool: BlockType.FUNCTION, params: {} },
         inputs: {},
         outputs: {},
@@ -77,7 +77,7 @@ describe('LoopManager', () => {
       {
         id: 'after-loop',
         position: { x: 400, y: 0 },
-        metadata: { id: BlockType.FUNCTION, name: 'After Loop' },
+        metadata: { id: BlockType.FUNCTION, Name: 'After Loop' },
         config: { tool: BlockType.FUNCTION, params: {} },
         inputs: {},
         outputs: {},
@@ -497,7 +497,7 @@ describe('LoopManager', () => {
       workflow.blocks.push({
         id: 'error-handler',
         position: { x: 350, y: 100 },
-        metadata: { id: BlockType.FUNCTION, name: 'Error Handler' },
+        metadata: { id: BlockType.FUNCTION, Name: 'Error Handler' },
         config: { tool: BlockType.FUNCTION, params: {} },
         inputs: {},
         outputs: {},

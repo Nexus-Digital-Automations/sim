@@ -40,7 +40,7 @@ interface ProgressVisualization {
 
 interface ProgressDataPoint {
   id: string
-  name: string
+  Name: string
   status: 'pending' | 'active' | 'completed' | 'error'
   progress: number
   timestamp?: Date
@@ -310,7 +310,7 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
     // Convert milestones to data points
     const dataPoints: ProgressDataPoint[] = progress.milestones.map((milestone) => ({
       id: milestone.id,
-      name: milestone.name,
+      Name: milestone.Name,
       status: milestone.completed
         ? 'completed'
         : milestone.stateId === progress.currentStateName

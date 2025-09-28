@@ -108,7 +108,7 @@ export function calculateStreamingCost(
       error: error instanceof Error ? error.message : String(error),
     })
 
-    if (error instanceof Error && error.name === 'TokenizationError') {
+    if (error instanceof Error && error.Name === 'TokenizationError') {
       throw error
     }
 

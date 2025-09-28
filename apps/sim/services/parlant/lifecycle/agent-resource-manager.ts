@@ -58,7 +58,7 @@ export interface ResourceMetrics {
  */
 export interface ResourcePool {
   id: string
-  name: string
+  Name: string
   agentIds: string[]
   limits: ResourceLimits
   allocation: ResourceAllocation
@@ -220,7 +220,7 @@ export class AgentResourceManager extends EventEmitter {
 
     logger.info(`Resource pool created`, {
       poolId: pool.id,
-      name: pool.name,
+      Name: pool.Name,
       agentCount: pool.agentIds.length,
     })
 

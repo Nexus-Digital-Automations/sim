@@ -6,7 +6,7 @@
 // Tool call state types (from apps/sim/types/tool-call.ts)
 export interface ToolCallState {
   id: string
-  name: string
+  Name: string
   displayName?: string
   parameters?: Record<string, any>
   state:
@@ -83,7 +83,7 @@ export interface ToolDisplayConfig {
 
 // Schema for tool parameters (OpenAI function calling format)
 export interface ToolSchema {
-  name: string
+  Name: string
   description: string
   parameters?: {
     type: 'object'

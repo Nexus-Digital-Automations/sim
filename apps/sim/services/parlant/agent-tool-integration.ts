@@ -616,7 +616,7 @@ export class AgentToolIntegrationManager {
 
     // Auto-fill obvious defaults
     const defaults: Record<string, string> = {
-      method: 'GET',
+      method: 'get',
       operation: 'send',
       limit: '10',
       timeout: '30',
@@ -658,10 +658,10 @@ export class AgentToolIntegrationManager {
     const expertise = capabilities.toolPreferences.toolExpertise[topTool.id] || 0.5
 
     return {
-      agentRelevance: `This agent has ${expertise > 0.7 ? 'high' : expertise > 0.4 ? 'moderate' : 'limited'} experience with ${topTool.name}`,
+      agentRelevance: `This agent has ${expertise > 0.7 ? 'high' : expertise > 0.4 ? 'moderate' : 'limited'} experience with ${topTool.Name}`,
       expertiseLevel: expertise,
       successProbability: Math.min(0.9, expertise + recommendations.confidence * 0.3),
-      learningOpportunities: expertise < 0.8 ? [`Improve ${topTool.name} proficiency`] : [],
+      learningOpportunities: expertise < 0.8 ? [`Improve ${topTool.Name} proficiency`] : [],
     }
   }
 

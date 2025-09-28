@@ -206,10 +206,10 @@ export const LocalCopilotWelcome: React.FC<LocalCopilotWelcomeProps> = ({
               <Bot className='h-6 w-6 text-primary' />
             </div>
             <div className='space-y-1'>
-              <h2 className='font-semibold text-xl'>Chat with {selectedAgent.name}</h2>
+              <h2 className='font-semibold text-xl'>Chat with {selectedAgent.Name}</h2>
               <p className='text-muted-foreground text-sm'>
                 {selectedAgent.description ||
-                  `AI agent specialized for ${selectedAgent.name.toLowerCase()} tasks`}
+                  `AI agent specialized for ${selectedAgent.Name.toLowerCase()} tasks`}
               </p>
             </div>
           </div>

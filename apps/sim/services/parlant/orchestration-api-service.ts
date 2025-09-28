@@ -42,7 +42,7 @@ const logger = createLogger('OrchestrationAPI')
 // ============================================================================
 
 export interface CreateTeamRequest {
-  name: string
+  Name: string
   description: string
   agents: Array<{
     agentId: string
@@ -76,11 +76,11 @@ export interface ListTeamsResponse {
 }
 
 export interface StartProcessRequest {
-  name: string
+  Name: string
   description: string
   teamId: string
   steps: Array<{
-    name: string
+    Name: string
     description: string
     assignedAgentId: string
     inputs?: Record<string, any>
@@ -163,7 +163,7 @@ export interface RespondToInterventionResponse {
 }
 
 export interface CreateCollaborationRoomRequest {
-  name: string
+  Name: string
   type: 'process' | 'team' | 'workspace'
   processId?: string
   teamId?: string
@@ -206,12 +206,12 @@ export class OrchestrationAPIService {
 
   /**
    * Create new agent team
-   * POST /api/orchestration/teams
+   * post /api/orchestration/teams
    */
   async createTeam(request: CreateTeamRequest, auth: AuthContext): Promise<CreateTeamResponse> {
     try {
       logger.info('API: Creating agent team', {
-        name: request.name,
+        Name: request.Name,
         agentCount: request.agents.length,
         userId: auth.user_id,
       })
@@ -222,7 +222,7 @@ export class OrchestrationAPIService {
       // Create team through orchestration service
       const team = await multiAgentOrchestrationService.createAgentTeam(
         {
-          name: request.name,
+          Name: request.Name,
           description: request.description,
           workspaceId: auth.workspace_id!,
           agents: request.agents,
@@ -234,7 +234,7 @@ export class OrchestrationAPIService {
       // Create collaboration room for team
       await orchestrationCollaborationHub.createCollaborationRoom(
         {
-          name: `Team: ${team.name}`,
+          Name: `Team: ${team.Name}`,
           type: 'team',
           workspaceId: team.workspaceId,
           teamId: team.id,
@@ -256,7 +256,7 @@ export class OrchestrationAPIService {
 
       logger.info('API: Agent team created successfully', {
         teamId: team.id,
-        name: team.name,
+        Name: team.Name,
       })
 
       return {
@@ -272,7 +272,7 @@ export class OrchestrationAPIService {
 
   /**
    * Get agent team details
-   * GET /api/orchestration/teams/:teamId
+   * get /api/orchestration/teams/:teamId
    */
   async getTeam(teamId: string, auth: AuthContext): Promise<CreateTeamResponse> {
     try {
@@ -291,7 +291,7 @@ export class OrchestrationAPIService {
 
   /**
    * List agent teams
-   * GET /api/orchestration/teams
+   * get /api/orchestration/teams
    */
   async listTeams(request: ListTeamsRequest, auth: AuthContext): Promise<ListTeamsResponse> {
     try {
@@ -327,8 +327,8 @@ export class OrchestrationAPIService {
       const team = await multiAgentOrchestrationService.getAgentTeam(teamId, auth)
 
       // Apply updates (simplified implementation - full update logic would be more complex)
-      if (updates.name) {
-        team.name = updates.name
+      if (updates.Name) {
+        team.Name = updates.Name
       }
       if (updates.description) {
         team.description = updates.description
@@ -353,7 +353,7 @@ export class OrchestrationAPIService {
 
   /**
    * Start orchestration process
-   * POST /api/orchestration/processes
+   * post /api/orchestration/processes
    */
   async startProcess(
     request: StartProcessRequest,
@@ -361,7 +361,7 @@ export class OrchestrationAPIService {
   ): Promise<StartProcessResponse> {
     try {
       logger.info('API: Starting orchestration process', {
-        name: request.name,
+        Name: request.Name,
         teamId: request.teamId,
         stepCount: request.steps.length,
         userId: auth.user_id,
@@ -373,7 +373,7 @@ export class OrchestrationAPIService {
       // Start process through orchestration service
       const process = await multiAgentOrchestrationService.startOrchestrationProcess(
         {
-          name: request.name,
+          Name: request.Name,
           description: request.description,
           teamId: request.teamId,
           steps: request.steps,
@@ -386,7 +386,7 @@ export class OrchestrationAPIService {
       const team = await multiAgentOrchestrationService.getAgentTeam(request.teamId, auth)
       await orchestrationCollaborationHub.createCollaborationRoom(
         {
-          name: `Process: ${process.name}`,
+          Name: `Process: ${process.Name}`,
           type: 'process',
           workspaceId: process.workspaceId,
           processId: process.id,
@@ -409,7 +409,7 @@ export class OrchestrationAPIService {
 
       logger.info('API: Orchestration process started successfully', {
         processId: process.id,
-        name: process.name,
+        Name: process.Name,
       })
 
       return {
@@ -425,7 +425,7 @@ export class OrchestrationAPIService {
 
   /**
    * Get orchestration process details
-   * GET /api/orchestration/processes/:processId
+   * get /api/orchestration/processes/:processId
    */
   async getProcess(processId: string, auth: AuthContext): Promise<StartProcessResponse> {
     try {
@@ -444,7 +444,7 @@ export class OrchestrationAPIService {
 
   /**
    * List orchestration processes
-   * GET /api/orchestration/processes
+   * get /api/orchestration/processes
    */
   async listProcesses(
     request: ListProcessesRequest,
@@ -474,7 +474,7 @@ export class OrchestrationAPIService {
 
   /**
    * Initiate agent handoff
-   * POST /api/orchestration/processes/:processId/handoffs
+   * post /api/orchestration/processes/:processId/handoffs
    */
   async initiateHandoff(
     processId: string,
@@ -528,7 +528,7 @@ export class OrchestrationAPIService {
 
   /**
    * Request human intervention
-   * POST /api/orchestration/processes/:processId/interventions
+   * post /api/orchestration/processes/:processId/interventions
    */
   async requestIntervention(
     processId: string,
@@ -625,7 +625,7 @@ export class OrchestrationAPIService {
 
   /**
    * Create collaboration room
-   * POST /api/orchestration/collaboration/rooms
+   * post /api/orchestration/collaboration/rooms
    */
   async createCollaborationRoom(
     request: CreateCollaborationRoomRequest,
@@ -633,7 +633,7 @@ export class OrchestrationAPIService {
   ): Promise<CreateCollaborationRoomResponse> {
     try {
       logger.info('API: Creating collaboration room', {
-        name: request.name,
+        Name: request.Name,
         type: request.type,
         participantCount: request.participants.length,
         userId: auth.user_id,
@@ -645,7 +645,7 @@ export class OrchestrationAPIService {
       // Create room through collaboration hub
       const room = await orchestrationCollaborationHub.createCollaborationRoom(
         {
-          name: request.name,
+          Name: request.Name,
           type: request.type,
           workspaceId: auth.workspace_id!,
           processId: request.processId,
@@ -657,7 +657,7 @@ export class OrchestrationAPIService {
 
       logger.info('API: Collaboration room created successfully', {
         roomId: room.id,
-        name: room.name,
+        Name: room.Name,
       })
 
       return {
@@ -673,7 +673,7 @@ export class OrchestrationAPIService {
 
   /**
    * Send agent communication
-   * POST /api/orchestration/processes/:processId/communications
+   * post /api/orchestration/processes/:processId/communications
    */
   async sendAgentCommunication(
     processId: string,
@@ -729,7 +729,7 @@ export class OrchestrationAPIService {
 
   /**
    * Get process metrics
-   * GET /api/orchestration/processes/:processId/metrics
+   * get /api/orchestration/processes/:processId/metrics
    */
   async getProcessMetrics(
     processId: string,
@@ -760,8 +760,8 @@ export class OrchestrationAPIService {
   // ========================================================================
 
   private validateCreateTeamRequest(request: CreateTeamRequest): void {
-    if (!request.name || request.name.trim().length === 0) {
-      throw new ParlantValidationError('Team name is required')
+    if (!request.Name || request.Name.trim().length === 0) {
+      throw new ParlantValidationError('Team Name is required')
     }
 
     if (!request.description || request.description.trim().length === 0) {
@@ -784,8 +784,8 @@ export class OrchestrationAPIService {
   }
 
   private validateStartProcessRequest(request: StartProcessRequest): void {
-    if (!request.name || request.name.trim().length === 0) {
-      throw new ParlantValidationError('Process name is required')
+    if (!request.Name || request.Name.trim().length === 0) {
+      throw new ParlantValidationError('Process Name is required')
     }
 
     if (!request.teamId) {
@@ -797,8 +797,8 @@ export class OrchestrationAPIService {
     }
 
     for (const step of request.steps) {
-      if (!step.name || !step.description || !step.assignedAgentId) {
-        throw new ParlantValidationError('Step requires name, description, and assignedAgentId')
+      if (!step.Name || !step.description || !step.assignedAgentId) {
+        throw new ParlantValidationError('Step requires Name, description, and assignedAgentId')
       }
     }
   }
@@ -850,8 +850,8 @@ export class OrchestrationAPIService {
   }
 
   private validateCreateCollaborationRoomRequest(request: CreateCollaborationRoomRequest): void {
-    if (!request.name || request.name.trim().length === 0) {
-      throw new ParlantValidationError('Room name is required')
+    if (!request.Name || request.Name.trim().length === 0) {
+      throw new ParlantValidationError('Room Name is required')
     }
 
     if (!['process', 'team', 'workspace'].includes(request.type)) {

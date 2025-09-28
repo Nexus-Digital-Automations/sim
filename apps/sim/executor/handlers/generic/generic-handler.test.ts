@@ -23,7 +23,7 @@ describe('GenericBlockHandler', () => {
 
     mockBlock = {
       id: 'generic-block-1',
-      metadata: { id: 'custom-type', name: 'Test Generic Block' },
+      metadata: { id: 'custom-type', Name: 'Test Generic Block' },
       position: { x: 40, y: 40 },
       config: { tool: 'some_custom_tool', params: { param1: 'value1' } },
       inputs: { param1: 'string' }, // Using ParamType strings
@@ -47,13 +47,13 @@ describe('GenericBlockHandler', () => {
 
     mockTool = {
       id: 'some_custom_tool',
-      name: 'Some Custom Tool',
+      Name: 'Some Custom Tool',
       description: 'Does something custom',
       version: '1.0',
       params: { param1: { type: 'string' } },
       request: {
         url: 'https://example.com/api',
-        method: 'POST',
+        method: 'post',
         headers: () => ({ 'Content-Type': 'application/json' }),
         body: (params) => params,
       },
@@ -161,7 +161,7 @@ describe('GenericBlockHandler', () => {
       mockTool = {
         ...mockTool,
         id: 'knowledge_search',
-        name: 'Knowledge Search',
+        Name: 'Knowledge Search',
       }
 
       mockGetTool.mockImplementation((toolId) => {
@@ -229,7 +229,7 @@ describe('GenericBlockHandler', () => {
       // Update to upload_chunk tool
       mockBlock.config.tool = 'knowledge_upload_chunk'
       mockTool.id = 'knowledge_upload_chunk'
-      mockTool.name = 'Knowledge Upload Chunk'
+      mockTool.Name = 'Knowledge Upload Chunk'
 
       mockGetTool.mockImplementation((toolId) => {
         if (toolId === 'knowledge_upload_chunk') {

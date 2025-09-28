@@ -48,7 +48,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
 
     mockAgent = {
       id: 'test-agent-1',
-      name: 'Test Agent',
+      Name: 'Test Agent',
       description: 'Agent for testing',
       status: 'active',
       capabilities: ['testing'],
@@ -65,7 +65,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
     const server = new Server(httpServer, {
       cors: {
         origin: '*',
-        methods: ['GET', 'POST'],
+        methods: ['get', 'post'],
       },
     })
 
@@ -135,7 +135,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'websocket-connection-establish',
-            name: 'WebSocket Connection Establishment',
+            Name: 'WebSocket Connection Establishment',
             complexity: 'simple',
             metadata: { testType: 'connection', clientId: client.id },
           } as any,
@@ -169,7 +169,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'websocket-concurrent-connections',
-            name: 'WebSocket Concurrent Connections',
+            Name: 'WebSocket Concurrent Connections',
             complexity: 'complex',
             metadata: {
               testType: 'connection',
@@ -237,7 +237,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'websocket-authentication',
-            name: 'WebSocket Connection Authentication',
+            Name: 'WebSocket Connection Authentication',
             complexity: 'medium',
             metadata: { testType: 'authentication' },
           } as any,
@@ -275,7 +275,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'websocket-disconnection',
-            name: 'WebSocket Connection Disconnection',
+            Name: 'WebSocket Connection Disconnection',
             complexity: 'simple',
             metadata: { testType: 'connection' },
           } as any,
@@ -301,7 +301,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       const testMessage: ChatMessage = {
         id: 'test-msg-1',
         content: 'Hello from sender!',
-        sender: { type: 'user', id: 'user-1', name: 'Test User' },
+        sender: { type: 'user', id: 'user-1', Name: 'Test User' },
         timestamp: new Date(),
         type: 'text',
         sessionId: 'session-1',
@@ -329,7 +329,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'message-delivery-basic',
-            name: 'Basic Message Delivery',
+            Name: 'Basic Message Delivery',
             complexity: 'medium',
             metadata: {
               testType: 'messaging',
@@ -370,7 +370,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         sender.emit('chat:send', {
           id: `burst-msg-${i}`,
           content: `Burst message ${i}`,
-          sender: { type: 'user', id: 'user-1', name: 'Test User' },
+          sender: { type: 'user', id: 'user-1', Name: 'Test User' },
           timestamp: new Date(),
           type: 'text',
           sessionId: 'session-1',
@@ -404,7 +404,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'message-delivery-burst',
-            name: 'High-Frequency Message Burst',
+            Name: 'High-Frequency Message Burst',
             complexity: 'complex',
             metadata: {
               testType: 'messaging',
@@ -436,7 +436,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       const testMessage: ChatMessage = {
         id: 'ack-test-msg',
         content: 'Message requiring acknowledgment',
-        sender: { type: 'user', id: 'user-1', name: 'Test User' },
+        sender: { type: 'user', id: 'user-1', Name: 'Test User' },
         timestamp: new Date(),
         type: 'text',
         sessionId: 'session-1',
@@ -481,7 +481,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'message-delivery-acknowledgment',
-            name: 'Message Delivery Acknowledgment',
+            Name: 'Message Delivery Acknowledgment',
             complexity: 'complex',
             metadata: { testType: 'messaging' },
           } as any,
@@ -512,7 +512,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       const testMessage: ChatMessage = {
         id: 'queued-msg-1',
         content: 'Message sent while disconnected',
-        sender: { type: 'user', id: 'user-1', name: 'Test User' },
+        sender: { type: 'user', id: 'user-1', Name: 'Test User' },
         timestamp: new Date(),
         type: 'text',
         sessionId: 'session-1',
@@ -546,7 +546,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'message-queuing',
-            name: 'Message Queuing During Disconnection',
+            Name: 'Message Queuing During Disconnection',
             complexity: 'complex',
             metadata: { testType: 'messaging' },
           } as any,
@@ -603,7 +603,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'network-interruption-handling',
-            name: 'Network Interruption Handling',
+            Name: 'Network Interruption Handling',
             complexity: 'complex',
             metadata: { testType: 'resilience' },
           } as any,
@@ -658,7 +658,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'exponential-backoff-reconnection',
-            name: 'Exponential Backoff Reconnection',
+            Name: 'Exponential Backoff Reconnection',
             complexity: 'complex',
             metadata: {
               testType: 'resilience',
@@ -712,7 +712,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'server-overload-handling',
-            name: 'Server Overload Handling',
+            Name: 'Server Overload Handling',
             complexity: 'extreme',
             metadata: {
               testType: 'resilience',
@@ -759,7 +759,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         sender.emit('chat:send', {
           id: `latency-test-${i}`,
           content: `latency-${sendTime}`,
-          sender: { type: 'user', id: 'user-1', name: 'Test User' },
+          sender: { type: 'user', id: 'user-1', Name: 'Test User' },
           timestamp: new Date(),
           type: 'text',
           sessionId: 'session-1',
@@ -793,7 +793,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'message-latency-performance',
-            name: 'Message Latency Performance',
+            Name: 'Message Latency Performance',
             complexity: 'complex',
             metadata: {
               testType: 'performance',
@@ -855,7 +855,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
             pair.sender.emit('chat:send', {
               id: `concurrent-${index}-${i}`,
               content: `Concurrent message ${i} from session ${index}`,
-              sender: { type: 'user', id: `user-${index}`, name: `User ${index}` },
+              sender: { type: 'user', id: `user-${index}`, Name: `User ${index}` },
               timestamp: new Date(),
               type: 'text',
               sessionId: sessionId,
@@ -897,7 +897,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'concurrent-messaging-performance',
-            name: 'Concurrent Messaging Performance',
+            Name: 'Concurrent Messaging Performance',
             complexity: 'extreme',
             metadata: {
               testType: 'performance',
@@ -954,7 +954,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
       workspace1Client1.emit('chat:send', {
         id: 'isolation-test-msg',
         content: 'Message from workspace 1',
-        sender: { type: 'user', id: 'user-1', name: 'User 1' },
+        sender: { type: 'user', id: 'user-1', Name: 'User 1' },
         timestamp: new Date(),
         type: 'text',
         sessionId: 'session-1',
@@ -972,7 +972,7 @@ describe('WebSocket Real-time Communication Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'workspace-message-isolation',
-            name: 'Workspace Message Isolation',
+            Name: 'Workspace Message Isolation',
             complexity: 'complex',
             metadata: { testType: 'security' },
           } as any,

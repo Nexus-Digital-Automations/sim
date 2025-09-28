@@ -27,7 +27,7 @@ const QueryParamsSchema = z.object({
   workspaceId: z.string(),
 })
 
-export async function GET(request: NextRequest) {
+export async function get(request: NextRequest) {
   const requestId = generateRequestId()
 
   try {
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
               cost: workflowExecutionLogs.cost,
               files: workflowExecutionLogs.files, // Large field - only in full mode
               createdAt: workflowExecutionLogs.createdAt,
-              workflowName: workflow.name,
+              workflowName: workflow.Name,
               workflowDescription: workflow.description,
               workflowColor: workflow.color,
               workflowFolderId: workflow.folderId,
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
               cost: workflowExecutionLogs.cost,
               files: sql<null>`NULL`, // Exclude files in basic mode
               createdAt: workflowExecutionLogs.createdAt,
-              workflowName: workflow.name,
+              workflowName: workflow.Name,
               workflowDescription: workflow.description,
               workflowColor: workflow.color,
               workflowFolderId: workflow.folderId,
@@ -157,16 +157,16 @@ export async function GET(request: NextRequest) {
         conditions = and(conditions, sql`${workflowExecutionLogs.executionId} ILIKE ${searchTerm}`)
       }
 
-      // Filter by workflow name (from advanced search input)
+      // Filter by workflow Name (from advanced search input)
       if (params.workflowName) {
         const nameTerm = `%${params.workflowName}%`
-        conditions = and(conditions, sql`${workflow.name} ILIKE ${nameTerm}`)
+        conditions = and(conditions, sql`${workflow.Name} ILIKE ${nameTerm}`)
       }
 
-      // Filter by folder name (best-effort text match when present on workflows)
+      // Filter by folder Name (best-effort text match when present on workflows)
       if (params.folderName) {
         const folderTerm = `%${params.folderName}%`
-        conditions = and(conditions, sql`${workflow.name} ILIKE ${folderTerm}`)
+        conditions = and(conditions, sql`${workflow.Name} ILIKE ${folderTerm}`)
       }
 
       // Execute the query using the optimized join
@@ -213,7 +213,7 @@ export async function GET(request: NextRequest) {
 
           return {
             id: block.id,
-            name: `Block ${block.blockName || block.blockType} (${block.blockType})`,
+            Name: `Block ${block.blockName || block.blockType} (${block.blockType})`,
             type: block.blockType,
             duration: block.durationMs,
             startTime: block.startedAt,
@@ -308,7 +308,7 @@ export async function GET(request: NextRequest) {
 
         const workflowSummary = {
           id: log.workflowId,
-          name: log.workflowName,
+          Name: log.workflowName,
           description: log.workflowDescription,
           color: log.workflowColor,
           folderId: log.workflowFolderId,

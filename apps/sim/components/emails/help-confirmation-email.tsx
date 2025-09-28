@@ -61,7 +61,7 @@ export const HelpConfirmationEmail = ({
                 <Img
                   src={brand.logoUrl || `${baseUrl}/logo/reverse/text/medium.png`}
                   width='114'
-                  alt={brand.name}
+                  alt={brand.Name}
                   style={{
                     margin: '0 auto',
                   }}
@@ -109,7 +109,7 @@ export const HelpConfirmationEmail = ({
             <Text style={baseStyles.paragraph}>
               Best regards,
               <br />
-              The {brand.name} Team
+              The {brand.Name} Team
             </Text>
 
             <Text

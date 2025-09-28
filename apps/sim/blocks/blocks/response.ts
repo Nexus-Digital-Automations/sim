@@ -1,17 +1,17 @@
-import { ResponseIcon } from '@/components/icons'
+import { RESPONSE_ICON } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { ResponseBlockOutput } from '@/tools/response/types'
 
 export const ResponseBlock: BlockConfig<ResponseBlockOutput> = {
   type: 'response',
-  name: 'Response',
+  Name: 'Response',
   description: 'Send structured API response',
   longDescription:
     'Integrate Response into the workflow. Can send build or edit structured responses into a final workflow response.',
   docsLink: 'https://docs.sim.ai/blocks/response',
   category: 'blocks',
   bgColor: '#2F55FF',
-  icon: ResponseIcon,
+  icon: RESPONSE_ICON,
   subBlocks: [
     {
       id: 'dataMode',
@@ -32,7 +32,7 @@ export const ResponseBlock: BlockConfig<ResponseBlockOutput> = {
       layout: 'full',
       condition: { field: 'dataMode', value: 'structured' },
       description:
-        'Define the structure of your response data. Use <variable.name> in field names to reference workflow variables.',
+        'Define the structure of your response data. Use <variable.Name> in field NAMES to reference workflow variables.',
     },
     {
       id: 'data',
@@ -43,7 +43,7 @@ export const ResponseBlock: BlockConfig<ResponseBlockOutput> = {
       language: 'json',
       condition: { field: 'dataMode', value: 'json' },
       description:
-        'Data that will be sent as the response body on API calls. Use <variable.name> to reference workflow variables.',
+        'Data that will be sent as the response body on API calls. Use <variable.Name> to reference workflow variables.',
       wandConfig: {
         enabled: true,
         maintainHistory: true,
@@ -56,12 +56,12 @@ Current response: {context}
 Do not include any explanations, markdown formatting, or other text outside the JSON object.
 
 You have access to the following variables you can use to generate the JSON body:
-- 'params' (object): Contains input parameters derived from the JSON schema. Access these directly using the parameter name wrapped in angle brackets, e.g., '<paramName>'. Do NOT use 'params.paramName'.
+- 'params' (object): Contains input parameters derived from the JSON schema. Access these directly using the parameter Name wrapped in angle brackets, e.g., '<paramName>'. Do NOT use 'params.paramName'.
 - 'environmentVariables' (object): Contains environment variables. Reference these using the double curly brace syntax: '{{ENV_VAR_NAME}}'. Do NOT use 'environmentVariables.VAR_NAME' or env.
 
 Example:
 {
-  "name": "<block.agent.response.content>",
+  "Name": "<block.agent.response.content>",
   "age": <block.function.output.age>,
   "success": true
 }`,

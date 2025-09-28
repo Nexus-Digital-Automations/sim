@@ -34,7 +34,7 @@ describe('getFromEmailAddress', () => {
     expect(result).toBe('Sim <noreply@sim.ai>')
   })
 
-  it('should return simple email format when FROM_EMAIL_ADDRESS is set without display name', async () => {
+  it('should return simple email format when FROM_EMAIL_ADDRESS is set without display Name', async () => {
     vi.doMock('@/lib/env', () => ({
       env: {
         FROM_EMAIL_ADDRESS: 'noreply@sim.ai',

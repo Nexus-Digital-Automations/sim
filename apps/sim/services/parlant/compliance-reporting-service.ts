@@ -754,7 +754,7 @@ export class ComplianceReportingService {
     return [
       {
         policy_id: 'policy_001',
-        name: 'PII Protection',
+        Name: 'PII Protection',
         violations_prevented: 25,
         false_positives: 2,
         effectiveness_score: 92,

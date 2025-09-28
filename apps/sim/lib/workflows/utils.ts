@@ -16,7 +16,7 @@ export async function getWorkflowById(id: string) {
       userId: workflowTable.userId,
       workspaceId: workflowTable.workspaceId,
       folderId: workflowTable.folderId,
-      name: workflowTable.name,
+      Name: workflowTable.Name,
       description: workflowTable.description,
       color: workflowTable.color,
       lastSynced: workflowTable.lastSynced,
@@ -33,7 +33,7 @@ export async function getWorkflowById(id: string) {
       marketplaceData: workflowTable.marketplaceData,
       pinnedApiKey: {
         id: apiKey.id,
-        name: apiKey.name,
+        Name: apiKey.Name,
         key: apiKey.key,
         type: apiKey.type,
         workspaceId: apiKey.workspaceId,
@@ -62,7 +62,7 @@ export async function updateWorkflowRunCounts(workflowId: string, runs = 1) {
     if (origin) {
       // Use absolute URL with origin
       const response = await fetch(`${origin}/api/workflows/${workflowId}/stats?runs=${runs}`, {
-        method: 'POST',
+        method: 'post',
       })
 
       if (!response.ok) {
@@ -366,8 +366,8 @@ export function hasWorkflowChanged(
   return false
 }
 
-export function stripCustomToolPrefix(name: string) {
-  return name.startsWith('custom_') ? name.replace('custom_', '') : name
+export function stripCustomToolPrefix(Name: string) {
+  return Name.startsWith('custom_') ? Name.replace('custom_', '') : Name
 }
 
 export const workflowHasResponseBlock = (executionResult: ExecutionResult): boolean => {

@@ -281,7 +281,7 @@ export function ChatCommandSuggestions({
                 <ul className='list-inside list-disc space-y-0.5'>
                   <li>Commands are case-insensitive</li>
                   <li>Use natural language - the system will understand</li>
-                  <li>Block names can be partial matches</li>
+                  <li>Block NAMES can be partial matches</li>
                 </ul>
               </div>
             </div>

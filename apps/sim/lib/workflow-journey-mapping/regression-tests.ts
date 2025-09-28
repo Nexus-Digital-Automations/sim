@@ -33,7 +33,7 @@ export interface RegressionTestSuite {
 }
 
 export interface WorkflowTestScenario {
-  name: string
+  Name: string
   description: string
   workflow: WorkflowState
   expectedBehavior: any
@@ -180,7 +180,7 @@ export class WorkflowRegressionTestRunner {
       await this.runTest('Block Property Modification', async () => {
         for (const [blockId, block] of Object.entries(workflow.blocks)) {
           // Ensure all properties that can be modified are present
-          const requiredProps = ['enabled', 'name', 'position']
+          const requiredProps = ['enabled', 'Name', 'position']
           for (const prop of requiredProps) {
             if (!(prop in block)) {
               throw new Error(`Block ${blockId} missing required property: ${prop}`)
@@ -192,8 +192,8 @@ export class WorkflowRegressionTestRunner {
             throw new Error(`Block ${blockId} enabled property is not boolean`)
           }
 
-          if (typeof block.name !== 'string' || block.name.length === 0) {
-            throw new Error(`Block ${blockId} name is not a valid string`)
+          if (typeof block.Name !== 'string' || block.Name.length === 0) {
+            throw new Error(`Block ${blockId} Name is not a valid string`)
           }
         }
 
@@ -621,8 +621,8 @@ export class WorkflowRegressionTestRunner {
             throw new Error(`Block ${blockId} type changed in clone`)
           }
 
-          if (original.name !== clonedBlock.name) {
-            throw new Error(`Block ${blockId} name changed in clone`)
+          if (original.Name !== clonedBlock.Name) {
+            throw new Error(`Block ${blockId} Name changed in clone`)
           }
         }
 

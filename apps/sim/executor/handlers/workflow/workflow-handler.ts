@@ -56,7 +56,7 @@ export class WorkflowBlockHandler implements BlockHandler {
       // Get workflow metadata for logging
       const { workflows } = useWorkflowRegistry.getState()
       const workflowMetadata = workflows[workflowId]
-      const childWorkflowName = workflowMetadata?.name || childWorkflow.name || 'Unknown Workflow'
+      const childWorkflowName = workflowMetadata?.Name || childWorkflow.Name || 'Unknown Workflow'
 
       logger.info(
         `Executing child workflow: ${childWorkflowName} (${workflowId}) at depth ${currentDepth}`
@@ -108,7 +108,7 @@ export class WorkflowBlockHandler implements BlockHandler {
         const errorWithSpans = new Error(
           `Error in child workflow "${childWorkflowName}": ${childError}`
         ) as any
-        // Attach trace spans and name for higher-level logging to consume
+        // Attach trace spans and Name for higher-level logging to consume
         errorWithSpans.childTraceSpans = childTraceSpans
         errorWithSpans.childWorkflowName = childWorkflowName
         throw errorWithSpans
@@ -120,7 +120,7 @@ export class WorkflowBlockHandler implements BlockHandler {
 
       const { workflows } = useWorkflowRegistry.getState()
       const workflowMetadata = workflows[workflowId]
-      const childWorkflowName = workflowMetadata?.name || workflowId
+      const childWorkflowName = workflowMetadata?.Name || workflowId
 
       const originalError = error.message || 'Unknown error'
       if (originalError.startsWith('Error in child workflow')) {
@@ -163,7 +163,7 @@ export class WorkflowBlockHandler implements BlockHandler {
         return null
       }
 
-      logger.info(`Loaded child workflow: ${workflowData.name} (${workflowId})`)
+      logger.info(`Loaded child workflow: ${workflowData.Name} (${workflowId})`)
       const workflowState = workflowData.state
 
       if (!workflowState || !workflowState.blocks) {
@@ -189,7 +189,7 @@ export class WorkflowBlockHandler implements BlockHandler {
       }
 
       return {
-        name: workflowData.name,
+        Name: workflowData.Name,
         serializedState: serializedWorkflow,
         variables: workflowVariables,
       }
@@ -235,7 +235,7 @@ export class WorkflowBlockHandler implements BlockHandler {
   private transformSpanForChildWorkflow(span: any, childWorkflowName: string): any {
     const transformedSpan = {
       ...span,
-      name: this.cleanChildSpanName(span.name, childWorkflowName),
+      Name: this.cleanChildSpanName(span.Name, childWorkflowName),
       metadata: {
         ...span.metadata,
         isFromChildWorkflow: true,
@@ -260,7 +260,7 @@ export class WorkflowBlockHandler implements BlockHandler {
   }
 
   /**
-   * Cleans up child span names for readability
+   * Cleans up child span NAMES for readability
    */
   private cleanChildSpanName(spanName: string, childWorkflowName: string): string {
     if (spanName.includes(`${childWorkflowName}:`)) {

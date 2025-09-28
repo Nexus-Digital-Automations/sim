@@ -16,7 +16,7 @@ const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
 const mockAgents: Agent[] = [
   {
     id: 'agent-1',
-    name: 'Customer Support Agent',
+    Name: 'Customer Support Agent',
     description: 'Helps with customer inquiries and support tickets',
     workspace_id: 'workspace-1',
     user_id: 'user-1',
@@ -37,7 +37,7 @@ const mockAgents: Agent[] = [
   },
   {
     id: 'agent-2',
-    name: 'Sales Assistant',
+    Name: 'Sales Assistant',
     description: 'Assists with sales inquiries and lead qualification',
     workspace_id: 'workspace-1',
     user_id: 'user-1',
@@ -58,7 +58,7 @@ const mockAgents: Agent[] = [
   },
   {
     id: 'agent-3',
-    name: 'Technical Support',
+    Name: 'Technical Support',
     description: 'Provides technical assistance and troubleshooting',
     workspace_id: 'workspace-1',
     user_id: 'user-1',
@@ -188,10 +188,10 @@ describe('AgentSelectionInterface', () => {
     })
 
     // Find search input and type
-    const searchInput = screen.getByPlaceholderText('Search agents by name or description...')
+    const searchInput = screen.getByPlaceholderText('Search agents by Name or description...')
     fireEvent.change(searchInput, { target: { value: 'support' } })
 
-    // Should filter to show only agents with "support" in name/description
+    // Should filter to show only agents with "support" in Name/description
     await waitFor(() => {
       expect(screen.getByText('Customer Support Agent')).toBeInTheDocument()
       expect(screen.getByText('Technical Support')).toBeInTheDocument()
@@ -207,7 +207,7 @@ describe('AgentSelectionInterface', () => {
     })
 
     // Find status filter dropdown
-    const statusFilter = screen.getByRole('combobox', { name: /status/i })
+    const statusFilter = screen.getByRole('combobox', { Name: /status/i })
     fireEvent.click(statusFilter)
 
     // Select "Training" status

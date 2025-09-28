@@ -20,7 +20,7 @@
  *
  * // Create an agent
  * const agent = await agentService.createAgent({
- *   name: 'Customer Support Agent',
+ *   Name: 'Customer Support Agent',
  *   workspace_id: 'workspace-123',
  *   guidelines: [...]
  * }, authContext)
@@ -379,7 +379,7 @@ export const parlantUtils = {
    * Create a simple agent with default configuration
    */
   async createSimpleAgent(
-    name: string,
+    Name: string,
     workspaceId: string,
     auth: AuthContext,
     options?: {
@@ -390,7 +390,7 @@ export const parlantUtils = {
   ) {
     return agentService.createAgent(
       {
-        name,
+        Name,
         description: options?.description,
         workspace_id: workspaceId,
         config: {
@@ -502,7 +502,7 @@ export const parlantUtils = {
    * Upload files to knowledge base with RAG optimization
    */
   async uploadKnowledgeFiles(
-    files: Array<{ name: string; content: string | Buffer; mimeType: string; size: number }>,
+    files: Array<{ Name: string; content: string | Buffer; mimeType: string; size: number }>,
     knowledgeBaseId: string,
     auth: AuthContext
   ) {
@@ -618,7 +618,7 @@ export const parlantUtils = {
    * Create policy with standard configuration
    */
   async createStandardPolicy(
-    name: string,
+    Name: string,
     category: 'data_governance' | 'content_filtering' | 'security' | 'compliance',
     workspaceId: string,
     auth: AuthContext,
@@ -630,7 +630,7 @@ export const parlantUtils = {
   ) {
     const policyData = {
       workspace_id: workspaceId,
-      name,
+      Name,
       description: options?.description || `Standard ${category} policy`,
       category,
       type: 'mandatory' as const,

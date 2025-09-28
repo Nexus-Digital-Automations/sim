@@ -69,7 +69,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
     testWorkspaces = [
       {
         id: 'workspace-alpha',
-        name: 'Alpha Corporation',
+        Name: 'Alpha Corporation',
         tier: 'enterprise',
         securityLevel: 'high',
         isolationPolicy: 'strict',
@@ -83,7 +83,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       },
       {
         id: 'workspace-beta',
-        name: 'Beta Industries',
+        Name: 'Beta Industries',
         tier: 'professional',
         securityLevel: 'medium',
         isolationPolicy: 'standard',
@@ -96,7 +96,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       },
       {
         id: 'workspace-gamma',
-        name: 'Gamma Startup',
+        Name: 'Gamma Startup',
         tier: 'basic',
         securityLevel: 'standard',
         isolationPolicy: 'basic',
@@ -139,19 +139,19 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       // Test cross-workspace access attempts
       const crossAccessAttempts = [
         {
-          name: 'Beta user accessing Alpha data',
+          Name: 'Beta user accessing Alpha data',
           userId: 'user-beta-1',
           targetWorkspace: 'workspace-alpha',
           shouldFail: true,
         },
         {
-          name: 'Alpha user accessing Beta data',
+          Name: 'Alpha user accessing Beta data',
           userId: 'user-alpha-2',
           targetWorkspace: 'workspace-beta',
           shouldFail: true,
         },
         {
-          name: 'Gamma user accessing Alpha data',
+          Name: 'Gamma user accessing Alpha data',
           userId: 'user-gamma-1',
           targetWorkspace: 'workspace-alpha',
           shouldFail: true,
@@ -195,7 +195,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'workspace-isolation-cross-access',
-            name: 'Cross-Workspace Data Access Prevention',
+            Name: 'Cross-Workspace Data Access Prevention',
             complexity: 'complex',
             metadata: {
               testType: 'isolation',
@@ -275,7 +275,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'workspace-encryption-enforcement',
-            name: 'Workspace-Specific Encryption Enforcement',
+            Name: 'Workspace-Specific Encryption Enforcement',
             complexity: 'complex',
             metadata: {
               testType: 'encryption',
@@ -310,19 +310,19 @@ describe('Workspace Security and Isolation Testing Suite', () => {
 
       const sessionIsolationTests = [
         {
-          name: 'Alpha session accessing Beta workspace',
+          Name: 'Alpha session accessing Beta workspace',
           sessionToken: sessions[0].token,
           targetWorkspace: 'workspace-beta',
           expectedResult: 'denied',
         },
         {
-          name: 'Beta session accessing Gamma workspace',
+          Name: 'Beta session accessing Gamma workspace',
           sessionToken: sessions[1].token,
           targetWorkspace: 'workspace-gamma',
           expectedResult: 'denied',
         },
         {
-          name: 'Alpha session accessing Alpha workspace',
+          Name: 'Alpha session accessing Alpha workspace',
           sessionToken: sessions[0].token,
           targetWorkspace: 'workspace-alpha',
           expectedResult: 'allowed',
@@ -361,7 +361,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'session-isolation-testing',
-            name: 'Session Isolation Between Workspaces',
+            Name: 'Session Isolation Between Workspaces',
             complexity: 'complex',
             metadata: {
               testType: 'session-isolation',
@@ -432,7 +432,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'configuration-leakage-prevention',
-            name: 'Workspace Configuration Leakage Prevention',
+            Name: 'Workspace Configuration Leakage Prevention',
             complexity: 'complex',
             metadata: {
               testType: 'configuration-isolation',
@@ -463,32 +463,32 @@ describe('Workspace Security and Isolation Testing Suite', () => {
 
       const authenticationTests = [
         {
-          name: 'Weak password rejection',
+          Name: 'Weak password rejection',
           credentials: { username: 'testuser', password: '123' },
           expectedResult: 'rejected',
         },
         {
-          name: 'Strong password acceptance',
+          Name: 'Strong password acceptance',
           credentials: { username: 'testuser', password: 'StrongP@ssw0rd123!' },
           expectedResult: 'accepted',
         },
         {
-          name: 'SQL injection attempt',
+          Name: 'SQL injection attempt',
           credentials: { username: "admin'; DROP TABLE users; --", password: 'password' },
           expectedResult: 'rejected',
         },
         {
-          name: 'XSS attempt in username',
+          Name: 'XSS attempt in username',
           credentials: { username: '<script>alert("xss")</script>', password: 'password' },
           expectedResult: 'rejected',
         },
         {
-          name: 'Empty credentials',
+          Name: 'Empty credentials',
           credentials: { username: '', password: '' },
           expectedResult: 'rejected',
         },
         {
-          name: 'Null credentials',
+          Name: 'Null credentials',
           credentials: { username: null, password: null },
           expectedResult: 'rejected',
         },
@@ -507,7 +507,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
             securityTestsPassed++
           } else {
             securityTestsFailed++
-            console.warn(`Security test failed: ${test.name}`)
+            console.warn(`Security test failed: ${test.Name}`)
           }
         } catch (error) {
           if (test.expectedResult === 'rejected') {
@@ -528,7 +528,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'authentication-security-enforcement',
-            name: 'Authentication Security Enforcement',
+            Name: 'Authentication Security Enforcement',
             complexity: 'complex',
             metadata: {
               testType: 'authentication-security',
@@ -623,7 +623,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'brute-force-protection',
-            name: 'Brute Force Attack Protection',
+            Name: 'Brute Force Attack Protection',
             complexity: 'complex',
             metadata: {
               testType: 'brute-force-protection',
@@ -653,32 +653,32 @@ describe('Workspace Security and Isolation Testing Suite', () => {
 
       const tokenSecurityTests = [
         {
-          name: 'Valid token acceptance',
+          Name: 'Valid token acceptance',
           token: validSession.token,
           expectedValid: true,
         },
         {
-          name: 'Expired token rejection',
+          Name: 'Expired token rejection',
           token: await testHarness.createExpiredToken('user-alpha-1'),
           expectedValid: false,
         },
         {
-          name: 'Tampered token rejection',
+          Name: 'Tampered token rejection',
           token: `${validSession.token.slice(0, -5)}XXXXX`,
           expectedValid: false,
         },
         {
-          name: 'Invalid signature rejection',
+          Name: 'Invalid signature rejection',
           token: await testHarness.createInvalidSignatureToken('user-alpha-1'),
           expectedValid: false,
         },
         {
-          name: 'Malformed token rejection',
+          Name: 'Malformed token rejection',
           token: 'this.is.not.a.valid.jwt.token',
           expectedValid: false,
         },
         {
-          name: 'Empty token rejection',
+          Name: 'Empty token rejection',
           token: '',
           expectedValid: false,
         },
@@ -697,7 +697,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
             tokenTestsPassed++
           } else {
             tokenTestsFailed++
-            console.warn(`Token security test failed: ${test.name}`)
+            console.warn(`Token security test failed: ${test.Name}`)
           }
         } catch (error) {
           if (!test.expectedValid) {
@@ -723,7 +723,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'jwt-token-security',
-            name: 'JWT Token Security Validation',
+            Name: 'JWT Token Security Validation',
             complexity: 'complex',
             metadata: {
               testType: 'token-security',
@@ -751,42 +751,42 @@ describe('Workspace Security and Isolation Testing Suite', () => {
 
       const rbacTests = [
         {
-          name: 'Admin full access',
+          Name: 'Admin full access',
           userId: 'user-alpha-1',
           workspaceId: 'workspace-alpha',
           action: 'admin',
           expectedResult: 'allowed',
         },
         {
-          name: 'Member write access',
+          Name: 'Member write access',
           userId: 'user-alpha-2',
           workspaceId: 'workspace-alpha',
           action: 'write',
           expectedResult: 'allowed',
         },
         {
-          name: 'Member admin access denied',
+          Name: 'Member admin access denied',
           userId: 'user-alpha-2',
           workspaceId: 'workspace-alpha',
           action: 'admin',
           expectedResult: 'denied',
         },
         {
-          name: 'Viewer read access',
+          Name: 'Viewer read access',
           userId: 'user-alpha-3',
           workspaceId: 'workspace-alpha',
           action: 'read',
           expectedResult: 'allowed',
         },
         {
-          name: 'Viewer write access denied',
+          Name: 'Viewer write access denied',
           userId: 'user-alpha-3',
           workspaceId: 'workspace-alpha',
           action: 'write',
           expectedResult: 'denied',
         },
         {
-          name: 'Cross-workspace access denied',
+          Name: 'Cross-workspace access denied',
           userId: 'user-alpha-1',
           workspaceId: 'workspace-beta',
           action: 'read',
@@ -811,7 +811,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
             authorizationTestsPassed++
           } else {
             authorizationTestsFailed++
-            console.warn(`RBAC test failed: ${test.name}`)
+            console.warn(`RBAC test failed: ${test.Name}`)
           }
         } catch (error) {
           if (test.expectedResult === 'denied') {
@@ -829,7 +829,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'role-based-access-control',
-            name: 'Role-Based Access Control Enforcement',
+            Name: 'Role-Based Access Control Enforcement',
             complexity: 'complex',
             metadata: {
               testType: 'rbac',
@@ -881,28 +881,28 @@ describe('Workspace Security and Isolation Testing Suite', () => {
 
       const resourcePermissionTests = [
         {
-          name: 'Owner full access to chat session',
+          Name: 'Owner full access to chat session',
           userId: 'user-alpha-1',
           resourceId: 'chat-session-1',
           action: 'delete',
           expectedResult: 'allowed',
         },
         {
-          name: 'Member write access to chat session',
+          Name: 'Member write access to chat session',
           userId: 'user-alpha-2',
           resourceId: 'chat-session-1',
           action: 'write',
           expectedResult: 'allowed',
         },
         {
-          name: 'Viewer delete access denied',
+          Name: 'Viewer delete access denied',
           userId: 'user-alpha-3',
           resourceId: 'chat-session-1',
           action: 'delete',
           expectedResult: 'denied',
         },
         {
-          name: 'Non-permitted user access denied',
+          Name: 'Non-permitted user access denied',
           userId: 'user-alpha-3',
           resourceId: 'agent-config-1',
           action: 'read',
@@ -932,7 +932,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
             resourceTestsPassed++
           } else {
             resourceTestsFailed++
-            console.warn(`Resource permission test failed: ${test.name}`)
+            console.warn(`Resource permission test failed: ${test.Name}`)
           }
         } catch (error) {
           if (test.expectedResult === 'denied') {
@@ -950,7 +950,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'resource-level-permissions',
-            name: 'Resource-Level Permission Validation',
+            Name: 'Resource-Level Permission Validation',
             complexity: 'complex',
             metadata: {
               testType: 'resource-permissions',
@@ -977,31 +977,31 @@ describe('Workspace Security and Isolation Testing Suite', () => {
 
       const injectionTests = [
         {
-          name: 'SQL Injection in message content',
+          Name: 'SQL Injection in message content',
           attack: "'; DROP TABLE messages; --",
           attackType: 'sql-injection',
           targetEndpoint: '/api/chat/send',
         },
         {
-          name: 'NoSQL Injection in user lookup',
+          Name: 'NoSQL Injection in user lookup',
           attack: { $ne: null },
           attackType: 'nosql-injection',
           targetEndpoint: '/api/users/lookup',
         },
         {
-          name: 'XSS in chat message',
+          Name: 'XSS in chat message',
           attack: '<script>document.cookie="stolen=true"</script>',
           attackType: 'xss',
           targetEndpoint: '/api/chat/send',
         },
         {
-          name: 'Command injection in file upload',
+          Name: 'Command injection in file upload',
           attack: 'test.txt; rm -rf /',
           attackType: 'command-injection',
           targetEndpoint: '/api/files/upload',
         },
         {
-          name: 'LDAP injection in user authentication',
+          Name: 'LDAP injection in user authentication',
           attack: '*)(uid=*))(|(uid=*',
           attackType: 'ldap-injection',
           targetEndpoint: '/api/auth/login',
@@ -1023,7 +1023,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
             injectionBlockedCount++
           } else {
             injectionSucceededCount++
-            console.warn(`Injection attack succeeded: ${test.name}`)
+            console.warn(`Injection attack succeeded: ${test.Name}`)
           }
         } catch (error) {
           // Errors likely indicate attack was blocked
@@ -1041,7 +1041,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'injection-attack-resistance',
-            name: 'Injection Attack Resistance',
+            Name: 'Injection Attack Resistance',
             complexity: 'extreme',
             metadata: {
               testType: 'penetration-testing',
@@ -1067,37 +1067,37 @@ describe('Workspace Security and Isolation Testing Suite', () => {
 
       const unauthorizedAccessTests = [
         {
-          name: 'Access admin endpoints without authentication',
+          Name: 'Access admin endpoints without authentication',
           endpoint: '/api/admin/workspaces',
-          method: 'GET',
+          method: 'get',
           auth: null,
           expectedStatus: 401,
         },
         {
-          name: 'Access user data with invalid token',
+          Name: 'Access user data with invalid token',
           endpoint: '/api/users/profile',
-          method: 'GET',
+          method: 'get',
           auth: { token: 'invalid-token' },
           expectedStatus: 401,
         },
         {
-          name: 'Modify workspace settings without permission',
+          Name: 'Modify workspace settings without permission',
           endpoint: '/api/workspaces/workspace-alpha/settings',
           method: 'PUT',
           auth: { token: await testHarness.createToken('user-alpha-3', 'viewer') },
           expectedStatus: 403,
         },
         {
-          name: 'Access cross-workspace data',
+          Name: 'Access cross-workspace data',
           endpoint: '/api/workspaces/workspace-beta/data',
-          method: 'GET',
+          method: 'get',
           auth: { token: await testHarness.createToken('user-alpha-1', 'admin') },
           expectedStatus: 403,
         },
         {
-          name: 'Bypass rate limiting',
+          Name: 'Bypass rate limiting',
           endpoint: '/api/chat/send',
-          method: 'POST',
+          method: 'post',
           auth: { token: await testHarness.createToken('user-alpha-1', 'admin') },
           rateLimitTest: true,
           expectedStatus: 429,
@@ -1127,7 +1127,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
             properDenials++
           } else {
             unauthorizedSuccess++
-            console.warn(`Unauthorized access succeeded: ${test.name} (status: ${response.status})`)
+            console.warn(`Unauthorized access succeeded: ${test.Name} (status: ${response.status})`)
           }
         } catch (error) {
           // Network errors likely indicate proper blocking
@@ -1145,7 +1145,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'unauthorized-api-access-prevention',
-            name: 'Unauthorized API Access Prevention',
+            Name: 'Unauthorized API Access Prevention',
             complexity: 'extreme',
             metadata: {
               testType: 'api-security',
@@ -1183,23 +1183,23 @@ describe('Workspace Security and Isolation Testing Suite', () => {
       // Simulate various attack scenarios
       const attackScenarios = [
         {
-          name: 'Concurrent modification attacks',
+          Name: 'Concurrent modification attacks',
           attack: () => testHarness.simulateConcurrentModifications(50),
         },
         {
-          name: 'Database corruption attempts',
+          Name: 'Database corruption attempts',
           attack: () => testHarness.simulateDatabaseCorruption(),
         },
         {
-          name: 'Memory exhaustion attack',
+          Name: 'Memory exhaustion attack',
           attack: () => testHarness.simulateMemoryExhaustion(),
         },
         {
-          name: 'Race condition exploitation',
+          Name: 'Race condition exploitation',
           attack: () => testHarness.simulateRaceConditions(),
         },
         {
-          name: 'Transaction rollback attacks',
+          Name: 'Transaction rollback attacks',
           attack: () => testHarness.simulateTransactionAttacks(),
         },
       ]
@@ -1222,7 +1222,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
             dataIntegrityMaintained++
           } else {
             dataCorruptionDetected++
-            console.warn(`Data corruption detected after: ${scenario.name}`)
+            console.warn(`Data corruption detected after: ${scenario.Name}`)
           }
         } catch (error) {
           // Attacks should be blocked, not cause errors
@@ -1240,7 +1240,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'data-integrity-under-attack',
-            name: 'Data Integrity Under Attack',
+            Name: 'Data Integrity Under Attack',
             complexity: 'extreme',
             metadata: {
               testType: 'data-integrity',
@@ -1308,7 +1308,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'comprehensive-audit-trails',
-            name: 'Comprehensive Audit Trail Maintenance',
+            Name: 'Comprehensive Audit Trail Maintenance',
             complexity: 'medium',
             metadata: {
               testType: 'audit-compliance',
@@ -1334,27 +1334,27 @@ describe('Workspace Security and Isolation Testing Suite', () => {
 
       const privacyComplianceTests = [
         {
-          name: 'Data anonymization',
+          Name: 'Data anonymization',
           action: () => testHarness.testDataAnonymization('user-alpha-1'),
           requiredFeature: 'anonymization',
         },
         {
-          name: 'Right to be forgotten',
+          Name: 'Right to be forgotten',
           action: () => testHarness.testDataDeletion('user-alpha-1'),
           requiredFeature: 'data-deletion',
         },
         {
-          name: 'Data portability',
+          Name: 'Data portability',
           action: () => testHarness.testDataExport('user-alpha-1'),
           requiredFeature: 'data-export',
         },
         {
-          name: 'Consent management',
+          Name: 'Consent management',
           action: () => testHarness.testConsentManagement('user-alpha-1'),
           requiredFeature: 'consent-management',
         },
         {
-          name: 'Data minimization',
+          Name: 'Data minimization',
           action: () => testHarness.testDataMinimization('workspace-alpha'),
           requiredFeature: 'data-minimization',
         },
@@ -1371,11 +1371,11 @@ describe('Workspace Security and Isolation Testing Suite', () => {
             complianceTestsPassed++
           } else {
             complianceTestsFailed++
-            console.warn(`Privacy compliance test failed: ${test.name}`)
+            console.warn(`Privacy compliance test failed: ${test.Name}`)
           }
         } catch (error) {
           complianceTestsFailed++
-          console.error(`Privacy compliance test error: ${test.name}`, error)
+          console.error(`Privacy compliance test error: ${test.Name}`, error)
         }
       }
 
@@ -1389,7 +1389,7 @@ describe('Workspace Security and Isolation Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'data-privacy-compliance',
-            name: 'Data Privacy Compliance Testing',
+            Name: 'Data Privacy Compliance Testing',
             complexity: 'complex',
             metadata: {
               testType: 'privacy-compliance',

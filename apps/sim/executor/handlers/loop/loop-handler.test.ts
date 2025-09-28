@@ -22,7 +22,7 @@ describe('LoopBlockHandler', () => {
       config: { tool: BlockType.LOOP, params: {} },
       inputs: {},
       outputs: {},
-      metadata: { id: BlockType.LOOP, name: 'Test Loop' },
+      metadata: { id: BlockType.LOOP, Name: 'Test Loop' },
       enabled: true,
     }
 

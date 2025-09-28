@@ -34,7 +34,7 @@ export function createSocketIOServer(httpServer: HttpServer): Server {
   const io = new Server(httpServer, {
     cors: {
       origin: allowedOrigins,
-      methods: ['GET', 'POST', 'OPTIONS'],
+      methods: ['get', 'post', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'socket.io'],
       credentials: true, // Enable credentials to accept cookies
     },
@@ -44,7 +44,7 @@ export function createSocketIOServer(httpServer: HttpServer): Server {
     pingInterval: 25000, // Back to original interval
     maxHttpBufferSize: 1e6,
     cookie: {
-      name: 'io',
+      Name: 'io',
       path: '/',
       httpOnly: true,
       sameSite: 'none', // Required for cross-origin cookies

@@ -36,7 +36,7 @@ export const ResetPasswordEmail = ({
     <Html>
       <Head />
       <Body style={baseStyles.main}>
-        <Preview>Reset your {brand.name} password</Preview>
+        <Preview>Reset your {brand.Name} password</Preview>
         <Container style={baseStyles.container}>
           <Section style={{ padding: '30px 0', textAlign: 'center' }}>
             <Row>
@@ -44,7 +44,7 @@ export const ResetPasswordEmail = ({
                 <Img
                   src={brand.logoUrl || `${baseUrl}/logo/reverse/text/medium.png`}
                   width='114'
-                  alt={brand.name}
+                  alt={brand.Name}
                   style={{
                     margin: '0 auto',
                   }}
@@ -64,7 +64,7 @@ export const ResetPasswordEmail = ({
           <Section style={baseStyles.content}>
             <Text style={baseStyles.paragraph}>Hello {username},</Text>
             <Text style={baseStyles.paragraph}>
-              You recently requested to reset your password for your {brand.name} account. Use the
+              You recently requested to reset your password for your {brand.Name} account. Use the
               button below to reset it. This password reset is only valid for the next 24 hours.
             </Text>
             <Link href={resetLink} style={{ textDecoration: 'none' }}>
@@ -77,7 +77,7 @@ export const ResetPasswordEmail = ({
             <Text style={baseStyles.paragraph}>
               Best regards,
               <br />
-              The {brand.name} Team
+              The {brand.Name} Team
             </Text>
             <Text
               style={{

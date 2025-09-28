@@ -1,4 +1,4 @@
-export async function GET() {
+export async function get() {
   const llmsContent = `# Sim - AI Agent Workflow Builder
 Sim is an open-source AI agent workflow builder. Developers at trail-blazing startups to Fortune 500 companies deploy agentic workflows on the Sim platform.  
 30,000+ developers are already using Sim to build and deploy AI agent workflows.  

@@ -1,17 +1,17 @@
-import { AirtableIcon } from '@/components/icons'
+import { airtableIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { AirtableResponse } from '@/tools/airtable/types'
 
 export const AirtableBlock: BlockConfig<AirtableResponse> = {
   type: 'airtable',
-  name: 'Airtable',
+  Name: 'Airtable',
   description: 'Read, create, and update Airtable',
   longDescription:
     'Integrates Airtable into the workflow. Can create, get, list, or update Airtable records. Requires OAuth. Can be used in trigger mode to trigger a workflow when an update is made to an Airtable table.',
   docsLink: 'https://docs.sim.ai/tools/airtable',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: AirtableIcon,
+  icon: airtableIcon,
   subBlocks: [
     {
       id: 'operation',

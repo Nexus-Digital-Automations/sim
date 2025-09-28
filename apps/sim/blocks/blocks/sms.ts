@@ -1,16 +1,16 @@
-import { SMSIcon } from '@/components/icons'
+import { SMSICON } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { SMSSendResult } from '@/tools/sms/types'
 
 export const SMSBlock: BlockConfig<SMSSendResult> = {
   type: 'sms',
-  name: 'SMS',
+  Name: 'SMS',
   description: 'Send SMS messages using the internal SMS service',
   longDescription:
     'Send SMS messages directly using the internal SMS service powered by Twilio. No external configuration or OAuth required. Perfect for sending notifications, alerts, or general purpose text messages from your workflows. Requires valid phone numbers with country codes.',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: SMSIcon,
+  icon: SMSICON,
 
   subBlocks: [
     {

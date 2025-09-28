@@ -128,7 +128,7 @@ export async function sendStreamingMessage(
       })
     } catch {}
     const response = await fetch('/api/copilot/chat', {
-      method: 'POST',
+      method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...requestBody, stream: true }),
       signal: abortSignal,
@@ -158,7 +158,7 @@ export async function sendStreamingMessage(
     }
   } catch (error) {
     // Handle AbortError gracefully - this is expected when user aborts
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error && error.Name === 'AbortError') {
       logger.info('Streaming message was aborted by user')
       return {
         success: false,

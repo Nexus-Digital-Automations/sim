@@ -60,7 +60,7 @@ export class KnowledgeIntegrationService {
   async getAvailableKnowledgeBases(
     workspaceId: string,
     auth: AuthContext
-  ): Promise<Array<{ id: string; name: string; description: string | null; docCount: number }>> {
+  ): Promise<Array<{ id: string; Name: string; description: string | null; docCount: number }>> {
     try {
       logger.info('Fetching available knowledge bases', { workspaceId, userId: auth.user_id })
 
@@ -73,7 +73,7 @@ export class KnowledgeIntegrationService {
 
       return knowledgeBases.map((kb) => ({
         id: kb.id,
-        name: kb.name,
+        Name: kb.Name,
         description: kb.description,
         docCount: kb.docCount,
       }))
@@ -252,7 +252,7 @@ Please provide a comprehensive answer based on the context provided above.`
    */
   async processFileUpload(
     file: {
-      name: string
+      Name: string
       content: string | Buffer
       mimeType: string
     },
@@ -267,7 +267,7 @@ Please provide a comprehensive answer based on the context provided above.`
   }> {
     try {
       logger.info('Processing file upload for knowledge base', {
-        fileName: file.name,
+        fileName: file.Name,
         knowledgeBaseId,
         mimeType: file.mimeType,
         userId: auth.user_id,
@@ -279,7 +279,7 @@ Please provide a comprehensive answer based on the context provided above.`
       // TODO: Integrate with actual document creation API
       // const documentResult = await createDocument({
       //   knowledgeBaseId,
-      //   name: file.name,
+      //   Name: file.Name,
       //   content: file.content,
       //   metadata: metadata || {}
       // }, auth)
@@ -288,17 +288,17 @@ Please provide a comprehensive answer based on the context provided above.`
 
       logger.info('File upload processed', {
         documentId,
-        fileName: file.name,
+        fileName: file.Name,
         knowledgeBaseId,
       })
 
       return {
         documentId,
         status: 'processing',
-        message: `Document '${file.name}' has been uploaded and is being processed for knowledge base integration.`,
+        message: `Document '${file.Name}' has been uploaded and is being processed for knowledge base integration.`,
       }
     } catch (error) {
-      logger.error('File upload processing failed', { error, fileName: file.name })
+      logger.error('File upload processing failed', { error, fileName: file.Name })
       throw errorHandler.handleError(error, 'process_file_upload')
     }
   }

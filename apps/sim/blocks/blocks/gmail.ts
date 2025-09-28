@@ -1,17 +1,17 @@
-import { GmailIcon } from '@/components/icons'
+import { gmailIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { GmailToolResponse } from '@/tools/gmail/types'
 
 export const GmailBlock: BlockConfig<GmailToolResponse> = {
   type: 'gmail',
-  name: 'Gmail',
+  Name: 'Gmail',
   description: 'Send Gmail or trigger workflows from Gmail events',
   longDescription:
     'Integrate Gmail into the workflow. Can send, read, and search emails. Requires OAuth. Can be used in trigger mode to trigger a workflow when a new email is received.',
   docsLink: 'https://docs.sim.ai/tools/gmail',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: GmailIcon,
+  icon: gmailIcon,
   subBlocks: [
     // Operation selector
     {
@@ -118,7 +118,7 @@ export const GmailBlock: BlockConfig<GmailToolResponse> = {
       type: 'short-input',
       layout: 'full',
       canonicalParamId: 'folder',
-      placeholder: 'Enter Gmail label name (e.g., INBOX, SENT, or custom label)',
+      placeholder: 'Enter Gmail label Name (e.g., INBOX, SENT, or custom label)',
       mode: 'advanced',
       condition: { field: 'operation', value: 'read_gmail' },
     },
@@ -224,7 +224,7 @@ export const GmailBlock: BlockConfig<GmailToolResponse> = {
     bcc: { type: 'string', description: 'BCC recipients (comma-separated)' },
     // Read operation inputs
     folder: { type: 'string', description: 'Gmail folder' },
-    manualFolder: { type: 'string', description: 'Manual folder name' },
+    manualFolder: { type: 'string', description: 'Manual folder Name' },
     messageId: { type: 'string', description: 'Message identifier' },
     unreadOnly: { type: 'boolean', description: 'Unread messages only' },
     includeAttachments: { type: 'boolean', description: 'Include email attachments' },

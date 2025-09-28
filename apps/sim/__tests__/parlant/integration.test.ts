@@ -62,7 +62,7 @@ describe('Parlant Database Integration Tests', () => {
       .insert(user)
       .values({
         id: `user-${Date.now()}`,
-        name: 'Test User',
+        Name: 'Test User',
         email: `test-${Date.now()}@example.com`,
         emailVerified: true,
         createdAt: new Date(),
@@ -74,7 +74,7 @@ describe('Parlant Database Integration Tests', () => {
       .insert(workspace)
       .values({
         id: `workspace-${Date.now()}`,
-        name: 'Test Workspace',
+        Name: 'Test Workspace',
         ownerId: userResult[0].id,
       })
       .returning({ id: workspace.id })
@@ -85,7 +85,7 @@ describe('Parlant Database Integration Tests', () => {
         id: `kb-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Test Knowledge Base',
+        Name: 'Test Knowledge Base',
         description: 'Test KB for integration tests',
       })
       .returning({ id: knowledgeBase.id })
@@ -96,7 +96,7 @@ describe('Parlant Database Integration Tests', () => {
         id: `workflow-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Test Workflow',
+        Name: 'Test Workflow',
         description: 'Test workflow for Parlant integration',
         color: '#FF0000',
         lastSynced: new Date(),
@@ -111,7 +111,7 @@ describe('Parlant Database Integration Tests', () => {
         id: `apikey-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Test API Key',
+        Name: 'Test API Key',
         key: `sk-test-${Date.now()}`,
         type: 'workspace',
         createdBy: userResult[0].id,
@@ -140,7 +140,7 @@ describe('Parlant Database Integration Tests', () => {
         id: `mcp-${Date.now()}`,
         workspaceId: workspaceResult[0].id,
         createdBy: userResult[0].id,
-        name: 'Test MCP Server',
+        Name: 'Test MCP Server',
         description: 'Test MCP server for Parlant integration',
         transport: 'http',
         url: 'http://localhost:3000',
@@ -203,7 +203,7 @@ describe('Parlant Database Integration Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Complete Integration Agent',
+          Name: 'Complete Integration Agent',
           description: 'A comprehensive test agent',
           status: 'active',
           compositionMode: 'fluid',
@@ -231,7 +231,7 @@ describe('Parlant Database Integration Tests', () => {
         .insert(parlantTool)
         .values({
           workspaceId: ctx.workspaceId,
-          name: 'integration_tool',
+          Name: 'integration_tool',
           displayName: 'Integration Test Tool',
           description: 'A tool for testing integration capabilities',
           toolType: 'custom',
@@ -325,7 +325,7 @@ describe('Parlant Database Integration Tests', () => {
       // Create glossary terms
       await db.insert(parlantTerm).values({
         agentId: ctx.agentId,
-        name: 'Integration Testing',
+        Name: 'Integration Testing',
         description: 'The practice of testing software components together',
         synonyms: ['Integration Test', 'System Integration Test'],
         category: 'testing',
@@ -365,7 +365,7 @@ describe('Parlant Database Integration Tests', () => {
         .insert(parlantJourneyState)
         .values({
           journeyId: ctx.journeyId,
-          name: 'Initial Help',
+          Name: 'Initial Help',
           stateType: 'chat',
           chatPrompt: 'How can I help you today?',
           isInitial: true,
@@ -377,7 +377,7 @@ describe('Parlant Database Integration Tests', () => {
         .insert(parlantJourneyState)
         .values({
           journeyId: ctx.journeyId,
-          name: 'Use Tool',
+          Name: 'Use Tool',
           stateType: 'tool',
           toolId: ctx.toolId,
           toolConfig: { timeout: 10000 },
@@ -389,7 +389,7 @@ describe('Parlant Database Integration Tests', () => {
         .insert(parlantJourneyState)
         .values({
           journeyId: ctx.journeyId,
-          name: 'Complete',
+          Name: 'Complete',
           stateType: 'final',
           isFinal: true,
         })
@@ -432,13 +432,13 @@ describe('Parlant Database Integration Tests', () => {
       // Verify the complete setup
       const agentDetails = await db
         .select({
-          agentName: parlantAgent.name,
+          agentName: parlantAgent.Name,
           toolCount: count(parlantAgentTool.id),
         })
         .from(parlantAgent)
         .leftJoin(parlantAgentTool, eq(parlantAgentTool.agentId, parlantAgent.id))
         .where(eq(parlantAgent.id, ctx.agentId))
-        .groupBy(parlantAgent.name)
+        .groupBy(parlantAgent.Name)
 
       expect(agentDetails[0].agentName).toBe('Complete Integration Agent')
       expect(agentDetails[0].toolCount).toBe(1)
@@ -466,7 +466,7 @@ describe('Parlant Database Integration Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Session Test Agent',
+          Name: 'Session Test Agent',
         })
         .returning()
 
@@ -488,7 +488,7 @@ describe('Parlant Database Integration Tests', () => {
         .insert(parlantJourneyState)
         .values({
           journeyId: ctx.journeyId,
-          name: 'Chat State',
+          Name: 'Chat State',
           stateType: 'chat',
           chatPrompt: 'Hello! How can I help?',
           isInitial: true,
@@ -637,7 +637,7 @@ describe('Parlant Database Integration Tests', () => {
       const sessionSummary = await db
         .select({
           sessionId: parlantSession.id,
-          agentName: parlantAgent.name,
+          agentName: parlantAgent.Name,
           eventCount: parlantSession.eventCount,
           messageCount: parlantSession.messageCount,
           actualEventCount: count(parlantEvent.id),
@@ -652,7 +652,7 @@ describe('Parlant Database Integration Tests', () => {
         .where(eq(parlantSession.id, ctx.sessionId))
         .groupBy(
           parlantSession.id,
-          parlantAgent.name,
+          parlantAgent.Name,
           parlantSession.eventCount,
           parlantSession.messageCount,
           parlantJourney.title
@@ -688,7 +688,7 @@ describe('Parlant Database Integration Tests', () => {
           {
             workspaceId: ctx.workspaceId,
             createdBy: ctx.userId,
-            name: 'Analytics Agent 1',
+            Name: 'Analytics Agent 1',
             status: 'active',
             totalSessions: 10,
             totalMessages: 100,
@@ -698,7 +698,7 @@ describe('Parlant Database Integration Tests', () => {
           {
             workspaceId: ctx.workspaceId,
             createdBy: ctx.userId,
-            name: 'Analytics Agent 2',
+            Name: 'Analytics Agent 2',
             status: 'active',
             totalSessions: 5,
             totalMessages: 50,
@@ -753,7 +753,7 @@ describe('Parlant Database Integration Tests', () => {
       const agentMetrics = await db
         .select({
           agentId: parlantAgent.id,
-          agentName: parlantAgent.name,
+          agentName: parlantAgent.Name,
           totalSessions: parlantAgent.totalSessions,
           completedSessions: count(
             sql`CASE WHEN ${parlantSession.status} = 'completed' THEN 1 END`
@@ -767,7 +767,7 @@ describe('Parlant Database Integration Tests', () => {
         .from(parlantAgent)
         .leftJoin(parlantSession, eq(parlantSession.agentId, parlantAgent.id))
         .where(eq(parlantAgent.workspaceId, ctx.workspaceId))
-        .groupBy(parlantAgent.id, parlantAgent.name, parlantAgent.totalSessions)
+        .groupBy(parlantAgent.id, parlantAgent.Name, parlantAgent.totalSessions)
         .orderBy(desc(sql`SUM(${parlantSession.cost})`))
 
       expect(agentMetrics).toHaveLength(2)
@@ -812,7 +812,7 @@ describe('Parlant Database Integration Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Journey Analytics Agent',
+          Name: 'Journey Analytics Agent',
         })
         .returning()
 
@@ -833,23 +833,23 @@ describe('Parlant Database Integration Tests', () => {
         .values([
           {
             journeyId: journey[0].id,
-            name: 'Welcome',
+            Name: 'Welcome',
             stateType: 'chat',
             isInitial: true,
           },
           {
             journeyId: journey[0].id,
-            name: 'Gather Info',
+            Name: 'Gather Info',
             stateType: 'chat',
           },
           {
             journeyId: journey[0].id,
-            name: 'Process Request',
+            Name: 'Process Request',
             stateType: 'tool',
           },
           {
             journeyId: journey[0].id,
-            name: 'Complete',
+            Name: 'Complete',
             stateType: 'final',
             isFinal: true,
           },
@@ -903,8 +903,8 @@ describe('Parlant Database Integration Tests', () => {
       const journeyAnalysis = await db
         .select({
           journeyTitle: parlantJourney.title,
-          fromStateName: sql<string>`from_state.name`,
-          toStateName: sql<string>`to_state.name`,
+          fromStateName: sql<string>`from_state.Name`,
+          toStateName: sql<string>`to_state.Name`,
           transitionCount: parlantJourneyTransition.useCount,
           transitionSuccess: sql<number>`ROUND((${parlantJourneyTransition.useCount}::float / ${parlantJourney.totalSessions}) * 100, 2)`,
           priority: parlantJourneyTransition.priority,
@@ -931,7 +931,7 @@ describe('Parlant Database Integration Tests', () => {
       // Find bottlenecks (states where users drop off)
       const bottleneckAnalysis = await db
         .select({
-          stateName: parlantJourneyState.name,
+          stateName: parlantJourneyState.Name,
           stateType: parlantJourneyState.stateType,
           incomingTransitions: sql<number>`COUNT(incoming.id)`,
           outgoingTransitions: sql<number>`COUNT(outgoing.id)`,
@@ -952,7 +952,7 @@ describe('Parlant Database Integration Tests', () => {
           sql`outgoing.from_state_id = ${parlantJourneyState.id}`
         )
         .where(eq(parlantJourneyState.journeyId, journey[0].id))
-        .groupBy(parlantJourneyState.id, parlantJourneyState.name, parlantJourneyState.stateType)
+        .groupBy(parlantJourneyState.id, parlantJourneyState.Name, parlantJourneyState.stateType)
         .orderBy(
           desc(sql`COALESCE(SUM(incoming.use_count), 0) - COALESCE(SUM(outgoing.use_count), 0)`)
         )
@@ -975,7 +975,7 @@ describe('Parlant Database Integration Tests', () => {
           .values({
             workspaceId: ctx.workspaceId,
             createdBy: ctx.userId,
-            name: 'Transaction Test Agent',
+            Name: 'Transaction Test Agent',
             status: 'active',
           })
           .returning()
@@ -985,7 +985,7 @@ describe('Parlant Database Integration Tests', () => {
           .insert(parlantTool)
           .values({
             workspaceId: ctx.workspaceId,
-            name: 'transaction_tool',
+            Name: 'transaction_tool',
             displayName: 'Transaction Test Tool',
             description: 'Tool for testing transactions',
             toolType: 'custom',
@@ -1071,7 +1071,7 @@ describe('Parlant Database Integration Tests', () => {
             .values({
               workspaceId: ctx.workspaceId,
               createdBy: ctx.userId,
-              name: 'Rollback Test Agent',
+              Name: 'Rollback Test Agent',
             })
             .returning()
 
@@ -1126,7 +1126,7 @@ describe('Parlant Database Integration Tests', () => {
         .insert(user)
         .values({
           id: `user2-${Date.now()}`,
-          name: 'Test User 2',
+          Name: 'Test User 2',
           email: `test2-${Date.now()}@example.com`,
           emailVerified: true,
           createdAt: new Date(),
@@ -1138,7 +1138,7 @@ describe('Parlant Database Integration Tests', () => {
         .insert(workspace)
         .values({
           id: `workspace2-${Date.now()}`,
-          name: 'Test Workspace 2',
+          Name: 'Test Workspace 2',
           ownerId: user2[0].id,
         })
         .returning()
@@ -1149,7 +1149,7 @@ describe('Parlant Database Integration Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Workspace 1 Agent',
+          Name: 'Workspace 1 Agent',
         })
         .returning()
 
@@ -1158,7 +1158,7 @@ describe('Parlant Database Integration Tests', () => {
         .values({
           workspaceId: workspace2[0].id,
           createdBy: user2[0].id,
-          name: 'Workspace 2 Agent',
+          Name: 'Workspace 2 Agent',
         })
         .returning()
 
@@ -1181,7 +1181,7 @@ describe('Parlant Database Integration Tests', () => {
       // Verify workspace isolation
       const workspace1Data = await db
         .select({
-          agentName: parlantAgent.name,
+          agentName: parlantAgent.Name,
           sessionTitle: parlantSession.title,
         })
         .from(parlantAgent)
@@ -1190,7 +1190,7 @@ describe('Parlant Database Integration Tests', () => {
 
       const workspace2Data = await db
         .select({
-          agentName: parlantAgent.name,
+          agentName: parlantAgent.Name,
           sessionTitle: parlantSession.title,
         })
         .from(parlantAgent)

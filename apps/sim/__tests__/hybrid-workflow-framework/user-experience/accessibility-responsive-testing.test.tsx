@@ -616,7 +616,7 @@ describe('Hybrid Workflow User Experience Testing', () => {
         showModal: true,
         modalContent: {
           title: 'Block Settings',
-          fields: ['name', 'type', 'config'],
+          fields: ['Name', 'type', 'config'],
         },
       }
 

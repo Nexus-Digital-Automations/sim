@@ -3,7 +3,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { PublicEnvScript } from 'next-runtime-env'
-import { BrandedLayout } from '@/components/branded-layout'
+import { brandedLayout } from '@/components/branded-layout'
 import { generateThemeCSS } from '@/lib/branding/inject-theme'
 import { generateBrandedMetadata, generateStructuredData } from '@/lib/branding/metadata'
 import { isHosted } from '@/lib/environment'
@@ -60,8 +60,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
 
         {/* Basic head hints that are not covered by the Metadata API */}
-        <meta name='color-scheme' content='light dark' />
-        <meta name='format-detection' content='telephone=no' />
+        <meta Name='color-scheme' content='light dark' />
+        <meta Name='format-detection' content='telephone=no' />
         <meta httpEquiv='x-ua-compatible' content='ie=edge' />
 
         <PublicEnvScript />
@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body suppressHydrationWarning>
         <ConditionalThemeProvider>
           <SessionProvider>
-            <BrandedLayout>
+            <brandedLayout>
               <ZoomPrevention />
               {children}
               {isHosted && (
@@ -78,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Analytics />
                 </>
               )}
-            </BrandedLayout>
+            </brandedLayout>
           </SessionProvider>
         </ConditionalThemeProvider>
       </body>

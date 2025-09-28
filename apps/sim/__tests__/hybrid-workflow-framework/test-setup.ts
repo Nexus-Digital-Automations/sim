@@ -99,7 +99,7 @@ global.fetch = vi.fn().mockImplementation((url: string, options?: RequestInit) =
     json: () =>
       Promise.resolve({
         success: true,
-        data: { url, method: options?.method || 'GET' },
+        data: { url, method: options?.method || 'get' },
       }),
     text: () => Promise.resolve('{"success": true}'),
     blob: () => Promise.resolve(new Blob()),
@@ -272,7 +272,7 @@ export const testUtils = {
       blocks[blockId] = {
         id: blockId,
         type: i === 0 ? 'starter' : i % 2 === 0 ? 'condition' : 'webhook',
-        name: `Test Block ${i}`,
+        Name: `Test Block ${i}`,
         position: { x: i * 200, y: 100 },
         enabled: true,
         config: { testData: `config-${i}` },
@@ -293,7 +293,7 @@ export const testUtils = {
 
     return {
       id: `test-workflow-${Date.now()}`,
-      name: `Test Workflow`,
+      Name: `Test Workflow`,
       blocks,
       edges,
       viewport: { x: 0, y: 0, zoom: 1 },

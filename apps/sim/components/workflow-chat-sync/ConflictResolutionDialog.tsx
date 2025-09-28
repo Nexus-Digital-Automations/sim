@@ -240,7 +240,7 @@ export function ConflictResolutionDialog({ open, onOpenChange }: ConflictResolut
                         >
                           <input
                             type='radio'
-                            name={`conflict-${conflict.id}`}
+                            Name={`conflict-${conflict.id}`}
                             value={resolution}
                             checked={selectedResolutions[conflict.id] === resolution}
                             onChange={() => handleResolutionChange(conflict.id, resolution)}

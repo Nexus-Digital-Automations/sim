@@ -4,7 +4,7 @@ import { vi } from 'vitest'
 export interface MockUser {
   id: string
   email: string
-  name?: string
+  Name?: string
 }
 
 export interface MockAuthResult {
@@ -64,7 +64,7 @@ export interface MockDatabaseOptions {
 }
 
 export interface CapturedFolderValues {
-  name?: string
+  Name?: string
   color?: string
   parentId?: string | null
   isExpanded?: boolean
@@ -73,7 +73,7 @@ export interface CapturedFolderValues {
 }
 
 export interface CapturedWorkflowValues {
-  name?: string
+  Name?: string
   description?: string
   color?: string
   folderId?: string | null
@@ -86,7 +86,7 @@ export const sampleWorkflowState = {
     'starter-id': {
       id: 'starter-id',
       type: 'starter',
-      name: 'Start',
+      Name: 'Start',
       position: { x: 100, y: 100 },
       subBlocks: {
         startWorkflow: { id: 'startWorkflow', type: 'dropdown', value: 'manual' },
@@ -105,7 +105,7 @@ export const sampleWorkflowState = {
     'agent-id': {
       id: 'agent-id',
       type: 'agent',
-      name: 'Agent 1',
+      Name: 'Agent 1',
       position: { x: 634, y: -167 },
       subBlocks: {
         systemPrompt: {
@@ -200,7 +200,7 @@ export const mockSubscription = {
 
 export const mockOrganization = {
   id: 'org-456',
-  name: 'Test Organization',
+  Name: 'Test Organization',
   slug: 'test-org',
 }
 
@@ -250,7 +250,7 @@ export const mockDecryptedEnvVars = {
 }
 
 export function createMockRequest(
-  method = 'GET',
+  method = 'get',
   body?: any,
   headers: Record<string, string> = {}
 ): NextRequest {
@@ -301,7 +301,7 @@ export function mockExecutionDependencies() {
         blocks: [
           {
             id: 'starter-id',
-            metadata: { id: 'starter', name: 'Start' },
+            metadata: { id: 'starter', Name: 'Start' },
             config: {},
             inputs: {},
             outputs: {},
@@ -310,7 +310,7 @@ export function mockExecutionDependencies() {
           },
           {
             id: 'agent-id',
-            metadata: { id: 'agent', name: 'Agent 1' },
+            metadata: { id: 'agent', Name: 'Agent 1' },
             config: {},
             inputs: {},
             outputs: {},
@@ -601,7 +601,7 @@ export function mockKnowledgeSchemas() {
     knowledgeBase: {
       id: 'kb_id',
       userId: 'user_id',
-      name: 'kb_name',
+      Name: 'kb_name',
       description: 'description',
       tokenCount: 'token_count',
       embeddingModel: 'embedding_model',
@@ -778,7 +778,7 @@ export function createStorageProviderMocks(options: StorageProviderMockOptions =
     uploadFile: vi.fn().mockResolvedValue({
       path: '/api/files/serve/test-key.txt',
       key: 'test-key.txt',
-      name: 'test.txt',
+      Name: 'test.txt',
       size: 100,
       type: 'text/plain',
     }),
@@ -1235,7 +1235,7 @@ export function setupFileApiMocks(
       uploadFile: vi.fn().mockResolvedValue({
         path: '/api/files/serve/test-key.txt',
         key: 'test-key.txt',
-        name: 'test.txt',
+        Name: 'test.txt',
         size: 100,
         type: 'text/plain',
       }),
@@ -1348,7 +1348,7 @@ export function mockUploadUtils(
     uploadResult = {
       path: '/api/files/serve/test-key.txt',
       key: 'test-key.txt',
-      name: 'test.txt',
+      Name: 'test.txt',
       size: 100,
       type: 'text/plain',
     },

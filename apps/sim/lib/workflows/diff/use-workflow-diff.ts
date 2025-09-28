@@ -152,7 +152,7 @@ export function useWorkflowDiff(): UseWorkflowDiffReturn {
         .find((msg) => msg.role === 'user')
 
       const response = await fetch('/api/copilot/checkpoints', {
-        method: 'POST',
+        method: 'post',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           workflowId: activeWorkflowId,

@@ -85,7 +85,7 @@ export default function ParlantConversationPage() {
 
       logger.info('Agent fetched successfully', {
         agentId: fetchedAgent.id,
-        agentName: fetchedAgent.name,
+        agentName: fetchedAgent.Name,
       })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load agent'
@@ -107,7 +107,7 @@ export default function ParlantConversationPage() {
       })
 
       const response = await fetch('/api/v1/sessions', {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -246,7 +246,7 @@ export default function ParlantConversationPage() {
               <div className='flex items-center space-x-3'>
                 <div className='flex items-center space-x-2'>
                   <Bot className='h-5 w-5 text-blue-500' />
-                  <span className='font-semibold'>{agent.name}</span>
+                  <span className='font-semibold'>{agent.Name}</span>
                 </div>
 
                 <Badge
@@ -307,7 +307,7 @@ export default function ParlantConversationPage() {
             <Card className='mx-4 w-full max-w-2xl'>
               <CardContent className='p-12 text-center'>
                 <MessageCircle className='mx-auto mb-6 h-16 w-16 text-blue-500' />
-                <h3 className='mb-4 font-semibold text-xl'>Ready to Chat with {agent.name}</h3>
+                <h3 className='mb-4 font-semibold text-xl'>Ready to Chat with {agent.Name}</h3>
                 <p className='mb-6 text-muted-foreground'>
                   {agent.description ||
                     'This agent is ready to help you with your questions and tasks.'}

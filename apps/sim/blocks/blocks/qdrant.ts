@@ -1,17 +1,17 @@
-import { QdrantIcon } from '@/components/icons'
+import { qdrantIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { QdrantResponse } from '@/tools/qdrant/types'
 
 export const QdrantBlock: BlockConfig<QdrantResponse> = {
   type: 'qdrant',
-  name: 'Qdrant',
+  Name: 'Qdrant',
   description: 'Use Qdrant vector database',
   longDescription:
     'Integrate Qdrant into the workflow. Can upsert, search, and fetch points. Requires API Key.',
   docsLink: 'https://qdrant.tech/documentation/',
   category: 'tools',
   bgColor: '#1A223F',
-  icon: QdrantIcon,
+  icon: qdrantIcon,
 
   subBlocks: [
     {
@@ -187,7 +187,7 @@ export const QdrantBlock: BlockConfig<QdrantResponse> = {
     operation: { type: 'string', description: 'Operation to perform' },
     url: { type: 'string', description: 'Qdrant server URL' },
     apiKey: { type: 'string', description: 'Qdrant API key' },
-    collection: { type: 'string', description: 'Collection name' },
+    collection: { type: 'string', description: 'Collection Name' },
     points: { type: 'json', description: 'Points to upsert' },
     vector: { type: 'json', description: 'Query vector' },
     limit: { type: 'number', description: 'Result limit' },

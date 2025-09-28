@@ -1,17 +1,17 @@
-import { WikipediaIcon } from '@/components/icons'
+import { wikipediaIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { WikipediaResponse } from '@/tools/wikipedia/types'
 
 export const WikipediaBlock: BlockConfig<WikipediaResponse> = {
   type: 'wikipedia',
-  name: 'Wikipedia',
+  Name: 'Wikipedia',
   description: 'Search and retrieve content from Wikipedia',
   longDescription:
     'Integrate Wikipedia into the workflow. Can get page summary, search pages, get page content, and get random page.',
   docsLink: 'https://docs.sim.ai/tools/wikipedia',
   category: 'tools',
   bgColor: '#000000',
-  icon: WikipediaIcon,
+  icon: wikipediaIcon,
   subBlocks: [
     {
       id: 'operation',

@@ -51,7 +51,7 @@ const TEST_CONTEXT_BASE: Partial<ConversionContext> = {
 // Test workflow definitions for different complexity levels
 const SIMPLE_LINEAR_WORKFLOW: WorkflowState = {
   id: 'simple-linear-test',
-  name: 'Simple Linear Workflow',
+  Name: 'Simple Linear Workflow',
   description: 'Basic sequential workflow for testing',
   blocks: [
     {
@@ -81,7 +81,7 @@ const SIMPLE_LINEAR_WORKFLOW: WorkflowState = {
       position: { x: 700, y: 100 },
       data: {
         label: 'Send Response',
-        method: 'POST',
+        method: 'post',
         url: '{{api_endpoint}}',
         headers: { 'Content-Type': 'application/json' },
         body: '{"result": "{{agent_output}}"}',
@@ -108,7 +108,7 @@ const SIMPLE_LINEAR_WORKFLOW: WorkflowState = {
 
 const COMPLEX_WORKFLOW_WITH_CONDITIONS: WorkflowState = {
   id: 'complex-conditional-test',
-  name: 'Complex Conditional Workflow',
+  Name: 'Complex Conditional Workflow',
   description: 'Workflow with conditions, parallels, and loops',
   blocks: [
     {
@@ -193,7 +193,7 @@ const COMPLEX_WORKFLOW_WITH_CONDITIONS: WorkflowState = {
 const TEST_PARAMETERS: Record<string, TemplateParameter> = {
   user_input: {
     id: 'user_input',
-    name: 'user_input',
+    Name: 'user_input',
     type: 'string',
     description: 'User input text',
     default_value: 'Test input',
@@ -202,7 +202,7 @@ const TEST_PARAMETERS: Record<string, TemplateParameter> = {
   },
   api_endpoint: {
     id: 'api_endpoint',
-    name: 'api_endpoint',
+    Name: 'api_endpoint',
     type: 'string',
     description: 'API endpoint URL',
     default_value: 'https://api.example.com/process',
@@ -214,7 +214,7 @@ const TEST_PARAMETERS: Record<string, TemplateParameter> = {
   },
   input_type: {
     id: 'input_type',
-    name: 'input_type',
+    Name: 'input_type',
     type: 'string',
     description: 'Priority level of input',
     default_value: 'normal',
@@ -237,7 +237,7 @@ class ConversionAccuracyValidator {
       errors.push('Missing journey in conversion result')
     } else {
       if (!result.journey.id) errors.push('Journey missing ID')
-      if (!result.journey.name) errors.push('Journey missing name')
+      if (!result.journey.Name) errors.push('Journey missing Name')
     }
 
     // Validate steps
@@ -440,7 +440,7 @@ class TestDataGenerator {
 
     return {
       id: 'comprehensive-block-test',
-      name: 'Comprehensive Block Type Test',
+      Name: 'Comprehensive Block Type Test',
       description: 'Workflow containing all supported block types',
       blocks,
       edges,
@@ -457,7 +457,7 @@ class TestDataGenerator {
         temperature: 0.7,
       },
       api: {
-        method: 'GET',
+        method: 'get',
         url: '{{api_url}}',
         headers: {},
       },
@@ -688,7 +688,7 @@ describe('Workflow to Journey Conversion Accuracy', () => {
     test('should handle empty workflows', async () => {
       const emptyWorkflow: WorkflowState = {
         id: 'empty-test',
-        name: 'Empty Workflow',
+        Name: 'Empty Workflow',
         description: 'Workflow with no blocks',
         blocks: [],
         edges: [],
@@ -712,7 +712,7 @@ describe('Workflow to Journey Conversion Accuracy', () => {
     test('should handle circular workflows', async () => {
       const circularWorkflow: WorkflowState = {
         id: 'circular-test',
-        name: 'Circular Workflow',
+        Name: 'Circular Workflow',
         description: 'Workflow with circular dependencies',
         blocks: [
           {
@@ -756,7 +756,7 @@ describe('Workflow to Journey Conversion Accuracy', () => {
     test('should handle workflows with disconnected blocks', async () => {
       const disconnectedWorkflow: WorkflowState = {
         id: 'disconnected-test',
-        name: 'Disconnected Workflow',
+        Name: 'Disconnected Workflow',
         description: 'Workflow with isolated blocks',
         blocks: [
           {
@@ -779,7 +779,7 @@ describe('Workflow to Journey Conversion Accuracy', () => {
             id: 'isolated-1',
             type: 'api',
             position: { x: 100, y: 300 },
-            data: { label: 'Isolated API', method: 'GET', url: '/test' },
+            data: { label: 'Isolated API', method: 'get', url: '/test' },
             width: 200,
             height: 100,
           },

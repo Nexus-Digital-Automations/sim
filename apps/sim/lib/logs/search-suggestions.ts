@@ -209,7 +209,7 @@ export class SearchSuggestions {
           id: 'filter-key-workflow',
           value: 'workflow:',
           label: 'Workflow',
-          description: 'Filter by workflow name',
+          description: 'Filter by workflow Name',
           category: 'filters',
         })
       }
@@ -226,7 +226,7 @@ export class SearchSuggestions {
           id: 'filter-key-folder',
           value: 'folder:',
           label: 'Folder',
-          description: 'Filter by folder name',
+          description: 'Filter by folder Name',
           category: 'filters',
         })
       }
@@ -293,7 +293,7 @@ export class SearchSuggestions {
             id: `filter-value-workflow-${workflow}`,
             value: `"${workflow}"`,
             label: workflow,
-            description: 'Workflow name',
+            description: 'Workflow Name',
             category: 'workflow',
           })
         }
@@ -311,7 +311,7 @@ export class SearchSuggestions {
             id: `filter-value-folder-${folder}`,
             value: `"${folder}"`,
             label: folder,
-            description: 'Folder name',
+            description: 'Folder Name',
             category: 'folder',
           })
         }

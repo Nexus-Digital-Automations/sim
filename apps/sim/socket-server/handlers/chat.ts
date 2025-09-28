@@ -36,7 +36,7 @@ interface ChatMessage {
     tokens?: number
     toolCalls?: Array<{
       id: string
-      name: string
+      Name: string
       parameters: any
       result?: any
     }>

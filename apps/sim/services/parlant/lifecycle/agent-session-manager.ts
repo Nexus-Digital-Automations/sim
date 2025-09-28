@@ -126,7 +126,7 @@ export class AgentSessionManager extends EventEmitter {
     this.socketServer = io(server, {
       cors: {
         origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
-        methods: ['GET', 'POST'],
+        methods: ['get', 'post'],
         credentials: true,
       },
     })
@@ -200,7 +200,7 @@ export class AgentSessionManager extends EventEmitter {
         config: agent.config || {},
         metadata: {
           ...options.customMetadata,
-          agent_name: agent.name,
+          agent_name: agent.Name,
           agent_description: agent.description,
         },
         conversationHistory: [],

@@ -55,7 +55,7 @@ export type AgentAvailabilityStatus =
  */
 export interface AgentTeam {
   id: string
-  name: string
+  Name: string
   description: string
   workspaceId: string
   members: AgentTeamMember[]
@@ -87,7 +87,7 @@ export interface AgentTeamMember {
  */
 export interface TeamWorkflow {
   id: string
-  name: string
+  Name: string
   steps: WorkflowStep[]
   handoffRules: HandoffRule[]
   escalationPath: EscalationStep[]
@@ -100,7 +100,7 @@ export interface TeamWorkflow {
  */
 export interface WorkflowStep {
   id: string
-  name: string
+  Name: string
   description: string
   assignedSpecialization: AgentSpecialization[]
   prerequisites: string[]
@@ -115,7 +115,7 @@ export interface WorkflowStep {
  */
 export interface HandoffTrigger {
   id: string
-  name: string
+  Name: string
   condition:
     | 'keyword_detected'
     | 'complexity_threshold'
@@ -221,7 +221,7 @@ export class MultiAgentCoordinator extends EventEmitter {
     auth: AuthContext
   ): Promise<AgentTeam> {
     logger.info(`Creating agent team`, {
-      name: teamConfig.name,
+      Name: teamConfig.Name,
       workspaceId: teamConfig.workspaceId,
       memberCount: teamConfig.members.length,
     })
@@ -258,7 +258,7 @@ export class MultiAgentCoordinator extends EventEmitter {
 
     logger.info(`Agent team created successfully`, {
       teamId: team.id,
-      name: team.name,
+      Name: team.Name,
       memberCount: team.members.length,
     })
 
@@ -513,7 +513,7 @@ export class MultiAgentCoordinator extends EventEmitter {
           shouldHandoff: true,
           recommendedSpecialization: trigger.targetSpecialization,
           confidence: triggerResult.confidence,
-          reason: `Auto-handoff triggered: ${trigger.name}`,
+          reason: `Auto-handoff triggered: ${trigger.Name}`,
         }
       }
     }

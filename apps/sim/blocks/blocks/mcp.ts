@@ -1,4 +1,4 @@
-import { ServerIcon } from '@/components/icons'
+import { serverIcon } from '@/components/icons'
 import { createMcpToolId } from '@/lib/mcp/utils'
 import type { BlockConfig } from '@/blocks/types'
 import type { ToolResponse } from '@/tools/types'
@@ -9,14 +9,14 @@ export interface McpResponse extends ToolResponse {
 
 export const McpBlock: BlockConfig<McpResponse> = {
   type: 'mcp',
-  name: 'MCP Tool',
+  Name: 'MCP Tool',
   description: 'Execute tools from Model Context Protocol (MCP) servers',
   longDescription:
     'Integrate MCP into the workflow. Can execute tools from MCP servers. Requires MCP servers in workspace settings.',
   docsLink: 'https://docs.sim.ai/tools/mcp',
   category: 'tools',
   bgColor: '#181C1E',
-  icon: ServerIcon,
+  icon: serverIcon,
   subBlocks: [
     {
       id: 'server',

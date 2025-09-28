@@ -1,4 +1,4 @@
-import { ConditionalIcon } from '@/components/icons'
+import { conditionalIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 
 interface ConditionBlockOutput {
@@ -17,13 +17,13 @@ interface ConditionBlockOutput {
 
 export const ConditionBlock: BlockConfig<ConditionBlockOutput> = {
   type: 'condition',
-  name: 'Condition',
+  Name: 'Condition',
   description: 'Add a condition',
   longDescription:
     'This is a core workflow block. Add a condition to the workflow to branch the execution path based on a boolean expression.',
   docsLink: 'https://docs.sim.ai/blocks/condition',
   bgColor: '#FF752F',
-  icon: ConditionalIcon,
+  icon: conditionalIcon,
   category: 'blocks',
   subBlocks: [
     {

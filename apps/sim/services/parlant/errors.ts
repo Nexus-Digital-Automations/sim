@@ -35,7 +35,7 @@ export class ParlantError extends Error {
     requestId?: string
   ) {
     super(message)
-    this.name = 'ParlantError'
+    this.Name = 'ParlantError'
     this.code = code
     this.statusCode = statusCode
     this.details = details
@@ -98,7 +98,7 @@ export class ParlantApiError extends ParlantError {
     requestId?: string
   ) {
     super(message, 'PARLANT_API_ERROR', statusCode, details, requestId)
-    this.name = 'ParlantApiError'
+    this.Name = 'ParlantApiError'
   }
 }
 
@@ -115,7 +115,7 @@ export class ParlantConnectionError extends ParlantError {
     requestId?: string
   ) {
     super(message, 'PARLANT_CONNECTION_ERROR', 503, details, requestId)
-    this.name = 'ParlantConnectionError'
+    this.Name = 'ParlantConnectionError'
     this.isRetryable = isRetryable
   }
 }
@@ -130,7 +130,7 @@ export class ParlantAuthError extends ParlantError {
     requestId?: string
   ) {
     super(message, 'PARLANT_AUTH_ERROR', 401, details, requestId)
-    this.name = 'ParlantAuthError'
+    this.Name = 'ParlantAuthError'
   }
 }
 
@@ -152,7 +152,7 @@ export class ParlantValidationError extends ParlantError {
       { validation_errors: validationErrors },
       requestId
     )
-    this.name = 'ParlantValidationError'
+    this.Name = 'ParlantValidationError'
     this.validationErrors = validationErrors
   }
 
@@ -201,7 +201,7 @@ export class ParlantRateLimitError extends ParlantError {
       },
       requestId
     )
-    this.name = 'ParlantRateLimitError'
+    this.Name = 'ParlantRateLimitError'
     this.retryAfter = retryAfter
     this.limit = limit
     this.resetAt = resetAt
@@ -216,7 +216,7 @@ export class ParlantNotFoundError extends ParlantError {
     const message = id ? `${resource} with ID '${id}' not found` : `${resource} not found`
 
     super(message, 'PARLANT_NOT_FOUND_ERROR', 404, { resource, id }, requestId)
-    this.name = 'ParlantNotFoundError'
+    this.Name = 'ParlantNotFoundError'
   }
 }
 
@@ -226,7 +226,7 @@ export class ParlantNotFoundError extends ParlantError {
 export class ParlantWorkspaceError extends ParlantError {
   constructor(message = 'Workspace access denied', workspaceId?: string, requestId?: string) {
     super(message, 'PARLANT_WORKSPACE_ERROR', 403, { workspace_id: workspaceId }, requestId)
-    this.name = 'ParlantWorkspaceError'
+    this.Name = 'ParlantWorkspaceError'
   }
 }
 
@@ -238,7 +238,7 @@ export class ParlantHealthError extends ParlantError {
 
   constructor(message = 'Parlant server unhealthy', healthStatus?: any, requestId?: string) {
     super(message, 'PARLANT_HEALTH_ERROR', 503, { health_status: healthStatus }, requestId)
-    this.name = 'ParlantHealthError'
+    this.Name = 'ParlantHealthError'
     this.healthStatus = healthStatus
   }
 }
@@ -254,7 +254,7 @@ export class ParlantTimeoutError extends ParlantConnectionError {
       true,
       requestId
     )
-    this.name = 'ParlantTimeoutError'
+    this.Name = 'ParlantTimeoutError'
   }
 }
 
@@ -264,7 +264,7 @@ export class ParlantTimeoutError extends ParlantConnectionError {
 export class ParlantConfigError extends ParlantError {
   constructor(message: string, configKey?: string, requestId?: string) {
     super(message, 'PARLANT_CONFIG_ERROR', 500, { config_key: configKey }, requestId)
-    this.name = 'ParlantConfigError'
+    this.Name = 'ParlantConfigError'
   }
 }
 
@@ -290,7 +290,7 @@ export class ParlantErrorHandler {
     }
 
     // Network errors are generally retryable
-    if (error.name === 'AxiosError' || error.message.includes('ECONNREFUSED')) {
+    if (error.Name === 'AxiosError' || error.message.includes('ECONNREFUSED')) {
       return true
     }
 
@@ -319,7 +319,7 @@ export class ParlantErrorHandler {
         error.message,
         'UNKNOWN_ERROR',
         500,
-        { original_error: error.name },
+        { original_error: error.Name },
         requestId
       )
     }

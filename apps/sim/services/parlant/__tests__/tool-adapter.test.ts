@@ -51,7 +51,7 @@ const mockAuthContext: AuthContext = {
 
 const mockToolDescription: EnhancedToolDescription = {
   id: 'test-tool',
-  name: 'Test Tool',
+  Name: 'Test Tool',
   shortDescription: 'A test tool for unit testing',
   longDescription:
     'This is a comprehensive test tool used for validating the Universal Tool Adapter System functionality.',
@@ -77,7 +77,7 @@ const mockToolDescription: EnhancedToolDescription = {
 
 const mockBlockConfig = {
   type: 'test-tool',
-  name: 'Test Tool',
+  Name: 'Test Tool',
   description: 'Test tool for validation',
   category: 'testing',
   bgColor: '#FF0000',
@@ -112,7 +112,7 @@ describe('SimToolRegistry', () => {
     const tools = registry.getAllTools()
     expect(tools).toHaveLength(1)
     expect(tools[0].id).toBe('test-tool')
-    expect(tools[0].name).toBe('Test Tool')
+    expect(tools[0].Name).toBe('Test Tool')
   })
 
   test('should retrieve tool by ID', () => {
@@ -192,7 +192,7 @@ describe('UniversalToolAdapter', () => {
     const parlantTool = adapter.adaptTool(mockBlockConfig as any)
 
     expect(parlantTool.id).toBe('test-tool')
-    expect(parlantTool.name).toBe('Test Tool')
+    expect(parlantTool.Name).toBe('Test Tool')
     expect(parlantTool.description).toContain('This is a comprehensive test tool')
     expect(parlantTool.parameters).toBeDefined()
   })
@@ -505,7 +505,7 @@ describe('AgentToolIntegrationManager', () => {
     const mockAgentService = {
       getAgent: jest.fn().mockResolvedValue({
         success: true,
-        data: { id: 'test-agent', name: 'Test Agent' },
+        data: { id: 'test-agent', Name: 'Test Agent' },
       }),
     }
 
@@ -564,7 +564,7 @@ describe('ToolRegistryInitializer', () => {
     // Test structure of tool descriptions
     const sampleTool = COMPREHENSIVE_TOOL_DESCRIPTIONS.function
     expect(sampleTool.id).toBeDefined()
-    expect(sampleTool.name).toBeDefined()
+    expect(sampleTool.Name).toBeDefined()
     expect(sampleTool.shortDescription).toBeDefined()
     expect(sampleTool.longDescription).toBeDefined()
     expect(sampleTool.usageExamples).toBeDefined()
@@ -643,7 +643,7 @@ describe('Universal Tool Adapter System - Integration Tests', () => {
       if (blockConfig) {
         const parlantTool = toolAdapter.adaptTool(blockConfig)
         expect(parlantTool.id).toBe('gmail')
-        expect(parlantTool.name).toBe('Gmail')
+        expect(parlantTool.Name).toBe('Gmail')
       }
     }
   })
@@ -724,7 +724,7 @@ describe('Error Handling', () => {
   test('should validate tool descriptions structure', () => {
     Object.entries(COMPREHENSIVE_TOOL_DESCRIPTIONS).forEach(([toolId, description]) => {
       expect(description.id).toBe(toolId)
-      expect(description.name).toBeDefined()
+      expect(description.Name).toBeDefined()
       expect(description.shortDescription).toBeDefined()
       expect(description.longDescription).toBeDefined()
       expect(description.usageExamples).toBeDefined()

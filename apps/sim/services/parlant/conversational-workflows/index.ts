@@ -88,7 +88,7 @@ export const CONVERSATIONAL_WORKFLOW_CONSTANTS = {
   // Version
   VERSION: '1.0.0',
 
-  // Event names for Socket.io
+  // Event NAMES for Socket.io
   SOCKET_EVENTS: {
     CREATE_WORKFLOW: 'create-conversational-workflow',
     PROCESS_COMMAND: 'process-nl-command',
@@ -162,7 +162,7 @@ export const CONVERSATIONAL_WORKFLOW_CONSTANTS = {
  */
 export const ConversationalWorkflowUtils = {
   /**
-   * Generate session room name for Socket.io
+   * Generate session room Name for Socket.io
    */
   getSessionRoomName(sessionId: string): string {
     return `conversational-workflow:${sessionId}`

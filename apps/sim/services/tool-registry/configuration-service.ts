@@ -26,7 +26,7 @@ export class ToolConfigurationService implements IToolConfigurationService {
       toolId: config.toolId,
       workspaceId: config.workspaceId,
       userId: config.userId,
-      name: config.name,
+      Name: config.Name,
     })
 
     try {
@@ -61,7 +61,7 @@ export class ToolConfigurationService implements IToolConfigurationService {
           toolId: config.toolId,
           workspaceId: config.workspaceId || null,
           userId: config.userId || null,
-          name: config.name,
+          Name: config.Name,
           description: config.description || null,
           configuration: JSON.stringify(config.configuration),
           environmentVariables: JSON.stringify(config.environmentVariables),
@@ -126,7 +126,7 @@ export class ToolConfigurationService implements IToolConfigurationService {
       const updateData: any = {}
 
       // Map updates to database format
-      if (updates.name !== undefined) updateData.name = updates.name
+      if (updates.Name !== undefined) updateData.Name = updates.Name
       if (updates.description !== undefined) updateData.description = updates.description
       if (updates.configuration !== undefined) {
         // Validate configuration if it's being updated
@@ -360,7 +360,7 @@ export class ToolConfigurationService implements IToolConfigurationService {
       toolId: dbConfig.toolId,
       workspaceId: dbConfig.workspaceId || undefined,
       userId: dbConfig.userId || undefined,
-      name: dbConfig.name,
+      Name: dbConfig.Name,
       description: dbConfig.description || undefined,
       configuration: JSON.parse(dbConfig.configuration as string),
       environmentVariables: JSON.parse(dbConfig.environmentVariables as string),

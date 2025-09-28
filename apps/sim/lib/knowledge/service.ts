@@ -22,7 +22,7 @@ export async function getKnowledgeBases(
   const knowledgeBasesWithCounts = await db
     .select({
       id: knowledgeBase.id,
-      name: knowledgeBase.name,
+      Name: knowledgeBase.Name,
       description: knowledgeBase.description,
       tokenCount: knowledgeBase.tokenCount,
       embeddingModel: knowledgeBase.embeddingModel,
@@ -95,7 +95,7 @@ export async function createKnowledgeBase(
 
   const newKnowledgeBase = {
     id: kbId,
-    name: data.name,
+    Name: data.Name,
     description: data.description ?? null,
     workspaceId: data.workspaceId ?? null,
     userId: data.userId,
@@ -110,11 +110,11 @@ export async function createKnowledgeBase(
 
   await db.insert(knowledgeBase).values(newKnowledgeBase)
 
-  logger.info(`[${requestId}] Created knowledge base: ${data.name} (${kbId})`)
+  logger.info(`[${requestId}] Created knowledge base: ${data.Name} (${kbId})`)
 
   return {
     id: kbId,
-    name: data.name,
+    Name: data.Name,
     description: data.description ?? null,
     tokenCount: 0,
     embeddingModel: data.embeddingModel,
@@ -133,7 +133,7 @@ export async function createKnowledgeBase(
 export async function updateKnowledgeBase(
   knowledgeBaseId: string,
   updates: {
-    name?: string
+    Name?: string
     description?: string
     chunkingConfig?: {
       maxSize: number
@@ -146,7 +146,7 @@ export async function updateKnowledgeBase(
   const now = new Date()
   const updateData: {
     updatedAt: Date
-    name?: string
+    Name?: string
     description?: string | null
     chunkingConfig?: {
       maxSize: number
@@ -159,7 +159,7 @@ export async function updateKnowledgeBase(
     updatedAt: now,
   }
 
-  if (updates.name !== undefined) updateData.name = updates.name
+  if (updates.Name !== undefined) updateData.Name = updates.Name
   if (updates.description !== undefined) updateData.description = updates.description
   if (updates.chunkingConfig !== undefined) {
     updateData.chunkingConfig = updates.chunkingConfig
@@ -172,7 +172,7 @@ export async function updateKnowledgeBase(
   const updatedKb = await db
     .select({
       id: knowledgeBase.id,
-      name: knowledgeBase.name,
+      Name: knowledgeBase.Name,
       description: knowledgeBase.description,
       tokenCount: knowledgeBase.tokenCount,
       embeddingModel: knowledgeBase.embeddingModel,
@@ -214,7 +214,7 @@ export async function getKnowledgeBaseById(
   const result = await db
     .select({
       id: knowledgeBase.id,
-      name: knowledgeBase.name,
+      Name: knowledgeBase.Name,
       description: knowledgeBase.description,
       tokenCount: knowledgeBase.tokenCount,
       embeddingModel: knowledgeBase.embeddingModel,

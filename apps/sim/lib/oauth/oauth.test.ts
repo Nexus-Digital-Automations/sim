@@ -65,32 +65,32 @@ describe('OAuth Token Refresh', () => {
   describe('Basic Auth Providers', () => {
     const basicAuthProviders = [
       {
-        name: 'Airtable',
+        Name: 'Airtable',
         providerId: 'airtable',
         endpoint: 'https://airtable.com/oauth2/v1/token',
       },
-      { name: 'X (Twitter)', providerId: 'x', endpoint: 'https://api.x.com/2/oauth2/token' },
+      { Name: 'X (Twitter)', providerId: 'x', endpoint: 'https://api.x.com/2/oauth2/token' },
       {
-        name: 'Confluence',
+        Name: 'Confluence',
         providerId: 'confluence',
         endpoint: 'https://auth.atlassian.com/oauth/token',
       },
-      { name: 'Jira', providerId: 'jira', endpoint: 'https://auth.atlassian.com/oauth/token' },
+      { Name: 'Jira', providerId: 'jira', endpoint: 'https://auth.atlassian.com/oauth/token' },
       {
-        name: 'Discord',
+        Name: 'Discord',
         providerId: 'discord',
         endpoint: 'https://discord.com/api/v10/oauth2/token',
       },
-      { name: 'Linear', providerId: 'linear', endpoint: 'https://api.linear.app/oauth/token' },
+      { Name: 'Linear', providerId: 'linear', endpoint: 'https://api.linear.app/oauth/token' },
       {
-        name: 'Reddit',
+        Name: 'Reddit',
         providerId: 'reddit',
         endpoint: 'https://www.reddit.com/api/v1/access_token',
       },
     ]
 
-    basicAuthProviders.forEach(({ name, providerId, endpoint }) => {
-      it(`should send ${name} request with Basic Auth header and no credentials in body`, async () => {
+    basicAuthProviders.forEach(({ Name, providerId, endpoint }) => {
+      it(`should send ${Name} request with Basic Auth header and no credentials in body`, async () => {
         const refreshToken = 'test_refresh_token'
 
         await refreshOAuthToken(providerId, refreshToken)
@@ -98,7 +98,7 @@ describe('OAuth Token Refresh', () => {
         expect(mockFetch).toHaveBeenCalledWith(
           endpoint,
           expect.objectContaining({
-            method: 'POST',
+            method: 'post',
             headers: expect.objectContaining({
               'Content-Type': 'application/x-www-form-urlencoded',
               Authorization: expect.stringMatching(/^Basic /),
@@ -138,33 +138,33 @@ describe('OAuth Token Refresh', () => {
 
   describe('Body Credential Providers', () => {
     const bodyCredentialProviders = [
-      { name: 'Google', providerId: 'google', endpoint: 'https://oauth2.googleapis.com/token' },
+      { Name: 'Google', providerId: 'google', endpoint: 'https://oauth2.googleapis.com/token' },
       {
-        name: 'GitHub',
+        Name: 'GitHub',
         providerId: 'github',
         endpoint: 'https://github.com/login/oauth/access_token',
       },
       {
-        name: 'Microsoft',
+        Name: 'Microsoft',
         providerId: 'microsoft',
         endpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
       },
       {
-        name: 'Outlook',
+        Name: 'Outlook',
         providerId: 'outlook',
         endpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
       },
       {
-        name: 'Supabase',
+        Name: 'Supabase',
         providerId: 'supabase',
         endpoint: 'https://api.supabase.com/v1/oauth/token',
       },
-      { name: 'Notion', providerId: 'notion', endpoint: 'https://api.notion.com/v1/oauth/token' },
-      { name: 'Slack', providerId: 'slack', endpoint: 'https://slack.com/api/oauth.v2.access' },
+      { Name: 'Notion', providerId: 'notion', endpoint: 'https://api.notion.com/v1/oauth/token' },
+      { Name: 'Slack', providerId: 'slack', endpoint: 'https://slack.com/api/oauth.v2.access' },
     ]
 
-    bodyCredentialProviders.forEach(({ name, providerId, endpoint }) => {
-      it(`should send ${name} request with credentials in body and no Basic Auth`, async () => {
+    bodyCredentialProviders.forEach(({ Name, providerId, endpoint }) => {
+      it(`should send ${Name} request with credentials in body and no Basic Auth`, async () => {
         const refreshToken = 'test_refresh_token'
 
         await refreshOAuthToken(providerId, refreshToken)
@@ -172,7 +172,7 @@ describe('OAuth Token Refresh', () => {
         expect(mockFetch).toHaveBeenCalledWith(
           endpoint,
           expect.objectContaining({
-            method: 'POST',
+            method: 'post',
             headers: expect.objectContaining({
               'Content-Type': 'application/x-www-form-urlencoded',
             }),

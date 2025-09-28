@@ -1,16 +1,16 @@
-import { MistralIcon } from '@/components/icons'
+import { mistralIcon } from '@/components/icons'
 import type { BlockConfig, SubBlockLayout, SubBlockType } from '@/blocks/types'
 import type { MistralParserOutput } from '@/tools/mistral/types'
 
 export const MistralParseBlock: BlockConfig<MistralParserOutput> = {
   type: 'mistral_parse',
-  name: 'Mistral Parser',
+  Name: 'Mistral Parser',
   description: 'Extract text from PDF documents',
   longDescription: `Integrate Mistral Parse into the workflow. Can extract text from uploaded PDF documents, or from a URL. Requires API Key.`,
   docsLink: 'https://docs.sim.ai/tools/mistral_parse',
   category: 'tools',
   bgColor: '#000000',
-  icon: MistralIcon,
+  icon: mistralIcon,
   subBlocks: [
     // Show input method selection
     {

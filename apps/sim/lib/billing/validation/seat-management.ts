@@ -117,7 +117,7 @@ export async function getOrganizationSeatInfo(
     const organizationData = await db
       .select({
         id: organization.id,
-        name: organization.name,
+        Name: organization.Name,
       })
       .from(organization)
       .where(eq(organization.id, organizationId))
@@ -148,7 +148,7 @@ export async function getOrganizationSeatInfo(
 
     return {
       organizationId,
-      organizationName: organizationData[0].name,
+      organizationName: organizationData[0].Name,
       currentSeats,
       maxSeats,
       availableSeats,
@@ -373,7 +373,7 @@ export async function getOrganizationSeatAnalytics(organizationId: string) {
     const memberActivity = await db
       .select({
         userId: member.userId,
-        userName: user.name,
+        userName: user.Name,
         userEmail: user.email,
         role: member.role,
         joinedAt: member.createdAt,

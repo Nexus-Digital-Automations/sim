@@ -7,7 +7,7 @@ import type { SerializedBlock, SerializedWorkflow } from '@/serializer/types'
  */
 export interface UserFile {
   id: string
-  name: string
+  Name: string
   url: string
   size: number
   type: string
@@ -63,7 +63,7 @@ export interface NormalizedBlockOutput {
  */
 export interface BlockLog {
   blockId: string // Unique identifier of the executed block
-  blockName?: string // Display name of the block
+  blockName?: string // Display Name of the block
   blockType?: string // Type of the block (agent, router, etc.)
   startedAt: string // ISO timestamp when execution started
   endedAt: string // ISO timestamp when execution completed
@@ -248,7 +248,7 @@ export interface BlockHandler {
  */
 export interface Tool<P = any, O = Record<string, any>> {
   id: string // Unique identifier for the tool
-  name: string // Display name of the tool
+  Name: string // Display Name of the tool
   description: string // Description of what the tool does
   version: string // Version string for the tool
 

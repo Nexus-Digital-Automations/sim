@@ -489,7 +489,7 @@ export class VisualToConversationalTranslationEngine {
     context: TranslationContext
   ): Promise<ConversationalDescription> {
     const elementName =
-      elementData.data?.name || elementData.data?.title || `${elementType} ${elementData.id}`
+      elementData.data?.Name || elementData.data?.title || `${elementType} ${elementData.id}`
     const nodeType = elementData.type || 'generic'
 
     // Base descriptions by user level
@@ -769,8 +769,8 @@ export class VisualToConversationalTranslationEngine {
     const sourceNode = workflowData.nodes?.find((n: any) => n.id === edge.source)
     const targetNode = workflowData.nodes?.find((n: any) => n.id === edge.target)
 
-    const sourceName = sourceNode?.data?.name || `Step ${edge.source}`
-    const targetName = targetNode?.data?.name || `Step ${edge.target}`
+    const sourceName = sourceNode?.data?.Name || `Step ${edge.source}`
+    const targetName = targetNode?.data?.Name || `Step ${edge.target}`
 
     let conversationalDescription = `After ${sourceName} completes, the workflow continues to ${targetName}.`
 
@@ -800,7 +800,7 @@ export class VisualToConversationalTranslationEngine {
     elementTranslations: Map<string, TranslatedVisualElement>
   ): Promise<WorkflowTranslation['workflowConversation']> {
     const nodeCount = workflowData.nodes?.length || 0
-    const workflowName = workflowData.name || 'Your Workflow'
+    const workflowName = workflowData.Name || 'Your Workflow'
 
     return {
       introduction: `Let me walk you through "${workflowName}" - this workflow has ${nodeCount} steps that work together to accomplish your goal.`,
@@ -900,7 +900,7 @@ export class VisualToConversationalTranslationEngine {
     let confidence = 0.7 // Base confidence
 
     // Increase confidence if we have good data
-    if (elementData.data?.name) confidence += 0.1
+    if (elementData.data?.Name) confidence += 0.1
     if (elementData.data?.description) confidence += 0.1
     if (elementData.type) confidence += 0.1
 
@@ -940,7 +940,7 @@ export class VisualToConversationalTranslationEngine {
     elementType: VisualElementType,
     context: TranslationContext
   ): TranslatedVisualElement['conversationStarters'] {
-    const elementName = elementData.data?.name || elementData.id
+    const elementName = elementData.data?.Name || elementData.id
 
     return {
       questions: [
@@ -985,7 +985,7 @@ export class VisualToConversationalTranslationEngine {
     elementType: VisualElementType,
     context: TranslationContext
   ): TranslatedVisualElement['accessibility'] {
-    const elementName = elementData.data?.name || elementData.id
+    const elementName = elementData.data?.Name || elementData.id
 
     return {
       screenReaderDescription: `${elementType} element named ${elementName}. ${elementData.data?.description || 'Workflow component.'}`,
@@ -1115,7 +1115,7 @@ type ElementTranslator = (
 ) => Promise<TranslatedVisualElement>
 
 interface PatternRecognizer {
-  name: string
+  Name: string
   recognize: (
     workflowData: any,
     context: TranslationContext

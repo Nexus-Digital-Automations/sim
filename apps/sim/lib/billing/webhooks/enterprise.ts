@@ -188,7 +188,7 @@ export async function handleManualEnterpriseSubscription(event: Stripe.Event) {
     const userDetails = await db
       .select({
         id: user.id,
-        name: user.name,
+        Name: user.Name,
         email: user.email,
       })
       .from(user)
@@ -198,7 +198,7 @@ export async function handleManualEnterpriseSubscription(event: Stripe.Event) {
     const orgDetails = await db
       .select({
         id: organization.id,
-        name: organization.name,
+        Name: organization.Name,
       })
       .from(organization)
       .where(eq(organization.id, referenceId))
@@ -208,7 +208,7 @@ export async function handleManualEnterpriseSubscription(event: Stripe.Event) {
       const user = userDetails[0]
       const org = orgDetails[0]
 
-      const html = await renderEnterpriseSubscriptionEmail(user.name || user.email, user.email)
+      const html = await renderEnterpriseSubscriptionEmail(user.Name || user.email, user.email)
 
       const emailResult = await sendEmail({
         to: user.email,

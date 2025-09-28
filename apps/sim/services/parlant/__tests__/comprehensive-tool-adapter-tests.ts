@@ -378,13 +378,13 @@ class ComprehensiveToolAdapterTestFramework {
       const errorTests = [
         // Test missing required parameters
         {
-          name: 'missing_required_params',
+          Name: 'missing_required_params',
           params: {}, // Empty params should trigger validation error
           expectedError: true,
         },
         // Test invalid parameter types
         {
-          name: 'invalid_param_types',
+          Name: 'invalid_param_types',
           params: { invalidParam: 'invalid' },
           expectedError: true,
         },
@@ -397,7 +397,7 @@ class ComprehensiveToolAdapterTestFramework {
           const result = await adapter.execute(test.params, context)
 
           results.push({
-            testName: test.name,
+            testName: test.Name,
             expectedError: test.expectedError,
             actualError: !result.success,
             errorMessage: result.error,
@@ -405,7 +405,7 @@ class ComprehensiveToolAdapterTestFramework {
           })
         } catch (error) {
           results.push({
-            testName: test.name,
+            testName: test.Name,
             expectedError: test.expectedError,
             actualError: true,
             errorMessage: error instanceof Error ? error.message : String(error),
@@ -905,12 +905,12 @@ class ComprehensiveToolAdapterTestFramework {
     for (const param of parlantTool.parameters) {
       if (param.required) {
         if (param.examples && param.examples.length > 0) {
-          params[param.name] = param.examples[0]
+          params[param.Name] = param.examples[0]
         } else if (param.default !== undefined) {
-          params[param.name] = param.default
+          params[param.Name] = param.default
         } else {
           // Generate value based on type
-          params[param.name] = this.generateValueForType(param.type, param.name)
+          params[param.Name] = this.generateValueForType(param.type, param.Name)
         }
       }
     }

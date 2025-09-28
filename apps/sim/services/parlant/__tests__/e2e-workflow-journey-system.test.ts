@@ -36,7 +36,7 @@ class MockParlantServer {
   async createAgent(config: any): Promise<any> {
     const agent = {
       id: `agent_${Date.now()}`,
-      name: config.name,
+      Name: config.Name,
       description: config.description,
       created_at: new Date().toISOString(),
       guidelines: [],
@@ -150,14 +150,14 @@ class MockSimWorkflowService {
     const testWorkflows = [
       {
         id: 'wf_customer_onboarding',
-        name: 'Customer Onboarding',
+        Name: 'Customer Onboarding',
         description: 'Complete customer onboarding process',
         nodes: [
           { id: 'start', type: 'start', data: { label: 'Start' } },
           {
             id: 'collect_info',
             type: 'form',
-            data: { label: 'Collect Information', fields: ['name', 'email', 'phone'] },
+            data: { label: 'Collect Information', fields: ['Name', 'email', 'phone'] },
           },
           {
             id: 'verify_email',
@@ -192,7 +192,7 @@ class MockSimWorkflowService {
       },
       {
         id: 'wf_support_ticket',
-        name: 'Support Ticket Processing',
+        Name: 'Support Ticket Processing',
         description: 'Automated support ticket processing and routing',
         nodes: [
           { id: 'start', type: 'start', data: { label: 'Start' } },
@@ -284,9 +284,9 @@ class WorkflowToJourneyConverter {
   async convertWorkflowToJourney(workflow: any): Promise<any> {
     // Mock conversion implementation
     const journey = {
-      title: `Conversational ${workflow.name}`,
+      title: `Conversational ${workflow.Name}`,
       description: `Converted workflow: ${workflow.description}`,
-      conditions: [`User wants to execute ${workflow.name}`],
+      conditions: [`User wants to execute ${workflow.Name}`],
       states: this.convertNodesToStates(workflow.nodes),
       transitions: this.convertEdgesToTransitions(workflow.edges),
       metadata: {
@@ -302,7 +302,7 @@ class WorkflowToJourneyConverter {
     return nodes.map((node) => ({
       id: `state_${node.id}`,
       type: this.mapNodeTypeToStateType(node.type),
-      name: node.data.label,
+      Name: node.data.label,
       config: node.data,
       originalNodeId: node.id,
     }))
@@ -358,7 +358,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       expect(workflows.length).toBeGreaterThan(0)
 
       const testWorkflow = workflows[0]
-      console.log(`🔄 Converting workflow: ${testWorkflow.name}`)
+      console.log(`🔄 Converting workflow: ${testWorkflow.Name}`)
 
       // Step 2: Convert workflow to journey
       const conversionResult = await converter.convertWorkflowToJourney(testWorkflow)
@@ -367,7 +367,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
 
       // Step 3: Create agent in Parlant
       const agent = await parlantServer.createAgent({
-        name: `${testWorkflow.name} Assistant`,
+        Name: `${testWorkflow.Name} Assistant`,
         description: `Conversational assistant for ${testWorkflow.description}`,
       })
       expect(agent).toBeDefined()
@@ -388,7 +388,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       const conversionResult = await converter.convertWorkflowToJourney(workflow)
 
       const agent = await parlantServer.createAgent({
-        name: 'Customer Onboarding Assistant',
+        Name: 'Customer Onboarding Assistant',
         description: 'Helps customers through the onboarding process',
       })
 
@@ -434,7 +434,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       expect(conversionResult.success).toBe(true)
 
       const agent = await parlantServer.createAgent({
-        name: 'Support Ticket Assistant',
+        Name: 'Support Ticket Assistant',
         description: 'Helps process support tickets conversationally',
       })
 
@@ -518,7 +518,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       // Test with malformed workflow
       const malformedWorkflow = {
         id: 'malformed',
-        name: 'Malformed Workflow',
+        Name: 'Malformed Workflow',
         nodes: null, // Invalid
         edges: undefined, // Invalid
       }
@@ -557,7 +557,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       // User can also interact conversationally with the same workflow
       const conversionResult = await converter.convertWorkflowToJourney(workflow)
       const agent = await parlantServer.createAgent({
-        name: 'Onboarding Assistant',
+        Name: 'Onboarding Assistant',
         description: 'Helps with customer onboarding',
       })
 
@@ -621,7 +621,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
 
     return {
       id: `large_workflow_${nodeCount}`,
-      name: `Large Test Workflow (${nodeCount} nodes)`,
+      Name: `Large Test Workflow (${nodeCount} nodes)`,
       description: `Generated large workflow for performance testing`,
       nodes,
       edges,

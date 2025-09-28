@@ -95,7 +95,7 @@ export async function loadWorkflowFromNormalizedTables(
       blocksMap[block.id] = {
         id: block.id,
         type: block.type,
-        name: block.name,
+        Name: block.Name,
         position: {
           x: Number(block.positionX),
           y: Number(block.positionY),
@@ -191,7 +191,7 @@ export async function saveWorkflowToNormalizedTables(
           id: block.id,
           workflowId: workflowId,
           type: block.type,
-          name: block.name || '',
+          Name: block.Name || '',
           positionX: String(block.position?.x || 0),
           positionY: String(block.position?.y || 0),
           enabled: block.enabled ?? true,

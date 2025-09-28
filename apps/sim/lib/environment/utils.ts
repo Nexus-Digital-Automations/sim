@@ -8,7 +8,7 @@ const logger = createLogger('EnvironmentUtils')
 
 /**
  * Get environment variable keys for a user
- * Returns only the variable names, not their values
+ * Returns only the variable NAMES, not their values
  */
 export async function getEnvironmentVariableKeys(userId: string): Promise<{
   variableNames: string[]
@@ -28,7 +28,7 @@ export async function getEnvironmentVariableKeys(userId: string): Promise<{
       }
     }
 
-    // Get the keys (variable names) without decrypting values
+    // Get the keys (variable NAMES) without decrypting values
     const encryptedVariables = result[0].variables as Record<string, string>
     const variableNames = Object.keys(encryptedVariables)
 

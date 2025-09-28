@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import useDrivePicker from 'react-google-drive-picker'
-import { GoogleDriveIcon } from '@/components/icons'
+import { googleDriveIcon } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ClientToolCallState } from '@/lib/copilot/tools/client/base-tool'
@@ -36,7 +36,7 @@ function shouldShowRunSkipButtons(toolCall: CopilotToolCall): boolean {
   let hasInterrupt = !!instance?.getInterruptDisplays?.()
   if (!hasInterrupt) {
     try {
-      const def = getRegisteredTools()[toolCall.name]
+      const def = getRegisteredTools()[toolCall.Name]
       if (def) {
         hasInterrupt =
           typeof def.hasInterrupt === 'function'
@@ -77,11 +77,11 @@ function getDisplayName(toolCall: CopilotToolCall): string {
   const fromStore = (toolCall as any).display?.text
   if (fromStore) return fromStore
   try {
-    const def = getRegisteredTools()[toolCall.name] as any
+    const def = getRegisteredTools()[toolCall.Name] as any
     const byState = def?.metadata?.displayNames?.[toolCall.state]
     if (byState?.text) return byState.text
   } catch {}
-  return toolCall.name
+  return toolCall.Name
 }
 
 function RunSkipButtons({
@@ -122,7 +122,7 @@ function RunSkipButtons({
       const defaultCred = creds.find((c: any) => c.isDefault) || creds[0]
 
       const tokenRes = await fetch('/api/auth/oauth/token', {
-        method: 'POST',
+        method: 'post',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credentialId: defaultCred.id }),
       })
@@ -156,7 +156,7 @@ function RunSkipButtons({
 
   if (buttonsHidden) return null
 
-  if (toolCall.name === 'gdrive_request_access' && toolCall.state === 'pending') {
+  if (toolCall.Name === 'gdrive_request_access' && toolCall.state === 'pending') {
     return (
       <div className='flex items-center gap-2'>
         <Button
@@ -197,7 +197,7 @@ function RunSkipButtons({
           className='h-6 bg-gray-900 px-2 font-medium text-white text-xs hover:bg-gray-800 disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200'
           title='Grant Google Drive access'
         >
-          <GoogleDriveIcon className='mr-0.5 h-4 w-4' />
+          <googleDriveIcon className='mr-0.5 h-4 w-4' />
           Select
         </Button>
         <Button
@@ -255,9 +255,9 @@ export function InlineToolCall({
   // All hooks must be called before any early returns
   const isExpandablePending =
     toolCall?.state === 'pending' &&
-    (toolCall?.name === 'make_api_request' ||
-      toolCall?.name === 'set_environment_variables' ||
-      toolCall?.name === 'set_global_workflow_variables')
+    (toolCall?.Name === 'make_api_request' ||
+      toolCall?.Name === 'set_environment_variables' ||
+      toolCall?.Name === 'set_global_workflow_variables')
 
   const [expanded, setExpanded] = useState(isExpandablePending)
 
@@ -266,20 +266,20 @@ export function InlineToolCall({
 
   // Skip rendering tools that are not in the registry or are explicitly omitted
   try {
-    if (toolCall.name === 'checkoff_todo' || toolCall.name === 'mark_todo_in_progress') return null
+    if (toolCall.Name === 'checkoff_todo' || toolCall.Name === 'mark_todo_in_progress') return null
     // Allow if tool id exists in CLASS_TOOL_METADATA (client tools)
-    if (!CLASS_TOOL_METADATA[toolCall.name]) return null
+    if (!CLASS_TOOL_METADATA[toolCall.Name]) return null
   } catch {
     return null
   }
   const isExpandableTool =
-    toolCall.name === 'make_api_request' ||
-    toolCall.name === 'set_environment_variables' ||
-    toolCall.name === 'set_global_workflow_variables'
+    toolCall.Name === 'make_api_request' ||
+    toolCall.Name === 'set_environment_variables' ||
+    toolCall.Name === 'set_global_workflow_variables'
 
   const showButtons = shouldShowRunSkipButtons(toolCall)
   const showMoveToBackground =
-    toolCall.name === 'run_workflow' &&
+    toolCall.Name === 'run_workflow' &&
     (toolCall.state === (ClientToolCallState.executing as any) ||
       toolCall.state === ('executing' as any))
 
@@ -292,7 +292,7 @@ export function InlineToolCall({
   const params = (toolCall as any).parameters || (toolCall as any).input || toolCall.params || {}
 
   const renderPendingDetails = () => {
-    if (toolCall.name === 'make_api_request') {
+    if (toolCall.Name === 'make_api_request') {
       const url = params.url || ''
       const method = (params.method || '').toUpperCase()
       return (
@@ -308,7 +308,7 @@ export function InlineToolCall({
           <div className='grid grid-cols-[auto_1fr] items-center gap-2 px-2 py-2'>
             <div>
               <span className='inline-flex rounded bg-muted px-1.5 py-0.5 font-mono text-muted-foreground text-xs'>
-                {method || 'GET'}
+                {method || 'get'}
               </span>
             </div>
             <div className='min-w-0'>
@@ -324,7 +324,7 @@ export function InlineToolCall({
       )
     }
 
-    if (toolCall.name === 'set_environment_variables') {
+    if (toolCall.Name === 'set_environment_variables') {
       const variables =
         params.variables && typeof params.variables === 'object' ? params.variables : {}
       const entries = Object.entries(variables)
@@ -360,7 +360,7 @@ export function InlineToolCall({
       )
     }
 
-    if (toolCall.name === 'set_global_workflow_variables') {
+    if (toolCall.Name === 'set_global_workflow_variables') {
       const ops = Array.isArray(params.operations) ? (params.operations as any[]) : []
       return (
         <div className='mt-0.5 w-full overflow-hidden rounded border border-muted bg-card'>
@@ -383,7 +383,7 @@ export function InlineToolCall({
                 <div key={idx} className='grid grid-cols-3 items-center gap-0 px-2 py-1.5'>
                   <div className='min-w-0'>
                     <span className='truncate text-amber-800 text-xs dark:text-amber-200'>
-                      {String(op.name || '')}
+                      {String(op.Name || '')}
                     </span>
                   </div>
                   <div>
@@ -419,7 +419,7 @@ export function InlineToolCall({
       let IconComp: any | undefined = IconFromStore
       if (!IconComp) {
         try {
-          const def = getRegisteredTools()[toolCall.name] as any
+          const def = getRegisteredTools()[toolCall.Name] as any
           IconComp = def?.metadata?.displayNames?.[toolCall.state]?.icon
         } catch {}
       }
@@ -434,7 +434,7 @@ export function InlineToolCall({
         colorClass = 'text-red-500'
       } else if (state === (ClientToolCallState as any).success || state === 'success') {
         const isBuildOrEdit =
-          toolCall.name === 'build_workflow' || toolCall.name === 'edit_workflow'
+          toolCall.Name === 'build_workflow' || toolCall.Name === 'edit_workflow'
         colorClass = isBuildOrEdit ? 'text-[var(--brand-primary-hover-hex)]' : 'text-green-600'
       }
 

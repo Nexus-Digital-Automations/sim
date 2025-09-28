@@ -119,7 +119,7 @@ export const EnvVarDropdown: React.FC<EnvVarDropdownProps> = ({
       onSelect(newValue)
     } else {
       // For direct typing mode (API key fields), check if we need to replace existing text
-      // This handles the case where user has already typed part of a variable name
+      // This handles the case where user has already typed part of a variable Name
       if (inputValue.trim() !== '') {
         // Replace the entire input with the selected env var
         onSelect(`{{${envVar}}}`)

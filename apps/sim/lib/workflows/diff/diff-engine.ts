@@ -112,7 +112,7 @@ export class WorkflowDiffEngine {
       }
 
       const response = await fetch('/api/yaml/diff/create', {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -233,7 +233,7 @@ export class WorkflowDiffEngine {
       }
 
       const response = await fetch('/api/yaml/diff/merge', {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },

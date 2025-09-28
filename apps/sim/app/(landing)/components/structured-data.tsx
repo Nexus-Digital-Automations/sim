@@ -5,7 +5,7 @@ export default function StructuredData() {
       {
         '@type': 'Organization',
         '@id': 'https://sim.ai/#organization',
-        name: 'Sim',
+        Name: 'Sim',
         alternateName: 'Sim Studio',
         description:
           'Open-source AI agent workflow builder used by developers at trail-blazing startups to Fortune 500 companies',
@@ -36,7 +36,7 @@ export default function StructuredData() {
         '@type': 'WebSite',
         '@id': 'https://sim.ai/#website',
         url: 'https://sim.ai',
-        name: 'Sim - AI Agent Workflow Builder',
+        Name: 'Sim - AI Agent Workflow Builder',
         description:
           'Open-source AI agent workflow builder. 30,000+ developers build and deploy agentic workflows. SOC2 and HIPAA compliant.',
         publisher: {
@@ -50,7 +50,7 @@ export default function StructuredData() {
               '@type': 'EntryPoint',
               urlTemplate: 'https://sim.ai/search?q={search_term_string}',
             },
-            'query-input': 'required name=search_term_string',
+            'query-input': 'required Name=search_term_string',
           },
         ],
         inLanguage: 'en-US',
@@ -59,7 +59,7 @@ export default function StructuredData() {
         '@type': 'WebPage',
         '@id': 'https://sim.ai/#webpage',
         url: 'https://sim.ai',
-        name: 'Sim - Workflows for LLMs | Build AI Agent Workflows',
+        Name: 'Sim - Workflows for LLMs | Build AI Agent Workflows',
         isPartOf: {
           '@id': 'https://sim.ai/#website',
         },
@@ -88,7 +88,7 @@ export default function StructuredData() {
           {
             '@type': 'ListItem',
             position: 1,
-            name: 'Home',
+            Name: 'Home',
             item: 'https://sim.ai',
           },
         ],
@@ -96,7 +96,7 @@ export default function StructuredData() {
       {
         '@type': 'SoftwareApplication',
         '@id': 'https://sim.ai/#software',
-        name: 'Sim - AI Agent Workflow Builder',
+        Name: 'Sim - AI Agent Workflow Builder',
         description:
           'Open-source AI agent workflow builder used by 30,000+ developers. Build agentic workflows with visual drag-and-drop interface. SOC2 and HIPAA compliant. Integrate with 100+ apps.',
         applicationCategory: 'DeveloperApplication',
@@ -107,7 +107,7 @@ export default function StructuredData() {
           {
             '@type': 'Offer',
             '@id': 'https://sim.ai/#offer-free',
-            name: 'Community Plan',
+            Name: 'Community Plan',
             price: '0',
             priceCurrency: 'USD',
             priceValidUntil: '2025-12-31',
@@ -118,13 +118,13 @@ export default function StructuredData() {
             },
             eligibleRegion: {
               '@type': 'Place',
-              name: 'Worldwide',
+              Name: 'Worldwide',
             },
           },
           {
             '@type': 'Offer',
             '@id': 'https://sim.ai/#offer-pro',
-            name: 'Pro Plan',
+            Name: 'Pro Plan',
             price: '20',
             priceCurrency: 'USD',
             priceSpecification: {
@@ -144,7 +144,7 @@ export default function StructuredData() {
           {
             '@type': 'Offer',
             '@id': 'https://sim.ai/#offer-team',
-            name: 'Team Plan',
+            Name: 'Team Plan',
             price: '40',
             priceCurrency: 'USD',
             priceSpecification: {
@@ -195,7 +195,7 @@ export default function StructuredData() {
         mainEntity: [
           {
             '@type': 'Question',
-            name: 'What is Sim?',
+            Name: 'What is Sim?',
             acceptedAnswer: {
               '@type': 'Answer',
               text: 'Sim is an open-source AI agent workflow builder used by 30,000+ developers at trail-blazing startups to Fortune 500 companies. It provides a visual drag-and-drop interface for building and deploying agentic workflows. Sim is SOC2 and HIPAA compliant.',
@@ -203,7 +203,7 @@ export default function StructuredData() {
           },
           {
             '@type': 'Question',
-            name: 'Which AI models does Sim support?',
+            Name: 'Which AI models does Sim support?',
             acceptedAnswer: {
               '@type': 'Answer',
               text: 'Sim supports all major AI models including OpenAI (GPT-4, GPT-3.5), Anthropic (Claude), Google (Gemini), Mistral, Perplexity, and many more. You can also connect to open-source models via Ollama.',
@@ -211,7 +211,7 @@ export default function StructuredData() {
           },
           {
             '@type': 'Question',
-            name: 'Do I need coding skills to use Sim?',
+            Name: 'Do I need coding skills to use Sim?',
             acceptedAnswer: {
               '@type': 'Answer',
               text: 'No coding skills are required! Sim features a visual drag-and-drop interface that makes it easy to build AI workflows. However, developers can also use custom functions and our API for advanced use cases.',

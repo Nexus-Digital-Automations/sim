@@ -1,17 +1,17 @@
-import { JiraIcon } from '@/components/icons'
+import { jiraIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { JiraResponse } from '@/tools/jira/types'
 
 export const JiraBlock: BlockConfig<JiraResponse> = {
   type: 'jira',
-  name: 'Jira',
+  Name: 'Jira',
   description: 'Interact with Jira',
   longDescription:
     'Integrate Jira into the workflow. Can read, write, and update issues. Requires OAuth.',
   docsLink: 'https://docs.sim.ai/tools/jira',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: JiraIcon,
+  icon: jiraIcon,
   subBlocks: [
     {
       id: 'operation',

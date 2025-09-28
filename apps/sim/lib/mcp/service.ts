@@ -264,7 +264,7 @@ class McpService {
 
     return {
       id: server.id,
-      name: server.name,
+      Name: server.Name,
       description: server.description || undefined,
       transport: server.transport as 'http' | 'sse',
       url: server.url || undefined,
@@ -294,7 +294,7 @@ class McpService {
 
     return servers.map((server) => ({
       id: server.id,
-      name: server.name,
+      Name: server.Name,
       description: server.description || undefined,
       transport: server.transport as McpTransport,
       url: server.url || undefined,
@@ -336,7 +336,7 @@ class McpService {
 
     try {
       logger.info(
-        `[${requestId}] Executing MCP tool ${toolCall.name} on server ${serverId} for user ${userId}`
+        `[${requestId}] Executing MCP tool ${toolCall.Name} on server ${serverId} for user ${userId}`
       )
 
       const config = await this.getServerConfig(serverId, workspaceId)
@@ -350,14 +350,14 @@ class McpService {
 
       try {
         const result = await client.callTool(toolCall)
-        logger.info(`[${requestId}] Successfully executed tool ${toolCall.name}`)
+        logger.info(`[${requestId}] Successfully executed tool ${toolCall.Name}`)
         return result
       } finally {
         await client.disconnect()
       }
     } catch (error) {
       logger.error(
-        `[${requestId}] Failed to execute tool ${toolCall.name} on server ${serverId}:`,
+        `[${requestId}] Failed to execute tool ${toolCall.Name} on server ${serverId}:`,
         error
       )
       throw error
@@ -402,7 +402,7 @@ class McpService {
           try {
             const tools = await client.listTools()
             logger.debug(
-              `[${requestId}] Discovered ${tools.length} tools from server ${config.name}`
+              `[${requestId}] Discovered ${tools.length} tools from server ${config.Name}`
             )
             return tools
           } finally {
@@ -416,7 +416,7 @@ class McpService {
           allTools.push(...result.value)
         } else {
           logger.warn(
-            `[${requestId}] Failed to discover tools from server ${servers[index].name}:`,
+            `[${requestId}] Failed to discover tools from server ${servers[index].Name}:`,
             result.reason
           )
         }
@@ -458,7 +458,7 @@ class McpService {
 
       try {
         const tools = await client.listTools()
-        logger.info(`[${requestId}] Discovered ${tools.length} tools from server ${config.name}`)
+        logger.info(`[${requestId}] Discovered ${tools.length} tools from server ${config.Name}`)
         return tools
       } finally {
         await client.disconnect()
@@ -490,7 +490,7 @@ class McpService {
 
           summaries.push({
             id: config.id,
-            name: config.name,
+            Name: config.Name,
             url: config.url,
             transport: config.transport,
             status: 'connected',
@@ -501,7 +501,7 @@ class McpService {
         } catch (error) {
           summaries.push({
             id: config.id,
-            name: config.name,
+            Name: config.Name,
             url: config.url,
             transport: config.transport,
             status: 'error',

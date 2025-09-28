@@ -8,7 +8,7 @@ import { createLogger } from '@/lib/logs/console/logger'
 const logger = createLogger('Workspaces')
 
 // Get all workspaces for the current user
-export async function GET() {
+export async function get() {
   const session = await getSession()
 
   if (!session?.user?.id) {
@@ -28,7 +28,7 @@ export async function GET() {
 
   if (userWorkspaces.length === 0) {
     // Create a default workspace for the user
-    const defaultWorkspace = await createDefaultWorkspace(session.user.id, session.user.name)
+    const defaultWorkspace = await createDefaultWorkspace(session.user.id, session.user.Name)
 
     // Migrate existing workflows to the default workspace
     await migrateExistingWorkflows(session.user.id, defaultWorkspace.id)
@@ -51,8 +51,8 @@ export async function GET() {
   return NextResponse.json({ workspaces: workspacesWithPermissions })
 }
 
-// POST /api/workspaces - Create a new workspace
-export async function POST(req: Request) {
+// post /api/workspaces - Create a new workspace
+export async function post(req: Request) {
   const session = await getSession()
 
   if (!session?.user?.id) {
@@ -60,13 +60,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { name } = await req.json()
+    const { Name } = await req.json()
 
-    if (!name) {
+    if (!Name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 })
     }
 
-    const newWorkspace = await createWorkspace(session.user.id, name)
+    const newWorkspace = await createWorkspace(session.user.id, Name)
 
     return NextResponse.json({ workspace: newWorkspace })
   } catch (error) {
@@ -82,7 +82,7 @@ async function createDefaultWorkspace(userId: string, userName?: string | null) 
 }
 
 // Helper function to create a workspace
-async function createWorkspace(userId: string, name: string) {
+async function createWorkspace(userId: string, Name: string) {
   const workspaceId = crypto.randomUUID()
   const workflowId = crypto.randomUUID()
   const now = new Date()
@@ -93,7 +93,7 @@ async function createWorkspace(userId: string, name: string) {
       // Create the workspace
       await tx.insert(workspace).values({
         id: workspaceId,
-        name,
+        Name,
         ownerId: userId,
         createdAt: now,
         updatedAt: now,
@@ -119,7 +119,7 @@ async function createWorkspace(userId: string, name: string) {
         userId,
         workspaceId,
         folderId: null,
-        name: 'default-agent',
+        Name: 'default-agent',
         description: 'Your first workflow - start building here!',
         color: '#3972F6',
         lastSynced: now,
@@ -138,7 +138,7 @@ async function createWorkspace(userId: string, name: string) {
         id: starterId,
         workflowId: workflowId,
         type: 'starter',
-        name: 'Start',
+        Name: 'Start',
         positionX: '100',
         positionY: '100',
         enabled: true,
@@ -201,7 +201,7 @@ async function createWorkspace(userId: string, name: string) {
   // Return the workspace data directly instead of querying again
   return {
     id: workspaceId,
-    name,
+    Name,
     ownerId: userId,
     createdAt: now,
     updatedAt: now,

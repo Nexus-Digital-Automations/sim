@@ -40,7 +40,7 @@ export async function createAgent(
   context: AuthContext
 ): Promise<Agent> {
   logger.info(`Creating new agent`, {
-    name: request.name,
+    Name: request.Name,
     workspace_id: request.workspace_id,
     user_id: context.user_id,
   })
@@ -66,7 +66,7 @@ export async function createAgent(
 
     logger.info(`Agent created successfully`, {
       agent_id: agent.id,
-      name: agent.name,
+      Name: agent.Name,
       workspace_id: agent.workspace_id,
       user_id: agent.user_id,
     })
@@ -74,7 +74,7 @@ export async function createAgent(
     return agent
   } catch (error) {
     logger.error(`Failed to create agent`, {
-      name: request.name,
+      Name: request.Name,
       workspace_id: request.workspace_id,
       error: (error as Error).message,
     })
@@ -101,7 +101,7 @@ export async function getAgent(agentId: string, context: AuthContext): Promise<A
 
     logger.info(`Agent retrieved successfully`, {
       agent_id: agent.id,
-      name: agent.name,
+      Name: agent.Name,
       workspace_id: agent.workspace_id,
     })
 
@@ -149,7 +149,7 @@ export async function updateAgent(
 
     logger.info(`Agent updated successfully`, {
       agent_id: updatedAgent.id,
-      name: updatedAgent.name,
+      Name: updatedAgent.Name,
       updated_fields: Object.keys(request),
     })
 
@@ -192,7 +192,7 @@ export async function deleteAgent(agentId: string, context: AuthContext): Promis
 
     logger.info(`Agent deleted successfully`, {
       agent_id: agentId,
-      name: agent.name,
+      Name: agent.Name,
       workspace_id: agent.workspace_id,
     })
   } catch (error) {
@@ -355,12 +355,12 @@ export async function addAgentGuideline(
 function validateAgentCreateRequest(request: AgentCreateRequest): void {
   const errors: string[] = []
 
-  if (!request.name || request.name.trim().length === 0) {
-    errors.push('Agent name is required')
+  if (!request.Name || request.Name.trim().length === 0) {
+    errors.push('Agent Name is required')
   }
 
-  if (request.name && request.name.length > 100) {
-    errors.push('Agent name must be less than 100 characters')
+  if (request.Name && request.Name.length > 100) {
+    errors.push('Agent Name must be less than 100 characters')
   }
 
   if (!request.workspace_id || request.workspace_id.trim().length === 0) {
@@ -400,12 +400,12 @@ function validateAgentCreateRequest(request: AgentCreateRequest): void {
 function validateAgentUpdateRequest(request: AgentUpdateRequest): void {
   const errors: string[] = []
 
-  if (request.name !== undefined) {
-    if (!request.name || request.name.trim().length === 0) {
-      errors.push('Agent name cannot be empty')
+  if (request.Name !== undefined) {
+    if (!request.Name || request.Name.trim().length === 0) {
+      errors.push('Agent Name cannot be empty')
     }
-    if (request.name.length > 100) {
-      errors.push('Agent name must be less than 100 characters')
+    if (request.Name.length > 100) {
+      errors.push('Agent Name must be less than 100 characters')
     }
   }
 

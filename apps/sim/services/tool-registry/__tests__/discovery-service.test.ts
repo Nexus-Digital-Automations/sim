@@ -26,7 +26,7 @@ vi.mock('@/packages/db', () => ({
               Promise.resolve([
                 {
                   id: 'test-category',
-                  name: 'Test Category',
+                  Name: 'Test Category',
                   count: 5,
                 },
               ])
@@ -66,7 +66,7 @@ vi.mock('../analytics-service', () => ({
 
 const mockTool: EnrichedTool = {
   id: 'test_tool',
-  name: 'test_tool',
+  Name: 'test_tool',
   displayName: 'Test Tool',
   description: 'A test tool',
   version: '1.0.0',
@@ -246,7 +246,7 @@ describe('ToolDiscoveryService', () => {
 
   describe('sorting and pagination', () => {
     it('should handle different sort options', async () => {
-      const sortOptions = ['name', 'usage', 'rating', 'recent', 'relevance'] as const
+      const sortOptions = ['Name', 'usage', 'rating', 'recent', 'relevance'] as const
 
       for (const sortBy of sortOptions) {
         const results = await discoveryService.searchTools({

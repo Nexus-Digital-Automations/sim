@@ -103,14 +103,14 @@ export class FileToolProcessor {
     context: ExecutionContext,
     outputKey: string
   ): Promise<UserFile> {
-    logger.info(`Processing file data for output '${outputKey}': ${fileData.name}`)
+    logger.info(`Processing file data for output '${outputKey}': ${fileData.Name}`)
     try {
       // Convert various formats to Buffer
       let buffer: Buffer
 
       if (Buffer.isBuffer(fileData.data)) {
         buffer = fileData.data
-        logger.info(`Using Buffer data for ${fileData.name} (${buffer.length} bytes)`)
+        logger.info(`Using Buffer data for ${fileData.Name} (${buffer.length} bytes)`)
       } else if (
         fileData.data &&
         typeof fileData.data === 'object' &&
@@ -122,10 +122,10 @@ export class FileToolProcessor {
         if (serializedBuffer.type === 'Buffer' && Array.isArray(serializedBuffer.data)) {
           buffer = Buffer.from(serializedBuffer.data)
         } else {
-          throw new Error(`Invalid serialized buffer format for ${fileData.name}`)
+          throw new Error(`Invalid serialized buffer format for ${fileData.Name}`)
         }
         logger.info(
-          `Converted serialized Buffer to Buffer for ${fileData.name} (${buffer.length} bytes)`
+          `Converted serialized Buffer to Buffer for ${fileData.Name} (${buffer.length} bytes)`
         )
       } else if (typeof fileData.data === 'string' && fileData.data) {
         // Assume base64 or base64url
@@ -138,7 +138,7 @@ export class FileToolProcessor {
 
         buffer = Buffer.from(base64Data, 'base64')
         logger.info(
-          `Converted base64 string to Buffer for ${fileData.name} (${buffer.length} bytes)`
+          `Converted base64 string to Buffer for ${fileData.Name} (${buffer.length} bytes)`
         )
       } else if (fileData.url) {
         // Download from URL
@@ -151,16 +151,16 @@ export class FileToolProcessor {
 
         const arrayBuffer = await response.arrayBuffer()
         buffer = Buffer.from(arrayBuffer)
-        logger.info(`Downloaded file from URL for ${fileData.name} (${buffer.length} bytes)`)
+        logger.info(`Downloaded file from URL for ${fileData.Name} (${buffer.length} bytes)`)
       } else {
         throw new Error(
-          `File data for '${fileData.name}' must have either 'data' (Buffer/base64) or 'url' property`
+          `File data for '${fileData.Name}' must have either 'data' (Buffer/base64) or 'url' property`
         )
       }
 
       // Validate buffer
       if (buffer.length === 0) {
-        throw new Error(`File '${fileData.name}' has zero bytes`)
+        throw new Error(`File '${fileData.Name}' has zero bytes`)
       }
 
       // Store in execution filesystem
@@ -171,16 +171,16 @@ export class FileToolProcessor {
           executionId: context.executionId || '',
         },
         buffer,
-        fileData.name,
+        fileData.Name,
         fileData.mimeType
       )
 
       logger.info(
-        `Successfully stored file '${fileData.name}' in execution filesystem with key: ${userFile.key}`
+        `Successfully stored file '${fileData.Name}' in execution filesystem with key: ${userFile.key}`
       )
       return userFile
     } catch (error) {
-      logger.error(`Error processing file data for '${fileData.name}':`, error)
+      logger.error(`Error processing file data for '${fileData.Name}':`, error)
       throw error
     }
   }

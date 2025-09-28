@@ -133,7 +133,7 @@ describe('SynchronizedChatInterface Integration', () => {
       workflows: {
         'test-workflow-id': {
           id: 'test-workflow-id',
-          name: 'Test Workflow',
+          Name: 'Test Workflow',
           description: 'Test workflow description',
           color: '#000000',
           lastModified: new Date(),
@@ -205,7 +205,7 @@ describe('SynchronizedChatInterface Integration', () => {
       render(<SynchronizedChatInterface />)
 
       const input = screen.getByPlaceholderText('Type a message or command...')
-      const sendButton = screen.getByRole('button', { name: /send/i })
+      const sendButton = screen.getByRole('button', { Name: /send/i })
 
       fireEvent.change(input, { target: { value: 'Hello workflow!' } })
       fireEvent.click(sendButton)
@@ -236,7 +236,7 @@ describe('SynchronizedChatInterface Integration', () => {
     it('should not send empty messages', () => {
       render(<SynchronizedChatInterface />)
 
-      const sendButton = screen.getByRole('button', { name: /send/i })
+      const sendButton = screen.getByRole('button', { Name: /send/i })
 
       fireEvent.click(sendButton)
 
@@ -365,7 +365,7 @@ describe('SynchronizedChatInterface Integration', () => {
           'block-1': {
             id: 'block-1',
             type: 'starter',
-            name: 'Start',
+            Name: 'Start',
             position: { x: 100, y: 100 },
             enabled: true,
             subBlocks: {},
@@ -422,7 +422,7 @@ describe('SynchronizedChatInterface Integration', () => {
       render(<SynchronizedChatInterface />)
 
       const input = screen.getByPlaceholderText('Type a message or command...')
-      const sendButton = screen.getByRole('button', { name: /send/i })
+      const sendButton = screen.getByRole('button', { Name: /send/i })
 
       expect(input).toBeDisabled()
       expect(sendButton).toBeDisabled()
@@ -466,7 +466,7 @@ describe('SynchronizedChatInterface Integration', () => {
         blocks[`block-${i}`] = {
           id: `block-${i}`,
           type: 'llm',
-          name: `Block ${i}`,
+          Name: `Block ${i}`,
           position: { x: i * 100, y: i * 100 },
           enabled: true,
           subBlocks: {},

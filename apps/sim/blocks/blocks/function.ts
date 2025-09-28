@@ -1,18 +1,18 @@
-import { CodeIcon } from '@/components/icons'
+import { codeIcon } from '@/components/icons'
 import { CodeLanguage, getLanguageDisplayName } from '@/lib/execution/languages'
 import type { BlockConfig } from '@/blocks/types'
 import type { CodeExecutionOutput } from '@/tools/function/types'
 
 export const FunctionBlock: BlockConfig<CodeExecutionOutput> = {
   type: 'function',
-  name: 'Function',
+  Name: 'Function',
   description: 'Run custom logic',
   longDescription:
     'This is a core workflow block. Execute custom JavaScript or Python code within your workflow. Use E2B for remote execution with imports or enable Fast Mode (bolt) to run JavaScript locally for lowest latency.',
   docsLink: 'https://docs.sim.ai/blocks/function',
   category: 'blocks',
   bgColor: '#FF402F',
-  icon: CodeIcon,
+  icon: codeIcon,
   subBlocks: [
     {
       id: 'remoteExecution',
@@ -46,7 +46,7 @@ export const FunctionBlock: BlockConfig<CodeExecutionOutput> = {
         prompt: `You are an expert JavaScript programmer.
 Generate ONLY the raw body of a JavaScript function based on the user's request.
 The code should be executable within an 'async function(params, environmentVariables) {...}' context.
-- 'params' (object): Contains input parameters derived from the JSON schema. Access these directly using the parameter name wrapped in angle brackets, e.g., '<paramName>'. Do NOT use 'params.paramName'.
+- 'params' (object): Contains input parameters derived from the JSON schema. Access these directly using the parameter Name wrapped in angle brackets, e.g., '<paramName>'. Do NOT use 'params.paramName'.
 - 'environmentVariables' (object): Contains environment variables. Reference these using the double curly brace syntax: '{{ENV_VAR_NAME}}'. Do NOT use 'environmentVariables.VAR_NAME' or env.
 
 Current code context: {context}
@@ -70,7 +70,7 @@ const url = \`https://api.example.com/users/\${userId}\`;
 
 try {
   const response = await fetch(url, {
-    method: 'GET',
+    method: 'get',
     headers: {
       'Authorization': \`Bearer \${apiKey}\`,
       'Content-Type': 'application/json'

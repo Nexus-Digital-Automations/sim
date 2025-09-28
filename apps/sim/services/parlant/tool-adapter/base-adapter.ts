@@ -20,7 +20,7 @@ import type {
 } from './types'
 
 export abstract class BaseToolAdapter implements ToolAdapter {
-  protected logger = createLogger(`ToolAdapter:${this.constructor.name}`)
+  protected logger = createLogger(`ToolAdapter:${this.constructor.Name}`)
 
   constructor(
     public readonly schema: ParlantToolSchema,
@@ -32,11 +32,11 @@ export abstract class BaseToolAdapter implements ToolAdapter {
    */
   async execute(args: any, context: AdapterContext): Promise<AdapterResult> {
     const startTime = Date.now()
-    const executionId = `${this.schema.name}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const executionId = `${this.schema.Name}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
     this.logger.info('Starting tool execution', {
       executionId,
-      tool: this.schema.name,
+      tool: this.schema.Name,
       userId: context.user_id,
       workspaceId: context.workspace_id,
       argsProvided: !!args,
@@ -71,7 +71,7 @@ export abstract class BaseToolAdapter implements ToolAdapter {
 
       this.logger.info('Tool execution completed', {
         executionId,
-        tool: this.schema.name,
+        tool: this.schema.Name,
         success: result.success,
         executionTime,
       })
@@ -89,7 +89,7 @@ export abstract class BaseToolAdapter implements ToolAdapter {
 
       this.logger.error('Tool execution failed', {
         executionId,
-        tool: this.schema.name,
+        tool: this.schema.Name,
         error: error.message,
         executionTime,
         stack: error.stack,
@@ -246,14 +246,14 @@ export function measureExecutionTime<T>(
  * Utility function to create tool schema with defaults
  */
 export function createToolSchema(
-  name: string,
+  Name: string,
   description: string,
   usage_guidelines: string,
   parameters: Record<string, any>,
   overrides: Partial<ParlantToolSchema> = {}
 ): ParlantToolSchema {
   return {
-    name,
+    Name,
     description,
     usage_guidelines,
     parameters,

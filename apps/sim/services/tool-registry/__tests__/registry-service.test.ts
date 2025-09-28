@@ -64,7 +64,7 @@ vi.mock('../adapters', () => ({
 
 const mockToolDefinition: ToolDefinition = {
   id: 'test_tool',
-  name: 'test_tool',
+  Name: 'test_tool',
   displayName: 'Test Tool',
   description: 'A test tool',
   version: '1.0.0',
@@ -164,7 +164,7 @@ describe('ToolRegistryService', () => {
   describe('createCategory', () => {
     it('should create category successfully', async () => {
       const categoryData = {
-        name: 'Test Category',
+        Name: 'Test Category',
         description: 'A test category',
         sortOrder: 1,
       }

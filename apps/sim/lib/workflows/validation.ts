@@ -11,7 +11,7 @@ function isValidCustomToolSchema(tool: any): boolean {
     if (!schema || typeof schema !== 'object') return false
     const fn = schema.function
     if (!fn || typeof fn !== 'object') return false
-    if (!fn.name || typeof fn.name !== 'string') return false
+    if (!fn.Name || typeof fn.Name !== 'string') return false
 
     const params = fn.parameters
     if (!params || typeof params !== 'object') return false
@@ -48,7 +48,7 @@ export function sanitizeAgentToolsInBlocks(blocks: Record<string, any>): {
           value = JSON.parse(value)
         } catch (_e) {
           warnings.push(
-            `Block ${block.name || blockId}: invalid tools JSON; resetting tools to empty array`
+            `Block ${block.Name || blockId}: invalid tools JSON; resetting tools to empty array`
           )
           value = []
         }
@@ -56,7 +56,7 @@ export function sanitizeAgentToolsInBlocks(blocks: Record<string, any>): {
 
       if (!Array.isArray(value)) {
         // Force to array to keep client safe
-        warnings.push(`Block ${block.name || blockId}: tools value is not an array; resetting`)
+        warnings.push(`Block ${block.Name || blockId}: tools value is not an array; resetting`)
         toolsSubBlock.value = []
         continue
       }
@@ -71,7 +71,7 @@ export function sanitizeAgentToolsInBlocks(blocks: Record<string, any>): {
           if (!ok) {
             logger.warn('Removing invalid custom tool from workflow', {
               blockId,
-              blockName: block.name,
+              blockName: block.Name,
             })
           }
           return ok
@@ -91,7 +91,7 @@ export function sanitizeAgentToolsInBlocks(blocks: Record<string, any>): {
 
       if (cleaned.length !== originalLength) {
         warnings.push(
-          `Block ${block.name || blockId}: removed ${originalLength - cleaned.length} invalid tool(s)`
+          `Block ${block.Name || blockId}: removed ${originalLength - cleaned.length} invalid tool(s)`
         )
       }
 
@@ -100,7 +100,7 @@ export function sanitizeAgentToolsInBlocks(blocks: Record<string, any>): {
       sanitizedBlocks[blockId] = { ...block, subBlocks: { ...subBlocks, tools: toolsSubBlock } }
     } catch (err: any) {
       warnings.push(
-        `Block ${block?.name || blockId}: tools sanitation failed: ${err?.message || String(err)}`
+        `Block ${block?.Name || blockId}: tools sanitation failed: ${err?.message || String(err)}`
       )
     }
   }

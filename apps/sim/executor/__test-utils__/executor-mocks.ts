@@ -160,7 +160,7 @@ export const createMinimalWorkflow = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'starter', name: 'Starter Block' },
+      metadata: { id: 'starter', Name: 'Starter Block' },
     },
     {
       id: 'block1',
@@ -169,7 +169,7 @@ export const createMinimalWorkflow = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'test', name: 'Test Block' },
+      metadata: { id: 'test', Name: 'Test Block' },
     },
   ],
   connections: [
@@ -191,7 +191,7 @@ export const createWorkflowWithCondition = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'starter', name: 'Starter Block' },
+      metadata: { id: 'starter', Name: 'Starter Block' },
     },
     {
       id: 'condition1',
@@ -200,7 +200,7 @@ export const createWorkflowWithCondition = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'condition', name: 'Condition Block' },
+      metadata: { id: 'condition', Name: 'Condition Block' },
     },
     {
       id: 'block1',
@@ -209,7 +209,7 @@ export const createWorkflowWithCondition = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'test', name: 'True Path Block' },
+      metadata: { id: 'test', Name: 'True Path Block' },
     },
     {
       id: 'block2',
@@ -218,7 +218,7 @@ export const createWorkflowWithCondition = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'test', name: 'False Path Block' },
+      metadata: { id: 'test', Name: 'False Path Block' },
     },
   ],
   connections: [
@@ -250,7 +250,7 @@ export const createWorkflowWithLoop = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'starter', name: 'Starter Block' },
+      metadata: { id: 'starter', Name: 'Starter Block' },
     },
     {
       id: 'block1',
@@ -259,7 +259,7 @@ export const createWorkflowWithLoop = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'test', name: 'Loop Block 1' },
+      metadata: { id: 'test', Name: 'Loop Block 1' },
     },
     {
       id: 'block2',
@@ -268,7 +268,7 @@ export const createWorkflowWithLoop = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'test', name: 'Loop Block 2' },
+      metadata: { id: 'test', Name: 'Loop Block 2' },
     },
   ],
   connections: [
@@ -306,7 +306,7 @@ export const createWorkflowWithErrorPath = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'starter', name: 'Starter Block' },
+      metadata: { id: 'starter', Name: 'Starter Block' },
     },
     {
       id: 'block1',
@@ -315,7 +315,7 @@ export const createWorkflowWithErrorPath = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'function', name: 'Function Block' },
+      metadata: { id: 'function', Name: 'Function Block' },
     },
     {
       id: 'error-handler',
@@ -324,7 +324,7 @@ export const createWorkflowWithErrorPath = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'test', name: 'Error Handler Block' },
+      metadata: { id: 'test', Name: 'Error Handler Block' },
     },
     {
       id: 'success-block',
@@ -333,7 +333,7 @@ export const createWorkflowWithErrorPath = (): SerializedWorkflow => ({
       inputs: {},
       outputs: {},
       enabled: true,
-      metadata: { id: 'test', name: 'Success Block' },
+      metadata: { id: 'test', Name: 'Success Block' },
     },
   ],
   connections: [
@@ -361,7 +361,7 @@ export const createWorkflowWithParallel = (distribution?: any): SerializedWorkfl
     {
       id: 'starter',
       position: { x: 0, y: 0 },
-      metadata: { id: 'starter', name: 'Start' },
+      metadata: { id: 'starter', Name: 'Start' },
       config: { tool: 'starter', params: {} },
       inputs: {},
       outputs: {},
@@ -370,7 +370,7 @@ export const createWorkflowWithParallel = (distribution?: any): SerializedWorkfl
     {
       id: 'parallel-1',
       position: { x: 100, y: 0 },
-      metadata: { id: 'parallel', name: 'Test Parallel' },
+      metadata: { id: 'parallel', Name: 'Test Parallel' },
       config: { tool: 'parallel', params: {} },
       inputs: {},
       outputs: {},
@@ -379,7 +379,7 @@ export const createWorkflowWithParallel = (distribution?: any): SerializedWorkfl
     {
       id: 'function-1',
       position: { x: 200, y: 0 },
-      metadata: { id: 'function', name: 'Process Item' },
+      metadata: { id: 'function', Name: 'Process Item' },
       config: {
         tool: 'function',
         params: {
@@ -393,7 +393,7 @@ export const createWorkflowWithParallel = (distribution?: any): SerializedWorkfl
     {
       id: 'endpoint',
       position: { x: 300, y: 0 },
-      metadata: { id: 'generic', name: 'End' },
+      metadata: { id: 'generic', Name: 'End' },
       config: { tool: 'generic', params: {} },
       inputs: {},
       outputs: {},
@@ -431,7 +431,7 @@ export const createWorkflowWithResponse = (): SerializedWorkflow => ({
         },
       },
       enabled: true,
-      metadata: { id: 'starter', name: 'Starter Block' },
+      metadata: { id: 'starter', Name: 'Starter Block' },
     },
     {
       id: 'response',
@@ -450,7 +450,7 @@ export const createWorkflowWithResponse = (): SerializedWorkflow => ({
         },
       },
       enabled: true,
-      metadata: { id: 'response', name: 'Response Block' },
+      metadata: { id: 'response', Name: 'Response Block' },
     },
   ],
   connections: [{ source: 'starter', target: 'response' }],
@@ -781,7 +781,7 @@ export const createWorkflowWithParallelArray = (
     {
       id: 'starter',
       position: { x: 0, y: 0 },
-      metadata: { id: 'starter', name: 'Start' },
+      metadata: { id: 'starter', Name: 'Start' },
       config: { tool: 'starter', params: {} },
       inputs: {},
       outputs: {},
@@ -790,7 +790,7 @@ export const createWorkflowWithParallelArray = (
     {
       id: 'parallel-1',
       position: { x: 100, y: 0 },
-      metadata: { id: 'parallel', name: 'Test Parallel' },
+      metadata: { id: 'parallel', Name: 'Test Parallel' },
       config: { tool: 'parallel', params: {} },
       inputs: {},
       outputs: {},
@@ -799,7 +799,7 @@ export const createWorkflowWithParallelArray = (
     {
       id: 'function-1',
       position: { x: 200, y: 0 },
-      metadata: { id: 'function', name: 'Process Item' },
+      metadata: { id: 'function', Name: 'Process Item' },
       config: {
         tool: 'function',
         params: {
@@ -813,7 +813,7 @@ export const createWorkflowWithParallelArray = (
     {
       id: 'endpoint',
       position: { x: 300, y: 0 },
-      metadata: { id: 'generic', name: 'End' },
+      metadata: { id: 'generic', Name: 'End' },
       config: { tool: 'generic', params: {} },
       inputs: {},
       outputs: {},
@@ -846,7 +846,7 @@ export const createWorkflowWithParallelObject = (
     {
       id: 'starter',
       position: { x: 0, y: 0 },
-      metadata: { id: 'starter', name: 'Start' },
+      metadata: { id: 'starter', Name: 'Start' },
       config: { tool: 'starter', params: {} },
       inputs: {},
       outputs: {},
@@ -855,7 +855,7 @@ export const createWorkflowWithParallelObject = (
     {
       id: 'parallel-1',
       position: { x: 100, y: 0 },
-      metadata: { id: 'parallel', name: 'Test Parallel' },
+      metadata: { id: 'parallel', Name: 'Test Parallel' },
       config: { tool: 'parallel', params: {} },
       inputs: {},
       outputs: {},
@@ -864,7 +864,7 @@ export const createWorkflowWithParallelObject = (
     {
       id: 'function-1',
       position: { x: 200, y: 0 },
-      metadata: { id: 'function', name: 'Process Entry' },
+      metadata: { id: 'function', Name: 'Process Entry' },
       config: {
         tool: 'function',
         params: {
@@ -878,7 +878,7 @@ export const createWorkflowWithParallelObject = (
     {
       id: 'endpoint',
       position: { x: 300, y: 0 },
-      metadata: { id: 'generic', name: 'End' },
+      metadata: { id: 'generic', Name: 'End' },
       config: { tool: 'generic', params: {} },
       inputs: {},
       outputs: {},

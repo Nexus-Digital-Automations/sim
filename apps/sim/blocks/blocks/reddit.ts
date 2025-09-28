@@ -1,17 +1,17 @@
-import { RedditIcon } from '@/components/icons'
+import { redditIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { RedditResponse } from '@/tools/reddit/types'
 
 export const RedditBlock: BlockConfig<RedditResponse> = {
   type: 'reddit',
-  name: 'Reddit',
+  Name: 'Reddit',
   description: 'Access Reddit data and content',
   longDescription:
     'Integrate Reddit into the workflow. Can get posts and comments from a subreddit. Requires OAuth.',
   docsLink: 'https://docs.sim.ai/tools/reddit',
   category: 'tools',
   bgColor: '#FF5700',
-  icon: RedditIcon,
+  icon: redditIcon,
   subBlocks: [
     // Operation selection
     {
@@ -45,7 +45,7 @@ export const RedditBlock: BlockConfig<RedditResponse> = {
       title: 'Subreddit',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Enter subreddit name (without r/)',
+      placeholder: 'Enter subreddit Name (without r/)',
       condition: {
         field: 'operation',
         value: ['get_posts', 'get_comments'],
@@ -187,7 +187,7 @@ export const RedditBlock: BlockConfig<RedditResponse> = {
   inputs: {
     operation: { type: 'string', description: 'Operation to perform' },
     credential: { type: 'string', description: 'Reddit access token' },
-    subreddit: { type: 'string', description: 'Subreddit name' },
+    subreddit: { type: 'string', description: 'Subreddit Name' },
     sort: { type: 'string', description: 'Sort order' },
     time: { type: 'string', description: 'Time filter' },
     limit: { type: 'number', description: 'Maximum posts' },
@@ -196,7 +196,7 @@ export const RedditBlock: BlockConfig<RedditResponse> = {
     commentLimit: { type: 'number', description: 'Maximum comments' },
   },
   outputs: {
-    subreddit: { type: 'string', description: 'Subreddit name' },
+    subreddit: { type: 'string', description: 'Subreddit Name' },
     posts: { type: 'json', description: 'Posts data' },
     post: { type: 'json', description: 'Single post data' },
     comments: { type: 'json', description: 'Comments data' },

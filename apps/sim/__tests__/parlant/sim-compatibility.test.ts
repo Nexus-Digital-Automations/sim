@@ -70,7 +70,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       .insert(user)
       .values({
         id: `simuser-${Date.now()}`,
-        name: 'Sim Compatibility User',
+        Name: 'Sim Compatibility User',
         email: `simcompat-${Date.now()}@example.com`,
         emailVerified: true,
         createdAt: new Date(),
@@ -82,7 +82,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       .insert(workspace)
       .values({
         id: `simworkspace-${Date.now()}`,
-        name: 'Sim Compatibility Workspace',
+        Name: 'Sim Compatibility Workspace',
         ownerId: userResult[0].id,
       })
       .returning({ id: workspace.id })
@@ -93,7 +93,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         id: `simworkflow-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Sim Compatibility Workflow',
+        Name: 'Sim Compatibility Workflow',
         description: 'Test workflow for compatibility validation',
         color: '#3972F6',
         lastSynced: new Date(),
@@ -114,7 +114,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         id: `simkey-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Sim Compatibility API Key',
+        Name: 'Sim Compatibility API Key',
         key: `sk-sim-${Date.now()}`,
         type: 'workspace',
         createdBy: userResult[0].id,
@@ -127,7 +127,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         id: `simkb-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Sim Compatibility KB',
+        Name: 'Sim Compatibility KB',
         description: 'Knowledge base for compatibility testing',
         tokenCount: 1000,
         embeddingModel: 'text-embedding-3-small',
@@ -212,7 +212,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .insert(user)
         .values({
           id: `newuser-${Date.now()}`,
-          name: 'New Test User',
+          Name: 'New Test User',
           email: `newuser-${Date.now()}@example.com`,
           emailVerified: false,
           image: 'https://example.com/avatar.png',
@@ -222,21 +222,21 @@ describe('Sim Functionality Compatibility Tests', () => {
         })
         .returning()
 
-      expect(newUser[0].name).toBe('New Test User')
+      expect(newUser[0].Name).toBe('New Test User')
       expect(newUser[0].emailVerified).toBe(false)
 
       // Test user update
       const updatedUser = await db
         .update(user)
         .set({
-          name: 'Updated Test User',
+          Name: 'Updated Test User',
           emailVerified: true,
           updatedAt: new Date(),
         })
         .where(eq(user.id, newUser[0].id))
         .returning()
 
-      expect(updatedUser[0].name).toBe('Updated Test User')
+      expect(updatedUser[0].Name).toBe('Updated Test User')
       expect(updatedUser[0].emailVerified).toBe(true)
 
       // Test user settings creation
@@ -278,7 +278,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       const userWithRelations = await db
         .select({
           userId: user.id,
-          userName: user.name,
+          userName: user.Name,
           userEmail: user.email,
           theme: settings.theme,
           totalCost: userStats.totalCost,
@@ -354,8 +354,8 @@ describe('Sim Functionality Compatibility Tests', () => {
       // Test complex workspace query with joins
       const workspaceDetails = await db
         .select({
-          workspaceName: workspace.name,
-          ownerName: user.name,
+          workspaceName: workspace.Name,
+          ownerName: user.Name,
           permissionCount: count(permissions.id),
           hasEnvironment: sql<boolean>`CASE WHEN ${workspaceEnvironment.id} IS NOT NULL THEN TRUE ELSE FALSE END`,
           invitationCount: sql<number>`COUNT(DISTINCT ${workspaceInvitation.id})`,
@@ -366,7 +366,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .leftJoin(workspaceEnvironment, eq(workspaceEnvironment.workspaceId, workspace.id))
         .leftJoin(workspaceInvitation, eq(workspaceInvitation.workspaceId, workspace.id))
         .where(eq(workspace.id, ctx.workspaceId))
-        .groupBy(workspace.name, user.name, workspaceEnvironment.id)
+        .groupBy(workspace.Name, user.Name, workspaceEnvironment.id)
 
       expect(workspaceDetails[0].workspaceName).toBe('Sim Compatibility Workspace')
       expect(workspaceDetails[0].permissionCount).toBe(1)
@@ -427,7 +427,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .select({
           sessionId: session.id,
           userId: session.userId,
-          userName: user.name,
+          userName: user.Name,
           userEmail: user.email,
           sessionExpires: session.expiresAt,
         })
@@ -454,7 +454,7 @@ describe('Sim Functionality Compatibility Tests', () => {
             id: 'block-start',
             workflowId: ctx.workflowId,
             type: 'starter',
-            name: 'Start Block',
+            Name: 'Start Block',
             positionX: '100',
             positionY: '100',
             enabled: true,
@@ -477,7 +477,7 @@ describe('Sim Functionality Compatibility Tests', () => {
             id: 'block-api',
             workflowId: ctx.workflowId,
             type: 'api',
-            name: 'API Block',
+            Name: 'API Block',
             positionX: '300',
             positionY: '100',
             enabled: true,
@@ -493,7 +493,7 @@ describe('Sim Functionality Compatibility Tests', () => {
               method: {
                 id: 'method',
                 type: 'dropdown',
-                value: 'GET',
+                value: 'get',
               },
             },
             outputs: {
@@ -551,7 +551,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       const workflowState = await db
         .select({
           workflowId: workflow.id,
-          workflowName: workflow.name,
+          workflowName: workflow.Name,
           blockCount: count(workflowBlocks.id),
           edgeCount: sql<number>`COUNT(DISTINCT ${workflowEdges.id})`,
           subflowCount: sql<number>`COUNT(DISTINCT ${workflowSubflows.id})`,
@@ -563,7 +563,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .leftJoin(workflowEdges, eq(workflowEdges.workflowId, workflow.id))
         .leftJoin(workflowSubflows, eq(workflowSubflows.workflowId, workflow.id))
         .where(eq(workflow.id, ctx.workflowId))
-        .groupBy(workflow.id, workflow.name, workflow.isDeployed, workflow.lastSynced)
+        .groupBy(workflow.id, workflow.Name, workflow.isDeployed, workflow.lastSynced)
 
       expect(workflowState[0].workflowName).toBe('Sim Compatibility Workflow')
       expect(workflowState[0].blockCount).toBe(2)
@@ -574,7 +574,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       const updatedWorkflow = await db
         .update(workflow)
         .set({
-          name: 'Updated Compatibility Workflow',
+          Name: 'Updated Compatibility Workflow',
           description: 'Updated description for testing',
           isDeployed: true,
           deployedAt: new Date(),
@@ -585,7 +585,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .where(eq(workflow.id, ctx.workflowId))
         .returning()
 
-      expect(updatedWorkflow[0].name).toBe('Updated Compatibility Workflow')
+      expect(updatedWorkflow[0].Name).toBe('Updated Compatibility Workflow')
       expect(updatedWorkflow[0].isDeployed).toBe(true)
       expect(updatedWorkflow[0].runCount).toBe(5)
     })
@@ -642,7 +642,7 @@ describe('Sim Functionality Compatibility Tests', () => {
           files: [
             {
               id: 'file-1',
-              name: 'output.json',
+              Name: 'output.json',
               size: 1024,
               type: 'application/json',
             },
@@ -656,7 +656,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       // Test execution analytics query
       const executionAnalytics = await db
         .select({
-          workflowName: workflow.name,
+          workflowName: workflow.Name,
           totalExecutions: count(workflowExecutionLogs.id),
           avgDuration: sql<number>`ROUND(AVG(${workflowExecutionLogs.totalDurationMs}), 2)`,
           totalCost: sql<number>`SUM(CAST(${workflowExecutionLogs.cost}->>'totalCost' AS DECIMAL))`,
@@ -670,7 +670,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .from(workflow)
         .leftJoin(workflowExecutionLogs, eq(workflowExecutionLogs.workflowId, workflow.id))
         .where(eq(workflow.id, ctx.workflowId))
-        .groupBy(workflow.id, workflow.name)
+        .groupBy(workflow.id, workflow.Name)
 
       expect(executionAnalytics[0].totalExecutions).toBe(1)
       expect(executionAnalytics[0].avgDuration).toBe(1500)
@@ -719,7 +719,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       // Test webhook and schedule query
       const workflowTriggers = await db
         .select({
-          workflowName: workflow.name,
+          workflowName: workflow.Name,
           hasSchedule: sql<boolean>`CASE WHEN ${workflowSchedule.id} IS NOT NULL THEN TRUE ELSE FALSE END`,
           scheduleExpression: workflowSchedule.cronExpression,
           scheduleStatus: workflowSchedule.status,
@@ -733,7 +733,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .where(eq(workflow.id, ctx.workflowId))
         .groupBy(
           workflow.id,
-          workflow.name,
+          workflow.Name,
           workflowSchedule.id,
           workflowSchedule.cronExpression,
           workflowSchedule.status
@@ -826,7 +826,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       // Test knowledge base analytics query
       const kbAnalytics = await db
         .select({
-          kbName: knowledgeBase.name,
+          kbName: knowledgeBase.Name,
           totalDocuments: count(document.id),
           totalChunks: sql<number>`SUM(${document.chunkCount})`,
           totalTokens: sql<number>`SUM(${document.tokenCount})`,
@@ -840,7 +840,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .leftJoin(document, eq(document.knowledgeBaseId, knowledgeBase.id))
         .leftJoin(embedding, eq(embedding.documentId, document.id))
         .where(eq(knowledgeBase.id, ctx.knowledgeBaseId))
-        .groupBy(knowledgeBase.id, knowledgeBase.name)
+        .groupBy(knowledgeBase.id, knowledgeBase.Name)
 
       expect(kbAnalytics[0].kbName).toBe('Sim Compatibility KB')
       expect(kbAnalytics[0].totalDocuments).toBe(1)
@@ -883,7 +883,7 @@ describe('Sim Functionality Compatibility Tests', () => {
           schema: {
             type: 'function',
             function: {
-              name: 'process_data',
+              Name: 'process_data',
               description: 'Process data for compatibility testing',
               parameters: {
                 type: 'object',
@@ -933,7 +933,7 @@ describe('Sim Functionality Compatibility Tests', () => {
           id: `mcp-${Date.now()}`,
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Compatibility MCP Server',
+          Name: 'Compatibility MCP Server',
           description: 'MCP server for compatibility testing',
           transport: 'http',
           url: 'http://localhost:8080/mcp',
@@ -949,7 +949,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         })
         .returning()
 
-      expect(mcpServer[0].name).toBe('Compatibility MCP Server')
+      expect(mcpServer[0].Name).toBe('Compatibility MCP Server')
       expect(mcpServer[0].connectionStatus).toBe('connected')
 
       // Test tools query for workspace
@@ -969,7 +969,7 @@ describe('Sim Functionality Compatibility Tests', () => {
             .select({
               toolType: sql<string>`'mcp' as tool_type`,
               toolId: mcpServers.id,
-              toolName: mcpServers.name,
+              toolName: mcpServers.Name,
               isEnabled: mcpServers.enabled,
               lastUsed: mcpServers.lastUsed,
               source: sql<string>`'mcp' as source`,
@@ -1043,8 +1043,8 @@ describe('Sim Functionality Compatibility Tests', () => {
         .select({
           chatId: chat.id,
           chatTitle: chat.title,
-          workflowName: workflow.name,
-          userName: user.name,
+          workflowName: workflow.Name,
+          userName: user.Name,
           isActive: chat.isActive,
           authType: chat.authType,
           customizations: chat.customizations,
@@ -1061,7 +1061,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       // Test copilot analytics
       const copilotAnalytics = await db
         .select({
-          workflowName: workflow.name,
+          workflowName: workflow.Name,
           totalChats: count(copilotChats.id),
           totalCheckpoints: sql<number>`COUNT(DISTINCT ${workflowCheckpoints.id})`,
           avgMessagesPerChat: sql<number>`ROUND(AVG(JSONB_ARRAY_LENGTH(${copilotChats.messages})), 2)`,
@@ -1072,7 +1072,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .leftJoin(copilotChats, eq(copilotChats.workflowId, workflow.id))
         .leftJoin(workflowCheckpoints, eq(workflowCheckpoints.workflowId, workflow.id))
         .where(eq(workflow.id, ctx.workflowId))
-        .groupBy(workflow.id, workflow.name)
+        .groupBy(workflow.id, workflow.Name)
 
       expect(copilotAnalytics[0].totalChats).toBe(1)
       expect(copilotAnalytics[0].totalCheckpoints).toBe(1)
@@ -1161,7 +1161,7 @@ describe('Sim Functionality Compatibility Tests', () => {
           id: `template-${Date.now()}`,
           workflowId: ctx.workflowId,
           userId: ctx.userId,
-          name: 'Compatibility Test Template',
+          Name: 'Compatibility Test Template',
           description: 'A template for testing compatibility features',
           author: 'Sim Compatibility User',
           views: 0,
@@ -1174,14 +1174,14 @@ describe('Sim Functionality Compatibility Tests', () => {
               'start-block': {
                 id: 'start-block',
                 type: 'starter',
-                name: 'Start',
+                Name: 'Start',
                 position: { x: 100, y: 100 },
                 config: { trigger: 'manual' },
               },
               'test-block': {
                 id: 'test-block',
                 type: 'function',
-                name: 'Run Tests',
+                Name: 'Run Tests',
                 position: { x: 300, y: 100 },
                 config: {
                   code: 'function runTests() { return { success: true }; }',
@@ -1204,7 +1204,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         })
         .returning()
 
-      expect(template[0].name).toBe('Compatibility Test Template')
+      expect(template[0].Name).toBe('Compatibility Test Template')
       expect(template[0].category).toBe('Testing')
 
       // Test template starring
@@ -1229,7 +1229,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       // Test template analytics query
       const templateAnalytics = await db
         .select({
-          templateName: templates.name,
+          templateName: templates.Name,
           templateAuthor: templates.author,
           templateCategory: templates.category,
           totalViews: templates.views,
@@ -1252,11 +1252,11 @@ describe('Sim Functionality Compatibility Tests', () => {
       const popularTemplates = await db
         .select({
           templateId: templates.id,
-          templateName: templates.name,
+          templateName: templates.Name,
           templateCategory: templates.category,
           stars: templates.stars,
           views: templates.views,
-          authorName: user.name,
+          authorName: user.Name,
           starCount: count(templateStars.id),
         })
         .from(templates)
@@ -1264,11 +1264,11 @@ describe('Sim Functionality Compatibility Tests', () => {
         .leftJoin(templateStars, eq(templateStars.templateId, templates.id))
         .groupBy(
           templates.id,
-          templates.name,
+          templates.Name,
           templates.category,
           templates.stars,
           templates.views,
-          user.name
+          user.Name
         )
         .orderBy(desc(templates.stars), desc(templates.views))
         .limit(10)
@@ -1331,7 +1331,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       const billingData = await db
         .select({
           userId: user.id,
-          userName: user.name,
+          userName: user.Name,
           totalManualExecutions: userStats.totalManualExecutions,
           totalApiCalls: userStats.totalApiCalls,
           totalCost: userStats.totalCost,
@@ -1388,7 +1388,7 @@ describe('Sim Functionality Compatibility Tests', () => {
             edges: [],
             version: '1.0',
           },
-          name: 'Compatibility Test Workflow',
+          Name: 'Compatibility Test Workflow',
           description: 'A workflow for testing compatibility features',
           authorId: ctx.userId,
           authorName: 'Sim Compatibility User',
@@ -1397,13 +1397,13 @@ describe('Sim Functionality Compatibility Tests', () => {
         })
         .returning()
 
-      expect(marketplaceEntry[0].name).toBe('Compatibility Test Workflow')
+      expect(marketplaceEntry[0].Name).toBe('Compatibility Test Workflow')
       expect(marketplaceEntry[0].category).toBe('Testing')
 
       // Test subscription and marketplace analytics
       const userSubscriptionData = await db
         .select({
-          userName: user.name,
+          userName: user.Name,
           userEmail: user.email,
           subscriptionPlan: subscription.plan,
           subscriptionStatus: subscription.status,
@@ -1418,7 +1418,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .where(eq(user.id, ctx.userId))
         .groupBy(
           user.id,
-          user.name,
+          user.Name,
           user.email,
           subscription.plan,
           subscription.status,
@@ -1440,7 +1440,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Test Parlant Agent',
+          Name: 'Test Parlant Agent',
           description: 'Agent to test cross-system compatibility',
         })
         .returning()
@@ -1475,8 +1475,8 @@ describe('Sim Functionality Compatibility Tests', () => {
       const simWorkspaceQuery = await db
         .select({
           workspaceId: workspace.id,
-          workspaceName: workspace.name,
-          ownerName: user.name,
+          workspaceName: workspace.Name,
+          ownerName: user.Name,
           workflowCount: count(workflow.id),
           apiKeyCount: sql<number>`COUNT(DISTINCT ${apiKey.id})`,
           kbCount: sql<number>`COUNT(DISTINCT ${knowledgeBase.id})`,
@@ -1489,7 +1489,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .leftJoin(knowledgeBase, eq(knowledgeBase.workspaceId, workspace.id))
         .leftJoin(chat, eq(chat.workflowId, workflow.id))
         .where(eq(workspace.id, ctx.workspaceId))
-        .groupBy(workspace.id, workspace.name, user.name)
+        .groupBy(workspace.id, workspace.Name, user.Name)
 
       // Sim queries should return correct data despite Parlant tables existing
       expect(simWorkspaceQuery[0].workspaceName).toBe('Sim Compatibility Workspace')
@@ -1501,7 +1501,7 @@ describe('Sim Functionality Compatibility Tests', () => {
       const coexistenceQuery = await db
         .select({
           workspaceId: workspace.id,
-          workspaceName: workspace.name,
+          workspaceName: workspace.Name,
           // Sim entities
           simWorkflows: count(workflow.id),
           simApiKeys: sql<number>`COUNT(DISTINCT ${apiKey.id})`,
@@ -1519,7 +1519,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         .leftJoin(parlantSession, eq(parlantSession.workspaceId, workspace.id))
         .leftJoin(parlantEvent, eq(parlantEvent.sessionId, parlantSession.id))
         .where(eq(workspace.id, ctx.workspaceId))
-        .groupBy(workspace.id, workspace.name)
+        .groupBy(workspace.id, workspace.Name)
 
       expect(coexistenceQuery[0].simWorkflows).toBe(1)
       expect(coexistenceQuery[0].parlantAgents).toBe(1)
@@ -1533,7 +1533,7 @@ describe('Sim Functionality Compatibility Tests', () => {
           id: `workflow-after-parlant-${Date.now()}`,
           userId: ctx.userId,
           workspaceId: ctx.workspaceId,
-          name: 'Workflow Created After Parlant',
+          Name: 'Workflow Created After Parlant',
           description: 'This workflow was created after Parlant data',
           color: '#FF5722',
           lastSynced: new Date(),
@@ -1542,7 +1542,7 @@ describe('Sim Functionality Compatibility Tests', () => {
         })
         .returning()
 
-      expect(newWorkflow[0].name).toBe('Workflow Created After Parlant')
+      expect(newWorkflow[0].Name).toBe('Workflow Created After Parlant')
 
       // Final verification: Both systems can operate simultaneously
       const finalVerification = await Promise.all([

@@ -26,28 +26,28 @@ export class ToolAdapterRegistry {
    * Register a new tool adapter
    */
   register(adapter: ToolAdapter): void {
-    const name = adapter.schema.name
+    const Name = adapter.schema.Name
 
-    if (this.adapters.has(name)) {
-      logger.warn('Overriding existing tool adapter', { toolName: name })
+    if (this.adapters.has(Name)) {
+      logger.warn('Overriding existing tool adapter', { toolName: Name })
     }
 
-    this.adapters.set(name, adapter)
+    this.adapters.set(Name, adapter)
 
     // Update category index
     if (!this.categories.has(adapter.schema.category)) {
       this.categories.set(adapter.schema.category, new Set())
     }
-    this.categories.get(adapter.schema.category)!.add(name)
+    this.categories.get(adapter.schema.category)!.add(Name)
 
     // Update permission index
     if (!this.permissions.has(adapter.schema.permission_level)) {
       this.permissions.set(adapter.schema.permission_level, new Set())
     }
-    this.permissions.get(adapter.schema.permission_level)!.add(name)
+    this.permissions.get(adapter.schema.permission_level)!.add(Name)
 
     logger.info('Registered tool adapter', {
-      toolName: name,
+      toolName: Name,
       category: adapter.schema.category,
       permissionLevel: adapter.schema.permission_level,
     })
@@ -56,44 +56,44 @@ export class ToolAdapterRegistry {
   /**
    * Unregister a tool adapter
    */
-  unregister(name: string): boolean {
-    const adapter = this.adapters.get(name)
+  unregister(Name: string): boolean {
+    const adapter = this.adapters.get(Name)
     if (!adapter) {
       return false
     }
 
     // Remove from indexes
-    this.categories.get(adapter.schema.category)?.delete(name)
-    this.permissions.get(adapter.schema.permission_level)?.delete(name)
+    this.categories.get(adapter.schema.category)?.delete(Name)
+    this.permissions.get(adapter.schema.permission_level)?.delete(Name)
 
     // Cleanup if supported
     if (adapter.cleanup) {
       adapter.cleanup().catch((error) => {
-        logger.warn('Error during adapter cleanup', { toolName: name, error: error.message })
+        logger.warn('Error during adapter cleanup', { toolName: Name, error: error.message })
       })
     }
 
-    this.adapters.delete(name)
-    logger.info('Unregistered tool adapter', { toolName: name })
+    this.adapters.delete(Name)
+    logger.info('Unregistered tool adapter', { toolName: Name })
     return true
   }
 
   /**
    * Get a specific tool adapter
    */
-  get(name: string): ToolAdapter | undefined {
-    return this.adapters.get(name)
+  get(Name: string): ToolAdapter | undefined {
+    return this.adapters.get(Name)
   }
 
   /**
    * Check if a tool exists
    */
-  has(name: string): boolean {
-    return this.adapters.has(name)
+  has(Name: string): boolean {
+    return this.adapters.has(Name)
   }
 
   /**
-   * Get all registered tool names
+   * Get all registered tool NAMES
    */
   getToolNames(): string[] {
     return Array.from(this.adapters.keys())
@@ -112,7 +112,7 @@ export class ToolAdapterRegistry {
   getByCategory(category: ToolCategory): ToolAdapter[] {
     const toolNames = this.categories.get(category) || new Set()
     return Array.from(toolNames)
-      .map((name) => this.adapters.get(name))
+      .map((Name) => this.adapters.get(Name))
       .filter((adapter): adapter is ToolAdapter => adapter !== undefined)
   }
 
@@ -122,7 +122,7 @@ export class ToolAdapterRegistry {
   getByPermissionLevel(level: PermissionLevel): ToolAdapter[] {
     const toolNames = this.permissions.get(level) || new Set()
     return Array.from(toolNames)
-      .map((name) => this.adapters.get(name))
+      .map((Name) => this.adapters.get(Name))
       .filter((adapter): adapter is ToolAdapter => adapter !== undefined)
   }
 
@@ -146,7 +146,7 @@ export class ToolAdapterRegistry {
 
     return Array.from(this.adapters.values()).filter((adapter) => {
       return (
-        adapter.schema.name.toLowerCase().includes(lowerQuery) ||
+        adapter.schema.Name.toLowerCase().includes(lowerQuery) ||
         adapter.schema.description.toLowerCase().includes(lowerQuery) ||
         adapter.schema.category.toLowerCase().includes(lowerQuery) ||
         adapter.schema.usage_guidelines.toLowerCase().includes(lowerQuery)
@@ -172,7 +172,7 @@ export class ToolAdapterRegistry {
           recommendations.push(...toolRecommendations)
         } catch (error: any) {
           logger.warn('Error getting recommendations from tool', {
-            toolName: adapter.schema.name,
+            toolName: adapter.schema.Name,
             error: error.message,
           })
         }
@@ -270,8 +270,8 @@ export function registerToolAdapter(adapter: ToolAdapter): void {
   globalToolAdapterRegistry.register(adapter)
 }
 
-export function getToolAdapter(name: string): ToolAdapter | undefined {
-  return globalToolAdapterRegistry.get(name)
+export function getToolAdapter(Name: string): ToolAdapter | undefined {
+  return globalToolAdapterRegistry.get(Name)
 }
 
 export function getAllToolSchemas(): ParlantToolSchema[] {

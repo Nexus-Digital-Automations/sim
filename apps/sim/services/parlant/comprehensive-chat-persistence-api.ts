@@ -49,7 +49,7 @@ export class ChatPersistenceError extends Error {
     public details?: Record<string, any>
   ) {
     super(message)
-    this.name = 'ChatPersistenceError'
+    this.Name = 'ChatPersistenceError'
   }
 }
 

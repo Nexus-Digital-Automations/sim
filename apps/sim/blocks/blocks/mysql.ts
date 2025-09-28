@@ -1,17 +1,17 @@
-import { MySQLIcon } from '@/components/icons'
+import { mySqlicon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { MySQLResponse } from '@/tools/mysql/types'
 
 export const MySQLBlock: BlockConfig<MySQLResponse> = {
   type: 'mysql',
-  name: 'MySQL',
+  Name: 'MySQL',
   description: 'Connect to MySQL database',
   longDescription:
     'Integrate MySQL into the workflow. Can query, insert, update, delete, and execute raw SQL.',
   docsLink: 'https://docs.sim.ai/tools/mysql',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: MySQLIcon,
+  icon: mySqlicon,
   subBlocks: [
     {
       id: 'operation',
@@ -145,7 +145,7 @@ Return ONLY the SQL query. Do not include any explanations, markdown formatting,
 ### EXAMPLES
 
 **Simple Select**: "Get all active users"
-→ SELECT id, name, email, created_at 
+→ SELECT id, Name, email, created_at 
   FROM users 
   WHERE active = 1 
   ORDER BY created_at DESC;
@@ -153,21 +153,21 @@ Return ONLY the SQL query. Do not include any explanations, markdown formatting,
 **Complex Join**: "Get users with their order counts and total spent"
 → SELECT 
       u.id,
-      u.name,
+      u.Name,
       u.email,
       COUNT(o.id) as order_count,
       IFNULL(SUM(o.total), 0) as total_spent
   FROM users u
   LEFT JOIN orders o ON u.id = o.user_id
   WHERE u.active = 1
-  GROUP BY u.id, u.name, u.email
+  GROUP BY u.id, u.Name, u.email
   HAVING COUNT(o.id) > 0
   ORDER BY total_spent DESC;
 
 **With Subquery**: "Get top 10 products by sales"
 → SELECT 
       p.id,
-      p.name,
+      p.Name,
       (SELECT SUM(oi.quantity * oi.price)
        FROM order_items oi 
        JOIN orders o ON oi.order_id = o.id
@@ -220,7 +220,7 @@ Return ONLY the SQL query. Do not include any explanations, markdown formatting,
 ### EXAMPLES
 
 **Simple Select**: "Get all active users"
-→ SELECT id, name, email, created_at 
+→ SELECT id, Name, email, created_at 
   FROM users 
   WHERE active = 1 
   ORDER BY created_at DESC;
@@ -228,21 +228,21 @@ Return ONLY the SQL query. Do not include any explanations, markdown formatting,
 **Complex Join**: "Get users with their order counts and total spent"
 → SELECT 
       u.id,
-      u.name,
+      u.Name,
       u.email,
       COUNT(o.id) as order_count,
       IFNULL(SUM(o.total), 0) as total_spent
   FROM users u
   LEFT JOIN orders o ON u.id = o.user_id
   WHERE u.active = 1
-  GROUP BY u.id, u.name, u.email
+  GROUP BY u.id, u.Name, u.email
   HAVING COUNT(o.id) > 0
   ORDER BY total_spent DESC;
 
 **With Subquery**: "Get top 10 products by sales"
 → SELECT 
       p.id,
-      p.name,
+      p.Name,
       (SELECT SUM(oi.quantity * oi.price)
        FROM order_items oi 
        JOIN orders o ON oi.order_id = o.id
@@ -266,7 +266,7 @@ Return ONLY the SQL query - no explanations, no markdown, no extra text.`,
       title: 'Data (JSON)',
       type: 'code',
       layout: 'full',
-      placeholder: '{\n  "name": "John Doe",\n  "email": "john@example.com",\n  "active": true\n}',
+      placeholder: '{\n  "Name": "John Doe",\n  "email": "john@example.com",\n  "active": true\n}',
       condition: { field: 'operation', value: 'insert' },
       required: true,
     },
@@ -276,7 +276,7 @@ Return ONLY the SQL query - no explanations, no markdown, no extra text.`,
       title: 'Update Data (JSON)',
       type: 'code',
       layout: 'full',
-      placeholder: '{\n  "name": "Jane Doe",\n  "email": "jane@example.com"\n}',
+      placeholder: '{\n  "Name": "Jane Doe",\n  "email": "jane@example.com"\n}',
       condition: { field: 'operation', value: 'update' },
       required: true,
     },
@@ -361,11 +361,11 @@ Return ONLY the SQL query - no explanations, no markdown, no extra text.`,
     operation: { type: 'string', description: 'Database operation to perform' },
     host: { type: 'string', description: 'Database host' },
     port: { type: 'string', description: 'Database port' },
-    database: { type: 'string', description: 'Database name' },
+    database: { type: 'string', description: 'Database Name' },
     username: { type: 'string', description: 'Database username' },
     password: { type: 'string', description: 'Database password' },
     ssl: { type: 'string', description: 'SSL mode' },
-    table: { type: 'string', description: 'Table name' },
+    table: { type: 'string', description: 'Table Name' },
     query: { type: 'string', description: 'SQL query to execute' },
     data: { type: 'json', description: 'Data for insert/update operations' },
     where: { type: 'string', description: 'WHERE clause for update/delete' },

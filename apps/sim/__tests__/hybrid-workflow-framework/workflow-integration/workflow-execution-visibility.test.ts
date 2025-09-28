@@ -41,7 +41,7 @@ vi.mock('@/lib/logs/console/logger', () => ({
 vi.mock('@/blocks', () => ({
   getBlock: vi.fn((type: string) => ({
     type,
-    name: `Mock ${type} block`,
+    Name: `Mock ${type} block`,
     description: `Mock block for ${type}`,
     icon: 'test-icon',
     category: 'test',
@@ -94,12 +94,12 @@ describe('Workflow Integration Testing Framework', () => {
 
     mockWorkflowState = {
       id: testWorkflowId,
-      name: 'Integration Test Workflow',
+      Name: 'Integration Test Workflow',
       blocks: {
         'exec-block-1': {
           id: 'exec-block-1',
           type: 'starter',
-          name: 'Start Execution',
+          Name: 'Start Execution',
           position: { x: 100, y: 100 },
           enabled: true,
           config: { message: 'Starting execution test' },
@@ -107,7 +107,7 @@ describe('Workflow Integration Testing Framework', () => {
         'exec-block-2': {
           id: 'exec-block-2',
           type: 'condition',
-          name: 'Execution Decision',
+          Name: 'Execution Decision',
           position: { x: 300, y: 100 },
           enabled: true,
           config: { condition: 'execution.status === "ready"' },
@@ -115,15 +115,15 @@ describe('Workflow Integration Testing Framework', () => {
         'exec-block-3': {
           id: 'exec-block-3',
           type: 'webhook',
-          name: 'Execute API',
+          Name: 'Execute API',
           position: { x: 500, y: 100 },
           enabled: true,
-          config: { url: 'https://execution.example.com', method: 'POST' },
+          config: { url: 'https://execution.example.com', method: 'post' },
         } as BlockState,
         'exec-block-4': {
           id: 'exec-block-4',
           type: 'notification',
-          name: 'Notify Complete',
+          Name: 'Notify Complete',
           position: { x: 700, y: 100 },
           enabled: true,
           config: { message: 'Execution completed successfully' },
@@ -305,11 +305,11 @@ describe('Workflow Integration Testing Framework', () => {
 
       // Should format workflow for chat display
       const chatFormattedWorkflow = {
-        name: context.reactFlowState.name,
+        Name: context.reactFlowState.Name,
         totalBlocks: Object.keys(context.reactFlowState.blocks).length,
         totalConnections: context.reactFlowState.edges.length,
         blocks: Object.values(context.reactFlowState.blocks).map((block) => ({
-          name: block.name,
+          Name: block.Name,
           type: block.type,
           enabled: block.enabled,
         })),
@@ -317,7 +317,7 @@ describe('Workflow Integration Testing Framework', () => {
 
       expect(chatFormattedWorkflow.totalBlocks).toBe(4)
       expect(chatFormattedWorkflow.totalConnections).toBe(3)
-      expect(chatFormattedWorkflow.blocks[0].name).toBe('Start Execution')
+      expect(chatFormattedWorkflow.blocks[0].Name).toBe('Start Execution')
     })
   })
 
@@ -329,7 +329,7 @@ describe('Workflow Integration Testing Framework', () => {
       const chatCommand = {
         type: 'modify_block',
         blockId: 'exec-block-1',
-        property: 'name',
+        property: 'Name',
         value: 'Modified Start Block',
         userId: 'test-user',
       }
@@ -340,7 +340,7 @@ describe('Workflow Integration Testing Framework', () => {
           {
             type: 'BLOCK_MODIFIED',
             blockId: 'exec-block-1',
-            changes: { name: 'Modified Start Block' },
+            changes: { Name: 'Modified Start Block' },
           },
         ],
       })
@@ -362,7 +362,7 @@ describe('Workflow Integration Testing Framework', () => {
       const addBlockCommand = {
         type: 'add_block',
         blockType: 'email',
-        name: 'Send Email',
+        Name: 'Send Email',
         position: { x: 600, y: 200 },
         config: {
           to: 'user@example.com',
@@ -380,7 +380,7 @@ describe('Workflow Integration Testing Framework', () => {
             block: {
               id: 'new-email-block',
               type: 'email',
-              name: 'Send Email',
+              Name: 'Send Email',
               position: { x: 600, y: 200 },
               enabled: true,
               config: addBlockCommand.config,
@@ -393,7 +393,7 @@ describe('Workflow Integration Testing Framework', () => {
 
       expect(result.success).toBe(true)
       expect(result.changes[0].type).toBe('BLOCK_ADDED')
-      expect(result.changes[0].block.name).toBe('Send Email')
+      expect(result.changes[0].block.Name).toBe('Send Email')
     })
 
     it('should connect blocks via chat commands', async () => {
@@ -473,7 +473,7 @@ describe('Workflow Integration Testing Framework', () => {
       const invalidCommand = {
         type: 'modify_block',
         blockId: 'non-existent-block',
-        property: 'name',
+        property: 'Name',
         value: 'Invalid Modification',
       }
 
@@ -519,8 +519,8 @@ describe('Workflow Integration Testing Framework', () => {
             description: 'Add logging blocks to track execution progress',
             priority: 'low',
             suggestedBlocks: [
-              { type: 'log', name: 'Log Start', position: 'after:exec-block-1' },
-              { type: 'log', name: 'Log Complete', position: 'after:exec-block-4' },
+              { type: 'log', Name: 'Log Start', position: 'after:exec-block-1' },
+              { type: 'log', Name: 'Log Complete', position: 'after:exec-block-4' },
             ],
           },
         ],
@@ -767,7 +767,7 @@ describe('Workflow Integration Testing Framework', () => {
       const modificationPromise = mockChatService.modifyWorkflowViaChat(testWorkflowId, {
         type: 'modify_block',
         blockId: 'exec-block-1',
-        property: 'name',
+        property: 'Name',
         value: 'Modified During Execution',
       })
 

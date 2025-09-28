@@ -76,7 +76,7 @@ export async function getUsersWithPermissions(workspaceId: string): Promise<
   Array<{
     userId: string
     email: string
-    name: string
+    Name: string
     permissionType: PermissionType
   }>
 > {
@@ -84,7 +84,7 @@ export async function getUsersWithPermissions(workspaceId: string): Promise<
     .select({
       userId: user.id,
       email: user.email,
-      name: user.name,
+      Name: user.Name,
       permissionType: permissions.permissionType,
     })
     .from(permissions)
@@ -95,7 +95,7 @@ export async function getUsersWithPermissions(workspaceId: string): Promise<
   return usersWithPermissions.map((row) => ({
     userId: row.userId,
     email: row.email,
-    name: row.name,
+    Name: row.Name,
     permissionType: row.permissionType,
   }))
 }
@@ -134,7 +134,7 @@ export async function hasWorkspaceAdminAccess(
  * @param userId - The ID of the user to check
  * @returns Promise<Array<{
  *   id: string
- *   name: string
+ *   Name: string
  *   ownerId: string
  *   accessType: 'direct' | 'owner'
  * }>> - A list of workspaces that the user has access to
@@ -142,7 +142,7 @@ export async function hasWorkspaceAdminAccess(
 export async function getManageableWorkspaces(userId: string): Promise<
   Array<{
     id: string
-    name: string
+    Name: string
     ownerId: string
     accessType: 'direct' | 'owner'
   }>
@@ -150,7 +150,7 @@ export async function getManageableWorkspaces(userId: string): Promise<
   const ownedWorkspaces = await db
     .select({
       id: workspace.id,
-      name: workspace.name,
+      Name: workspace.Name,
       ownerId: workspace.ownerId,
     })
     .from(workspace)
@@ -159,7 +159,7 @@ export async function getManageableWorkspaces(userId: string): Promise<
   const adminWorkspaces = await db
     .select({
       id: workspace.id,
-      name: workspace.name,
+      Name: workspace.Name,
       ownerId: workspace.ownerId,
     })
     .from(workspace)

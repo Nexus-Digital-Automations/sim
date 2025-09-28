@@ -26,11 +26,11 @@ vi.mock('@sim/db/schema', () => ({
   user: {
     id: 'user_id',
     email: 'user_email',
-    name: 'user_name',
+    Name: 'user_name',
   },
   workspace: {
     id: 'workspace_id',
-    name: 'workspace_name',
+    Name: 'workspace_name',
     ownerId: 'workspace_owner_id',
   },
 }))
@@ -245,7 +245,7 @@ describe('Permission Utils', () => {
         {
           userId: 'user1',
           email: 'alice@example.com',
-          name: 'Alice Smith',
+          Name: 'Alice Smith',
           permissionType: 'admin' as PermissionType,
         },
       ]
@@ -259,7 +259,7 @@ describe('Permission Utils', () => {
         {
           userId: 'user1',
           email: 'alice@example.com',
-          name: 'Alice Smith',
+          Name: 'Alice Smith',
           permissionType: 'admin',
         },
       ])
@@ -270,19 +270,19 @@ describe('Permission Utils', () => {
         {
           userId: 'user1',
           email: 'admin@example.com',
-          name: 'Admin User',
+          Name: 'Admin User',
           permissionType: 'admin' as PermissionType,
         },
         {
           userId: 'user2',
           email: 'writer@example.com',
-          name: 'Writer User',
+          Name: 'Writer User',
           permissionType: 'write' as PermissionType,
         },
         {
           userId: 'user3',
           email: 'reader@example.com',
-          name: 'Reader User',
+          Name: 'Reader User',
           permissionType: 'read' as PermissionType,
         },
       ]
@@ -298,12 +298,12 @@ describe('Permission Utils', () => {
       expect(result[2].permissionType).toBe('read')
     })
 
-    it('should handle users with empty names', async () => {
+    it('should handle users with empty NAMES', async () => {
       const mockUsersResults = [
         {
           userId: 'user1',
           email: 'test@example.com',
-          name: '',
+          Name: '',
           permissionType: 'read' as PermissionType,
         },
       ]
@@ -313,7 +313,7 @@ describe('Permission Utils', () => {
 
       const result = await getUsersWithPermissions('workspace123')
 
-      expect(result[0].name).toBe('')
+      expect(result[0].Name).toBe('')
     })
   })
 
@@ -439,7 +439,7 @@ describe('Permission Utils', () => {
       expect(result).toBeNull()
     })
 
-    it('should handle unicode characters in entity names', async () => {
+    it('should handle unicode characters in entity NAMES', async () => {
       const chain = createMockChain([{ permissionType: 'read' as PermissionType }])
       mockDb.select.mockReturnValue(chain)
 
@@ -498,8 +498,8 @@ describe('Permission Utils', () => {
 
     it('should return owned workspaces', async () => {
       const mockWorkspaces = [
-        { id: 'ws1', name: 'My Workspace 1', ownerId: 'user123' },
-        { id: 'ws2', name: 'My Workspace 2', ownerId: 'user123' },
+        { id: 'ws1', Name: 'My Workspace 1', ownerId: 'user123' },
+        { id: 'ws2', Name: 'My Workspace 2', ownerId: 'user123' },
       ]
 
       let callCount = 0
@@ -514,13 +514,13 @@ describe('Permission Utils', () => {
       const result = await getManageableWorkspaces('user123')
 
       expect(result).toEqual([
-        { id: 'ws1', name: 'My Workspace 1', ownerId: 'user123', accessType: 'owner' },
-        { id: 'ws2', name: 'My Workspace 2', ownerId: 'user123', accessType: 'owner' },
+        { id: 'ws1', Name: 'My Workspace 1', ownerId: 'user123', accessType: 'owner' },
+        { id: 'ws2', Name: 'My Workspace 2', ownerId: 'user123', accessType: 'owner' },
       ])
     })
 
     it('should return workspaces with direct admin permissions', async () => {
-      const mockAdminWorkspaces = [{ id: 'ws1', name: 'Shared Workspace', ownerId: 'other-user' }]
+      const mockAdminWorkspaces = [{ id: 'ws1', Name: 'Shared Workspace', ownerId: 'other-user' }]
 
       let callCount = 0
       mockDb.select.mockImplementation(() => {
@@ -534,18 +534,18 @@ describe('Permission Utils', () => {
       const result = await getManageableWorkspaces('user123')
 
       expect(result).toEqual([
-        { id: 'ws1', name: 'Shared Workspace', ownerId: 'other-user', accessType: 'direct' },
+        { id: 'ws1', Name: 'Shared Workspace', ownerId: 'other-user', accessType: 'direct' },
       ])
     })
 
     it('should combine owned and admin workspaces without duplicates', async () => {
       const mockOwnedWorkspaces = [
-        { id: 'ws1', name: 'My Workspace', ownerId: 'user123' },
-        { id: 'ws2', name: 'Another Workspace', ownerId: 'user123' },
+        { id: 'ws1', Name: 'My Workspace', ownerId: 'user123' },
+        { id: 'ws2', Name: 'Another Workspace', ownerId: 'user123' },
       ]
       const mockAdminWorkspaces = [
-        { id: 'ws1', name: 'My Workspace', ownerId: 'user123' }, // Duplicate (should be filtered)
-        { id: 'ws3', name: 'Shared Workspace', ownerId: 'other-user' },
+        { id: 'ws1', Name: 'My Workspace', ownerId: 'user123' }, // Duplicate (should be filtered)
+        { id: 'ws3', Name: 'Shared Workspace', ownerId: 'other-user' },
       ]
 
       let callCount = 0
@@ -561,14 +561,14 @@ describe('Permission Utils', () => {
 
       expect(result).toHaveLength(3)
       expect(result).toEqual([
-        { id: 'ws1', name: 'My Workspace', ownerId: 'user123', accessType: 'owner' },
-        { id: 'ws2', name: 'Another Workspace', ownerId: 'user123', accessType: 'owner' },
-        { id: 'ws3', name: 'Shared Workspace', ownerId: 'other-user', accessType: 'direct' },
+        { id: 'ws1', Name: 'My Workspace', ownerId: 'user123', accessType: 'owner' },
+        { id: 'ws2', Name: 'Another Workspace', ownerId: 'user123', accessType: 'owner' },
+        { id: 'ws3', Name: 'Shared Workspace', ownerId: 'other-user', accessType: 'direct' },
       ])
     })
 
-    it('should handle empty workspace names', async () => {
-      const mockWorkspaces = [{ id: 'ws1', name: '', ownerId: 'user123' }]
+    it('should handle empty workspace NAMES', async () => {
+      const mockWorkspaces = [{ id: 'ws1', Name: '', ownerId: 'user123' }]
 
       let callCount = 0
       mockDb.select.mockImplementation(() => {
@@ -581,13 +581,13 @@ describe('Permission Utils', () => {
 
       const result = await getManageableWorkspaces('user123')
 
-      expect(result[0].name).toBe('')
+      expect(result[0].Name).toBe('')
     })
 
     it('should handle multiple admin permissions for same workspace', async () => {
       const mockAdminWorkspaces = [
-        { id: 'ws1', name: 'Shared Workspace', ownerId: 'other-user' },
-        { id: 'ws1', name: 'Shared Workspace', ownerId: 'other-user' }, // Duplicate
+        { id: 'ws1', Name: 'Shared Workspace', ownerId: 'other-user' },
+        { id: 'ws1', Name: 'Shared Workspace', ownerId: 'other-user' }, // Duplicate
       ]
 
       let callCount = 0

@@ -14,7 +14,7 @@ describe('Multi-Input Routing Scenarios', () => {
         {
           id: 'start',
           position: { x: 0, y: 0 },
-          metadata: { id: BlockType.STARTER, name: 'Start' },
+          metadata: { id: BlockType.STARTER, Name: 'Start' },
           config: { tool: BlockType.STARTER, params: {} },
           inputs: {},
           outputs: {},
@@ -23,7 +23,7 @@ describe('Multi-Input Routing Scenarios', () => {
         {
           id: 'router-1',
           position: { x: 150, y: 0 },
-          metadata: { id: BlockType.ROUTER, name: 'Router 1' },
+          metadata: { id: BlockType.ROUTER, Name: 'Router 1' },
           config: {
             tool: BlockType.ROUTER,
             params: {
@@ -38,7 +38,7 @@ describe('Multi-Input Routing Scenarios', () => {
         {
           id: 'function-1',
           position: { x: 300, y: -100 },
-          metadata: { id: BlockType.FUNCTION, name: 'Function 1' },
+          metadata: { id: BlockType.FUNCTION, Name: 'Function 1' },
           config: {
             tool: BlockType.FUNCTION,
             params: { code: "return 'hi'" },
@@ -50,7 +50,7 @@ describe('Multi-Input Routing Scenarios', () => {
         {
           id: 'function-2',
           position: { x: 300, y: 100 },
-          metadata: { id: BlockType.FUNCTION, name: 'Function 2' },
+          metadata: { id: BlockType.FUNCTION, Name: 'Function 2' },
           config: {
             tool: BlockType.FUNCTION,
             params: { code: "return 'bye'" },
@@ -62,7 +62,7 @@ describe('Multi-Input Routing Scenarios', () => {
         {
           id: 'agent-1',
           position: { x: 500, y: 0 },
-          metadata: { id: BlockType.AGENT, name: 'Agent 1' },
+          metadata: { id: BlockType.AGENT, Name: 'Agent 1' },
           config: {
             tool: BlockType.AGENT,
             params: {

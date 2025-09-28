@@ -7,7 +7,7 @@ import type { BaseServerTool } from '@/lib/copilot/tools/server/base-tool'
 
 export interface ParlantToolSchema {
   /** Tool identifier that matches Parlant's naming conventions */
-  name: string
+  Name: string
   /** Human-readable description for AI agents */
   description: string
   /** Detailed natural language explanation of when and how to use this tool */

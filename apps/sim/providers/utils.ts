@@ -230,12 +230,12 @@ export function generateStructuredOutputInstructions(responseFormat: any): strin
   }
 
   const exampleFormat = responseFormat.fields
-    .map((field: any) => `  "${field.name}": ${generateFieldStructure(field)}`)
+    .map((field: any) => `  "${field.Name}": ${generateFieldStructure(field)}`)
     .join(',\n')
 
   const fieldDescriptions = responseFormat.fields
     .map((field: any) => {
-      let desc = `${field.name} (${field.type})`
+      let desc = `${field.Name} (${field.type})`
       if (field.description) desc += `: ${field.description}`
       if (field.type === 'object' && field.properties) {
         desc += '\nProperties:'
@@ -313,7 +313,7 @@ export function transformCustomTool(customTool: any): ProviderToolConfig {
 
   return {
     id: `custom_${customTool.id}`, // Prefix with 'custom_' to identify custom tools
-    name: schema.function.name,
+    Name: schema.function.Name,
     description: schema.function.description || '',
     params: {}, // This will be derived from parameters
     parameters: {
@@ -422,7 +422,7 @@ export async function transformBlockTool(
   // Return formatted tool config
   return {
     id: toolConfig.id,
-    name: toolConfig.name,
+    Name: toolConfig.Name,
     description: toolConfig.description,
     params: userProvidedParams,
     parameters: llmSchema,
@@ -432,7 +432,7 @@ export async function transformBlockTool(
 /**
  * Calculate cost for token usage based on model pricing
  *
- * @param model The model name
+ * @param model The model Name
  * @param promptTokens Number of prompt tokens used
  * @param completionTokens Number of completion tokens used
  * @param useCachedInput Whether to use cached input pricing (default: false)
@@ -547,7 +547,7 @@ export function getHostedModels(): string[] {
 /**
  * Determine if model usage should be billed to the user
  *
- * @param model The model name
+ * @param model The model Name
  * @returns true if the usage should be billed to the user
  */
 export function shouldBillModelUsage(model: string): boolean {
@@ -618,9 +618,9 @@ export function prepareToolsWithUsageControl(
   toolChoice:
     | 'auto'
     | 'none'
-    | { type: 'function'; function: { name: string } }
-    | { type: 'tool'; name: string }
-    | { type: 'any'; any: { model: string; name: string } }
+    | { type: 'function'; function: { Name: string } }
+    | { type: 'tool'; Name: string }
+    | { type: 'any'; any: { model: string; Name: string } }
     | undefined
   toolConfig?: {
     // Add toolConfig for Google's format
@@ -644,7 +644,7 @@ export function prepareToolsWithUsageControl(
 
   // Filter out tools marked with usageControl='none'
   const filteredTools = tools.filter((tool) => {
-    const toolId = tool.function?.name || tool.name
+    const toolId = tool.function?.Name || tool.Name
     const toolConfig = providerTools?.find((t) => t.id === toolId)
     return toolConfig?.usageControl !== 'none'
   })
@@ -676,9 +676,9 @@ export function prepareToolsWithUsageControl(
   let toolChoice:
     | 'auto'
     | 'none'
-    | { type: 'function'; function: { name: string } }
-    | { type: 'tool'; name: string }
-    | { type: 'any'; any: { model: string; name: string } } = 'auto'
+    | { type: 'function'; function: { Name: string } }
+    | { type: 'tool'; Name: string }
+    | { type: 'any'; any: { model: string; Name: string } } = 'auto'
 
   // For Google, we'll use a separate toolConfig object
   let toolConfig:
@@ -698,7 +698,7 @@ export function prepareToolsWithUsageControl(
     if (provider === 'anthropic') {
       toolChoice = {
         type: 'tool',
-        name: forcedTool.id,
+        Name: forcedTool.id,
       }
     } else if (provider === 'google') {
       // Google Gemini format uses a separate toolConfig object
@@ -717,7 +717,7 @@ export function prepareToolsWithUsageControl(
       // Default OpenAI format
       toolChoice = {
         type: 'function',
-        function: { name: forcedTool.id },
+        function: { Name: forcedTool.id },
       }
     }
 
@@ -769,9 +769,9 @@ export function trackForcedToolUsage(
   usedForcedTools: string[]
   nextToolChoice?:
     | 'auto'
-    | { type: 'function'; function: { name: string } }
-    | { type: 'tool'; name: string }
-    | { type: 'any'; any: { model: string; name: string } }
+    | { type: 'function'; function: { Name: string } }
+    | { type: 'tool'; Name: string }
+    | { type: 'any'; any: { model: string; Name: string } }
     | null
   nextToolConfig?: {
     functionCallingConfig: {
@@ -797,29 +797,29 @@ export function trackForcedToolUsage(
   // Special handling for Google format
   const isGoogleFormat = provider === 'google'
 
-  // Get the name of the current forced tool(s)
+  // Get the Name of the current forced tool(s)
   let forcedToolNames: string[] = []
   if (isGoogleFormat && originalToolChoice?.functionCallingConfig?.allowedFunctionNames) {
     // For Google format
     forcedToolNames = originalToolChoice.functionCallingConfig.allowedFunctionNames
   } else if (
     typeof originalToolChoice === 'object' &&
-    (originalToolChoice?.function?.name ||
-      (originalToolChoice?.type === 'tool' && originalToolChoice?.name) ||
-      (originalToolChoice?.type === 'any' && originalToolChoice?.any?.name))
+    (originalToolChoice?.function?.Name ||
+      (originalToolChoice?.type === 'tool' && originalToolChoice?.Name) ||
+      (originalToolChoice?.type === 'any' && originalToolChoice?.any?.Name))
   ) {
     // For other providers
     forcedToolNames = [
-      originalToolChoice?.function?.name ||
-        originalToolChoice?.name ||
-        originalToolChoice?.any?.name,
+      originalToolChoice?.function?.Name ||
+        originalToolChoice?.Name ||
+        originalToolChoice?.any?.Name,
     ].filter(Boolean)
   }
 
   // If we're forcing specific tools and we have tool calls in the response
   if (forcedToolNames.length > 0 && toolCallsResponse && toolCallsResponse.length > 0) {
     // Check if any of the tool calls used the forced tools
-    const toolNames = toolCallsResponse.map((tc) => tc.function?.name || tc.name || tc.id)
+    const toolNames = toolCallsResponse.map((tc) => tc.function?.Name || tc.Name || tc.id)
 
     // Find any forced tools that were used
     const usedTools = forcedToolNames.filter((toolName) => toolNames.includes(toolName))
@@ -840,7 +840,7 @@ export function trackForcedToolUsage(
         if (provider === 'anthropic') {
           nextToolChoice = {
             type: 'tool',
-            name: nextToolToForce,
+            Name: nextToolToForce,
           }
         } else if (provider === 'google') {
           nextToolConfig = {
@@ -856,7 +856,7 @@ export function trackForcedToolUsage(
           // Default OpenAI format
           nextToolChoice = {
             type: 'function',
-            function: { name: nextToolToForce },
+            function: { Name: nextToolToForce },
           }
         }
 

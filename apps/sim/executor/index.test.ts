@@ -503,7 +503,7 @@ describe('Executor', () => {
         inputs: {},
         outputs: {},
         enabled: true,
-        metadata: { id: BlockType.CONDITION, name: 'Condition Block' },
+        metadata: { id: BlockType.CONDITION, Name: 'Condition Block' },
       })
 
       const context = {
@@ -666,7 +666,7 @@ describe('Executor', () => {
           {
             id: 'start',
             position: { x: 0, y: 0 },
-            metadata: { id: BlockType.STARTER, name: 'Start' },
+            metadata: { id: BlockType.STARTER, Name: 'Start' },
             config: { tool: 'test-tool', params: {} },
             inputs: {},
             outputs: {},
@@ -675,7 +675,7 @@ describe('Executor', () => {
           {
             id: 'router',
             position: { x: 100, y: 0 },
-            metadata: { id: BlockType.ROUTER, name: 'Router' },
+            metadata: { id: BlockType.ROUTER, Name: 'Router' },
             config: {
               tool: 'test-tool',
               params: { prompt: 'test', model: 'gpt-4' },
@@ -687,10 +687,10 @@ describe('Executor', () => {
           {
             id: 'api1',
             position: { x: 200, y: -50 },
-            metadata: { id: BlockType.API, name: 'API 1' },
+            metadata: { id: BlockType.API, Name: 'API 1' },
             config: {
               tool: 'test-tool',
-              params: { url: 'http://api1.com', method: 'GET' },
+              params: { url: 'http://api1.com', method: 'get' },
             },
             inputs: {},
             outputs: {},
@@ -699,10 +699,10 @@ describe('Executor', () => {
           {
             id: 'api2',
             position: { x: 200, y: 50 },
-            metadata: { id: BlockType.API, name: 'API 2' },
+            metadata: { id: BlockType.API, Name: 'API 2' },
             config: {
               tool: 'test-tool',
-              params: { url: 'http://api2.com', method: 'GET' },
+              params: { url: 'http://api2.com', method: 'get' },
             },
             inputs: {},
             outputs: {},
@@ -711,7 +711,7 @@ describe('Executor', () => {
           {
             id: 'agent',
             position: { x: 300, y: 0 },
-            metadata: { id: BlockType.AGENT, name: 'Agent' },
+            metadata: { id: BlockType.AGENT, Name: 'Agent' },
             config: {
               tool: 'test-tool',
               params: { model: 'gpt-4', userPrompt: 'test' },
@@ -802,7 +802,7 @@ describe('Executor', () => {
       workflow.blocks.push({
         id: 'router1',
         position: { x: 200, y: 0 },
-        metadata: { id: BlockType.ROUTER, name: 'Router' },
+        metadata: { id: BlockType.ROUTER, Name: 'Router' },
         config: { tool: 'test-tool', params: {} },
         inputs: {},
         outputs: {},
@@ -1019,7 +1019,7 @@ describe('Executor', () => {
             {
               id: 'agent1',
               position: { x: 100, y: 0 },
-              metadata: { id: BlockType.AGENT, name: 'Agent 1' },
+              metadata: { id: BlockType.AGENT, Name: 'Agent 1' },
               config: {
                 tool: 'agent',
                 params: { model: 'gpt-4o', input: 'Hello' },
@@ -1031,7 +1031,7 @@ describe('Executor', () => {
             {
               id: 'agent2',
               position: { x: 200, y: 0 },
-              metadata: { id: BlockType.AGENT, name: 'Agent 2' },
+              metadata: { id: BlockType.AGENT, Name: 'Agent 2' },
               config: {
                 tool: 'agent',
                 params: { model: 'gpt-4o', input: 'Hello' },
@@ -1113,7 +1113,7 @@ describe('Executor', () => {
           {
             id: 'starter',
             position: { x: -100, y: 0 },
-            metadata: { id: BlockType.STARTER, name: 'Starter Block' },
+            metadata: { id: BlockType.STARTER, Name: 'Starter Block' },
             config: { tool: 'starter', params: {} },
             inputs: {} as Record<string, ParamType>,
             outputs: {} as Record<string, BlockOutput>,
@@ -1124,7 +1124,7 @@ describe('Executor', () => {
             position: { x: 0, y: 0 },
             metadata: {
               id: BlockType.API,
-              name: 'API Block',
+              Name: 'API Block',
               category: 'tools',
             },
             config: { tool: 'api', params: {} },
@@ -1171,7 +1171,7 @@ describe('Executor', () => {
             {
               id: 'starter',
               position: { x: 0, y: 0 },
-              metadata: { id: BlockType.STARTER, name: 'Starter Block' },
+              metadata: { id: BlockType.STARTER, Name: 'Starter Block' },
               config: { tool: 'starter', params: {} },
               inputs: {} as Record<string, ParamType>,
               outputs: {} as Record<string, BlockOutput>,
@@ -1180,7 +1180,7 @@ describe('Executor', () => {
             {
               id: 'workflow-block-1',
               position: { x: 100, y: 0 },
-              metadata: { id: BlockType.WORKFLOW, name: 'Workflow Block 1' },
+              metadata: { id: BlockType.WORKFLOW, Name: 'Workflow Block 1' },
               config: {
                 tool: 'workflow',
                 params: {
@@ -1195,7 +1195,7 @@ describe('Executor', () => {
             {
               id: 'workflow-block-2',
               position: { x: 100, y: 100 },
-              metadata: { id: BlockType.WORKFLOW, name: 'Workflow Block 2' },
+              metadata: { id: BlockType.WORKFLOW, Name: 'Workflow Block 2' },
               config: {
                 tool: 'workflow',
                 params: {
@@ -1238,7 +1238,7 @@ describe('Executor', () => {
           {
             id: 'starter',
             position: { x: 0, y: 0 },
-            metadata: { id: BlockType.STARTER, name: 'Starter Block' },
+            metadata: { id: BlockType.STARTER, Name: 'Starter Block' },
             config: { tool: 'starter', params: {} },
             inputs: {} as Record<string, ParamType>,
             outputs: {} as Record<string, BlockOutput>,
@@ -1247,7 +1247,7 @@ describe('Executor', () => {
           {
             id: 'workflow-block',
             position: { x: 100, y: 0 },
-            metadata: { id: BlockType.WORKFLOW, name: 'Workflow Block' },
+            metadata: { id: BlockType.WORKFLOW, Name: 'Workflow Block' },
             config: {
               tool: 'workflow',
               params: {
@@ -1288,7 +1288,7 @@ describe('Executor', () => {
             {
               id: 'starter',
               position: { x: 0, y: 0 },
-              metadata: { id: BlockType.STARTER, name: 'Starter Block' },
+              metadata: { id: BlockType.STARTER, Name: 'Starter Block' },
               config: { tool: 'starter', params: {} },
               inputs: {} as Record<string, ParamType>,
               outputs: {} as Record<string, BlockOutput>,
@@ -1297,7 +1297,7 @@ describe('Executor', () => {
             {
               id: 'workflow-block-1',
               position: { x: 100, y: 0 },
-              metadata: { id: BlockType.WORKFLOW, name: 'Workflow Block 1' },
+              metadata: { id: BlockType.WORKFLOW, Name: 'Workflow Block 1' },
               config: {
                 tool: 'workflow',
                 params: {
@@ -1312,7 +1312,7 @@ describe('Executor', () => {
             {
               id: 'workflow-block-2',
               position: { x: 100, y: 100 },
-              metadata: { id: BlockType.WORKFLOW, name: 'Workflow Block 2' },
+              metadata: { id: BlockType.WORKFLOW, Name: 'Workflow Block 2' },
               config: {
                 tool: 'workflow',
                 params: {
@@ -1327,7 +1327,7 @@ describe('Executor', () => {
             {
               id: 'workflow-block-3',
               position: { x: 100, y: 200 },
-              metadata: { id: BlockType.WORKFLOW, name: 'Workflow Block 3' },
+              metadata: { id: BlockType.WORKFLOW, Name: 'Workflow Block 3' },
               config: {
                 tool: 'workflow',
                 params: {
@@ -1373,7 +1373,7 @@ describe('Executor', () => {
             {
               id: 'starter',
               position: { x: 0, y: 0 },
-              metadata: { id: BlockType.STARTER, name: 'Starter Block' },
+              metadata: { id: BlockType.STARTER, Name: 'Starter Block' },
               config: { tool: 'starter', params: {} },
               inputs: {} as Record<string, ParamType>,
               outputs: {} as Record<string, BlockOutput>,
@@ -1382,7 +1382,7 @@ describe('Executor', () => {
             {
               id: 'workflow-block-1',
               position: { x: 100, y: 0 },
-              metadata: { id: BlockType.WORKFLOW, name: 'Workflow Block 1' },
+              metadata: { id: BlockType.WORKFLOW, Name: 'Workflow Block 1' },
               config: {
                 tool: 'workflow',
                 params: {
@@ -1397,7 +1397,7 @@ describe('Executor', () => {
             {
               id: 'workflow-block-2',
               position: { x: 100, y: 100 },
-              metadata: { id: BlockType.WORKFLOW, name: 'Workflow Block 2' },
+              metadata: { id: BlockType.WORKFLOW, Name: 'Workflow Block 2' },
               config: {
                 tool: 'workflow',
                 params: {
@@ -1446,7 +1446,7 @@ describe('Executor', () => {
           {
             id: 'starter',
             position: { x: 0, y: 0 },
-            metadata: { id: BlockType.STARTER, name: 'Starter Block' },
+            metadata: { id: BlockType.STARTER, Name: 'Starter Block' },
             config: { tool: 'starter', params: {} },
             inputs: {} as Record<string, ParamType>,
             outputs: {} as Record<string, BlockOutput>,
@@ -1457,7 +1457,7 @@ describe('Executor', () => {
             position: { x: 100, y: 0 },
             metadata: {
               id: BlockType.WORKFLOW,
-              name: 'Failing Workflow Block',
+              Name: 'Failing Workflow Block',
             },
             config: {
               tool: 'workflow',

@@ -28,7 +28,7 @@ const logger = createLogger('AgentConfigurationFramework')
  */
 export interface AgentPersonality {
   id: string
-  name: string
+  Name: string
   description: string
   traits: {
     formality: 'casual' | 'professional' | 'formal'
@@ -47,7 +47,7 @@ export interface AgentPersonality {
  */
 export interface AgentCapability {
   id: string
-  name: string
+  Name: string
   description: string
   category: 'core' | 'tool' | 'integration' | 'advanced'
   enabled: boolean
@@ -66,7 +66,7 @@ export interface AgentCapability {
  */
 export interface AgentConfigurationTemplate {
   id: string
-  name: string
+  Name: string
   description: string
   category: 'general' | 'support' | 'sales' | 'technical' | 'custom'
   baseConfig: AgentConfig
@@ -82,7 +82,7 @@ export interface AgentConfigurationTemplate {
  */
 export interface ConfigurationRule {
   id: string
-  name: string
+  Name: string
   description: string
   conditions: {
     workspaceType?: string
@@ -168,7 +168,7 @@ export class AgentConfigurationFramework extends EventEmitter {
     this.personalities.set(personality.id, personality)
     logger.info(`Registered personality profile`, {
       personalityId: personality.id,
-      name: personality.name,
+      Name: personality.Name,
     })
   }
 
@@ -177,7 +177,7 @@ export class AgentConfigurationFramework extends EventEmitter {
    */
   public registerCapability(capability: AgentCapability): void {
     this.capabilities.set(capability.id, capability)
-    logger.info(`Registered capability`, { capabilityId: capability.id, name: capability.name })
+    logger.info(`Registered capability`, { capabilityId: capability.id, Name: capability.Name })
   }
 
   /**
@@ -187,7 +187,7 @@ export class AgentConfigurationFramework extends EventEmitter {
     this.templates.set(template.id, template)
     logger.info(`Registered configuration template`, {
       templateId: template.id,
-      name: template.name,
+      Name: template.Name,
     })
   }
 
@@ -196,7 +196,7 @@ export class AgentConfigurationFramework extends EventEmitter {
    */
   public registerRule(rule: ConfigurationRule): void {
     this.rules.set(rule.id, rule)
-    logger.info(`Registered configuration rule`, { ruleId: rule.id, name: rule.name })
+    logger.info(`Registered configuration rule`, { ruleId: rule.id, Name: rule.Name })
   }
 
   /**
@@ -524,7 +524,7 @@ export class AgentConfigurationFramework extends EventEmitter {
     // Register default personality
     this.registerPersonality({
       id: 'default',
-      name: 'Balanced Assistant',
+      Name: 'Balanced Assistant',
       description: 'A well-balanced, helpful assistant suitable for most interactions',
       traits: {
         formality: 'professional',
@@ -553,7 +553,7 @@ export class AgentConfigurationFramework extends EventEmitter {
     // Register core capabilities
     this.registerCapability({
       id: 'conversational_ai',
-      name: 'Conversational AI',
+      Name: 'Conversational AI',
       description: 'Basic conversational abilities',
       category: 'core',
       enabled: true,
@@ -570,7 +570,7 @@ export class AgentConfigurationFramework extends EventEmitter {
     // Register default template
     this.registerTemplate({
       id: 'general_assistant',
-      name: 'General Assistant',
+      Name: 'General Assistant',
       description: 'A versatile assistant for general workplace tasks',
       category: 'general',
       baseConfig: {

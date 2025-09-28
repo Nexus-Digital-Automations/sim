@@ -147,7 +147,7 @@ export class WorkflowToJourneyConverter {
     }
 
     const stepId = this.generateStepId(blockState.id)
-    let stepTitle = blockState.name
+    let stepTitle = blockState.Name
     let stepDescription = blockConfig.description
 
     // Apply parameter substitution if enabled
@@ -348,7 +348,7 @@ export class WorkflowToJourneyConverter {
     // Get workflow metadata
     const workflowMeta = await this.getWorkflowMetadata(context.workflow_id, context.workspace_id)
 
-    let title = workflowMeta.name || `Journey from Workflow ${context.workflow_id}`
+    let title = workflowMeta.Name || `Journey from Workflow ${context.workflow_id}`
     let description = workflowMeta.description || 'Auto-generated journey from workflow conversion'
 
     // Apply parameter substitution
@@ -542,9 +542,9 @@ export class WorkflowToJourneyConverter {
   private async getWorkflowMetadata(
     workflowId: string,
     workspaceId: string
-  ): Promise<{ name: string; description?: string }> {
+  ): Promise<{ Name: string; description?: string }> {
     // TODO: Implement workflow metadata retrieval
-    return { name: `Workflow ${workflowId}`, description: 'Converted workflow' }
+    return { Name: `Workflow ${workflowId}`, description: 'Converted workflow' }
   }
 
   private extractParameterSubstitutions(

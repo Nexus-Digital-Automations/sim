@@ -31,7 +31,7 @@ export type ToolType = 'builtin' | 'custom' | 'integration' | 'plugin'
 // Core tool definition with rich metadata
 export interface ToolDefinition {
   id: string
-  name: string
+  Name: string
   displayName: string
   description: string
   longDescription?: string
@@ -118,7 +118,7 @@ export interface ToolSearchQuery {
   userId?: string
   limit?: number
   offset?: number
-  sortBy?: 'name' | 'usage' | 'rating' | 'recent' | 'relevance'
+  sortBy?: 'Name' | 'usage' | 'rating' | 'recent' | 'relevance'
   sortOrder?: 'asc' | 'desc'
 }
 
@@ -130,7 +130,7 @@ export interface ToolSearchResult {
 }
 
 export interface ToolSearchFacets {
-  categories: { id: string; name: string; count: number }[]
+  categories: { id: string; Name: string; count: number }[]
   types: { type: ToolType; count: number }[]
   tags: { tag: string; count: number }[]
   scopes: { scope: ToolScope; count: number }[]
@@ -168,7 +168,7 @@ export interface ToolHealth {
 }
 
 export interface ToolDependencyHealth {
-  name: string
+  Name: string
   status: 'healthy' | 'warning' | 'error'
   responseTime?: number
   lastChecked?: Date
@@ -207,7 +207,7 @@ export interface ToolConfiguration {
   toolId: string
   workspaceId?: string
   userId?: string
-  name: string
+  Name: string
   description?: string
   configuration: Record<string, any>
   environmentVariables: Record<string, string>

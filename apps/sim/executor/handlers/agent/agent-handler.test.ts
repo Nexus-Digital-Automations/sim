@@ -89,7 +89,7 @@ describe('AgentBlockHandler', () => {
 
     mockBlock = {
       id: 'test-agent-block',
-      metadata: { id: BlockType.AGENT, name: 'Test Agent' },
+      metadata: { id: BlockType.AGENT, Name: 'Test Agent' },
       type: BlockType.AGENT,
       position: { x: 0, y: 0 },
       config: {
@@ -126,9 +126,9 @@ describe('AgentBlockHandler', () => {
       return Promise.resolve({
         ok: true,
         headers: {
-          get: (name: string) => {
-            if (name === 'Content-Type') return 'application/json'
-            if (name === 'X-Execution-Data') return null
+          get: (Name: string) => {
+            if (Name === 'Content-Type') return 'application/json'
+            if (Name === 'X-Execution-Data') return null
             return null
           },
         },
@@ -146,7 +146,7 @@ describe('AgentBlockHandler', () => {
 
     mockTransformBlockTool.mockImplementation((tool: any) => ({
       id: `transformed_${tool.id}`,
-      name: `${tool.id}_${tool.operation}`,
+      Name: `${tool.id}_${tool.operation}`,
       description: 'Transformed tool',
       parameters: { type: 'object', properties: {} },
     }))
@@ -245,9 +245,9 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => {
-              if (name === 'Content-Type') return 'application/json'
-              if (name === 'X-Execution-Data') return null
+            get: (Name: string) => {
+              if (Name === 'Content-Type') return 'application/json'
+              if (Name === 'X-Execution-Data') return null
               return null
             },
           },
@@ -258,11 +258,11 @@ describe('AgentBlockHandler', () => {
               tokens: { prompt: 10, completion: 20, total: 30 },
               toolCalls: [
                 {
-                  name: 'auto_tool',
+                  Name: 'auto_tool',
                   arguments: { input: 'test input for auto tool' },
                 },
                 {
-                  name: 'force_tool',
+                  Name: 'force_tool',
                   arguments: { input: 'test input for force tool' },
                 },
               ],
@@ -283,7 +283,7 @@ describe('AgentBlockHandler', () => {
             timeout: 1000,
             schema: {
               function: {
-                name: 'auto_tool',
+                Name: 'auto_tool',
                 description: 'Custom tool with auto usage control',
                 parameters: {
                   type: 'object',
@@ -302,7 +302,7 @@ describe('AgentBlockHandler', () => {
             timeout: 1000,
             schema: {
               function: {
-                name: 'force_tool',
+                Name: 'force_tool',
                 description: 'Custom tool with forced usage control',
                 parameters: {
                   type: 'object',
@@ -321,7 +321,7 @@ describe('AgentBlockHandler', () => {
             timeout: 1000,
             schema: {
               function: {
-                name: 'none_tool',
+                Name: 'none_tool',
                 description: 'Custom tool that should be filtered out',
                 parameters: {
                   type: 'object',
@@ -344,9 +344,9 @@ describe('AgentBlockHandler', () => {
 
       expect(capturedTools.length).toBe(2)
 
-      const autoTool = capturedTools.find((t) => t.name === 'auto_tool')
-      const forceTool = capturedTools.find((t) => t.name === 'force_tool')
-      const noneTool = capturedTools.find((t) => t.name === 'none_tool')
+      const autoTool = capturedTools.find((t) => t.Name === 'auto_tool')
+      const forceTool = capturedTools.find((t) => t.Name === 'force_tool')
+      const noneTool = capturedTools.find((t) => t.Name === 'none_tool')
 
       expect(autoTool).toBeDefined()
       expect(forceTool).toBeDefined()
@@ -459,7 +459,7 @@ describe('AgentBlockHandler', () => {
 
       mockTransformBlockTool.mockImplementation((tool: any) => ({
         id: `transformed_${tool.id}`,
-        name: `${tool.id}_${tool.operation}`,
+        Name: `${tool.id}_${tool.operation}`,
         description: 'Transformed tool',
         parameters: { type: 'object', properties: {} },
       }))
@@ -486,7 +486,7 @@ describe('AgentBlockHandler', () => {
             title: 'Custom Tool - Auto',
             schema: {
               function: {
-                name: 'custom_tool_auto',
+                Name: 'custom_tool_auto',
                 description: 'A custom tool with auto usage control',
                 parameters: {
                   type: 'object',
@@ -501,7 +501,7 @@ describe('AgentBlockHandler', () => {
             title: 'Custom Tool - Force',
             schema: {
               function: {
-                name: 'custom_tool_force',
+                Name: 'custom_tool_force',
                 description: 'A custom tool with forced usage',
                 parameters: {
                   type: 'object',
@@ -516,7 +516,7 @@ describe('AgentBlockHandler', () => {
             title: 'Custom Tool - None',
             schema: {
               function: {
-                name: 'custom_tool_none',
+                Name: 'custom_tool_none',
                 description: 'A custom tool that should not be used',
                 parameters: {
                   type: 'object',
@@ -538,13 +538,13 @@ describe('AgentBlockHandler', () => {
 
       expect(requestBody.tools.length).toBe(2)
 
-      const toolNames = requestBody.tools.map((t: any) => t.name)
+      const toolNames = requestBody.tools.map((t: any) => t.Name)
       expect(toolNames).toContain('custom_tool_auto')
       expect(toolNames).toContain('custom_tool_force')
       expect(toolNames).not.toContain('custom_tool_none')
 
-      const autoTool = requestBody.tools.find((t: any) => t.name === 'custom_tool_auto')
-      const forceTool = requestBody.tools.find((t: any) => t.name === 'custom_tool_force')
+      const autoTool = requestBody.tools.find((t: any) => t.Name === 'custom_tool_auto')
+      const forceTool = requestBody.tools.find((t: any) => t.Name === 'custom_tool_force')
 
       expect(autoTool.usageControl).toBe('auto')
       expect(forceTool.usageControl).toBe('force')
@@ -584,7 +584,7 @@ describe('AgentBlockHandler', () => {
 
       const mockToolDetails = {
         id: 'block_tool_1',
-        name: 'data_analysis_analyze',
+        Name: 'data_analysis_analyze',
         description: 'Analyzes data',
         parameters: { type: 'object', properties: { input: { type: 'string' } } },
       }
@@ -622,7 +622,7 @@ describe('AgentBlockHandler', () => {
             title: 'Custom Schema Tool',
             schema: {
               function: {
-                name: 'custom_schema_tool',
+                Name: 'custom_schema_tool',
                 description: 'A tool defined only by schema',
                 parameters: {
                   type: 'object',
@@ -640,7 +640,7 @@ describe('AgentBlockHandler', () => {
             timeout: 1000,
             schema: {
               function: {
-                name: 'custom_code_tool',
+                Name: 'custom_code_tool',
                 description: 'A tool with code execution',
                 parameters: {
                   type: 'object',
@@ -666,9 +666,9 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => {
-              if (name === 'Content-Type') return 'application/json'
-              if (name === 'X-Execution-Data') return null
+            get: (Name: string) => {
+              if (Name === 'Content-Type') return 'application/json'
+              if (Name === 'X-Execution-Data') return null
               return null
             },
           },
@@ -709,9 +709,9 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => {
-              if (name === 'Content-Type') return 'application/json'
-              if (name === 'X-Execution-Data') return null
+            get: (Name: string) => {
+              if (Name === 'Content-Type') return 'application/json'
+              if (Name === 'X-Execution-Data') return null
               return null
             },
           },
@@ -749,9 +749,9 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => {
-              if (name === 'Content-Type') return 'application/json'
-              if (name === 'X-Execution-Data') return null
+            get: (Name: string) => {
+              if (Name === 'Content-Type') return 'application/json'
+              if (Name === 'X-Execution-Data') return null
               return null
             },
           },
@@ -792,9 +792,9 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => {
-              if (name === 'Content-Type') return 'application/json'
-              if (name === 'X-Execution-Data') return null
+            get: (Name: string) => {
+              if (Name === 'Content-Type') return 'application/json'
+              if (Name === 'X-Execution-Data') return null
               return null
             },
           },
@@ -856,9 +856,9 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => {
-              if (name === 'Content-Type') return 'application/json'
-              if (name === 'X-Execution-Data') return null
+            get: (Name: string) => {
+              if (Name === 'Content-Type') return 'application/json'
+              if (Name === 'X-Execution-Data') return null
               return null
             },
           },
@@ -933,9 +933,9 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => {
-              if (name === 'Content-Type') return 'application/json'
-              if (name === 'X-Execution-Data') return JSON.stringify(mockExecutionData)
+            get: (Name: string) => {
+              if (Name === 'Content-Type') return 'application/json'
+              if (Name === 'X-Execution-Data') return JSON.stringify(mockExecutionData)
               return null
             },
           },
@@ -982,7 +982,7 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => (name === 'Content-Type' ? 'application/json' : null),
+            get: (Name: string) => (Name === 'Content-Type' ? 'application/json' : null),
           },
           json: () =>
             Promise.resolve({
@@ -1030,7 +1030,7 @@ describe('AgentBlockHandler', () => {
         systemPrompt: 'You are a helpful assistant.',
         userPrompt: 'What did we discuss before?',
         memories: [
-          { role: 'user', content: 'Hello, my name is John.' },
+          { role: 'user', content: 'Hello, my Name is John.' },
           { role: 'assistant', content: 'Hello John! Nice to meet you.' },
           { role: 'user', content: 'I like programming.' },
           { role: 'assistant', content: "That's great! What programming languages do you enjoy?" },
@@ -1055,7 +1055,7 @@ describe('AgentBlockHandler', () => {
 
       // Check memories are in the middle
       expect(requestBody.messages[1].role).toBe('user')
-      expect(requestBody.messages[1].content).toBe('Hello, my name is John.')
+      expect(requestBody.messages[1].content).toBe('Hello, my Name is John.')
       expect(requestBody.messages[2].role).toBe('assistant')
       expect(requestBody.messages[2].content).toBe('Hello John! Nice to meet you.')
 
@@ -1403,9 +1403,9 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => {
-              if (name === 'Content-Type') return 'application/json'
-              if (name === 'X-Execution-Data') return null
+            get: (Name: string) => {
+              if (Name === 'Content-Type') return 'application/json'
+              if (Name === 'X-Execution-Data') return null
               return null
             },
           },
@@ -1416,7 +1416,7 @@ describe('AgentBlockHandler', () => {
               tokens: { prompt: 15, completion: 25, total: 40 },
               toolCalls: [
                 {
-                  name: 'mcp-server1-list_files',
+                  Name: 'mcp-server1-list_files',
                   arguments: { path: '/tmp' },
                   result: {
                     success: true,
@@ -1424,7 +1424,7 @@ describe('AgentBlockHandler', () => {
                   },
                 },
                 {
-                  name: 'mcp-server2-search',
+                  Name: 'mcp-server2-search',
                   arguments: { query: 'test', limit: 5 },
                   result: {
                     success: true,
@@ -1447,7 +1447,7 @@ describe('AgentBlockHandler', () => {
             title: 'List Files',
             schema: {
               function: {
-                name: 'mcp-server1-list_files',
+                Name: 'mcp-server1-list_files',
                 description: 'List files in directory',
                 parameters: {
                   type: 'object',
@@ -1464,7 +1464,7 @@ describe('AgentBlockHandler', () => {
             title: 'Search',
             schema: {
               function: {
-                name: 'mcp-server2-search',
+                Name: 'mcp-server2-search',
                 description: 'Search for data',
                 parameters: {
                   type: 'object',
@@ -1493,9 +1493,9 @@ describe('AgentBlockHandler', () => {
       expect((result as any).toolCalls.count).toBe(2)
       expect((result as any).toolCalls.list).toHaveLength(2)
 
-      expect((result as any).toolCalls.list[0].name).toBe('mcp-server1-list_files')
+      expect((result as any).toolCalls.list[0].Name).toBe('mcp-server1-list_files')
       expect((result as any).toolCalls.list[0].result.success).toBe(true)
-      expect((result as any).toolCalls.list[1].name).toBe('mcp-server2-search')
+      expect((result as any).toolCalls.list[1].Name).toBe('mcp-server2-search')
       expect((result as any).toolCalls.list[1].result.success).toBe(true)
     })
 
@@ -1514,9 +1514,9 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => {
-              if (name === 'Content-Type') return 'application/json'
-              if (name === 'X-Execution-Data') return null
+            get: (Name: string) => {
+              if (Name === 'Content-Type') return 'application/json'
+              if (Name === 'X-Execution-Data') return null
               return null
             },
           },
@@ -1527,7 +1527,7 @@ describe('AgentBlockHandler', () => {
               tokens: { prompt: 10, completion: 15, total: 25 },
               toolCalls: [
                 {
-                  name: 'mcp-server1-failing_tool',
+                  Name: 'mcp-server1-failing_tool',
                   arguments: { param: 'value' },
                   result: {
                     success: false,
@@ -1550,7 +1550,7 @@ describe('AgentBlockHandler', () => {
             title: 'Failing Tool',
             schema: {
               function: {
-                name: 'mcp-server1-failing_tool',
+                Name: 'mcp-server1-failing_tool',
                 description: 'A tool that will fail',
                 parameters: {
                   type: 'object',
@@ -1591,7 +1591,7 @@ describe('AgentBlockHandler', () => {
             title: 'Read File',
             schema: {
               function: {
-                name: 'mcp-filesystem-read_file',
+                Name: 'mcp-filesystem-read_file',
                 description: 'Read file from filesystem',
                 parameters: { type: 'object', properties: {} },
               },
@@ -1603,7 +1603,7 @@ describe('AgentBlockHandler', () => {
             title: 'Web Search',
             schema: {
               function: {
-                name: 'mcp-web-search',
+                Name: 'mcp-web-search',
                 description: 'Search the web',
                 parameters: { type: 'object', properties: {} },
               },
@@ -1619,9 +1619,9 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => {
-              if (name === 'Content-Type') return 'application/json'
-              if (name === 'X-Execution-Data') return null
+            get: (Name: string) => {
+              if (Name === 'Content-Type') return 'application/json'
+              if (Name === 'X-Execution-Data') return null
               return null
             },
           },
@@ -1637,8 +1637,8 @@ describe('AgentBlockHandler', () => {
       })
 
       mockTransformBlockTool.mockImplementation((tool: any) => ({
-        id: tool.schema?.function?.name || `mcp-${tool.title.toLowerCase().replace(' ', '-')}`,
-        name: tool.schema?.function?.name || tool.title,
+        id: tool.schema?.function?.Name || `mcp-${tool.title.toLowerCase().replace(' ', '-')}`,
+        Name: tool.schema?.function?.Name || tool.title,
         description: tool.schema?.function?.description || `MCP tool: ${tool.title}`,
         parameters: tool.schema?.function?.parameters || { type: 'object', properties: {} },
         usageControl: tool.usageControl,
@@ -1672,14 +1672,14 @@ describe('AgentBlockHandler', () => {
         return Promise.resolve({
           ok: true,
           headers: {
-            get: (name: string) => (name === 'Content-Type' ? 'application/json' : null),
+            get: (Name: string) => (Name === 'Content-Type' ? 'application/json' : null),
           },
           json: () =>
             Promise.resolve({
               content: 'Using MCP tool',
               model: 'gpt-4o',
               tokens: { prompt: 10, completion: 10, total: 20 },
-              toolCalls: [{ name: 'mcp-test-tool', arguments: {} }],
+              toolCalls: [{ Name: 'mcp-test-tool', arguments: {} }],
               timing: { total: 50 },
             }),
         })
@@ -1695,7 +1695,7 @@ describe('AgentBlockHandler', () => {
             title: 'Test Tool',
             schema: {
               function: {
-                name: 'mcp-test-tool',
+                Name: 'mcp-test-tool',
                 description: 'Test MCP tool',
                 parameters: { type: 'object', properties: {} },
               },

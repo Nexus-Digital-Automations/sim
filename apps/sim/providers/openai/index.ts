@@ -62,7 +62,7 @@ function createReadableStreamFromOpenAIStream(
  */
 export const openaiProvider: ProviderConfig = {
   id: 'openai',
-  name: 'OpenAI',
+  Name: 'OpenAI',
   description: "OpenAI's GPT models",
   version: '1.0.0',
   models: getProviderModels('openai'),
@@ -113,7 +113,7 @@ export const openaiProvider: ProviderConfig = {
       ? request.tools.map((tool) => ({
           type: 'function',
           function: {
-            name: tool.id,
+            Name: tool.id,
             description: tool.description,
             parameters: tool.parameters,
           },
@@ -140,7 +140,7 @@ export const openaiProvider: ProviderConfig = {
       payload.response_format = {
         type: 'json_schema',
         json_schema: {
-          name: request.responseFormat.name || 'response_schema',
+          Name: request.responseFormat.Name || 'response_schema',
           schema: request.responseFormat.schema || request.responseFormat,
           strict: request.responseFormat.strict !== false,
         },
@@ -166,11 +166,11 @@ export const openaiProvider: ProviderConfig = {
             typeof toolChoice === 'string'
               ? toolChoice
               : toolChoice.type === 'function'
-                ? `force:${toolChoice.function.name}`
+                ? `force:${toolChoice.function.Name}`
                 : toolChoice.type === 'tool'
-                  ? `force:${toolChoice.name}`
+                  ? `force:${toolChoice.Name}`
                   : toolChoice.type === 'any'
-                    ? `force:${toolChoice.any?.name || 'unknown'}`
+                    ? `force:${toolChoice.any?.Name || 'unknown'}`
                     : 'unknown',
           model: request.model || 'gpt-4o',
         })
@@ -253,7 +253,7 @@ export const openaiProvider: ProviderConfig = {
                 timeSegments: [
                   {
                     type: 'model',
-                    name: 'Streaming response',
+                    Name: 'Streaming response',
                     startTime: providerStartTime,
                     endTime: Date.now(),
                     duration: Date.now() - providerStartTime,
@@ -288,7 +288,7 @@ export const openaiProvider: ProviderConfig = {
       // Helper function to check for forced tool usage in responses
       const checkForForcedToolUsage = (
         response: any,
-        toolChoice: string | { type: string; function?: { name: string }; name?: string; any?: any }
+        toolChoice: string | { type: string; function?: { Name: string }; Name?: string; any?: any }
       ) => {
         if (typeof toolChoice === 'object' && response.choices[0]?.message?.tool_calls) {
           const toolCallsResponse = response.choices[0].message.tool_calls
@@ -332,7 +332,7 @@ export const openaiProvider: ProviderConfig = {
       const timeSegments: TimeSegment[] = [
         {
           type: 'model',
-          name: 'Initial response',
+          Name: 'Initial response',
           startTime: initialCallTime,
           endTime: initialCallTime + firstResponseTime,
           duration: firstResponseTime,
@@ -359,7 +359,7 @@ export const openaiProvider: ProviderConfig = {
         // Process each tool call
         for (const toolCall of toolCallsInResponse) {
           try {
-            const toolName = toolCall.function.name
+            const toolName = toolCall.function.Name
             const toolArgs = JSON.parse(toolCall.function.arguments)
 
             // Get the tool from the tools registry
@@ -377,7 +377,7 @@ export const openaiProvider: ProviderConfig = {
             // Add to time segments for both success and failure
             timeSegments.push({
               type: 'tool',
-              name: toolName,
+              Name: toolName,
               startTime: toolCallStartTime,
               endTime: toolCallEndTime,
               duration: toolCallDuration,
@@ -398,7 +398,7 @@ export const openaiProvider: ProviderConfig = {
             }
 
             toolCalls.push({
-              name: toolName,
+              Name: toolName,
               arguments: toolParams,
               startTime: new Date(toolCallStartTime).toISOString(),
               endTime: new Date(toolCallEndTime).toISOString(),
@@ -416,7 +416,7 @@ export const openaiProvider: ProviderConfig = {
                   id: toolCall.id,
                   type: 'function',
                   function: {
-                    name: toolName,
+                    Name: toolName,
                     arguments: toolCall.function.arguments,
                   },
                 },
@@ -431,7 +431,7 @@ export const openaiProvider: ProviderConfig = {
           } catch (error) {
             logger.error('Error processing tool call:', {
               error,
-              toolName: toolCall?.function?.name,
+              toolName: toolCall?.function?.Name,
             })
           }
         }
@@ -455,7 +455,7 @@ export const openaiProvider: ProviderConfig = {
             // Force the next tool
             nextPayload.tool_choice = {
               type: 'function',
-              function: { name: remainingTools[0] },
+              function: { Name: remainingTools[0] },
             }
             logger.info(`Forcing next tool: ${remainingTools[0]}`)
           } else {
@@ -480,7 +480,7 @@ export const openaiProvider: ProviderConfig = {
         // Add to time segments
         timeSegments.push({
           type: 'model',
-          name: `Model response (iteration ${iterationCount + 1})`,
+          Name: `Model response (iteration ${iterationCount + 1})`,
           startTime: nextModelStartTime,
           endTime: nextModelEndTime,
           duration: thisModelTime,

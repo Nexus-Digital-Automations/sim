@@ -20,7 +20,7 @@ describe('ParallelBlockHandler', () => {
     config: { tool: '', params: {} },
     inputs: {},
     outputs: {},
-    metadata: { id: BlockType.PARALLEL, name: 'Test Parallel' },
+    metadata: { id: BlockType.PARALLEL, Name: 'Test Parallel' },
     enabled: true,
   })
 
@@ -402,7 +402,7 @@ describe('ParallelBlockHandler', () => {
               config: { tool: BlockType.AGENT, params: {} },
               inputs: {},
               outputs: {},
-              metadata: { id: BlockType.AGENT, name: 'Agent 1' },
+              metadata: { id: BlockType.AGENT, Name: 'Agent 1' },
               enabled: true,
             },
             {
@@ -416,7 +416,7 @@ describe('ParallelBlockHandler', () => {
               },
               inputs: {},
               outputs: {},
-              metadata: { id: BlockType.FUNCTION, name: 'Function 1' },
+              metadata: { id: BlockType.FUNCTION, Name: 'Function 1' },
               enabled: true,
             },
           ],

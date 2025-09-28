@@ -312,7 +312,7 @@ export default function ChatClient({ subdomain }: { subdomain: string }) {
       logger.info('API payload:', payload)
 
       const response = await fetch(`/api/chat/${subdomain}`, {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
@@ -362,7 +362,7 @@ export default function ChatClient({ subdomain }: { subdomain: string }) {
       // Clear timeout in case of error
       clearTimeout(timeoutId)
 
-      if (error.name === 'AbortError') {
+      if (error.Name === 'AbortError') {
         logger.info('Request aborted by user or timeout')
         setIsLoading(false)
         return

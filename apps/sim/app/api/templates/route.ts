@@ -52,7 +52,7 @@ function sanitizeWorkflowState(state: any): any {
 // Schema for creating a template
 const CreateTemplateSchema = z.object({
   workflowId: z.string().min(1, 'Workflow ID is required'),
-  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
+  Name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   description: z
     .string()
     .min(1, 'Description is required')
@@ -81,8 +81,8 @@ const QueryParamsSchema = z.object({
   workflowId: z.string().optional(),
 })
 
-// GET /api/templates - Retrieve templates
-export async function GET(request: NextRequest) {
+// get /api/templates - Retrieve templates
+export async function get(request: NextRequest) {
   const requestId = generateRequestId()
 
   try {
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
     if (params.search) {
       const searchTerm = `%${params.search}%`
       conditions.push(
-        or(ilike(templates.name, searchTerm), ilike(templates.description, searchTerm))
+        or(ilike(templates.Name, searchTerm), ilike(templates.description, searchTerm))
       )
     }
 
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
         id: templates.id,
         workflowId: templates.workflowId,
         userId: templates.userId,
-        name: templates.name,
+        Name: templates.Name,
         description: templates.description,
         author: templates.author,
         views: templates.views,
@@ -184,8 +184,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/templates - Create a new template
-export async function POST(request: NextRequest) {
+// post /api/templates - Create a new template
+export async function post(request: NextRequest) {
   const requestId = generateRequestId()
 
   try {
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
     const data = CreateTemplateSchema.parse(body)
 
     logger.debug(`[${requestId}] Creating template:`, {
-      name: data.name,
+      Name: data.Name,
       category: data.category,
       workflowId: data.workflowId,
     })
@@ -227,7 +227,7 @@ export async function POST(request: NextRequest) {
       id: templateId,
       workflowId: data.workflowId,
       userId: session.user.id,
-      name: data.name,
+      Name: data.Name,
       description: data.description || null,
       author: data.author,
       views: 0,

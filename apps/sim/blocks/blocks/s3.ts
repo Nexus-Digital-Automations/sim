@@ -1,17 +1,17 @@
-import { S3Icon } from '@/components/icons'
+import { S3ICON } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { S3Response } from '@/tools/s3/types'
 
 export const S3Block: BlockConfig<S3Response> = {
   type: 's3',
-  name: 'S3',
+  Name: 'S3',
   description: 'View S3 files',
   longDescription:
     'Integrate S3 into the workflow. Can get presigned URLs for S3 objects. Requires access key and secret access key.',
   docsLink: 'https://docs.sim.ai/tools/s3',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: S3Icon,
+  icon: S3ICON,
   subBlocks: [
     {
       id: 'accessKeyId',
@@ -36,7 +36,7 @@ export const S3Block: BlockConfig<S3Response> = {
       title: 'S3 Object URL',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'e.g., https://bucket-name.s3.region.amazonaws.com/path/to/file',
+      placeholder: 'e.g., https://bucket-Name.s3.region.amazonaws.com/path/to/file',
       required: true,
     },
   ],
@@ -61,7 +61,7 @@ export const S3Block: BlockConfig<S3Response> = {
           const url = new URL(params.s3Uri)
           const hostname = url.hostname
 
-          // Extract bucket name from hostname
+          // Extract bucket Name from hostname
           const bucketName = hostname.split('.')[0]
 
           // Extract region from hostname
@@ -72,7 +72,7 @@ export const S3Block: BlockConfig<S3Response> = {
           const objectKey = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname
 
           if (!bucketName) {
-            throw new Error('Could not extract bucket name from URL')
+            throw new Error('Could not extract bucket Name from URL')
           }
 
           if (!objectKey) {
@@ -88,7 +88,7 @@ export const S3Block: BlockConfig<S3Response> = {
           }
         } catch (_error) {
           throw new Error(
-            'Invalid S3 Object URL format. Expected format: https://bucket-name.s3.region.amazonaws.com/path/to/file'
+            'Invalid S3 Object URL format. Expected format: https://bucket-Name.s3.region.amazonaws.com/path/to/file'
           )
         }
       },

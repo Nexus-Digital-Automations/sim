@@ -11,14 +11,14 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 /**
- * GET handler for searching and retrieving memories
+ * get handler for searching and retrieving memories
  * Supports query parameters:
  * - query: Search string for memory keys
  * - type: Filter by memory type
  * - limit: Maximum number of results (default: 50)
  * - workflowId: Filter by workflow ID (required)
  */
-export async function GET(request: NextRequest) {
+export async function get(request: NextRequest) {
   const requestId = generateRequestId()
 
   try {
@@ -94,14 +94,14 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST handler for creating new memories
+ * post handler for creating new memories
  * Requires:
  * - key: Unique identifier for the memory (within workflow scope)
  * - type: Memory type ('agent')
  * - data: Memory content (agent message with role and content)
  * - workflowId: ID of the workflow this memory belongs to
  */
-export async function POST(request: NextRequest) {
+export async function post(request: NextRequest) {
   const requestId = generateRequestId()
 
   try {

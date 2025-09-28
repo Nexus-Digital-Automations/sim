@@ -138,19 +138,19 @@ class MemoryMonitor {
 // Performance timer utility
 class PerformanceTimer {
   private startTime = 0
-  private measurements: Array<{ name: string; duration: number }> = []
+  private measurements: Array<{ Name: string; duration: number }> = []
 
   start(): void {
     this.startTime = performance.now()
   }
 
-  mark(name: string): number {
+  mark(Name: string): number {
     const duration = performance.now() - this.startTime
-    this.measurements.push({ name, duration })
+    this.measurements.push({ Name, duration })
     return duration
   }
 
-  getMeasurements(): Array<{ name: string; duration: number }> {
+  getMeasurements(): Array<{ Name: string; duration: number }> {
     return [...this.measurements]
   }
 
@@ -218,7 +218,7 @@ describe('Performance Testing and Optimization Validation', () => {
       .insert(workspace)
       .values({
         id: workspaceId,
-        name: 'Performance Test Workspace',
+        Name: 'Performance Test Workspace',
         slug: 'perf-test-workspace',
       })
       .onConflictDoNothing()
@@ -228,7 +228,7 @@ describe('Performance Testing and Optimization Validation', () => {
       .values({
         id: userId,
         email: 'perf-test@example.com',
-        name: 'Performance Test User',
+        Name: 'Performance Test User',
       })
       .onConflictDoNothing()
 
@@ -238,7 +238,7 @@ describe('Performance Testing and Optimization Validation', () => {
         id: agentId,
         workspaceId,
         createdBy: userId,
-        name: 'Performance Test Agent',
+        Name: 'Performance Test Agent',
         description: 'Agent for performance testing',
         status: 'active',
       })
@@ -825,7 +825,7 @@ describe('Performance Testing and Optimization Validation', () => {
       // Test different query patterns and measure performance
       const queryTests = [
         {
-          name: 'basic_pagination',
+          Name: 'basic_pagination',
           test: () =>
             testContext.historyRetrieval.getSessionHistory({
               sessionId,
@@ -835,7 +835,7 @@ describe('Performance Testing and Optimization Validation', () => {
             }),
         },
         {
-          name: 'filtered_by_type',
+          Name: 'filtered_by_type',
           test: () =>
             testContext.historyRetrieval.getSessionHistory({
               sessionId,
@@ -845,7 +845,7 @@ describe('Performance Testing and Optimization Validation', () => {
             }),
         },
         {
-          name: 'search_query',
+          Name: 'search_query',
           test: () =>
             testContext.historyRetrieval.searchMessages({
               workspaceId: testContext.workspaceId,
@@ -855,7 +855,7 @@ describe('Performance Testing and Optimization Validation', () => {
             }),
         },
         {
-          name: 'date_range_filter',
+          Name: 'date_range_filter',
           test: () =>
             testContext.historyRetrieval.searchMessages({
               workspaceId: testContext.workspaceId,
@@ -876,7 +876,7 @@ describe('Performance Testing and Optimization Validation', () => {
         const result = await queryTest.test()
         const queryTime = performance.now() - startTime
 
-        queryResults[queryTest.name] = {
+        queryResults[queryTest.Name] = {
           time: queryTime,
           resultCount: result.messages?.length || 0,
         }

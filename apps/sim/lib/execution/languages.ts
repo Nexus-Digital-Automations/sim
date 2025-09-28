@@ -14,7 +14,7 @@ export function isValidCodeLanguage(value: string): value is CodeLanguage {
 }
 
 /**
- * Get language display name
+ * Get language display Name
  */
 export function getLanguageDisplayName(language: CodeLanguage): string {
   switch (language) {

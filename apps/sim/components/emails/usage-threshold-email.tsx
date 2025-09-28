@@ -39,7 +39,7 @@ export function UsageThresholdEmail({
   const brand = getBrandConfig()
   const baseUrl = env.NEXT_PUBLIC_APP_URL || 'https://sim.ai'
 
-  const previewText = `${brand.name}: You're at ${percentUsed}% of your ${planName} monthly budget`
+  const previewText = `${brand.Name}: You're at ${percentUsed}% of your ${planName} monthly budget`
 
   return (
     <Html>
@@ -53,7 +53,7 @@ export function UsageThresholdEmail({
                 <Img
                   src={brand.logoUrl || `${baseUrl}/logo/reverse/text/medium.png`}
                   width='114'
-                  alt={brand.name}
+                  alt={brand.Name}
                   style={{
                     margin: '0 auto',
                   }}

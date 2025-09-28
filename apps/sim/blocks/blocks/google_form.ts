@@ -1,16 +1,16 @@
-import { GoogleFormsIcon } from '@/components/icons'
+import { googleFormsIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 
 export const GoogleFormsBlock: BlockConfig = {
   type: 'google_forms',
-  name: 'Google Forms',
+  Name: 'Google Forms',
   description: 'Read responses from a Google Form',
   longDescription:
     'Integrate Google Forms into your workflow. Provide a Form ID to list responses, or specify a Response ID to fetch a single response. Requires OAuth.',
   docsLink: 'https://docs.sim.ai/tools/google_forms',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: GoogleFormsIcon,
+  icon: googleFormsIcon,
   subBlocks: [
     {
       id: 'credential',

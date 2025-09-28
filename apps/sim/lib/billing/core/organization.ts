@@ -93,7 +93,7 @@ export async function getOrganizationBillingData(
     const membersWithUsage = await db
       .select({
         userId: member.userId,
-        userName: user.name,
+        userName: user.Name,
         userEmail: user.email,
         role: member.role,
         joinedAt: member.createdAt,
@@ -171,7 +171,7 @@ export async function getOrganizationBillingData(
 
     return {
       organizationId,
-      organizationName: organizationData.name || '',
+      organizationName: organizationData.Name || '',
       subscriptionPlan: subscription.plan,
       subscriptionStatus: subscription.status || 'inactive',
       totalSeats: Math.max(subscription.seats || 1, 1),
@@ -292,7 +292,7 @@ export async function getOrganizationBillingSummary(organizationId: string) {
     ).length
 
     const topUsers = billingData.members.slice(0, 5).map((m) => ({
-      name: m.userName,
+      Name: m.userName,
       usage: m.currentUsage,
       limit: m.usageLimit,
       percentUsed: m.percentUsed,
@@ -301,7 +301,7 @@ export async function getOrganizationBillingSummary(organizationId: string) {
     return {
       organization: {
         id: billingData.organizationId,
-        name: billingData.organizationName,
+        Name: billingData.organizationName,
         plan: billingData.subscriptionPlan,
         status: billingData.subscriptionStatus,
       },

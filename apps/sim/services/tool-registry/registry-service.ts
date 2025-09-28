@@ -76,12 +76,12 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
    * Register a new tool in the registry
    */
   async registerTool(tool: ToolDefinition): Promise<void> {
-    logger.info('Registering tool', { toolId: tool.id, name: tool.name })
+    logger.info('Registering tool', { toolId: tool.id, Name: tool.Name })
 
     try {
       const toolData: ToolRegistryInsert = {
         id: tool.id,
-        name: tool.name,
+        Name: tool.Name,
         displayName: tool.displayName,
         description: tool.description,
         longDescription: tool.longDescription,
@@ -264,7 +264,7 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
 
       const enrichedTool: EnrichedTool = {
         id: tool.id,
-        name: tool.name,
+        Name: tool.Name,
         displayName: tool.displayName,
         description: tool.description,
         longDescription: tool.longDescription || undefined,
@@ -320,7 +320,7 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
         })
         .returning()
 
-      logger.info('Tool category created', { categoryId: category.id, name: category.name })
+      logger.info('Tool category created', { categoryId: category.id, Name: category.Name })
       return category
     } catch (error) {
       logger.error('Failed to create tool category', { categoryData, error })
@@ -336,7 +336,7 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
       return await db
         .select()
         .from(toolCategories)
-        .orderBy(asc(toolCategories.sortOrder), asc(toolCategories.name))
+        .orderBy(asc(toolCategories.sortOrder), asc(toolCategories.Name))
     } catch (error) {
       logger.error('Failed to get tool categories', { error })
       throw error
@@ -421,49 +421,49 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
   private async createDefaultCategories(): Promise<void> {
     const defaultCategories = [
       {
-        name: 'Workflow Management',
+        Name: 'Workflow Management',
         description: 'Tools for creating, editing, and managing workflows',
         icon: 'workflow',
         color: '#3B82F6',
         sortOrder: 1,
       },
       {
-        name: 'Data Processing',
+        Name: 'Data Processing',
         description: 'Tools for processing, transforming, and analyzing data',
         icon: 'database',
         color: '#10B981',
         sortOrder: 2,
       },
       {
-        name: 'External APIs',
+        Name: 'External APIs',
         description: 'Tools for making API requests and integrations',
         icon: 'api',
         color: '#F59E0B',
         sortOrder: 3,
       },
       {
-        name: 'File Management',
+        Name: 'File Management',
         description: 'Tools for file operations and cloud storage',
         icon: 'folder',
         color: '#8B5CF6',
         sortOrder: 4,
       },
       {
-        name: 'Documentation',
+        Name: 'Documentation',
         description: 'Tools for searching and managing documentation',
         icon: 'book',
         color: '#06B6D4',
         sortOrder: 5,
       },
       {
-        name: 'Environment',
+        Name: 'Environment',
         description: 'Tools for managing environment variables and settings',
         icon: 'settings',
         color: '#EF4444',
         sortOrder: 6,
       },
       {
-        name: 'Utilities',
+        Name: 'Utilities',
         description: 'General utility tools and helpers',
         icon: 'tool',
         color: '#6B7280',
@@ -477,7 +477,7 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
       } catch (error) {
         // Ignore duplicate category errors
         if (!error?.message?.includes('duplicate') && !error?.message?.includes('unique')) {
-          logger.warn('Failed to create default category', { category: category.name, error })
+          logger.warn('Failed to create default category', { category: category.Name, error })
         }
       }
     }

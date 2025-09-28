@@ -53,7 +53,7 @@ export interface Alert {
 }
 
 export interface RecoveryStrategy {
-  name: string
+  Name: string
   description: string
   applicableComponents: string[]
   execute: (component: string, error: Error) => Promise<RecoveryResult>
@@ -252,7 +252,7 @@ export class SyncMonitoringSystem {
 
       if (result.success) {
         this.resetComponentHealth(component)
-        this.createAlert('info', component, `Recovery successful using ${strategy.name}`)
+        this.createAlert('info', component, `Recovery successful using ${strategy.Name}`)
       } else {
         this.createAlert('error', component, `Recovery failed: ${result.description}`)
       }
@@ -263,13 +263,13 @@ export class SyncMonitoringSystem {
       componentHealth.isRecovering = false
       logger.error('Recovery execution failed', {
         component,
-        strategy: strategy.name,
+        strategy: strategy.Name,
         recoveryError,
       })
 
       return {
         success: false,
-        description: `Recovery strategy ${strategy.name} threw an error: ${recoveryError}`,
+        description: `Recovery strategy ${strategy.Name} threw an error: ${recoveryError}`,
       }
     }
   }
@@ -685,7 +685,7 @@ export class SyncMonitoringSystem {
   private initializeRecoveryStrategies(): void {
     // Restart strategy
     this.recoveryStrategies.set('restart', {
-      name: 'restart',
+      Name: 'restart',
       description: 'Restart the affected component',
       applicableComponents: ['syncEngine', 'dataBinding', 'conflictResolution'],
       cooldownPeriod: 60000, // 1 minute
@@ -705,7 +705,7 @@ export class SyncMonitoringSystem {
 
     // Clear cache strategy
     this.recoveryStrategies.set('clear-cache', {
-      name: 'clear-cache',
+      Name: 'clear-cache',
       description: 'Clear caches and reset state',
       applicableComponents: ['performance', 'dataBinding'],
       cooldownPeriod: 30000, // 30 seconds
@@ -723,7 +723,7 @@ export class SyncMonitoringSystem {
 
     // Reduce load strategy
     this.recoveryStrategies.set('reduce-load', {
-      name: 'reduce-load',
+      Name: 'reduce-load',
       description: 'Temporarily reduce system load',
       applicableComponents: ['syncEngine', 'performance'],
       cooldownPeriod: 120000, // 2 minutes
@@ -753,12 +753,12 @@ export class SyncMonitoringSystem {
     const componentHealth = this.healthMetrics[component as keyof HealthMetrics] as ComponentHealth
 
     if (componentHealth.recoveryAttempts < 2) {
-      return applicableStrategies.find((s) => s.name === 'restart') || applicableStrategies[0]
+      return applicableStrategies.find((s) => s.Name === 'restart') || applicableStrategies[0]
     }
     if (componentHealth.recoveryAttempts < 4) {
-      return applicableStrategies.find((s) => s.name === 'clear-cache') || applicableStrategies[1]
+      return applicableStrategies.find((s) => s.Name === 'clear-cache') || applicableStrategies[1]
     }
-    return applicableStrategies.find((s) => s.name === 'reduce-load') || applicableStrategies[2]
+    return applicableStrategies.find((s) => s.Name === 'reduce-load') || applicableStrategies[2]
   }
 
   /**

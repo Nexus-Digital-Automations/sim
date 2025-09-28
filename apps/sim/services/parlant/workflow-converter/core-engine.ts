@@ -225,7 +225,7 @@ export class WorkflowConversionEngine {
           step: 'Converting nodes to states',
           completed: 1,
           total: 5,
-          currentNode: node.data.name || node.id,
+          currentNode: node.data.Name || node.id,
         })
 
         // Find appropriate converter
@@ -257,7 +257,7 @@ export class WorkflowConversionEngine {
         // Store variables if any
         if (conversionResult.variables) {
           conversionResult.variables.forEach((variable) => {
-            context.variables.set(variable.name, variable)
+            context.variables.set(variable.Name, variable)
           })
         }
 
@@ -349,10 +349,10 @@ export class WorkflowConversionEngine {
     // Create journey
     const journey: ParlantJourney = {
       id: `journey_${context.workflow.id}`,
-      title: context.workflow.name,
+      title: context.workflow.Name,
       description:
-        context.workflow.description || `Converted from workflow: ${context.workflow.name}`,
-      conditions: [`Converted from workflow ${context.workflow.name}`],
+        context.workflow.description || `Converted from workflow: ${context.workflow.Name}`,
+      conditions: [`Converted from workflow ${context.workflow.Name}`],
       states,
       transitions,
       metadata: {
@@ -467,7 +467,7 @@ export class WorkflowConversionEngine {
     context.workflow.nodes.forEach((node) => {
       // Find corresponding states for this node
       const nodeStates = Array.from(context.stateMap.values()).filter(
-        (state) => state.id.startsWith(node.id) || state.name.includes(node.data.name || '')
+        (state) => state.id.startsWith(node.id) || state.Name.includes(node.data.Name || '')
       )
 
       if (nodeStates.length > 0) {

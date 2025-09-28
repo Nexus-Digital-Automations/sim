@@ -25,7 +25,7 @@ const logger = createLogger('ParlantFileUploadProcessor')
 
 export interface FileUploadRequest {
   file: {
-    name: string
+    Name: string
     content: string | Buffer
     mimeType: string
     size: number
@@ -130,7 +130,7 @@ export class FileUploadProcessorService {
     try {
       logger.info('Starting file upload processing', {
         uploadId,
-        fileName: request.file.name,
+        fileName: request.file.Name,
         mimeType: request.file.mimeType,
         size: request.file.size,
         knowledgeBaseId: request.knowledgeBaseId,
@@ -175,7 +175,7 @@ export class FileUploadProcessorService {
       const processingOptions = request.processingOptions || {}
       const documentResult = await processDocument(
         fileUrl,
-        request.file.name,
+        request.file.Name,
         request.file.mimeType,
         processingOptions.chunkSize || 1000,
         processingOptions.chunkOverlap || 200,
@@ -200,7 +200,7 @@ export class FileUploadProcessorService {
 
       const documentId = await this.createKnowledgeDocument(
         request.knowledgeBaseId,
-        request.file.name,
+        request.file.Name,
         documentResult.chunks,
         enhancedMetadata,
         auth
@@ -452,13 +452,13 @@ export class FileUploadProcessorService {
    * Upload file to storage
    */
   private async uploadFileToStorage(
-    file: { name: string; content: string | Buffer; mimeType: string },
+    file: { Name: string; content: string | Buffer; mimeType: string },
     auth: AuthContext
   ): Promise<string> {
     // This would integrate with the actual file upload system
     // For now, return a placeholder URL
     const fileId = `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    return `https://storage.sim.ai/knowledge/${auth.workspace_id}/${fileId}/${file.name}`
+    return `https://storage.sim.ai/knowledge/${auth.workspace_id}/${fileId}/${file.Name}`
   }
 
   /**
@@ -467,13 +467,13 @@ export class FileUploadProcessorService {
   private async enhanceMetadata(
     baseMetadata: Record<string, any>,
     documentResult: any,
-    file: { name: string; mimeType: string }
+    file: { Name: string; mimeType: string }
   ): Promise<any> {
     const enhanced = { ...baseMetadata }
 
     // Extract title from filename if not provided
     if (!enhanced.title) {
-      enhanced.title = file.name.replace(/\.[^/.]+$/, '')
+      enhanced.title = file.Name.replace(/\.[^/.]+$/, '')
     }
 
     // Detect document type
@@ -701,7 +701,7 @@ export const fileProcessingUtils = {
   /**
    * Validate file for knowledge base compatibility
    */
-  validateFileForKnowledge(file: { name: string; mimeType: string; size: number }): {
+  validateFileForKnowledge(file: { Name: string; mimeType: string; size: number }): {
     valid: boolean
     issues: string[]
     recommendations: string[]

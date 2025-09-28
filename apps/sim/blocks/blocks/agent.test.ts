@@ -61,7 +61,7 @@ describe('AgentBlock', () => {
             title: 'Custom Tool',
             schema: {
               function: {
-                name: 'custom_function',
+                Name: 'custom_function',
                 description: 'A custom function',
                 parameters: { type: 'object', properties: {} },
               },
@@ -77,7 +77,7 @@ describe('AgentBlock', () => {
       expect(result.tools.length).toBe(2)
 
       // Verify the tool titles (custom identifiers that we can check)
-      const toolIds = result.tools.map((tool: any) => tool.name)
+      const toolIds = result.tools.map((tool: any) => tool.Name)
       expect(toolIds).toContain('Tool 1')
       expect(toolIds).not.toContain('Tool 2')
       expect(toolIds).toContain('Custom Tool')
@@ -112,7 +112,7 @@ describe('AgentBlock', () => {
             title: 'Custom Tool',
             schema: {
               function: {
-                name: 'custom_function',
+                Name: 'custom_function',
                 description: 'A custom function description',
                 parameters: {
                   type: 'object',
@@ -132,7 +132,7 @@ describe('AgentBlock', () => {
       // Verify custom tool transformation
       expect(result.tools[0]).toEqual({
         id: 'custom_function',
-        name: 'Custom Tool',
+        Name: 'Custom Tool',
         description: 'A custom function description',
         params: {},
         parameters: {

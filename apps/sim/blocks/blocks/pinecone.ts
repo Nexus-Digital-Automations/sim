@@ -1,17 +1,17 @@
-import { PineconeIcon } from '@/components/icons'
+import { pineconeIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { PineconeResponse } from '@/tools/pinecone/types'
 
 export const PineconeBlock: BlockConfig<PineconeResponse> = {
   type: 'pinecone',
-  name: 'Pinecone',
+  Name: 'Pinecone',
   description: 'Use Pinecone vector database',
   longDescription:
     'Integrate Pinecone into the workflow. Can generate embeddings, upsert text, search with text, fetch vectors, and search with vectors. Requires API Key.',
   docsLink: 'https://docs.sim.ai/tools/pinecone',
   category: 'tools',
   bgColor: '#0D1117',
-  icon: PineconeIcon,
+  icon: pineconeIcon,
 
   subBlocks: [
     {
@@ -60,7 +60,7 @@ export const PineconeBlock: BlockConfig<PineconeResponse> = {
       title: 'Index Host',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'https://index-name-abc123.svc.project-id.pinecone.io',
+      placeholder: 'https://index-Name-abc123.svc.project-id.pinecone.io',
       condition: { field: 'operation', value: 'upsert_text' },
       required: true,
     },
@@ -89,7 +89,7 @@ export const PineconeBlock: BlockConfig<PineconeResponse> = {
       title: 'Index Host',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'https://index-name-abc123.svc.project-id.pinecone.io',
+      placeholder: 'https://index-Name-abc123.svc.project-id.pinecone.io',
       condition: { field: 'operation', value: 'search_text' },
       required: true,
     },
@@ -149,7 +149,7 @@ export const PineconeBlock: BlockConfig<PineconeResponse> = {
       title: 'Index Host',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'https://index-name-abc123.svc.project-id.pinecone.io',
+      placeholder: 'https://index-Name-abc123.svc.project-id.pinecone.io',
       condition: { field: 'operation', value: 'fetch' },
       required: true,
     },
@@ -177,7 +177,7 @@ export const PineconeBlock: BlockConfig<PineconeResponse> = {
       title: 'Index Host',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'https://index-name-abc123.svc.project-id.pinecone.io',
+      placeholder: 'https://index-Name-abc123.svc.project-id.pinecone.io',
       condition: { field: 'operation', value: 'search_vector' },
       required: true,
     },

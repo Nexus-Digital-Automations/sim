@@ -15,13 +15,13 @@ const logger = createLogger('ParlantAuthBridge')
 export interface ParlantUserContext {
   user_id: string
   email: string
-  name: string
+  Name: string
   email_verified: boolean
   image: string | null
   active_organization_id: string | null
   workspaces: Array<{
     id: string
-    name: string
+    Name: string
     role: string
     permissions: string[]
   }>
@@ -55,7 +55,7 @@ export async function getParlantUserContext(): Promise<ParlantUserContext | null
     const workspaces = [
       {
         id: 'default-workspace',
-        name: 'Default Workspace',
+        Name: 'Default Workspace',
         role: 'admin',
         permissions: ['read', 'write', 'admin'],
       },
@@ -64,7 +64,7 @@ export async function getParlantUserContext(): Promise<ParlantUserContext | null
     const userContext: ParlantUserContext = {
       user_id: user.id,
       email: user.email,
-      name: user.name || '',
+      Name: user.Name || '',
       email_verified: user.emailVerified || false,
       image: user.image || null,
       active_organization_id: sessionData.activeOrganizationId || null,
@@ -176,7 +176,7 @@ export class ParlantApiClient {
     const headers = await this.getAuthenticatedHeaders(workspaceId)
 
     const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'GET',
+      method: 'get',
       headers,
     })
 
@@ -191,7 +191,7 @@ export class ParlantApiClient {
     const headers = await this.getAuthenticatedHeaders(workspaceId)
 
     const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'POST',
+      method: 'post',
       headers,
       body: JSON.stringify(data),
     })

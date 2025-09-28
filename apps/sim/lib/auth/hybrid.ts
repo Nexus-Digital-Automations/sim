@@ -43,7 +43,7 @@ export async function checkHybridAuth(
         const { searchParams } = new URL(request.url)
         workflowId = searchParams.get('workflowId')
 
-        if (!workflowId && request.method === 'POST') {
+        if (!workflowId && request.method === 'post') {
           try {
             // Clone the request to avoid consuming the original body
             const clonedRequest = request.clone()

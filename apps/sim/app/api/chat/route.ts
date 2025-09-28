@@ -41,7 +41,7 @@ const chatSchema = z.object({
     .default([]),
 })
 
-export async function GET(request: NextRequest) {
+export async function get(request: NextRequest) {
   try {
     const session = await getSession()
 
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function post(request: NextRequest) {
   try {
     const session = await getSession()
 

@@ -73,7 +73,7 @@ export default function ParlantChatPage() {
     setSelectedAgent(agent)
     logger.info('Agent selected for chat', {
       agentId: agent.id,
-      agentName: agent.name,
+      agentName: agent.Name,
       workspaceId,
     })
 
@@ -140,7 +140,7 @@ export default function ParlantChatPage() {
               {selectedAgent && (
                 <div className='flex items-center space-x-2 text-muted-foreground text-sm'>
                   <span>Selected:</span>
-                  <Badge variant='outline'>{selectedAgent.name}</Badge>
+                  <Badge variant='outline'>{selectedAgent.Name}</Badge>
                 </div>
               )}
             </div>

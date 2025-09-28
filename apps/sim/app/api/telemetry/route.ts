@@ -95,7 +95,7 @@ async function forwardToCollector(data: any): Promise<boolean> {
     const safeAttrs = createSafeAttributes(data)
 
     const serviceAttrs = [
-      { key: 'service.name', value: { stringValue: 'sim-studio' } },
+      { key: 'service.Name', value: { stringValue: 'sim-studio' } },
       {
         key: 'service.version',
         value: { stringValue: '0.1.0' },
@@ -119,7 +119,7 @@ async function forwardToCollector(data: any): Promise<boolean> {
             {
               spans: [
                 {
-                  name: spanName,
+                  Name: spanName,
                   kind: 1,
                   startTimeUnixNano: timestamp,
                   endTimeUnixNano: timestamp + 1000000,
@@ -138,7 +138,7 @@ async function forwardToCollector(data: any): Promise<boolean> {
 
     try {
       const options = {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -160,7 +160,7 @@ async function forwardToCollector(data: any): Promise<boolean> {
       return true
     } catch (fetchError) {
       clearTimeout(timeoutId)
-      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+      if (fetchError instanceof Error && fetchError.Name === 'AbortError') {
         logger.error('Telemetry request timed out', { endpoint })
       } else {
         logger.error('Failed to send telemetry to collector', fetchError)
@@ -176,7 +176,7 @@ async function forwardToCollector(data: any): Promise<boolean> {
 /**
  * Endpoint that receives telemetry events and forwards them to OpenTelemetry collector
  */
-export async function POST(req: NextRequest) {
+export async function post(req: NextRequest) {
   try {
     let eventData
     try {

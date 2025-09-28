@@ -37,26 +37,26 @@ class CompatibilityValidator {
       // Test 1: Ensure all expected tables exist
       const tableChecks = [
         // Sim tables
-        { name: 'users', table: user },
-        { name: 'workspaces', table: workspace },
-        { name: 'workflows', table: workflow },
-        { name: 'knowledge', table: knowledge },
+        { Name: 'users', table: user },
+        { Name: 'workspaces', table: workspace },
+        { Name: 'workflows', table: workflow },
+        { Name: 'knowledge', table: knowledge },
         // Parlant tables
-        { name: 'parlant_agents', table: parlantAgents },
-        { name: 'parlant_sessions', table: parlantSessions },
-        { name: 'parlant_events', table: parlantEvents },
-        { name: 'parlant_tools', table: parlantTools },
-        { name: 'parlant_journeys', table: parlantJourneys },
-        { name: 'parlant_journey_states', table: parlantJourneyStates },
-        { name: 'parlant_variables', table: parlantVariables },
-        { name: 'parlant_guidelines', table: parlantGuidelines },
+        { Name: 'parlant_agents', table: parlantAgents },
+        { Name: 'parlant_sessions', table: parlantSessions },
+        { Name: 'parlant_events', table: parlantEvents },
+        { Name: 'parlant_tools', table: parlantTools },
+        { Name: 'parlant_journeys', table: parlantJourneys },
+        { Name: 'parlant_journey_states', table: parlantJourneyStates },
+        { Name: 'parlant_variables', table: parlantVariables },
+        { Name: 'parlant_guidelines', table: parlantGuidelines },
       ]
 
-      for (const { name, table } of tableChecks) {
+      for (const { Name, table } of tableChecks) {
         try {
           await db.select().from(table).limit(1)
         } catch (error) {
-          issues.push(`Table ${name} is not accessible: ${error.message}`)
+          issues.push(`Table ${Name} is not accessible: ${error.message}`)
         }
       }
 
@@ -201,7 +201,7 @@ class CompatibilityValidator {
             .insert(parlantAgents)
             .values({
               workspaceId: testWorkspaceId,
-              name: 'Compatibility Test Agent',
+              Name: 'Compatibility Test Agent',
               displayName: 'Compatibility Test Agent',
               description: 'Testing transaction compatibility',
               systemPrompt: 'Test agent for compatibility',
@@ -244,7 +244,7 @@ class CompatibilityValidator {
         await db.transaction(async (tx) => {
           await tx.insert(parlantAgents).values({
             workspaceId: testWorkspaceId,
-            name: 'Rollback Test Agent',
+            Name: 'Rollback Test Agent',
             displayName: 'Rollback Test Agent',
             description: 'Testing rollback compatibility',
             systemPrompt: 'Test agent for rollback',

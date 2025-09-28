@@ -502,7 +502,7 @@ interface ContentGenerationRule {
 }
 
 interface AdaptationStrategy {
-  name: string
+  Name: string
   adapt: (content: HelpContent, context: HelpContext) => Promise<HelpContent>
 }
 

@@ -31,7 +31,7 @@ describe('Parallel Block Activation Regression Tests', () => {
         blocks: [
           {
             id: 'start',
-            metadata: { id: BlockType.STARTER, name: 'Start' },
+            metadata: { id: BlockType.STARTER, Name: 'Start' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.STARTER, params: {} },
             inputs: {},
@@ -40,7 +40,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'agent-1',
-            metadata: { id: BlockType.AGENT, name: 'Agent 1' },
+            metadata: { id: BlockType.AGENT, Name: 'Agent 1' },
             position: { x: 200, y: 0 },
             config: { tool: BlockType.AGENT, params: {} },
             inputs: {},
@@ -49,7 +49,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'parallel-1',
-            metadata: { id: BlockType.PARALLEL, name: 'Parallel 1' },
+            metadata: { id: BlockType.PARALLEL, Name: 'Parallel 1' },
             position: { x: 400, y: 0 },
             config: { tool: BlockType.PARALLEL, params: {} },
             inputs: {},
@@ -58,7 +58,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'agent-2',
-            metadata: { id: BlockType.AGENT, name: 'Agent 2' },
+            metadata: { id: BlockType.AGENT, Name: 'Agent 2' },
             position: { x: 600, y: 0 },
             config: { tool: BlockType.AGENT, params: {} },
             inputs: {},
@@ -129,7 +129,7 @@ describe('Parallel Block Activation Regression Tests', () => {
         blocks: [
           {
             id: 'start',
-            metadata: { id: BlockType.STARTER, name: 'Start' },
+            metadata: { id: BlockType.STARTER, Name: 'Start' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.STARTER, params: {} },
             inputs: {},
@@ -138,7 +138,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'router-1',
-            metadata: { id: BlockType.ROUTER, name: 'Router 1' },
+            metadata: { id: BlockType.ROUTER, Name: 'Router 1' },
             position: { x: 200, y: 0 },
             config: { tool: BlockType.ROUTER, params: {} },
             inputs: {},
@@ -147,7 +147,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'parallel-1',
-            metadata: { id: BlockType.PARALLEL, name: 'Parallel 1' },
+            metadata: { id: BlockType.PARALLEL, Name: 'Parallel 1' },
             position: { x: 400, y: 0 },
             config: { tool: BlockType.PARALLEL, params: {} },
             inputs: {},
@@ -156,7 +156,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'function-1',
-            metadata: { id: BlockType.FUNCTION, name: 'Function 1' },
+            metadata: { id: BlockType.FUNCTION, Name: 'Function 1' },
             position: { x: 600, y: 0 },
             config: { tool: BlockType.FUNCTION, params: {} },
             inputs: {},
@@ -212,7 +212,7 @@ describe('Parallel Block Activation Regression Tests', () => {
         blocks: [
           {
             id: 'start',
-            metadata: { id: BlockType.STARTER, name: 'Start' },
+            metadata: { id: BlockType.STARTER, Name: 'Start' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.STARTER, params: {} },
             inputs: {},
@@ -221,7 +221,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'condition-1',
-            metadata: { id: BlockType.CONDITION, name: 'Condition 1' },
+            metadata: { id: BlockType.CONDITION, Name: 'Condition 1' },
             position: { x: 200, y: 0 },
             config: { tool: BlockType.CONDITION, params: {} },
             inputs: {},
@@ -230,7 +230,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'parallel-1',
-            metadata: { id: BlockType.PARALLEL, name: 'Parallel 1' },
+            metadata: { id: BlockType.PARALLEL, Name: 'Parallel 1' },
             position: { x: 400, y: 0 },
             config: { tool: BlockType.PARALLEL, params: {} },
             inputs: {},
@@ -239,7 +239,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'function-1',
-            metadata: { id: BlockType.FUNCTION, name: 'Function 1' },
+            metadata: { id: BlockType.FUNCTION, Name: 'Function 1' },
             position: { x: 400, y: 200 },
             config: { tool: BlockType.FUNCTION, params: {} },
             inputs: {},
@@ -248,7 +248,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'agent-1',
-            metadata: { id: BlockType.AGENT, name: 'Agent 1' },
+            metadata: { id: BlockType.AGENT, Name: 'Agent 1' },
             position: { x: 600, y: 0 },
             config: { tool: BlockType.AGENT, params: {} },
             inputs: {},
@@ -326,19 +326,19 @@ describe('Parallel Block Activation Regression Tests', () => {
 
   describe('Regression: All regular blocks should activate parallel/loop', () => {
     it.each([
-      { blockType: BlockType.FUNCTION, name: 'Function' },
-      { blockType: BlockType.AGENT, name: 'Agent' },
-      { blockType: BlockType.API, name: 'API' },
-      { blockType: BlockType.EVALUATOR, name: 'Evaluator' },
-      { blockType: BlockType.RESPONSE, name: 'Response' },
-      { blockType: BlockType.WORKFLOW, name: 'Workflow' },
-    ])('should allow $name → Parallel activation', ({ blockType, name }) => {
+      { blockType: BlockType.FUNCTION, Name: 'Function' },
+      { blockType: BlockType.AGENT, Name: 'Agent' },
+      { blockType: BlockType.API, Name: 'API' },
+      { blockType: BlockType.EVALUATOR, Name: 'Evaluator' },
+      { blockType: BlockType.RESPONSE, Name: 'Response' },
+      { blockType: BlockType.WORKFLOW, Name: 'Workflow' },
+    ])('should allow $Name → Parallel activation', ({ blockType, Name }) => {
       const workflow: SerializedWorkflow = {
         version: '2.0',
         blocks: [
           {
             id: 'start',
-            metadata: { id: BlockType.STARTER, name: 'Start' },
+            metadata: { id: BlockType.STARTER, Name: 'Start' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.STARTER, params: {} },
             inputs: {},
@@ -347,7 +347,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'regular-block',
-            metadata: { id: blockType, name },
+            metadata: { id: blockType, Name },
             position: { x: 200, y: 0 },
             config: { tool: blockType, params: {} },
             inputs: {},
@@ -356,7 +356,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'parallel-1',
-            metadata: { id: BlockType.PARALLEL, name: 'Parallel 1' },
+            metadata: { id: BlockType.PARALLEL, Name: 'Parallel 1' },
             position: { x: 400, y: 0 },
             config: { tool: BlockType.PARALLEL, params: {} },
             inputs: {},
@@ -365,7 +365,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'target-function',
-            metadata: { id: BlockType.FUNCTION, name: 'Target Function' },
+            metadata: { id: BlockType.FUNCTION, Name: 'Target Function' },
             position: { x: 600, y: 0 },
             config: { tool: BlockType.FUNCTION, params: {} },
             inputs: {},
@@ -420,7 +420,7 @@ describe('Parallel Block Activation Regression Tests', () => {
         blocks: [
           {
             id: 'function-1',
-            metadata: { id: BlockType.FUNCTION, name: 'Function 1' },
+            metadata: { id: BlockType.FUNCTION, Name: 'Function 1' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.FUNCTION, params: {} },
             inputs: {},
@@ -429,7 +429,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'agent-1',
-            metadata: { id: BlockType.AGENT, name: 'Agent 1' },
+            metadata: { id: BlockType.AGENT, Name: 'Agent 1' },
             position: { x: 200, y: 0 },
             config: { tool: BlockType.AGENT, params: {} },
             inputs: {},
@@ -472,7 +472,7 @@ describe('Parallel Block Activation Regression Tests', () => {
         blocks: [
           {
             id: 'start',
-            metadata: { id: BlockType.STARTER, name: 'Start' },
+            metadata: { id: BlockType.STARTER, Name: 'Start' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.STARTER, params: {} },
             inputs: {},
@@ -481,7 +481,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'function-1',
-            metadata: { id: BlockType.FUNCTION, name: 'Function 1' },
+            metadata: { id: BlockType.FUNCTION, Name: 'Function 1' },
             position: { x: 200, y: 0 },
             config: { tool: BlockType.FUNCTION, params: {} },
             inputs: {},
@@ -490,7 +490,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'loop-1',
-            metadata: { id: BlockType.LOOP, name: 'Loop 1' },
+            metadata: { id: BlockType.LOOP, Name: 'Loop 1' },
             position: { x: 400, y: 0 },
             config: { tool: BlockType.LOOP, params: {} },
             inputs: {},
@@ -499,7 +499,7 @@ describe('Parallel Block Activation Regression Tests', () => {
           },
           {
             id: 'agent-1',
-            metadata: { id: BlockType.AGENT, name: 'Agent 1' },
+            metadata: { id: BlockType.AGENT, Name: 'Agent 1' },
             position: { x: 600, y: 0 },
             config: { tool: BlockType.AGENT, params: {} },
             inputs: {},

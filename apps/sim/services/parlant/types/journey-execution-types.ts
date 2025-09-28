@@ -30,7 +30,7 @@ export interface JourneyDefinition {
 export interface JourneyState {
   id: string
   type: StateType
-  name?: string
+  Name?: string
   description?: string
   config?: StateConfiguration
   position?: { x: number; y: number }
@@ -195,7 +195,7 @@ export interface ProgressTracker {
 
 export interface ProgressMilestone {
   id: string
-  name: string
+  Name: string
   description: string
   stateId: string
   completed: boolean
@@ -231,7 +231,7 @@ export interface ConversationMessage {
 
 export interface MessageAttachment {
   type: 'image' | 'file' | 'data' | 'chart'
-  name: string
+  Name: string
   url?: string
   data?: any
   mimeType?: string
@@ -242,7 +242,7 @@ export interface MessageAttachment {
  */
 export interface WorkflowData {
   id: string
-  name: string
+  Name: string
   description: string
   version: string
   nodes: WorkflowNode[]
@@ -434,7 +434,7 @@ export interface ExecutionResults {
 
 export interface ResultArtifact {
   id: string
-  name: string
+  Name: string
   type: 'file' | 'data' | 'report' | 'visualization'
   url?: string
   data?: any

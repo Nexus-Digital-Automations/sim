@@ -365,7 +365,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
     if (query.query) {
       conditions.push(
         or(
-          ilike(toolRegistry.name, `%${query.query}%`),
+          ilike(toolRegistry.Name, `%${query.query}%`),
           ilike(toolRegistry.displayName, `%${query.query}%`),
           ilike(toolRegistry.description, `%${query.query}%`),
           ilike(toolRegistry.naturalLanguageDescription, `%${query.query}%`),
@@ -425,7 +425,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
     const orderFunc = sortOrder === 'asc' ? asc : desc
 
     switch (sortBy) {
-      case 'name':
+      case 'Name':
         return query.orderBy(orderFunc(toolRegistry.displayName))
       case 'usage':
         return query.orderBy(orderFunc(toolRegistry.usageCount))
@@ -447,13 +447,13 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
     const categories = await db
       .select({
         id: toolCategories.id,
-        name: toolCategories.name,
+        Name: toolCategories.Name,
         count: count(toolRegistry.id),
       })
       .from(toolCategories)
       .leftJoin(toolRegistry, eq(toolCategories.id, toolRegistry.categoryId))
       .where(eq(toolRegistry.status, 'active'))
-      .groupBy(toolCategories.id, toolCategories.name)
+      .groupBy(toolCategories.id, toolCategories.Name)
       .orderBy(desc(count(toolRegistry.id)))
 
     // Get type facets
@@ -483,7 +483,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
     const tags: Array<{ tag: string; count: number }> = []
 
     return {
-      categories: categories.map((c) => ({ id: c.id, name: c.name, count: Number(c.count) })),
+      categories: categories.map((c) => ({ id: c.id, Name: c.Name, count: Number(c.count) })),
       types: types.map((t) => ({ type: t.type, count: Number(t.count) })),
       scopes: scopes.map((s) => ({ scope: s.scope, count: Number(s.count) })),
       tags,
@@ -498,23 +498,23 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
     // In a real system, we'd use more sophisticated suggestion algorithms
     const suggestions = []
 
-    // Get similar tool names
+    // Get similar tool NAMES
     const similarTools = await db
-      .select({ name: toolRegistry.displayName })
+      .select({ Name: toolRegistry.displayName })
       .from(toolRegistry)
       .where(and(eq(toolRegistry.status, 'active'), ilike(toolRegistry.displayName, `%${query}%`)))
       .limit(5)
 
-    suggestions.push(...similarTools.map((t) => t.name))
+    suggestions.push(...similarTools.map((t) => t.Name))
 
     // Get related categories
     const relatedCategories = await db
-      .select({ name: toolCategories.name })
+      .select({ Name: toolCategories.Name })
       .from(toolCategories)
-      .where(ilike(toolCategories.name, `%${query}%`))
+      .where(ilike(toolCategories.Name, `%${query}%`))
       .limit(3)
 
-    suggestions.push(...relatedCategories.map((c) => c.name))
+    suggestions.push(...relatedCategories.map((c) => c.Name))
 
     return suggestions.slice(0, 8) // Limit total suggestions
   }
@@ -529,7 +529,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
   ): Promise<EnrichedTool> {
     return {
       id: tool.id,
-      name: tool.name,
+      Name: tool.Name,
       displayName: tool.displayName,
       description: tool.description,
       longDescription: tool.longDescription || undefined,

@@ -15,7 +15,7 @@ const logger = createLogger('WebhooksAPI')
 export const dynamic = 'force-dynamic'
 
 // Get all webhooks for the current user
-export async function GET(request: NextRequest) {
+export async function get(request: NextRequest) {
   const requestId = generateRequestId()
 
   try {
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
           webhook: webhook,
           workflow: {
             id: workflow.id,
-            name: workflow.name,
+            Name: workflow.Name,
           },
         })
         .from(webhook)
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
         webhook: webhook,
         workflow: {
           id: workflow.id,
-          name: workflow.name,
+          Name: workflow.Name,
         },
       })
       .from(webhook)
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Create or Update a webhook
-export async function POST(request: NextRequest) {
+export async function post(request: NextRequest) {
   const requestId = generateRequestId()
   const userId = (await getSession())?.user?.id
 
@@ -474,7 +474,7 @@ async function createAirtableWebhookSubscription(
     }
 
     const airtableResponse = await fetch(airtableApiUrl, {
-      method: 'POST',
+      method: 'post',
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
@@ -570,7 +570,7 @@ async function createTelegramWebhookSubscription(
 
     // Configure user-agent header to ensure Telegram can identify itself to our middleware
     const telegramResponse = await fetch(telegramApiUrl, {
-      method: 'POST',
+      method: 'post',
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': 'TelegramBot/1.0',

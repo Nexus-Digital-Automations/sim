@@ -138,7 +138,7 @@ export const setChatAuthCookie = (
   const token = encryptAuthToken(subdomainId, type)
   // Set cookie with HttpOnly and secure flags
   response.cookies.set({
-    name: `chat_auth_${subdomainId}`,
+    Name: `chat_auth_${subdomainId}`,
     value: token,
     httpOnly: true,
     secure: !isDev,
@@ -159,7 +159,7 @@ export function addCorsHeaders(response: NextResponse, request: NextRequest) {
   if (isDev && origin.includes('localhost')) {
     response.headers.set('Access-Control-Allow-Origin', origin)
     response.headers.set('Access-Control-Allow-Credentials', 'true')
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    response.headers.set('Access-Control-Allow-Methods', 'get, post, OPTIONS')
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With')
   }
 
@@ -196,8 +196,8 @@ export async function validateChatAuth(
 
   // For password protection, check the password in the request body
   if (authType === 'password') {
-    // For GET requests, we just notify the client that authentication is required
-    if (request.method === 'GET') {
+    // For get requests, we just notify the client that authentication is required
+    if (request.method === 'get') {
       return { authorized: false, error: 'auth_required_password' }
     }
 
@@ -238,8 +238,8 @@ export async function validateChatAuth(
 
   // For email access control, check the email in the request body
   if (authType === 'email') {
-    // For GET requests, we just notify the client that authentication is required
-    if (request.method === 'GET') {
+    // For get requests, we just notify the client that authentication is required
+    if (request.method === 'get') {
       return { authorized: false, error: 'auth_required_email' }
     }
 

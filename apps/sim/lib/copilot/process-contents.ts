@@ -189,7 +189,7 @@ function sanitizeMessageForDocs(rawMessage: string, contexts: ChatContext[] | un
     result = result.replace(pattern, ' ')
   }
 
-  // 2) For block mentions, strip the '@' but keep the block name
+  // 2) For block mentions, strip the '@' but keep the block Name
   for (const label of blockLabels) {
     const pattern = new RegExp(`@${escapeRegExp(label)}(?!\\S)`, 'g')
     result = result.replace(pattern, label)
@@ -324,7 +324,7 @@ async function processKnowledgeFromDb(
     const kbRows = await db
       .select({
         id: knowledgeBase.id,
-        name: knowledgeBase.name,
+        Name: knowledgeBase.Name,
         updatedAt: knowledgeBase.updatedAt,
       })
       .from(knowledgeBase)
@@ -344,7 +344,7 @@ async function processKnowledgeFromDb(
     // We don't have total via this quick select; fallback to sample count
     const summary = {
       id: kb.id,
-      name: kb.name,
+      Name: kb.Name,
       docCount: sampleDocuments.length,
       sampleDocuments,
     }
@@ -374,7 +374,7 @@ async function processBlockMetadata(blockId: string, tag: string): Promise<Agent
       }
       metadata = {
         id: blockId,
-        name: blockConfig.name || blockId,
+        Name: blockConfig.Name || blockId,
         description: blockConfig.description || '',
         longDescription: blockConfig.longDescription,
         category: blockConfig.category,
@@ -387,7 +387,7 @@ async function processBlockMetadata(blockId: string, tag: string): Promise<Agent
       if (blockConfig.subBlocks && Array.isArray(blockConfig.subBlocks)) {
         metadata.subBlocks = (blockConfig.subBlocks as any[]).map((sb: any) => ({
           id: sb.id,
-          name: sb.name,
+          Name: sb.Name,
           type: sb.type,
           description: sb.description,
           default: sb.default,
@@ -403,7 +403,7 @@ async function processBlockMetadata(blockId: string, tag: string): Promise<Agent
       for (const toolId of metadata.tools) {
         const tool = (toolsRegistry as any)[toolId]
         if (tool) {
-          metadata.toolDetails[toolId] = { name: tool.name, description: tool.description }
+          metadata.toolDetails[toolId] = { Name: tool.Name, description: tool.description }
         }
       }
     }
@@ -424,7 +424,7 @@ async function processTemplateFromDb(
     const rows = await db
       .select({
         id: templates.id,
-        name: templates.name,
+        Name: templates.Name,
         description: templates.description,
         category: templates.category,
         author: templates.author,
@@ -440,7 +440,7 @@ async function processTemplateFromDb(
     // Match get-user-workflow format: just the workflow state JSON
     const summary = {
       id: t.id,
-      name: t.name,
+      Name: t.Name,
       description: t.description || '',
       category: t.category,
       author: t.author,
@@ -465,7 +465,7 @@ async function processWorkflowBlockFromDb(
     if (!normalized) return null
     const block = (normalized.blocks as any)[blockId]
     if (!block) return null
-    const tag = label ? `@${label} in Workflow` : `@${block.name || blockId} in Workflow`
+    const tag = label ? `@${label} in Workflow` : `@${block.Name || blockId} in Workflow`
 
     // Build content: isolate the block and include its subBlocks fully
     const contentObj = {
@@ -499,7 +499,7 @@ async function processExecutionLogFromDb(
         totalDurationMs: workflowExecutionLogs.totalDurationMs,
         executionData: workflowExecutionLogs.executionData,
         cost: workflowExecutionLogs.cost,
-        workflowName: workflow.name,
+        workflowName: workflow.Name,
       })
       .from(workflowExecutionLogs)
       .innerJoin(workflow, eq(workflowExecutionLogs.workflowId, workflow.id))

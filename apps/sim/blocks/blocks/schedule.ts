@@ -1,15 +1,15 @@
-import { ScheduleIcon } from '@/components/icons'
+import { scheduleIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 
 export const ScheduleBlock: BlockConfig = {
   type: 'schedule',
-  name: 'Schedule',
+  Name: 'Schedule',
   description: 'Trigger workflow execution on a schedule',
   longDescription:
     'Integrate Schedule into the workflow. Can trigger a workflow on a schedule configuration.',
   category: 'triggers',
   bgColor: '#7B68EE',
-  icon: ScheduleIcon,
+  icon: scheduleIcon,
 
   subBlocks: [
     // Schedule configuration status display

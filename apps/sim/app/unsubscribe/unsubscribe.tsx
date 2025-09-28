@@ -66,7 +66,7 @@ function UnsubscribeContent() {
 
     try {
       const response = await fetch('/api/users/me/settings/unsubscribe', {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },

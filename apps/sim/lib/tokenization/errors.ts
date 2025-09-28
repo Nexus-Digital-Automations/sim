@@ -8,7 +8,7 @@ export class TokenizationError extends Error {
 
   constructor(message: string, code: TokenizationError['code'], details?: Record<string, unknown>) {
     super(message)
-    this.name = 'TokenizationError'
+    this.Name = 'TokenizationError'
     this.code = code
     this.details = details
   }

@@ -9,7 +9,7 @@ export class EmbeddingAPIError extends Error {
 
   constructor(message: string, status: number) {
     super(message)
-    this.name = 'EmbeddingAPIError'
+    this.Name = 'EmbeddingAPIError'
     this.status = status
   }
 }
@@ -73,7 +73,7 @@ async function callEmbeddingAPI(inputs: string[], config: EmbeddingConfig): Prom
           }
 
       const response = await fetch(config.apiUrl, {
-        method: 'POST',
+        method: 'post',
         headers: config.headers,
         body: JSON.stringify(requestBody),
       })

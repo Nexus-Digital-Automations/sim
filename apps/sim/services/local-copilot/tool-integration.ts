@@ -119,17 +119,17 @@ export class LocalCopilotToolIntegration {
 
     logger.info('Executing tool call', {
       agentId: agent.id,
-      toolId: toolCall.name,
+      toolId: toolCall.Name,
       arguments: Object.keys(toolCall.arguments || {}),
     })
 
     try {
       // Get tool description and block config
-      const tool = toolRegistry.getTool(toolCall.name)
-      const blockConfig = toolRegistry.getBlockConfig(toolCall.name)
+      const tool = toolRegistry.getTool(toolCall.Name)
+      const blockConfig = toolRegistry.getBlockConfig(toolCall.Name)
 
       if (!tool || !blockConfig) {
-        throw new Error(`Tool not found: ${toolCall.name}`)
+        throw new Error(`Tool not found: ${toolCall.Name}`)
       }
 
       // Mark as executing
@@ -153,14 +153,14 @@ export class LocalCopilotToolIntegration {
       }
 
       logger.info('Tool call completed successfully', {
-        toolId: toolCall.name,
+        toolId: toolCall.Name,
         duration: completedCall.duration,
       })
 
       return completedCall
     } catch (error) {
       logger.error('Tool call execution failed', {
-        toolId: toolCall.name,
+        toolId: toolCall.Name,
         error: error instanceof Error ? error.message : 'Unknown error',
       })
 
@@ -187,17 +187,17 @@ export class LocalCopilotToolIntegration {
     details?: string
     suggestedNextSteps?: string[]
   } {
-    const tool = toolRegistry.getTool(toolCall.name)
+    const tool = toolRegistry.getTool(toolCall.Name)
 
     if (!tool) {
       return {
-        summary: `Tool ${toolCall.name} execution completed`,
+        summary: `Tool ${toolCall.Name} execution completed`,
       }
     }
 
     // Use intelligence engine to format results
     const execution = {
-      toolId: toolCall.name,
+      toolId: toolCall.Name,
       status: toolCall.state === 'success' ? ('completed' as const) : ('failed' as const),
       result: toolCall.result,
       error: toolCall.error,
@@ -344,7 +344,7 @@ export class LocalCopilotToolIntegration {
       // Create a basic block config for built-in tools
       const blockConfig: BlockConfig = {
         type: toolId,
-        name: toolId.charAt(0).toUpperCase() + toolId.slice(1),
+        Name: toolId.charAt(0).toUpperCase() + toolId.slice(1),
         description: `${toolId} integration tool`,
         category: 'tools',
         bgColor: '#3B82F6',
@@ -413,7 +413,7 @@ export class LocalCopilotToolIntegration {
       default:
         return {
           success: true,
-          message: `${tool.name} executed successfully`,
+          message: `${tool.Name} executed successfully`,
           parameters: args,
         }
     }

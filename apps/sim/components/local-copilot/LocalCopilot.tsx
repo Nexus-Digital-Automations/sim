@@ -243,7 +243,7 @@ export const LocalCopilot = forwardRef<LocalCopilotRef, LocalCopilotProps>(
     // Handle agent selection
     const handleAgentSelect = useCallback(
       (agent: Agent) => {
-        logger.info('Agent selected', { agentId: agent.id, agentName: agent.name })
+        logger.info('Agent selected', { agentId: agent.id, agentName: agent.Name })
         selectAgent(agent)
 
         // Create new conversation with selected agent if none exists
@@ -363,7 +363,7 @@ export const LocalCopilot = forwardRef<LocalCopilotRef, LocalCopilotProps>(
                   <Separator orientation='vertical' className='h-4' />
                   <div className='flex items-center gap-2'>
                     <Badge variant='secondary' className='text-xs'>
-                      {selectedAgent.name}
+                      {selectedAgent.Name}
                     </Badge>
                     {selectedAgent.tools && selectedAgent.tools.length > 0 && (
                       <Tooltip>
@@ -483,7 +483,7 @@ export const LocalCopilot = forwardRef<LocalCopilotRef, LocalCopilotProps>(
             selectedAgent={selectedAgent}
             placeholder={
               selectedAgent
-                ? `Message ${selectedAgent.name}...`
+                ? `Message ${selectedAgent.Name}...`
                 : 'Select an agent to start chatting...'
             }
           />

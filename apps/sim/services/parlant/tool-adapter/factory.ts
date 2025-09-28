@@ -36,7 +36,7 @@ export function createClientToolAdapter(
         // Create execution context for the client tool
         const toolContext = {
           toolCallId: `adapter-${Date.now()}`,
-          toolName: schema.name,
+          toolName: schema.Name,
           log: (level: any, message: string, extra?: Record<string, any>) => {
             this.logger[level]?.(message, {
               ...extra,
@@ -60,14 +60,14 @@ export function createClientToolAdapter(
         // Convert client tool result to adapter result
         return this.createSuccessResult(
           result.data,
-          result.message || `${schema.name} completed successfully`,
+          result.message || `${schema.Name} completed successfully`,
           {
             original_status: result.status,
           }
         )
       } catch (error: any) {
         logger.error('Client tool execution failed', {
-          toolName: schema.name,
+          toolName: schema.Name,
           error: error.message,
         })
 
@@ -99,12 +99,12 @@ export function createServerToolAdapter(
         const result = await serverTool.execute(args)
 
         // Convert server tool result to adapter result
-        return this.createSuccessResult(result, `${schema.name} completed successfully`, {
+        return this.createSuccessResult(result, `${schema.Name} completed successfully`, {
           server_tool_result: true,
         })
       } catch (error: any) {
         logger.error('Server tool execution failed', {
-          toolName: schema.name,
+          toolName: schema.Name,
           error: error.message,
         })
 
@@ -124,14 +124,14 @@ export function createServerToolAdapter(
  * Create a custom tool adapter with a manual execution function
  */
 export function createCustomToolAdapter(
-  name: string,
+  Name: string,
   description: string,
   usage_guidelines: string,
   parameters: Record<string, any>,
   executeFunction: (args: any, context: AdapterContext) => Promise<AdapterResult>,
   options: AdapterOptions = {}
 ): ToolAdapter {
-  const schema = createToolSchema(name, description, usage_guidelines, parameters, {
+  const schema = createToolSchema(Name, description, usage_guidelines, parameters, {
     category: options.category || 'automation',
     permission_level: options.permissionLevel || 'workspace',
     performance: {
@@ -159,7 +159,7 @@ export function createAndRegisterClientToolAdapter(
 ): ToolAdapter {
   const adapter = createClientToolAdapter(clientTool, options)
   registerToolAdapter(adapter)
-  logger.info('Created and registered client tool adapter', { toolName: adapter.schema.name })
+  logger.info('Created and registered client tool adapter', { toolName: adapter.schema.Name })
   return adapter
 }
 
@@ -172,7 +172,7 @@ export function createAndRegisterServerToolAdapter(
 ): ToolAdapter {
   const adapter = createServerToolAdapter(serverTool, options)
   registerToolAdapter(adapter)
-  logger.info('Created and registered server tool adapter', { toolName: adapter.schema.name })
+  logger.info('Created and registered server tool adapter', { toolName: adapter.schema.Name })
   return adapter
 }
 
@@ -180,7 +180,7 @@ export function createAndRegisterServerToolAdapter(
  * Create and register a custom tool adapter
  */
 export function createAndRegisterCustomToolAdapter(
-  name: string,
+  Name: string,
   description: string,
   usage_guidelines: string,
   parameters: Record<string, any>,
@@ -188,7 +188,7 @@ export function createAndRegisterCustomToolAdapter(
   options: AdapterOptions = {}
 ): ToolAdapter {
   const adapter = createCustomToolAdapter(
-    name,
+    Name,
     description,
     usage_guidelines,
     parameters,
@@ -196,7 +196,7 @@ export function createAndRegisterCustomToolAdapter(
     options
   )
   registerToolAdapter(adapter)
-  logger.info('Created and registered custom tool adapter', { toolName: adapter.schema.name })
+  logger.info('Created and registered custom tool adapter', { toolName: adapter.schema.Name })
   return adapter
 }
 
@@ -267,10 +267,10 @@ function createToolSchemaFromClientTool(
 ): ParlantToolSchema {
   // Extract information from client tool metadata if available
   const metadata = clientTool.metadata
-  const displayName = metadata?.displayNames?.success?.text || clientTool.name
+  const displayName = metadata?.displayNames?.success?.text || clientTool.Name
 
   return createToolSchema(
-    clientTool.name,
+    clientTool.Name,
     options.description || `Execute ${displayName}`,
     options.usageGuidelines || `Use this tool to ${displayName.toLowerCase()}`,
     options.parameters || {},
@@ -291,9 +291,9 @@ function createToolSchemaFromServerTool(
   options: AdapterOptions
 ): ParlantToolSchema {
   return createToolSchema(
-    serverTool.name,
-    options.description || `Execute server tool: ${serverTool.name}`,
-    options.usageGuidelines || `Use this tool to execute ${serverTool.name} on the server`,
+    serverTool.Name,
+    options.description || `Execute server tool: ${serverTool.Name}`,
+    options.usageGuidelines || `Use this tool to execute ${serverTool.Name} on the server`,
     options.parameters || {},
     {
       category: options.category || 'external-integration',
@@ -311,13 +311,13 @@ function createToolSchemaFromServerTool(
  * Create a tool adapter that proxies to an existing tool function
  */
 export function createProxyToolAdapter(
-  name: string,
+  Name: string,
   description: string,
   proxyFunction: (args: any) => Promise<any>,
   options: AdapterOptions = {}
 ): ToolAdapter {
   return createCustomToolAdapter(
-    name,
+    Name,
     description,
     options.usageGuidelines || `Use this tool to ${description.toLowerCase()}`,
     options.parameters || {},
@@ -327,7 +327,7 @@ export function createProxyToolAdapter(
         return {
           success: true,
           data: result,
-          message: `${name} completed successfully`,
+          message: `${Name} completed successfully`,
           metadata: {
             execution_time_ms: 0,
             cached: false,

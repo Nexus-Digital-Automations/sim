@@ -15,7 +15,7 @@ vi.mock('@/blocks', () => ({
   getBlock: (type: string) => {
     const mockConfigs: Record<string, any> = {
       jina: {
-        name: 'Jina',
+        Name: 'Jina',
         description: 'Convert website content into text',
         category: 'tools',
         bgColor: '#333333',
@@ -32,7 +32,7 @@ vi.mock('@/blocks', () => ({
         },
       },
       reddit: {
-        name: 'Reddit',
+        Name: 'Reddit',
         description: 'Access Reddit data',
         category: 'tools',
         bgColor: '#FF5700',
@@ -62,7 +62,7 @@ vi.mock('@/tools/utils', async () => {
     getTool: (toolId: string) => {
       const mockTools: Record<string, any> = {
         jina_read_url: {
-          name: 'Jina Reader',
+          Name: 'Jina Reader',
           params: {
             url: {
               type: 'string',
@@ -79,13 +79,13 @@ vi.mock('@/tools/utils', async () => {
           },
         },
         reddit_get_posts: {
-          name: 'Reddit Posts',
+          Name: 'Reddit Posts',
           params: {
             subreddit: {
               type: 'string',
               visibility: 'user-or-llm',
               required: true,
-              description: 'Subreddit name',
+              description: 'Subreddit Name',
             },
             credential: {
               type: 'string',
@@ -109,7 +109,7 @@ describe('Validation Integration Tests', () => {
     const blockWithMissingUserOnlyField: any = {
       id: 'jina-block',
       type: 'jina',
-      name: 'Jina Content Extractor',
+      Name: 'Jina Content Extractor',
       position: { x: 0, y: 0 },
       subBlocks: {
         url: { value: 'https://example.com' }, // Present
@@ -140,7 +140,7 @@ describe('Validation Integration Tests', () => {
       const blockWithMissingUserOrLlmField: any = {
         id: 'jina-block',
         type: 'jina',
-        name: 'Jina Content Extractor',
+        Name: 'Jina Content Extractor',
         position: { x: 0, y: 0 },
         subBlocks: {
           url: { value: null }, // Missing user-or-llm field (LLM can provide)
@@ -177,7 +177,7 @@ describe('Validation Integration Tests', () => {
         validateRequiredParametersAfterMerge(
           'jina_read_url',
           {
-            name: 'Jina Reader',
+            Name: 'Jina Reader',
             params: {
               url: {
                 type: 'string',
@@ -211,7 +211,7 @@ describe('Validation Integration Tests', () => {
       validateRequiredParametersAfterMerge(
         'jina_read_url',
         {
-          name: 'Jina Reader',
+          Name: 'Jina Reader',
           params: {
             url: {
               type: 'string',
@@ -239,7 +239,7 @@ describe('Validation Integration Tests', () => {
     const blockMissingUserOnly: any = {
       id: 'reddit-block',
       type: 'reddit',
-      name: 'Reddit Posts',
+      Name: 'Reddit Posts',
       position: { x: 0, y: 0 },
       subBlocks: {
         operation: { value: 'get_posts' },
@@ -264,7 +264,7 @@ describe('Validation Integration Tests', () => {
     const blockMissingUserOrLlm: any = {
       id: 'reddit-block',
       type: 'reddit',
-      name: 'Reddit Posts',
+      Name: 'Reddit Posts',
       position: { x: 0, y: 0 },
       subBlocks: {
         operation: { value: 'get_posts' },
@@ -296,13 +296,13 @@ describe('Validation Integration Tests', () => {
       validateRequiredParametersAfterMerge(
         'reddit_get_posts',
         {
-          name: 'Reddit Posts',
+          Name: 'Reddit Posts',
           params: {
             subreddit: {
               type: 'string',
               visibility: 'user-or-llm',
               required: true,
-              description: 'Subreddit name',
+              description: 'Subreddit Name',
             },
             credential: {
               type: 'string',
@@ -324,7 +324,7 @@ describe('Validation Integration Tests', () => {
     const completeBlock: any = {
       id: 'jina-block',
       type: 'jina',
-      name: 'Jina Content Extractor',
+      Name: 'Jina Content Extractor',
       position: { x: 0, y: 0 },
       subBlocks: {
         url: { value: 'https://example.com' }, // Present user-or-llm
@@ -349,7 +349,7 @@ describe('Validation Integration Tests', () => {
       validateRequiredParametersAfterMerge(
         'jina_read_url',
         {
-          name: 'Jina Reader',
+          Name: 'Jina Reader',
           params: {
             url: {
               type: 'string',

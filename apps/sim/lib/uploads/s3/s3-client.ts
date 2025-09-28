@@ -69,7 +69,7 @@ export function sanitizeFilenameForMetadata(filename: string): string {
 export interface FileInfo {
   path: string // Path to access the file
   key: string // S3 key or local filename
-  name: string // Original filename
+  Name: string // Original filename
   size: number // File size in bytes
   type: string // MIME type
 }
@@ -85,7 +85,7 @@ export interface CustomS3Config {
 /**
  * Upload a file to S3
  * @param file Buffer containing file data
- * @param fileName Original file name
+ * @param fileName Original file Name
  * @param contentType MIME type of the file
  * @param size File size in bytes (optional, will use buffer length if not provided)
  * @returns Object with file information
@@ -100,7 +100,7 @@ export async function uploadToS3(
 /**
  * Upload a file to S3 with custom bucket configuration
  * @param file Buffer containing file data
- * @param fileName Original file name
+ * @param fileName Original file Name
  * @param contentType MIME type of the file
  * @param customConfig Custom S3 configuration (bucket and region)
  * @param size File size in bytes (optional, will use buffer length if not provided)
@@ -168,7 +168,7 @@ export async function uploadToS3(
   return {
     path: servePath,
     key: uniqueKey,
-    name: fileName, // Return the actual original filename in the response
+    Name: fileName, // Return the actual original filename in the response
     size: fileSize,
     type: contentType,
   }

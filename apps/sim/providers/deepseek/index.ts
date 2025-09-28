@@ -41,7 +41,7 @@ function createReadableStreamFromDeepseekStream(deepseekStream: any): ReadableSt
 
 export const deepseekProvider: ProviderConfig = {
   id: 'deepseek',
-  name: 'Deepseek',
+  Name: 'Deepseek',
   description: "Deepseek's chat models",
   version: '1.0.0',
   models: getProviderModels('deepseek'),
@@ -94,7 +94,7 @@ export const deepseekProvider: ProviderConfig = {
         ? request.tools.map((tool) => ({
             type: 'function',
             function: {
-              name: tool.id,
+              Name: tool.id,
               description: tool.description,
               parameters: tool.parameters,
             },
@@ -127,11 +127,11 @@ export const deepseekProvider: ProviderConfig = {
               typeof toolChoice === 'string'
                 ? toolChoice
                 : toolChoice.type === 'function'
-                  ? `force:${toolChoice.function.name}`
+                  ? `force:${toolChoice.function.Name}`
                   : toolChoice.type === 'tool'
-                    ? `force:${toolChoice.name}`
+                    ? `force:${toolChoice.Name}`
                     : toolChoice.type === 'any'
-                      ? `force:${toolChoice.any?.name || 'unknown'}`
+                      ? `force:${toolChoice.any?.Name || 'unknown'}`
                       : 'unknown',
             model: request.model || 'deepseek-v3',
           })
@@ -171,7 +171,7 @@ export const deepseekProvider: ProviderConfig = {
                 timeSegments: [
                   {
                     type: 'model',
-                    name: 'Streaming response',
+                    Name: 'Streaming response',
                     startTime: providerStartTime,
                     endTime: Date.now(),
                     duration: Date.now() - providerStartTime,
@@ -244,7 +244,7 @@ export const deepseekProvider: ProviderConfig = {
       const timeSegments: TimeSegment[] = [
         {
           type: 'model',
-          name: 'Initial response',
+          Name: 'Initial response',
           startTime: initialCallTime,
           endTime: initialCallTime + firstResponseTime,
           duration: firstResponseTime,
@@ -283,7 +283,7 @@ export const deepseekProvider: ProviderConfig = {
           // Process each tool call
           for (const toolCall of toolCallsInResponse) {
             try {
-              const toolName = toolCall.function.name
+              const toolName = toolCall.function.Name
               const toolArgs = JSON.parse(toolCall.function.arguments)
 
               // Get the tool from the tools registry
@@ -302,7 +302,7 @@ export const deepseekProvider: ProviderConfig = {
               // Add to time segments for both success and failure
               timeSegments.push({
                 type: 'tool',
-                name: toolName,
+                Name: toolName,
                 startTime: toolCallStartTime,
                 endTime: toolCallEndTime,
                 duration: toolCallDuration,
@@ -323,7 +323,7 @@ export const deepseekProvider: ProviderConfig = {
               }
 
               toolCalls.push({
-                name: toolName,
+                Name: toolName,
                 arguments: toolParams,
                 startTime: new Date(toolCallStartTime).toISOString(),
                 endTime: new Date(toolCallEndTime).toISOString(),
@@ -341,7 +341,7 @@ export const deepseekProvider: ProviderConfig = {
                     id: toolCall.id,
                     type: 'function',
                     function: {
-                      name: toolName,
+                      Name: toolName,
                       arguments: toolCall.function.arguments,
                     },
                   },
@@ -381,7 +381,7 @@ export const deepseekProvider: ProviderConfig = {
               // Force the next tool
               nextPayload.tool_choice = {
                 type: 'function',
-                function: { name: remainingTools[0] },
+                function: { Name: remainingTools[0] },
               }
               logger.info(`Forcing next tool: ${remainingTools[0]}`)
             } else {
@@ -421,7 +421,7 @@ export const deepseekProvider: ProviderConfig = {
           // Add to time segments
           timeSegments.push({
             type: 'model',
-            name: `Model response (iteration ${iterationCount + 1})`,
+            Name: `Model response (iteration ${iterationCount + 1})`,
             startTime: nextModelStartTime,
             endTime: nextModelEndTime,
             duration: thisModelTime,
@@ -456,7 +456,7 @@ export const deepseekProvider: ProviderConfig = {
       const providerEndTimeISO = new Date(providerEndTime).toISOString()
       const totalDuration = providerEndTime - providerStartTime
 
-      // POST-TOOL STREAMING: stream final response after tool calls if requested
+      // post-TOOL STREAMING: stream final response after tool calls if requested
       if (request.stream && iterationCount > 0) {
         logger.info('Using streaming for final DeepSeek response after tool calls')
 

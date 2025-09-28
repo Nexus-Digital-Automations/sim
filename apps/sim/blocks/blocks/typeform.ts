@@ -1,17 +1,17 @@
-import { TypeformIcon } from '@/components/icons'
+import { typeformIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { TypeformResponse } from '@/tools/typeform/types'
 
 export const TypeformBlock: BlockConfig<TypeformResponse> = {
   type: 'typeform',
-  name: 'Typeform',
+  Name: 'Typeform',
   description: 'Interact with Typeform',
   longDescription:
     'Integrate Typeform into the workflow. Can retrieve responses, download files, and get form insights. Requires API Key.',
   docsLink: 'https://docs.sim.ai/tools/typeform',
   category: 'tools',
   bgColor: '#262627', // Typeform brand color
-  icon: TypeformIcon,
+  icon: typeformIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -141,7 +141,7 @@ export const TypeformBlock: BlockConfig<TypeformResponse> = {
     // File operation params
     responseId: { type: 'string', description: 'Response identifier' },
     fieldId: { type: 'string', description: 'Field identifier' },
-    filename: { type: 'string', description: 'File name' },
+    filename: { type: 'string', description: 'File Name' },
     inline: { type: 'boolean', description: 'Inline display option' },
   },
   outputs: {

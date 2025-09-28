@@ -1,17 +1,17 @@
-import { MicrosoftOneDriveIcon } from '@/components/icons'
+import { microsoftOneDriveIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { OneDriveResponse } from '@/tools/onedrive/types'
 
 export const OneDriveBlock: BlockConfig<OneDriveResponse> = {
   type: 'onedrive',
-  name: 'OneDrive',
+  Name: 'OneDrive',
   description: 'Create, upload, and list files',
   longDescription:
     'Integrate OneDrive into the workflow. Can create, upload, and list files. Requires OAuth.',
   docsLink: 'https://docs.sim.ai/tools/onedrive',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: MicrosoftOneDriveIcon,
+  icon: microsoftOneDriveIcon,
   subBlocks: [
     // Operation selector
     {
@@ -176,7 +176,7 @@ export const OneDriveBlock: BlockConfig<OneDriveResponse> = {
       title: 'Search Query',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Search for specific files (e.g., name contains "report")',
+      placeholder: 'Search for specific files (e.g., Name contains "report")',
       condition: { field: 'operation', value: 'list' },
     },
     {
@@ -223,7 +223,7 @@ export const OneDriveBlock: BlockConfig<OneDriveResponse> = {
     operation: { type: 'string', description: 'Operation to perform' },
     credential: { type: 'string', description: 'Microsoft account credential' },
     // Upload and Create Folder operation inputs
-    fileName: { type: 'string', description: 'File name' },
+    fileName: { type: 'string', description: 'File Name' },
     content: { type: 'string', description: 'File content' },
     // Get Content operation inputs
     // fileId: { type: 'string', required: false },
@@ -236,12 +236,12 @@ export const OneDriveBlock: BlockConfig<OneDriveResponse> = {
   outputs: {
     file: {
       type: 'json',
-      description: 'The OneDrive file object, including details such as id, name, size, and more.',
+      description: 'The OneDrive file object, including details such as id, Name, size, and more.',
     },
     files: {
       type: 'json',
       description:
-        'An array of OneDrive file objects, each containing details such as id, name, size, and more.',
+        'An array of OneDrive file objects, each containing details such as id, Name, size, and more.',
     },
   },
 }

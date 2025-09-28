@@ -150,7 +150,7 @@ vi.mock('@/triggers/utils', () => ({
       outlook: [
         {
           id: 'outlook_poller',
-          name: 'Outlook Email Trigger',
+          Name: 'Outlook Email Trigger',
           outputs: {
             email: {
               id: { type: 'string', description: 'Outlook message ID' },
@@ -179,7 +179,7 @@ vi.mock('@/triggers/utils', () => ({
       slack: [
         {
           id: 'slack_message',
-          name: 'Slack Message Trigger',
+          Name: 'Slack Message Trigger',
           outputs: {
             message: {
               text: { type: 'string', description: 'Message text' },
@@ -204,7 +204,7 @@ describe('TagDropdown Trigger Output Parsing', () => {
         outlook: [
           {
             id: 'outlook_poller',
-            name: 'Outlook Email Trigger',
+            Name: 'Outlook Email Trigger',
             outputs: {
               email: {
                 id: { type: 'string', description: 'Outlook message ID' },
@@ -776,7 +776,7 @@ describe('TagDropdown Loop Suggestions', () => {
       loop1: {
         id: 'loop1',
         type: 'loop',
-        name: 'Test Loop',
+        Name: 'Test Loop',
         position: { x: 0, y: 0 },
         subBlocks: {},
         outputs: {},
@@ -789,7 +789,7 @@ describe('TagDropdown Loop Suggestions', () => {
       function1: {
         id: 'function1',
         type: 'function',
-        name: 'Function 1',
+        Name: 'Function 1',
         position: { x: 0, y: 0 },
         subBlocks: {},
         outputs: {},
@@ -840,7 +840,7 @@ describe('TagDropdown Loop Suggestions', () => {
       loop1: {
         id: 'loop1',
         type: 'loop',
-        name: 'Test Loop',
+        Name: 'Test Loop',
         position: { x: 0, y: 0 },
         subBlocks: {},
         outputs: {},
@@ -854,7 +854,7 @@ describe('TagDropdown Loop Suggestions', () => {
       function1: {
         id: 'function1',
         type: 'function',
-        name: 'Function 1',
+        Name: 'Function 1',
         position: { x: 0, y: 0 },
         subBlocks: {},
         outputs: {},
@@ -899,7 +899,7 @@ describe('TagDropdown Parallel Suggestions', () => {
       parallel1: {
         id: 'parallel1',
         type: 'parallel',
-        name: 'Test Parallel',
+        Name: 'Test Parallel',
         position: { x: 0, y: 0 },
         subBlocks: {},
         outputs: {},
@@ -911,7 +911,7 @@ describe('TagDropdown Parallel Suggestions', () => {
       function1: {
         id: 'function1',
         type: 'function',
-        name: 'Function 1',
+        Name: 'Function 1',
         position: { x: 0, y: 0 },
         subBlocks: {},
         outputs: {},
@@ -955,14 +955,14 @@ describe('TagDropdown Parallel Suggestions', () => {
 describe('TagDropdown Variable Suggestions', () => {
   it.concurrent('should generate variable tags with correct format', () => {
     const variables = [
-      { id: 'var1', name: 'User Name', type: 'string' },
-      { id: 'var2', name: 'User Age', type: 'number' },
-      { id: 'var3', name: 'Is Active', type: 'boolean' },
+      { id: 'var1', Name: 'User Name', type: 'string' },
+      { id: 'var2', Name: 'User Age', type: 'number' },
+      { id: 'var3', Name: 'Is Active', type: 'boolean' },
     ]
 
     // Simulate variable tag generation
     const variableTags = variables.map(
-      (variable) => `variable.${variable.name.replace(/\s+/g, '')}`
+      (variable) => `variable.${variable.Name.replace(/\s+/g, '')}`
     )
 
     expect(variableTags).toEqual(['variable.UserName', 'variable.UserAge', 'variable.IsActive'])
@@ -970,14 +970,14 @@ describe('TagDropdown Variable Suggestions', () => {
 
   it.concurrent('should create variable info map correctly', () => {
     const variables = [
-      { id: 'var1', name: 'User Name', type: 'string' },
-      { id: 'var2', name: 'User Age', type: 'number' },
+      { id: 'var1', Name: 'User Name', type: 'string' },
+      { id: 'var2', Name: 'User Age', type: 'number' },
     ]
 
     // Simulate variable info map creation
     const variableInfoMap = variables.reduce(
       (acc, variable) => {
-        const tagName = `variable.${variable.name.replace(/\s+/g, '')}`
+        const tagName = `variable.${variable.Name.replace(/\s+/g, '')}`
         acc[tagName] = {
           type: variable.type,
           id: variable.id,
@@ -1108,7 +1108,7 @@ describe('extractFieldsFromSchema helper function logic', () => {
     const responseFormat = {
       schema: {
         properties: {
-          name: { type: 'string', description: 'User name' },
+          Name: { type: 'string', description: 'User Name' },
           age: { type: 'number', description: 'User age' },
           tags: { type: 'array', description: 'User tags' },
         },
@@ -1118,9 +1118,9 @@ describe('extractFieldsFromSchema helper function logic', () => {
     const fields = extractFieldsFromSchema(responseFormat)
 
     expect(fields).toEqual([
-      { name: 'name', type: 'string', description: 'User name' },
-      { name: 'age', type: 'number', description: 'User age' },
-      { name: 'tags', type: 'array', description: 'User tags' },
+      { Name: 'Name', type: 'string', description: 'User Name' },
+      { Name: 'age', type: 'number', description: 'User age' },
+      { Name: 'tags', type: 'array', description: 'User tags' },
     ])
   })
 
@@ -1135,8 +1135,8 @@ describe('extractFieldsFromSchema helper function logic', () => {
     const fields = extractFieldsFromSchema(responseFormat)
 
     expect(fields).toEqual([
-      { name: 'status', type: 'boolean', description: 'Status flag' },
-      { name: 'data', type: 'object', description: 'Response data' },
+      { Name: 'status', type: 'boolean', description: 'Status flag' },
+      { Name: 'data', type: 'object', description: 'Response data' },
     ])
   })
 
@@ -1153,22 +1153,22 @@ describe('extractFieldsFromSchema helper function logic', () => {
     const responseFormat = {
       properties: {
         items: ['string', 'array'],
-        name: { type: 'string' },
+        Name: { type: 'string' },
       },
     }
 
     const fields = extractFieldsFromSchema(responseFormat)
 
     expect(fields).toEqual([
-      { name: 'items', type: 'array', description: undefined },
-      { name: 'name', type: 'string', description: undefined },
+      { Name: 'items', type: 'array', description: undefined },
+      { Name: 'Name', type: 'string', description: undefined },
     ])
   })
 
   it.concurrent('should default to string type when type is missing', () => {
     const responseFormat = {
       properties: {
-        name: { description: 'User name' },
+        Name: { description: 'User Name' },
         age: { type: 'number' },
       },
     }
@@ -1176,8 +1176,8 @@ describe('extractFieldsFromSchema helper function logic', () => {
     const fields = extractFieldsFromSchema(responseFormat)
 
     expect(fields).toEqual([
-      { name: 'name', type: 'string', description: 'User name' },
-      { name: 'age', type: 'number', description: undefined },
+      { Name: 'Name', type: 'string', description: 'User Name' },
+      { Name: 'age', type: 'number', description: undefined },
     ])
   })
 
@@ -1185,7 +1185,7 @@ describe('extractFieldsFromSchema helper function logic', () => {
     const responseFormat = {
       schema: {
         properties: {
-          name: { type: 'string', description: 'User name' },
+          Name: { type: 'string', description: 'User Name' },
           age: { type: 'number', description: 'User age' },
           status: { type: 'boolean', description: 'Active status' },
         },
@@ -1195,9 +1195,9 @@ describe('extractFieldsFromSchema helper function logic', () => {
     const fields = extractFieldsFromSchema(responseFormat)
 
     expect(fields).toEqual([
-      { name: 'name', type: 'string', description: 'User name' },
-      { name: 'age', type: 'number', description: 'User age' },
-      { name: 'status', type: 'boolean', description: 'Active status' },
+      { Name: 'Name', type: 'string', description: 'User Name' },
+      { Name: 'age', type: 'number', description: 'User age' },
+      { Name: 'status', type: 'boolean', description: 'Active status' },
     ])
   })
 })
@@ -1314,7 +1314,7 @@ describe('TagDropdown Tag Selection Logic', () => {
     // Invalid tag-like text (should not remove closing bracket)
     expect(regex.test('input> and more')).toBe(false)
     expect(regex.test('content data')).toBe(false) // space
-    expect(regex.test('user-name')).toBe(false) // hyphen
+    expect(regex.test('user-Name')).toBe(false) // hyphen
     expect(regex.test('data[')).toBe(false) // bracket
     expect(regex.test('content.data!')).toBe(false) // exclamation
   })
@@ -1362,7 +1362,7 @@ describe('TagDropdown Response Format Support', () => {
 
       // Set up the mock to return the example schema from the user
       const responseFormatValue = JSON.stringify({
-        name: 'short_schema',
+        Name: 'short_schema',
         description: 'A minimal example schema with a single string property.',
         strict: true,
         schema: {
@@ -1396,7 +1396,7 @@ describe('TagDropdown Response Format Support', () => {
       const parsedFormat = parseResponseFormatSafely(responseFormatValue, 'agent1')
 
       expect(parsedFormat).toEqual({
-        name: 'short_schema',
+        Name: 'short_schema',
         description: 'A minimal example schema with a single string property.',
         strict: true,
         schema: {
@@ -1417,7 +1417,7 @@ describe('TagDropdown Response Format Support', () => {
 
       expect(fields).toEqual([
         {
-          name: 'example_property',
+          Name: 'example_property',
           type: 'string',
           description: 'A simple string property.',
         },
@@ -1448,7 +1448,7 @@ describe('TagDropdown Response Format Support', () => {
             type: 'object',
             description: 'User information',
             properties: {
-              name: { type: 'string', description: 'User name' },
+              Name: { type: 'string', description: 'User Name' },
               age: { type: 'number', description: 'User age' },
             },
           },
@@ -1460,8 +1460,8 @@ describe('TagDropdown Response Format Support', () => {
     const fields = extractFieldsFromSchema(responseFormat)
 
     expect(fields).toEqual([
-      { name: 'user', type: 'object', description: 'User information' },
-      { name: 'status', type: 'string', description: 'Response status' },
+      { Name: 'user', type: 'object', description: 'User information' },
+      { Name: 'status', type: 'string', description: 'Response status' },
     ])
   })
 
@@ -1477,14 +1477,14 @@ describe('TagDropdown Response Format Support', () => {
     const fields = extractFieldsFromSchema(responseFormat)
 
     expect(fields).toEqual([
-      { name: 'result', type: 'boolean', description: 'Operation result' },
-      { name: 'message', type: 'string', description: 'Status message' },
+      { Name: 'result', type: 'boolean', description: 'Operation result' },
+      { Name: 'message', type: 'string', description: 'Status message' },
     ])
   })
 
   it.concurrent('should return object as-is when it is already parsed', async () => {
     const responseFormat = {
-      name: 'test_schema',
+      Name: 'test_schema',
       schema: {
         properties: {
           data: { type: 'string' },
@@ -1515,14 +1515,14 @@ describe('TagDropdown Response Format Support', () => {
     const schemaFields = extractFieldsFromSchema(responseFormat)
 
     // Generate block tags as they would be in the component
-    const blockTags = schemaFields.map((field) => `${normalizedBlockName}.${field.name}`)
+    const blockTags = schemaFields.map((field) => `${normalizedBlockName}.${field.Name}`)
 
     expect(blockTags).toEqual(['agent1.example_property', 'agent1.another_field'])
 
     // Verify the fields extracted correctly
     expect(schemaFields).toEqual([
-      { name: 'example_property', type: 'string', description: 'A simple string property.' },
-      { name: 'another_field', type: 'number', description: 'Another field.' },
+      { Name: 'example_property', type: 'string', description: 'A simple string property.' },
+      { Name: 'another_field', type: 'number', description: 'Another field.' },
     ])
   })
 })

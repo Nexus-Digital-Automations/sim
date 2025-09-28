@@ -39,7 +39,7 @@ interface SecurityTestEnvironment {
 }
 
 interface SecurityScenario {
-  name: string
+  Name: string
   description: string
   vulnerability: string
   testFunction: (env: SecurityTestEnvironment) => Promise<SecurityTestResult>
@@ -71,7 +71,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
     const server = createServer()
     const socketServer = new Server(server, {
-      cors: { origin: '*', methods: ['GET', 'POST'] },
+      cors: { origin: '*', methods: ['get', 'post'] },
     })
 
     const parlantClient = getParlantClient({
@@ -109,21 +109,21 @@ describe('Security and Workspace Isolation Testing Suite', () => {
     const workspaces = [
       {
         id: `secure-workspace-${Date.now()}`,
-        name: 'Secure Enterprise Workspace',
+        Name: 'Secure Enterprise Workspace',
         securityLevel: 'enterprise',
         encryptionEnabled: true,
         auditingEnabled: true,
       },
       {
         id: `standard-workspace-${Date.now()}`,
-        name: 'Standard Business Workspace',
+        Name: 'Standard Business Workspace',
         securityLevel: 'business',
         encryptionEnabled: false,
         auditingEnabled: false,
       },
       {
         id: `isolated-workspace-${Date.now()}`,
-        name: 'Isolated Test Workspace',
+        Name: 'Isolated Test Workspace',
         securityLevel: 'isolated',
         encryptionEnabled: true,
         auditingEnabled: true,
@@ -151,7 +151,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         {
           id: `admin-${workspace.id}`,
           email: `admin-${workspace.id}@example.com`,
-          name: 'Workspace Admin',
+          Name: 'Workspace Admin',
           role: 'admin',
           workspaceId: workspace.id,
           permissions: ['read', 'write', 'admin', 'delete'],
@@ -159,7 +159,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         {
           id: `member-${workspace.id}`,
           email: `member-${workspace.id}@example.com`,
-          name: 'Workspace Member',
+          Name: 'Workspace Member',
           role: 'member',
           workspaceId: workspace.id,
           permissions: ['read', 'write'],
@@ -167,7 +167,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         {
           id: `viewer-${workspace.id}`,
           email: `viewer-${workspace.id}@example.com`,
-          name: 'Workspace Viewer',
+          Name: 'Workspace Viewer',
           role: 'viewer',
           workspaceId: workspace.id,
           permissions: ['read'],
@@ -199,7 +199,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
       const workspaceAgents = [
         {
           id: `agent-public-${workspace.id}`,
-          name: 'Public Agent',
+          Name: 'Public Agent',
           description: 'Publicly accessible agent',
           workspaceId: workspace.id,
           userId: adminUser.id,
@@ -208,7 +208,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         },
         {
           id: `agent-private-${workspace.id}`,
-          name: 'Private Agent',
+          Name: 'Private Agent',
           description: 'Workspace-only agent',
           workspaceId: workspace.id,
           userId: adminUser.id,
@@ -217,7 +217,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         },
         {
           id: `agent-confidential-${workspace.id}`,
-          name: 'Confidential Agent',
+          Name: 'Confidential Agent',
           description: 'Highly restricted agent',
           workspaceId: workspace.id,
           userId: adminUser.id,
@@ -246,9 +246,9 @@ describe('Security and Workspace Isolation Testing Suite', () => {
     env.server.close()
 
     // Cleanup test data
-    await db.delete('parlant_agents').where(like('name', '%Agent%'))
+    await db.delete('parlant_agents').where(like('Name', '%Agent%'))
     await db.delete('users').where(like('email', '%@example.com%'))
-    await db.delete('workspaces').where(like('name', '%Workspace%'))
+    await db.delete('workspaces').where(like('Name', '%Workspace%'))
   }
 
   async function generateSecurityReport(results: SecurityTestResult[]): Promise<void> {
@@ -288,7 +288,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
       return result
     } catch (error) {
       return {
-        testName: scenario.name,
+        testName: scenario.Name,
         description: scenario.description,
         vulnerability: scenario.vulnerability,
         severity: scenario.severity,
@@ -303,7 +303,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
   describe('Workspace Isolation Security', () => {
     it('should prevent cross-workspace agent access', async () => {
       const scenario: SecurityScenario = {
-        name: 'Cross-Workspace Agent Access Prevention',
+        Name: 'Cross-Workspace Agent Access Prevention',
         description: 'Ensure agents cannot be accessed from different workspaces',
         vulnerability: 'Unauthorized cross-workspace data access',
         severity: 'critical',
@@ -364,7 +364,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
     it('should isolate session data between workspaces', async () => {
       const scenario: SecurityScenario = {
-        name: 'Session Data Isolation',
+        Name: 'Session Data Isolation',
         description: 'Ensure session data is isolated between workspaces',
         vulnerability: 'Cross-workspace session data leakage',
         severity: 'high',
@@ -466,7 +466,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
     it('should enforce workspace-level permissions', async () => {
       const scenario: SecurityScenario = {
-        name: 'Workspace Permission Enforcement',
+        Name: 'Workspace Permission Enforcement',
         description: 'Enforce role-based permissions within workspaces',
         vulnerability: 'Permission escalation within workspace',
         severity: 'high',
@@ -493,7 +493,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
           try {
             await env.agentService.createAgent(
               {
-                name: 'Unauthorized Agent Creation',
+                Name: 'Unauthorized Agent Creation',
                 workspace_id: workspace.id,
               },
               viewerContext
@@ -532,7 +532,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
   describe('Authentication and Authorization Security', () => {
     it('should prevent JWT token manipulation', async () => {
       const scenario: SecurityScenario = {
-        name: 'JWT Token Security',
+        Name: 'JWT Token Security',
         description: 'Prevent JWT token manipulation and forgery',
         vulnerability: 'JWT token manipulation',
         severity: 'critical',
@@ -599,7 +599,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
     it('should handle expired authentication tokens', async () => {
       const scenario: SecurityScenario = {
-        name: 'Expired Token Handling',
+        Name: 'Expired Token Handling',
         description: 'Properly handle and reject expired authentication tokens',
         vulnerability: 'Expired token acceptance',
         severity: 'medium',
@@ -664,7 +664,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
     it('should prevent password brute force attacks', async () => {
       const scenario: SecurityScenario = {
-        name: 'Password Brute Force Prevention',
+        Name: 'Password Brute Force Prevention',
         description: 'Prevent brute force attacks on password authentication',
         vulnerability: 'Brute force attack vulnerability',
         severity: 'high',
@@ -737,7 +737,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
   describe('Input Sanitization and XSS Prevention', () => {
     it('should sanitize XSS attempts in chat messages', async () => {
       const scenario: SecurityScenario = {
-        name: 'XSS Prevention in Chat Messages',
+        Name: 'XSS Prevention in Chat Messages',
         description: 'Prevent XSS attacks through chat message content',
         vulnerability: 'Cross-site scripting (XSS)',
         severity: 'high',
@@ -808,9 +808,9 @@ describe('Security and Workspace Isolation Testing Suite', () => {
       expect(result.passed).toBe(true)
     })
 
-    it('should prevent HTML injection in agent names and descriptions', async () => {
+    it('should prevent HTML injection in agent NAMES and descriptions', async () => {
       const scenario: SecurityScenario = {
-        name: 'HTML Injection Prevention',
+        Name: 'HTML Injection Prevention',
         description: 'Prevent HTML injection in agent metadata',
         vulnerability: 'HTML injection',
         severity: 'medium',
@@ -831,7 +831,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
           const agentResult = await env.agentService.createAgent(
             {
-              name: maliciousName,
+              Name: maliciousName,
               description: maliciousDescription,
               workspace_id: workspace.id,
             },
@@ -840,8 +840,8 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
           // Check if HTML was sanitized
           if (
-            agentResult.data.name.includes('<h1>') ||
-            agentResult.data.name.includes('<script>') ||
+            agentResult.data.Name.includes('<h1>') ||
+            agentResult.data.Name.includes('<script>') ||
             agentResult.data.description?.includes('<iframe>')
           ) {
             return {
@@ -877,7 +877,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
   describe('SQL Injection Protection', () => {
     it('should prevent SQL injection in agent queries', async () => {
       const scenario: SecurityScenario = {
-        name: 'SQL Injection Prevention',
+        Name: 'SQL Injection Prevention',
         description: 'Prevent SQL injection attacks in database queries',
         vulnerability: 'SQL injection',
         severity: 'critical',
@@ -953,7 +953,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
   describe('Socket.io Security', () => {
     it('should enforce workspace isolation in Socket.io rooms', async () => {
       const scenario: SecurityScenario = {
-        name: 'Socket.io Workspace Isolation',
+        Name: 'Socket.io Workspace Isolation',
         description: 'Prevent cross-workspace message leakage in Socket.io',
         vulnerability: 'Cross-workspace Socket.io leakage',
         severity: 'high',
@@ -1038,7 +1038,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
     it('should prevent Socket.io authentication bypass', async () => {
       const scenario: SecurityScenario = {
-        name: 'Socket.io Authentication Bypass Prevention',
+        Name: 'Socket.io Authentication Bypass Prevention',
         description: 'Prevent bypassing Socket.io authentication',
         vulnerability: 'Socket.io authentication bypass',
         severity: 'critical',
@@ -1099,7 +1099,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
   describe('Data Privacy and Compliance', () => {
     it('should handle GDPR data deletion requests', async () => {
       const scenario: SecurityScenario = {
-        name: 'GDPR Data Deletion Compliance',
+        Name: 'GDPR Data Deletion Compliance',
         description: 'Properly handle GDPR right to be forgotten requests',
         vulnerability: 'GDPR non-compliance',
         severity: 'high',
@@ -1199,7 +1199,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
     it('should provide GDPR data export functionality', async () => {
       const scenario: SecurityScenario = {
-        name: 'GDPR Data Export Compliance',
+        Name: 'GDPR Data Export Compliance',
         description: 'Provide GDPR compliant data export functionality',
         vulnerability: 'GDPR non-compliance',
         severity: 'medium',
@@ -1272,7 +1272,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
   describe('Rate Limiting and Abuse Prevention', () => {
     it('should enforce API rate limits per workspace', async () => {
       const scenario: SecurityScenario = {
-        name: 'API Rate Limiting',
+        Name: 'API Rate Limiting',
         description: 'Enforce rate limits to prevent API abuse',
         vulnerability: 'API abuse and DoS',
         severity: 'medium',

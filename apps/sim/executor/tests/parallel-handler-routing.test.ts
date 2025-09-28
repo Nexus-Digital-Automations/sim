@@ -19,7 +19,7 @@ describe('Parallel Handler Integration with PathTracker', () => {
         {
           id: 'condition-1',
           position: { x: 0, y: 0 },
-          metadata: { id: BlockType.CONDITION, name: 'Condition 1' },
+          metadata: { id: BlockType.CONDITION, Name: 'Condition 1' },
           config: { tool: BlockType.CONDITION, params: {} },
           inputs: {},
           outputs: {},
@@ -28,7 +28,7 @@ describe('Parallel Handler Integration with PathTracker', () => {
         {
           id: 'function-2',
           position: { x: 100, y: -50 },
-          metadata: { id: BlockType.FUNCTION, name: 'Function 2' },
+          metadata: { id: BlockType.FUNCTION, Name: 'Function 2' },
           config: { tool: BlockType.FUNCTION, params: {} },
           inputs: {},
           outputs: {},
@@ -37,7 +37,7 @@ describe('Parallel Handler Integration with PathTracker', () => {
         {
           id: 'parallel-2',
           position: { x: 100, y: 50 },
-          metadata: { id: BlockType.PARALLEL, name: 'Parallel 2' },
+          metadata: { id: BlockType.PARALLEL, Name: 'Parallel 2' },
           config: { tool: BlockType.PARALLEL, params: {} },
           inputs: {},
           outputs: {},
@@ -46,7 +46,7 @@ describe('Parallel Handler Integration with PathTracker', () => {
         {
           id: 'agent-2',
           position: { x: 200, y: 50 },
-          metadata: { id: BlockType.AGENT, name: 'Agent 2' },
+          metadata: { id: BlockType.AGENT, Name: 'Agent 2' },
           config: { tool: BlockType.AGENT, params: {} },
           inputs: {},
           outputs: {},

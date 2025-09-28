@@ -58,7 +58,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
     testAgents = [
       {
         id: 'support-agent',
-        name: 'Customer Support Agent',
+        Name: 'Customer Support Agent',
         description: 'Specialized in customer support and troubleshooting',
         status: 'active',
         capabilities: [
@@ -82,7 +82,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
       },
       {
         id: 'sales-agent',
-        name: 'Sales Specialist Agent',
+        Name: 'Sales Specialist Agent',
         description: 'Expert in product sales and customer acquisition',
         status: 'active',
         capabilities: [
@@ -106,7 +106,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
       },
       {
         id: 'technical-agent',
-        name: 'Technical Expert Agent',
+        Name: 'Technical Expert Agent',
         description: 'Advanced technical support and integration assistance',
         status: 'active',
         capabilities: [
@@ -143,7 +143,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         previousInteractions: [],
         userProfile: {
           id: 'user-123',
-          name: 'John Doe',
+          Name: 'John Doe',
           tier: 'premium',
           previousIssues: ['billing-question', 'feature-request'],
         },
@@ -173,7 +173,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'agent-lifecycle-creation',
-            name: 'Agent Creation and Initialization',
+            Name: 'Agent Creation and Initialization',
             complexity: 'medium',
             metadata: {
               testType: 'lifecycle',
@@ -224,7 +224,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'agent-configuration-update',
-            name: 'Agent Configuration Update',
+            Name: 'Agent Configuration Update',
             complexity: 'medium',
             metadata: { testType: 'lifecycle' },
           } as any,
@@ -270,7 +270,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'agent-deactivation',
-            name: 'Agent Deactivation and Cleanup',
+            Name: 'Agent Deactivation and Cleanup',
             complexity: 'complex',
             metadata: { testType: 'lifecycle' },
           } as any,
@@ -327,7 +327,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'agent-resource-monitoring',
-            name: 'Agent Resource Monitoring',
+            Name: 'Agent Resource Monitoring',
             complexity: 'complex',
             metadata: {
               testType: 'lifecycle',
@@ -398,7 +398,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'conversation-routing',
-            name: 'Conversation Agent Routing',
+            Name: 'Conversation Agent Routing',
             complexity: 'complex',
             metadata: {
               testType: 'conversation-flow',
@@ -443,7 +443,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
       for (const message of supportMessages) {
         await conversationFlow.processMessage(session.id, {
           content: message,
-          sender: { type: 'user', id: 'user-123', name: 'User' },
+          sender: { type: 'user', id: 'user-123', Name: 'User' },
           timestamp: new Date(),
           type: 'text',
         })
@@ -477,7 +477,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'agent-handoff-seamless',
-            name: 'Seamless Agent Handoff',
+            Name: 'Seamless Agent Handoff',
             complexity: 'complex',
             metadata: {
               testType: 'conversation-flow',
@@ -519,7 +519,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
       const conversationContext: ConversationContext = {
         userProfile: {
           id: 'user-123',
-          name: 'John Doe',
+          Name: 'John Doe',
           tier: 'premium',
           previousIssues: ['billing-question', 'api-integration'],
         },
@@ -565,7 +565,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'context-preservation-handoff',
-            name: 'Context Preservation During Handoff',
+            Name: 'Context Preservation During Handoff',
             complexity: 'complex',
             metadata: {
               testType: 'conversation-flow',
@@ -648,7 +648,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'response-quality-analysis',
-            name: 'Response Quality Analysis',
+            Name: 'Response Quality Analysis',
             complexity: 'complex',
             metadata: {
               testType: 'quality-analysis',
@@ -714,7 +714,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'inappropriate-response-detection',
-            name: 'Inappropriate Response Detection',
+            Name: 'Inappropriate Response Detection',
             complexity: 'complex',
             metadata: {
               testType: 'safety-analysis',
@@ -772,7 +772,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'response-consistency-analysis',
-            name: 'Response Consistency Analysis',
+            Name: 'Response Consistency Analysis',
             complexity: 'complex',
             metadata: {
               testType: 'consistency-analysis',
@@ -847,7 +847,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'concurrent-conversations-performance',
-            name: 'Concurrent Conversations Performance',
+            Name: 'Concurrent Conversations Performance',
             complexity: 'extreme',
             metadata: {
               testType: 'performance',
@@ -940,7 +940,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'sustained-load-performance',
-            name: 'Sustained Load Performance',
+            Name: 'Sustained Load Performance',
             complexity: 'extreme',
             metadata: {
               testType: 'performance',
@@ -1044,7 +1044,7 @@ describe('Agent Integration Lifecycle Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'resource-intensive-operations',
-            name: 'Resource-Intensive Operations Efficiency',
+            Name: 'Resource-Intensive Operations Efficiency',
             complexity: 'extreme',
             metadata: {
               testType: 'performance',

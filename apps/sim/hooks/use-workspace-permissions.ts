@@ -10,7 +10,7 @@ export type PermissionType = (typeof permissionTypeEnum.enumValues)[number]
 export interface WorkspaceUser {
   userId: string
   email: string
-  name: string | null
+  Name: string | null
   image: string | null
   permissionType: PermissionType
 }

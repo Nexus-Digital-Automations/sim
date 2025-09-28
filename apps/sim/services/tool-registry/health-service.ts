@@ -344,13 +344,13 @@ export class ToolHealthService extends EventEmitter {
         errorDetails: serverHealth.errorDetails || clientHealth.errorDetails,
         dependencies: [
           {
-            name: 'server',
+            Name: 'server',
             status: serverHealth.status,
             responseTime: serverHealth.responseTime,
             lastChecked: new Date(),
           },
           {
-            name: 'client',
+            Name: 'client',
             status: clientHealth.status,
             lastChecked: new Date(),
           },
@@ -371,7 +371,7 @@ export class ToolHealthService extends EventEmitter {
   private async checkGenericToolHealth(tool: any): Promise<ToolHealth> {
     try {
       // Basic validation of tool definition
-      const isValid = tool.name && tool.id && tool.schema
+      const isValid = tool.Name && tool.id && tool.schema
 
       return {
         status: isValid ? 'healthy' : 'warning',
@@ -439,7 +439,7 @@ export class ToolHealthService extends EventEmitter {
   private async validateClientTool(tool: any): Promise<boolean> {
     // In a real implementation, this would validate the client tool definition
     try {
-      return !!(tool.name && tool.id)
+      return !!(tool.Name && tool.id)
     } catch (error) {
       return false
     }

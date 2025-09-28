@@ -79,7 +79,7 @@ export class ParlantToolAdapterService {
             message: `Tool '${toolName}' not found`,
             user_message: `The requested tool '${toolName}' is not available.`,
             suggestions: [
-              'Check the tool name for typos',
+              'Check the tool Name for typos',
               'View available tools with listTools()',
               'Contact support if the tool should be available',
             ],
@@ -249,9 +249,9 @@ export class ParlantToolAdapterService {
     // Filter by accessibility if context provided
     if (context) {
       const accessibleToolNames = new Set(
-        this.registry.getAccessibleTools(context).map((adapter) => adapter.schema.name)
+        this.registry.getAccessibleTools(context).map((adapter) => adapter.schema.Name)
       )
-      tools = tools.filter((adapter) => accessibleToolNames.has(adapter.schema.name))
+      tools = tools.filter((adapter) => accessibleToolNames.has(adapter.schema.Name))
     }
 
     return tools.map((adapter) => adapter.schema)
@@ -270,9 +270,9 @@ export class ParlantToolAdapterService {
     // Filter by accessibility if context provided
     if (context) {
       const accessibleToolNames = new Set(
-        this.registry.getAccessibleTools(context).map((adapter) => adapter.schema.name)
+        this.registry.getAccessibleTools(context).map((adapter) => adapter.schema.Name)
       )
-      tools = tools.filter((adapter) => accessibleToolNames.has(adapter.schema.name))
+      tools = tools.filter((adapter) => accessibleToolNames.has(adapter.schema.Name))
     }
 
     return tools.map((adapter) => adapter.schema)

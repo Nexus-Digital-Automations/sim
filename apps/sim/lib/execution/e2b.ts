@@ -44,7 +44,7 @@ export async function executeInE2B(req: E2BExecutionRequest): Promise<E2BExecuti
 
     // Check for execution errors
     if (execution.error) {
-      const errorMessage = `${execution.error.name}: ${execution.error.value}`
+      const errorMessage = `${execution.error.Name}: ${execution.error.value}`
       logger.error(`E2B execution error`, {
         sandboxId,
         error: execution.error,

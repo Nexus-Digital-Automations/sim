@@ -103,15 +103,15 @@ const ToolCallDisplay: React.FC<ToolCallDisplayProps> = ({ toolCall, compact = f
     )
   }
 
-  const formatToolName = (name: string) => {
-    return name.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+  const formatToolName = (Name: string) => {
+    return Name.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
   }
 
   if (compact) {
     return (
       <div className='flex items-center gap-2 rounded-md border bg-muted/50 p-2'>
         {getStateIcon()}
-        <span className='font-medium text-xs'>{formatToolName(toolCall.name)}</span>
+        <span className='font-medium text-xs'>{formatToolName(toolCall.Name)}</span>
         {getStateBadge()}
       </div>
     )
@@ -125,7 +125,7 @@ const ToolCallDisplay: React.FC<ToolCallDisplayProps> = ({ toolCall, compact = f
             <Button variant='ghost' className='h-auto w-full justify-between p-0 font-normal'>
               <div className='flex items-center gap-2'>
                 {getStateIcon()}
-                <span className='font-medium text-sm'>{formatToolName(toolCall.name)}</span>
+                <span className='font-medium text-sm'>{formatToolName(toolCall.Name)}</span>
                 {getStateBadge()}
               </div>
             </Button>
@@ -306,7 +306,7 @@ export const LocalCopilotMessage: React.FC<LocalCopilotMessageProps> = ({
                 })}
               >
                 {isUser && 'You'}
-                {isAssistant && (message.agentName || selectedAgent?.name || 'Assistant')}
+                {isAssistant && (message.agentName || selectedAgent?.Name || 'Assistant')}
                 {isSystem && 'System'}
               </span>
 

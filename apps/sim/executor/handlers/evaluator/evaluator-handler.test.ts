@@ -20,7 +20,7 @@ describe('EvaluatorBlockHandler', () => {
 
     mockBlock = {
       id: 'eval-block-1',
-      metadata: { id: BlockType.EVALUATOR, name: 'Test Evaluator' },
+      metadata: { id: BlockType.EVALUATOR, Name: 'Test Evaluator' },
       position: { x: 20, y: 20 },
       config: { tool: BlockType.EVALUATOR, params: {} },
       inputs: {
@@ -79,8 +79,8 @@ describe('EvaluatorBlockHandler', () => {
     const inputs = {
       content: 'This is the content to evaluate.',
       metrics: [
-        { name: 'score1', description: 'First score', range: { min: 0, max: 10 } },
-        { name: 'score2', description: 'Second score', range: { min: 0, max: 10 } },
+        { Name: 'score1', description: 'First score', range: { min: 0, max: 10 } },
+        { Name: 'score2', description: 'Second score', range: { min: 0, max: 10 } },
       ],
       model: 'gpt-4o',
       temperature: 0.1,
@@ -92,7 +92,7 @@ describe('EvaluatorBlockHandler', () => {
     expect(mockFetch).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
-        method: 'POST',
+        method: 'post',
         headers: expect.any(Object),
         body: expect.any(String),
       })
@@ -137,7 +137,7 @@ describe('EvaluatorBlockHandler', () => {
     const contentObj = { text: 'Evaluate this JSON.', value: 42 }
     const inputs = {
       content: JSON.stringify(contentObj),
-      metrics: [{ name: 'clarity', description: 'Clarity score', range: { min: 1, max: 5 } }],
+      metrics: [{ Name: 'clarity', description: 'Clarity score', range: { min: 1, max: 5 } }],
     }
 
     mockFetch.mockImplementationOnce(() => {
@@ -168,7 +168,7 @@ describe('EvaluatorBlockHandler', () => {
     const inputs = {
       content: contentObj,
       metrics: [
-        { name: 'completeness', description: 'Data completeness', range: { min: 0, max: 1 } },
+        { Name: 'completeness', description: 'Data completeness', range: { min: 0, max: 1 } },
       ],
     }
 
@@ -198,7 +198,7 @@ describe('EvaluatorBlockHandler', () => {
   it('should parse valid JSON response correctly', async () => {
     const inputs = {
       content: 'Test content',
-      metrics: [{ name: 'quality', description: 'Quality score', range: { min: 1, max: 10 } }],
+      metrics: [{ Name: 'quality', description: 'Quality score', range: { min: 1, max: 10 } }],
     }
 
     mockFetch.mockImplementationOnce(() => {
@@ -223,7 +223,7 @@ describe('EvaluatorBlockHandler', () => {
   it('should handle invalid/non-JSON response gracefully (scores = 0)', async () => {
     const inputs = {
       content: 'Test content',
-      metrics: [{ name: 'score', description: 'Score', range: { min: 0, max: 5 } }],
+      metrics: [{ Name: 'score', description: 'Score', range: { min: 0, max: 5 } }],
     }
 
     mockFetch.mockImplementationOnce(() => {
@@ -249,8 +249,8 @@ describe('EvaluatorBlockHandler', () => {
     const inputs = {
       content: 'Test content',
       metrics: [
-        { name: 'accuracy', description: 'Acc', range: { min: 0, max: 1 } },
-        { name: 'fluency', description: 'Flu', range: { min: 0, max: 1 } },
+        { Name: 'accuracy', description: 'Acc', range: { min: 0, max: 1 } },
+        { Name: 'fluency', description: 'Flu', range: { min: 0, max: 1 } },
       ],
     }
 
@@ -276,7 +276,7 @@ describe('EvaluatorBlockHandler', () => {
   it('should extract metric scores ignoring case', async () => {
     const inputs = {
       content: 'Test',
-      metrics: [{ name: 'CamelCaseScore', description: 'Desc', range: { min: 0, max: 10 } }],
+      metrics: [{ Name: 'CamelCaseScore', description: 'Desc', range: { min: 0, max: 10 } }],
     }
 
     mockFetch.mockImplementationOnce(() => {
@@ -302,8 +302,8 @@ describe('EvaluatorBlockHandler', () => {
     const inputs = {
       content: 'Test',
       metrics: [
-        { name: 'presentScore', description: 'Desc1', range: { min: 0, max: 5 } },
-        { name: 'missingScore', description: 'Desc2', range: { min: 0, max: 5 } },
+        { Name: 'presentScore', description: 'Desc1', range: { min: 0, max: 5 } },
+        { Name: 'missingScore', description: 'Desc2', range: { min: 0, max: 5 } },
       ],
     }
 

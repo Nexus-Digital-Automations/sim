@@ -86,7 +86,7 @@ export function useTagDefinitions(
         const response = await fetch(
           `/api/knowledge/${knowledgeBaseId}/documents/${documentId}/tag-definitions`,
           {
-            method: 'POST',
+            method: 'post',
             headers: {
               'Content-Type': 'application/json',
             },

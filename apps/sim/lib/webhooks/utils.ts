@@ -107,7 +107,7 @@ export async function validateSlackSignature(
     const key = await crypto.subtle.importKey(
       'raw',
       encoder.encode(signingSecret),
-      { name: 'HMAC', hash: 'SHA-256' },
+      { Name: 'HMAC', hash: 'SHA-256' },
       false,
       ['sign']
     )
@@ -377,7 +377,7 @@ export function formatWebhookInput(
       serviceUrl: body?.serviceUrl || '',
       channelId: body?.channelId || '',
       from_id: from.id || '',
-      from_name: from.name || '',
+      from_name: from.Name || '',
       conversation_id: conversation.id || '',
       text: messageText,
 
@@ -393,12 +393,12 @@ export function formatWebhookInput(
         },
         from: {
           id: from.id,
-          name: from.name,
+          Name: from.Name,
           aadObjectId: from.aadObjectId,
         },
         conversation: {
           id: conversation.id,
-          name: conversation.name,
+          Name: conversation.Name,
           conversationType: conversation.conversationType,
           tenantId: conversation.tenantId,
         },
@@ -593,7 +593,7 @@ export function formatWebhookInput(
 
       // Repository information (avoid 'repository' to prevent conflict with the object)
       repository_full_name: repository.full_name || '',
-      repository_name: repository.name || '',
+      repository_name: repository.Name || '',
       repository_owner: repository.owner?.login || '',
       repository_id: repository.id || '',
       repository_url: repository.html_url || '',
@@ -617,7 +617,7 @@ export function formatWebhookInput(
       }),
       ...(body?.head_commit && {
         commit_message: body.head_commit.message || '',
-        commit_author: body.head_commit.author?.name || '',
+        commit_author: body.head_commit.author?.Name || '',
         commit_sha: body.head_commit.id || '',
         commit_url: body.head_commit.url || '',
       }),
@@ -1004,7 +1004,7 @@ export async function fetchAndProcessAirtablePayloads(
       try {
         const fetchStartTime = Date.now()
         const response = await fetch(fullUrl, {
-          method: 'GET',
+          method: 'get',
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
@@ -1199,7 +1199,7 @@ export async function fetchAndProcessAirtablePayloads(
         }
       } catch (fetchError: any) {
         logger.error(
-          `[${requestId}] Network error calling Airtable GET /payloads (Call ${apiCallCount}) for webhook ${webhookData.id}`,
+          `[${requestId}] Network error calling Airtable get /payloads (Call ${apiCallCount}) for webhook ${webhookData.id}`,
           fetchError
         )
         // Error logging handled by logging session

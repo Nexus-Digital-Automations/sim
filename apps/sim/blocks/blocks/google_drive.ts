@@ -1,17 +1,17 @@
-import { GoogleDriveIcon } from '@/components/icons'
+import { googleDriveIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { GoogleDriveResponse } from '@/tools/google_drive/types'
 
 export const GoogleDriveBlock: BlockConfig<GoogleDriveResponse> = {
   type: 'google_drive',
-  name: 'Google Drive',
+  Name: 'Google Drive',
   description: 'Create, upload, and list files',
   longDescription:
     'Integrate Google Drive into the workflow. Can create, upload, and list files. Requires OAuth.',
   docsLink: 'https://docs.sim.ai/tools/google_drive',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: GoogleDriveIcon,
+  icon: googleDriveIcon,
   subBlocks: [
     // Operation selector
     {
@@ -205,7 +205,7 @@ export const GoogleDriveBlock: BlockConfig<GoogleDriveResponse> = {
       title: 'Search Query',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Search for specific files (e.g., name contains "report")',
+      placeholder: 'Search for specific files (e.g., Name contains "report")',
       condition: { field: 'operation', value: 'list' },
     },
     {
@@ -252,7 +252,7 @@ export const GoogleDriveBlock: BlockConfig<GoogleDriveResponse> = {
     operation: { type: 'string', description: 'Operation to perform' },
     credential: { type: 'string', description: 'Google Drive access token' },
     // Upload and Create Folder operation inputs
-    fileName: { type: 'string', description: 'File or folder name' },
+    fileName: { type: 'string', description: 'File or folder Name' },
     content: { type: 'string', description: 'File content' },
     mimeType: { type: 'string', description: 'File MIME type' },
     // List operation inputs

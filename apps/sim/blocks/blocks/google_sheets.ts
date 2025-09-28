@@ -1,17 +1,17 @@
-import { GoogleSheetsIcon } from '@/components/icons'
+import { googleSheetsIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { GoogleSheetsResponse } from '@/tools/google_sheets/types'
 
 export const GoogleSheetsBlock: BlockConfig<GoogleSheetsResponse> = {
   type: 'google_sheets',
-  name: 'Google Sheets',
+  Name: 'Google Sheets',
   description: 'Read, write, and update data',
   longDescription:
     'Integrate Google Sheets into the workflow. Can read, write, append, and update data. Requires OAuth.',
   docsLink: 'https://docs.sim.ai/tools/google_sheets',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: GoogleSheetsIcon,
+  icon: googleSheetsIcon,
   subBlocks: [
     // Operation selector
     {
@@ -71,7 +71,7 @@ export const GoogleSheetsBlock: BlockConfig<GoogleSheetsResponse> = {
       title: 'Range',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Sheet name and cell range (e.g., Sheet1!A1:D10)',
+      placeholder: 'Sheet Name and cell range (e.g., Sheet1!A1:D10)',
     },
     // Write-specific Fields
     {
@@ -80,7 +80,7 @@ export const GoogleSheetsBlock: BlockConfig<GoogleSheetsResponse> = {
       type: 'long-input',
       layout: 'full',
       placeholder:
-        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"name":"John", "age":30}, {"name":"Jane", "age":25}])',
+        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"Name":"John", "age":30}, {"Name":"Jane", "age":25}])',
       condition: { field: 'operation', value: 'write' },
       required: true,
     },
@@ -102,7 +102,7 @@ export const GoogleSheetsBlock: BlockConfig<GoogleSheetsResponse> = {
       type: 'long-input',
       layout: 'full',
       placeholder:
-        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"name":"John", "age":30}, {"name":"Jane", "age":25}])',
+        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"Name":"John", "age":30}, {"Name":"Jane", "age":25}])',
       condition: { field: 'operation', value: 'update' },
       required: true,
     },
@@ -124,7 +124,7 @@ export const GoogleSheetsBlock: BlockConfig<GoogleSheetsResponse> = {
       type: 'long-input',
       layout: 'full',
       placeholder:
-        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"name":"John", "age":30}, {"name":"Jane", "age":25}])',
+        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"Name":"John", "age":30}, {"Name":"Jane", "age":25}])',
       condition: { field: 'operation', value: 'append' },
       required: true,
     },

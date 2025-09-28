@@ -1,4 +1,4 @@
-import { TranslateIcon } from '@/components/icons'
+import { translateIcon } from '@/components/icons'
 import { isHosted } from '@/lib/environment'
 import type { BlockConfig } from '@/blocks/types'
 import {
@@ -27,13 +27,13 @@ Only return the translated text without any explanations or notes. The translati
 
 export const TranslateBlock: BlockConfig = {
   type: 'translate',
-  name: 'Translate',
+  Name: 'Translate',
   description: 'Translate text to any language',
   longDescription: 'Integrate Translate into the workflow. Can translate text to any language.',
   docsLink: 'https://docs.sim.ai/tools/translate',
   category: 'tools',
   bgColor: '#FF4B4B',
-  icon: TranslateIcon,
+  icon: translateIcon,
   subBlocks: [
     {
       id: 'context',

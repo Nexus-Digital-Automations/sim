@@ -75,7 +75,7 @@ describe('BidirectionalSyncSystem', () => {
         {
           id: 'test-block-1',
           type: 'textInput',
-          name: 'Test Block',
+          Name: 'Test Block',
           position: { x: 100, y: 100 },
         },
         'visual'

@@ -1,17 +1,17 @@
-import { MicrosoftTeamsIcon } from '@/components/icons'
+import { microsoftTeamsIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { MicrosoftTeamsResponse } from '@/tools/microsoft_teams/types'
 
 export const MicrosoftTeamsBlock: BlockConfig<MicrosoftTeamsResponse> = {
   type: 'microsoft_teams',
-  name: 'Microsoft Teams',
+  Name: 'Microsoft Teams',
   description: 'Read, write, and create messages',
   longDescription:
     'Integrate Microsoft Teams into the workflow. Can read and write chat messages, and read and write channel messages. Requires OAuth. Can be used in trigger mode to trigger a workflow when a message is sent to a chat or channel.',
   docsLink: 'https://docs.sim.ai/tools/microsoft_teams',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: MicrosoftTeamsIcon,
+  icon: microsoftTeamsIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -239,7 +239,7 @@ export const MicrosoftTeamsBlock: BlockConfig<MicrosoftTeamsResponse> = {
     createdTime: { type: 'string', description: 'Timestamp when message was created' },
     url: { type: 'string', description: 'Web URL to the message' },
     // Individual message fields (from read operations)
-    sender: { type: 'string', description: 'Message sender display name' },
+    sender: { type: 'string', description: 'Message sender display Name' },
     messageTimestamp: { type: 'string', description: 'Individual message timestamp' },
     messageType: {
       type: 'string',

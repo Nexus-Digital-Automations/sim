@@ -110,7 +110,7 @@ class BlockTestDataGenerator {
       // API and external service blocks
       api: {
         label: 'Test API Call',
-        method: 'POST',
+        method: 'post',
         url: '{{api_endpoint}}/test',
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +128,7 @@ class BlockTestDataGenerator {
       webhook: {
         label: 'Test Webhook',
         url: '{{webhook_url}}',
-        method: 'POST',
+        method: 'post',
         headers: {
           'X-Webhook-Source': 'sim-workflow-test',
         },
@@ -432,7 +432,7 @@ class BlockTestDataGenerator {
 
     return {
       id: `test-workflow-${blockType}`,
-      name: `Test Workflow for ${blockType}`,
+      Name: `Test Workflow for ${blockType}`,
       description: `Isolated test workflow for validating ${blockType} block conversion`,
       blocks,
       edges,
@@ -739,7 +739,7 @@ describe('Workflow Block Validation Tests', () => {
 
       const workflow: WorkflowState = {
         id: 'test-incomplete-agent',
-        name: 'Test Incomplete Agent',
+        Name: 'Test Incomplete Agent',
         description: 'Test workflow with incomplete agent configuration',
         blocks: [incompleteAgentBlock],
         edges: [],
@@ -778,7 +778,7 @@ describe('Workflow Block Validation Tests', () => {
 
       const workflow: WorkflowState = {
         id: 'test-invalid-api',
-        name: 'Test Invalid API',
+        Name: 'Test Invalid API',
         description: 'Test workflow with invalid API configuration',
         blocks: [invalidApiBlock],
         edges: [],
@@ -819,7 +819,7 @@ describe('Workflow Block Validation Tests', () => {
 
       const workflow: WorkflowState = {
         id: 'test-circular-ref',
-        name: 'Test Circular References',
+        Name: 'Test Circular References',
         description: 'Test workflow with circular parameter references',
         blocks: [circularRefBlock],
         edges: [],
@@ -880,7 +880,7 @@ describe('Workflow Block Validation Tests', () => {
 
       const workflow: WorkflowState = {
         id: 'test-major-block-types',
-        name: 'Test Major Block Types',
+        Name: 'Test Major Block Types',
         description: 'Test workflow with all major block types',
         blocks,
         edges,
@@ -918,7 +918,7 @@ describe('Workflow Block Validation Tests', () => {
     test('should handle complex nested parallel and conditional blocks', async () => {
       const nestedWorkflow: WorkflowState = {
         id: 'test-nested-complex',
-        name: 'Test Nested Complex Workflow',
+        Name: 'Test Nested Complex Workflow',
         description: 'Complex workflow with nested parallel and conditional structures',
         blocks: [
           {
@@ -1025,7 +1025,7 @@ describe('Workflow Block Validation Tests', () => {
 
       const workflow: WorkflowState = {
         id: 'test-problematic',
-        name: 'Test Problematic Block',
+        Name: 'Test Problematic Block',
         description: 'Test workflow with problematic block configuration',
         blocks: [problematicBlock],
         edges: [],
@@ -1064,7 +1064,7 @@ describe('Workflow Block Validation Tests', () => {
 
       const workflow: WorkflowState = {
         id: 'test-unsupported',
-        name: 'Test Unsupported Block',
+        Name: 'Test Unsupported Block',
         description: 'Test workflow with unsupported block type',
         blocks: [unsupportedBlock],
         edges: [],

@@ -173,12 +173,12 @@ export class ConditionBlockHandler implements BlockHandler {
           selectedCondition = elseCondition
         } else {
           throw new Error(
-            `No path found for condition block "${block.metadata?.name}", and 'else' connection missing.`
+            `No path found for condition block "${block.metadata?.Name}", and 'else' connection missing.`
           )
         }
       } else {
         throw new Error(
-          `No matching path found for condition block "${block.metadata?.name}", and no 'else' block exists.`
+          `No matching path found for condition block "${block.metadata?.Name}", and no 'else' block exists.`
         )
       }
     }
@@ -191,7 +191,7 @@ export class ConditionBlockHandler implements BlockHandler {
 
     // Log the decision
     logger.info(
-      `Condition block ${block.id} selected path: ${selectedCondition.title} (${selectedCondition.id}) -> ${targetBlock.metadata?.name || targetBlock.id}`
+      `Condition block ${block.id} selected path: ${selectedCondition.title} (${selectedCondition.id}) -> ${targetBlock.metadata?.Name || targetBlock.id}`
     )
 
     // Update context decisions
@@ -204,7 +204,7 @@ export class ConditionBlockHandler implements BlockHandler {
       selectedPath: {
         blockId: targetBlock.id,
         blockType: targetBlock.metadata?.id || 'unknown',
-        blockTitle: targetBlock.metadata?.name || 'Untitled Block',
+        blockTitle: targetBlock.metadata?.Name || 'Untitled Block',
       },
       selectedConditionId: selectedCondition.id,
     }

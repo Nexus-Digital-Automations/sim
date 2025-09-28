@@ -22,7 +22,7 @@ describe('ApiBlockHandler', () => {
     handler = new ApiBlockHandler()
     mockBlock = {
       id: 'api-block-1',
-      metadata: { id: BlockType.API, name: 'Test API Block' },
+      metadata: { id: BlockType.API, Name: 'Test API Block' },
       position: { x: 10, y: 10 },
       config: { tool: 'http_request', params: {} },
       inputs: {},
@@ -44,18 +44,18 @@ describe('ApiBlockHandler', () => {
     }
     mockApiTool = {
       id: 'http_request',
-      name: 'HTTP Request Tool',
+      Name: 'HTTP Request Tool',
       description: 'Makes an HTTP request',
       version: '1.0',
       params: {
         url: { type: 'string', required: true },
-        method: { type: 'string', default: 'GET' },
+        method: { type: 'string', default: 'get' },
         headers: { type: 'object' },
         body: { type: 'any' },
       },
       request: {
         url: 'https://example.com/api',
-        method: 'POST',
+        method: 'post',
         headers: () => ({ 'Content-Type': 'application/json' }),
         body: (params) => params,
       },
@@ -88,7 +88,7 @@ describe('ApiBlockHandler', () => {
   it('should execute api block correctly with valid inputs', async () => {
     const inputs = {
       url: 'https://example.com/api',
-      method: 'POST',
+      method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ key: 'value' }),
     }
@@ -117,7 +117,7 @@ describe('ApiBlockHandler', () => {
   it('should handle missing URL gracefully (empty success response)', async () => {
     const inputs = {
       url: '', // Empty URL
-      method: 'GET',
+      method: 'get',
     }
 
     const expectedOutput = { data: null, status: 200, headers: {} }
@@ -202,7 +202,7 @@ describe('ApiBlockHandler', () => {
   it('should handle API errors correctly and format message', async () => {
     const inputs = {
       url: 'https://example.com/notfound',
-      method: 'GET',
+      method: 'get',
     }
     const errorOutput = { status: 404, statusText: 'Not Found' }
     mockExecuteTool.mockResolvedValue({
@@ -212,7 +212,7 @@ describe('ApiBlockHandler', () => {
     })
 
     await expect(handler.execute(mockBlock, inputs, mockContext)).rejects.toThrow(
-      'HTTP Request failed: URL: https://example.com/notfound | Method: GET | Error: Resource not found | Status: 404 | Status text: Not Found - The requested resource was not found'
+      'HTTP Request failed: URL: https://example.com/notfound | Method: get | Error: Resource not found | Status: 404 | Status text: Not Found - The requested resource was not found'
     )
     expect(mockExecuteTool).toHaveBeenCalled()
   })

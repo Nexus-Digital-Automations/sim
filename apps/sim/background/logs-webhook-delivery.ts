@@ -230,7 +230,7 @@ export const logsWebhookDelivery = task({
 
       try {
         const response = await fetch(subscription.url, {
-          method: 'POST',
+          method: 'post',
           headers,
           body,
           signal: controller.signal,
@@ -335,7 +335,7 @@ export const logsWebhookDelivery = task({
       } catch (error: any) {
         clearTimeout(timeoutId)
 
-        if (error.name === 'AbortError') {
+        if (error.Name === 'AbortError') {
           logger.error(`Webhook delivery ${deliveryId} timed out`, {
             executionId: log.executionId,
             attempts,

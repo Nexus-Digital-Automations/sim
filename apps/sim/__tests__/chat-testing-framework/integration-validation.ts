@@ -26,7 +26,7 @@ interface ValidationResult {
 }
 
 interface ValidationSuite {
-  name: string
+  Name: string
   results: ValidationResult[]
   passed: boolean
   totalTests: number
@@ -157,7 +157,7 @@ class ParlantChatIntegrationValidator {
    */
   private async validateSocketIOConnection(): Promise<void> {
     const suite: ValidationSuite = {
-      name: 'Socket.io Connection',
+      Name: 'Socket.io Connection',
       results: [],
       passed: false,
       totalTests: 0,
@@ -259,7 +259,7 @@ class ParlantChatIntegrationValidator {
    */
   private async validateWorkspaceIsolation(): Promise<void> {
     const suite: ValidationSuite = {
-      name: 'Workspace Isolation',
+      Name: 'Workspace Isolation',
       results: [],
       passed: false,
       totalTests: 0,
@@ -405,7 +405,7 @@ class ParlantChatIntegrationValidator {
    */
   private async validateRealTimeMessaging(): Promise<void> {
     const suite: ValidationSuite = {
-      name: 'Real-time Messaging',
+      Name: 'Real-time Messaging',
       results: [],
       passed: false,
       totalTests: 0,
@@ -543,7 +543,7 @@ class ParlantChatIntegrationValidator {
    */
   private async validateAgentIntegration(): Promise<void> {
     const suite: ValidationSuite = {
-      name: 'Agent Integration',
+      Name: 'Agent Integration',
       results: [],
       passed: false,
       totalTests: 0,
@@ -673,7 +673,7 @@ class ParlantChatIntegrationValidator {
    */
   private async validateSecurityFeatures(): Promise<void> {
     const suite: ValidationSuite = {
-      name: 'Security Features',
+      Name: 'Security Features',
       results: [],
       passed: false,
       totalTests: 0,
@@ -779,7 +779,7 @@ class ParlantChatIntegrationValidator {
    */
   private async validatePerformance(): Promise<void> {
     const suite: ValidationSuite = {
-      name: 'Performance',
+      Name: 'Performance',
       results: [],
       passed: false,
       totalTests: 0,
@@ -991,7 +991,7 @@ if (require.main === module) {
     results.suites.forEach((suite) => {
       const status = suite.passed ? '✅ PASSED' : '❌ FAILED'
       console.log(
-        `\n${status} ${suite.name} (${suite.passedTests}/${suite.totalTests} tests passed, ${suite.duration}ms)`
+        `\n${status} ${suite.Name} (${suite.passedTests}/${suite.totalTests} tests passed, ${suite.duration}ms)`
       )
 
       suite.results.forEach((result) => {

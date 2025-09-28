@@ -59,16 +59,16 @@ export class EvaluatorBlockHandler implements BlockHandler {
     const metrics = Array.isArray(inputs.metrics) ? inputs.metrics : []
     logger.info('Metrics for evaluator:', metrics)
     const metricDescriptions = metrics
-      .filter((m: any) => m?.name && m.range) // Filter out invalid/incomplete metrics
-      .map((m: any) => `"${m.name}" (${m.range.min}-${m.range.max}): ${m.description || ''}`)
+      .filter((m: any) => m?.Name && m.range) // Filter out invalid/incomplete metrics
+      .map((m: any) => `"${m.Name}" (${m.range.min}-${m.range.max}): ${m.description || ''}`)
       .join('\n')
 
     // Create a response format structure
     const responseProperties: Record<string, any> = {}
     metrics.forEach((m: any) => {
-      // Ensure metric and name are valid before using them
-      if (m?.name) {
-        responseProperties[m.name.toLowerCase()] = { type: 'number' } // Use lowercase for consistency
+      // Ensure metric and Name are valid before using them
+      if (m?.Name) {
+        responseProperties[m.Name.toLowerCase()] = { type: 'number' } // Use lowercase for consistency
       } else {
         logger.warn('Skipping invalid metric entry during response format generation:', m)
       }
@@ -83,14 +83,14 @@ export class EvaluatorBlockHandler implements BlockHandler {
     Content:
     ${processedContent}
 
-    Return a JSON object with each metric name as a key and a numeric score as the value. No explanations, only scores.`,
+    Return a JSON object with each metric Name as a key and a numeric score as the value. No explanations, only scores.`,
       responseFormat: {
-        name: 'evaluation_response',
+        Name: 'evaluation_response',
         schema: {
           type: 'object',
           properties: responseProperties,
-          // Filter out invalid names before creating the required array
-          required: metrics.filter((m: any) => m?.name).map((m: any) => m.name.toLowerCase()),
+          // Filter out invalid NAMES before creating the required array
+          required: metrics.filter((m: any) => m?.Name).map((m: any) => m.Name.toLowerCase()),
           additionalProperties: false,
         },
         strict: true,
@@ -125,7 +125,7 @@ export class EvaluatorBlockHandler implements BlockHandler {
       }
 
       const response = await fetch(url.toString(), {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -195,13 +195,13 @@ export class EvaluatorBlockHandler implements BlockHandler {
         // If we have a successful parse, extract the metrics
         if (Object.keys(parsedContent).length > 0) {
           validMetrics.forEach((metric: any) => {
-            // Check if metric and name are valid before proceeding
-            if (!metric || !metric.name) {
+            // Check if metric and Name are valid before proceeding
+            if (!metric || !metric.Name) {
               logger.warn('Skipping invalid metric entry during score extraction:', metric)
               return // Skip this iteration
             }
 
-            const metricName = metric.name
+            const metricName = metric.Name
             const lowerCaseMetricName = metricName.toLowerCase()
 
             // Try multiple possible ways the metric might be represented
@@ -212,7 +212,7 @@ export class EvaluatorBlockHandler implements BlockHandler {
             } else if (parsedContent[metricName.toUpperCase()] !== undefined) {
               metricScores[lowerCaseMetricName] = Number(parsedContent[metricName.toUpperCase()])
             } else {
-              // Last resort - try to find any key that might contain this metric name
+              // Last resort - try to find any key that might contain this metric Name
               const matchingKey = Object.keys(parsedContent).find((key) => {
                 // Add check for key validity before calling toLowerCase()
                 return typeof key === 'string' && key.toLowerCase().includes(lowerCaseMetricName)
@@ -229,9 +229,9 @@ export class EvaluatorBlockHandler implements BlockHandler {
         } else {
           // If we couldn't parse any content, set all metrics to 0
           validMetrics.forEach((metric: any) => {
-            // Ensure metric and name are valid before setting default score
-            if (metric?.name) {
-              metricScores[metric.name.toLowerCase()] = 0
+            // Ensure metric and Name are valid before setting default score
+            if (metric?.Name) {
+              metricScores[metric.Name.toLowerCase()] = 0
             } else {
               logger.warn('Skipping invalid metric entry when setting default scores:', metric)
             }

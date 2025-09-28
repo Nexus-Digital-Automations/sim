@@ -243,7 +243,7 @@ export const LocalCopilotUserInput = forwardRef<
       Array.from(files).forEach((file) => {
         const attachment: MessageFileAttachment = {
           id: `${Date.now()}_${Math.random()}`,
-          filename: file.name,
+          filename: file.Name,
           media_type: file.type || 'application/octet-stream',
           size: file.size,
           data: file, // Store the File object for later processing
@@ -443,7 +443,7 @@ export const LocalCopilotUserInput = forwardRef<
               </div>
               {selectedAgent && (
                 <div className='text-muted-foreground text-xs'>
-                  Chatting with {selectedAgent.name}
+                  Chatting with {selectedAgent.Name}
                 </div>
               )}
             </div>

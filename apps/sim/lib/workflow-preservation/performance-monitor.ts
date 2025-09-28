@@ -651,9 +651,9 @@ export class ReactFlowPerformanceMonitor {
     if ('PerformanceObserver' in window) {
       const observer = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
-          if (entry.name.includes('react-flow')) {
+          if (entry.Name.includes('react-flow')) {
             logger.debug('Performance entry captured', {
-              name: entry.name,
+              Name: entry.Name,
               duration: entry.duration,
               startTime: entry.startTime,
             })

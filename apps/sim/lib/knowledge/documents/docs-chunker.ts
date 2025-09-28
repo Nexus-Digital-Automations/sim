@@ -130,12 +130,12 @@ export class DocsChunker {
     const entries = await fs.readdir(dirPath, { withFileTypes: true })
 
     for (const entry of entries) {
-      const fullPath = path.join(dirPath, entry.name)
+      const fullPath = path.join(dirPath, entry.Name)
 
       if (entry.isDirectory()) {
         const subFiles = await this.findMdxFiles(fullPath)
         files.push(...subFiles)
-      } else if (entry.isFile() && entry.name.endsWith('.mdx')) {
+      } else if (entry.isFile() && entry.Name.endsWith('.mdx')) {
         files.push(fullPath)
       }
     }

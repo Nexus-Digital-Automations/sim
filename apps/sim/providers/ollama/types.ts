@@ -1,5 +1,5 @@
 interface Model {
-  name: string
+  Name: string
   model: string
   modified_at: string
   size: number

@@ -140,7 +140,7 @@ const getOutputTypeForPath = (
     const inputFormatValue = getSubBlockValue(blockId, 'inputFormat')
     if (inputFormatValue && Array.isArray(inputFormatValue)) {
       const field = inputFormatValue.find(
-        (f: { name?: string; type?: string }) => f.name === outputPath
+        (f: { Name?: string; type?: string }) => f.Name === outputPath
       )
       if (field?.type) {
         return field.type
@@ -327,7 +327,7 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
               results: 'array',
             },
           }
-          const blockName = sourceBlock.name || sourceBlock.type
+          const blockName = sourceBlock.Name || sourceBlock.type
           const normalizedBlockName = normalizeBlockName(blockName)
 
           const outputPaths = generateOutputPaths(mockConfig.outputs)
@@ -352,7 +352,7 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
         return { tags: [], variableInfoMap: {}, blockTagGroups: [] }
       }
 
-      const blockName = sourceBlock.name || sourceBlock.type
+      const blockName = sourceBlock.Name || sourceBlock.type
       const normalizedBlockName = normalizeBlockName(blockName)
 
       const responseFormatValue = getSubBlockValue(activeSourceBlockId, 'responseFormat')
@@ -364,9 +364,9 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
         const metricsValue = getSubBlockValue(activeSourceBlockId, 'metrics')
 
         if (metricsValue && Array.isArray(metricsValue) && metricsValue.length > 0) {
-          const validMetrics = metricsValue.filter((metric: { name?: string }) => metric?.name)
+          const validMetrics = metricsValue.filter((metric: { Name?: string }) => metric?.Name)
           blockTags = validMetrics.map(
-            (metric: { name: string }) => `${normalizedBlockName}.${metric.name.toLowerCase()}`
+            (metric: { Name: string }) => `${normalizedBlockName}.${metric.Name.toLowerCase()}`
           )
         } else {
           const outputPaths = generateOutputPaths(blockConfig.outputs)
@@ -375,7 +375,7 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
       } else if (responseFormat) {
         const schemaFields = extractFieldsFromSchema(responseFormat)
         if (schemaFields.length > 0) {
-          blockTags = schemaFields.map((field) => `${normalizedBlockName}.${field.name}`)
+          blockTags = schemaFields.map((field) => `${normalizedBlockName}.${field.Name}`)
         } else {
           const outputPaths = generateOutputPaths(blockConfig.outputs || {})
           blockTags = outputPaths.map((path) => `${normalizedBlockName}.${path}`)
@@ -400,8 +400,8 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
               inputFormatValue.length > 0
             ) {
               blockTags = inputFormatValue
-                .filter((field: { name?: string }) => field.name && field.name.trim() !== '')
-                .map((field: { name: string }) => `${normalizedBlockName}.${field.name}`)
+                .filter((field: { Name?: string }) => field.Name && field.Name.trim() !== '')
+                .map((field: { Name: string }) => `${normalizedBlockName}.${field.Name}`)
             } else {
               blockTags = [normalizedBlockName]
             }
@@ -504,16 +504,16 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
     }
 
     const validVariables = workflowVariables.filter(
-      (variable: Variable) => variable.name.trim() !== ''
+      (variable: Variable) => variable.Name.trim() !== ''
     )
 
     const variableTags = validVariables.map(
-      (variable: Variable) => `${TAG_PREFIXES.VARIABLE}${normalizeVariableName(variable.name)}`
+      (variable: Variable) => `${TAG_PREFIXES.VARIABLE}${normalizeVariableName(variable.Name)}`
     )
 
     const variableInfoMap = validVariables.reduce(
       (acc, variable) => {
-        const tagName = `${TAG_PREFIXES.VARIABLE}${normalizeVariableName(variable.name)}`
+        const tagName = `${TAG_PREFIXES.VARIABLE}${normalizeVariableName(variable.Name)}`
         acc[tagName] = {
           type: variable.type,
           id: variable.id,
@@ -538,7 +538,7 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
 
       const containingLoopBlock = blocks[loopId]
       if (containingLoopBlock) {
-        const loopBlockName = containingLoopBlock.name || containingLoopBlock.type
+        const loopBlockName = containingLoopBlock.Name || containingLoopBlock.type
 
         loopBlockGroup = {
           blockName: loopBlockName,
@@ -567,7 +567,7 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
 
       const containingParallelBlock = blocks[parallelId]
       if (containingParallelBlock) {
-        const parallelBlockName = containingParallelBlock.name || containingParallelBlock.type
+        const parallelBlockName = containingParallelBlock.Name || containingParallelBlock.type
 
         parallelBlockGroup = {
           blockName: parallelBlockName,
@@ -603,7 +603,7 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
               results: 'array',
             },
           }
-          const blockName = accessibleBlock.name || accessibleBlock.type
+          const blockName = accessibleBlock.Name || accessibleBlock.type
           const normalizedBlockName = normalizeBlockName(blockName)
 
           const outputPaths = generateOutputPaths(mockConfig.outputs)
@@ -622,7 +622,7 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
         continue
       }
 
-      const blockName = accessibleBlock.name || accessibleBlock.type
+      const blockName = accessibleBlock.Name || accessibleBlock.type
       const normalizedBlockName = normalizeBlockName(blockName)
 
       const responseFormatValue = getSubBlockValue(accessibleBlockId, 'responseFormat')
@@ -634,9 +634,9 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
         const metricsValue = getSubBlockValue(accessibleBlockId, 'metrics')
 
         if (metricsValue && Array.isArray(metricsValue) && metricsValue.length > 0) {
-          const validMetrics = metricsValue.filter((metric: { name?: string }) => metric?.name)
+          const validMetrics = metricsValue.filter((metric: { Name?: string }) => metric?.Name)
           blockTags = validMetrics.map(
-            (metric: { name: string }) => `${normalizedBlockName}.${metric.name.toLowerCase()}`
+            (metric: { Name: string }) => `${normalizedBlockName}.${metric.Name.toLowerCase()}`
           )
         } else {
           const outputPaths = generateOutputPaths(blockConfig.outputs)
@@ -645,7 +645,7 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
       } else if (responseFormat) {
         const schemaFields = extractFieldsFromSchema(responseFormat)
         if (schemaFields.length > 0) {
-          blockTags = schemaFields.map((field) => `${normalizedBlockName}.${field.name}`)
+          blockTags = schemaFields.map((field) => `${normalizedBlockName}.${field.Name}`)
         } else {
           const outputPaths = generateOutputPaths(blockConfig.outputs || {})
           blockTags = outputPaths.map((path) => `${normalizedBlockName}.${path}`)
@@ -670,8 +670,8 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
               inputFormatValue.length > 0
             ) {
               blockTags = inputFormatValue
-                .filter((field: { name?: string }) => field.name && field.name.trim() !== '')
-                .map((field: { name: string }) => `${normalizedBlockName}.${field.name}`)
+                .filter((field: { Name?: string }) => field.Name && field.Name.trim() !== '')
+                .map((field: { Name: string }) => `${normalizedBlockName}.${field.Name}`)
             } else {
               blockTags = [normalizedBlockName]
             }
@@ -904,7 +904,7 @@ export const TagDropdown: React.FC<TagDropdownProps> = ({
       if (tag.startsWith(TAG_PREFIXES.VARIABLE)) {
         const variableName = tag.substring(TAG_PREFIXES.VARIABLE.length)
         const variableObj = Object.values(variables).find(
-          (v) => v.name.replace(/\s+/g, '') === variableName
+          (v) => v.Name.replace(/\s+/g, '') === variableName
         )
 
         if (variableObj) {

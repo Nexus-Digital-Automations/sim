@@ -555,7 +555,7 @@ export class ToolRecommendationService {
   private async enrichTool(tool: any, category: any, analytics: any): Promise<EnrichedTool> {
     return {
       id: tool.id,
-      name: tool.name,
+      Name: tool.Name,
       displayName: tool.displayName,
       description: tool.description,
       longDescription: tool.longDescription || undefined,

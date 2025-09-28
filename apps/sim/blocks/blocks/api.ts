@@ -1,17 +1,17 @@
-import { ApiIcon } from '@/components/icons'
+import { apiIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { RequestResponse } from '@/tools/http/types'
 
 export const ApiBlock: BlockConfig<RequestResponse> = {
   type: 'api',
-  name: 'API',
+  Name: 'API',
   description: 'Use any API',
   longDescription:
     'This is a core workflow block. Connect to any external API with support for all standard HTTP methods and customizable request parameters. Configure headers, query parameters, and request bodies. Standard headers (User-Agent, Accept, Cache-Control, etc.) are automatically included.',
   docsLink: 'https://docs.sim.ai/blocks/api',
   category: 'blocks',
   bgColor: '#2F55FF',
-  icon: ApiIcon,
+  icon: apiIcon,
   subBlocks: [
     {
       id: 'url',
@@ -28,8 +28,8 @@ export const ApiBlock: BlockConfig<RequestResponse> = {
       layout: 'half',
       required: true,
       options: [
-        { label: 'GET', id: 'GET' },
-        { label: 'POST', id: 'POST' },
+        { label: 'get', id: 'get' },
+        { label: 'post', id: 'post' },
         { label: 'PUT', id: 'PUT' },
         { label: 'DELETE', id: 'DELETE' },
         { label: 'PATCH', id: 'PATCH' },
@@ -69,12 +69,12 @@ Current body: {context}
 Do not include any explanations, markdown formatting, or other text outside the JSON object.
 
 You have access to the following variables you can use to generate the JSON body:
-- 'params' (object): Contains input parameters derived from the JSON schema. Access these directly using the parameter name wrapped in angle brackets, e.g., '<paramName>'. Do NOT use 'params.paramName'.
+- 'params' (object): Contains input parameters derived from the JSON schema. Access these directly using the parameter Name wrapped in angle brackets, e.g., '<paramName>'. Do NOT use 'params.paramName'.
 - 'environmentVariables' (object): Contains environment variables. Reference these using the double curly brace syntax: '{{ENV_VAR_NAME}}'. Do NOT use 'environmentVariables.VAR_NAME' or env.
 
 Example:
 {
-  "name": "<block.agent.response.content>",
+  "Name": "<block.agent.response.content>",
   "age": <block.function.output.age>,
   "success": true
 }`,

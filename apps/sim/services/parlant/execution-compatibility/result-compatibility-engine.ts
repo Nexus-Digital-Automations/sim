@@ -148,25 +148,25 @@ export class ResultCompatibilityEngine {
   /**
    * Register custom result formatter
    */
-  registerFormatter(name: string, formatter: ResultFormatter): void {
-    this.formatters.set(name, formatter)
-    logger.info('Result formatter registered', { name })
+  registerFormatter(Name: string, formatter: ResultFormatter): void {
+    this.formatters.set(Name, formatter)
+    logger.info('Result formatter registered', { Name })
   }
 
   /**
    * Register custom result transformer
    */
-  registerTransformer(name: string, transformer: ResultTransformer): void {
-    this.transformers.set(name, transformer)
-    logger.info('Result transformer registered', { name })
+  registerTransformer(Name: string, transformer: ResultTransformer): void {
+    this.transformers.set(Name, transformer)
+    logger.info('Result transformer registered', { Name })
   }
 
   /**
    * Register custom result validator
    */
-  registerValidator(name: string, validator: ResultValidator): void {
-    this.validators.set(name, validator)
-    logger.info('Result validator registered', { name })
+  registerValidator(Name: string, validator: ResultValidator): void {
+    this.validators.set(Name, validator)
+    logger.info('Result validator registered', { Name })
   }
 
   // ========================================

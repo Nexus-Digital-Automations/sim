@@ -8,8 +8,8 @@ import { getUserEntityPermissions } from '@/lib/permissions/utils'
 
 const logger = createLogger('FoldersAPI')
 
-// GET - Fetch folders for a workspace
-export async function GET(request: NextRequest) {
+// get - Fetch folders for a workspace
+export async function get(request: NextRequest) {
   try {
     const session = await getSession()
     if (!session?.user?.id) {
@@ -49,8 +49,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create a new folder
-export async function POST(request: NextRequest) {
+// post - Create a new folder
+export async function post(request: NextRequest) {
   try {
     const session = await getSession()
     if (!session?.user?.id) {
@@ -58,9 +58,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, workspaceId, parentId, color } = body
+    const { Name, workspaceId, parentId, color } = body
 
-    if (!name || !workspaceId) {
+    if (!Name || !workspaceId) {
       return NextResponse.json({ error: 'Name and workspace ID are required' }, { status: 400 })
     }
 
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
         .insert(workflowFolder)
         .values({
           id,
-          name: name.trim(),
+          Name: Name.trim(),
           userId: session.user.id,
           workspaceId,
           parentId: parentId || null,
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       return folder
     })
 
-    logger.info('Created new folder:', { id, name, workspaceId, parentId })
+    logger.info('Created new folder:', { id, Name, workspaceId, parentId })
 
     return NextResponse.json({ folder: newFolder })
   } catch (error) {

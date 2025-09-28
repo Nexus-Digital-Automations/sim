@@ -154,13 +154,13 @@ export async function createOrUpdateTagDefinitionsBulk(
         // Update existing definition
         const existingDef = existingByDisplayName.get(originalDisplayName!)
         if (!existingDef) {
-          errors.push(`Tag definition with display name "${originalDisplayName}" not found`)
+          errors.push(`Tag definition with display Name "${originalDisplayName}" not found`)
           continue
         }
 
-        // Check if new display name conflicts with another definition
+        // Check if new display Name conflicts with another definition
         if (displayName !== originalDisplayName && existingByDisplayName.has(displayName)) {
-          errors.push(`Display name "${displayName}" already exists`)
+          errors.push(`Display Name "${displayName}" already exists`)
           continue
         }
 
@@ -203,9 +203,9 @@ export async function createOrUpdateTagDefinitionsBulk(
           continue
         }
 
-        // Check display name conflicts
+        // Check display Name conflicts
         if (existingByDisplayName.has(displayName)) {
-          errors.push(`Display name "${displayName}" already exists`)
+          errors.push(`Display Name "${displayName}" already exists`)
           continue
         }
 
@@ -552,7 +552,7 @@ export async function getTagUsage(
     tagName: string
     tagSlot: string
     documentCount: number
-    documents: Array<{ id: string; name: string; tagValue: string }>
+    documents: Array<{ id: string; Name: string; tagValue: string }>
   }>
 > {
   const definitions = await getDocumentTagDefinitions(knowledgeBaseId)
@@ -583,7 +583,7 @@ export async function getTagUsage(
       documentCount: documentsWithTag.length,
       documents: documentsWithTag.map((doc) => ({
         id: doc.id,
-        name: doc.filename,
+        Name: doc.filename,
         tagValue: doc.tagValue || '',
       })),
     })

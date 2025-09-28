@@ -1,4 +1,4 @@
-import { SupabaseIcon } from '@/components/icons'
+import { supabaseIcon } from '@/components/icons'
 import { createLogger } from '@/lib/logs/console/logger'
 import type { BlockConfig } from '@/blocks/types'
 import type { SupabaseResponse } from '@/tools/supabase/types'
@@ -7,14 +7,14 @@ const logger = createLogger('SupabaseBlock')
 
 export const SupabaseBlock: BlockConfig<SupabaseResponse> = {
   type: 'supabase',
-  name: 'Supabase',
+  Name: 'Supabase',
   description: 'Use Supabase database',
   longDescription:
     'Integrate Supabase into the workflow. Can get many rows, get, create, update, delete, and upsert a row.',
   docsLink: 'https://docs.sim.ai/tools/supabase',
   category: 'tools',
   bgColor: '#1C1C1C',
-  icon: SupabaseIcon,
+  icon: supabaseIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -116,7 +116,7 @@ column=operator.value
 - **gte** - greater than or equal: \`score=gte.80\`
 - **lt** - less than: \`price=lt.100\`
 - **lte** - less than or equal: \`rating=lte.5\`
-- **like** - pattern matching: \`name=like.*john*\`
+- **like** - pattern matching: \`Name=like.*john*\`
 - **ilike** - case-insensitive like: \`email=ilike.*@gmail.com\`
 - **in** - in list: \`category=in.(tech,science,art)\`
 - **is** - is null/not null: \`deleted_at=is.null\`
@@ -185,7 +185,7 @@ column=operator.value
 - **gte** - greater than or equal: \`score=gte.80\`
 - **lt** - less than: \`price=lt.100\`
 - **lte** - less than or equal: \`rating=lte.5\`
-- **like** - pattern matching: \`name=like.*john*\`
+- **like** - pattern matching: \`Name=like.*john*\`
 - **ilike** - case-insensitive like: \`email=ilike.*@gmail.com\`
 - **in** - in list: \`category=in.(tech,science,art)\`
 - **is** - is null/not null: \`deleted_at=is.null\`
@@ -254,7 +254,7 @@ column=operator.value
 - **gte** - greater than or equal: \`score=gte.80\`
 - **lt** - less than: \`price=lt.100\`
 - **lte** - less than or equal: \`rating=lte.5\`
-- **like** - pattern matching: \`name=like.*john*\`
+- **like** - pattern matching: \`Name=like.*john*\`
 - **ilike** - case-insensitive like: \`email=ilike.*@gmail.com\`
 - **in** - in list: \`category=in.(tech,science,art)\`
 - **is** - is null/not null: \`deleted_at=is.null\`
@@ -323,7 +323,7 @@ column=operator.value
 - **gte** - greater than or equal: \`score=gte.80\`
 - **lt** - less than: \`price=lt.100\`
 - **lte** - less than or equal: \`rating=lte.5\`
-- **like** - pattern matching: \`name=like.*john*\`
+- **like** - pattern matching: \`Name=like.*john*\`
 - **ilike** - case-insensitive like: \`email=ilike.*@gmail.com\`
 - **in** - in list: \`category=in.(tech,science,art)\`
 - **is** - is null/not null: \`deleted_at=is.null\`
@@ -452,7 +452,7 @@ Return ONLY the PostgREST filter expression - no explanations, no markdown, no e
   inputs: {
     operation: { type: 'string', description: 'Operation to perform' },
     projectId: { type: 'string', description: 'Supabase project identifier' },
-    table: { type: 'string', description: 'Database table name' },
+    table: { type: 'string', description: 'Database table Name' },
     apiKey: { type: 'string', description: 'Service role secret key' },
     // Data for insert/update operations
     data: { type: 'json', description: 'Row data' },

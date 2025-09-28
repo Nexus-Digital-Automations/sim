@@ -464,7 +464,7 @@ export async function getTeamUsageLimits(organizationId: string): Promise<
     const teamMembers = await db
       .select({
         userId: member.userId,
-        userName: user.name,
+        userName: user.Name,
         userEmail: user.email,
         currentLimit: userStats.currentUsageLimit,
         currentPeriodCost: userStats.currentPeriodCost,
@@ -604,12 +604,12 @@ export async function maybeSendUsageThresholdEmail(params: {
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://sim.ai'
     const ctaLink = `${baseUrl}/workspace?billing=usage`
-    const sendTo = async (email: string, name?: string) => {
+    const sendTo = async (email: string, Name?: string) => {
       const prefs = await getEmailPreferences(email)
       if (prefs?.unsubscribeAll || prefs?.unsubscribeNotifications) return
 
       const html = await renderUsageThresholdEmail({
-        userName: name,
+        userName: Name,
         planName: params.planName,
         percentUsed: Math.min(100, Math.round(params.percentAfter)),
         currentUsage: params.currentUsageAfter,
@@ -637,7 +637,7 @@ export async function maybeSendUsageThresholdEmail(params: {
       const admins = await db
         .select({
           email: user.email,
-          name: user.name,
+          Name: user.Name,
           enabled: settings.billingUsageNotificationsEnabled,
           role: member.role,
         })
@@ -651,7 +651,7 @@ export async function maybeSendUsageThresholdEmail(params: {
         if (!isAdmin) continue
         if (a.enabled === false) continue
         if (!a.email) continue
-        await sendTo(a.email, a.name || undefined)
+        await sendTo(a.email, a.Name || undefined)
       }
     }
   } catch (error) {

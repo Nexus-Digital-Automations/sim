@@ -1,17 +1,17 @@
-import { SlackIcon } from '@/components/icons'
+import { slackIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { SlackResponse } from '@/tools/slack/types'
 
 export const SlackBlock: BlockConfig<SlackResponse> = {
   type: 'slack',
-  name: 'Slack',
+  Name: 'Slack',
   description: 'Send messages to Slack or trigger workflows from Slack events',
   longDescription:
     'Integrate Slack into the workflow. Can send messages, create canvases, and read messages. Requires OAuth. Can be used in trigger mode to trigger a workflow when a message is sent to a channel.',
   docsLink: 'https://docs.sim.ai/tools/slack',
   category: 'tools',
   bgColor: '#611f69',
-  icon: SlackIcon,
+  icon: slackIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -283,7 +283,7 @@ export const SlackBlock: BlockConfig<SlackResponse> = {
 
     // Trigger outputs (when used as webhook trigger)
     event_type: { type: 'string', description: 'Type of Slack event that triggered the workflow' },
-    channel_name: { type: 'string', description: 'Human-readable channel name' },
+    channel_name: { type: 'string', description: 'Human-readable channel Name' },
     user_name: { type: 'string', description: 'Username who triggered the event' },
     team_id: { type: 'string', description: 'Slack workspace/team ID' },
     event_id: { type: 'string', description: 'Unique event identifier for the trigger' },

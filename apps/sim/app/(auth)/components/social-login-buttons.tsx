@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { GithubIcon, GoogleIcon } from '@/components/icons'
+import { githubIcon, googleIcon } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { client } from '@/lib/auth-client'
 import { inter } from '@/app/fonts/inter'
@@ -84,7 +84,7 @@ export function SocialLoginButtons({
       disabled={!githubAvailable || isGithubLoading}
       onClick={signInWithGithub}
     >
-      <GithubIcon className='!h-[18px] !w-[18px] mr-1' />
+      <githubIcon className='!h-[18px] !w-[18px] mr-1' />
       {isGithubLoading ? 'Connecting...' : 'GitHub'}
     </Button>
   )
@@ -96,7 +96,7 @@ export function SocialLoginButtons({
       disabled={!googleAvailable || isGoogleLoading}
       onClick={signInWithGoogle}
     >
-      <GoogleIcon className='!h-[18px] !w-[18px] mr-1' />
+      <googleIcon className='!h-[18px] !w-[18px] mr-1' />
       {isGoogleLoading ? 'Connecting...' : 'Google'}
     </Button>
   )

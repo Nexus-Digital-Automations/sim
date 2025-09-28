@@ -623,8 +623,8 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
       description: 'A sample journey for testing',
       conditions: ['User wants to execute this workflow'],
       states: [
-        { id: 'start', type: 'initial', name: 'Start' },
-        { id: 'end', type: 'final', name: 'Complete' },
+        { id: 'start', type: 'initial', Name: 'Start' },
+        { id: 'end', type: 'final', Name: 'Complete' },
       ],
       transitions: [{ id: 't1', from: 'start', to: 'end' }],
     }

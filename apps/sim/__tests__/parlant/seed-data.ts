@@ -65,7 +65,7 @@ export class ParlantTestDataSeeder {
       .insert(user)
       .values({
         id: `seeduser-${Date.now()}`,
-        name: 'Parlant Test User',
+        Name: 'Parlant Test User',
         email: `parlant-test-${Date.now()}@example.com`,
         emailVerified: true,
         createdAt: new Date(),
@@ -79,7 +79,7 @@ export class ParlantTestDataSeeder {
       .insert(workspace)
       .values({
         id: `seedworkspace-${Date.now()}`,
-        name: 'Parlant Test Workspace',
+        Name: 'Parlant Test Workspace',
         ownerId: userResult[0].id,
       })
       .returning({ id: workspace.id })
@@ -91,7 +91,7 @@ export class ParlantTestDataSeeder {
         id: `seedworkflow-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Parlant Integration Workflow',
+        Name: 'Parlant Integration Workflow',
         description: 'Test workflow for Parlant agent integration',
         color: '#8B5CF6',
         lastSynced: new Date(),
@@ -112,7 +112,7 @@ export class ParlantTestDataSeeder {
         id: `seedkb-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Parlant Test Knowledge Base',
+        Name: 'Parlant Test Knowledge Base',
         description: 'Knowledge base containing test documentation and procedures',
         tokenCount: 25000,
         embeddingModel: 'text-embedding-3-small',
@@ -132,7 +132,7 @@ export class ParlantTestDataSeeder {
         id: `seedapikey-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Parlant Test API Key',
+        Name: 'Parlant Test API Key',
         key: `sk-parlant-test-${Date.now()}`,
         type: 'workspace',
         createdBy: userResult[0].id,
@@ -149,7 +149,7 @@ export class ParlantTestDataSeeder {
         schema: {
           type: 'function',
           function: {
-            name: 'process_customer_query',
+            Name: 'process_customer_query',
             description: 'Process customer queries and generate appropriate responses',
             parameters: {
               type: 'object',
@@ -192,7 +192,7 @@ export class ParlantTestDataSeeder {
         id: `seedmcp-${Date.now()}`,
         workspaceId: workspaceResult[0].id,
         createdBy: userResult[0].id,
-        name: 'Parlant Test MCP Server',
+        Name: 'Parlant Test MCP Server',
         description: 'MCP server providing external tool capabilities for Parlant agents',
         transport: 'http',
         url: 'http://localhost:9000/mcp',
@@ -241,7 +241,7 @@ export class ParlantTestDataSeeder {
         {
           workspaceId: this.ctx.workspaceId,
           createdBy: this.ctx.userId,
-          name: 'Customer Support Agent',
+          Name: 'Customer Support Agent',
           description: 'Specialized agent for handling customer support inquiries',
           status: 'active',
           compositionMode: 'fluid',
@@ -272,7 +272,7 @@ export class ParlantTestDataSeeder {
         {
           workspaceId: this.ctx.workspaceId,
           createdBy: this.ctx.userId,
-          name: 'Sales Assistant Agent',
+          Name: 'Sales Assistant Agent',
           description: 'Agent focused on sales inquiries and lead qualification',
           status: 'active',
           compositionMode: 'strict',
@@ -303,7 +303,7 @@ export class ParlantTestDataSeeder {
         {
           workspaceId: this.ctx.workspaceId,
           createdBy: this.ctx.userId,
-          name: 'Technical Expert Agent',
+          Name: 'Technical Expert Agent',
           description: 'Deep technical knowledge agent for complex technical questions',
           status: 'active',
           compositionMode: 'fluid',
@@ -334,7 +334,7 @@ export class ParlantTestDataSeeder {
         {
           workspaceId: this.ctx.workspaceId,
           createdBy: this.ctx.userId,
-          name: 'Onboarding Guide Agent',
+          Name: 'Onboarding Guide Agent',
           description: 'Agent specialized in user onboarding and training',
           status: 'active',
           compositionMode: 'strict',
@@ -365,7 +365,7 @@ export class ParlantTestDataSeeder {
         {
           workspaceId: this.ctx.workspaceId,
           createdBy: this.ctx.userId,
-          name: 'Research Assistant Agent',
+          Name: 'Research Assistant Agent',
           description: 'Agent for research tasks and information gathering',
           status: 'inactive',
           compositionMode: 'fluid',
@@ -416,7 +416,7 @@ export class ParlantTestDataSeeder {
       .values([
         {
           workspaceId: this.ctx.workspaceId,
-          name: 'ticket_search',
+          Name: 'ticket_search',
           displayName: 'Ticket Search',
           description: 'Search through support tickets to find relevant information',
           toolType: 'external',
@@ -464,7 +464,7 @@ export class ParlantTestDataSeeder {
         },
         {
           workspaceId: this.ctx.workspaceId,
-          name: 'knowledge_search',
+          Name: 'knowledge_search',
           displayName: 'Knowledge Base Search',
           description: 'Search the knowledge base for relevant articles and documentation',
           toolType: 'sim_native',
@@ -508,7 +508,7 @@ export class ParlantTestDataSeeder {
         },
         {
           workspaceId: this.ctx.workspaceId,
-          name: 'send_email',
+          Name: 'send_email',
           displayName: 'Send Email',
           description: 'Send emails to customers or internal team members',
           toolType: 'external',
@@ -542,7 +542,7 @@ export class ParlantTestDataSeeder {
         },
         {
           workspaceId: this.ctx.workspaceId,
-          name: 'create_ticket',
+          Name: 'create_ticket',
           displayName: 'Create Support Ticket',
           description: 'Create new support tickets in the ticketing system',
           toolType: 'external',
@@ -585,7 +585,7 @@ export class ParlantTestDataSeeder {
         },
         {
           workspaceId: this.ctx.workspaceId,
-          name: 'workflow_trigger',
+          Name: 'workflow_trigger',
           displayName: 'Trigger Workflow',
           description: 'Trigger predefined workflows for complex operations',
           toolType: 'sim_native',
@@ -714,7 +714,7 @@ export class ParlantTestDataSeeder {
           .values([
             {
               journeyId: journey.id,
-              name: 'Issue Identification',
+              Name: 'Issue Identification',
               stateType: 'chat',
               chatPrompt:
                 "I understand you're experiencing an issue. Could you please describe what specific problem you're facing?",
@@ -723,7 +723,7 @@ export class ParlantTestDataSeeder {
             },
             {
               journeyId: journey.id,
-              name: 'Information Gathering',
+              Name: 'Information Gathering',
               stateType: 'chat',
               chatPrompt:
                 'Thank you for that information. To help diagnose the issue, could you provide more details about when this started and what you were trying to do?',
@@ -731,7 +731,7 @@ export class ParlantTestDataSeeder {
             },
             {
               journeyId: journey.id,
-              name: 'Knowledge Base Search',
+              Name: 'Knowledge Base Search',
               stateType: 'tool',
               toolId: this.ctx.toolIds?.[1], // knowledge_search tool
               toolConfig: { maxResults: 3, categories: ['troubleshooting', 'faq'] },
@@ -739,7 +739,7 @@ export class ParlantTestDataSeeder {
             },
             {
               journeyId: journey.id,
-              name: 'Solution Presentation',
+              Name: 'Solution Presentation',
               stateType: 'chat',
               chatPrompt:
                 "Based on your description, I've found some potential solutions. Let me walk you through them.",
@@ -747,14 +747,14 @@ export class ParlantTestDataSeeder {
             },
             {
               journeyId: journey.id,
-              name: 'Resolution Confirmation',
+              Name: 'Resolution Confirmation',
               stateType: 'decision',
               condition: 'user.satisfaction >= 4 || user.issue_resolved === true',
               allowSkip: false,
             },
             {
               journeyId: journey.id,
-              name: 'Escalation',
+              Name: 'Escalation',
               stateType: 'tool',
               toolId: this.ctx.toolIds?.[3], // create_ticket tool
               toolConfig: { priority: 'medium', category: 'technical_support' },
@@ -762,7 +762,7 @@ export class ParlantTestDataSeeder {
             },
             {
               journeyId: journey.id,
-              name: 'Completion',
+              Name: 'Completion',
               stateType: 'final',
               isFinal: true,
             },
@@ -835,7 +835,7 @@ export class ParlantTestDataSeeder {
           .values([
             {
               journeyId: journey.id,
-              name: 'Welcome & Qualification',
+              Name: 'Welcome & Qualification',
               stateType: 'chat',
               chatPrompt:
                 "Welcome! I'm here to help you find the right solution for your needs. Could you tell me a bit about your business and what you're looking for?",
@@ -844,7 +844,7 @@ export class ParlantTestDataSeeder {
             },
             {
               journeyId: journey.id,
-              name: 'Needs Assessment',
+              Name: 'Needs Assessment',
               stateType: 'chat',
               chatPrompt:
                 "That's helpful information. Let me ask a few questions to better understand your requirements and current challenges.",
@@ -852,7 +852,7 @@ export class ParlantTestDataSeeder {
             },
             {
               journeyId: journey.id,
-              name: 'Solution Recommendation',
+              Name: 'Solution Recommendation',
               stateType: 'chat',
               chatPrompt:
                 "Based on what you've shared, I think I have some great options for you. Let me present the solutions that best fit your needs.",
@@ -860,14 +860,14 @@ export class ParlantTestDataSeeder {
             },
             {
               journeyId: journey.id,
-              name: 'Objection Handling',
+              Name: 'Objection Handling',
               stateType: 'decision',
               condition: 'user.has_objections === true || user.needs_more_info === true',
               allowSkip: true,
             },
             {
               journeyId: journey.id,
-              name: 'Next Steps',
+              Name: 'Next Steps',
               stateType: 'chat',
               chatPrompt:
                 "Excellent! Let's discuss the next steps. I can set you up with a trial or connect you with our team for a detailed demo.",
@@ -875,7 +875,7 @@ export class ParlantTestDataSeeder {
             },
             {
               journeyId: journey.id,
-              name: 'Follow-up Scheduling',
+              Name: 'Follow-up Scheduling',
               stateType: 'tool',
               toolId: this.ctx.toolIds?.[2], // send_email tool
               toolConfig: { template: 'sales_followup', priority: 'high' },
@@ -883,7 +883,7 @@ export class ParlantTestDataSeeder {
             },
             {
               journeyId: journey.id,
-              name: 'Completion',
+              Name: 'Completion',
               stateType: 'final',
               isFinal: true,
             },
@@ -1152,7 +1152,7 @@ export class ParlantTestDataSeeder {
         await db.insert(parlantTerm).values(
           agentTerms.terms.map((term, index) => ({
             agentId: this.ctx.agentIds![agentTerms.agentIndex],
-            name: term,
+            Name: term,
             description: `Definition and context for ${term} in the context of ${agentTerms.agentIndex === 0 ? 'customer support' : agentTerms.agentIndex === 1 ? 'sales' : agentTerms.agentIndex === 2 ? 'technical' : 'onboarding'}`,
             synonyms: [],
             category:

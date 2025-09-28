@@ -238,8 +238,8 @@ async function sendWithAzure(data: ProcessedEmailData): Promise<SendEmailResult>
     throw new Error('Azure Communication Services requires either HTML or text content')
   }
 
-  // For Azure, use just the email address part (no display name)
-  // Azure will use the display name configured in the portal for the sender address
+  // For Azure, use just the email address part (no display Name)
+  // Azure will use the display Name configured in the portal for the sender address
   const senderEmailOnly = data.senderEmail.includes('<')
     ? data.senderEmail.match(/<(.+)>/)?.[1] || data.senderEmail
     : data.senderEmail

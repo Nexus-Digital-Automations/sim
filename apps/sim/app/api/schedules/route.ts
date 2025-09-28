@@ -64,7 +64,7 @@ function hasValidScheduleConfig(
 /**
  * Get schedule information for a workflow
  */
-export async function GET(req: NextRequest) {
+export async function get(req: NextRequest) {
   const requestId = generateRequestId()
   const url = new URL(req.url)
   const workflowId = url.searchParams.get('workflowId')
@@ -164,7 +164,7 @@ export async function GET(req: NextRequest) {
 /**
  * Create or update a schedule for a workflow
  */
-export async function POST(req: NextRequest) {
+export async function post(req: NextRequest) {
   const requestId = generateRequestId()
 
   try {

@@ -34,10 +34,10 @@ export class InputResolver {
     // Create maps for efficient lookups
     this.blockById = new Map(workflow.blocks.map((block) => [block.id, block]))
 
-    // Initialize the normalized name map
+    // Initialize the normalized Name map
     this.blockByNormalizedName = new Map(
       workflow.blocks.map((block) => [
-        block.metadata?.name ? this.normalizeBlockName(block.metadata.name) : block.id,
+        block.metadata?.Name ? this.normalizeBlockName(block.metadata.Name) : block.id,
         block,
       ])
     )
@@ -46,10 +46,10 @@ export class InputResolver {
     const starterBlock = workflow.blocks.find((block) => block.metadata?.id === 'starter')
     if (starterBlock) {
       this.blockByNormalizedName.set('start', starterBlock)
-      // Also add the normalized actual name if it exists
-      if (starterBlock.metadata?.name) {
+      // Also add the normalized actual Name if it exists
+      if (starterBlock.metadata?.Name) {
         this.blockByNormalizedName.set(
-          this.normalizeBlockName(starterBlock.metadata.name),
+          this.normalizeBlockName(starterBlock.metadata.Name),
           starterBlock
         )
       }
@@ -213,7 +213,7 @@ export class InputResolver {
       if (typeof value === 'string') {
         const trimmedValue = value.trim()
 
-        // Check for direct variable reference pattern: <variable.name>
+        // Check for direct variable reference pattern: <variable.Name>
         const directVariableMatch = trimmedValue.match(/^<variable\.([^>]+)>$/)
         if (directVariableMatch) {
           const variableName = directVariableMatch[1]
@@ -340,7 +340,7 @@ export class InputResolver {
       // Use the centralized VariableManager to resolve variable values
       return VariableManager.resolveForExecution(variable.value, type)
     } catch (error) {
-      logger.error(`Error processing variable ${variable.name} (type: ${variable.type}):`, error)
+      logger.error(`Error processing variable ${variable.Name} (type: ${variable.type}):`, error)
       return variable.value // Fallback to original value on error
     }
   }
@@ -386,7 +386,7 @@ export class InputResolver {
   }
 
   /**
-   * Resolves workflow variable references in a string (<variable.name>).
+   * Resolves workflow variable references in a string (<variable.Name>).
    *
    * @param value - String containing variable references
    * @param currentBlock - The current block, used to determine context
@@ -422,7 +422,7 @@ export class InputResolver {
         )
         resolvedValue = resolvedValue.replace(match, formattedValue)
       } else {
-        // Variable not found - leave the placeholder <variable.name> in the string? Or replace with empty string?
+        // Variable not found - leave the placeholder <variable.Name> in the string? Or replace with empty string?
         // For now, let's leave it, which matches previous behavior implicitly.
         logger.warn(
           `Interpolated variable reference <variable.${variableName}> not found. Leaving as literal.`
@@ -507,7 +507,7 @@ export class InputResolver {
       const path = match.slice(1, -1)
       const [blockRef, ...pathParts] = path.split('.')
 
-      // Skip XML-like tags (but allow block names with spaces)
+      // Skip XML-like tags (but allow block NAMES with spaces)
       if (blockRef.includes(':')) {
         continue
       }
@@ -706,7 +706,7 @@ export class InputResolver {
 
       if (sourceBlock.enabled === false) {
         throw new Error(
-          `Block "${sourceBlock.metadata?.name || sourceBlock.id}" is disabled, and block "${currentBlock.metadata?.name || currentBlock.id}" depends on it.`
+          `Block "${sourceBlock.metadata?.Name || sourceBlock.id}" is disabled, and block "${currentBlock.metadata?.Name || currentBlock.id}" depends on it.`
         )
       }
 
@@ -736,7 +736,7 @@ export class InputResolver {
         }
 
         throw new Error(
-          `No state found for block "${sourceBlock.metadata?.name || sourceBlock.id}" (ID: ${sourceBlock.id}).`
+          `No state found for block "${sourceBlock.metadata?.Name || sourceBlock.id}" (ID: ${sourceBlock.id}).`
         )
       }
 
@@ -745,7 +745,7 @@ export class InputResolver {
       for (const part of pathParts) {
         if (!replacementValue || typeof replacementValue !== 'object') {
           throw new Error(
-            `Invalid path "${part}" in "${path}" for block "${currentBlock.metadata?.name || currentBlock.id}".`
+            `Invalid path "${part}" in "${path}" for block "${currentBlock.metadata?.Name || currentBlock.id}".`
           )
         }
 
@@ -759,14 +759,14 @@ export class InputResolver {
           const arrayValue = replacementValue[arrayName]
           if (!Array.isArray(arrayValue)) {
             throw new Error(
-              `Property "${arrayName}" is not an array in path "${path}" for block "${sourceBlock.metadata?.name || sourceBlock.id}".`
+              `Property "${arrayName}" is not an array in path "${path}" for block "${sourceBlock.metadata?.Name || sourceBlock.id}".`
             )
           }
 
           // Then access the array element
           if (index < 0 || index >= arrayValue.length) {
             throw new Error(
-              `Array index ${index} is out of bounds for "${arrayName}" (length: ${arrayValue.length}) in path "${path}" for block "${sourceBlock.metadata?.name || sourceBlock.id}".`
+              `Array index ${index} is out of bounds for "${arrayName}" (length: ${arrayValue.length}) in path "${path}" for block "${sourceBlock.metadata?.Name || sourceBlock.id}".`
             )
           }
 
@@ -777,7 +777,7 @@ export class InputResolver {
             replacementValue,
             part,
             path,
-            sourceBlock.metadata?.name || sourceBlock.id
+            sourceBlock.metadata?.Name || sourceBlock.id
           )
         } else {
           // Regular property access with FileReference mapping
@@ -786,7 +786,7 @@ export class InputResolver {
 
         if (replacementValue === undefined) {
           throw new Error(
-            `No value found at path "${path}" in block "${sourceBlock.metadata?.name || sourceBlock.id}".`
+            `No value found at path "${path}" in block "${sourceBlock.metadata?.Name || sourceBlock.id}".`
           )
         }
       }
@@ -1052,7 +1052,7 @@ export class InputResolver {
     // Look for the value in the block params
     for (const [key, paramValue] of Object.entries(block.config.params)) {
       if (paramValue === value) {
-        // Check if key name suggests it's an API key
+        // Check if key Name suggests it's an API key
         const normalizedKey = key.toLowerCase().replace(/[_\-\s]/g, '')
         return (
           normalizedKey === 'apikey' ||
@@ -1101,7 +1101,7 @@ export class InputResolver {
   ): any {
     let value = base
 
-    // Extract leading property name if present
+    // Extract leading property Name if present
     const propMatch = part.match(/^([^[]+)/)
     let rest = part
     if (propMatch) {
@@ -1137,26 +1137,26 @@ export class InputResolver {
   }
 
   /**
-   * Normalizes block name for consistent lookups.
+   * Normalizes block Name for consistent lookups.
    * Converts to lowercase and removes whitespace.
    *
-   * @param name - Block name to normalize
-   * @returns Normalized block name
+   * @param Name - Block Name to normalize
+   * @returns Normalized block Name
    */
-  private normalizeBlockName(name: string): string {
-    return name.toLowerCase().replace(/\s+/g, '')
+  private normalizeBlockName(Name: string): string {
+    return Name.toLowerCase().replace(/\s+/g, '')
   }
 
   /**
-   * Helper method to find a variable by its name.
-   * Handles normalization of names (removing spaces) for consistent matching.
+   * Helper method to find a variable by its Name.
+   * Handles normalization of NAMES (removing spaces) for consistent matching.
    *
-   * @param variableName - The name of the variable to find
+   * @param variableName - The Name of the variable to find
    * @returns The found variable object or undefined if not found
    */
   private findVariableByName(variableName: string): any | undefined {
     const foundVariable = Object.entries(this.workflowVariables).find(
-      ([_, variable]) => (variable.name || '').replace(/\s+/g, '') === variableName
+      ([_, variable]) => (variable.Name || '').replace(/\s+/g, '') === variableName
     )
 
     return foundVariable ? foundVariable[1] : undefined
@@ -1228,11 +1228,11 @@ export class InputResolver {
   }
 
   /**
-   * Gets block names that the current block can reference for helpful error messages.
+   * Gets block NAMES that the current block can reference for helpful error messages.
    * Uses shared utility when pre-calculated data is available.
    *
    * @param currentBlockId - ID of the block requesting references
-   * @returns Array of accessible block names and aliases
+   * @returns Array of accessible block NAMES and aliases
    */
   private getAccessibleBlockNames(currentBlockId: string): string[] {
     // Use shared utility if pre-calculated data is available
@@ -1246,42 +1246,42 @@ export class InputResolver {
 
     // Fallback to legacy calculation
     const accessibleBlockIds = this.getAccessibleBlocks(currentBlockId)
-    const names: string[] = []
+    const NAMES: string[] = []
 
     for (const blockId of accessibleBlockIds) {
       const block = this.blockById.get(blockId)
       if (block) {
-        // Add both the actual name and the normalized name
-        if (block.metadata?.name) {
-          names.push(block.metadata.name)
-          names.push(this.normalizeBlockName(block.metadata.name))
+        // Add both the actual Name and the normalized Name
+        if (block.metadata?.Name) {
+          NAMES.push(block.metadata.Name)
+          NAMES.push(this.normalizeBlockName(block.metadata.Name))
         }
-        names.push(blockId)
+        NAMES.push(blockId)
       }
     }
 
     // Add special aliases
-    names.push('start') // Always allow start alias
+    NAMES.push('start') // Always allow start alias
 
-    return [...new Set(names)] // Remove duplicates
+    return [...new Set(NAMES)] // Remove duplicates
   }
 
   /**
-   * Gets user-friendly block names for error messages.
-   * Only returns the actual block names that users see in the UI.
+   * Gets user-friendly block NAMES for error messages.
+   * Only returns the actual block NAMES that users see in the UI.
    */
   private getAccessibleBlockNamesForError(currentBlockId: string): string[] {
     const accessibleBlockIds = this.getAccessibleBlocks(currentBlockId)
-    const names: string[] = []
+    const NAMES: string[] = []
 
     for (const blockId of accessibleBlockIds) {
       const block = this.blockById.get(blockId)
-      if (block?.metadata?.name) {
-        names.push(block.metadata.name)
+      if (block?.metadata?.Name) {
+        NAMES.push(block.metadata.Name)
       }
     }
 
-    return [...new Set(names)] // Remove duplicates
+    return [...new Set(NAMES)] // Remove duplicates
   }
 
   /**
@@ -1365,7 +1365,7 @@ export class InputResolver {
               // Handle both JSON format (double quotes) and JS format (single quotes)
               const normalizedExpression = trimmedExpression
                 .replace(/'/g, '"') // Replace all single quotes with double quotes
-                .replace(/(\w+):/g, '"$1":') // Convert property names to double-quoted strings
+                .replace(/(\w+):/g, '"$1":') // Convert property NAMES to double-quoted strings
                 .replace(/,\s*]/g, ']') // Remove trailing commas before closing brackets
                 .replace(/,\s*}/g, '}') // Remove trailing commas before closing braces
 

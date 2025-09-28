@@ -186,7 +186,7 @@ export interface SubBlockConfig {
 
 export interface BlockConfig<T extends ToolResponse = ToolResponse> {
   type: string
-  name: string
+  Name: string
   description: string
   category: BlockCategory
   longDescription?: string

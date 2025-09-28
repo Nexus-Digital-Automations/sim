@@ -119,7 +119,7 @@ export class GovernanceComplianceService {
           actor_id: auth.user_id,
           actor_type: 'system',
           metadata: {
-            policy_name: policy.name,
+            policy_name: policy.Name,
             violation_detected: result.overall_violation,
             risk_score: result.risk_score,
           },
@@ -172,13 +172,13 @@ export class GovernanceComplianceService {
         actor_type: 'user',
         after_state: policy,
         metadata: {
-          policy_name: policy.name,
+          policy_name: policy.Name,
           category: policy.category,
           enforcement_level: policy.enforcement_level,
         },
       })
 
-      console.log(`[Governance] Policy created: ${policy.name} (${policy.id})`)
+      console.log(`[Governance] Policy created: ${policy.Name} (${policy.id})`)
       return policy
     } catch (error) {
       console.error('[Governance] Policy creation failed:', error)
@@ -226,12 +226,12 @@ export class GovernanceComplianceService {
         before_state: existingPolicy,
         after_state: updatedPolicy,
         metadata: {
-          policy_name: updatedPolicy.name,
+          policy_name: updatedPolicy.Name,
           version_increment: true,
         },
       })
 
-      console.log(`[Governance] Policy updated: ${updatedPolicy.name} (v${updatedPolicy.version})`)
+      console.log(`[Governance] Policy updated: ${updatedPolicy.Name} (v${updatedPolicy.version})`)
       return updatedPolicy
     } catch (error) {
       console.error('[Governance] Policy update failed:', error)
@@ -536,8 +536,8 @@ export class GovernanceComplianceService {
   }
 
   private async validatePolicyConfiguration(policy: GovernancePolicy): Promise<void> {
-    if (!policy.name || policy.name.trim().length === 0) {
-      throw new Error('Policy name is required')
+    if (!policy.Name || policy.Name.trim().length === 0) {
+      throw new Error('Policy Name is required')
     }
 
     if (!policy.rules || policy.rules.length === 0) {
@@ -648,7 +648,7 @@ export class GovernanceComplianceService {
       {
         id: this.generateId('policy'),
         workspace_id: workspaceId,
-        name: 'PII Protection Policy',
+        Name: 'PII Protection Policy',
         description: 'Prevents exposure of personally identifiable information',
         category: 'data_governance',
         type: 'mandatory',
@@ -682,7 +682,7 @@ export class GovernanceComplianceService {
       {
         id: this.generateId('policy'),
         workspace_id: workspaceId,
-        name: 'Brand Voice Compliance',
+        Name: 'Brand Voice Compliance',
         description: 'Ensures consistent brand voice and messaging',
         category: 'branding',
         type: 'advisory',
@@ -695,7 +695,7 @@ export class GovernanceComplianceService {
             condition: {
               field: 'content',
               operator: 'contains',
-              value: 'competitor brand names',
+              value: 'competitor brand NAMES',
               case_sensitive: false,
             },
             action: {
@@ -723,7 +723,7 @@ export class GovernanceComplianceService {
   ): GovernanceError {
     const error = new Error(message) as GovernanceError
     error.code = code
-    error.name = 'GovernanceError'
+    error.Name = 'GovernanceError'
 
     if (originalError) {
       error.stack = originalError.stack

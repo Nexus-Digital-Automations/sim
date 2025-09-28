@@ -31,7 +31,7 @@ export interface SerializedBlock {
   outputs: Record<string, BlockOutput>
   metadata?: {
     id: string
-    name?: string
+    Name?: string
     description?: string
     category?: string
     icon?: string

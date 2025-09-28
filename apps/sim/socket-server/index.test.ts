@@ -50,7 +50,7 @@ vi.mock('@/socket-server/middleware/permissions', () => ({
 vi.mock('@/socket-server/database/operations', () => ({
   getWorkflowState: vi.fn().mockResolvedValue({
     id: 'test-workflow',
-    name: 'Test Workflow',
+    Name: 'Test Workflow',
     lastModified: Date.now(),
   }),
   persistWorkflowOperation: vi.fn().mockResolvedValue(undefined),
@@ -156,8 +156,8 @@ describe('Socket Server Index Integration', () => {
     it('should have proper CORS configuration', () => {
       const corsOptions = io.engine.opts.cors
       expect(corsOptions).toBeDefined()
-      expect(corsOptions.methods).toContain('GET')
-      expect(corsOptions.methods).toContain('POST')
+      expect(corsOptions.methods).toContain('get')
+      expect(corsOptions.methods).toContain('post')
       expect(corsOptions.credentials).toBe(true)
     })
 
@@ -293,7 +293,7 @@ describe('Socket Server Index Integration', () => {
         payload: {
           id: 'test-block',
           type: 'action',
-          name: 'Test Block',
+          Name: 'Test Block',
           position: { x: 100, y: 200 },
         },
         timestamp: Date.now(),
@@ -311,7 +311,7 @@ describe('Socket Server Index Integration', () => {
         payload: {
           id: 'test-block',
           type: 'action',
-          name: 'Test Block',
+          Name: 'Test Block',
           position: { x: 100, y: 200 },
           autoConnectEdge: {
             id: 'auto-edge-123',

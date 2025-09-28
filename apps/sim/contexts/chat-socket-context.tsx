@@ -35,7 +35,7 @@ interface ChatMessage {
     senderSocketId?: string
     toolCalls?: Array<{
       id: string
-      name: string
+      Name: string
       parameters: any
       result?: any
     }>
@@ -147,7 +147,7 @@ interface ChatSocketProviderProps {
   children: ReactNode
   user?: {
     id: string
-    name?: string
+    Name?: string
     email?: string
   }
 }
@@ -176,7 +176,7 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
   // Helper function to generate a fresh socket token
   const generateSocketToken = async (): Promise<string> => {
     const res = await fetch('/api/auth/socket-token', {
-      method: 'POST',
+      method: 'post',
       credentials: 'include',
       headers: { 'cache-control': 'no-store' },
     })
@@ -239,7 +239,7 @@ export function ChatSocketProvider({ children, user }: ChatSocketProviderProps) 
           logger.info('Chat socket connected successfully', {
             socketId: socketInstance.id,
             connected: socketInstance.connected,
-            transport: socketInstance.io.engine?.transport?.name,
+            transport: socketInstance.io.engine?.transport?.Name,
           })
         })
 

@@ -154,7 +154,7 @@ export class LoggingSession {
       const syntheticErrorSpan: TraceSpan[] = [
         {
           id: 'pre-execution-validation',
-          name: 'Workflow Error',
+          Name: 'Workflow Error',
           type: 'validation',
           duration: Math.max(1, durationMs),
           startTime: startTime.toISOString(),

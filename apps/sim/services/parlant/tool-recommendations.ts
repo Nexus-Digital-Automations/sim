@@ -678,7 +678,7 @@ export class AdvancedRecommendationEngine {
 
     if (recommendations.length > 1) {
       suggestions.push(
-        `Try "${recommendations[0].tool.name}" first - it has the highest confidence score`
+        `Try "${recommendations[0].tool.Name}" first - it has the highest confidence score`
       )
     }
 

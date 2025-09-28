@@ -27,7 +27,7 @@ export class StreamingResponseFormatProcessor implements ResponseFormatStreamPro
       return originalStream
     }
 
-    // Get the selected field names for this block
+    // Get the selected field NAMES for this block
     const selectedFields = selectedOutputIds
       .filter((outputId) => {
         const blockIdForOutput = outputId.includes('_')

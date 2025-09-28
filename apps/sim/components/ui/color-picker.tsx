@@ -18,7 +18,7 @@ interface ColorPickerProps {
 const ColorPicker = forwardRef<
   HTMLInputElement,
   Omit<ButtonProps, 'value' | 'onChange' | 'onBlur'> & ColorPickerProps & ButtonProps
->(({ disabled, value, onChange, onBlur, name, className, size, ...props }, forwardedRef) => {
+>(({ disabled, value, onChange, onBlur, Name, className, size, ...props }, forwardedRef) => {
   const ref = useForwardedRef(forwardedRef)
   const [open, setOpen] = useState(false)
 
@@ -32,7 +32,7 @@ const ColorPicker = forwardRef<
         <Button
           {...props}
           className={cn('block', className)}
-          name={name}
+          Name={Name}
           onClick={() => {
             setOpen(true)
           }}

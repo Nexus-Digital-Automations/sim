@@ -49,7 +49,7 @@ export function ToolCallExecution({ toolCall, isCompact = false }: ToolCallProps
             <div className='flex min-w-0 items-center gap-2 overflow-hidden'>
               <Settings className='h-4 w-4 shrink-0 animate-pulse text-amber-600 dark:text-amber-400' />
               <span className='min-w-0 truncate font-mono text-amber-800 text-xs dark:text-amber-200'>
-                {toolCall.displayName || toolCall.name}
+                {toolCall.displayName || toolCall.Name}
               </span>
               {toolCall.progress && (
                 <Badge
@@ -75,11 +75,11 @@ export function ToolCallExecution({ toolCall, isCompact = false }: ToolCallProps
             </div>
             {toolCall.parameters &&
               Object.keys(toolCall.parameters).length > 0 &&
-              (toolCall.name === 'make_api_request' ||
-                toolCall.name === 'set_environment_variables' ||
-                toolCall.name === 'set_global_workflow_variables') && (
+              (toolCall.Name === 'make_api_request' ||
+                toolCall.Name === 'set_environment_variables' ||
+                toolCall.Name === 'set_global_workflow_variables') && (
                 <div className='min-w-0 max-w-full rounded border border-amber-200 bg-amber-50 p-2 dark:border-amber-800 dark:bg-amber-950'>
-                  {toolCall.name === 'make_api_request' ? (
+                  {toolCall.Name === 'make_api_request' ? (
                     <div className='w-full overflow-hidden rounded border border-muted bg-card'>
                       <div className='grid grid-cols-2 gap-0 border-muted/60 border-b bg-muted/40 px-2 py-1.5'>
                         <div className='font-medium text-[10px] text-muted-foreground uppercase tracking-wide'>
@@ -93,7 +93,7 @@ export function ToolCallExecution({ toolCall, isCompact = false }: ToolCallProps
                         <div>
                           <span className='inline-flex rounded bg-muted px-1.5 py-0.5 font-mono text-muted-foreground text-xs'>
                             {String((toolCall.parameters as any).method || '').toUpperCase() ||
-                              'GET'}
+                              'get'}
                           </span>
                         </div>
                         <div className='min-w-0'>
@@ -108,7 +108,7 @@ export function ToolCallExecution({ toolCall, isCompact = false }: ToolCallProps
                     </div>
                   ) : null}
 
-                  {toolCall.name === 'set_environment_variables'
+                  {toolCall.Name === 'set_environment_variables'
                     ? (() => {
                         const variables =
                           (toolCall.parameters as any).variables &&
@@ -154,7 +154,7 @@ export function ToolCallExecution({ toolCall, isCompact = false }: ToolCallProps
                       })()
                     : null}
 
-                  {toolCall.name === 'set_global_workflow_variables'
+                  {toolCall.Name === 'set_global_workflow_variables'
                     ? (() => {
                         const ops = Array.isArray((toolCall.parameters as any).operations)
                           ? ((toolCall.parameters as any).operations as any[])
@@ -185,7 +185,7 @@ export function ToolCallExecution({ toolCall, isCompact = false }: ToolCallProps
                                   >
                                     <div className='min-w-0'>
                                       <span className='truncate text-amber-800 text-xs dark:text-amber-200'>
-                                        {String(op.name || '')}
+                                        {String(op.Name || '')}
                                       </span>
                                     </div>
                                     <div>
@@ -267,7 +267,7 @@ export function ToolCallCompletion({ toolCall, isCompact = false }: ToolCallProp
                   isAborted && 'text-orange-800 dark:text-orange-200'
                 )}
               >
-                {toolCall.displayName || toolCall.name}
+                {toolCall.displayName || toolCall.Name}
               </span>
               {toolCall.duration && (
                 <Badge
@@ -309,8 +309,8 @@ export function ToolCallCompletion({ toolCall, isCompact = false }: ToolCallProp
           <div className='min-w-0 max-w-full space-y-2'>
             {toolCall.parameters &&
               Object.keys(toolCall.parameters).length > 0 &&
-              (toolCall.name === 'make_api_request' ||
-                toolCall.name === 'set_environment_variables') && (
+              (toolCall.Name === 'make_api_request' ||
+                toolCall.Name === 'set_environment_variables') && (
                 <div
                   className={cn(
                     'min-w-0 max-w-full rounded p-2',

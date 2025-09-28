@@ -20,7 +20,7 @@ const mockWorkflowBlocks = {
   workflowId: 'workflowId',
   id: 'id',
   type: 'type',
-  name: 'name',
+  Name: 'Name',
   positionX: 'positionX',
   positionY: 'positionY',
   enabled: 'enabled',
@@ -80,7 +80,7 @@ const mockBlocksFromDb = [
     id: 'block-1',
     workflowId: mockWorkflowId,
     type: 'starter',
-    name: 'Start Block',
+    Name: 'Start Block',
     positionX: 100,
     positionY: 100,
     enabled: true,
@@ -97,7 +97,7 @@ const mockBlocksFromDb = [
     id: 'block-2',
     workflowId: mockWorkflowId,
     type: 'api',
-    name: 'API Block',
+    Name: 'API Block',
     positionX: 300,
     positionY: 100,
     enabled: true,
@@ -152,7 +152,7 @@ const mockWorkflowState: WorkflowState = {
     'block-1': {
       id: 'block-1',
       type: 'starter',
-      name: 'Start Block',
+      Name: 'Start Block',
       position: { x: 100, y: 100 },
       subBlocks: { input: { id: 'input', type: 'short-input' as const, value: 'test' } },
       outputs: { result: { type: 'string' } },
@@ -165,7 +165,7 @@ const mockWorkflowState: WorkflowState = {
     'block-2': {
       id: 'block-2',
       type: 'api',
-      name: 'API Block',
+      Name: 'API Block',
       position: { x: 300, y: 100 },
       subBlocks: {},
       outputs: {},
@@ -253,7 +253,7 @@ describe('Database Helpers', () => {
       expect(result?.blocks['block-1']).toEqual({
         id: 'block-1',
         type: 'starter',
-        name: 'Start Block',
+        Name: 'Start Block',
         position: { x: 100, y: 100 },
         enabled: true,
         horizontalHandles: true,
@@ -359,7 +359,7 @@ describe('Database Helpers', () => {
           workflowId: mockWorkflowId,
           // Missing required fields
           type: null,
-          name: null,
+          Name: null,
           positionX: 0,
           positionY: 0,
           enabled: true,
@@ -392,9 +392,9 @@ describe('Database Helpers', () => {
 
       expect(result).toBeDefined()
       expect(result?.blocks['block-1']).toBeDefined()
-      // The function should handle null type and name gracefully
+      // The function should handle null type and Name gracefully
       expect(result?.blocks['block-1'].type).toBeNull()
-      expect(result?.blocks['block-1'].name).toBeNull()
+      expect(result?.blocks['block-1'].Name).toBeNull()
     })
 
     it('should handle database connection errors gracefully', async () => {
@@ -551,7 +551,7 @@ describe('Database Helpers', () => {
         id: 'block-1',
         workflowId: mockWorkflowId,
         type: 'starter',
-        name: 'Start Block',
+        Name: 'Start Block',
         positionX: '100',
         positionY: '100',
         enabled: true,
@@ -729,7 +729,7 @@ describe('Database Helpers', () => {
         largeWorkflowState.blocks[`block-${i}`] = {
           id: `block-${i}`,
           type: 'api',
-          name: `Block ${i}`,
+          Name: `Block ${i}`,
           position: { x: i * 100, y: i * 100 },
           subBlocks: {},
           outputs: {},
@@ -778,7 +778,7 @@ describe('Database Helpers', () => {
           id: 'block-advanced-wide',
           workflowId: mockWorkflowId,
           type: 'agent',
-          name: 'Advanced Wide Block',
+          Name: 'Advanced Wide Block',
           positionX: 100,
           positionY: 100,
           enabled: true,
@@ -796,7 +796,7 @@ describe('Database Helpers', () => {
           id: 'block-basic-narrow',
           workflowId: mockWorkflowId,
           type: 'agent',
-          name: 'Basic Narrow Block',
+          Name: 'Basic Narrow Block',
           positionX: 200,
           positionY: 100,
           enabled: true,
@@ -814,7 +814,7 @@ describe('Database Helpers', () => {
           id: 'block-advanced-narrow',
           workflowId: mockWorkflowId,
           type: 'agent',
-          name: 'Advanced Narrow Block',
+          Name: 'Advanced Narrow Block',
           positionX: 300,
           positionY: 100,
           enabled: true,
@@ -869,7 +869,7 @@ describe('Database Helpers', () => {
           id: 'block-null-props',
           workflowId: mockWorkflowId,
           type: 'agent',
-          name: 'Block with null properties',
+          Name: 'Block with null properties',
           positionX: 100,
           positionY: 100,
           enabled: true,
@@ -887,7 +887,7 @@ describe('Database Helpers', () => {
           id: 'block-undefined-props',
           workflowId: mockWorkflowId,
           type: 'agent',
-          name: 'Block with undefined properties',
+          Name: 'Block with undefined properties',
           positionX: 200,
           positionY: 100,
           enabled: true,
@@ -944,7 +944,7 @@ describe('Database Helpers', () => {
         id: 'agent-original',
         workflowId: mockWorkflowId,
         type: 'agent',
-        name: 'Agent 1',
+        Name: 'Agent 1',
         positionX: 100,
         positionY: 100,
         enabled: true,
@@ -971,7 +971,7 @@ describe('Database Helpers', () => {
         id: 'agent-duplicate',
         workflowId: mockWorkflowId,
         type: 'agent',
-        name: 'Agent 2',
+        Name: 'Agent 2',
         positionX: 200,
         positionY: 100,
         enabled: true,
@@ -1076,7 +1076,7 @@ describe('Database Helpers', () => {
         id: 'agent-basic',
         workflowId: mockWorkflowId,
         type: 'agent',
-        name: 'Basic Agent',
+        Name: 'Basic Agent',
         positionX: 100,
         positionY: 100,
         enabled: true,
@@ -1095,7 +1095,7 @@ describe('Database Helpers', () => {
         id: 'agent-advanced',
         workflowId: mockWorkflowId,
         type: 'agent',
-        name: 'Advanced Agent',
+        Name: 'Advanced Agent',
         positionX: 200,
         positionY: 100,
         enabled: true,
@@ -1146,7 +1146,7 @@ describe('Database Helpers', () => {
           'block-1': {
             id: 'block-1',
             type: 'agent',
-            name: 'Test Agent',
+            Name: 'Test Agent',
             position: { x: 100, y: 100 },
             subBlocks: {
               systemPrompt: { id: 'systemPrompt', type: 'long-input' as const, value: 'System' },
@@ -1203,7 +1203,7 @@ describe('Database Helpers', () => {
                   id: 'block-1',
                   workflowId: mockWorkflowId,
                   type: 'agent',
-                  name: 'Test Agent',
+                  Name: 'Test Agent',
                   positionX: 100,
                   positionY: 100,
                   enabled: true,

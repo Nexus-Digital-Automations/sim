@@ -55,13 +55,13 @@ describe('Knowledge Base API Route', () => {
     vi.clearAllMocks()
   })
 
-  describe('GET /api/knowledge', () => {
+  describe('get /api/knowledge', () => {
     it('should return unauthorized for unauthenticated user', async () => {
       mockAuth$.mockUnauthenticated()
 
-      const req = createMockRequest('GET')
-      const { GET } = await import('@/app/api/knowledge/route')
-      const response = await GET(req)
+      const req = createMockRequest('get')
+      const { get } = await import('@/app/api/knowledge/route')
+      const response = await get(req)
       const data = await response.json()
 
       expect(response.status).toBe(401)
@@ -72,9 +72,9 @@ describe('Knowledge Base API Route', () => {
       mockAuth$.mockAuthenticatedUser()
       mockDbChain.orderBy.mockRejectedValue(new Error('Database error'))
 
-      const req = createMockRequest('GET')
-      const { GET } = await import('@/app/api/knowledge/route')
-      const response = await GET(req)
+      const req = createMockRequest('get')
+      const { get } = await import('@/app/api/knowledge/route')
+      const response = await get(req)
       const data = await response.json()
 
       expect(response.status).toBe(500)
@@ -82,9 +82,9 @@ describe('Knowledge Base API Route', () => {
     })
   })
 
-  describe('POST /api/knowledge', () => {
+  describe('post /api/knowledge', () => {
     const validKnowledgeBaseData = {
-      name: 'Test Knowledge Base',
+      Name: 'Test Knowledge Base',
       description: 'Test description',
       chunkingConfig: {
         maxSize: 1024,
@@ -96,14 +96,14 @@ describe('Knowledge Base API Route', () => {
     it('should create knowledge base successfully', async () => {
       mockAuth$.mockAuthenticatedUser()
 
-      const req = createMockRequest('POST', validKnowledgeBaseData)
-      const { POST } = await import('@/app/api/knowledge/route')
-      const response = await POST(req)
+      const req = createMockRequest('post', validKnowledgeBaseData)
+      const { post } = await import('@/app/api/knowledge/route')
+      const response = await post(req)
       const data = await response.json()
 
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
-      expect(data.data.name).toBe(validKnowledgeBaseData.name)
+      expect(data.data.Name).toBe(validKnowledgeBaseData.Name)
       expect(data.data.description).toBe(validKnowledgeBaseData.description)
       expect(mockDbChain.insert).toHaveBeenCalled()
     })
@@ -111,9 +111,9 @@ describe('Knowledge Base API Route', () => {
     it('should return unauthorized for unauthenticated user', async () => {
       mockAuth$.mockUnauthenticated()
 
-      const req = createMockRequest('POST', validKnowledgeBaseData)
-      const { POST } = await import('@/app/api/knowledge/route')
-      const response = await POST(req)
+      const req = createMockRequest('post', validKnowledgeBaseData)
+      const { post } = await import('@/app/api/knowledge/route')
+      const response = await post(req)
       const data = await response.json()
 
       expect(response.status).toBe(401)
@@ -123,9 +123,9 @@ describe('Knowledge Base API Route', () => {
     it('should validate required fields', async () => {
       mockAuth$.mockAuthenticatedUser()
 
-      const req = createMockRequest('POST', { description: 'Missing name' })
-      const { POST } = await import('@/app/api/knowledge/route')
-      const response = await POST(req)
+      const req = createMockRequest('post', { description: 'Missing Name' })
+      const { post } = await import('@/app/api/knowledge/route')
+      const response = await post(req)
       const data = await response.json()
 
       expect(response.status).toBe(400)
@@ -137,7 +137,7 @@ describe('Knowledge Base API Route', () => {
       mockAuth$.mockAuthenticatedUser()
 
       const invalidData = {
-        name: 'Test KB',
+        Name: 'Test KB',
         chunkingConfig: {
           maxSize: 100,
           minSize: 200, // Invalid: minSize > maxSize
@@ -145,9 +145,9 @@ describe('Knowledge Base API Route', () => {
         },
       }
 
-      const req = createMockRequest('POST', invalidData)
-      const { POST } = await import('@/app/api/knowledge/route')
-      const response = await POST(req)
+      const req = createMockRequest('post', invalidData)
+      const { post } = await import('@/app/api/knowledge/route')
+      const response = await post(req)
       const data = await response.json()
 
       expect(response.status).toBe(400)
@@ -157,10 +157,10 @@ describe('Knowledge Base API Route', () => {
     it('should use default values for optional fields', async () => {
       mockAuth$.mockAuthenticatedUser()
 
-      const minimalData = { name: 'Test KB' }
-      const req = createMockRequest('POST', minimalData)
-      const { POST } = await import('@/app/api/knowledge/route')
-      const response = await POST(req)
+      const minimalData = { Name: 'Test KB' }
+      const req = createMockRequest('post', minimalData)
+      const { post } = await import('@/app/api/knowledge/route')
+      const response = await post(req)
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -177,9 +177,9 @@ describe('Knowledge Base API Route', () => {
       mockAuth$.mockAuthenticatedUser()
       mockDbChain.values.mockRejectedValue(new Error('Database error'))
 
-      const req = createMockRequest('POST', validKnowledgeBaseData)
-      const { POST } = await import('@/app/api/knowledge/route')
-      const response = await POST(req)
+      const req = createMockRequest('post', validKnowledgeBaseData)
+      const { post } = await import('@/app/api/knowledge/route')
+      const response = await post(req)
       const data = await response.json()
 
       expect(response.status).toBe(500)

@@ -193,7 +193,7 @@ export class ParlantClient {
   }
 
   /**
-   * Generic GET request
+   * Generic get request
    */
   async get<T = any>(
     endpoint: string,
@@ -201,7 +201,7 @@ export class ParlantClient {
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.requestWithRetry<T>({
-      method: 'GET',
+      method: 'get',
       url: endpoint,
       params,
       ...config,
@@ -211,11 +211,11 @@ export class ParlantClient {
   }
 
   /**
-   * Generic POST request
+   * Generic post request
    */
   async post<T = any>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.requestWithRetry<T>({
-      method: 'POST',
+      method: 'post',
       url: endpoint,
       data,
       ...config,
@@ -343,7 +343,7 @@ export class ParlantClient {
     timeoutMs = 30000
   ): Promise<T> {
     const response = await this.requestWithRetry<T>({
-      method: 'GET',
+      method: 'get',
       url: endpoint,
       params: {
         ...params,

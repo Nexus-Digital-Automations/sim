@@ -595,7 +595,7 @@ export class WorkspaceIsolationService {
       const ownedWorkspaces = await db
         .select({
           id: workspace.id,
-          name: workspace.name,
+          Name: workspace.Name,
         })
         .from(workspace)
         .where(eq(workspace.ownerId, userId))
@@ -604,7 +604,7 @@ export class WorkspaceIsolationService {
       const permittedWorkspaces = await db
         .select({
           workspaceId: permissions.entityId,
-          workspaceName: workspace.name,
+          workspaceName: workspace.Name,
           permission: permissions.permission,
         })
         .from(permissions)
@@ -627,7 +627,7 @@ export class WorkspaceIsolationService {
       for (const ownedWorkspace of ownedWorkspaces) {
         accessibleWorkspaces.set(ownedWorkspace.id, {
           workspaceId: ownedWorkspace.id,
-          workspaceName: ownedWorkspace.name,
+          workspaceName: ownedWorkspace.Name,
           accessLevel: 'owner',
           permissions: ['read', 'write', 'admin', 'delete'],
           isOwner: true,

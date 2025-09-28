@@ -18,7 +18,7 @@ import type {
 const SAMPLE_WORKFLOWS = {
   simple_linear: {
     id: 'workflow_simple_linear',
-    name: 'Simple Linear Workflow',
+    Name: 'Simple Linear Workflow',
     description: 'Basic sequential workflow with 3 steps',
     version: '1.0',
     nodes: [
@@ -63,7 +63,7 @@ const SAMPLE_WORKFLOWS = {
   },
   complex_branching: {
     id: 'workflow_complex_branching',
-    name: 'Complex Branching Workflow',
+    Name: 'Complex Branching Workflow',
     description: 'Workflow with conditional branches and loops',
     version: '1.0',
     nodes: [
@@ -134,7 +134,7 @@ const SAMPLE_WORKFLOWS = {
   },
   error_handling: {
     id: 'workflow_error_handling',
-    name: 'Error Handling Workflow',
+    Name: 'Error Handling Workflow',
     description: 'Workflow with comprehensive error handling',
     version: '1.0',
     nodes: [
@@ -205,9 +205,9 @@ class WorkflowToJourneyConverter {
       // Mock conversion logic - would be replaced with actual implementation
       const journey: JourneyDefinition = {
         id: `journey_${workflow.id}`,
-        title: workflow.name,
+        title: workflow.Name,
         description: `Converted from workflow: ${workflow.description}`,
-        conditions: [`User wants to execute ${workflow.name}`],
+        conditions: [`User wants to execute ${workflow.Name}`],
         states: this.convertNodesToStates(workflow.nodes),
         transitions: this.convertEdgesToTransitions(workflow.edges),
         metadata: {
@@ -256,7 +256,7 @@ class WorkflowToJourneyConverter {
     return nodes.map((node) => ({
       id: `state_${node.id}`,
       type: this.mapNodeTypeToStateType(node.type),
-      name: node.data.label || node.id,
+      Name: node.data.label || node.id,
       config: node.data.config || {},
       position: node.position,
       originalNodeId: node.id,
@@ -286,7 +286,7 @@ class WorkflowToJourneyConverter {
 
   private extractPreservedAttributes(workflow: WorkflowDefinition): any {
     return {
-      name: workflow.name,
+      Name: workflow.Name,
       description: workflow.description,
       version: workflow.version,
       nodeTypes: [...new Set(workflow.nodes.map((n) => n.type))],
@@ -444,14 +444,14 @@ class WorkflowJourneyTestSuite {
     console.log('🚀 Running Performance Benchmarks...')
 
     const performanceTests = [
-      { name: 'Small workflow (5 nodes)', size: 5 },
-      { name: 'Medium workflow (20 nodes)', size: 20 },
-      { name: 'Large workflow (50 nodes)', size: 50 },
-      { name: 'Extra large workflow (100 nodes)', size: 100 },
+      { Name: 'Small workflow (5 nodes)', size: 5 },
+      { Name: 'Medium workflow (20 nodes)', size: 20 },
+      { Name: 'Large workflow (50 nodes)', size: 50 },
+      { Name: 'Extra large workflow (100 nodes)', size: 100 },
     ]
 
     for (const testCase of performanceTests) {
-      await test(`Performance: ${testCase.name}`, async () => {
+      await test(`Performance: ${testCase.Name}`, async () => {
         const syntheticWorkflow = this.generateSyntheticWorkflow(testCase.size)
         const startTime = Date.now()
 
@@ -462,7 +462,7 @@ class WorkflowJourneyTestSuite {
         expect(conversionTime).toBeLessThan(testCase.size * 100) // Max 100ms per node
 
         console.log(
-          `⚡ ${testCase.name}: ${conversionTime}ms (${(conversionTime / testCase.size).toFixed(2)}ms/node)`
+          `⚡ ${testCase.Name}: ${conversionTime}ms (${(conversionTime / testCase.size).toFixed(2)}ms/node)`
         )
       })
     }
@@ -566,7 +566,7 @@ class WorkflowJourneyTestSuite {
 
     return {
       id: `synthetic_workflow_${nodeCount}`,
-      name: `Synthetic Workflow (${nodeCount} nodes)`,
+      Name: `Synthetic Workflow (${nodeCount} nodes)`,
       description: `Generated workflow with ${nodeCount} nodes for performance testing`,
       version: '1.0',
       nodes,

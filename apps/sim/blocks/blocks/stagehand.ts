@@ -1,4 +1,4 @@
-import { StagehandIcon } from '@/components/icons'
+import { stagehandIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { ToolResponse } from '@/tools/types'
 
@@ -10,14 +10,14 @@ export interface StagehandExtractResponse extends ToolResponse {
 
 export const StagehandBlock: BlockConfig<StagehandExtractResponse> = {
   type: 'stagehand',
-  name: 'Stagehand Extract',
+  Name: 'Stagehand Extract',
   description: 'Extract data from websites',
   longDescription:
     'Integrate Stagehand into the workflow. Can extract structured data from webpages. Requires API Key.',
   docsLink: 'https://docs.sim.ai/tools/stagehand',
   category: 'tools',
   bgColor: '#FFC83C',
-  icon: StagehandIcon,
+  icon: stagehandIcon,
   subBlocks: [
     {
       id: 'url',

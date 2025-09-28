@@ -27,7 +27,7 @@ vi.mock('@/lib/logs/console/logger', () => ({
 vi.mock('@/blocks', () => ({
   getBlock: vi.fn((type: string) => ({
     type,
-    name: `Mock ${type} block`,
+    Name: `Mock ${type} block`,
     description: `Mock block for ${type}`,
     icon: 'test-icon',
     category: 'test',
@@ -43,12 +43,12 @@ describe('Hybrid Workflow Synchronization Framework', () => {
 
     mockWorkflowState = {
       id: testWorkflowId,
-      name: 'Sync Test Workflow',
+      Name: 'Sync Test Workflow',
       blocks: {
         'sync-block-1': {
           id: 'sync-block-1',
           type: 'starter',
-          name: 'Start Sync',
+          Name: 'Start Sync',
           position: { x: 100, y: 100 },
           enabled: true,
           config: { message: 'Starting sync workflow' },
@@ -56,7 +56,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
         'sync-block-2': {
           id: 'sync-block-2',
           type: 'condition',
-          name: 'Sync Decision',
+          Name: 'Sync Decision',
           position: { x: 300, y: 100 },
           enabled: true,
           config: { condition: 'syncReady === true' },
@@ -64,10 +64,10 @@ describe('Hybrid Workflow Synchronization Framework', () => {
         'sync-block-3': {
           id: 'sync-block-3',
           type: 'webhook',
-          name: 'Sync API',
+          Name: 'Sync API',
           position: { x: 500, y: 100 },
           enabled: true,
-          config: { url: 'https://sync.example.com', method: 'POST' },
+          config: { url: 'https://sync.example.com', method: 'post' },
         } as BlockState,
       },
       edges: [
@@ -116,7 +116,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
       const context = dualModeArchitecture.getExecutionContext(testWorkflowId)!
 
       // Simulate ReactFlow state change
-      context.reactFlowState.blocks['sync-block-1'].name = 'Modified Start Sync'
+      context.reactFlowState.blocks['sync-block-1'].Name = 'Modified Start Sync'
       context.reactFlowState.blocks['sync-block-1'].config.message = 'Updated message'
 
       // Switch to journey mode - should trigger synchronization
@@ -153,7 +153,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
 
       // Simulate concurrent modifications
       const modifyReactFlow = async () => {
-        context.reactFlowState.blocks['sync-block-1'].name = 'ReactFlow Modified'
+        context.reactFlowState.blocks['sync-block-1'].Name = 'ReactFlow Modified'
         await dualModeArchitecture.synchronizeStates(context)
       }
 
@@ -194,7 +194,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
 
       // Ensure journeyState exists
       context.journeyState = {
-        states: [{ id: 'sync-block-1', name: 'Journey State' }],
+        states: [{ id: 'sync-block-1', Name: 'Journey State' }],
         metadata: { version: '1.0.0' },
       }
 
@@ -206,7 +206,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
           entityId: 'sync-block-1',
           timestamp: new Date(),
           source: 'reactflow',
-          data: { name: 'Modified Block' },
+          data: { Name: 'Modified Block' },
         } as Change,
       ])
 
@@ -215,7 +215,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
       detectConflictsSpy.mockResolvedValue([
         {
           type: 'DATA_MISMATCH',
-          description: 'Block name mismatch',
+          description: 'Block Name mismatch',
           reactFlowValue: 'ReactFlow Name',
           journeyValue: 'Journey Name',
           resolution: 'PREFER_REACTFLOW',
@@ -275,7 +275,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
 
       // Ensure journeyState exists
       context.journeyState = {
-        states: [{ id: 'sync-block-1', name: 'Journey State', path: 'path-b' }],
+        states: [{ id: 'sync-block-1', Name: 'Journey State', path: 'path-b' }],
         metadata: { version: '1.0.0' },
       }
 
@@ -317,7 +317,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
 
       // Ensure journeyState exists
       context.journeyState = {
-        states: [{ id: 'sync-block-1', name: 'Journey State', state: 'critical-state-b' }],
+        states: [{ id: 'sync-block-1', Name: 'Journey State', state: 'critical-state-b' }],
         metadata: { version: '1.0.0' },
       }
 
@@ -366,7 +366,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
 
       // Ensure journeyState exists
       context.journeyState = {
-        states: [{ id: 'sync-block-1', name: 'Journey State', value: 'b' }],
+        states: [{ id: 'sync-block-1', Name: 'Journey State', value: 'b' }],
         metadata: { version: '1.0.0' },
       }
 
@@ -434,7 +434,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
         const currentBlock = currentBlocks[blockId]
         expect(currentBlock.id).toBe(originalBlock.id)
         expect(currentBlock.type).toBe(originalBlock.type)
-        expect(currentBlock.name).toBe(originalBlock.name)
+        expect(currentBlock.Name).toBe(originalBlock.Name)
         expect(currentBlock.enabled).toBe(originalBlock.enabled)
       }
     })
@@ -466,7 +466,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
     it('should validate workflow metadata consistency', async () => {
       await initializeDualMode(testWorkflowId, mockWorkflowState)
 
-      const originalName = mockWorkflowState.name
+      const originalName = mockWorkflowState.Name
       const originalViewport = mockWorkflowState.viewport
 
       await switchWorkflowMode(testWorkflowId, 'journey')
@@ -474,7 +474,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
 
       const context = dualModeArchitecture.getExecutionContext(testWorkflowId)!
 
-      expect(context.reactFlowState.name).toBe(originalName)
+      expect(context.reactFlowState.Name).toBe(originalName)
       expect(context.reactFlowState.viewport).toEqual(originalViewport)
       expect(context.reactFlowState.id).toBe(testWorkflowId)
     })
@@ -539,7 +539,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
 
       // Ensure journeyState exists to avoid null check failures
       context.journeyState = {
-        states: [{ id: 'sync-block-1', name: 'Journey State' }],
+        states: [{ id: 'sync-block-1', Name: 'Journey State' }],
         metadata: { version: '1.0.0' },
       }
 
@@ -568,7 +568,7 @@ describe('Hybrid Workflow Synchronization Framework', () => {
         largeWorkflowState.blocks[blockId] = {
           id: blockId,
           type: i % 3 === 0 ? 'starter' : i % 3 === 1 ? 'condition' : 'webhook',
-          name: `Block ${i}`,
+          Name: `Block ${i}`,
           position: { x: (i % 10) * 150, y: Math.floor(i / 10) * 100 },
           enabled: true,
           config: { data: `config-${i}` },

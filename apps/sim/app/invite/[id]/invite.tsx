@@ -53,7 +53,7 @@ export default function Invite() {
       try {
         // Fetch invitation details using the invitation ID from the URL path
         const workspaceInviteResponse = await fetch(`/api/workspaces/invitations/${inviteId}`, {
-          method: 'GET',
+          method: 'get',
         })
 
         if (workspaceInviteResponse.ok) {
@@ -62,7 +62,7 @@ export default function Invite() {
           setInvitationDetails({
             type: 'workspace',
             data,
-            name: data.workspaceName || 'a workspace',
+            Name: data.workspaceName || 'a workspace',
           })
           setIsLoading(false)
           return
@@ -78,7 +78,7 @@ export default function Invite() {
             setInvitationDetails({
               type: 'organization',
               data,
-              name: data.organizationName || 'an organization',
+              Name: data.organizationName || 'an organization',
             })
 
             if (data.organizationId) {
@@ -89,7 +89,7 @@ export default function Invite() {
               if (orgResponse.data) {
                 setInvitationDetails((prev: any) => ({
                   ...prev,
-                  name: orgResponse.data.name || 'an organization',
+                  Name: orgResponse.data.Name || 'an organization',
                 }))
               }
             }
@@ -239,7 +239,7 @@ export default function Invite() {
         <InviteStatusCard
           type='success'
           title='Welcome!'
-          description={`You have successfully joined ${invitationDetails?.name || 'the workspace'}. Redirecting to your workspace...`}
+          description={`You have successfully joined ${invitationDetails?.Name || 'the workspace'}. Redirecting to your workspace...`}
           icon='success'
           actions={[
             {
@@ -259,7 +259,7 @@ export default function Invite() {
         title={
           invitationType === 'organization' ? 'Organization Invitation' : 'Workspace Invitation'
         }
-        description={`You've been invited to join ${invitationDetails?.name || `a ${invitationType}`}. Click accept below to join.`}
+        description={`You've been invited to join ${invitationDetails?.Name || `a ${invitationType}`}. Click accept below to join.`}
         icon={invitationType === 'organization' ? 'users' : 'mail'}
         actions={[
           {

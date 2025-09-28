@@ -152,7 +152,7 @@ describe('ReactFlow Preservation Test Suite', () => {
         id: 'test-node-1',
         type: 'agent',
         position: { x: 100, y: 100 },
-        data: { type: 'agent', config: {}, name: 'Test Agent' },
+        data: { type: 'agent', config: {}, Name: 'Test Agent' },
       }
 
       const startTime = performance.now()
@@ -175,7 +175,7 @@ describe('ReactFlow Preservation Test Suite', () => {
           [nodeData.id]: {
             id: nodeData.id,
             type: nodeData.type,
-            name: nodeData.data.name,
+            Name: nodeData.data.Name,
             position: nodeData.position,
             subBlocks: {},
             outputs: {},
@@ -747,7 +747,7 @@ async function createLargeWorkflow(nodeCount: number, edgeCount: number): Promis
     blocks[`node-${i}`] = {
       id: `node-${i}`,
       type: i % 2 === 0 ? 'agent' : 'api',
-      name: `Node ${i}`,
+      Name: `Node ${i}`,
       position: { x: (i % 10) * 100, y: Math.floor(i / 10) * 100 },
       subBlocks: {},
       outputs: {},

@@ -40,7 +40,7 @@ const logger = createLogger('MultiAgentOrchestration')
 
 export interface AgentTeam {
   id: string
-  name: string
+  Name: string
   description: string
   workspaceId: string
   createdBy: string
@@ -95,7 +95,7 @@ export interface TimeoutSettings {
 
 export interface OrchestrationProcess {
   id: string
-  name: string
+  Name: string
   description: string
   teamId: string
   workspaceId: string
@@ -112,7 +112,7 @@ export interface OrchestrationProcess {
 
 export interface ProcessStep {
   id: string
-  name: string
+  Name: string
   description: string
   assignedAgentId: string
   status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped'
@@ -234,7 +234,7 @@ export class MultiAgentOrchestrationService extends EventEmitter {
    */
   async createAgentTeam(
     teamData: {
-      name: string
+      Name: string
       description: string
       workspaceId: string
       agents: Array<{ agentId: string; role: AgentTeamMember['role']; specialization: string }>
@@ -244,7 +244,7 @@ export class MultiAgentOrchestrationService extends EventEmitter {
   ): Promise<AgentTeam> {
     try {
       logger.info('Creating agent team', {
-        name: teamData.name,
+        Name: teamData.Name,
         agentCount: teamData.agents.length,
         workspaceId: teamData.workspaceId,
         userId: auth.user_id,
@@ -285,7 +285,7 @@ export class MultiAgentOrchestrationService extends EventEmitter {
 
       const team: AgentTeam = {
         id: `team_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name: teamData.name,
+        Name: teamData.Name,
         description: teamData.description,
         workspaceId: teamData.workspaceId,
         createdBy: auth.user_id,
@@ -300,7 +300,7 @@ export class MultiAgentOrchestrationService extends EventEmitter {
 
       logger.info('Agent team created successfully', {
         teamId: team.id,
-        name: team.name,
+        Name: team.Name,
         agentCount: team.agents.length,
       })
 
@@ -365,7 +365,7 @@ export class MultiAgentOrchestrationService extends EventEmitter {
         const search = filters.search.toLowerCase()
         filteredTeams = filteredTeams.filter(
           (team) =>
-            team.name.toLowerCase().includes(search) ||
+            team.Name.toLowerCase().includes(search) ||
             team.description.toLowerCase().includes(search)
         )
       }
@@ -398,11 +398,11 @@ export class MultiAgentOrchestrationService extends EventEmitter {
    */
   async startOrchestrationProcess(
     processData: {
-      name: string
+      Name: string
       description: string
       teamId: string
       steps: Array<{
-        name: string
+        Name: string
         description: string
         assignedAgentId: string
         inputs?: Record<string, any>
@@ -415,7 +415,7 @@ export class MultiAgentOrchestrationService extends EventEmitter {
   ): Promise<OrchestrationProcess> {
     try {
       logger.info('Starting orchestration process', {
-        name: processData.name,
+        Name: processData.Name,
         teamId: processData.teamId,
         stepCount: processData.steps.length,
         userId: auth.user_id,
@@ -427,7 +427,7 @@ export class MultiAgentOrchestrationService extends EventEmitter {
       // Create process steps
       const steps: ProcessStep[] = processData.steps.map((stepData, index) => ({
         id: `step_${index + 1}_${Math.random().toString(36).substr(2, 9)}`,
-        name: stepData.name,
+        Name: stepData.Name,
         description: stepData.description,
         assignedAgentId: stepData.assignedAgentId,
         status: index === 0 ? 'pending' : 'pending',
@@ -440,7 +440,7 @@ export class MultiAgentOrchestrationService extends EventEmitter {
 
       const process: OrchestrationProcess = {
         id: `process_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name: processData.name,
+        Name: processData.Name,
         description: processData.description,
         teamId: processData.teamId,
         workspaceId: team.workspaceId,
@@ -477,7 +477,7 @@ export class MultiAgentOrchestrationService extends EventEmitter {
 
       logger.info('Orchestration process started successfully', {
         processId: process.id,
-        name: process.name,
+        Name: process.Name,
       })
 
       return process
@@ -832,7 +832,7 @@ export class MultiAgentOrchestrationService extends EventEmitter {
       process.context.sessionIds.push(session.data.id)
 
       // Send initial message with step context
-      const contextMessage = `Starting step: ${currentStep.name}
+      const contextMessage = `Starting step: ${currentStep.Name}
 Description: ${currentStep.description}
 Inputs: ${JSON.stringify(currentStep.inputs)}
 Process Context: ${JSON.stringify(process.context.sharedData)}`
@@ -873,7 +873,7 @@ Process Context: ${JSON.stringify(process.context.sharedData)}`
 
     // Analyze agent capabilities and context
     recommendations.push(
-      `Handing off from ${fromAgent.name} to ${toAgent.name}`,
+      `Handing off from ${fromAgent.Name} to ${toAgent.Name}`,
       `Context: ${Object.keys(process.context.sharedData).length} shared variables`,
       `Conversation history: ${process.context.conversationHistory.length} messages`
     )

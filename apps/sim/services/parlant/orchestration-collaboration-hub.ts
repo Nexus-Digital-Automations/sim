@@ -87,7 +87,7 @@ export interface AgentCommunicationResponse {
 
 export interface CollaborationRoom {
   id: string
-  name: string
+  Name: string
   type: 'process' | 'team' | 'workspace'
   workspaceId: string
   processId?: string
@@ -111,7 +111,7 @@ export interface CollaborationParticipant {
 
 export interface CollaborationChannel {
   id: string
-  name: string
+  Name: string
   type: 'general' | 'alerts' | 'handoffs' | 'interventions' | 'monitoring'
   description: string
   participants: string[] // participant IDs
@@ -196,7 +196,7 @@ export class OrchestrationCollaborationHub extends EventEmitter {
    */
   async createCollaborationRoom(
     roomData: {
-      name: string
+      Name: string
       type: CollaborationRoom['type']
       workspaceId: string
       processId?: string
@@ -212,7 +212,7 @@ export class OrchestrationCollaborationHub extends EventEmitter {
   ): Promise<CollaborationRoom> {
     try {
       logger.info('Creating collaboration room', {
-        name: roomData.name,
+        Name: roomData.Name,
         type: roomData.type,
         workspaceId: roomData.workspaceId,
         participantCount: roomData.participants.length,
@@ -233,7 +233,7 @@ export class OrchestrationCollaborationHub extends EventEmitter {
       const defaultChannels: CollaborationChannel[] = [
         {
           id: `general_${Date.now()}`,
-          name: 'General',
+          Name: 'General',
           type: 'general',
           description: 'General discussion and coordination',
           participants: participants.map((p) => p.id),
@@ -241,7 +241,7 @@ export class OrchestrationCollaborationHub extends EventEmitter {
         },
         {
           id: `alerts_${Date.now()}`,
-          name: 'Alerts',
+          Name: 'Alerts',
           type: 'alerts',
           description: 'System alerts and notifications',
           participants: participants.filter((p) => p.role !== 'observer').map((p) => p.id),
@@ -249,7 +249,7 @@ export class OrchestrationCollaborationHub extends EventEmitter {
         },
         {
           id: `handoffs_${Date.now()}`,
-          name: 'Handoffs',
+          Name: 'Handoffs',
           type: 'handoffs',
           description: 'Agent handoff coordination',
           participants: participants.filter((p) => p.type === 'agent').map((p) => p.id),
@@ -260,7 +260,7 @@ export class OrchestrationCollaborationHub extends EventEmitter {
       if (roomData.type === 'process') {
         defaultChannels.push({
           id: `interventions_${Date.now()}`,
-          name: 'Human Interventions',
+          Name: 'Human Interventions',
           type: 'interventions',
           description: 'Human intervention requests and responses',
           participants: participants.filter((p) => p.type === 'human').map((p) => p.id),
@@ -270,7 +270,7 @@ export class OrchestrationCollaborationHub extends EventEmitter {
 
       const room: CollaborationRoom = {
         id: `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name: roomData.name,
+        Name: roomData.Name,
         type: roomData.type,
         workspaceId: roomData.workspaceId,
         processId: roomData.processId,
@@ -285,7 +285,7 @@ export class OrchestrationCollaborationHub extends EventEmitter {
 
       logger.info('Collaboration room created successfully', {
         roomId: room.id,
-        name: room.name,
+        Name: room.Name,
         channelCount: room.activeChannels.length,
       })
 

@@ -84,7 +84,7 @@ describe('Concurrent Access and Transaction Tests', () => {
             .insert(parlantAgents)
             .values({
               workspaceId: testWorkspaceId,
-              name: `Test Agent ${index}`,
+              Name: `Test Agent ${index}`,
               displayName: `Test Agent ${index}`,
               description: `Concurrent test agent ${index}`,
               systemPrompt: 'You are a test agent',
@@ -115,7 +115,7 @@ describe('Concurrent Access and Transaction Tests', () => {
       expect(dbAgents).toHaveLength(agentCount)
     })
 
-    it('should handle agent name uniqueness constraints properly', async () => {
+    it('should handle agent Name uniqueness constraints properly', async () => {
       const duplicateNameOperations = Array.from({ length: 10 }, () => {
         return async () => {
           try {
@@ -123,7 +123,7 @@ describe('Concurrent Access and Transaction Tests', () => {
               .insert(parlantAgents)
               .values({
                 workspaceId: testWorkspaceId,
-                name: 'Duplicate Name Agent',
+                Name: 'Duplicate Name Agent',
                 displayName: 'Duplicate Display Name',
                 description: 'Testing uniqueness constraints',
                 systemPrompt: 'You are a test agent',
@@ -162,7 +162,7 @@ describe('Concurrent Access and Transaction Tests', () => {
           .insert(parlantAgents)
           .values({
             workspaceId: testWorkspaceId,
-            name: `Session Test Agent ${index}`,
+            Name: `Session Test Agent ${index}`,
             displayName: `Session Test Agent ${index}`,
             description: `Agent for session testing ${index}`,
             systemPrompt: 'You are a test agent',
@@ -277,7 +277,7 @@ describe('Concurrent Access and Transaction Tests', () => {
         .insert(parlantAgents)
         .values({
           workspaceId: testWorkspaceId,
-          name: 'Transaction Test Agent',
+          Name: 'Transaction Test Agent',
           displayName: 'Transaction Test Agent',
           description: 'Agent for transaction testing',
           systemPrompt: 'You are a test agent',
@@ -364,7 +364,7 @@ describe('Concurrent Access and Transaction Tests', () => {
         .insert(parlantAgents)
         .values({
           workspaceId: testWorkspaceId,
-          name: 'Rollback Test Agent',
+          Name: 'Rollback Test Agent',
           displayName: 'Rollback Test Agent',
           description: 'Agent for rollback testing',
           systemPrompt: 'You are a test agent',
@@ -445,7 +445,7 @@ describe('Concurrent Access and Transaction Tests', () => {
         .insert(parlantAgents)
         .values({
           workspaceId: testWorkspaceId,
-          name: 'Race Condition Test Agent',
+          Name: 'Race Condition Test Agent',
           displayName: 'Race Condition Test Agent',
           description: 'Agent for race condition testing',
           systemPrompt: 'You are a test agent',
@@ -554,7 +554,7 @@ describe('Concurrent Access and Transaction Tests', () => {
           .insert(parlantAgents)
           .values({
             workspaceId: testWorkspaceId,
-            name: 'Deadlock Test Agent 1',
+            Name: 'Deadlock Test Agent 1',
             displayName: 'Deadlock Test Agent 1',
             description: 'First agent for deadlock testing',
             systemPrompt: 'You are test agent 1',
@@ -571,7 +571,7 @@ describe('Concurrent Access and Transaction Tests', () => {
           .insert(parlantAgents)
           .values({
             workspaceId: testWorkspaceId,
-            name: 'Deadlock Test Agent 2',
+            Name: 'Deadlock Test Agent 2',
             displayName: 'Deadlock Test Agent 2',
             description: 'Second agent for deadlock testing',
             systemPrompt: 'You are test agent 2',
@@ -662,7 +662,7 @@ describe('Concurrent Access and Transaction Tests', () => {
               .insert(parlantAgents)
               .values({
                 workspaceId: testWorkspaceId,
-                name: `Performance Test Agent ${index}`,
+                Name: `Performance Test Agent ${index}`,
                 displayName: `Performance Test Agent ${index}`,
                 description: `Performance testing agent ${index}`,
                 systemPrompt: 'You are a performance test agent',

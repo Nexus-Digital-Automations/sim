@@ -12,7 +12,7 @@ const logger = createLogger('UnifiedBillingAPI')
 /**
  * Unified Billing Endpoint
  */
-export async function GET(request: NextRequest) {
+export async function get(request: NextRequest) {
   const session = await getSession()
 
   try {

@@ -18,7 +18,7 @@ const logger = createLogger('SocketContext')
 
 interface User {
   id: string
-  name?: string
+  Name?: string
   email?: string
 }
 
@@ -134,7 +134,7 @@ export function SocketProvider({ children, user }: SocketProviderProps) {
   const generateSocketToken = async (): Promise<string> => {
     // Avoid overlapping token requests
     const res = await fetch('/api/auth/socket-token', {
-      method: 'POST',
+      method: 'post',
       credentials: 'include',
       headers: { 'cache-control': 'no-store' },
     })
@@ -198,7 +198,7 @@ export function SocketProvider({ children, user }: SocketProviderProps) {
           logger.info('Socket connected successfully', {
             socketId: socketInstance.id,
             connected: socketInstance.connected,
-            transport: socketInstance.io.engine?.transport?.name,
+            transport: socketInstance.io.engine?.transport?.Name,
           })
 
           // Automatically join the current workflow room based on URL
@@ -254,7 +254,7 @@ export function SocketProvider({ children, user }: SocketProviderProps) {
           logger.info('Socket reconnected successfully', {
             attemptNumber,
             socketId: socketInstance.id,
-            transport: socketInstance.io.engine?.transport?.name,
+            transport: socketInstance.io.engine?.transport?.Name,
           })
           // Note: Workflow rejoining is handled by the 'connect' event which fires for both initial connections and reconnections
         })

@@ -70,7 +70,7 @@ export class McpClient {
    * Initialize connection to MCP server
    */
   async connect(): Promise<void> {
-    logger.info(`Connecting to MCP server: ${this.config.name} (${this.config.transport})`)
+    logger.info(`Connecting to MCP server: ${this.config.Name} (${this.config.transport})`)
 
     try {
       switch (this.config.transport) {
@@ -91,11 +91,11 @@ export class McpClient {
       this.connectionStatus.connected = true
       this.connectionStatus.lastConnected = new Date()
 
-      logger.info(`Successfully connected to MCP server: ${this.config.name}`)
+      logger.info(`Successfully connected to MCP server: ${this.config.Name}`)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       this.connectionStatus.lastError = errorMessage
-      logger.error(`Failed to connect to MCP server ${this.config.name}:`, error)
+      logger.error(`Failed to connect to MCP server ${this.config.Name}:`, error)
       throw new McpConnectionError(errorMessage, this.config.id)
     }
   }
@@ -104,7 +104,7 @@ export class McpClient {
    * Disconnect from MCP server
    */
   async disconnect(): Promise<void> {
-    logger.info(`Disconnecting from MCP server: ${this.config.name}`)
+    logger.info(`Disconnecting from MCP server: ${this.config.Name}`)
 
     for (const [, pending] of this.pendingRequests) {
       clearTimeout(pending.timeout)
@@ -113,7 +113,7 @@ export class McpClient {
     this.pendingRequests.clear()
 
     this.connectionStatus.connected = false
-    logger.info(`Disconnected from MCP server: ${this.config.name}`)
+    logger.info(`Disconnected from MCP server: ${this.config.Name}`)
   }
 
   /**
@@ -135,19 +135,19 @@ export class McpClient {
       const response = await this.sendRequest('tools/list', {})
 
       if (!response.tools || !Array.isArray(response.tools)) {
-        logger.warn(`Invalid tools response from server ${this.config.name}:`, response)
+        logger.warn(`Invalid tools response from server ${this.config.Name}:`, response)
         return []
       }
 
       return response.tools.map((tool: any) => ({
-        name: tool.name,
+        Name: tool.Name,
         description: tool.description,
         inputSchema: tool.inputSchema,
         serverId: this.config.id,
-        serverName: this.config.name,
+        serverName: this.config.Name,
       }))
     } catch (error) {
-      logger.error(`Failed to list tools from server ${this.config.name}:`, error)
+      logger.error(`Failed to list tools from server ${this.config.Name}:`, error)
       throw error
     }
   }
@@ -165,9 +165,9 @@ export class McpClient {
       type: 'tool_execution',
       context: {
         serverId: this.config.id,
-        serverName: this.config.name,
-        action: toolCall.name,
-        description: `Execute tool '${toolCall.name}' on ${this.config.name}`,
+        serverName: this.config.Name,
+        action: toolCall.Name,
+        description: `Execute tool '${toolCall.Name}' on ${this.config.Name}`,
         dataAccess: Object.keys(toolCall.arguments || {}),
         sideEffects: ['tool_execution'],
       },
@@ -176,26 +176,26 @@ export class McpClient {
 
     const consentResponse = await this.requestConsent(consentRequest)
     if (!consentResponse.granted) {
-      throw new McpError(`User consent denied for tool execution: ${toolCall.name}`, -32000, {
+      throw new McpError(`User consent denied for tool execution: ${toolCall.Name}`, -32000, {
         consentAuditId: consentResponse.auditId,
       })
     }
 
     try {
-      logger.info(`Calling tool ${toolCall.name} on server ${this.config.name}`, {
+      logger.info(`Calling tool ${toolCall.Name} on server ${this.config.Name}`, {
         consentAuditId: consentResponse.auditId,
         protocolVersion: this.negotiatedVersion,
       })
 
       const response = await this.sendRequest('tools/call', {
-        name: toolCall.name,
+        Name: toolCall.Name,
         arguments: toolCall.arguments,
       })
 
       // The response is the JSON-RPC 'result' field
       return response as McpToolResult
     } catch (error) {
-      logger.error(`Failed to call tool ${toolCall.name} on server ${this.config.name}:`, error)
+      logger.error(`Failed to call tool ${toolCall.Name} on server ${this.config.Name}:`, error)
       throw error
     }
   }
@@ -240,7 +240,7 @@ export class McpClient {
         logging: { level: 'info' },
       },
       clientInfo: {
-        name: 'sim-platform',
+        Name: 'sim-platform',
         version: '1.0.0',
       },
     }
@@ -280,21 +280,21 @@ export class McpClient {
       if (error instanceof Error) {
         if (error.message.includes('fetch') || error.message.includes('network')) {
           throw new McpError(
-            `Failed to connect to MCP server '${this.config.name}': ${error.message}. ` +
+            `Failed to connect to MCP server '${this.config.Name}': ${error.message}. ` +
               `Please check the server URL and ensure the server is running.`
           )
         }
 
         if (error.message.includes('timeout')) {
           throw new McpError(
-            `Connection timeout to MCP server '${this.config.name}'. ` +
+            `Connection timeout to MCP server '${this.config.Name}'. ` +
               `The server may be slow to respond or unreachable.`
           )
         }
 
         // Generic error
         throw new McpError(
-          `Connection to MCP server '${this.config.name}' failed: ${error.message}. ` +
+          `Connection to MCP server '${this.config.Name}' failed: ${error.message}. ` +
             `Please verify the server configuration and try again.`
         )
       }
@@ -326,7 +326,7 @@ export class McpClient {
       throw new McpError('URL required for Streamable HTTP transport')
     }
 
-    logger.info(`Using Streamable HTTP transport for ${this.config.name}`)
+    logger.info(`Using Streamable HTTP transport for ${this.config.Name}`)
   }
 
   /**
@@ -353,7 +353,7 @@ export class McpClient {
 
         if (index > 0) {
           logger.info(
-            `[${this.config.name}] Successfully used alternative URL format: ${url} (original: ${originalUrl})`
+            `[${this.config.Name}] Successfully used alternative URL format: ${url} (original: ${originalUrl})`
           )
         }
         return
@@ -366,7 +366,7 @@ export class McpClient {
 
         if (index < urlsToTry.length - 1) {
           logger.info(
-            `[${this.config.name}] Retrying with different URL format: ${urlsToTry[index + 1]}`
+            `[${this.config.Name}] Retrying with different URL format: ${urlsToTry[index + 1]}`
           )
         }
       }
@@ -384,7 +384,7 @@ export class McpClient {
     isOriginalUrl = true
   ): Promise<void> {
     if (!isOriginalUrl) {
-      logger.info(`[${this.config.name}] Trying alternative URL format: ${url}`)
+      logger.info(`[${this.config.Name}] Trying alternative URL format: ${url}`)
     }
 
     const headers: Record<string, string> = {
@@ -398,14 +398,14 @@ export class McpClient {
     }
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: 'post',
       headers,
       body: JSON.stringify(request),
     })
 
     if (!response.ok) {
       const responseText = await response.text().catch(() => 'Could not read response body')
-      logger.error(`[${this.config.name}] HTTP request failed:`, {
+      logger.error(`[${this.config.Name}] HTTP request failed:`, {
         status: response.status,
         statusText: response.statusText,
         url,
@@ -421,7 +421,7 @@ export class McpClient {
         const sessionId = response.headers.get('Mcp-Session-Id')
         if (sessionId && !this.mcpSessionId) {
           this.mcpSessionId = sessionId
-          logger.info(`[${this.config.name}] Received MCP Session ID: ${sessionId}`)
+          logger.info(`[${this.config.Name}] Received MCP Session ID: ${sessionId}`)
         }
 
         const responseData: JsonRpcResponse = await response.json()
@@ -431,11 +431,11 @@ export class McpClient {
         this.handleSseResponse(responseText, request.id)
       } else {
         const unexpectedType = contentType || 'unknown'
-        logger.warn(`[${this.config.name}] Unexpected response content type: ${unexpectedType}`)
+        logger.warn(`[${this.config.Name}] Unexpected response content type: ${unexpectedType}`)
 
         const responseText = await response.text()
         logger.debug(
-          `[${this.config.name}] Unexpected response body:`,
+          `[${this.config.Name}] Unexpected response body:`,
           responseText.substring(0, 200)
         )
 
@@ -493,7 +493,7 @@ export class McpClient {
 
       if (!jsonData) {
         logger.error(
-          `[${this.config.name}] No valid data found in SSE response for request ${requestId}`
+          `[${this.config.Name}] No valid data found in SSE response for request ${requestId}`
         )
         pending.reject(new McpError('No data in SSE response'))
         return
@@ -516,7 +516,7 @@ export class McpClient {
         pending.resolve(responseData.result)
       }
     } catch (error) {
-      logger.error(`[${this.config.name}] Failed to parse SSE response for request ${requestId}:`, {
+      logger.error(`[${this.config.Name}] Failed to parse SSE response for request ${requestId}:`, {
         error: error instanceof Error ? error.message : 'Unknown error',
         responseText: responseText.substring(0, 500),
       })

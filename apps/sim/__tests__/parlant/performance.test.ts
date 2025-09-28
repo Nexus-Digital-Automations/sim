@@ -50,7 +50,7 @@ describe('Parlant Database Performance Tests', () => {
       .insert(user)
       .values({
         id: `perfuser-${Date.now()}`,
-        name: 'Performance Test User',
+        Name: 'Performance Test User',
         email: `perf-${Date.now()}@example.com`,
         emailVerified: true,
         createdAt: new Date(),
@@ -62,7 +62,7 @@ describe('Parlant Database Performance Tests', () => {
       .insert(workspace)
       .values({
         id: `perfworkspace-${Date.now()}`,
-        name: 'Performance Test Workspace',
+        Name: 'Performance Test Workspace',
         ownerId: userResult[0].id,
       })
       .returning({ id: workspace.id })
@@ -73,7 +73,7 @@ describe('Parlant Database Performance Tests', () => {
         id: `perfkb-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Performance Test KB',
+        Name: 'Performance Test KB',
       })
       .returning({ id: knowledgeBase.id })
 
@@ -139,7 +139,7 @@ describe('Parlant Database Performance Tests', () => {
       const agents = Array.from({ length: BULK_INSERT_SIZE }, (_, i) => ({
         workspaceId: ctx.workspaceId,
         createdBy: ctx.userId,
-        name: `Performance Agent ${i + 1}`,
+        Name: `Performance Agent ${i + 1}`,
         description: `Agent for performance testing batch ${i + 1}`,
         status: 'active' as const,
         compositionMode: 'fluid' as const,
@@ -165,7 +165,7 @@ describe('Parlant Database Performance Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Session Performance Agent',
+          Name: 'Session Performance Agent',
         })
         .returning()
 
@@ -216,7 +216,7 @@ describe('Parlant Database Performance Tests', () => {
       // Create bulk tools
       const tools = Array.from({ length: BULK_INSERT_SIZE }, (_, i) => ({
         workspaceId: ctx.workspaceId,
-        name: `performance_tool_${i}`,
+        Name: `performance_tool_${i}`,
         displayName: `Performance Tool ${i + 1}`,
         description: `Tool ${i + 1} for performance testing`,
         toolType: 'custom',
@@ -249,7 +249,7 @@ describe('Parlant Database Performance Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Tool Performance Agent',
+          Name: 'Tool Performance Agent',
         })
         .returning()
 
@@ -281,7 +281,7 @@ describe('Parlant Database Performance Tests', () => {
           Array.from({ length: 50 }, (_, i) => ({
             workspaceId: ctx.workspaceId,
             createdBy: ctx.userId,
-            name: `Analytics Agent ${i + 1}`,
+            Name: `Analytics Agent ${i + 1}`,
             status: i % 4 === 0 ? 'inactive' : ('active' as any),
             totalSessions: Math.floor(Math.random() * 100) + 1,
             totalMessages: Math.floor(Math.random() * 1000) + 100,
@@ -317,7 +317,7 @@ describe('Parlant Database Performance Tests', () => {
         db
           .select({
             agentId: parlantAgent.id,
-            agentName: parlantAgent.name,
+            agentName: parlantAgent.Name,
             agentStatus: parlantAgent.status,
             totalSessions: count(parlantSession.id),
             activeSessions: sql<number>`COUNT(CASE WHEN ${parlantSession.status} = 'active' THEN 1 END)`,
@@ -332,7 +332,7 @@ describe('Parlant Database Performance Tests', () => {
           .from(parlantAgent)
           .leftJoin(parlantSession, eq(parlantSession.agentId, parlantAgent.id))
           .where(eq(parlantAgent.workspaceId, ctx.workspaceId))
-          .groupBy(parlantAgent.id, parlantAgent.name, parlantAgent.status)
+          .groupBy(parlantAgent.id, parlantAgent.Name, parlantAgent.status)
           .having(sql`COUNT(${parlantSession.id}) > 0`)
           .orderBy(desc(sql`SUM(${parlantSession.cost})`))
       )
@@ -404,7 +404,7 @@ describe('Parlant Database Performance Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Pagination Test Agent',
+          Name: 'Pagination Test Agent',
         })
         .returning()
 
@@ -443,7 +443,7 @@ describe('Parlant Database Performance Tests', () => {
                 status: parlantSession.status,
                 messageCount: parlantSession.messageCount,
                 lastActivityAt: parlantSession.lastActivityAt,
-                agentName: parlantAgent.name,
+                agentName: parlantAgent.Name,
               })
               .from(parlantSession)
               .innerJoin(parlantAgent, eq(parlantSession.agentId, parlantAgent.id))
@@ -513,7 +513,7 @@ describe('Parlant Database Performance Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Concurrent Test Agent',
+          Name: 'Concurrent Test Agent',
         })
         .returning()
 
@@ -560,7 +560,7 @@ describe('Parlant Database Performance Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Event Concurrency Agent',
+          Name: 'Event Concurrency Agent',
         })
         .returning()
 
@@ -623,7 +623,7 @@ describe('Parlant Database Performance Tests', () => {
           Array.from({ length: 20 }, (_, i) => ({
             workspaceId: ctx.workspaceId,
             createdBy: ctx.userId,
-            name: `Concurrent Query Agent ${i + 1}`,
+            Name: `Concurrent Query Agent ${i + 1}`,
             totalSessions: Math.floor(Math.random() * 50) + 10,
             totalMessages: Math.floor(Math.random() * 500) + 100,
           }))
@@ -653,14 +653,14 @@ describe('Parlant Database Performance Tests', () => {
           db
             .select({
               agentId: parlantAgent.id,
-              agentName: parlantAgent.name,
+              agentName: parlantAgent.Name,
               sessionCount: count(parlantSession.id),
               totalCost: sql<number>`SUM(${parlantSession.cost})`,
             })
             .from(parlantAgent)
             .leftJoin(parlantSession, eq(parlantSession.agentId, parlantAgent.id))
             .where(eq(parlantAgent.workspaceId, ctx.workspaceId))
-            .groupBy(parlantAgent.id, parlantAgent.name)
+            .groupBy(parlantAgent.id, parlantAgent.Name)
             .orderBy(desc(sql`SUM(${parlantSession.cost})`))
         ),
 
@@ -723,7 +723,7 @@ describe('Parlant Database Performance Tests', () => {
             .values({
               workspaceId: ctx.workspaceId,
               createdBy: ctx.userId,
-              name: 'Memory Test Agent',
+              Name: 'Memory Test Agent',
             })
             .returning()
 
@@ -786,7 +786,7 @@ describe('Parlant Database Performance Tests', () => {
         .values({
           workspaceId: ctx.workspaceId,
           createdBy: ctx.userId,
-          name: 'Streaming Test Agent',
+          Name: 'Streaming Test Agent',
         })
         .returning()
 

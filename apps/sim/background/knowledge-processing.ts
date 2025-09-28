@@ -35,7 +35,7 @@ export const processDocument = task({
   },
   queue: {
     concurrencyLimit: env.KB_CONFIG_CONCURRENCY_LIMIT || 20,
-    name: 'document-processing-queue',
+    Name: 'document-processing-queue',
   },
   run: async (payload: DocumentProcessingPayload) => {
     const { knowledgeBaseId, documentId, docData, processingOptions, requestId } = payload

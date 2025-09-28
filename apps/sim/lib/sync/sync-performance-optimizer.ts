@@ -57,7 +57,7 @@ export interface PerformanceMetrics {
 
 // Optimization strategies
 export interface OptimizationStrategy {
-  name: string
+  Name: string
   description: string
   execute: (metrics: PerformanceMetrics) => Promise<OptimizationResult>
   threshold: (metrics: PerformanceMetrics) => boolean
@@ -681,7 +681,7 @@ export class SyncPerformanceOptimizer {
   private initializeOptimizationStrategies(): void {
     // Memory pressure optimization
     this.optimizationStrategies.set('memory-pressure', {
-      name: 'memory-pressure',
+      Name: 'memory-pressure',
       description: 'Reduce memory usage when approaching limits',
       threshold: (metrics) => metrics.memoryUsage > this.config.memoryThreshold * 0.8,
       execute: async (metrics) => {
@@ -708,7 +708,7 @@ export class SyncPerformanceOptimizer {
 
     // High latency optimization
     this.optimizationStrategies.set('high-latency', {
-      name: 'high-latency',
+      Name: 'high-latency',
       description: 'Optimize for reduced latency',
       threshold: (metrics) => {
         const avgLatency =
@@ -732,7 +732,7 @@ export class SyncPerformanceOptimizer {
 
     // Low cache hit rate optimization
     this.optimizationStrategies.set('cache-optimization', {
-      name: 'cache-optimization',
+      Name: 'cache-optimization',
       description: 'Improve cache performance',
       threshold: (metrics) => metrics.cacheHitRate < 0.6,
       execute: async (metrics) => {
@@ -801,13 +801,13 @@ export class SyncPerformanceOptimizer {
           results.push(result)
 
           logger.info('Optimization applied', {
-            strategy: strategy.name,
+            strategy: strategy.Name,
             improvement: result.improvement,
             description: result.description,
           })
         } catch (error) {
           logger.error('Optimization failed', {
-            strategy: strategy.name,
+            strategy: strategy.Name,
             error,
           })
         }

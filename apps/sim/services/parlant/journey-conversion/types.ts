@@ -12,7 +12,7 @@ import type { WorkflowState } from '@/stores/workflows/workflow/types'
 // Core conversion types
 export interface WorkflowTemplate {
   id: string
-  name: string
+  Name: string
   description?: string
   workspace_id: string
   version: string
@@ -26,7 +26,7 @@ export interface WorkflowTemplate {
 
 export interface TemplateParameter {
   id: string
-  name: string
+  Name: string
   type: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'json'
   description: string
   default_value?: any
@@ -123,7 +123,7 @@ export interface EdgeJourneyMapping {
 
 // Template management
 export interface TemplateCreateRequest {
-  name: string
+  Name: string
   description?: string
   workflow_id: string
   workspace_id: string
@@ -132,7 +132,7 @@ export interface TemplateCreateRequest {
 }
 
 export interface TemplateUpdateRequest {
-  name?: string
+  Name?: string
   description?: string
   parameters?: TemplateParameter[]
   tags?: string[]
@@ -144,7 +144,7 @@ export interface TemplateListQuery {
   tags?: string[]
   limit?: number
   offset?: number
-  sort_by?: 'name' | 'created_at' | 'updated_at' | 'usage_count'
+  sort_by?: 'Name' | 'created_at' | 'updated_at' | 'usage_count'
   sort_order?: 'asc' | 'desc'
 }
 

@@ -179,7 +179,7 @@ class WorkflowGenerator {
 
     return {
       id: `generated_workflow_${nodeCount}_${complexity}`,
-      name: `Generated ${complexity} Workflow (${nodeCount} nodes)`,
+      Name: `Generated ${complexity} Workflow (${nodeCount} nodes)`,
       description: `Auto-generated workflow for performance testing`,
       version: '1.0',
       nodes,
@@ -271,7 +271,7 @@ class WorkflowGenerator {
 
     for (let i = 0; i < fieldCount; i++) {
       fields.push({
-        name: `field_${i}`,
+        Name: `field_${i}`,
         type: i % 3 === 0 ? 'select' : i % 3 === 1 ? 'textarea' : 'text',
         required: Math.random() > 0.5,
         validation: complexity === 'complex' ? `validation_rule_${i}` : undefined,
@@ -299,9 +299,9 @@ class MockWorkflowToJourneyConverter {
 
       const journey = {
         id: `journey_${workflow.id}`,
-        title: `Conversational ${workflow.name}`,
+        title: `Conversational ${workflow.Name}`,
         description: workflow.description,
-        conditions: [`User wants to execute ${workflow.name}`],
+        conditions: [`User wants to execute ${workflow.Name}`],
         states: this.convertNodesToStates(workflow.nodes),
         transitions: this.convertEdgesToTransitions(workflow.edges),
         metadata: {
@@ -423,7 +423,7 @@ class MockWorkflowToJourneyConverter {
     return nodes.map((node) => ({
       id: `state_${node.id}`,
       type: this.mapNodeTypeToStateType(node.type),
-      name: node.data?.label || node.id,
+      Name: node.data?.label || node.id,
       config: node.data?.config || {},
       originalNodeId: node.id,
     }))

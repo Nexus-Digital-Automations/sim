@@ -11,7 +11,7 @@ const logger = createLogger('ParlantAgents')
 
 export interface Agent {
   id: string
-  name: string
+  Name: string
   description?: string
   workspace_id: string
   created_by: string
@@ -34,7 +34,7 @@ export async function getAgentById(agentId: string): Promise<Agent | null> {
     // In production, this would query the Parlant database
     const mockAgent: Agent = {
       id: agentId,
-      name: 'Sample Agent',
+      Name: 'Sample Agent',
       description: 'A conversational AI agent',
       workspace_id: 'mock-workspace',
       created_by: 'system',
@@ -131,7 +131,7 @@ export async function createAgent(
   userId: string,
   workspaceId: string,
   agentData: {
-    name: string
+    Name: string
     description?: string
     guidelines?: any
     tools?: string[]
@@ -166,7 +166,7 @@ export async function createAgent(
 
     const newAgent: Agent = {
       id: `agent_${Date.now()}`,
-      name: agentData.name,
+      Name: agentData.Name,
       description: agentData.description,
       workspace_id: workspaceId,
       created_by: userId,
@@ -179,7 +179,7 @@ export async function createAgent(
 
     logger.info('Created new agent', {
       agentId: newAgent.id,
-      agentName: newAgent.name,
+      agentName: newAgent.Name,
       workspaceId,
       createdBy: userId,
     })

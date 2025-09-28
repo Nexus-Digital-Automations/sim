@@ -18,7 +18,7 @@ interface RealTimeChatProps {
 
 interface TypingUsers {
   [userId: string]: {
-    name: string
+    Name: string
     isTyping: boolean
     lastUpdate: number
   }
@@ -147,7 +147,7 @@ export function RealTimeChat({
         setTypingUsers((prev) => ({
           ...prev,
           [indicator.userId!]: {
-            name: 'User', // This would come from participant data
+            Name: 'User', // This would come from participant data
             isTyping: indicator.isTyping,
             lastUpdate: Date.now(),
           },
@@ -332,7 +332,7 @@ export function RealTimeChat({
   // Get typing users display
   const typingUsersDisplay = Object.entries(typingUsers)
     .filter(([_, data]) => data.isTyping)
-    .map(([userId, data]) => data.name)
+    .map(([userId, data]) => data.Name)
     .join(', ')
 
   // Connection status display

@@ -1,17 +1,17 @@
-import { MicrosoftExcelIcon } from '@/components/icons'
+import { microsoftExcelIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { MicrosoftExcelResponse } from '@/tools/microsoft_excel/types'
 
 export const MicrosoftExcelBlock: BlockConfig<MicrosoftExcelResponse> = {
   type: 'microsoft_excel',
-  name: 'Microsoft Excel',
+  Name: 'Microsoft Excel',
   description: 'Read, write, and update data',
   longDescription:
     'Integrate Microsoft Excel into the workflow. Can read, write, update, and add to table. Requires OAuth.',
   docsLink: 'https://docs.sim.ai/tools/microsoft_excel',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: MicrosoftExcelIcon,
+  icon: microsoftExcelIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -65,7 +65,7 @@ export const MicrosoftExcelBlock: BlockConfig<MicrosoftExcelResponse> = {
       title: 'Range',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Sheet name and cell range (e.g., Sheet1!A1:D10)',
+      placeholder: 'Sheet Name and cell range (e.g., Sheet1!A1:D10)',
       condition: { field: 'operation', value: ['read', 'write', 'update'] },
     },
     {
@@ -83,7 +83,7 @@ export const MicrosoftExcelBlock: BlockConfig<MicrosoftExcelResponse> = {
       type: 'long-input',
       layout: 'full',
       placeholder:
-        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"name":"John", "age":30}, {"name":"Jane", "age":25}])',
+        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"Name":"John", "age":30}, {"Name":"Jane", "age":25}])',
       condition: { field: 'operation', value: 'write' },
       required: true,
     },
@@ -104,7 +104,7 @@ export const MicrosoftExcelBlock: BlockConfig<MicrosoftExcelResponse> = {
       type: 'long-input',
       layout: 'full',
       placeholder:
-        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"name":"John", "age":30}, {"name":"Jane", "age":25}])',
+        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"Name":"John", "age":30}, {"Name":"Jane", "age":25}])',
       condition: { field: 'operation', value: 'update' },
       required: true,
     },
@@ -125,7 +125,7 @@ export const MicrosoftExcelBlock: BlockConfig<MicrosoftExcelResponse> = {
       type: 'long-input',
       layout: 'full',
       placeholder:
-        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"name":"John", "age":30}, {"name":"Jane", "age":25}])',
+        'Enter values as JSON array of arrays (e.g., [["A1", "B1"], ["A2", "B2"]]) or an array of objects (e.g., [{"Name":"John", "age":30}, {"Name":"Jane", "age":25}])',
       condition: { field: 'operation', value: 'table_add' },
       required: true,
     },
@@ -166,7 +166,7 @@ export const MicrosoftExcelBlock: BlockConfig<MicrosoftExcelResponse> = {
 
         // For table operations, ensure tableName is provided
         if (params.operation === 'table_add' && !tableName) {
-          throw new Error('Table name is required for table operations.')
+          throw new Error('Table Name is required for table operations.')
         }
 
         const baseParams = {
@@ -194,7 +194,7 @@ export const MicrosoftExcelBlock: BlockConfig<MicrosoftExcelResponse> = {
     spreadsheetId: { type: 'string', description: 'Spreadsheet identifier' },
     manualSpreadsheetId: { type: 'string', description: 'Manual spreadsheet identifier' },
     range: { type: 'string', description: 'Cell range' },
-    tableName: { type: 'string', description: 'Table name' },
+    tableName: { type: 'string', description: 'Table Name' },
     values: { type: 'string', description: 'Cell values data' },
     valueInputOption: { type: 'string', description: 'Value input option' },
   },

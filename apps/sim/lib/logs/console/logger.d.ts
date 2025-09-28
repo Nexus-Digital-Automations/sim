@@ -29,7 +29,7 @@ export declare class Logger {
   private module
   /**
    * Create a new logger for a specific module
-   * @param module The name of the module (e.g., 'OpenAIProvider', 'AgentBlockHandler')
+   * @param module The Name of the module (e.g., 'OpenAIProvider', 'AgentBlockHandler')
    */
   constructor(module: string)
   /**
@@ -129,7 +129,7 @@ export declare class Logger {
  * logger.error('Failed to fetch data', error)
  * ```
  *
- * @param module The name of the module (e.g., 'OpenAIProvider', 'AgentBlockHandler')
+ * @param module The Name of the module (e.g., 'OpenAIProvider', 'AgentBlockHandler')
  * @returns A Logger instance
  */
 export declare function createLogger(module: string): Logger

@@ -207,7 +207,7 @@ export class WorkflowJourneyMapper {
     edges: Array<{ id: string; source: string; target: string; data?: any }>
     entryPoints: string[]
     exitPoints: string[]
-    variables: Array<{ name: string; type: string; defaultValue?: any }>
+    variables: Array<{ Name: string; type: string; defaultValue?: any }>
   }> {
     const nodes = Object.entries(workflow.blocks).map(([id, block]) => ({
       id,
@@ -371,8 +371,8 @@ export class WorkflowJourneyMapper {
 
     for (const variable of workflowAnalysis.variables) {
       const mapping: ContextVariableMapping = {
-        workflowVariable: variable.name,
-        journeyVariable: `journey_${variable.name}`,
+        workflowVariable: variable.Name,
+        journeyVariable: `journey_${variable.Name}`,
         dataType: this.mapDataType(variable.type),
         defaultValue: variable.defaultValue,
       }
@@ -425,7 +425,7 @@ export class WorkflowJourneyMapper {
 
       // Create journey via Parlant API
       const journeyResponse = await this.parlantClient.post('/journeys', {
-        name: `Workflow: ${workflowId}`,
+        Name: `Workflow: ${workflowId}`,
         description: `Conversational journey for Sim workflow ${workflowId}`,
         workspace_id: workspaceId,
         created_by: userId,
@@ -500,7 +500,7 @@ export class WorkflowJourneyMapper {
   ): Promise<string> {
     const template = this.stateTemplates.get(node.type)
     const baseMessage =
-      template?.entryMessage || `Executing ${blockConfig.name || node.type} step...`
+      template?.entryMessage || `Executing ${blockConfig.Name || node.type} step...`
 
     // Customize based on conversational config
     if (conversationalConfig.explainSteps) {
@@ -530,7 +530,7 @@ export class WorkflowJourneyMapper {
 
   private async generateAgentResponses(node: any, blockConfig: any): Promise<string[]> {
     return [
-      `This ${blockConfig.name || node.type} step is designed to ${blockConfig.description || 'process data'}.`,
+      `This ${blockConfig.Name || node.type} step is designed to ${blockConfig.description || 'process data'}.`,
       "I can help you understand what's happening at each step.",
       'Feel free to ask me to explain anything or modify the execution.',
     ]
@@ -580,7 +580,7 @@ export class WorkflowJourneyMapper {
   }
 
   private generateDisplayName(node: any, blockConfig: any): string {
-    return blockConfig.name || `${node.type.charAt(0).toUpperCase() + node.type.slice(1)} Step`
+    return blockConfig.Name || `${node.type.charAt(0).toUpperCase() + node.type.slice(1)} Step`
   }
 
   private generateDescription(node: any, blockConfig: any): string {
@@ -762,17 +762,17 @@ export class WorkflowJourneyMapper {
 
   private extractWorkflowVariables(
     workflow: SerializedWorkflow
-  ): Array<{ name: string; type: string; defaultValue?: any }> {
+  ): Array<{ Name: string; type: string; defaultValue?: any }> {
     // Extract variables from workflow structure
-    const variables: Array<{ name: string; type: string; defaultValue?: any }> = []
+    const variables: Array<{ Name: string; type: string; defaultValue?: any }> = []
 
     // This would analyze the workflow blocks to find variable definitions
     // For now, returning common workflow variables
     variables.push(
-      { name: 'workflow_input', type: 'object' },
-      { name: 'execution_context', type: 'object' },
-      { name: 'current_step', type: 'string' },
-      { name: 'progress_percentage', type: 'number', defaultValue: 0 }
+      { Name: 'workflow_input', type: 'object' },
+      { Name: 'execution_context', type: 'object' },
+      { Name: 'current_step', type: 'string' },
+      { Name: 'progress_percentage', type: 'number', defaultValue: 0 }
     )
 
     return variables

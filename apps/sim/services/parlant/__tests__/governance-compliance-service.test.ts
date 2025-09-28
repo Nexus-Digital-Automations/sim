@@ -50,7 +50,7 @@ describe('GovernanceComplianceService', () => {
     it('should create a new governance policy successfully', async () => {
       const policyData: Omit<GovernancePolicy, 'id' | 'created_at' | 'updated_at' | 'version'> = {
         workspace_id: testWorkspaceId,
-        name: 'Test PII Protection Policy',
+        Name: 'Test PII Protection Policy',
         description: 'Test policy for protecting personally identifiable information',
         category: 'data_governance',
         type: 'mandatory',
@@ -82,7 +82,7 @@ describe('GovernanceComplianceService', () => {
 
       expect(policy).toBeDefined()
       expect(policy.id).toMatch(/^policy_/)
-      expect(policy.name).toBe(policyData.name)
+      expect(policy.Name).toBe(policyData.Name)
       expect(policy.workspace_id).toBe(testWorkspaceId)
       expect(policy.status).toBe('draft')
       expect(policy.version).toBe(1)
@@ -105,7 +105,7 @@ describe('GovernanceComplianceService', () => {
       // First create a policy
       const policyData: Omit<GovernancePolicy, 'id' | 'created_at' | 'updated_at' | 'version'> = {
         workspace_id: testWorkspaceId,
-        name: 'Test Policy',
+        Name: 'Test Policy',
         description: 'Original description',
         category: 'content_filtering',
         type: 'advisory',
@@ -140,7 +140,7 @@ describe('GovernanceComplianceService', () => {
     it('should reject policy creation with invalid data', async () => {
       const invalidPolicyData = {
         workspace_id: testWorkspaceId,
-        name: '', // Invalid: empty name
+        Name: '', // Invalid: empty Name
         description: 'Test description',
         category: 'data_governance' as PolicyCategory,
         type: 'mandatory' as PolicyType,
@@ -165,7 +165,7 @@ describe('GovernanceComplianceService', () => {
       // Create a test policy for evaluation
       const policyData: Omit<GovernancePolicy, 'id' | 'created_at' | 'updated_at' | 'version'> = {
         workspace_id: testWorkspaceId,
-        name: 'SSN Detection Policy',
+        Name: 'SSN Detection Policy',
         description: 'Detects and blocks Social Security Numbers',
         category: 'data_governance',
         type: 'mandatory',
@@ -258,7 +258,7 @@ describe('GovernanceComplianceService', () => {
         'id' | 'created_at' | 'updated_at' | 'version'
       > = {
         workspace_id: testWorkspaceId,
-        name: 'Email Detection Policy',
+        Name: 'Email Detection Policy',
         description: 'Detects email addresses',
         category: 'data_governance',
         type: 'advisory',
@@ -438,7 +438,7 @@ describe('GovernanceComplianceService', () => {
         'id' | 'created_at' | 'updated_at' | 'version'
       > = {
         workspace_id: testWorkspaceId,
-        name: 'Invalid Policy',
+        Name: 'Invalid Policy',
         description: 'Policy with invalid rules',
         category: 'data_governance',
         type: 'mandatory',
@@ -515,7 +515,7 @@ describe('GovernanceComplianceService', () => {
           const policyData: Omit<GovernancePolicy, 'id' | 'created_at' | 'updated_at' | 'version'> =
             {
               workspace_id: testWorkspaceId,
-              name: `Test Policy ${index}`,
+              Name: `Test Policy ${index}`,
               description: `Test policy ${index} for performance testing`,
               category: 'content_filtering',
               type: 'advisory',

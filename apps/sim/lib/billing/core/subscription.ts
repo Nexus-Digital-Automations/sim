@@ -231,7 +231,7 @@ export async function getUserSubscriptionState(userId: string): Promise<UserSubs
     const isEnterprise = !isProd || (subscription && checkEnterprisePlan(subscription))
     const isFree = !isPro && !isTeam && !isEnterprise
 
-    // Determine plan name
+    // Determine plan Name
     let planName = 'free'
     if (isEnterprise) planName = 'enterprise'
     else if (isTeam) planName = 'team'
@@ -292,7 +292,7 @@ export async function sendPlanWelcomeEmail(subscription: any): Promise<void> {
     if (subPlan === 'pro' || subPlan === 'team') {
       const userId = subscription.referenceId
       const users = await db
-        .select({ email: user.email, name: user.name })
+        .select({ email: user.email, Name: user.Name })
         .from(user)
         .where(eq(user.id, userId))
         .limit(1)
@@ -306,7 +306,7 @@ export async function sendPlanWelcomeEmail(subscription: any): Promise<void> {
         const baseUrl = env.NEXT_PUBLIC_APP_URL || 'https://sim.ai'
         const html = await renderPlanWelcomeEmail({
           planName: subPlan === 'pro' ? 'Pro' : 'Team',
-          userName: users[0].name || undefined,
+          userName: users[0].Name || undefined,
           loginLink: `${baseUrl}/login`,
         })
 

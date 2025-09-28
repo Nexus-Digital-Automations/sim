@@ -1,12 +1,12 @@
-import { WebhookIcon } from '@/components/icons'
+import { webhookIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 
 export const GenericWebhookBlock: BlockConfig = {
   type: 'generic_webhook',
-  name: 'Webhook',
+  Name: 'Webhook',
   description: 'Receive webhooks from any service by configuring a custom webhook.',
   category: 'triggers',
-  icon: WebhookIcon,
+  icon: webhookIcon,
   bgColor: '#10B981', // Green color for triggers
 
   subBlocks: [

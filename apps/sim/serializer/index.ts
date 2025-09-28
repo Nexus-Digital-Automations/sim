@@ -19,7 +19,7 @@ export class WorkflowValidationError extends Error {
     public blockName?: string
   ) {
     super(message)
-    this.name = 'WorkflowValidationError'
+    this.Name = 'WorkflowValidationError'
   }
 }
 
@@ -102,7 +102,7 @@ export class Serializer {
         })()
 
         if (!hasNonEmptyCollection) {
-          const blockName = blocks[loop.id]?.name || 'Loop'
+          const blockName = blocks[loop.id]?.Name || 'Loop'
           const error = new WorkflowValidationError(
             `${blockName} requires a collection for forEach mode. Provide a non-empty array/object or a variable reference.`,
             loop.id,
@@ -143,7 +143,7 @@ export class Serializer {
         })()
 
         if (!hasNonEmptyDistribution) {
-          const blockName = blocks[parallel.id]?.name || 'Parallel'
+          const blockName = blocks[parallel.id]?.Name || 'Parallel'
           const error = new WorkflowValidationError(
             `${blockName} requires a collection for collection mode. Provide a non-empty array/object or a variable reference.`,
             parallel.id,
@@ -170,7 +170,7 @@ export class Serializer {
         outputs: block.outputs,
         metadata: {
           id: block.type,
-          name: block.name,
+          Name: block.Name,
           description: block.type === 'loop' ? 'Loop container' : 'Parallel container',
           category: 'subflow',
           color: block.type === 'loop' ? '#3b82f6' : '#8b5cf6',
@@ -271,7 +271,7 @@ export class Serializer {
       },
       metadata: {
         id: block.type,
-        name: block.name,
+        Name: block.Name,
         description: blockConfig.description,
         category: blockConfig.category,
         color: blockConfig.bgColor,
@@ -532,7 +532,7 @@ export class Serializer {
     })
 
     if (missingFields.length > 0) {
-      const blockName = block.name || blockConfig.name || 'Block'
+      const blockName = block.Name || blockConfig.Name || 'Block'
       throw new Error(`${blockName} is missing required fields: ${missingFields.join(', ')}`)
     }
   }
@@ -575,7 +575,7 @@ export class Serializer {
       return {
         id: serializedBlock.id,
         type: blockType,
-        name: serializedBlock.metadata?.name || (blockType === 'loop' ? 'Loop' : 'Parallel'),
+        Name: serializedBlock.metadata?.Name || (blockType === 'loop' ? 'Loop' : 'Parallel'),
         position: serializedBlock.position,
         subBlocks: {}, // Loops and parallels don't have traditional subBlocks
         outputs: serializedBlock.outputs,
@@ -601,7 +601,7 @@ export class Serializer {
     return {
       id: serializedBlock.id,
       type: blockType,
-      name: serializedBlock.metadata?.name || blockConfig.name,
+      Name: serializedBlock.metadata?.Name || blockConfig.Name,
       position: serializedBlock.position,
       subBlocks,
       outputs: serializedBlock.outputs,

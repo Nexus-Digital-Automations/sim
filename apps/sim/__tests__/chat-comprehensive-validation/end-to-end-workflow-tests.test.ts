@@ -32,7 +32,7 @@ interface TestEnvironment {
 }
 
 interface UserScenario {
-  name: string
+  Name: string
   description: string
   steps: UserStep[]
   expectedOutcome: string
@@ -143,7 +143,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
     // Create test workspace
     await db.insert('workspaces').values({
       id: workspaceId,
-      name: 'E2E Test Workspace',
+      Name: 'E2E Test Workspace',
       ownerId: userId,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -153,7 +153,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
     await db.insert('users').values({
       id: userId,
       email: `e2e-test-${Date.now()}@example.com`,
-      name: 'E2E Test User',
+      Name: 'E2E Test User',
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -162,21 +162,21 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
     const agents = [
       {
         id: `agent-support-${Date.now()}`,
-        name: 'Customer Support Agent',
+        Name: 'Customer Support Agent',
         description: 'Handles customer support inquiries',
         workspaceId,
         capabilities: ['customer_support', 'escalation'],
       },
       {
         id: `agent-sales-${Date.now()}`,
-        name: 'Sales Agent',
+        Name: 'Sales Agent',
         description: 'Handles sales inquiries and product information',
         workspaceId,
         capabilities: ['sales', 'product_info'],
       },
       {
         id: `agent-technical-${Date.now()}`,
-        name: 'Technical Support Agent',
+        Name: 'Technical Support Agent',
         description: 'Handles technical support and troubleshooting',
         workspaceId,
         capabilities: ['technical_support', 'diagnostics'],
@@ -257,8 +257,8 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       window.E2E_PERFORMANCE = {
         navigationStart: performance.now(),
         metrics: [],
-        addMetric: (name: string, value: number) => {
-          window.E2E_PERFORMANCE.metrics.push({ name, value, timestamp: performance.now() })
+        addMetric: (Name: string, value: number) => {
+          window.E2E_PERFORMANCE.metrics.push({ Name, value, timestamp: performance.now() })
         },
       }
     })
@@ -269,8 +269,8 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
 
     // Cleanup test data
     await db.delete('chat').where(like('subdomain', '%test%'))
-    await db.delete('parlant_agents').where(like('name', '%Test%'))
-    await db.delete('workspaces').where(like('name', '%Test%'))
+    await db.delete('parlant_agents').where(like('Name', '%Test%'))
+    await db.delete('workspaces').where(like('Name', '%Test%'))
     await db.delete('users').where(like('email', '%e2e-test%'))
   }
 
@@ -321,7 +321,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
     const executionTime = Date.now() - startTime
 
     return {
-      scenarioName: scenario.name,
+      scenarioName: scenario.Name,
       description: scenario.description,
       success,
       error,
@@ -395,7 +395,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       const page = testEnv.pages[testEnv.pages.length - 1]
 
       const scenario: UserScenario = {
-        name: 'Customer Support Journey',
+        Name: 'Customer Support Journey',
         description: 'Complete customer support conversation from start to resolution',
         timeout: 60000,
         steps: [
@@ -498,7 +498,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       const page = testEnv.pages[testEnv.pages.length - 1]
 
       const scenario: UserScenario = {
-        name: 'Authentication Flow',
+        Name: 'Authentication Flow',
         description: 'Complete authentication flow for password-protected chat',
         timeout: 30000,
         steps: [
@@ -564,7 +564,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       const page = testEnv.pages[testEnv.pages.length - 1]
 
       const scenario: UserScenario = {
-        name: 'Authentication Failure',
+        Name: 'Authentication Failure',
         description: 'Handle incorrect password authentication gracefully',
         timeout: 20000,
         steps: [
@@ -620,7 +620,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       const page = testEnv.pages[testEnv.pages.length - 1]
 
       const scenario: UserScenario = {
-        name: 'Context Retention',
+        Name: 'Context Retention',
         description: 'Verify conversation context is maintained across multiple message exchanges',
         timeout: 90000,
         steps: [
@@ -705,7 +705,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       const page = testEnv.pages[testEnv.pages.length - 1]
 
       const scenario: UserScenario = {
-        name: 'Complex Problem Solving',
+        Name: 'Complex Problem Solving',
         description: 'Handle a complex technical issue requiring multiple diagnostic steps',
         timeout: 120000,
         steps: [
@@ -795,7 +795,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       const page = testEnv.pages[testEnv.pages.length - 1]
 
       const scenario: UserScenario = {
-        name: 'Real-Time Indicators',
+        Name: 'Real-Time Indicators',
         description: 'Verify typing indicators and real-time response streaming',
         timeout: 45000,
         steps: [
@@ -865,7 +865,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       const page = testEnv.pages[testEnv.pages.length - 1]
 
       const scenario: UserScenario = {
-        name: 'Message Delivery Confirmation',
+        Name: 'Message Delivery Confirmation',
         description: 'Verify message delivery status and confirmations',
         timeout: 30000,
         steps: [
@@ -922,7 +922,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       const page = testEnv.pages[testEnv.pages.length - 1]
 
       const scenario: UserScenario = {
-        name: 'Network Recovery',
+        Name: 'Network Recovery',
         description: 'Handle network interruption and automatic recovery',
         timeout: 60000,
         steps: [
@@ -1015,7 +1015,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       const page = testEnv.pages[testEnv.pages.length - 1]
 
       const scenario: UserScenario = {
-        name: 'Server Error Recovery',
+        Name: 'Server Error Recovery',
         description: 'Handle server errors and provide retry mechanisms',
         timeout: 45000,
         steps: [
@@ -1083,7 +1083,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       page.on('request', (request) => {
         if (
           request.url().includes('/api/chat/') &&
-          request.method() === 'POST' &&
+          request.method() === 'post' &&
           !errorSimulated
         ) {
           errorSimulated = true
@@ -1111,7 +1111,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       const page = testEnv.pages[testEnv.pages.length - 1]
 
       const scenario: UserScenario = {
-        name: 'Performance Under Load',
+        Name: 'Performance Under Load',
         description: 'Maintain responsive performance during typical usage patterns',
         timeout: 60000,
         steps: [
@@ -1216,7 +1216,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       }
 
       const scenario: UserScenario = {
-        name: 'Large Conversation Performance',
+        Name: 'Large Conversation Performance',
         description: 'Test performance with large conversation history',
         timeout: 30000,
         steps: [
@@ -1269,7 +1269,7 @@ describe('End-to-End Chat Workflow Testing Suite', () => {
       await page.setViewport({ width: 375, height: 667 })
 
       const scenario: UserScenario = {
-        name: 'Mobile Chat Experience',
+        Name: 'Mobile Chat Experience',
         description: 'Complete chat interaction on mobile viewport',
         timeout: 45000,
         steps: [

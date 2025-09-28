@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 /**
  * Server-side proxy for provider requests
  */
-export async function POST(request: NextRequest) {
+export async function post(request: NextRequest) {
   const requestId = generateRequestId()
   const startTime = Date.now()
 
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
     const executionTime = Date.now() - startTime
     logger.error(`[${requestId}] Provider request failed:`, {
       error: error instanceof Error ? error.message : String(error),
-      errorName: error instanceof Error ? error.name : 'Unknown',
+      errorName: error instanceof Error ? error.Name : 'Unknown',
       errorStack: error instanceof Error ? error.stack : undefined,
       executionTime,
       timestamp: new Date().toISOString(),
@@ -263,8 +263,8 @@ function sanitizeToolCall(toolCall: any) {
   const sanitized = { ...toolCall }
 
   // Sanitize any string fields that might contain Unicode
-  if (typeof sanitized.name === 'string') {
-    sanitized.name = sanitized.name.replace(/[\u0080-\uFFFF]/g, '')
+  if (typeof sanitized.Name === 'string') {
+    sanitized.Name = sanitized.Name.replace(/[\u0080-\uFFFF]/g, '')
   }
 
   // Sanitize input/arguments

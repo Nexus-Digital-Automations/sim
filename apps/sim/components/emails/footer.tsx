@@ -65,7 +65,7 @@ export const EmailFooter = ({
                   margin: '8px 0 0 0',
                 }}
               >
-                © {new Date().getFullYear()} {brand.name}, All Rights Reserved
+                © {new Date().getFullYear()} {brand.Name}, All Rights Reserved
                 <br />
                 If you have any questions, please contact us at{' '}
                 <a

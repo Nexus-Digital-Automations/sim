@@ -32,13 +32,13 @@ const SearchQuerySchema = z.object({
   isPublic: z.boolean().optional(),
   limit: z.number().min(1).max(100).default(20),
   offset: z.number().min(0).default(0),
-  sortBy: z.enum(['name', 'usage', 'rating', 'recent', 'relevance']).default('relevance'),
+  sortBy: z.enum(['Name', 'usage', 'rating', 'recent', 'relevance']).default('relevance'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 })
 
 const ConfigurationSchema = z.object({
   toolId: z.string(),
-  name: z.string(),
+  Name: z.string(),
   description: z.string().optional(),
   configuration: z.record(z.any()),
   environmentVariables: z.record(z.string()).default({}),

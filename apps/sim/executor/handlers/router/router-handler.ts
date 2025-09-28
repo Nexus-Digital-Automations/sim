@@ -51,7 +51,7 @@ export class RouterBlockHandler implements BlockHandler {
       }
 
       const response = await fetch(url.toString(), {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -153,7 +153,7 @@ export class RouterBlockHandler implements BlockHandler {
         return {
           id: targetBlock.id,
           type: targetBlock.metadata?.id,
-          title: targetBlock.metadata?.name,
+          title: targetBlock.metadata?.Name,
           description: targetBlock.metadata?.description,
           subBlocks: {
             ...targetBlock.config.params,

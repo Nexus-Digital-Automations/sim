@@ -5,7 +5,7 @@ interface CerebrasMessage {
     id: string
     type: 'function'
     function: {
-      name: string
+      Name: string
       arguments: string
     }
   }>

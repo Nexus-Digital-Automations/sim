@@ -376,7 +376,7 @@ describe('ModeShortcuts', () => {
 
       // Click close button (X button)
       const closeButton =
-        screen.getByRole('button', { name: /close/i }) ||
+        screen.getByRole('button', { Name: /close/i }) ||
         screen.getAllByRole('button').find((btn) => btn.textContent === '×') ||
         screen.getAllByRole('button').find((btn) => btn.innerHTML.includes('M6 18L18 6M6 6l12 12'))
 

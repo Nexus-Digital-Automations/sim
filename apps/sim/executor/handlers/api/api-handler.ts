@@ -26,12 +26,12 @@ export class ApiBlockHandler implements BlockHandler {
     }
 
     // Early return with empty success response if URL is not provided or empty
-    if (tool.name?.includes('HTTP') && (!inputs.url || inputs.url.trim() === '')) {
+    if (tool.Name?.includes('HTTP') && (!inputs.url || inputs.url.trim() === '')) {
       return { data: null, status: 200, headers: {} }
     }
 
     // Pre-validate common HTTP request issues to provide better error messages
-    if (tool.name?.includes('HTTP') && inputs.url) {
+    if (tool.Name?.includes('HTTP') && inputs.url) {
       // Strip any surrounding quotes that might have been added during resolution
       let urlToValidate = inputs.url
       if (typeof urlToValidate === 'string') {
@@ -140,7 +140,7 @@ export class ApiBlockHandler implements BlockHandler {
         const errorMessage =
           errorDetails.length > 0
             ? `HTTP Request failed: ${errorDetails.join(' | ')}${suggestion}`
-            : `API request to ${tool.name || block.config.tool} failed with no error message`
+            : `API request to ${tool.Name || block.config.tool} failed with no error message`
 
         // Create a detailed error object with formatted message
         const error = new Error(errorMessage)
@@ -148,14 +148,14 @@ export class ApiBlockHandler implements BlockHandler {
         // Add additional properties for debugging
         Object.assign(error, {
           toolId: block.config.tool,
-          toolName: tool.name || 'Unknown tool',
+          toolName: tool.Name || 'Unknown tool',
           blockId: block.id,
-          blockName: block.metadata?.name || 'Unnamed Block',
+          blockName: block.metadata?.Name || 'Unnamed Block',
           output: result.output || {},
           status: result.output?.status || null,
           request: {
             url: inputs.url,
-            method: inputs.method || 'GET',
+            method: inputs.method || 'get',
           },
           timestamp: new Date().toISOString(),
         })
@@ -168,7 +168,7 @@ export class ApiBlockHandler implements BlockHandler {
       // Ensure we have a meaningful error message
       if (!error.message || error.message === 'undefined (undefined)') {
         // Construct a detailed error message with available information
-        let errorMessage = `API request to ${tool.name || block.config.tool} failed`
+        let errorMessage = `API request to ${tool.Name || block.config.tool} failed`
 
         // Add details if available
         if (inputs.url) errorMessage += `: ${inputs.url}`
@@ -176,8 +176,8 @@ export class ApiBlockHandler implements BlockHandler {
         if (error.statusText) errorMessage += ` - ${error.statusText}`
 
         // If we still have no details, give a generic but helpful message
-        if (errorMessage === `API request to ${tool.name || block.config.tool} failed`) {
-          errorMessage += ` - ${block.metadata?.name || 'Unknown error'}`
+        if (errorMessage === `API request to ${tool.Name || block.config.tool} failed`) {
+          errorMessage += ` - ${block.metadata?.Name || 'Unknown error'}`
         }
 
         error.message = errorMessage
@@ -186,13 +186,13 @@ export class ApiBlockHandler implements BlockHandler {
       // Add additional context to the error
       if (typeof error === 'object' && error !== null) {
         if (!error.toolId) error.toolId = block.config.tool
-        if (!error.blockName) error.blockName = block.metadata?.name || 'Unnamed Block'
+        if (!error.blockName) error.blockName = block.metadata?.Name || 'Unnamed Block'
 
         // Add request details if missing
         if (inputs && !error.request) {
           error.request = {
             url: inputs.url,
-            method: inputs.method || 'GET',
+            method: inputs.method || 'get',
           }
         }
       }

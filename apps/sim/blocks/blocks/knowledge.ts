@@ -1,14 +1,14 @@
-import { PackageSearchIcon } from '@/components/icons'
+import { packageSearchIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 
 export const KnowledgeBlock: BlockConfig = {
   type: 'knowledge',
-  name: 'Knowledge',
+  Name: 'Knowledge',
   description: 'Use vector search',
   longDescription:
     'Integrate Knowledge into the workflow. Can search, upload chunks, and create documents.',
   bgColor: '#00B0B0',
-  icon: PackageSearchIcon,
+  icon: packageSearchIcon,
   category: 'blocks',
   docsLink: 'https://docs.sim.ai/blocks/knowledge',
   subBlocks: [
@@ -81,11 +81,11 @@ export const KnowledgeBlock: BlockConfig = {
       condition: { field: 'operation', value: 'upload_chunk' },
     },
     {
-      id: 'name',
+      id: 'Name',
       title: 'Document Name',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Enter document name',
+      placeholder: 'Enter document Name',
       required: true,
       condition: { field: 'operation', value: ['create_document'] },
     },
@@ -151,7 +151,7 @@ export const KnowledgeBlock: BlockConfig = {
     topK: { type: 'number', description: 'Number of results' },
     documentId: { type: 'string', description: 'Document identifier' },
     content: { type: 'string', description: 'Content data' },
-    name: { type: 'string', description: 'Document name' },
+    Name: { type: 'string', description: 'Document Name' },
     // Dynamic tag filters for search
     tagFilters: { type: 'string', description: 'Tag filter criteria' },
     // Document tags for create document (JSON string of tag objects)

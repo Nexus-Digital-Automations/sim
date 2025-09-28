@@ -1,16 +1,16 @@
-import { OpenAIIcon } from '@/components/icons'
+import { openAiicon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 
 export const OpenAIBlock: BlockConfig = {
   type: 'openai',
-  name: 'Embeddings',
+  Name: 'Embeddings',
   description: 'Generate Open AI embeddings',
   longDescription:
     'Integrate Embeddings into the workflow. Can generate embeddings from text. Requires API Key.',
   category: 'tools',
   docsLink: 'https://docs.sim.ai/tools/openai',
   bgColor: '#10a37f',
-  icon: OpenAIIcon,
+  icon: openAiicon,
   subBlocks: [
     {
       id: 'input',

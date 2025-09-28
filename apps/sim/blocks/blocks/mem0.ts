@@ -1,15 +1,15 @@
-import { Mem0Icon } from '@/components/icons'
+import { mem0icon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { Mem0Response } from '@/tools/mem0/types'
 
 export const Mem0Block: BlockConfig<Mem0Response> = {
   type: 'mem0',
-  name: 'Mem0',
+  Name: 'Mem0',
   description: 'Agent memory management',
   longDescription:
     'Integrate Mem0 into the workflow. Can add, search, and retrieve memories. Requires API Key.',
   bgColor: '#181C1E',
-  icon: Mem0Icon,
+  icon: mem0icon,
   category: 'tools',
   docsLink: 'https://docs.sim.ai/tools/mem0',
   subBlocks: [

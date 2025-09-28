@@ -1,17 +1,17 @@
-import { TelegramIcon } from '@/components/icons'
+import { telegramIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { TelegramMessageResponse } from '@/tools/telegram/types'
 
 export const TelegramBlock: BlockConfig<TelegramMessageResponse> = {
   type: 'telegram',
-  name: 'Telegram',
+  Name: 'Telegram',
   description: 'Send messages through Telegram or trigger workflows from Telegram events',
   longDescription:
     'Integrate Telegram into the workflow. Can send messages. Can be used in trigger mode to trigger a workflow when a message is sent to a chat.',
   docsLink: 'https://docs.sim.ai/tools/telegram',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: TelegramIcon,
+  icon: telegramIcon,
   subBlocks: [
     {
       id: 'botToken',
@@ -23,7 +23,7 @@ export const TelegramBlock: BlockConfig<TelegramMessageResponse> = {
       connectionDroppable: false,
       description: `Getting Bot Token:
 1. If you haven't already, message "/newbot" to @BotFather
-2. Choose a name for your bot
+2. Choose a Name for your bot
 3. Copy the token it provides and paste it here`,
       required: true,
     },
@@ -82,8 +82,8 @@ export const TelegramBlock: BlockConfig<TelegramMessageResponse> = {
     message_id: { type: 'number', description: 'Unique message identifier from webhook' },
     from_id: { type: 'number', description: 'User ID who sent the message' },
     from_username: { type: 'string', description: 'Username of the sender' },
-    from_first_name: { type: 'string', description: 'First name of the sender' },
-    from_last_name: { type: 'string', description: 'Last name of the sender' },
+    from_first_name: { type: 'string', description: 'First Name of the sender' },
+    from_last_name: { type: 'string', description: 'Last Name of the sender' },
     chat_id: { type: 'number', description: 'Unique identifier for the chat' },
     chat_type: {
       type: 'string',

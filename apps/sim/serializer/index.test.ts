@@ -27,7 +27,7 @@ vi.mock('@/blocks', () => ({
     // Mock block configurations for different block types
     const mockConfigs: Record<string, any> = {
       starter: {
-        name: 'Starter',
+        Name: 'Starter',
         description: 'Start of the workflow',
         category: 'flow',
         bgColor: '#4CAF50',
@@ -41,7 +41,7 @@ vi.mock('@/blocks', () => ({
         inputs: {},
       },
       agent: {
-        name: 'Agent',
+        Name: 'Agent',
         description: 'AI Agent',
         category: 'ai',
         bgColor: '#2196F3',
@@ -66,7 +66,7 @@ vi.mock('@/blocks', () => ({
         },
       },
       condition: {
-        name: 'Condition',
+        Name: 'Condition',
         description: 'Branch based on condition',
         category: 'flow',
         bgColor: '#FF9800',
@@ -82,7 +82,7 @@ vi.mock('@/blocks', () => ({
         },
       },
       function: {
-        name: 'Function',
+        Name: 'Function',
         description: 'Execute custom code',
         category: 'code',
         bgColor: '#9C27B0',
@@ -101,7 +101,7 @@ vi.mock('@/blocks', () => ({
         },
       },
       api: {
-        name: 'API',
+        Name: 'API',
         description: 'Make API request',
         category: 'data',
         bgColor: '#E91E63',
@@ -120,7 +120,7 @@ vi.mock('@/blocks', () => ({
         inputs: {},
       },
       jina: {
-        name: 'Jina',
+        Name: 'Jina',
         description: 'Convert website content into text',
         category: 'tools',
         bgColor: '#333333',
@@ -145,7 +145,7 @@ vi.mock('@/blocks', () => ({
         },
       },
       reddit: {
-        name: 'Reddit',
+        Name: 'Reddit',
         description: 'Access Reddit data and content',
         category: 'tools',
         bgColor: '#FF5700',
@@ -183,7 +183,7 @@ vi.mock('@/blocks', () => ({
       },
       // Mock block with both basic and advanced mode fields for testing
       slack: {
-        name: 'Slack',
+        Name: 'Slack',
         description: 'Send messages to Slack',
         category: 'tools',
         bgColor: '#611f69',
@@ -218,7 +218,7 @@ vi.mock('@/blocks', () => ({
       },
       // Mock agent block with memories for testing
       agentWithMemories: {
-        name: 'Agent with Memories',
+        Name: 'Agent with Memories',
         description: 'AI Agent with memory support',
         category: 'ai',
         bgColor: '#2196F3',
@@ -386,7 +386,7 @@ describe('Serializer', () => {
       expect(apiBlock?.metadata?.id).toBe('api')
       expect(apiBlock?.config.tool).toBe('api')
       expect(apiBlock?.config.params.url).toBe('https://api.example.com/data')
-      expect(apiBlock?.config.params.method).toBe('GET')
+      expect(apiBlock?.config.params.method).toBe('get')
       expect(apiBlock?.config.params.headers).toEqual([
         ['Content-Type', 'application/json'],
         ['Authorization', 'Bearer {{API_KEY}}'],
@@ -432,12 +432,12 @@ describe('Serializer', () => {
       // Check custom tool
       const customTool = tools.find((t: any) => t.type === 'custom-tool')
       expect(customTool).toBeDefined()
-      expect(customTool.name).toBe('weather')
+      expect(customTool.Name).toBe('weather')
 
       // Check function tool
       const functionTool = tools.find((t: any) => t.type === 'function')
       expect(functionTool).toBeDefined()
-      expect(functionTool.name).toBe('calculator')
+      expect(functionTool.Name).toBe('calculator')
     })
 
     it.concurrent('should handle invalid block types gracefully', () => {
@@ -472,14 +472,14 @@ describe('Serializer', () => {
       const starterBlock = deserialized.blocks.starter
       expect(starterBlock).toBeDefined()
       expect(starterBlock.type).toBe('starter')
-      expect(starterBlock.name).toBe('Starter Block')
+      expect(starterBlock.Name).toBe('Starter Block')
       expect(starterBlock.subBlocks.description.value).toBe('This is the starter block')
 
       // Check agent block
       const agentBlock = deserialized.blocks.agent1
       expect(agentBlock).toBeDefined()
       expect(agentBlock.type).toBe('agent')
-      expect(agentBlock.name).toBe('Agent Block')
+      expect(agentBlock.Name).toBe('Agent Block')
       expect(agentBlock.subBlocks.prompt.value).toBe('Hello, world!')
       expect(agentBlock.subBlocks.model.value).toBe('claude-3-7-sonnet-20250219')
 
@@ -507,7 +507,7 @@ describe('Serializer', () => {
       expect(apiBlock).toBeDefined()
       expect(apiBlock.type).toBe('api')
       expect(apiBlock.subBlocks.url.value).toBe('https://api.example.com/data')
-      expect(apiBlock.subBlocks.method.value).toBe('GET')
+      expect(apiBlock.subBlocks.method.value).toBe('get')
       expect(apiBlock.subBlocks.headers.value).toEqual([
         ['Content-Type', 'application/json'],
         ['Authorization', 'Bearer {{API_KEY}}'],
@@ -603,7 +603,7 @@ describe('Serializer', () => {
       const blockWithMissingUserOnlyField: any = {
         id: 'test-block',
         type: 'jina',
-        name: 'Test Jina Block',
+        Name: 'Test Jina Block',
         position: { x: 0, y: 0 },
         subBlocks: {
           url: { value: 'https://example.com' },
@@ -630,7 +630,7 @@ describe('Serializer', () => {
       const blockWithAllUserOnlyFields: any = {
         id: 'test-block',
         type: 'jina',
-        name: 'Test Jina Block',
+        Name: 'Test Jina Block',
         position: { x: 0, y: 0 },
         subBlocks: {
           url: { value: 'https://example.com' },
@@ -658,7 +658,7 @@ describe('Serializer', () => {
       const blockWithMissingUserOrLlmField: any = {
         id: 'test-block',
         type: 'reddit',
-        name: 'Test Reddit Block',
+        Name: 'Test Reddit Block',
         position: { x: 0, y: 0 },
         subBlocks: {
           operation: { value: 'get_posts' },
@@ -687,7 +687,7 @@ describe('Serializer', () => {
       const blockWithMissingField: any = {
         id: 'test-block',
         type: 'jina',
-        name: 'Test Jina Block',
+        Name: 'Test Jina Block',
         position: { x: 0, y: 0 },
         subBlocks: {
           url: { value: 'https://example.com' },
@@ -709,7 +709,7 @@ describe('Serializer', () => {
       const blockWithMultipleMissing: any = {
         id: 'test-block',
         type: 'jina',
-        name: 'Test Jina Block',
+        Name: 'Test Jina Block',
         position: { x: 0, y: 0 },
         subBlocks: {
           url: { value: null }, // Missing user-or-llm field (should NOT be validated)
@@ -736,7 +736,7 @@ describe('Serializer', () => {
       const blockWithNoTools: any = {
         id: 'test-block',
         type: 'condition', // Condition blocks have different tool setup
-        name: 'Test Condition Block',
+        Name: 'Test Condition Block',
         position: { x: 0, y: 0 },
         subBlocks: {
           condition: { value: null }, // Missing required field but not user-only
@@ -757,7 +757,7 @@ describe('Serializer', () => {
       const blockWithEmptyString: any = {
         id: 'test-block',
         type: 'jina',
-        name: 'Test Jina Block',
+        Name: 'Test Jina Block',
         position: { x: 0, y: 0 },
         subBlocks: {
           url: { value: 'https://example.com' },
@@ -785,7 +785,7 @@ describe('Serializer', () => {
       const mixedBlock: any = {
         id: 'test-block',
         type: 'reddit',
-        name: 'Test Reddit Block',
+        Name: 'Test Reddit Block',
         position: { x: 0, y: 0 },
         subBlocks: {
           operation: { value: 'get_posts' },
@@ -812,7 +812,7 @@ describe('Serializer', () => {
       const advancedModeBlock: any = {
         id: 'slack-1',
         type: 'slack',
-        name: 'Test Slack Block',
+        Name: 'Test Slack Block',
         position: { x: 0, y: 0 },
         advancedMode: true, // Advanced mode enabled
         subBlocks: {
@@ -843,7 +843,7 @@ describe('Serializer', () => {
       const basicModeBlock: any = {
         id: 'slack-1',
         type: 'slack',
-        name: 'Test Slack Block',
+        Name: 'Test Slack Block',
         position: { x: 0, y: 0 },
         advancedMode: false, // Basic mode enabled
         subBlocks: {
@@ -876,7 +876,7 @@ describe('Serializer', () => {
         const defaultModeBlock: any = {
           id: 'slack-1',
           type: 'slack',
-          name: 'Test Slack Block',
+          Name: 'Test Slack Block',
           position: { x: 0, y: 0 },
           // advancedMode: undefined (defaults to false)
           subBlocks: {
@@ -908,13 +908,13 @@ describe('Serializer', () => {
       const agentInBasicMode: any = {
         id: 'agent-1',
         type: 'agentWithMemories',
-        name: 'Test Agent',
+        Name: 'Test Agent',
         position: { x: 0, y: 0 },
         advancedMode: false, // Basic mode
         subBlocks: {
           systemPrompt: { value: 'You are helpful' }, // both mode field
           userPrompt: { value: 'Hello' }, // both mode field
-          memories: { value: [{ role: 'user', content: 'My name is John' }] }, // advanced mode field
+          memories: { value: [{ role: 'user', content: 'My Name is John' }] }, // advanced mode field
           model: { value: 'claude-3-sonnet' }, // both mode field
         },
         outputs: {},
@@ -939,13 +939,13 @@ describe('Serializer', () => {
       const agentInAdvancedMode: any = {
         id: 'agent-1',
         type: 'agentWithMemories',
-        name: 'Test Agent',
+        Name: 'Test Agent',
         position: { x: 0, y: 0 },
         advancedMode: true, // Advanced mode
         subBlocks: {
           systemPrompt: { value: 'You are helpful' }, // both mode field
           userPrompt: { value: 'Hello' }, // both mode field
-          memories: { value: [{ role: 'user', content: 'My name is John' }] }, // advanced mode field
+          memories: { value: [{ role: 'user', content: 'My Name is John' }] }, // advanced mode field
           model: { value: 'claude-3-sonnet' }, // both mode field
         },
         outputs: {},
@@ -961,7 +961,7 @@ describe('Serializer', () => {
       expect(agentBlock?.config.params.systemPrompt).toBe('You are helpful')
       expect(agentBlock?.config.params.userPrompt).toBe('Hello')
       expect(agentBlock?.config.params.memories).toEqual([
-        { role: 'user', content: 'My name is John' },
+        { role: 'user', content: 'My Name is John' },
       ]) // Included in advanced mode
       expect(agentBlock?.config.params.model).toBe('claude-3-sonnet')
     })
@@ -972,7 +972,7 @@ describe('Serializer', () => {
       const blockWithUnknownField: any = {
         id: 'slack-1',
         type: 'slack',
-        name: 'Test Slack Block',
+        Name: 'Test Slack Block',
         position: { x: 0, y: 0 },
         advancedMode: false, // Basic mode
         subBlocks: {

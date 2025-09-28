@@ -1,4 +1,4 @@
-import { AgentIcon } from '@/components/icons'
+import { agentIcon } from '@/components/icons'
 import { isHosted } from '@/lib/environment'
 import { createLogger } from '@/lib/logs/console/logger'
 import type { BlockConfig } from '@/blocks/types'
@@ -34,7 +34,7 @@ interface AgentResponse extends ToolResponse {
     }
     toolCalls?: {
       list: Array<{
-        name: string
+        Name: string
         arguments: Record<string, any>
       }>
       count: number
@@ -59,14 +59,14 @@ const getToolIdFromBlock = (blockType: string): string | undefined => {
 
 export const AgentBlock: BlockConfig<AgentResponse> = {
   type: 'agent',
-  name: 'Agent',
+  Name: 'Agent',
   description: 'Build an agent',
   longDescription:
     'The Agent block is a core workflow block that is a wrapper around an LLM. It takes in system/user prompts and calls an LLM provider. It can also make tool calls by directly containing tools inside of its tool input. It can additionally return structured output.',
   docsLink: 'https://docs.sim.ai/blocks/agent',
   category: 'blocks',
   bgColor: 'var(--brand-primary-hex)',
-  icon: AgentIcon,
+  icon: agentIcon,
   subBlocks: [
     {
       id: 'systemPrompt',
@@ -306,7 +306,7 @@ Create a system prompt appropriately detailed for the request, using clear langu
         prompt: `You are an expert programmer specializing in creating JSON schemas according to a specific format.
 Generate ONLY the JSON schema based on the user's request.
 The output MUST be a single, valid JSON object, starting with { and ending with }.
-The JSON object MUST have the following top-level properties: 'name' (string), 'description' (string), 'strict' (boolean, usually true), and 'schema' (object).
+The JSON object MUST have the following top-level properties: 'Name' (string), 'description' (string), 'strict' (boolean, usually true), and 'schema' (object).
 The 'schema' object must define the structure and MUST contain 'type': 'object', 'properties': {...}, 'additionalProperties': false, and 'required': [...].
 Inside 'properties', use standard JSON Schema properties (type, description, enum, items for arrays, etc.).
 
@@ -318,7 +318,7 @@ Valid Schema Examples:
 
 Example 1:
 {
-    "name": "reddit_post",
+    "Name": "reddit_post",
     "description": "Fetches the reddit posts in the given subreddit",
     "strict": true,
     "schema": {
@@ -340,7 +340,7 @@ Example 1:
 
 Example 2:
 {
-    "name": "get_weather",
+    "Name": "get_weather",
     "description": "Fetches the current weather for a specific location.",
     "strict": true,
     "schema": {
@@ -363,7 +363,7 @@ Example 2:
 
 Example 3 (Array Input):
 {
-    "name": "process_items",
+    "Name": "process_items",
     "description": "Processes a list of items with specific IDs.",
     "strict": true,
     "schema": {
@@ -428,9 +428,9 @@ Example 3 (Array Input):
               const toolConfig = {
                 id:
                   tool.type === 'custom-tool'
-                    ? tool.schema?.function?.name
+                    ? tool.schema?.function?.Name
                     : tool.operation || getToolIdFromBlock(tool.type),
-                name: tool.title,
+                Name: tool.title,
                 description: tool.type === 'custom-tool' ? tool.schema?.function?.description : '',
                 params: tool.params || {},
                 parameters: tool.type === 'custom-tool' ? tool.schema?.function?.parameters : {},
@@ -469,9 +469,9 @@ Example 3 (Array Input):
       schema: {
         type: 'object',
         properties: {
-          name: {
+          Name: {
             type: 'string',
-            description: 'A name for your schema (optional)',
+            description: 'A Name for your schema (optional)',
           },
           schema: {
             type: 'object',
@@ -489,7 +489,7 @@ Example 3 (Array Input):
               required: {
                 type: 'array',
                 items: { type: 'string' },
-                description: 'Array of required property names',
+                description: 'Array of required property NAMES',
               },
               additionalProperties: {
                 type: 'boolean',

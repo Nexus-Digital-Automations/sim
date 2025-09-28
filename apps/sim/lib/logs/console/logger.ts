@@ -114,7 +114,7 @@ export class Logger {
 
   /**
    * Create a new logger for a specific module
-   * @param module The name of the module (e.g., 'OpenAIProvider', 'AgentBlockHandler')
+   * @param module The Name of the module (e.g., 'OpenAIProvider', 'AgentBlockHandler')
    */
   constructor(module: string) {
     this.module = module
@@ -295,7 +295,7 @@ export class Logger {
  * logger.error('Failed to fetch data', error)
  * ```
  *
- * @param module The name of the module (e.g., 'OpenAIProvider', 'AgentBlockHandler')
+ * @param module The Name of the module (e.g., 'OpenAIProvider', 'AgentBlockHandler')
  * @returns A Logger instance
  */
 export function createLogger(module: string): Logger {

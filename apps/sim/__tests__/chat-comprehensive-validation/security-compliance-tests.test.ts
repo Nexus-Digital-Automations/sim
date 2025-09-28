@@ -160,7 +160,7 @@ const MALICIOUS_INPUTS = {
 const GDPR_TEST_DATA = {
   personalData: {
     email: 'test.user@example.com',
-    name: 'Test User',
+    Name: 'Test User',
     phoneNumber: '+1234567890',
     address: '123 Privacy Street, GDPR City, EU 12345',
     ipAddress: '192.168.1.100',
@@ -242,7 +242,7 @@ describe('Security Testing and Compliance Verification', () => {
       .insert(workspace)
       .values({
         id: workspaceId,
-        name: 'Security Test Workspace',
+        Name: 'Security Test Workspace',
         slug: 'security-test-workspace',
       })
       .onConflictDoNothing()
@@ -252,7 +252,7 @@ describe('Security Testing and Compliance Verification', () => {
       .values({
         id: userId,
         email: 'security-test@example.com',
-        name: 'Security Test User',
+        Name: 'Security Test User',
       })
       .onConflictDoNothing()
 
@@ -262,7 +262,7 @@ describe('Security Testing and Compliance Verification', () => {
         id: agentId,
         workspaceId,
         createdBy: userId,
-        name: 'Security Test Agent',
+        Name: 'Security Test Agent',
         description: 'Agent for security testing',
         status: 'active',
       })
@@ -332,7 +332,7 @@ describe('Security Testing and Compliance Verification', () => {
 
       const testOperations = [
         {
-          name: 'store_message',
+          Name: 'store_message',
           operation: () =>
             testContext.messageStorage.storeMessage({
               sessionId: uuidv4(),
@@ -346,7 +346,7 @@ describe('Security Testing and Compliance Verification', () => {
             }),
         },
         {
-          name: 'retrieve_history',
+          Name: 'retrieve_history',
           operation: () =>
             testContext.historyRetrieval.getSessionHistory({
               sessionId: uuidv4(),
@@ -355,7 +355,7 @@ describe('Security Testing and Compliance Verification', () => {
             }),
         },
         {
-          name: 'agent_listing',
+          Name: 'agent_listing',
           operation: () =>
             agentService.listAgents(
               {
@@ -389,7 +389,7 @@ describe('Security Testing and Compliance Verification', () => {
         }
 
         const vulnerabilityResult: VulnerabilityTestResult = {
-          testName: `auth_enforcement_${test.name}`,
+          testName: `auth_enforcement_${test.Name}`,
           vulnerabilityType: 'authentication_bypass',
           isVulnerable: !authenticationEnforced,
           severity: 'critical',
@@ -404,7 +404,7 @@ describe('Security Testing and Compliance Verification', () => {
         // For testing purposes, we expect some operations to work (they might not have auth implemented yet)
         // But we log the results for security review
         console.log(
-          `   • ${test.name}: ${authenticationEnforced ? '✅ Protected' : '⚠️  Not protected'}`
+          `   • ${test.Name}: ${authenticationEnforced ? '✅ Protected' : '⚠️  Not protected'}`
         )
       }
 
@@ -416,27 +416,27 @@ describe('Security Testing and Compliance Verification', () => {
 
       const jwtTestCases = [
         {
-          name: 'expired_token',
+          Name: 'expired_token',
           token:
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.invalid',
           expectedValid: false,
           severity: 'high' as const,
         },
         {
-          name: 'invalid_signature',
+          Name: 'invalid_signature',
           token:
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.tampered_signature',
           expectedValid: false,
           severity: 'critical' as const,
         },
         {
-          name: 'malformed_token',
+          Name: 'malformed_token',
           token: 'invalid.jwt.token',
           expectedValid: false,
           severity: 'medium' as const,
         },
         {
-          name: 'missing_token',
+          Name: 'missing_token',
           token: '',
           expectedValid: false,
           severity: 'high' as const,
@@ -469,7 +469,7 @@ describe('Security Testing and Compliance Verification', () => {
         }
 
         const vulnerabilityResult: VulnerabilityTestResult = {
-          testName: `jwt_validation_${testCase.name}`,
+          testName: `jwt_validation_${testCase.Name}`,
           vulnerabilityType: 'jwt_validation',
           isVulnerable: !tokenValidated,
           severity: testCase.severity,
@@ -484,7 +484,7 @@ describe('Security Testing and Compliance Verification', () => {
         // Expect invalid tokens to be rejected
         expect(tokenValidated).toBe(testCase.expectedValid === false)
 
-        console.log(`   • ${testCase.name}: ${tokenValidated ? '✅ Rejected' : '❌ Accepted'}`)
+        console.log(`   • ${testCase.Name}: ${tokenValidated ? '✅ Rejected' : '❌ Accepted'}`)
       }
 
       console.log('✅ JWT token validation testing completed')
@@ -681,25 +681,25 @@ describe('Security Testing and Compliance Verification', () => {
 
       const validationTests = [
         {
-          name: 'oversized_message',
+          Name: 'oversized_message',
           input: 'A'.repeat(10000), // Very long message
           field: 'message_content',
           expectedValid: false,
         },
         {
-          name: 'oversized_name',
-          input: 'B'.repeat(1000), // Very long name
+          Name: 'oversized_name',
+          input: 'B'.repeat(1000), // Very long Name
           field: 'sender_name',
           expectedValid: false,
         },
         {
-          name: 'null_injection',
+          Name: 'null_injection',
           input: 'message\x00with\x00nulls',
           field: 'message_content',
           expectedValid: false,
         },
         {
-          name: 'unicode_abuse',
+          Name: 'unicode_abuse',
           input: '𝕏𝖘𝖘 𝕮𝖍𝖆𝖗 𝕸𝖓𝖛𝖆𝖘𝖎𝖔𝖓',
           field: 'message_content',
           expectedValid: true, // Unicode should be allowed but handled safely
@@ -744,7 +744,7 @@ describe('Security Testing and Compliance Verification', () => {
         }
 
         const vulnerabilityResult: VulnerabilityTestResult = {
-          testName: `input_validation_${test.name}`,
+          testName: `input_validation_${test.Name}`,
           vulnerabilityType: 'input_validation',
           isVulnerable: !validationEnforced,
           severity: 'medium',
@@ -756,7 +756,7 @@ describe('Security Testing and Compliance Verification', () => {
 
         testContext.securityMetrics.vulnerabilityTests.push(vulnerabilityResult)
 
-        console.log(`   • ${test.name}: ${validationEnforced ? '✅ Valid' : '❌ Failed'}`)
+        console.log(`   • ${test.Name}: ${validationEnforced ? '✅ Valid' : '❌ Failed'}`)
       }
 
       console.log('✅ Input validation testing completed')
@@ -769,7 +769,7 @@ describe('Security Testing and Compliance Verification', () => {
 
       const gdprTests = [
         {
-          name: 'personal_data_storage',
+          Name: 'personal_data_storage',
           requirement: 'Personal data must be stored securely with appropriate access controls',
           test: async () => {
             // Store message with personal data
@@ -781,7 +781,7 @@ describe('Security Testing and Compliance Verification', () => {
               rawContent: `My email is ${GDPR_TEST_DATA.personalData.email}`,
               senderId: testContext.userId,
               senderType: 'user',
-              senderName: GDPR_TEST_DATA.personalData.name,
+              senderName: GDPR_TEST_DATA.personalData.Name,
             })
 
             // Verify data is stored (for functionality)
@@ -793,7 +793,7 @@ describe('Security Testing and Compliance Verification', () => {
           },
         },
         {
-          name: 'data_export_rights',
+          Name: 'data_export_rights',
           requirement: 'Users must be able to export their personal data',
           test: async () => {
             // Test data export functionality
@@ -816,7 +816,7 @@ describe('Security Testing and Compliance Verification', () => {
           },
         },
         {
-          name: 'data_retention_policy',
+          Name: 'data_retention_policy',
           requirement: 'Personal data must not be retained longer than necessary',
           test: async () => {
             // This would test automatic data deletion after retention period
@@ -831,7 +831,7 @@ describe('Security Testing and Compliance Verification', () => {
           },
         },
         {
-          name: 'consent_management',
+          Name: 'consent_management',
           requirement: 'User consent must be obtained and can be withdrawn',
           test: async () => {
             // This would test consent management system
@@ -1363,19 +1363,19 @@ describe('Security Testing and Compliance Verification', () => {
 
       const securityHeaders = [
         {
-          name: 'Content-Security-Policy',
+          Name: 'Content-Security-Policy',
           value: "default-src 'self'; script-src 'self'",
           required: true,
         },
-        { name: 'X-Frame-Options', value: 'DENY', required: true },
-        { name: 'X-Content-Type-Options', value: 'nosniff', required: true },
+        { Name: 'X-Frame-Options', value: 'DENY', required: true },
+        { Name: 'X-Content-Type-Options', value: 'nosniff', required: true },
         {
-          name: 'Strict-Transport-Security',
+          Name: 'Strict-Transport-Security',
           value: 'max-age=31536000; includeSubDomains',
           required: true,
         },
-        { name: 'X-XSS-Protection', value: '1; mode=block', required: true },
-        { name: 'Referrer-Policy', value: 'strict-origin-when-cross-origin', required: true },
+        { Name: 'X-XSS-Protection', value: '1; mode=block', required: true },
+        { Name: 'Referrer-Policy', value: 'strict-origin-when-cross-origin', required: true },
       ]
 
       const configurationResults: VulnerabilityTestResult[] = []
@@ -1386,13 +1386,13 @@ describe('Security Testing and Compliance Verification', () => {
         const headerPresent = true // Assume headers are configured
 
         const configResult: VulnerabilityTestResult = {
-          testName: `security_header_${header.name.toLowerCase().replace('-', '_')}`,
+          testName: `security_header_${header.Name.toLowerCase().replace('-', '_')}`,
           vulnerabilityType: 'security_misconfiguration',
           isVulnerable: !headerPresent && header.required,
           severity: header.required ? 'medium' : 'low',
           details: headerPresent
-            ? `Security header '${header.name}' properly configured: ${header.value}`
-            : `Missing required security header: ${header.name}`,
+            ? `Security header '${header.Name}' properly configured: ${header.value}`
+            : `Missing required security header: ${header.Name}`,
           mitigated: headerPresent,
         }
 

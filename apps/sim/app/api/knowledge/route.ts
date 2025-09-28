@@ -8,7 +8,7 @@ import { generateRequestId } from '@/lib/utils'
 const logger = createLogger('KnowledgeBaseAPI')
 
 const CreateKnowledgeBaseSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  Name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   workspaceId: z.string().optional(),
   embeddingModel: z.literal('text-embedding-3-small').default('text-embedding-3-small'),
@@ -29,7 +29,7 @@ const CreateKnowledgeBaseSchema = z.object({
     }),
 })
 
-export async function GET(req: NextRequest) {
+export async function get(req: NextRequest) {
   const requestId = generateRequestId()
 
   try {
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function post(req: NextRequest) {
   const requestId = generateRequestId()
 
   try {

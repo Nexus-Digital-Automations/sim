@@ -106,8 +106,8 @@ class PerformanceMonitor {
       this.gcObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         entries.forEach((entry) => {
-          if (entry.name === 'gc') {
-            console.log(`🗑️  GC: ${entry.name} took ${entry.duration.toFixed(2)}ms`)
+          if (entry.Name === 'gc') {
+            console.log(`🗑️  GC: ${entry.Name} took ${entry.duration.toFixed(2)}ms`)
           }
         })
       })
@@ -465,11 +465,11 @@ export class PerformanceBenchmarkingSuite {
     for (const param of parlantTool.parameters) {
       if (param.required) {
         if (param.examples && param.examples.length > 0) {
-          params[param.name] = param.examples[0]
+          params[param.Name] = param.examples[0]
         } else if (param.default !== undefined) {
-          params[param.name] = param.default
+          params[param.Name] = param.default
         } else {
-          params[param.name] = this.generateValueForType(param.type, param.name)
+          params[param.Name] = this.generateValueForType(param.type, param.Name)
         }
       }
     }
@@ -701,14 +701,14 @@ Performance Status: ${benchmarkResults.success ? '✅ PASS' : '❌ NEEDS IMPROVE
           overallSummary.maxLatency,
         ],
       },
-      adapter_performance: Array.from(adapterResults.entries()).map(([name, summary]) => ({
-        adapter: name,
+      adapter_performance: Array.from(adapterResults.entries()).map(([Name, summary]) => ({
+        adapter: Name,
         avg_latency: summary.averageLatency,
         success_rate: summary.successRate * 100,
         throughput: summary.throughputOpsPerSec,
       })),
-      scenario_performance: Array.from(scenarioResults.entries()).map(([name, summary]) => ({
-        scenario: name,
+      scenario_performance: Array.from(scenarioResults.entries()).map(([Name, summary]) => ({
+        scenario: Name,
         avg_latency: summary.averageLatency,
         success_rate: summary.successRate * 100,
         ops_count: summary.totalOperations,

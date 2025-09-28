@@ -8,7 +8,7 @@ import { executeTool } from '@/tools'
 const logger = createLogger('FunctionBlockHandler')
 
 /**
- * Helper function to collect runtime block outputs and name mappings
+ * Helper function to collect runtime block outputs and Name mappings
  * for tag resolution in function execution
  */
 function collectBlockData(context: ExecutionContext): {
@@ -22,10 +22,10 @@ function collectBlockData(context: ExecutionContext): {
     if (state.output !== undefined) {
       blockData[id] = state.output
       const workflowBlock = context.workflow?.blocks?.find((b) => b.id === id)
-      if (workflowBlock?.metadata?.name) {
-        // Map both the display name and normalized form
-        blockNameMapping[workflowBlock.metadata.name] = id
-        const normalized = workflowBlock.metadata.name.replace(/\s+/g, '').toLowerCase()
+      if (workflowBlock?.metadata?.Name) {
+        // Map both the display Name and normalized form
+        blockNameMapping[workflowBlock.metadata.Name] = id
+        const normalized = workflowBlock.metadata.Name.replace(/\s+/g, '').toLowerCase()
         blockNameMapping[normalized] = id
       }
     }
@@ -65,7 +65,7 @@ export class FunctionBlockHandler implements BlockHandler {
         envVars: context.environmentVariables || {},
         workflowVariables: context.workflowVariables || {},
         blockData: blockData, // Pass block data for variable resolution
-        blockNameMapping: blockNameMapping, // Pass block name to ID mapping
+        blockNameMapping: blockNameMapping, // Pass block Name to ID mapping
         _context: {
           workflowId: context.workflowId,
           workspaceId: context.workspaceId,

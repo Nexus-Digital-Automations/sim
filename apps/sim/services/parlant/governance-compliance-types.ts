@@ -19,7 +19,7 @@
 export interface GovernancePolicy {
   id: string
   workspace_id: string
-  name: string
+  Name: string
   description: string
   category: PolicyCategory
   type: PolicyType
@@ -222,7 +222,7 @@ export interface ViolationEvidence {
 export interface ContentFilter {
   id: string
   workspace_id: string
-  name: string
+  Name: string
   description: string
   filter_type: FilterType
   patterns: FilterPattern[]
@@ -426,7 +426,7 @@ export interface AuditChange {
 // ==================== REQUEST/RESPONSE TYPES ====================
 
 export interface CreatePolicyRequest {
-  name: string
+  Name: string
   description: string
   category: PolicyCategory
   type: PolicyType
@@ -440,7 +440,7 @@ export interface CreatePolicyRequest {
 }
 
 export interface UpdatePolicyRequest {
-  name?: string
+  Name?: string
   description?: string
   rules?: PolicyRule[]
   enforcement_level?: EnforcementLevel
@@ -513,7 +513,7 @@ export interface GovernanceDashboardData {
   }
   policy_effectiveness: Array<{
     policy_id: string
-    name: string
+    Name: string
     violations_prevented: number
     false_positives: number
     effectiveness_score: number

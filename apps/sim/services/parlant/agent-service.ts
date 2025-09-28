@@ -23,7 +23,7 @@ const logger = createLogger('AgentService')
  * Enhanced agent list parameters
  */
 export interface ListAgentsParams extends AgentListQuery {
-  sortBy?: 'name' | 'created_at' | 'updated_at'
+  sortBy?: 'Name' | 'created_at' | 'updated_at'
   sortOrder?: 'asc' | 'desc'
 }
 
@@ -43,7 +43,7 @@ export class AgentService {
    */
   async createAgent(request: AgentCreateRequest, auth: AuthContext): Promise<ApiResponse<Agent>> {
     logger.info('Creating agent', {
-      name: request.name,
+      Name: request.Name,
       workspaceId: request.workspace_id,
       userId: auth.user_id,
     })
@@ -54,7 +54,7 @@ export class AgentService {
       if (response.success && response.data) {
         logger.info('Agent created successfully', {
           agentId: response.data.id,
-          name: response.data.name,
+          Name: response.data.Name,
           workspaceId: response.data.workspace_id,
         })
       }
@@ -86,7 +86,7 @@ export class AgentService {
       if (response.success && response.data) {
         logger.debug('Agent retrieved successfully', {
           agentId: response.data.id,
-          name: response.data.name,
+          Name: response.data.Name,
         })
       }
 
@@ -124,7 +124,7 @@ export class AgentService {
       if (response.success && response.data) {
         logger.info('Agent updated successfully', {
           agentId: response.data.id,
-          name: response.data.name,
+          Name: response.data.Name,
           updatedFields: Object.keys(updates),
         })
       }
@@ -249,7 +249,7 @@ export class AgentService {
   }
 
   /**
-   * Search agents by name or description
+   * Search agents by Name or description
    */
   async searchAgents(
     query: string,
@@ -274,7 +274,7 @@ export class AgentService {
         status,
         limit,
         offset: 0,
-        sortBy: 'name',
+        sortBy: 'Name',
         sortOrder: 'asc',
       },
       auth
@@ -309,12 +309,12 @@ export class AgentService {
 
       const sourceAgent = sourceResponse.data
 
-      // Create duplicate with modified name
+      // Create duplicate with modified Name
       const duplicateRequest: AgentCreateRequest = {
-        name: newName,
+        Name: newName,
         description: sourceAgent.description
           ? `Copy of ${sourceAgent.description}`
-          : `Copy of ${sourceAgent.name}`,
+          : `Copy of ${sourceAgent.Name}`,
         workspace_id: sourceAgent.workspace_id,
         guidelines: sourceAgent.guidelines?.map((g) => ({
           condition: g.condition,

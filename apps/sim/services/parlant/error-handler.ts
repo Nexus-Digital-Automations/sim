@@ -28,7 +28,7 @@ export class ParlantError extends Error {
     requestId?: string
   ) {
     super(message)
-    this.name = 'ParlantError'
+    this.Name = 'ParlantError'
     this.code = code
     this.details = details
     this.requestId = requestId
@@ -38,7 +38,7 @@ export class ParlantError extends Error {
 
   toJSON() {
     return {
-      name: this.name,
+      Name: this.Name,
       code: this.code,
       message: this.message,
       details: this.details,
@@ -56,7 +56,7 @@ export class ParlantError extends Error {
 export class ParlantNetworkError extends ParlantError {
   constructor(message: string, details?: Record<string, any>, requestId?: string) {
     super('NETWORK_ERROR', message, true, details, requestId)
-    this.name = 'ParlantNetworkError'
+    this.Name = 'ParlantNetworkError'
   }
 }
 
@@ -66,7 +66,7 @@ export class ParlantNetworkError extends ParlantError {
 export class ParlantAuthError extends ParlantError {
   constructor(message: string, details?: Record<string, any>, requestId?: string) {
     super('AUTH_ERROR', message, false, details, requestId)
-    this.name = 'ParlantAuthError'
+    this.Name = 'ParlantAuthError'
   }
 }
 
@@ -83,7 +83,7 @@ export class ParlantValidationError extends ParlantError {
     requestId?: string
   ) {
     super('VALIDATION_ERROR', message, false, details, requestId)
-    this.name = 'ParlantValidationError'
+    this.Name = 'ParlantValidationError'
     this.validationErrors = validationErrors
   }
 
@@ -108,7 +108,7 @@ export class ParlantRateLimitError extends ParlantError {
     requestId?: string
   ) {
     super('RATE_LIMIT_ERROR', message, true, details, requestId)
-    this.name = 'ParlantRateLimitError'
+    this.Name = 'ParlantRateLimitError'
     this.rateLimitInfo = rateLimitInfo
   }
 
@@ -133,7 +133,7 @@ export class ParlantServerError extends ParlantError {
     requestId?: string
   ) {
     super('SERVER_ERROR', message, statusCode >= 500, details, requestId)
-    this.name = 'ParlantServerError'
+    this.Name = 'ParlantServerError'
     this.statusCode = statusCode
   }
 
@@ -151,7 +151,7 @@ export class ParlantServerError extends ParlantError {
 export class ParlantConfigError extends ParlantError {
   constructor(message: string, details?: Record<string, any>) {
     super('CONFIG_ERROR', message, false, details)
-    this.name = 'ParlantConfigError'
+    this.Name = 'ParlantConfigError'
   }
 }
 
@@ -168,7 +168,7 @@ export class ParlantTimeoutError extends ParlantError {
     requestId?: string
   ) {
     super('TIMEOUT_ERROR', message, true, details, requestId)
-    this.name = 'ParlantTimeoutError'
+    this.Name = 'ParlantTimeoutError'
     this.timeoutMs = timeoutMs
   }
 
@@ -283,7 +283,7 @@ export class ParlantErrorHandler {
    */
   handleNetworkError(error: any, requestId?: string): ParlantError {
     // Timeout errors
-    if (error.name === 'AbortError') {
+    if (error.Name === 'AbortError') {
       return new ParlantTimeoutError(
         'Request timeout',
         30000, // Default timeout

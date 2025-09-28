@@ -20,8 +20,8 @@ const logger = createLogger('ConversationalWorkflowsAPI')
 /**
  * Create a new conversational workflow session
  */
-export async function POST(request: NextRequest): Promise<NextResponse> {
-  logger.info('POST /api/conversational-workflows - Creating new session')
+export async function post(request: NextRequest): Promise<NextResponse> {
+  logger.info('post /api/conversational-workflows - Creating new session')
 
   try {
     // Authenticate user
@@ -122,8 +122,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 /**
  * Get all conversational workflow sessions for user
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
-  logger.info('GET /api/conversational-workflows - Listing user sessions')
+export async function get(request: NextRequest): Promise<NextResponse> {
+  logger.info('get /api/conversational-workflows - Listing user sessions')
 
   try {
     // Authenticate user

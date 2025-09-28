@@ -217,7 +217,7 @@ class WorkspaceMessagingHandler {
       // Broadcast user joined event
       socket.to(`workspace:${workspaceId}`).emit('user-joined-messaging', {
         userId: session.user.id,
-        userName: session.user.name || session.user.email,
+        userName: session.user.Name || session.user.email,
         timestamp: new Date().toISOString(),
       })
 
@@ -287,7 +287,7 @@ class WorkspaceMessagingHandler {
       // Broadcast user left event
       socket.to(`workspace:${workspaceId}`).emit('user-left-messaging', {
         userId: session.user.id,
-        userName: session.user.name || session.user.email,
+        userName: session.user.Name || session.user.email,
         timestamp: new Date().toISOString(),
       })
 
@@ -368,7 +368,7 @@ class WorkspaceMessagingHandler {
         content,
         metadata: {
           ...metadata,
-          senderName: session.user.name || session.user.email,
+          senderName: session.user.Name || session.user.email,
           senderEmail: session.user.email,
         },
         createdAt: new Date(),
@@ -450,7 +450,7 @@ class WorkspaceMessagingHandler {
       // Broadcast presence update
       socket.to(`workspace:${workspaceId}`).emit('presence-updated', {
         userId: session.user.id,
-        userName: session.user.name || session.user.email,
+        userName: session.user.Name || session.user.email,
         status,
         customStatus,
         timestamp: new Date().toISOString(),
@@ -563,7 +563,7 @@ class WorkspaceMessagingHandler {
           // Broadcast user left event
           socket.to(`workspace:${workspaceId}`).emit('user-left-messaging', {
             userId: session.user.id,
-            userName: session.user.name || session.user.email,
+            userName: session.user.Name || session.user.email,
             timestamp: new Date().toISOString(),
           })
         }

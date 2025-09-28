@@ -219,7 +219,7 @@ export class UniversalToolAdapterRegistry {
     const queryLower = query.toLowerCase()
     return this.getParlantTools().filter(
       (tool) =>
-        tool.name.toLowerCase().includes(queryLower) ||
+        tool.Name.toLowerCase().includes(queryLower) ||
         tool.description.toLowerCase().includes(queryLower) ||
         tool.usageHints?.some((hint) => hint.toLowerCase().includes(queryLower))
     )

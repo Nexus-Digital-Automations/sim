@@ -108,7 +108,7 @@ export function useCollaborativeWorkflow() {
               workflowStore.addBlock(
                 payload.id,
                 payload.type,
-                payload.name,
+                payload.Name,
                 payload.position,
                 payload.data,
                 payload.parentId,
@@ -154,8 +154,8 @@ export function useCollaborativeWorkflow() {
               }
               break
             }
-            case 'update-name':
-              workflowStore.updateBlockName(payload.id, payload.name)
+            case 'update-Name':
+              workflowStore.updateBlockName(payload.id, payload.Name)
               break
             case 'remove':
               workflowStore.removeBlock(payload.id)
@@ -188,7 +188,7 @@ export function useCollaborativeWorkflow() {
               workflowStore.addBlock(
                 payload.id,
                 payload.type,
-                payload.name,
+                payload.Name,
                 payload.position,
                 payload.data,
                 payload.parentId,
@@ -261,7 +261,7 @@ export function useCollaborativeWorkflow() {
               variablesStore.addVariable(
                 {
                   workflowId: payload.workflowId,
-                  name: payload.name,
+                  Name: payload.Name,
                   type: payload.type,
                   value: payload.value,
                 },
@@ -312,8 +312,8 @@ export function useCollaborativeWorkflow() {
       isApplyingRemoteChange.current = true
 
       try {
-        if (field === 'name') {
-          variablesStore.updateVariable(variableId, { name: value })
+        if (field === 'Name') {
+          variablesStore.updateVariable(variableId, { Name: value })
         } else if (field === 'value') {
           variablesStore.updateVariable(variableId, { value })
         } else if (field === 'type') {
@@ -541,7 +541,7 @@ export function useCollaborativeWorkflow() {
     (
       id: string,
       type: string,
-      name: string,
+      Name: string,
       position: Position,
       data?: Record<string, any>,
       parentId?: string,
@@ -570,7 +570,7 @@ export function useCollaborativeWorkflow() {
         const completeBlockData = {
           id,
           type,
-          name,
+          Name,
           position,
           data: data || {},
           subBlocks: {},
@@ -587,7 +587,7 @@ export function useCollaborativeWorkflow() {
 
         // Skip if applying remote changes
         if (isApplyingRemoteChange.current) {
-          workflowStore.addBlock(id, type, name, position, data, parentId, extent, {
+          workflowStore.addBlock(id, type, Name, position, data, parentId, extent, {
             triggerMode: false,
           })
           if (autoConnectEdge) {
@@ -612,7 +612,7 @@ export function useCollaborativeWorkflow() {
         })
 
         // Apply locally first (immediate UI feedback)
-        workflowStore.addBlock(id, type, name, position, data, parentId, extent, {
+        workflowStore.addBlock(id, type, Name, position, data, parentId, extent, {
           triggerMode: false,
         })
         if (autoConnectEdge) {
@@ -646,7 +646,7 @@ export function useCollaborativeWorkflow() {
       const completeBlockData = {
         id,
         type,
-        name,
+        Name,
         position,
         data: data || {},
         subBlocks,
@@ -681,7 +681,7 @@ export function useCollaborativeWorkflow() {
       })
 
       // Apply locally
-      workflowStore.addBlock(id, type, name, position, data, parentId, extent, {
+      workflowStore.addBlock(id, type, Name, position, data, parentId, extent, {
         triggerMode: false,
       })
       if (autoConnectEdge) {
@@ -718,9 +718,9 @@ export function useCollaborativeWorkflow() {
   )
 
   const collaborativeUpdateBlockName = useCallback(
-    (id: string, name: string) => {
-      executeQueuedOperation('update-name', 'block', { id, name }, () => {
-        workflowStore.updateBlockName(id, name)
+    (id: string, Name: string) => {
+      executeQueuedOperation('update-Name', 'block', { id, Name }, () => {
+        workflowStore.updateBlockName(id, Name)
       })
     },
     [executeQueuedOperation, workflowStore]
@@ -964,10 +964,10 @@ export function useCollaborativeWorkflow() {
         y: sourceBlock.position.y + 20,
       }
 
-      const match = sourceBlock.name.match(/(.*?)(\d+)?$/)
+      const match = sourceBlock.Name.match(/(.*?)(\d+)?$/)
       const newName = match?.[2]
         ? `${match[1]}${Number.parseInt(match[2], 10) + 1}`
-        : `${sourceBlock.name} 1`
+        : `${sourceBlock.Name} 1`
 
       // Get subblock values from the store
       const subBlockValues = subBlockStore.workflowValues[activeWorkflowId || '']?.[sourceId] || {}
@@ -994,7 +994,7 @@ export function useCollaborativeWorkflow() {
         sourceId,
         id: newId,
         type: sourceBlock.type,
-        name: newName,
+        Name: newName,
         position: offsetPosition,
         data: sourceBlock.data ? JSON.parse(JSON.stringify(sourceBlock.data)) : {},
         subBlocks: mergedSubBlocks,
@@ -1223,10 +1223,10 @@ export function useCollaborativeWorkflow() {
   )
 
   const collaborativeUpdateVariable = useCallback(
-    (variableId: string, field: 'name' | 'value' | 'type', value: any) => {
+    (variableId: string, field: 'Name' | 'value' | 'type', value: any) => {
       executeQueuedOperation('variable-update', 'variable', { variableId, field, value }, () => {
-        if (field === 'name') {
-          variablesStore.updateVariable(variableId, { name: value })
+        if (field === 'Name') {
+          variablesStore.updateVariable(variableId, { Name: value })
         } else if (field === 'value') {
           variablesStore.updateVariable(variableId, { value })
         } else if (field === 'type') {
@@ -1238,7 +1238,7 @@ export function useCollaborativeWorkflow() {
   )
 
   const collaborativeAddVariable = useCallback(
-    (variableData: { name: string; type: any; value: any; workflowId: string }) => {
+    (variableData: { Name: string; type: any; value: any; workflowId: string }) => {
       const id = crypto.randomUUID()
       variablesStore.addVariable(variableData, id)
       const processedVariable = useVariablesStore.getState().variables[id]
@@ -1247,7 +1247,7 @@ export function useCollaborativeWorkflow() {
         const payloadWithProcessedName = {
           ...variableData,
           id,
-          name: processedVariable.name,
+          Name: processedVariable.Name,
         }
 
         executeQueuedOperation('add', 'variable', payloadWithProcessedName, () => {})

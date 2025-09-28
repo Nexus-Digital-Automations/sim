@@ -1,112 +1,100 @@
 {
   "execution": {
-    "timestamp": "2025-09-28T06:45:09.853Z",
+    "timestamp": "2025-09-28T06:49:22.164Z",
     "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
     "hookVersion": "1.0.0",
     "nodeVersion": "v22.20.0",
     "platform": "darwin",
     "arch": "arm64",
-    "pid": 31348,
+    "pid": 36654,
     "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
-    "endTimestamp": "2025-09-28T06:45:09.862Z",
-    "durationMs": 9
+    "endTimestamp": "2025-09-28T06:49:22.176Z",
+    "durationMs": 12
   },
   "input": {
     "sessionId": "cb7f52ee-feff-4b91-a009-d212217b1190",
     "transcriptPath": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/cb7f52ee-feff-4b91-a009-d212217b1190.jsonl",
-    "stopHookActive": false,
+    "stopHookActive": true,
     "rawInput": {
       "session_id": "cb7f52ee-feff-4b91-a009-d212217b1190",
       "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/cb7f52ee-feff-4b91-a009-d212217b1190.jsonl",
       "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
       "permission_mode": "default",
       "hook_event_name": "Stop",
-      "stop_hook_active": false
+      "stop_hook_active": true
     }
   },
   "projectState": {},
   "decisions": [],
   "flow": [
     {
-      "timestamp": "2025-09-28T06:45:09.853Z",
-      "message": "Raw input data: \"{\"session_id\":\"cb7f52ee-feff-4b91-a009-d212217b1190\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/cb7f52ee-feff-4b91-a009-d212217b1190.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim\",\"permission_mode\":\"default\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":false}\""
+      "timestamp": "2025-09-28T06:49:22.164Z",
+      "message": "Raw input data: \"{\"session_id\":\"cb7f52ee-feff-4b91-a009-d212217b1190\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/cb7f52ee-feff-4b91-a009-d212217b1190.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim\",\"permission_mode\":\"default\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":true}\""
     },
     {
-      "timestamp": "2025-09-28T06:45:09.853Z",
-      "message": "Input data length: 349"
+      "timestamp": "2025-09-28T06:49:22.164Z",
+      "message": "Input data length: 348"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.854Z",
+      "timestamp": "2025-09-28T06:49:22.164Z",
       "message": "Received input from Claude Code"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.854Z",
+      "timestamp": "2025-09-28T06:49:22.164Z",
       "message": "Received Stop event from Claude Code"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.854Z",
+      "timestamp": "2025-09-28T06:49:22.164Z",
       "message": "Checking transcript for DONE command: /Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/cb7f52ee-feff-4b91-a009-d212217b1190.jsonl"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.857Z",
+      "timestamp": "2025-09-28T06:49:22.171Z",
       "message": "Last assistant message: \"\""
     },
     {
-      "timestamp": "2025-09-28T06:45:09.860Z",
-      "message": "Found 1 total agents in TASKS.json"
+      "timestamp": "2025-09-28T06:49:22.175Z",
+      "message": "Found 0 total agents in TASKS.json"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.860Z",
+      "timestamp": "2025-09-28T06:49:22.175Z",
       "message": "🧹 Starting multi-project stale agent cleanup across 2 projects..."
     },
     {
-      "timestamp": "2025-09-28T06:45:09.860Z",
+      "timestamp": "2025-09-28T06:49:22.175Z",
       "message": "No TASKS.json found in /Users/jeremyparker/Desktop/Claude Coding Projects/AIgent/bytebot - skipping"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.861Z",
+      "timestamp": "2025-09-28T06:49:22.176Z",
       "message": "🧹 Multi-project cleanup complete: 0 agents removed, 0 tasks unassigned, 0 orphaned tasks reset"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.861Z",
-      "message": "Agent claude-code-agent-recovery: heartbeat=2025-09-28T02:20:46.841Z, timeSince=15863s, isActive=false"
-    },
-    {
-      "timestamp": "2025-09-28T06:45:09.861Z",
-      "message": "Removed stale agent: claude-code-agent-recovery"
-    },
-    {
-      "timestamp": "2025-09-28T06:45:09.862Z",
-      "message": "Removed 1 stale agents from TASKS.json"
-    },
-    {
-      "timestamp": "2025-09-28T06:45:09.862Z",
+      "timestamp": "2025-09-28T06:49:22.176Z",
       "message": "Running automatic task sorting And test error reclassification"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.862Z",
+      "timestamp": "2025-09-28T06:49:22.176Z",
       "message": "Task sorting completed - no reclassification needed"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.862Z",
-      "message": "Active agents found: 0, Stale agents removed: 1, Tasks unassigned: 0, Stale tasks reset: 0"
+      "timestamp": "2025-09-28T06:49:22.176Z",
+      "message": "Active agents found: 0, Stale agents removed: 0, Tasks unassigned: 0, Stale tasks reset: 0"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.862Z",
+      "timestamp": "2025-09-28T06:49:22.176Z",
       "message": "No active agents detected - analyzing situation for appropriate guidance"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.862Z",
-      "message": "Found 1 stale agents - providing reactivation guidance"
+      "timestamp": "2025-09-28T06:49:22.176Z",
+      "message": "No agents detected - need fresh agent initialization"
     },
     {
-      "timestamp": "2025-09-28T06:45:09.862Z",
-      "message": "Exiting with code 2: Only stale agents found - providing reactivation guidance"
+      "timestamp": "2025-09-28T06:49:22.176Z",
+      "message": "Exiting with code 2: No agents - providing fresh initialization guidance"
     }
   ],
   "output": {
     "exitCode": 2,
-    "exitReason": "Only stale agents found - providing reactivation guidance"
+    "exitReason": "No agents - providing fresh initialization guidance"
   },
   "errors": []
 }

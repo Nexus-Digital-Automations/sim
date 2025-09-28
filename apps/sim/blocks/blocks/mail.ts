@@ -1,16 +1,16 @@
-import { MailIcon } from '@/components/icons'
+import { mailIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { MailSendResult } from '@/tools/mail/types'
 
 export const MailBlock: BlockConfig<MailSendResult> = {
   type: 'mail',
-  name: 'Mail',
+  Name: 'Mail',
   description: 'Send emails using the internal mail service',
   longDescription:
     'Send emails directly using the internal mail service. Uses MAIL_BLOCK_FROM_ADDRESS if configured, otherwise falls back to FROM_EMAIL_ADDRESS. No external configuration or OAuth required. Perfect for sending notifications, alerts, or general purpose emails from your workflows. Supports HTML formatting.',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: MailIcon,
+  icon: mailIcon,
 
   subBlocks: [
     {

@@ -55,7 +55,7 @@ export class RateLimitError extends Error {
   statusCode: number
   constructor(message: string, statusCode = 429) {
     super(message)
-    this.name = 'RateLimitError'
+    this.Name = 'RateLimitError'
     this.statusCode = statusCode
   }
 }

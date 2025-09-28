@@ -116,7 +116,7 @@ describe('Chat API Utils', () => {
       setChatAuthCookie(mockResponse, subdomainId, type)
 
       expect(mockSet).toHaveBeenCalledWith({
-        name: `chat_auth_${subdomainId}`,
+        Name: `chat_auth_${subdomainId}`,
         value: expect.any(String),
         httpOnly: true,
         secure: false, // Development mode
@@ -156,7 +156,7 @@ describe('Chat API Utils', () => {
       )
       expect(mockResponse.headers.set).toHaveBeenCalledWith(
         'Access-Control-Allow-Methods',
-        'GET, POST, OPTIONS'
+        'get, post, OPTIONS'
       )
       expect(mockResponse.headers.set).toHaveBeenCalledWith(
         'Access-Control-Allow-Headers',
@@ -218,7 +218,7 @@ describe('Chat API Utils', () => {
       expect(result.authorized).toBe(true)
     })
 
-    it.concurrent('should request password auth for GET requests', async () => {
+    it.concurrent('should request password auth for get requests', async () => {
       const { validateChatAuth } = await import('@/app/api/chat/utils')
 
       const deployment = {
@@ -227,7 +227,7 @@ describe('Chat API Utils', () => {
       }
 
       const mockRequest = {
-        method: 'GET',
+        method: 'get',
         cookies: {
           get: vi.fn().mockReturnValue(null),
         },
@@ -239,7 +239,7 @@ describe('Chat API Utils', () => {
       expect(result.error).toBe('auth_required_password')
     })
 
-    it('should validate password for POST requests', async () => {
+    it('should validate password for post requests', async () => {
       const { validateChatAuth } = await import('@/app/api/chat/utils')
       const { decryptSecret } = await import('@/lib/utils')
 
@@ -250,7 +250,7 @@ describe('Chat API Utils', () => {
       }
 
       const mockRequest = {
-        method: 'POST',
+        method: 'post',
         cookies: {
           get: vi.fn().mockReturnValue(null),
         },
@@ -276,7 +276,7 @@ describe('Chat API Utils', () => {
       }
 
       const mockRequest = {
-        method: 'POST',
+        method: 'post',
         cookies: {
           get: vi.fn().mockReturnValue(null),
         },
@@ -302,7 +302,7 @@ describe('Chat API Utils', () => {
       }
 
       const mockRequest = {
-        method: 'GET',
+        method: 'get',
         cookies: {
           get: vi.fn().mockReturnValue(null),
         },
@@ -324,7 +324,7 @@ describe('Chat API Utils', () => {
       }
 
       const mockRequest = {
-        method: 'POST',
+        method: 'post',
         cookies: {
           get: vi.fn().mockReturnValue(null),
         },

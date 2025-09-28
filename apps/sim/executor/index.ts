@@ -787,14 +787,14 @@ export class Executor {
 
           // Process each field in the input format
           for (const field of inputFormat) {
-            if (field.name && field.type) {
+            if (field.Name && field.type) {
               // Get the field value from workflow input if available
               // First try to access via input.field, then directly from field
               // This handles both input formats: { input: { field: value } } and { field: value }
               let inputValue =
-                this.workflowInput?.input?.[field.name] !== undefined
-                  ? this.workflowInput.input[field.name] // Try to get from input.field
-                  : this.workflowInput?.[field.name] // Fallback to direct field access
+                this.workflowInput?.input?.[field.Name] !== undefined
+                  ? this.workflowInput.input[field.Name] // Try to get from input.field
+                  : this.workflowInput?.[field.Name] // Fallback to direct field access
 
               if (inputValue === undefined || inputValue === null) {
                 if (Object.hasOwn(field, 'value')) {
@@ -822,13 +822,13 @@ export class Executor {
                   try {
                     typedValue = JSON.parse(inputValue)
                   } catch (e) {
-                    logger.warn(`Failed to parse ${field.type} input for field ${field.name}:`, e)
+                    logger.warn(`Failed to parse ${field.type} input for field ${field.Name}:`, e)
                   }
                 }
               }
 
               // Add the field to structured input
-              structuredInput[field.name] = typedValue
+              structuredInput[field.Name] = typedValue
             }
           }
 
@@ -1415,14 +1415,14 @@ export class Executor {
     // Use virtual block ID in logs if applicable
     if (parallelInfo) {
       blockLog.blockId = blockId
-      blockLog.blockName = `${block.metadata?.name || ''} (iteration ${parallelInfo.iterationIndex + 1})`
+      blockLog.blockName = `${block.metadata?.Name || ''} (iteration ${parallelInfo.iterationIndex + 1})`
     }
 
     const addConsole = useConsoleStore.getState().addConsole
 
     try {
       if (block.enabled === false) {
-        throw new Error(`Cannot execute disabled block: ${block.metadata?.name || block.id}`)
+        throw new Error(`Cannot execute disabled block: ${block.metadata?.Name || block.id}`)
       }
 
       // Check if this block needs the starter block's output
@@ -1434,7 +1434,7 @@ export class Executor {
         const starterState = context.blockStates.get(starterBlock.id)
         if (!starterState) {
           logger.warn(
-            `Starter block state not found when executing ${block.metadata?.name || actualBlockId}. This may cause reference errors.`
+            `Starter block state not found when executing ${block.metadata?.Name || actualBlockId}. This may cause reference errors.`
           )
         }
       }
@@ -1455,7 +1455,7 @@ export class Executor {
         virtualBlockId: parallelInfo ? blockId : undefined,
         iterationIndex: parallelInfo?.iterationIndex,
         blockType: block.metadata?.id || 'unknown',
-        blockName: block.metadata?.name || 'Unnamed Block',
+        blockName: block.metadata?.Name || 'Unnamed Block',
         inputSize: Object.keys(inputs).length,
         startTime: new Date().toISOString(),
       })
@@ -1542,7 +1542,7 @@ export class Executor {
           let iterationCurrent: number | undefined
           let iterationTotal: number | undefined
           let iterationType: 'loop' | 'parallel' | undefined
-          const blockName = block.metadata?.name || 'Unnamed Block'
+          const blockName = block.metadata?.Name || 'Unnamed Block'
 
           if (parallelInfo) {
             // This is a parallel iteration
@@ -1599,7 +1599,7 @@ export class Executor {
           virtualBlockId: parallelInfo ? blockId : undefined,
           iterationIndex: parallelInfo?.iterationIndex,
           blockType: block.metadata?.id || 'unknown',
-          blockName: block.metadata?.name || 'Unnamed Block',
+          blockName: block.metadata?.Name || 'Unnamed Block',
           durationMs: Math.round(executionTime),
           success: true,
         })
@@ -1651,7 +1651,7 @@ export class Executor {
         let iterationCurrent: number | undefined
         let iterationTotal: number | undefined
         let iterationType: 'loop' | 'parallel' | undefined
-        const blockName = block.metadata?.name || 'Unnamed Block'
+        const blockName = block.metadata?.Name || 'Unnamed Block'
 
         if (parallelInfo) {
           // This is a parallel iteration
@@ -1708,7 +1708,7 @@ export class Executor {
         virtualBlockId: parallelInfo ? blockId : undefined,
         iterationIndex: parallelInfo?.iterationIndex,
         blockType: block.metadata?.id || 'unknown',
-        blockName: block.metadata?.name || 'Unnamed Block',
+        blockName: block.metadata?.Name || 'Unnamed Block',
         durationMs: Math.round(executionTime),
         success: true,
       })
@@ -1763,7 +1763,7 @@ export class Executor {
         let iterationCurrent: number | undefined
         let iterationTotal: number | undefined
         let iterationType: 'loop' | 'parallel' | undefined
-        const blockName = block.metadata?.name || 'Unnamed Block'
+        const blockName = block.metadata?.Name || 'Unnamed Block'
 
         if (parallelInfo) {
           // This is a parallel iteration
@@ -1822,7 +1822,7 @@ export class Executor {
 
       // Log the error for visibility
       logger.error(
-        `Error executing block ${block.metadata?.name || actualBlockId}:`,
+        `Error executing block ${block.metadata?.Name || actualBlockId}:`,
         this.sanitizeError(error)
       )
 
@@ -1855,7 +1855,7 @@ export class Executor {
 
       // Handle the specific "undefined (undefined)" case
       if (!errorMessage || errorMessage === 'undefined (undefined)') {
-        errorMessage = `Error executing ${block.metadata?.id || 'unknown'} block: ${block.metadata?.name || 'Unnamed Block'}`
+        errorMessage = `Error executing ${block.metadata?.id || 'unknown'} block: ${block.metadata?.Name || 'Unnamed Block'}`
 
         // Try to get more details if possible
         if (error && typeof error === 'object') {
@@ -1871,9 +1871,9 @@ export class Executor {
         virtualBlockId: parallelInfo ? blockId : undefined,
         iterationIndex: parallelInfo?.iterationIndex,
         blockType: block.metadata?.id || 'unknown',
-        blockName: block.metadata?.name || 'Unnamed Block',
+        blockName: block.metadata?.Name || 'Unnamed Block',
         durationMs: blockLog.durationMs,
-        errorType: error.name || 'Error',
+        errorType: error.Name || 'Error',
         errorMessage: this.extractErrorMessage(error),
       })
 
@@ -1961,7 +1961,7 @@ export class Executor {
   private createBlockLog(block: SerializedBlock): BlockLog {
     return {
       blockId: block.id,
-      blockName: block.metadata?.name || '',
+      blockName: block.metadata?.Name || '',
       blockType: block.metadata?.id || '',
       startedAt: new Date().toISOString(),
       endedAt: '',
@@ -2060,7 +2060,7 @@ export class Executor {
     if (blockOutput.files && Array.isArray(blockOutput.files) && blockOutput.files.length > 0) {
       const starterBlockLog: BlockLog = {
         blockId: initBlock.id,
-        blockName: initBlock.metadata?.name || 'Start',
+        blockName: initBlock.metadata?.Name || 'Start',
         blockType: initBlock.metadata?.id || 'start',
         startedAt: new Date().toISOString(),
         endedAt: new Date().toISOString(),

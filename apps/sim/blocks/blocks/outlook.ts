@@ -1,17 +1,17 @@
-import { OutlookIcon } from '@/components/icons'
+import { outlookIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { OutlookResponse } from '@/tools/outlook/types'
 
 export const OutlookBlock: BlockConfig<OutlookResponse> = {
   type: 'outlook',
-  name: 'Outlook',
+  Name: 'Outlook',
   description: 'Access Outlook',
   longDescription:
     'Integrate Outlook into the workflow. Can read, draft, and send email messages. Requires OAuth. Can be used in trigger mode to trigger a workflow when a new email is received.',
   docsLink: 'https://docs.sim.ai/tools/outlook',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: OutlookIcon,
+  icon: outlookIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -158,7 +158,7 @@ export const OutlookBlock: BlockConfig<OutlookResponse> = {
       type: 'short-input',
       layout: 'full',
       canonicalParamId: 'folder',
-      placeholder: 'Enter Outlook folder name (e.g., INBOX, SENT, or custom folder)',
+      placeholder: 'Enter Outlook folder Name (e.g., INBOX, SENT, or custom folder)',
       mode: 'advanced',
       condition: { field: 'operation', value: 'read_outlook' },
     },
@@ -226,7 +226,7 @@ export const OutlookBlock: BlockConfig<OutlookResponse> = {
     comment: { type: 'string', description: 'Optional comment for forwarding' },
     // Read operation inputs
     folder: { type: 'string', description: 'Email folder' },
-    manualFolder: { type: 'string', description: 'Manual folder name' },
+    manualFolder: { type: 'string', description: 'Manual folder Name' },
     maxResults: { type: 'number', description: 'Maximum emails' },
   },
   outputs: {

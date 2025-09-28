@@ -1,4 +1,4 @@
-import { DocumentIcon } from '@/components/icons'
+import { documentIcon } from '@/components/icons'
 import { createLogger } from '@/lib/logs/console/logger'
 import type { BlockConfig, SubBlockLayout, SubBlockType } from '@/blocks/types'
 import type { FileParserOutput } from '@/tools/file/types'
@@ -7,13 +7,13 @@ const logger = createLogger('FileBlock')
 
 export const FileBlock: BlockConfig<FileParserOutput> = {
   type: 'file',
-  name: 'File',
+  Name: 'File',
   description: 'Read and parse multiple files',
   longDescription: `Integrate File into the workflow. Can upload a file manually or insert a file url.`,
   docsLink: 'https://docs.sim.ai/tools/file',
   category: 'tools',
   bgColor: '#40916C',
-  icon: DocumentIcon,
+  icon: documentIcon,
   subBlocks: [
     {
       id: 'inputMethod',

@@ -5,7 +5,7 @@ import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('CreateTeamOrganization')
 
-export async function POST(request: Request) {
+export async function post(request: Request) {
   try {
     const session = await getSession()
 
@@ -15,14 +15,14 @@ export async function POST(request: Request) {
 
     const user = session.user
 
-    // Parse request body for optional name and slug
-    let organizationName = user.name
+    // Parse request body for optional Name and slug
+    let organizationName = user.Name
     let organizationSlug: string | undefined
 
     try {
       const body = await request.json()
-      if (body.name && typeof body.name === 'string') {
-        organizationName = body.name
+      if (body.Name && typeof body.Name === 'string') {
+        organizationName = body.Name
       }
       if (body.slug && typeof body.slug === 'string') {
         organizationSlug = body.slug
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     logger.info('Creating organization for team plan', {
       userId: user.id,
-      userName: user.name,
+      userName: user.Name,
       userEmail: user.email,
       organizationName,
       organizationSlug,

@@ -588,13 +588,13 @@ describe('CannedResponseService', () => {
       const personalizedResponse = await cannedResponseService.createResponse(
         {
           title: 'Utility Test Response',
-          content: 'Hello {{name}}, thanks for contacting us!',
+          content: 'Hello {{Name}}, thanks for contacting us!',
           category: 'greeting',
           tags: ['utility'],
           personalization_fields: [
             {
-              field_name: 'name',
-              placeholder: '{{name}}',
+              field_name: 'Name',
+              placeholder: '{{Name}}',
               data_source: 'user_profile',
               required: false,
               fallback_value: 'there',
@@ -607,7 +607,7 @@ describe('CannedResponseService', () => {
 
       const personalizedContent = await getPersonalizedResponse(
         personalizedResponse.id,
-        { name: 'Alice' },
+        { Name: 'Alice' },
         testAuth
       )
 

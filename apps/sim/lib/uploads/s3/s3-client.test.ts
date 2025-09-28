@@ -92,7 +92,7 @@ describe('S3 Client', () => {
       expect(result).toEqual({
         path: expect.stringContaining('/api/files/serve/s3/'),
         key: expect.stringContaining('test-file.txt'),
-        name: 'test-file.txt',
+        Name: 'test-file.txt',
         size: file.length,
         type: 'text/plain',
       })
@@ -115,7 +115,7 @@ describe('S3 Client', () => {
         })
       )
 
-      expect(result.name).toBe(fileName)
+      expect(result.Name).toBe(fileName)
     })
 
     it('should use provided size if available', async () => {

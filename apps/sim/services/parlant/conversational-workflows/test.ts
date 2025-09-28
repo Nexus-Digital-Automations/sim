@@ -49,12 +49,12 @@ export class ConversationalWorkflowTestSuite {
     logger.info('Running conversational workflow integration tests')
 
     const tests = [
-      { name: 'Test NLP Processing', fn: () => this.testNLPProcessing() },
-      { name: 'Test State Management', fn: () => this.testStateManagement() },
-      { name: 'Test Workflow Creation', fn: () => this.testWorkflowCreation() },
-      { name: 'Test Command Processing', fn: () => this.testCommandProcessing() },
-      { name: 'Test Error Handling', fn: () => this.testErrorHandling() },
-      { name: 'Test Constants and Utils', fn: () => this.testConstantsAndUtils() },
+      { Name: 'Test NLP Processing', fn: () => this.testNLPProcessing() },
+      { Name: 'Test State Management', fn: () => this.testStateManagement() },
+      { Name: 'Test Workflow Creation', fn: () => this.testWorkflowCreation() },
+      { Name: 'Test Command Processing', fn: () => this.testCommandProcessing() },
+      { Name: 'Test Error Handling', fn: () => this.testErrorHandling() },
+      { Name: 'Test Constants and Utils', fn: () => this.testConstantsAndUtils() },
     ]
 
     for (const test of tests) {
@@ -65,23 +65,23 @@ export class ConversationalWorkflowTestSuite {
         const duration = Date.now() - startTime
 
         results.push({
-          test: test.name,
+          test: test.Name,
           success: true,
           duration,
         })
 
-        logger.info(`✅ ${test.name} passed`, { duration })
+        logger.info(`✅ ${test.Name} passed`, { duration })
       } catch (error: any) {
         const duration = Date.now() - startTime
 
         results.push({
-          test: test.name,
+          test: test.Name,
           success: false,
           error: error.message,
           duration,
         })
 
-        logger.error(`❌ ${test.name} failed`, { error: error.message, duration })
+        logger.error(`❌ ${test.Name} failed`, { error: error.message, duration })
       }
     }
 
@@ -367,10 +367,10 @@ export class ConversationalWorkflowTestSuite {
       throw new Error('Failed to extract command hints')
     }
 
-    // Test room name generation
+    // Test room Name generation
     const roomName = ConversationalWorkflowUtils.getSessionRoomName('test-session')
     if (roomName !== 'conversational-workflow:test-session') {
-      throw new Error('Incorrect room name generated')
+      throw new Error('Incorrect room Name generated')
     }
 
     // Test constants structure

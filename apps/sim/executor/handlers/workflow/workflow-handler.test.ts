@@ -19,7 +19,7 @@ describe('WorkflowBlockHandler', () => {
 
     mockBlock = {
       id: 'workflow-block-1',
-      metadata: { id: BlockType.WORKFLOW, name: 'Test Workflow Block' },
+      metadata: { id: BlockType.WORKFLOW, Name: 'Test Workflow Block' },
       position: { x: 0, y: 0 },
       config: { tool: BlockType.WORKFLOW, params: {} },
       inputs: { workflowId: 'string' },
@@ -56,12 +56,12 @@ describe('WorkflowBlockHandler', () => {
       json: () =>
         Promise.resolve({
           data: {
-            name: 'Child Workflow',
+            Name: 'Child Workflow',
             state: {
               blocks: [
                 {
                   id: 'starter',
-                  metadata: { id: BlockType.STARTER, name: 'Starter' },
+                  metadata: { id: BlockType.STARTER, Name: 'Starter' },
                   position: { x: 0, y: 0 },
                   config: { tool: BlockType.STARTER, params: {} },
                   inputs: {},
@@ -161,7 +161,7 @@ describe('WorkflowBlockHandler', () => {
         json: () =>
           Promise.resolve({
             data: {
-              name: 'Invalid Workflow',
+              Name: 'Invalid Workflow',
               state: null, // Invalid state
             },
           }),

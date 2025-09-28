@@ -78,15 +78,15 @@ export class GenericBlockHandler implements BlockHandler {
         const errorMessage =
           errorDetails.length > 0
             ? errorDetails.join(' - ')
-            : `Block execution of ${tool?.name || block.config.tool} failed with no error message`
+            : `Block execution of ${tool?.Name || block.config.tool} failed with no error message`
 
         const error = new Error(errorMessage)
 
         Object.assign(error, {
           toolId: block.config.tool,
-          toolName: tool?.name || 'Unknown tool',
+          toolName: tool?.Name || 'Unknown tool',
           blockId: block.id,
-          blockName: block.metadata?.name || 'Unnamed Block',
+          blockName: block.metadata?.Name || 'Unnamed Block',
           output: result.output || {},
           timestamp: new Date().toISOString(),
         })
@@ -117,10 +117,10 @@ export class GenericBlockHandler implements BlockHandler {
       return output
     } catch (error: any) {
       if (!error.message || error.message === 'undefined (undefined)') {
-        let errorMessage = `Block execution of ${tool?.name || block.config.tool} failed`
+        let errorMessage = `Block execution of ${tool?.Name || block.config.tool} failed`
 
-        if (block.metadata?.name) {
-          errorMessage += `: ${block.metadata.name}`
+        if (block.metadata?.Name) {
+          errorMessage += `: ${block.metadata.Name}`
         }
 
         if (error.status) {
@@ -132,7 +132,7 @@ export class GenericBlockHandler implements BlockHandler {
 
       if (typeof error === 'object' && error !== null) {
         if (!error.toolId) error.toolId = block.config.tool
-        if (!error.blockName) error.blockName = block.metadata?.name || 'Unnamed Block'
+        if (!error.blockName) error.blockName = block.metadata?.Name || 'Unnamed Block'
       }
 
       throw error

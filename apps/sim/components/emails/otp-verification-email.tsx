@@ -51,13 +51,13 @@ export const OTPVerificationEmail = ({
   const getMessage = () => {
     switch (type) {
       case 'sign-in':
-        return `Sign in to ${brand.name}`
+        return `Sign in to ${brand.Name}`
       case 'forget-password':
-        return `Reset your password for ${brand.name}`
+        return `Reset your password for ${brand.Name}`
       case 'chat-access':
         return `Access ${chatTitle || 'the chat'}`
       default:
-        return `Welcome to ${brand.name}`
+        return `Welcome to ${brand.Name}`
     }
   }
 
@@ -65,7 +65,7 @@ export const OTPVerificationEmail = ({
     <Html>
       <Head />
       <Body style={baseStyles.main}>
-        <Preview>{getSubjectByType(type, brand.name, chatTitle)}</Preview>
+        <Preview>{getSubjectByType(type, brand.Name, chatTitle)}</Preview>
         <Container style={baseStyles.container}>
           <Section style={{ padding: '30px 0', textAlign: 'center' }}>
             <Row>
@@ -73,7 +73,7 @@ export const OTPVerificationEmail = ({
                 <Img
                   src={brand.logoUrl || `${baseUrl}/logo/reverse/text/medium.png`}
                   width='114'
-                  alt={brand.name}
+                  alt={brand.Name}
                   style={{
                     margin: '0 auto',
                   }}

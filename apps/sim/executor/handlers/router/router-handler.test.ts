@@ -35,7 +35,7 @@ describe('RouterBlockHandler', () => {
   beforeEach(() => {
     mockTargetBlock1 = {
       id: 'target-block-1',
-      metadata: { id: 'target', name: 'Option A', description: 'Choose A' },
+      metadata: { id: 'target', Name: 'Option A', description: 'Choose A' },
       position: { x: 100, y: 100 },
       config: { tool: 'tool_a', params: { p: 'a' } },
       inputs: {},
@@ -44,7 +44,7 @@ describe('RouterBlockHandler', () => {
     }
     mockTargetBlock2 = {
       id: 'target-block-2',
-      metadata: { id: 'target', name: 'Option B', description: 'Choose B' },
+      metadata: { id: 'target', Name: 'Option B', description: 'Choose B' },
       position: { x: 100, y: 150 },
       config: { tool: 'tool_b', params: { p: 'b' } },
       inputs: {},
@@ -53,7 +53,7 @@ describe('RouterBlockHandler', () => {
     }
     mockBlock = {
       id: 'router-block-1',
-      metadata: { id: BlockType.ROUTER, name: 'Test Router' },
+      metadata: { id: BlockType.ROUTER, Name: 'Test Router' },
       position: { x: 50, y: 50 },
       config: { tool: BlockType.ROUTER, params: {} },
       inputs: { prompt: 'string', model: 'string' }, // Using ParamType strings
@@ -154,7 +154,7 @@ describe('RouterBlockHandler', () => {
     expect(mockFetch).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
-        method: 'POST',
+        method: 'post',
         headers: expect.any(Object),
         body: expect.any(String),
       })

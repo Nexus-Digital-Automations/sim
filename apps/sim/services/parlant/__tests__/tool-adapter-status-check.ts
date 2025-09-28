@@ -85,7 +85,7 @@ describe('Universal Tool Adapter System - Implementation Status', () => {
   test('should check if any tool adapter implementation files exist', async () => {
     console.log('🔍 Searching for any existing tool adapter implementation files...')
 
-    // Search for any files with "adapter" in the name within parlant services
+    // Search for any files with "adapter" in the Name within parlant services
     const parlantDir = join(projectRoot, 'apps/sim/services/parlant')
     const adapterFiles = []
 
@@ -98,7 +98,7 @@ describe('Universal Tool Adapter System - Implementation Status', () => {
       }
     }
 
-    console.log(`📊 Found ${adapterFiles.length} files with 'adapter' in the name:`)
+    console.log(`📊 Found ${adapterFiles.length} files with 'adapter' in the Name:`)
     adapterFiles.forEach((file) => {
       console.log(`  📄 ${file}`)
     })
@@ -149,9 +149,9 @@ describe('Universal Tool Adapter System - Implementation Status', () => {
 
       for (const entry of entries) {
         if (entry.isDirectory()) {
-          const indexFile = join(toolsDir, entry.name, 'index.ts')
+          const indexFile = join(toolsDir, entry.Name, 'index.ts')
           if (existsSync(indexFile)) {
-            toolDirectories.push(entry.name)
+            toolDirectories.push(entry.Name)
           }
         }
       }

@@ -147,7 +147,7 @@ describe('Schedule Configuration API Route', () => {
    */
   it('should create a new schedule successfully', async () => {
     // Create a mock request with schedule data
-    const req = createMockRequest('POST', {
+    const req = createMockRequest('post', {
       workflowId: 'workflow-id',
       state: {
         blocks: {
@@ -167,10 +167,10 @@ describe('Schedule Configuration API Route', () => {
     })
 
     // Import the route handler after mocks are set up
-    const { POST } = await import('@/app/api/schedules/route')
+    const { post } = await import('@/app/api/schedules/route')
 
     // Call the handler
-    const response = await POST(req)
+    const response = await post(req)
 
     // Verify response
     expect(response).toBeDefined()
@@ -233,7 +233,7 @@ describe('Schedule Configuration API Route', () => {
     // Since we're skipping this test, we don't need the rest of the implementation
     /*
     // Create a mock request
-    const req = createMockRequest('POST', {
+    const req = createMockRequest('post', {
       workflowId: 'workflow-id',
       state: { 
         blocks: {
@@ -251,10 +251,10 @@ describe('Schedule Configuration API Route', () => {
     })
 
     // Import the route handler after mocks are set up
-    const { POST } = await import('@/app/api/schedules/route')
+    const { post } = await import('@/app/api/schedules/route')
 
     // Call the handler
-    const response = await POST(req)
+    const response = await post(req)
 
     // Verify delete was called
     expect(dbDeleteMock).toHaveBeenCalled()
@@ -287,16 +287,16 @@ describe('Schedule Configuration API Route', () => {
     }))
 
     // Create a mock request
-    const req = createMockRequest('POST', {
+    const req = createMockRequest('post', {
       workflowId: 'workflow-id',
       state: { blocks: {}, edges: [], loops: {} },
     })
 
     // Import the route handler after mocks are set up
-    const { POST } = await import('@/app/api/schedules/route')
+    const { post } = await import('@/app/api/schedules/route')
 
     // Call the handler
-    const response = await POST(req)
+    const response = await post(req)
 
     // Check response is an error (could be 400 or 500 depending on error handling)
     expect(response.status).toBeGreaterThanOrEqual(400)
@@ -314,16 +314,16 @@ describe('Schedule Configuration API Route', () => {
     }))
 
     // Create a mock request
-    const req = createMockRequest('POST', {
+    const req = createMockRequest('post', {
       workflowId: 'workflow-id',
       state: { blocks: {}, edges: [], loops: {} },
     })
 
     // Import the route handler after mocks are set up
-    const { POST } = await import('@/app/api/schedules/route')
+    const { post } = await import('@/app/api/schedules/route')
 
     // Call the handler
-    const response = await POST(req)
+    const response = await post(req)
 
     // Check response requires auth
     expect(response.status).toBe(401)
@@ -336,17 +336,17 @@ describe('Schedule Configuration API Route', () => {
    */
   it('should validate input data', async () => {
     // Create a mock request with invalid data
-    const req = createMockRequest('POST', {
+    const req = createMockRequest('post', {
       // Missing required fields
       workflowId: 'workflow-id',
       // Missing state
     })
 
     // Import the route handler after mocks are set up
-    const { POST } = await import('@/app/api/schedules/route')
+    const { post } = await import('@/app/api/schedules/route')
 
     // Call the handler
-    const response = await POST(req)
+    const response = await post(req)
 
     // Check response validates data
     expect(response.status).toBe(400)

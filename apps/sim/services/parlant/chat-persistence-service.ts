@@ -146,7 +146,7 @@ export interface ChatStatistics {
   averageMessagesPerSession: number
   mostActiveAgent?: {
     agentId: string
-    name: string
+    Name: string
     sessionCount: number
   }
   messageTypeBreakdown: Record<ChatMessageType, number>
@@ -504,7 +504,7 @@ export class ChatPersistenceService {
           createdAt: parlantEvent.createdAt,
           sessionUserAgent: parlantSession.userAgent,
           sessionIpAddress: parlantSession.ipAddress,
-          agentName: parlantAgent.name,
+          agentName: parlantAgent.Name,
         })
         .from(parlantEvent)
         .innerJoin(parlantSession, eq(parlantEvent.sessionId, parlantSession.id))
@@ -627,7 +627,7 @@ export class ChatPersistenceService {
         .select({
           sessionId: parlantSession.id,
           agentId: parlantSession.agentId,
-          agentName: parlantAgent.name,
+          agentName: parlantAgent.Name,
           workspaceId: parlantSession.workspaceId,
           userId: parlantSession.userId,
           title: parlantSession.title,
@@ -777,7 +777,7 @@ export class ChatPersistenceService {
           .select({
             sessionId: parlantSession.id,
             agentId: parlantSession.agentId,
-            agentName: parlantAgent.name,
+            agentName: parlantAgent.Name,
             userId: parlantSession.userId,
             eventId: parlantEvent.id,
             eventType: parlantEvent.eventType,
@@ -787,7 +787,7 @@ export class ChatPersistenceService {
             createdAt: parlantEvent.createdAt,
             sessionStarted: parlantSession.startedAt,
             sessionTitle: parlantSession.title,
-            userName: user.name,
+            userName: user.Name,
             userEmail: options.anonymizeUsers ? sql`'[ANONYMIZED]'` : user.email,
           })
           .from(parlantEvent)
@@ -1057,13 +1057,13 @@ export class ChatPersistenceService {
       const [mostActiveAgent] = await db
         .select({
           agentId: parlantAgent.id,
-          name: parlantAgent.name,
+          Name: parlantAgent.Name,
           sessionCount: count(),
         })
         .from(parlantSession)
         .innerJoin(parlantAgent, eq(parlantSession.agentId, parlantAgent.id))
         .where(eq(parlantSession.workspaceId, workspaceId))
-        .groupBy(parlantAgent.id, parlantAgent.name)
+        .groupBy(parlantAgent.id, parlantAgent.Name)
         .orderBy(desc(count()))
         .limit(1)
 
@@ -1113,7 +1113,7 @@ export class ChatPersistenceService {
         mostActiveAgent: mostActiveAgent
           ? {
               agentId: mostActiveAgent.agentId,
-              name: mostActiveAgent.name,
+              Name: mostActiveAgent.Name,
               sessionCount: mostActiveAgent.sessionCount,
             }
           : undefined,

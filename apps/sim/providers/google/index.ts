@@ -46,7 +46,7 @@ function createReadableStreamFromGeminiStream(response: Response): ReadableStrea
                     logger.debug(
                       'Function call detected in final buffer, ending stream to execute tool',
                       {
-                        functionName: functionCall.name,
+                        functionName: functionCall.Name,
                       }
                     )
                     // Function calls should not be streamed - end the stream early
@@ -74,7 +74,7 @@ function createReadableStreamFromGeminiStream(response: Response): ReadableStrea
                             logger.debug(
                               'Function call detected in array item, ending stream to execute tool',
                               {
-                                functionName: functionCall.name,
+                                functionName: functionCall.Name,
                               }
                             )
                             controller.close()
@@ -165,7 +165,7 @@ function createReadableStreamFromGeminiStream(response: Response): ReadableStrea
                     logger.debug(
                       'Function call detected in stream, ending stream to execute tool',
                       {
-                        functionName: functionCall.name,
+                        functionName: functionCall.Name,
                       }
                     )
                     // Function calls should not be streamed - we need to end the stream
@@ -209,7 +209,7 @@ function createReadableStreamFromGeminiStream(response: Response): ReadableStrea
 
 export const googleProvider: ProviderConfig = {
   id: 'google',
-  name: 'Google',
+  Name: 'Google',
   description: "Google's Gemini models",
   version: '1.0.0',
   models: getProviderModels('google'),
@@ -306,7 +306,7 @@ export const googleProvider: ProviderConfig = {
           logger.info('Google Gemini request with tools:', {
             toolCount: filteredTools.length,
             model: requestedModel,
-            tools: filteredTools.map((t) => t.name),
+            tools: filteredTools.map((t) => t.Name),
             hasToolConfig: !!toolConfig,
             toolConfig: toolConfig,
           })
@@ -333,7 +333,7 @@ export const googleProvider: ProviderConfig = {
       }
 
       const response = await fetch(endpoint, {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -383,7 +383,7 @@ export const googleProvider: ProviderConfig = {
                 timeSegments: [
                   {
                     type: 'model',
-                    name: 'Initial streaming response',
+                    Name: 'Initial streaming response',
                     startTime: initialCallTime,
                     endTime: initialCallTime + firstResponseTime,
                     duration: firstResponseTime,
@@ -442,9 +442,9 @@ export const googleProvider: ProviderConfig = {
       let currentToolConfig = originalToolConfig
 
       // Helper function to check for forced tool usage in responses
-      const checkForForcedToolUsage = (functionCall: { name: string; args: any }) => {
+      const checkForForcedToolUsage = (functionCall: { Name: string; args: any }) => {
         if (currentToolConfig && forcedTools.length > 0) {
-          const toolCallsForTracking = [{ name: functionCall.name, arguments: functionCall.args }]
+          const toolCallsForTracking = [{ Name: functionCall.Name, arguments: functionCall.args }]
           const result = trackForcedToolUsage(
             toolCallsForTracking,
             currentToolConfig,
@@ -474,7 +474,7 @@ export const googleProvider: ProviderConfig = {
       const timeSegments: TimeSegment[] = [
         {
           type: 'model',
-          name: 'Initial response',
+          Name: 'Initial response',
           startTime: initialCallTime,
           endTime: initialCallTime + firstResponseTime,
           duration: firstResponseTime,
@@ -489,7 +489,7 @@ export const googleProvider: ProviderConfig = {
         const functionCall = extractFunctionCall(candidate)
 
         if (functionCall) {
-          logger.info(`Received function call from Gemini: ${functionCall.name}`)
+          logger.info(`Received function call from Gemini: ${functionCall.Name}`)
 
           // Process function calls in a loop
           while (iterationCount < MAX_ITERATIONS) {
@@ -504,14 +504,14 @@ export const googleProvider: ProviderConfig = {
             }
 
             logger.info(
-              `Processing function call: ${latestFunctionCall.name} (iteration ${iterationCount + 1}/${MAX_ITERATIONS})`
+              `Processing function call: ${latestFunctionCall.Name} (iteration ${iterationCount + 1}/${MAX_ITERATIONS})`
             )
 
             // Track time for tool calls
             const toolsStartTime = Date.now()
 
             try {
-              const toolName = latestFunctionCall.name
+              const toolName = latestFunctionCall.Name
               const toolArgs = latestFunctionCall.args || {}
 
               // Get the tool from the tools registry
@@ -532,7 +532,7 @@ export const googleProvider: ProviderConfig = {
               // Add to time segments for both success and failure
               timeSegments.push({
                 type: 'tool',
-                name: toolName,
+                Name: toolName,
                 startTime: toolCallStartTime,
                 endTime: toolCallEndTime,
                 duration: toolCallDuration,
@@ -553,7 +553,7 @@ export const googleProvider: ProviderConfig = {
               }
 
               toolCalls.push({
-                name: toolName,
+                Name: toolName,
                 arguments: toolParams,
                 startTime: new Date(toolCallStartTime).toISOString(),
                 endTime: new Date(toolCallEndTime).toISOString(),
@@ -575,7 +575,7 @@ export const googleProvider: ProviderConfig = {
                   parts: [
                     {
                       functionCall: {
-                        name: latestFunctionCall.name,
+                        Name: latestFunctionCall.Name,
                         args: latestFunctionCall.args,
                       },
                     },
@@ -586,7 +586,7 @@ export const googleProvider: ProviderConfig = {
                   role: 'user',
                   parts: [
                     {
-                      text: `Function ${latestFunctionCall.name} result: ${JSON.stringify(resultContent)}`,
+                      text: `Function ${latestFunctionCall.Name} result: ${JSON.stringify(resultContent)}`,
                     },
                   ],
                 },
@@ -652,7 +652,7 @@ export const googleProvider: ProviderConfig = {
                   const checkResponse = await fetch(
                     `https://generativelanguage.googleapis.com/v1beta/models/${requestedModel}:generateContent?key=${request.apiKey}`,
                     {
-                      method: 'POST',
+                      method: 'post',
                       headers: {
                         'Content-Type': 'application/json',
                       },
@@ -681,7 +681,7 @@ export const googleProvider: ProviderConfig = {
                     logger.info(
                       'Function call detected in follow-up, handling in non-streaming mode',
                       {
-                        functionName: checkFunctionCall.name,
+                        functionName: checkFunctionCall.Name,
                       }
                     )
 
@@ -705,7 +705,7 @@ export const googleProvider: ProviderConfig = {
                     // Add to time segments
                     timeSegments.push({
                       type: 'model',
-                      name: `Model response (iteration ${iterationCount + 1})`,
+                      Name: `Model response (iteration ${iterationCount + 1})`,
                       startTime: nextModelStartTime,
                       endTime: nextModelEndTime,
                       duration: thisModelTime,
@@ -722,7 +722,7 @@ export const googleProvider: ProviderConfig = {
                   const streamingResponse = await fetch(
                     `https://generativelanguage.googleapis.com/v1beta/models/${requestedModel}:streamGenerateContent?key=${request.apiKey}`,
                     {
-                      method: 'POST',
+                      method: 'post',
                       headers: {
                         'Content-Type': 'application/json',
                       },
@@ -753,7 +753,7 @@ export const googleProvider: ProviderConfig = {
                   // Add to time segments
                   timeSegments.push({
                     type: 'model',
-                    name: 'Final streaming response after tool calls',
+                    Name: 'Final streaming response after tool calls',
                     startTime: nextModelStartTime,
                     endTime: nextModelEndTime,
                     duration: thisModelTime,
@@ -840,7 +840,7 @@ export const googleProvider: ProviderConfig = {
                 const nextResponse = await fetch(
                   `https://generativelanguage.googleapis.com/v1beta/models/${requestedModel}:generateContent?key=${request.apiKey}`,
                   {
-                    method: 'POST',
+                    method: 'post',
                     headers: {
                       'Content-Type': 'application/json',
                     },
@@ -867,7 +867,7 @@ export const googleProvider: ProviderConfig = {
                 // Add to time segments
                 timeSegments.push({
                   type: 'model',
-                  name: `Model response (iteration ${iterationCount + 1})`,
+                  Name: `Model response (iteration ${iterationCount + 1})`,
                   startTime: nextModelStartTime,
                   endTime: nextModelEndTime,
                   duration: thisModelTime,
@@ -896,7 +896,7 @@ export const googleProvider: ProviderConfig = {
             } catch (error) {
               logger.error('Error processing function call:', {
                 error: error instanceof Error ? error.message : String(error),
-                functionName: latestFunctionCall?.name || 'unknown',
+                functionName: latestFunctionCall?.Name || 'unknown',
               })
               break
             }
@@ -913,7 +913,7 @@ export const googleProvider: ProviderConfig = {
 
         // Don't rethrow, so we can still return partial results
         if (!content && toolCalls.length > 0) {
-          content = `Tool call(s) executed: ${toolCalls.map((t) => t.name).join(', ')}. Results are available in the tool results.`
+          content = `Tool call(s) executed: ${toolCalls.map((t) => t.Name).join(', ')}. Results are available in the tool results.`
         }
       }
 
@@ -1032,7 +1032,7 @@ function extractTextContent(candidate: any): string {
 /**
  * Helper function to extract a function call from a Gemini response
  */
-function extractFunctionCall(candidate: any): { name: string; args: any } | null {
+function extractFunctionCall(candidate: any): { Name: string; args: any } | null {
   if (!candidate?.content?.parts) return null
 
   // Check for functionCall in parts
@@ -1045,12 +1045,12 @@ function extractFunctionCall(candidate: any): { name: string; args: any } | null
         part.functionCall.args.trim().startsWith('{')
       ) {
         try {
-          return { name: part.functionCall.name, args: JSON.parse(part.functionCall.args) }
+          return { Name: part.functionCall.Name, args: JSON.parse(part.functionCall.args) }
         } catch (_e) {
-          return { name: part.functionCall.name, args: part.functionCall.args }
+          return { Name: part.functionCall.Name, args: part.functionCall.args }
         }
       }
-      return { name: part.functionCall.name, args }
+      return { Name: part.functionCall.Name, args }
     }
   }
 
@@ -1060,7 +1060,7 @@ function extractFunctionCall(candidate: any): { name: string; args: any } | null
       typeof candidate.content.function_call.arguments === 'string'
         ? JSON.parse(candidate.content.function_call.arguments || '{}')
         : candidate.content.function_call.arguments || {}
-    return { name: candidate.content.function_call.name, args }
+    return { Name: candidate.content.function_call.Name, args }
   }
 
   return null
@@ -1111,7 +1111,7 @@ function convertToGeminiFormat(request: ProviderRequest): {
         if (message.role === 'assistant' && message.tool_calls && message.tool_calls.length > 0) {
           const functionCalls = message.tool_calls.map((toolCall) => ({
             functionCall: {
-              name: toolCall.function?.name,
+              Name: toolCall.function?.Name,
               args: JSON.parse(toolCall.function?.arguments || '{}'),
             },
           }))
@@ -1156,7 +1156,7 @@ function convertToGeminiFormat(request: ProviderRequest): {
 
       // Clean schema for Gemini
       return {
-        name: tool.id,
+        Name: tool.id,
         description: tool.description || `Execute the ${tool.id} function`,
         parameters: cleanSchemaForGemini(parameters),
       }
@@ -1164,7 +1164,7 @@ function convertToGeminiFormat(request: ProviderRequest): {
 
     // Simple schema case
     return {
-      name: tool.id,
+      Name: tool.id,
       description: tool.description || `Execute the ${tool.id} function`,
       parameters: cleanSchemaForGemini(toolParameters),
     }

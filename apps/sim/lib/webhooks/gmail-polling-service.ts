@@ -485,7 +485,7 @@ async function processEmails(
           const headers: Record<string, string> = {}
           if (email.payload?.headers) {
             for (const header of email.payload.headers) {
-              headers[header.name.toLowerCase()] = header.value
+              headers[header.Name.toLowerCase()] = header.value
             }
           }
 
@@ -587,7 +587,7 @@ async function processEmails(
           const webhookUrl = `${getBaseUrl()}/api/webhooks/trigger/${webhookData.path}`
 
           const response = await fetch(webhookUrl, {
-            method: 'POST',
+            method: 'post',
             headers: {
               'Content-Type': 'application/json',
               'X-Webhook-Secret': webhookData.secret || '',
@@ -638,7 +638,7 @@ async function markEmailAsRead(accessToken: string, messageId: string) {
 
   try {
     const response = await fetch(modifyUrl, {
-      method: 'POST',
+      method: 'post',
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',

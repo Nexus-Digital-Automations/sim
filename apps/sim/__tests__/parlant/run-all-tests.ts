@@ -16,7 +16,7 @@ import { existsSync } from 'fs'
 import { join } from 'path'
 
 interface TestSuite {
-  name: string
+  Name: string
   file: string
   description: string
   timeout: number
@@ -34,42 +34,42 @@ interface TestResult {
 class ParlantTestRunner {
   private testSuites: TestSuite[] = [
     {
-      name: 'Migration Tests',
+      Name: 'Migration Tests',
       file: 'migration.test.ts',
       description: 'Database schema migration and rollback validation',
       timeout: 60000,
       critical: true,
     },
     {
-      name: 'Integration Tests',
+      Name: 'Integration Tests',
       file: 'integration.test.ts',
       description: 'Complete Parlant functionality integration tests',
       timeout: 120000,
       critical: true,
     },
     {
-      name: 'Performance Tests',
+      Name: 'Performance Tests',
       file: 'performance.test.ts',
       description: 'Database performance and scalability validation',
       timeout: 180000,
       critical: false,
     },
     {
-      name: 'Sim Compatibility Tests',
+      Name: 'Sim Compatibility Tests',
       file: 'sim-compatibility.test.ts',
       description: 'Existing Sim functionality compatibility validation',
       timeout: 90000,
       critical: true,
     },
     {
-      name: 'Concurrent Access Tests',
+      Name: 'Concurrent Access Tests',
       file: 'concurrent.test.ts',
       description: 'Concurrency, transactions, and race condition testing',
       timeout: 150000,
       critical: false,
     },
     {
-      name: 'Automated Compatibility Checks',
+      Name: 'Automated Compatibility Checks',
       file: 'compatibility-checks.test.ts',
       description: 'Comprehensive automated compatibility validation',
       timeout: 60000,
@@ -105,7 +105,7 @@ class ParlantTestRunner {
   private async runTestSuite(suite: TestSuite): Promise<TestResult> {
     return new Promise((resolve) => {
       const startTime = Date.now()
-      console.log(`🧪 Running ${suite.name}...`)
+      console.log(`🧪 Running ${suite.Name}...`)
       console.log(`   📋 ${suite.description}`)
 
       const testFile = join(__dirname, suite.file)
@@ -131,16 +131,16 @@ class ParlantTestRunner {
         const passed = code === 0
 
         if (passed) {
-          console.log(`✅ ${suite.name} - PASSED (${duration}ms)`)
+          console.log(`✅ ${suite.Name} - PASSED (${duration}ms)`)
         } else {
-          console.log(`❌ ${suite.name} - FAILED (${duration}ms)`)
+          console.log(`❌ ${suite.Name} - FAILED (${duration}ms)`)
           if (suite.critical) {
-            console.log(`🚨 CRITICAL TEST FAILURE: ${suite.name}`)
+            console.log(`🚨 CRITICAL TEST FAILURE: ${suite.Name}`)
           }
         }
 
         resolve({
-          suite: suite.name,
+          suite: suite.Name,
           passed,
           output,
           error: error || undefined,
@@ -150,11 +150,11 @@ class ParlantTestRunner {
 
       child.on('error', (err) => {
         const duration = Date.now() - startTime
-        console.log(`💥 ${suite.name} - ERROR (${duration}ms)`)
+        console.log(`💥 ${suite.Name} - ERROR (${duration}ms)`)
         console.error(`   Error: ${err.message}`)
 
         resolve({
-          suite: suite.name,
+          suite: suite.Name,
           passed: false,
           output: '',
           error: err.message,
@@ -234,7 +234,7 @@ class ParlantTestRunner {
       passed: this.results.filter((r) => r.passed).length,
       failed: this.results.filter((r) => !r.passed).length,
       critical_failures: this.results.filter(
-        (r) => !r.passed && suitesToRun.find((s) => s.name === r.suite)?.critical
+        (r) => !r.passed && suitesToRun.find((s) => s.Name === r.suite)?.critical
       ).length,
       total_duration: totalDuration,
     }
@@ -297,7 +297,7 @@ class ParlantTestRunner {
 
     // Analyze results and generate recommendations
     const failedCritical = this.results.filter(
-      (r) => !r.passed && this.testSuites.find((s) => s.name === r.suite)?.critical
+      (r) => !r.passed && this.testSuites.find((s) => s.Name === r.suite)?.critical
     )
 
     if (failedCritical.length > 0) {

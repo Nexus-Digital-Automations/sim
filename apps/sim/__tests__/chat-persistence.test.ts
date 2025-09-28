@@ -60,21 +60,21 @@ describe('Chat Persistence System', () => {
 
     // Create test workspace (mock)
     await db.execute(sql`
-      INSERT INTO workspace (id, name, "ownerId", "createdAt", "updatedAt")
+      INSERT INTO workspace (id, Name, "ownerId", "createdAt", "updatedAt")
       VALUES (${testWorkspaceId}, 'Test Workspace', ${testUserId}, NOW(), NOW())
       ON CONFLICT (id) DO NOTHING
     `)
 
     // Create test user (mock)
     await db.execute(sql`
-      INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt")
+      INSERT INTO "user" (id, Name, email, "emailVerified", "createdAt", "updatedAt")
       VALUES (${testUserId}, 'Test User', 'test@example.com', true, NOW(), NOW())
       ON CONFLICT (id) DO NOTHING
     `)
 
     // Create test Parlant agent
     await db.execute(sql`
-      INSERT INTO parlant_agent (id, "workspaceId", "createdBy", name, description, status)
+      INSERT INTO parlant_agent (id, "workspaceId", "createdBy", Name, description, status)
       VALUES (${testAgentId}, ${testWorkspaceId}, ${testUserId}, 'Test Agent', 'Test Description', 'active')
       ON CONFLICT (id) DO NOTHING
     `)
@@ -696,19 +696,19 @@ describe('Performance Tests', () => {
 
     // Setup minimal test data
     await db.execute(sql`
-      INSERT INTO workspace (id, name, "ownerId", "createdAt", "updatedAt")
+      INSERT INTO workspace (id, Name, "ownerId", "createdAt", "updatedAt")
       VALUES (${testWorkspaceId}, 'Performance Test', 'test-user', NOW(), NOW())
       ON CONFLICT (id) DO NOTHING
     `)
 
     await db.execute(sql`
-      INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt")
+      INSERT INTO "user" (id, Name, email, "emailVerified", "createdAt", "updatedAt")
       VALUES ('test-user', 'Test User', 'test@example.com', true, NOW(), NOW())
       ON CONFLICT (id) DO NOTHING
     `)
 
     await db.execute(sql`
-      INSERT INTO parlant_agent (id, "workspaceId", "createdBy", name, status)
+      INSERT INTO parlant_agent (id, "workspaceId", "createdBy", Name, status)
       VALUES ('test-agent', ${testWorkspaceId}, 'test-user', 'Test Agent', 'active')
       ON CONFLICT (id) DO NOTHING
     `)

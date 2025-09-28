@@ -112,7 +112,7 @@ export function useUnifiedCopilot(workspaceId: string) {
     async (agent: Agent) => {
       logger.info('Selecting agent via unified hook', {
         agentId: agent.id,
-        agentName: agent.name,
+        agentName: agent.Name,
       })
 
       await localSelectAgent(agent)
@@ -170,7 +170,7 @@ export function useUnifiedCopilot(workspaceId: string) {
   const getStats = useCallback(() => {
     return {
       availableLocalAgents: availableAgents.length,
-      selectedLocalAgent: selectedAgent?.name,
+      selectedLocalAgent: selectedAgent?.Name,
       currentMode,
       isLocalAvailable,
       isExternalAvailable,
@@ -178,7 +178,7 @@ export function useUnifiedCopilot(workspaceId: string) {
     }
   }, [
     availableAgents.length,
-    selectedAgent?.name,
+    selectedAgent?.Name,
     currentMode,
     isLocalAvailable,
     isExternalAvailable,

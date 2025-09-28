@@ -31,7 +31,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should handle blocks with triggers category', () => {
       const triggerBlock: SerializedBlock = {
         id: 'trigger-1',
-        metadata: { id: 'schedule', name: 'Schedule Block', category: 'triggers' },
+        metadata: { id: 'schedule', Name: 'Schedule Block', category: 'triggers' },
         position: { x: 0, y: 0 },
         config: { tool: 'schedule', params: {} },
         inputs: {},
@@ -45,7 +45,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should handle blocks with triggerMode enabled', () => {
       const gmailTriggerBlock: SerializedBlock = {
         id: 'gmail-1',
-        metadata: { id: 'gmail', name: 'Gmail Block', category: 'tools' },
+        metadata: { id: 'gmail', Name: 'Gmail Block', category: 'tools' },
         position: { x: 0, y: 0 },
         config: { tool: 'gmail', params: { triggerMode: true } },
         inputs: {},
@@ -59,7 +59,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should not handle regular tool blocks without triggerMode', () => {
       const toolBlock: SerializedBlock = {
         id: 'tool-1',
-        metadata: { id: 'gmail', name: 'Gmail Block', category: 'tools' },
+        metadata: { id: 'gmail', Name: 'Gmail Block', category: 'tools' },
         position: { x: 0, y: 0 },
         config: { tool: 'gmail', params: { triggerMode: false } },
         inputs: {},
@@ -73,7 +73,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should not handle blocks without trigger indicators', () => {
       const regularBlock: SerializedBlock = {
         id: 'regular-1',
-        metadata: { id: 'api', name: 'API Block', category: 'tools' },
+        metadata: { id: 'api', Name: 'API Block', category: 'tools' },
         position: { x: 0, y: 0 },
         config: { tool: 'api', params: {} },
         inputs: {},
@@ -87,7 +87,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should handle generic webhook blocks', () => {
       const webhookBlock: SerializedBlock = {
         id: 'webhook-1',
-        metadata: { id: 'generic_webhook', name: 'Generic Webhook', category: 'triggers' },
+        metadata: { id: 'generic_webhook', Name: 'Generic Webhook', category: 'triggers' },
         position: { x: 0, y: 0 },
         config: { tool: 'generic_webhook', params: {} },
         inputs: {},
@@ -103,7 +103,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should return inputs directly when provided', async () => {
       const triggerBlock: SerializedBlock = {
         id: 'trigger-1',
-        metadata: { id: 'gmail', name: 'Gmail Trigger', category: 'triggers' },
+        metadata: { id: 'gmail', Name: 'Gmail Trigger', category: 'triggers' },
         position: { x: 0, y: 0 },
         config: { tool: 'gmail', params: {} },
         inputs: {},
@@ -129,7 +129,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should return empty object when no inputs provided', async () => {
       const triggerBlock: SerializedBlock = {
         id: 'trigger-1',
-        metadata: { id: 'schedule', name: 'Schedule Trigger', category: 'triggers' },
+        metadata: { id: 'schedule', Name: 'Schedule Trigger', category: 'triggers' },
         position: { x: 0, y: 0 },
         config: { tool: 'schedule', params: {} },
         inputs: {},
@@ -145,7 +145,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should handle webhook payload inputs', async () => {
       const webhookBlock: SerializedBlock = {
         id: 'webhook-1',
-        metadata: { id: 'generic_webhook', name: 'Generic Webhook', category: 'triggers' },
+        metadata: { id: 'generic_webhook', Name: 'Generic Webhook', category: 'triggers' },
         position: { x: 0, y: 0 },
         config: { tool: 'generic_webhook', params: {} },
         inputs: {},
@@ -166,7 +166,7 @@ describe('TriggerBlockHandler', () => {
         headers: {
           'content-type': 'application/json',
         },
-        method: 'POST',
+        method: 'post',
       }
 
       const result = await handler.execute(webhookBlock, webhookInputs, mockContext)
@@ -177,7 +177,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should handle Outlook trigger inputs', async () => {
       const outlookBlock: SerializedBlock = {
         id: 'outlook-1',
-        metadata: { id: 'outlook', name: 'Outlook Block', category: 'tools' },
+        metadata: { id: 'outlook', Name: 'Outlook Block', category: 'tools' },
         position: { x: 0, y: 0 },
         config: { tool: 'outlook', params: { triggerMode: true } },
         inputs: {},
@@ -203,7 +203,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should handle schedule trigger with no inputs', async () => {
       const scheduleBlock: SerializedBlock = {
         id: 'schedule-1',
-        metadata: { id: 'schedule', name: 'Daily Schedule', category: 'triggers' },
+        metadata: { id: 'schedule', Name: 'Daily Schedule', category: 'triggers' },
         position: { x: 0, y: 0 },
         config: { tool: 'schedule', params: { scheduleType: 'daily' } },
         inputs: {},
@@ -220,7 +220,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should handle complex nested trigger data', async () => {
       const triggerBlock: SerializedBlock = {
         id: 'complex-trigger-1',
-        metadata: { id: 'webhook', name: 'Complex Webhook', category: 'triggers' },
+        metadata: { id: 'webhook', Name: 'Complex Webhook', category: 'triggers' },
         position: { x: 0, y: 0 },
         config: { tool: 'webhook', params: {} },
         inputs: {},
@@ -258,7 +258,7 @@ describe('TriggerBlockHandler', () => {
     it.concurrent('should work with different trigger block types', () => {
       const testCases = [
         {
-          name: 'Gmail in trigger mode',
+          Name: 'Gmail in trigger mode',
           block: {
             id: 'gmail-trigger',
             metadata: { id: 'gmail', category: 'tools' },
@@ -267,7 +267,7 @@ describe('TriggerBlockHandler', () => {
           shouldHandle: true,
         },
         {
-          name: 'Generic webhook',
+          Name: 'Generic webhook',
           block: {
             id: 'webhook-trigger',
             metadata: { id: 'generic_webhook', category: 'triggers' },
@@ -276,7 +276,7 @@ describe('TriggerBlockHandler', () => {
           shouldHandle: true,
         },
         {
-          name: 'Schedule block',
+          Name: 'Schedule block',
           block: {
             id: 'schedule-trigger',
             metadata: { id: 'schedule', category: 'triggers' },
@@ -285,7 +285,7 @@ describe('TriggerBlockHandler', () => {
           shouldHandle: true,
         },
         {
-          name: 'Regular API block',
+          Name: 'Regular API block',
           block: {
             id: 'api-block',
             metadata: { id: 'api', category: 'tools' },
@@ -294,7 +294,7 @@ describe('TriggerBlockHandler', () => {
           shouldHandle: false,
         },
         {
-          name: 'Gmail in tool mode',
+          Name: 'Gmail in tool mode',
           block: {
             id: 'gmail-tool',
             metadata: { id: 'gmail', category: 'tools' },
@@ -304,7 +304,7 @@ describe('TriggerBlockHandler', () => {
         },
       ]
 
-      testCases.forEach(({ name, block, shouldHandle }) => {
+      testCases.forEach(({ Name, block, shouldHandle }) => {
         const serializedBlock: SerializedBlock = {
           ...block,
           position: { x: 0, y: 0 },
@@ -315,7 +315,7 @@ describe('TriggerBlockHandler', () => {
 
         expect(
           handler.canHandle(serializedBlock),
-          `${name} should ${shouldHandle ? '' : 'not '}be handled`
+          `${Name} should ${shouldHandle ? '' : 'not '}be handled`
         ).toBe(shouldHandle)
       })
     })

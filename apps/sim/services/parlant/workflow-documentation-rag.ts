@@ -36,7 +36,7 @@ export interface WorkflowContext {
     config?: Record<string, any>
   }
   workflowMeta?: {
-    name: string
+    Name: string
     description?: string
     category?: string
     tags?: string[]
@@ -476,7 +476,7 @@ export class WorkflowDocumentationRAGService {
 
 1. Start with simple workflows and gradually add complexity
 2. Test your workflow with sample data before production use
-3. Use descriptive names for your blocks and connections
+3. Use descriptive NAMES for your blocks and connections
 4. Consider error handling and edge cases
 5. Document your workflow's purpose and expected inputs/outputs
 
@@ -564,7 +564,7 @@ export const workflowDocUtils = {
       workflowId: workflowData.id,
       blockTypes: workflowData.blocks?.map((block: any) => block.type) || [],
       workflowMeta: {
-        name: workflowData.name,
+        Name: workflowData.Name,
         description: workflowData.description,
         category: workflowData.category,
         tags: workflowData.tags,

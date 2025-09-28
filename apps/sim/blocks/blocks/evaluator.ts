@@ -1,4 +1,4 @@
-import { ChartBarIcon } from '@/components/icons'
+import { chartBarIcon } from '@/components/icons'
 import { isHosted } from '@/lib/environment'
 import { createLogger } from '@/lib/logs/console/logger'
 import type { BlockConfig, ParamType } from '@/blocks/types'
@@ -20,7 +20,7 @@ const getCurrentOllamaModels = () => {
 }
 
 interface Metric {
-  name: string
+  Name: string
   description: string
   range: {
     min: number
@@ -48,13 +48,13 @@ interface EvaluatorResponse extends ToolResponse {
 
 export const generateEvaluatorPrompt = (metrics: Metric[], content: string): string => {
   // Filter out invalid/incomplete metrics first
-  const validMetrics = metrics.filter((m) => m?.name && m.range)
+  const validMetrics = metrics.filter((m) => m?.Name && m.range)
 
-  // Create a clear metrics description with name, range, and description
+  // Create a clear metrics description with Name, range, and description
   const metricsDescription = validMetrics
     .map(
       (metric) =>
-        `"${metric.name}" (${metric.range.min}-${metric.range.max}): ${metric.description || ''}` // Handle potentially missing description
+        `"${metric.Name}" (${metric.range.min}-${metric.range.max}): ${metric.description || ''}` // Handle potentially missing description
     )
     .join('\n')
 
@@ -82,9 +82,9 @@ export const generateEvaluatorPrompt = (metrics: Metric[], content: string): str
   // Generate an example of the expected output format using only valid metrics
   const exampleOutput = validMetrics.reduce(
     (acc, metric) => {
-      // Ensure metric and name are valid before using them
-      if (metric?.name) {
-        acc[metric.name.toLowerCase()] = Math.floor((metric.range.min + metric.range.max) / 2) // Use middle of range as example
+      // Ensure metric and Name are valid before using them
+      if (metric?.Name) {
+        acc[metric.Name.toLowerCase()] = Math.floor((metric.range.min + metric.range.max) / 2) // Use middle of range as example
       } else {
         logger.warn('Skipping invalid metric during example generation:', metric)
       }
@@ -98,8 +98,8 @@ export const generateEvaluatorPrompt = (metrics: Metric[], content: string): str
 Evaluation Instructions:
 - You MUST evaluate the content against each metric
 - For each metric, provide a numeric score within the specified range
-- Your response MUST be a valid JSON object with each metric name as a key and a numeric score as the value
-- IMPORTANT: Use lowercase versions of the metric names as keys in your JSON response
+- Your response MUST be a valid JSON object with each metric Name as a key and a numeric score as the value
+- IMPORTANT: Use lowercase versions of the metric NAMES as keys in your JSON response
 - Follow the exact schema of the response format provided to you
 - Do not include explanations in the JSON - only numeric scores
 - Do not add any additional fields not specified in the schema
@@ -114,13 +114,13 @@ ${formattedContent}
 Example of expected response format (with different scores):
 ${JSON.stringify(exampleOutput, null, 2)}
 
-Remember: Your response MUST be a valid JSON object containing only the lowercase metric names as keys with their numeric scores as values. No text explanations.`
+Remember: Your response MUST be a valid JSON object containing only the lowercase metric NAMES as keys with their numeric scores as values. No text explanations.`
 }
 
 // Simplified response format generator that matches the agent block schema structure
 const generateResponseFormat = (metrics: Metric[]) => {
   // Filter out invalid/incomplete metrics first
-  const validMetrics = metrics.filter((m) => m?.name)
+  const validMetrics = metrics.filter((m) => m?.Name)
 
   // Create properties for each metric
   const properties: Record<string, any> = {}
@@ -128,8 +128,8 @@ const generateResponseFormat = (metrics: Metric[]) => {
   // Add each metric as a property
   validMetrics.forEach((metric) => {
     // We've already filtered, but double-check just in case
-    if (metric?.name) {
-      properties[metric.name.toLowerCase()] = {
+    if (metric?.Name) {
+      properties[metric.Name.toLowerCase()] = {
         type: 'number',
         description: `${metric.description || ''} (Score between ${metric.range?.min ?? 0}-${metric.range?.max ?? 'N/A'})`, // Safely access range
       }
@@ -140,14 +140,14 @@ const generateResponseFormat = (metrics: Metric[]) => {
 
   // Return a proper JSON Schema format
   return {
-    name: 'evaluation_response',
+    Name: 'evaluation_response',
     schema: {
       type: 'object',
       properties,
-      // Use only valid, lowercase metric names for the required array
+      // Use only valid, lowercase metric NAMES for the required array
       required: validMetrics
-        .filter((metric) => metric?.name)
-        .map((metric) => metric.name.toLowerCase()),
+        .filter((metric) => metric?.Name)
+        .map((metric) => metric.Name.toLowerCase()),
       additionalProperties: false,
     },
     strict: true,
@@ -156,14 +156,14 @@ const generateResponseFormat = (metrics: Metric[]) => {
 
 export const EvaluatorBlock: BlockConfig<EvaluatorResponse> = {
   type: 'evaluator',
-  name: 'Evaluator',
+  Name: 'Evaluator',
   description: 'Evaluate content',
   longDescription:
     'This is a core workflow block. Assess content quality using customizable evaluation metrics and scoring criteria. Create objective evaluation frameworks with numeric scoring to measure performance across multiple dimensions.',
   docsLink: 'https://docs.sim.ai/blocks/evaluator',
   category: 'tools',
   bgColor: '#4D5FFF',
-  icon: ChartBarIcon,
+  icon: chartBarIcon,
   subBlocks: [
     {
       id: 'metrics',
@@ -335,7 +335,7 @@ export const EvaluatorBlock: BlockConfig<EvaluatorResponse> = {
         items: {
           type: 'object',
           properties: {
-            name: {
+            Name: {
               type: 'string',
               description: 'Name of the metric',
             },
@@ -358,7 +358,7 @@ export const EvaluatorBlock: BlockConfig<EvaluatorResponse> = {
               required: ['min', 'max'],
             },
           },
-          required: ['name', 'description', 'range'],
+          required: ['Name', 'description', 'range'],
         },
       },
     },

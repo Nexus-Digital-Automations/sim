@@ -113,7 +113,7 @@ describe('Azure Blob Storage Client', () => {
       expect(result).toEqual({
         path: expect.stringContaining('/api/files/serve/blob/'),
         key: expect.stringContaining(fileName.replace(/\s+/g, '-')),
-        name: fileName,
+        Name: fileName,
         size: testBuffer.length,
         type: contentType,
       })
@@ -136,7 +136,7 @@ describe('Azure Blob Storage Client', () => {
       const result = await uploadToBlob(testBuffer, fileName, contentType, customConfig)
 
       expect(mockGetContainerClient).toHaveBeenCalledWith('customcontainer')
-      expect(result.name).toBe(fileName)
+      expect(result.Name).toBe(fileName)
       expect(result.type).toBe(contentType)
     })
   })

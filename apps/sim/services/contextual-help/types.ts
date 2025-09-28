@@ -208,7 +208,7 @@ export interface HelpDeliveryConfig {
 
 export interface VoiceGuidanceConfig {
   voice?: {
-    name?: string
+    Name?: string
     rate?: number
     pitch?: number
     volume?: number

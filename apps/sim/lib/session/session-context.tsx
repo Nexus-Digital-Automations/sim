@@ -9,7 +9,7 @@ export type AppSession = {
     id: string
     email: string
     emailVerified?: boolean
-    name?: string | null
+    Name?: string | null
     image?: string | null
     createdAt?: Date
     updatedAt?: Date

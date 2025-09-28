@@ -167,7 +167,7 @@ export function CustomIntegrationExample() {
                   className='h-auto justify-start p-2 text-left'
                 >
                   <div>
-                    <div className='font-medium text-sm'>{agent.name}</div>
+                    <div className='font-medium text-sm'>{agent.Name}</div>
                     {agent.description && (
                       <div className='truncate text-xs opacity-70'>{agent.description}</div>
                     )}

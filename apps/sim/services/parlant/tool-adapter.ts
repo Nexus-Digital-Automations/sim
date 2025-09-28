@@ -34,8 +34,8 @@ import type { Tool, ToolExecution } from './types'
 export interface EnhancedToolDescription {
   /** Unique identifier for the tool */
   id: string
-  /** Human-readable name */
-  name: string
+  /** Human-readable Name */
+  Name: string
   /** Brief description for quick understanding */
   shortDescription: string
   /** Comprehensive explanation with use cases */
@@ -222,7 +222,7 @@ export class SimToolRegistry {
 
       // Text search
       const searchText =
-        `${tool.name} ${tool.shortDescription} ${tool.longDescription} ${tool.tags.join(' ')}`.toLowerCase()
+        `${tool.Name} ${tool.shortDescription} ${tool.longDescription} ${tool.tags.join(' ')}`.toLowerCase()
       return searchTerms.every((term) => searchText.includes(term))
     })
 
@@ -247,10 +247,10 @@ export class SimToolRegistry {
    */
   private calculateRelevanceScore(tool: EnhancedToolDescription, searchTerms: string[]): number {
     let score = 0
-    const text = `${tool.name} ${tool.shortDescription}`.toLowerCase()
+    const text = `${tool.Name} ${tool.shortDescription}`.toLowerCase()
 
     searchTerms.forEach((term) => {
-      if (tool.name.toLowerCase().includes(term)) score += 10
+      if (tool.Name.toLowerCase().includes(term)) score += 10
       if (tool.shortDescription.toLowerCase().includes(term)) score += 5
       if (tool.longDescription.toLowerCase().includes(term)) score += 2
       if (tool.tags.some((tag) => tag.toLowerCase().includes(term))) score += 3
@@ -281,7 +281,7 @@ export class UniversalToolAdapter {
 
     return {
       id: blockConfig.type,
-      name: enhanced.name,
+      Name: enhanced.Name,
       description: this.generateContextualDescription(enhanced, context),
       parameters: this.extractParameterSchema(blockConfig, enhanced),
     }
@@ -535,7 +535,7 @@ export class ToolIntelligenceEngine {
     // Extract potential parameter values from conversation history
     const conversationText = context.conversationHistory.map((msg) => msg.content).join(' ')
 
-    // Look for email addresses, URLs, file names, etc.
+    // Look for email addresses, URLs, file NAMES, etc.
     const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g
     const urlRegex = /https?:\/\/[^\s]+/g
     const emails = conversationText.match(emailRegex) || []
@@ -556,7 +556,7 @@ export class ToolIntelligenceEngine {
 
     // Use workflow context if available
     if (context.workflowContext?.availableInputs) {
-      // Match parameter names with available inputs
+      // Match parameter NAMES with available inputs
       Object.keys(context.workflowContext.availableInputs).forEach((input) => {
         if (suggestions[input] === undefined) {
           suggestions[input] = `<${input}>`
@@ -596,7 +596,7 @@ export class ToolIntelligenceEngine {
     execution: ToolExecution,
     tool: EnhancedToolDescription
   ): ConversationalToolExecution {
-    let explanation = `Executed ${tool.name} successfully.`
+    let explanation = `Executed ${tool.Name} successfully.`
     let summary = 'Task completed.'
     let details: string | undefined
     let suggestedNextSteps: string[] | undefined
@@ -607,7 +607,7 @@ export class ToolIntelligenceEngine {
       if (typeof execution.result === 'object') {
         // API responses, structured data
         if (execution.result.status) {
-          explanation = `${tool.name} returned status ${execution.result.status}.`
+          explanation = `${tool.Name} returned status ${execution.result.status}.`
           summary = `Request completed with status ${execution.result.status}.`
         }
 
@@ -625,7 +625,7 @@ export class ToolIntelligenceEngine {
 
     // Handle errors
     if (execution.status === 'failed' && execution.error) {
-      explanation = `${tool.name} encountered an error.`
+      explanation = `${tool.Name} encountered an error.`
       summary = 'Task failed.'
       userFriendlyErrors = [this.formatErrorForUser(execution.error, tool)]
     }
@@ -655,19 +655,19 @@ export class ToolIntelligenceEngine {
     const errorPatterns = [
       {
         pattern: /authentication|auth|token|credential/i,
-        message: `Authentication issue with ${tool.name}. Please check your login credentials and try again.`,
+        message: `Authentication issue with ${tool.Name}. Please check your login credentials and try again.`,
       },
       {
         pattern: /network|connection|timeout/i,
-        message: `Network connection problem with ${tool.name}. Please check your internet connection and try again.`,
+        message: `Network connection problem with ${tool.Name}. Please check your internet connection and try again.`,
       },
       {
         pattern: /rate limit|quota|too many requests/i,
-        message: `${tool.name} is temporarily unavailable due to rate limits. Please wait a moment and try again.`,
+        message: `${tool.Name} is temporarily unavailable due to rate limits. Please wait a moment and try again.`,
       },
       {
         pattern: /invalid|validation|required/i,
-        message: `Some required information is missing or invalid for ${tool.name}. Please check your input and try again.`,
+        message: `Some required information is missing or invalid for ${tool.Name}. Please check your input and try again.`,
       },
     ]
 
@@ -677,7 +677,7 @@ export class ToolIntelligenceEngine {
       }
     }
 
-    return `${tool.name} encountered an error: ${error.substring(0, 100)}${error.length > 100 ? '...' : ''}`
+    return `${tool.Name} encountered an error: ${error.substring(0, 100)}${error.length > 100 ? '...' : ''}`
   }
 
   /**
@@ -721,7 +721,7 @@ export class ToolIntelligenceEngine {
 export const ENHANCED_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescription> = {
   function: {
     id: 'function',
-    name: 'Function',
+    Name: 'Function',
     shortDescription: 'Execute custom JavaScript or Python code within your workflow',
     longDescription:
       'Run custom logic with JavaScript or Python. Perfect for data transformation, calculations, API processing, and complex business logic. Choose between local execution (fast) or remote execution (secure sandbox with imports).',
@@ -786,10 +786,10 @@ export const ENHANCED_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescription>
 
   api: {
     id: 'api',
-    name: 'API',
+    Name: 'API',
     shortDescription: 'Connect to any REST API with full HTTP method support',
     longDescription:
-      'Make HTTP requests to any API endpoint. Supports all HTTP methods (GET, POST, PUT, DELETE, PATCH) with custom headers, query parameters, and request bodies. Perfect for integrating with third-party services and internal APIs.',
+      'Make HTTP requests to any API endpoint. Supports all HTTP methods (get, post, PUT, DELETE, PATCH) with custom headers, query parameters, and request bodies. Perfect for integrating with third-party services and internal APIs.',
     usageExamples: [
       'Fetch user data from a CRM system',
       'Submit form data to an external service',
@@ -834,8 +834,8 @@ export const ENHANCED_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescription>
           parameter: 'method',
           question: 'What HTTP method do you need?',
           examples: [
-            'GET to fetch data',
-            'POST to create new records',
+            'get to fetch data',
+            'post to create new records',
             'PUT to update existing data',
             'DELETE to remove records',
           ],
@@ -858,7 +858,7 @@ export const ENHANCED_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescription>
 
   slack: {
     id: 'slack',
-    name: 'Slack',
+    Name: 'Slack',
     shortDescription: 'Send messages, create canvases, and read Slack conversations',
     longDescription:
       'Integrate with Slack to send messages, create rich canvases, and read channel conversations. Supports both OAuth and bot token authentication. Can trigger workflows from Slack events and provide real-time team collaboration.',
@@ -920,7 +920,7 @@ export const ENHANCED_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescription>
 
   gmail: {
     id: 'gmail',
-    name: 'Gmail',
+    Name: 'Gmail',
     shortDescription: 'Send, read, draft, and search Gmail messages',
     longDescription:
       'Full Gmail integration for email automation. Send emails with attachments, read messages from specific folders, create drafts for review, and search through your email history. Supports rich HTML formatting and advanced filtering.',

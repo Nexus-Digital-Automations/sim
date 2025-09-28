@@ -70,7 +70,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
     // Setup HTTP and Socket.io servers
     const httpServer = createServer()
     const socketServer = new Server(httpServer, {
-      cors: { origin: '*', methods: ['GET', 'POST'] },
+      cors: { origin: '*', methods: ['get', 'post'] },
     })
 
     // Initialize Parlant client
@@ -92,7 +92,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
 
     await db.insert('workspaces').values({
       id: testWorkspaceId,
-      name: 'Integration Test Workspace',
+      Name: 'Integration Test Workspace',
       ownerId: testUserId,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -101,7 +101,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
     await db.insert('users').values({
       id: testUserId,
       email: `test-${Date.now()}@example.com`,
-      name: 'Integration Test User',
+      Name: 'Integration Test User',
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -198,7 +198,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
       // Test agent creation with authentication
       const agent = await testEnv.agentService.createAgent(
         {
-          name: 'Auth Integration Test Agent',
+          Name: 'Auth Integration Test Agent',
           description: 'Testing authentication integration',
           workspace_id: testEnv.testWorkspaceId,
           guidelines: [
@@ -251,7 +251,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
       // Create agent in workspace 1
       const agent1 = await testEnv.agentService.createAgent(
         {
-          name: 'Workspace 1 Agent',
+          Name: 'Workspace 1 Agent',
           workspace_id: workspace1Context.workspace_id!,
         },
         workspace1Context
@@ -294,7 +294,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
       try {
         await testEnv.agentService.createAgent(
           {
-            name: 'Should Fail Agent',
+            Name: 'Should Fail Agent',
             workspace_id: testEnv.testWorkspaceId,
           },
           readOnlyContext
@@ -317,7 +317,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
       const workflowId = `test-workflow-${Date.now()}`
       const workflow = {
         id: workflowId,
-        name: 'Chat Integration Test Workflow',
+        Name: 'Chat Integration Test Workflow',
         blocks: {
           'start-1': {
             type: 'starter',
@@ -339,7 +339,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
       // Save workflow to database
       await db.insert('workflows').values({
         id: workflowId,
-        name: workflow.name,
+        Name: workflow.Name,
         workspaceId: testEnv.testWorkspaceId,
         userId: testEnv.testUserId,
         state: JSON.stringify(workflow),
@@ -383,7 +383,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
 
       const agent = await testEnv.agentService.createAgent(
         {
-          name: 'Tool Integration Test Agent',
+          Name: 'Tool Integration Test Agent',
           description: 'Agent with tool adapter integration',
           workspace_id: testEnv.testWorkspaceId,
           tools: availableTools.slice(0, 5), // Use first 5 tools
@@ -425,7 +425,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
 
       // Create mock failing tool
       const failingTool = {
-        name: 'failing_test_tool',
+        Name: 'failing_test_tool',
         description: 'A tool that always fails for testing',
         execute: async () => {
           throw new Error('Simulated tool failure')
@@ -442,7 +442,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
 
       const agent = await testEnv.agentService.createAgent(
         {
-          name: 'Error Handling Test Agent',
+          Name: 'Error Handling Test Agent',
           workspace_id: testEnv.testWorkspaceId,
           tools: [failingTool],
         },
@@ -499,7 +499,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
 
       const agent = await testEnv.agentService.createAgent(
         {
-          name: 'Socket Integration Test Agent',
+          Name: 'Socket Integration Test Agent',
           workspace_id: testEnv.testWorkspaceId,
         },
         authContext
@@ -680,7 +680,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
         updatedAt: new Date(),
       })
 
-      // Test GET endpoint
+      // Test get endpoint
       const getResponse = await request(testEnv.httpServer)
         .get(`/api/chat/${chatConfig.subdomain}`)
         .expect(200)
@@ -690,7 +690,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
         chatConfig.customizations.welcomeMessage
       )
 
-      // Test POST endpoint with message
+      // Test post endpoint with message
       const postResponse = await request(testEnv.httpServer)
         .post(`/api/chat/${chatConfig.subdomain}`)
         .send({
@@ -785,7 +785,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
       // Create agent for load testing
       const agent = await testEnv.agentService.createAgent(
         {
-          name: 'Load Test Agent',
+          Name: 'Load Test Agent',
           description: 'Agent for concurrent session testing',
           workspace_id: testEnv.testWorkspaceId,
         },
@@ -849,7 +849,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
       // Create agent and session
       const agent = await testEnv.agentService.createAgent(
         {
-          name: 'Message Load Test Agent',
+          Name: 'Message Load Test Agent',
           workspace_id: testEnv.testWorkspaceId,
         },
         authContext
@@ -959,7 +959,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
       try {
         await testEnv.agentService.createAgent(
           {
-            name: 'Transaction Test Agent',
+            Name: 'Transaction Test Agent',
             workspace_id: 'invalid-workspace-id', // Should cause constraint violation
           },
           authContext
@@ -979,7 +979,7 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
       )
 
       // Should not find the failed agent
-      const failedAgent = agents.data.find((a) => a.name === 'Transaction Test Agent')
+      const failedAgent = agents.data.find((a) => a.Name === 'Transaction Test Agent')
       expect(failedAgent).toBeUndefined()
 
       const duration = Date.now() - startTime
@@ -1057,15 +1057,15 @@ describe('Parlant-Sim Infrastructure Integration Tests', () => {
 
       const agent = await testEnv.agentService.createAgent(
         {
-          name: maliciousInput, // Should be sanitized
+          Name: maliciousInput, // Should be sanitized
           description: 'Testing input sanitization',
           workspace_id: testEnv.testWorkspaceId,
         },
         validContext
       )
 
-      expect(agent.data.name).not.toContain('<script>') // XSS prevented
-      expect(agent.data.name).not.toContain('alert') // Script removed
+      expect(agent.data.Name).not.toContain('<script>') // XSS prevented
+      expect(agent.data.Name).not.toContain('alert') // Script removed
 
       const duration = Date.now() - startTime
       recordTestResult('Security Validation', true, duration)

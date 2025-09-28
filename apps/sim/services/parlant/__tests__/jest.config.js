@@ -32,7 +32,7 @@ module.exports = {
     ],
   },
 
-  // Module name mapping for path aliases
+  // Module Name mapping for path aliases
   moduleNameMapping: {
     '^@/(.*)$': '<rootDir>/../../../../$1',
     '^@/services/parlant/(.*)$': '<rootDir>/../$1',

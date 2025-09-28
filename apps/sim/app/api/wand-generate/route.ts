@@ -138,7 +138,7 @@ async function updateUserStatsForWand(
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function post(req: NextRequest) {
   const requestId = generateRequestId()
   logger.info(`[${requestId}] Received wand generation request`)
 
@@ -211,7 +211,7 @@ export async function POST(req: NextRequest) {
         logger.debug(`[${requestId}] Making streaming request to: ${apiUrl}`)
 
         const response = await fetch(apiUrl, {
-          method: 'POST',
+          method: 'post',
           headers,
           body: JSON.stringify({
             model: useWandAzure ? wandModelName : 'gpt-4o',
@@ -320,7 +320,7 @@ export async function POST(req: NextRequest) {
               }
             } catch (streamError: any) {
               logger.error(`[${requestId}] Streaming error`, {
-                name: streamError?.name,
+                Name: streamError?.Name,
                 message: streamError?.message || 'Unknown error',
                 stack: streamError?.stack,
               })
@@ -344,7 +344,7 @@ export async function POST(req: NextRequest) {
         })
       } catch (error: any) {
         logger.error(`[${requestId}] Failed to create stream`, {
-          name: error?.name,
+          Name: error?.Name,
           message: error?.message || 'Unknown error',
           code: error?.code,
           status: error?.status,
@@ -392,7 +392,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, content: generatedContent })
   } catch (error: any) {
     logger.error(`[${requestId}] Wand generation failed`, {
-      name: error?.name,
+      Name: error?.Name,
       message: error?.message || 'Unknown error',
       code: error?.code,
       status: error?.status,

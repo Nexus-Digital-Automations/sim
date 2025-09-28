@@ -22,7 +22,7 @@ const createPerformanceMonitor = () => {
     endTime: 0,
     memoryStart: 0,
     memoryEnd: 0,
-    operations: [] as Array<{ name: string; duration: number; timestamp: number }>,
+    operations: [] as Array<{ Name: string; duration: number; timestamp: number }>,
   }
 
   return {
@@ -34,8 +34,8 @@ const createPerformanceMonitor = () => {
       metrics.endTime = performance.now()
       metrics.memoryEnd = (performance as any).memory?.usedJSHeapSize || 0
     },
-    recordOperation(name: string, duration: number) {
-      metrics.operations.push({ name, duration, timestamp: Date.now() })
+    recordOperation(Name: string, duration: number) {
+      metrics.operations.push({ Name, duration, timestamp: Date.now() })
     },
     getDuration() {
       return metrics.endTime - metrics.startTime
@@ -82,7 +82,7 @@ vi.mock('../../../lib/logs/console/logger', () => ({
 vi.mock('../../../blocks', () => ({
   getBlock: vi.fn((type: string) => ({
     type,
-    name: `Mock ${type} block`,
+    Name: `Mock ${type} block`,
     description: `Mock block for ${type}`,
     icon: 'test-icon',
     category: 'test',
@@ -113,7 +113,7 @@ vi.mock('../../../stores/workflows/workflow/store', () => ({
     getState: vi.fn(() => ({
       getWorkflowState: vi.fn(() => ({
         id: 'test-workflow',
-        name: 'Test Workflow',
+        Name: 'Test Workflow',
         blocks: {},
         edges: [],
         viewport: { x: 0, y: 0, zoom: 1 },
@@ -220,7 +220,7 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
     // Create a moderately complex workflow for performance testing
     mockWorkflowState = {
       id: testWorkflowId,
-      name: 'Performance Test Workflow',
+      Name: 'Performance Test Workflow',
       blocks: {},
       edges: [],
       viewport: { x: 0, y: 0, zoom: 1 },
@@ -240,7 +240,7 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
             : i % 4 === 2
               ? 'webhook'
               : 'notification',
-        name: `Performance Block ${i}`,
+        Name: `Performance Block ${i}`,
         position: { x: (i % 5) * 200, y: Math.floor(i / 5) * 150 },
         enabled: true,
         // For starter blocks, ensure they have proper starter configuration
@@ -366,7 +366,7 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
           largeWorkflow.blocks[blockId] = {
             id: blockId,
             type: 'webhook',
-            name: `Scale Block ${i}`,
+            Name: `Scale Block ${i}`,
             position: { x: (i % 10) * 200, y: Math.floor(i / 10) * 150 },
             enabled: true,
             config: { data: `scale-config-${i}` },
@@ -452,7 +452,7 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
       const context = dualModeArchitecture.getExecutionContext(testWorkflowId)!
 
       // Simulate state changes
-      context.reactFlowState.blocks['perf-block-1'].name = 'Modified Block'
+      context.reactFlowState.blocks['perf-block-1'].Name = 'Modified Block'
       context.reactFlowState.blocks['perf-block-5'].enabled = false
 
       performanceMonitor.start()
@@ -780,14 +780,14 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
 
       // Test various operations and identify slow ones
       const operations = [
-        { name: 'mode_switch_to_journey', fn: () => switchWorkflowMode(testWorkflowId, 'journey') },
+        { Name: 'mode_switch_to_journey', fn: () => switchWorkflowMode(testWorkflowId, 'journey') },
         {
-          name: 'mode_switch_to_reactflow',
+          Name: 'mode_switch_to_reactflow',
           fn: () => switchWorkflowMode(testWorkflowId, 'reactflow'),
         },
-        { name: 'workflow_execution', fn: () => executeDualModeWorkflow(testWorkflowId) },
+        { Name: 'workflow_execution', fn: () => executeDualModeWorkflow(testWorkflowId) },
         {
-          name: 'state_synchronization',
+          Name: 'state_synchronization',
           fn: () =>
             dualModeArchitecture.synchronizeStates(
               dualModeArchitecture.getExecutionContext(testWorkflowId)!
@@ -802,7 +802,7 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
 
         if (duration > 300) {
           // Flag as potential bottleneck if > 300ms
-          bottlenecks.push({ operation: operation.name, duration })
+          bottlenecks.push({ operation: operation.Name, duration })
         }
       }
 
@@ -882,7 +882,7 @@ describe('Hybrid Workflow Performance Testing Framework', () => {
           complexWorkflow.blocks[blockId] = {
             id: blockId,
             type: 'webhook',
-            name: `Complex Block ${i}`,
+            Name: `Complex Block ${i}`,
             position: { x: (i % 10) * 200, y: Math.floor(i / 10) * 150 },
             enabled: true,
             config: {

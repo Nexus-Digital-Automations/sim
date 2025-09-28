@@ -15,7 +15,7 @@
 // Core Agent Types
 export interface Agent {
   id: string
-  name: string
+  Name: string
   description?: string
   workspace_id: string
   user_id: string
@@ -68,7 +68,7 @@ export interface JourneyStep {
 
 // Agent API Request Types
 export interface AgentCreateRequest {
-  name: string
+  Name: string
   description?: string
   workspace_id: string
   guidelines?: Omit<Guideline, 'id' | 'agent_id' | 'created_at' | 'updated_at'>[]
@@ -76,7 +76,7 @@ export interface AgentCreateRequest {
 }
 
 export interface AgentUpdateRequest {
-  name?: string
+  Name?: string
   description?: string
   guidelines?: Omit<Guideline, 'id' | 'agent_id' | 'created_at' | 'updated_at'>[]
   config?: AgentConfig
@@ -275,7 +275,7 @@ export interface StreamingEvent {
 // Tool Integration Types (for future extension)
 export interface Tool {
   id: string
-  name: string
+  Name: string
   description: string
   parameters: Record<string, any>
   handler?: string

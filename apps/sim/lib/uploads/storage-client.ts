@@ -9,7 +9,7 @@ const logger = createLogger('StorageClient')
 export type FileInfo = {
   path: string
   key: string
-  name: string
+  Name: string
   size: number
   type: string
 }
@@ -28,7 +28,7 @@ export type CustomStorageConfig = {
 /**
  * Upload a file to the configured storage provider
  * @param file Buffer containing file data
- * @param fileName Original file name
+ * @param fileName Original file Name
  * @param contentType MIME type of the file
  * @param size File size in bytes (optional, will use buffer length if not provided)
  * @returns Object with file information
@@ -43,7 +43,7 @@ export async function uploadFile(
 /**
  * Upload a file to the configured storage provider with custom configuration
  * @param file Buffer containing file data
- * @param fileName Original file name
+ * @param fileName Original file Name
  * @param contentType MIME type of the file
  * @param customConfig Custom storage configuration
  * @param size File size in bytes (optional, will use buffer length if not provided)
@@ -99,14 +99,14 @@ export async function uploadFile(
 
 /**
  * Download a file from the configured storage provider
- * @param key File key/name
+ * @param key File key/Name
  * @returns File buffer
  */
 export async function downloadFile(key: string): Promise<Buffer>
 
 /**
  * Download a file from the configured storage provider with custom configuration
- * @param key File key/name
+ * @param key File key/Name
  * @param customConfig Custom storage configuration
  * @returns File buffer
  */
@@ -151,7 +151,7 @@ export async function downloadFile(
 
 /**
  * Delete a file from the configured storage provider
- * @param key File key/name
+ * @param key File key/Name
  */
 export async function deleteFile(key: string): Promise<void> {
   if (USE_BLOB_STORAGE) {
@@ -173,7 +173,7 @@ export async function deleteFile(key: string): Promise<void> {
 
 /**
  * Generate a presigned URL for direct file access
- * @param key File key/name
+ * @param key File key/Name
  * @param expiresIn Time in seconds until URL expires
  * @returns Presigned URL
  */
@@ -197,7 +197,7 @@ export async function getPresignedUrl(key: string, expiresIn = 3600): Promise<st
 
 /**
  * Generate a presigned URL for direct file access with custom configuration
- * @param key File key/name
+ * @param key File key/Name
  * @param customConfig Custom storage configuration
  * @param expiresIn Time in seconds until URL expires
  * @returns Presigned URL
@@ -241,7 +241,7 @@ export async function getPresignedUrlWithConfig(
 }
 
 /**
- * Get the current storage provider name
+ * Get the current storage provider Name
  */
 export function getStorageProvider(): 'blob' | 's3' | 'local' {
   if (USE_BLOB_STORAGE) return 'blob'

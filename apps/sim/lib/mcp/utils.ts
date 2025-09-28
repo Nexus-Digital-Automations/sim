@@ -119,7 +119,7 @@ export function categorizeError(error: unknown): { message: string; status: numb
 }
 
 /**
- * Create standardized MCP tool ID from server ID and tool name
+ * Create standardized MCP tool ID from server ID and tool Name
  */
 export function createMcpToolId(serverId: string, toolName: string): string {
   const normalizedServerId = serverId.startsWith('mcp-') ? serverId : `mcp-${serverId}`
@@ -127,7 +127,7 @@ export function createMcpToolId(serverId: string, toolName: string): string {
 }
 
 /**
- * Parse MCP tool ID to extract server ID and tool name
+ * Parse MCP tool ID to extract server ID and tool Name
  */
 export function parseMcpToolId(toolId: string): { serverId: string; toolName: string } {
   const parts = toolId.split('-')

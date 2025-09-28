@@ -30,7 +30,7 @@ export class HtmlParser implements FileParser {
 
       // Extract meta information before removing tags
       const title = $('title').text().trim()
-      const metaDescription = $('meta[name="description"]').attr('content') || ''
+      const metaDescription = $('meta[Name="description"]').attr('content') || ''
 
       $('script, style, noscript, meta, link, iframe, object, embed, svg').remove()
 

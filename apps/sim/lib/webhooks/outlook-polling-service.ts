@@ -32,19 +32,19 @@ interface OutlookEmail {
   }
   from: {
     emailAddress: {
-      name: string
+      Name: string
       address: string
     }
   }
   toRecipients: Array<{
     emailAddress: {
-      name: string
+      Name: string
       address: string
     }
   }>
   ccRecipients?: Array<{
     emailAddress: {
-      name: string
+      Name: string
       address: string
     }
   }>
@@ -391,7 +391,7 @@ async function processOutlookEmails(
           const webhookUrl = `${getBaseUrl()}/api/webhooks/trigger/${webhookData.path}`
 
           const response = await fetch(webhookUrl, {
-            method: 'POST',
+            method: 'post',
             headers: {
               'Content-Type': 'application/json',
               'X-Webhook-Secret': webhookData.secret || '',

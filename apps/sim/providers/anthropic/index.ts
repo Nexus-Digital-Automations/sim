@@ -32,7 +32,7 @@ function createReadableStreamFromAnthropicStream(
 
 export const anthropicProvider: ProviderConfig = {
   id: 'anthropic',
-  name: 'Anthropic',
+  Name: 'Anthropic',
   description: "Anthropic's Claude models",
   version: '1.0.0',
   models: getProviderModels('anthropic'),
@@ -75,20 +75,20 @@ export const anthropicProvider: ProviderConfig = {
             content: [
               {
                 type: 'tool_result',
-                tool_use_id: msg.name,
+                tool_use_id: msg.Name,
                 content: msg.content,
               },
             ],
           })
         } else if (msg.function_call) {
-          const toolUseId = `${msg.function_call.name}-${Date.now()}`
+          const toolUseId = `${msg.function_call.Name}-${Date.now()}`
           messages.push({
             role: 'assistant',
             content: [
               {
                 type: 'tool_use',
                 id: toolUseId,
-                name: msg.function_call.name,
+                Name: msg.function_call.Name,
                 input: JSON.parse(msg.function_call.arguments),
               },
             ],
@@ -115,7 +115,7 @@ export const anthropicProvider: ProviderConfig = {
     // Transform tools to Anthropic format if provided
     let anthropicTools = request.tools?.length
       ? request.tools.map((tool) => ({
-          name: tool.id,
+          Name: tool.id,
           description: tool.description,
           input_schema: {
             type: 'object',
@@ -126,7 +126,7 @@ export const anthropicProvider: ProviderConfig = {
       : undefined
 
     // Set tool_choice based on usage control settings
-    let toolChoice: 'none' | 'auto' | { type: 'tool'; name: string } = 'auto'
+    let toolChoice: 'none' | 'auto' | { type: 'tool'; Name: string } = 'auto'
 
     // Handle tools and tool usage control
     let preparedTools: ReturnType<typeof prepareToolsWithUsageControl> | null = null
@@ -148,7 +148,7 @@ export const anthropicProvider: ProviderConfig = {
           if (typeof tc === 'object' && tc !== null) {
             if (tc.type === 'tool') {
               toolChoice = tc
-              logger.info(`Using Anthropic tool_choice format: force tool "${tc.name}"`)
+              logger.info(`Using Anthropic tool_choice format: force tool "${tc.Name}"`)
             } else {
               // Default to auto if we got a non-Anthropic object format
               toolChoice = 'auto'
@@ -301,7 +301,7 @@ ${fieldDescriptions}
               timeSegments: [
                 {
                   type: 'model',
-                  name: 'Streaming response',
+                  Name: 'Streaming response',
                   startTime: providerStartTime,
                   endTime: Date.now(),
                   duration: Date.now() - providerStartTime,
@@ -386,7 +386,7 @@ ${fieldDescriptions}
         const timeSegments: TimeSegment[] = [
           {
             type: 'model',
-            name: 'Initial response',
+            Name: 'Initial response',
             startTime: initialCallTime,
             endTime: initialCallTime + firstResponseTime,
             duration: firstResponseTime,
@@ -405,12 +405,12 @@ ${fieldDescriptions}
             if (toolUses.length > 0) {
               // Convert Anthropic tool_use format to a format trackForcedToolUsage can understand
               const adaptedToolCalls = toolUses.map((tool: any) => ({
-                name: tool.name,
+                Name: tool.Name,
               }))
 
               // Convert Anthropic tool_choice format to match OpenAI format for tracking
               const adaptedToolChoice =
-                toolChoice.type === 'tool' ? { function: { name: toolChoice.name } } : toolChoice
+                toolChoice.type === 'tool' ? { function: { Name: toolChoice.Name } } : toolChoice
 
               const result = trackForcedToolUsage(
                 adaptedToolCalls,
@@ -446,7 +446,7 @@ ${fieldDescriptions}
             // Process each tool call
             for (const toolUse of toolUses) {
               try {
-                const toolName = toolUse.name
+                const toolName = toolUse.Name
                 const toolArgs = toolUse.input as Record<string, any>
 
                 // Get the tool from the tools registry
@@ -470,7 +470,7 @@ ${fieldDescriptions}
                 // Add to time segments for both success and failure
                 timeSegments.push({
                   type: 'tool',
-                  name: toolName,
+                  Name: toolName,
                   startTime: toolCallStartTime,
                   endTime: toolCallEndTime,
                   duration: toolCallDuration,
@@ -491,7 +491,7 @@ ${fieldDescriptions}
                 }
 
                 toolCalls.push({
-                  name: toolName,
+                  Name: toolName,
                   arguments: toolParams,
                   startTime: new Date(toolCallStartTime).toISOString(),
                   endTime: new Date(toolCallEndTime).toISOString(),
@@ -509,7 +509,7 @@ ${fieldDescriptions}
                     {
                       type: 'tool_use',
                       id: toolUseId,
-                      name: toolName,
+                      Name: toolName,
                       input: toolArgs,
                     } as any,
                   ],
@@ -553,7 +553,7 @@ ${fieldDescriptions}
                 // Force the next tool - use Anthropic format
                 nextPayload.tool_choice = {
                   type: 'tool',
-                  name: remainingTools[0],
+                  Name: remainingTools[0],
                 }
                 logger.info(`Forcing next tool: ${remainingTools[0]}`)
               } else {
@@ -584,7 +584,7 @@ ${fieldDescriptions}
             // Add to time segments
             timeSegments.push({
               type: 'model',
-              name: `Model response (iteration ${iterationCount + 1})`,
+              Name: `Model response (iteration ${iterationCount + 1})`,
               startTime: nextModelStartTime,
               endTime: nextModelEndTime,
               duration: thisModelTime,
@@ -644,7 +644,7 @@ ${fieldDescriptions}
           toolCalls:
             toolCalls.length > 0
               ? toolCalls.map((tc) => ({
-                  name: tc.name,
+                  Name: tc.Name,
                   arguments: tc.arguments as Record<string, any>,
                   startTime: tc.startTime,
                   endTime: tc.endTime,
@@ -740,7 +740,7 @@ ${fieldDescriptions}
       const timeSegments: TimeSegment[] = [
         {
           type: 'model',
-          name: 'Initial response',
+          Name: 'Initial response',
           startTime: initialCallTime,
           endTime: initialCallTime + firstResponseTime,
           duration: firstResponseTime,
@@ -759,12 +759,12 @@ ${fieldDescriptions}
           if (toolUses.length > 0) {
             // Convert Anthropic tool_use format to a format trackForcedToolUsage can understand
             const adaptedToolCalls = toolUses.map((tool: any) => ({
-              name: tool.name,
+              Name: tool.Name,
             }))
 
             // Convert Anthropic tool_choice format to match OpenAI format for tracking
             const adaptedToolChoice =
-              toolChoice.type === 'tool' ? { function: { name: toolChoice.name } } : toolChoice
+              toolChoice.type === 'tool' ? { function: { Name: toolChoice.Name } } : toolChoice
 
             const result = trackForcedToolUsage(
               adaptedToolCalls,
@@ -800,7 +800,7 @@ ${fieldDescriptions}
           // Process each tool call
           for (const toolUse of toolUses) {
             try {
-              const toolName = toolUse.name
+              const toolName = toolUse.Name
               const toolArgs = toolUse.input as Record<string, any>
 
               // Get the tool from the tools registry
@@ -820,7 +820,7 @@ ${fieldDescriptions}
               // Add to time segments for both success and failure
               timeSegments.push({
                 type: 'tool',
-                name: toolName,
+                Name: toolName,
                 startTime: toolCallStartTime,
                 endTime: toolCallEndTime,
                 duration: toolCallDuration,
@@ -841,7 +841,7 @@ ${fieldDescriptions}
               }
 
               toolCalls.push({
-                name: toolName,
+                Name: toolName,
                 arguments: toolParams,
                 startTime: new Date(toolCallStartTime).toISOString(),
                 endTime: new Date(toolCallEndTime).toISOString(),
@@ -859,7 +859,7 @@ ${fieldDescriptions}
                   {
                     type: 'tool_use',
                     id: toolUseId,
-                    name: toolName,
+                    Name: toolName,
                     input: toolArgs,
                   } as any,
                 ],
@@ -903,7 +903,7 @@ ${fieldDescriptions}
               // Force the next tool - use Anthropic format
               nextPayload.tool_choice = {
                 type: 'tool',
-                name: remainingTools[0],
+                Name: remainingTools[0],
               }
               logger.info(`Forcing next tool: ${remainingTools[0]}`)
             } else {
@@ -934,7 +934,7 @@ ${fieldDescriptions}
           // Add to time segments
           timeSegments.push({
             type: 'model',
-            name: `Model response (iteration ${iterationCount + 1})`,
+            Name: `Model response (iteration ${iterationCount + 1})`,
             startTime: nextModelStartTime,
             endTime: nextModelEndTime,
             duration: thisModelTime,
@@ -1059,7 +1059,7 @@ ${fieldDescriptions}
         toolCalls:
           toolCalls.length > 0
             ? toolCalls.map((tc) => ({
-                name: tc.name,
+                Name: tc.Name,
                 arguments: tc.arguments as Record<string, any>,
                 startTime: tc.startTime,
                 endTime: tc.endTime,

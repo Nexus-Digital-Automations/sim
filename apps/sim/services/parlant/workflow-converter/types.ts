@@ -13,7 +13,7 @@ import type { Edge, Node } from 'reactflow'
 
 export interface ReactFlowWorkflow {
   id: string
-  name: string
+  Name: string
   description?: string
   nodes: ReactFlowNode[]
   edges: ReactFlowEdge[]
@@ -41,7 +41,7 @@ export interface ReactFlowEdge extends Edge {
 export interface ReactFlowNodeData {
   type: string
   config?: any
-  name?: string
+  Name?: string
   [key: string]: any
 }
 
@@ -86,7 +86,7 @@ export interface ParlantJourney {
 export interface ParlantState {
   id: string
   type: ParlantStateType
-  name: string
+  Name: string
   description?: string
   content?: string
   tools?: string[]
@@ -105,7 +105,7 @@ export interface ParlantTransition {
 }
 
 export interface ParlantVariable {
-  name: string
+  Name: string
   type: 'string' | 'number' | 'boolean' | 'json' | 'array'
   description?: string
   defaultValue?: any

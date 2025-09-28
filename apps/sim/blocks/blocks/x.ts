@@ -4,7 +4,7 @@ import type { XResponse } from '@/tools/x/types'
 
 export const XBlock: BlockConfig<XResponse> = {
   type: 'x',
-  name: 'X',
+  Name: 'X',
   description: 'Interact with X',
   longDescription:
     'Integrate X into the workflow. Can post a new tweet, get tweet details, search tweets, and get user profile. Requires OAuth.',
@@ -205,7 +205,7 @@ export const XBlock: BlockConfig<XResponse> = {
     startTime: { type: 'string', description: 'Search start time' },
     endTime: { type: 'string', description: 'Search end time' },
     sortOrder: { type: 'string', description: 'Result sort order' },
-    username: { type: 'string', description: 'User profile name' },
+    username: { type: 'string', description: 'User profile Name' },
     includeRecentTweets: { type: 'boolean', description: 'Include recent tweets' },
   },
   outputs: {

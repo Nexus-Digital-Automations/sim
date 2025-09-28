@@ -36,7 +36,7 @@ function createReadableStreamFromGroqStream(groqStream: any): ReadableStream {
 
 export const groqProvider: ProviderConfig = {
   id: 'groq',
-  name: 'Groq',
+  Name: 'Groq',
   description: "Groq's LLM models with high-performance inference",
   version: '1.0.0',
   models: getProviderModels('groq'),
@@ -81,7 +81,7 @@ export const groqProvider: ProviderConfig = {
       ? request.tools.map((tool) => ({
           type: 'function',
           function: {
-            name: tool.id,
+            Name: tool.id,
             description: tool.description,
             parameters: tool.parameters,
           },
@@ -113,7 +113,7 @@ export const groqProvider: ProviderConfig = {
     if (tools?.length) {
       // Filter out any tools with usageControl='none', but ignore 'force' since Groq doesn't support it
       const filteredTools = tools.filter((tool) => {
-        const toolId = tool.function?.name
+        const toolId = tool.function?.Name
         const toolConfig = request.tools?.find((t) => t.id === toolId)
         // Only filter out 'none', treat 'force' as 'auto'
         return toolConfig?.usageControl !== 'none'
@@ -170,7 +170,7 @@ export const groqProvider: ProviderConfig = {
               timeSegments: [
                 {
                   type: 'model',
-                  name: 'Streaming response',
+                  Name: 'Streaming response',
                   startTime: providerStartTime,
                   endTime: Date.now(),
                   duration: Date.now() - providerStartTime,
@@ -228,7 +228,7 @@ export const groqProvider: ProviderConfig = {
       const timeSegments: TimeSegment[] = [
         {
           type: 'model',
-          name: 'Initial response',
+          Name: 'Initial response',
           startTime: initialCallTime,
           endTime: initialCallTime + firstResponseTime,
           duration: firstResponseTime,
@@ -249,7 +249,7 @@ export const groqProvider: ProviderConfig = {
           // Process each tool call
           for (const toolCall of toolCallsInResponse) {
             try {
-              const toolName = toolCall.function.name
+              const toolName = toolCall.function.Name
               const toolArgs = JSON.parse(toolCall.function.arguments)
 
               // Get the tool from the tools registry
@@ -268,7 +268,7 @@ export const groqProvider: ProviderConfig = {
               // Add to time segments for both success and failure
               timeSegments.push({
                 type: 'tool',
-                name: toolName,
+                Name: toolName,
                 startTime: toolCallStartTime,
                 endTime: toolCallEndTime,
                 duration: toolCallDuration,
@@ -289,7 +289,7 @@ export const groqProvider: ProviderConfig = {
               }
 
               toolCalls.push({
-                name: toolName,
+                Name: toolName,
                 arguments: toolParams,
                 startTime: new Date(toolCallStartTime).toISOString(),
                 endTime: new Date(toolCallEndTime).toISOString(),
@@ -307,7 +307,7 @@ export const groqProvider: ProviderConfig = {
                     id: toolCall.id,
                     type: 'function',
                     function: {
-                      name: toolName,
+                      Name: toolName,
                       arguments: toolCall.function.arguments,
                     },
                   },
@@ -346,7 +346,7 @@ export const groqProvider: ProviderConfig = {
           // Add to time segments
           timeSegments.push({
             type: 'model',
-            name: `Model response (iteration ${iterationCount + 1})`,
+            Name: `Model response (iteration ${iterationCount + 1})`,
             startTime: nextModelStartTime,
             endTime: nextModelEndTime,
             duration: thisModelTime,

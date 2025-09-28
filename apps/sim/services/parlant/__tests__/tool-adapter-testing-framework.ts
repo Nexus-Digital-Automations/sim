@@ -171,7 +171,7 @@ class ToolAdapterTestingFramework {
       // Create test agent for tool adapter testing
       const agentResponse = await agentService.createAgent(
         {
-          name: 'Tool Adapter Test Agent',
+          Name: 'Tool Adapter Test Agent',
           description: 'Agent for testing Universal Tool Adapter System integration',
           workspace_id: TEST_CONFIG.TEST_WORKSPACE_ID,
           config: {
@@ -181,7 +181,7 @@ class ToolAdapterTestingFramework {
           },
           guidelines: [
             {
-              name: 'Tool Testing Guidelines',
+              Name: 'Tool Testing Guidelines',
               description: 'Guidelines for systematic tool testing',
               content: `You are a tool testing agent. Your role is to:
 1. Test tool functionality systematically

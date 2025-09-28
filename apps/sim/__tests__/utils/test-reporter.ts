@@ -77,7 +77,7 @@ export interface TestArtifacts {
 
 export interface TestSuite {
   id: string
-  name: string
+  Name: string
   description: string
   startTime: Date
   endTime?: Date
@@ -141,10 +141,10 @@ export class ComprehensiveTestReporter {
   /**
    * Start a new test suite execution
    */
-  startTestSuite(id: string, name: string, description: string): void {
+  startTestSuite(id: string, Name: string, description: string): void {
     this.currentSuite = {
       id,
-      name,
+      Name,
       description,
       startTime: new Date(),
       totalTests: 0,
@@ -160,10 +160,10 @@ export class ComprehensiveTestReporter {
       type: 'suite_started',
       suiteId: id,
       timestamp: new Date(),
-      data: { name, description },
+      data: { Name, description },
     })
 
-    console.log(`🚀 Starting test suite: ${name}`)
+    console.log(`🚀 Starting test suite: ${Name}`)
   }
 
   /**
@@ -196,7 +196,7 @@ export class ComprehensiveTestReporter {
       data: { summary: completedSuite.summary },
     })
 
-    console.log(`✅ Test suite completed: ${completedSuite.name}`)
+    console.log(`✅ Test suite completed: ${completedSuite.Name}`)
     console.log(
       `   Total: ${completedSuite.totalTests}, Passed: ${completedSuite.passed}, Failed: ${completedSuite.failed}`
     )
@@ -285,7 +285,7 @@ export class ComprehensiveTestReporter {
     return {
       testId: `test_${scenario.id}_${Date.now()}`,
       scenarioId: scenario.id,
-      scenarioName: scenario.name,
+      scenarioName: scenario.Name,
       status,
       duration,
       startTime,
@@ -467,8 +467,8 @@ export class ComprehensiveTestReporter {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Report - ${suite.name}</title>
+    <meta Name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Report - ${suite.Name}</title>
     <style>
         ${this.getHtmlReportStyles()}
     </style>
@@ -479,7 +479,7 @@ export class ComprehensiveTestReporter {
         <header class="report-header">
             <h1>🧪 Test Execution Report</h1>
             <div class="suite-info">
-                <h2>${suite.name}</h2>
+                <h2>${suite.Name}</h2>
                 <p>${suite.description}</p>
                 <div class="meta-info">
                     <span>🕐 Started: ${suite.startTime.toLocaleString()}</span>
@@ -569,7 +569,7 @@ export class ComprehensiveTestReporter {
                             (result) => `
                             <tr class="result-row ${result.status}">
                                 <td>
-                                    <div class="test-name">${result.scenarioName}</div>
+                                    <div class="test-Name">${result.scenarioName}</div>
                                     <div class="test-meta">Complexity: ${result.metadata.scenarioComplexity}</div>
                                 </td>
                                 <td>
@@ -639,7 +639,7 @@ export class ComprehensiveTestReporter {
    * Generate Markdown report for documentation
    */
   private async generateMarkdownReport(suite: TestSuite): Promise<void> {
-    const markdown = `# 🧪 Test Execution Report: ${suite.name}
+    const markdown = `# 🧪 Test Execution Report: ${suite.Name}
 
 ${suite.description}
 
@@ -721,7 +721,7 @@ ${this.generateRecommendationsMarkdown(suite)}
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
     <testsuite
-        name="${suite.name}"
+        Name="${suite.Name}"
         tests="${suite.totalTests}"
         failures="${suite.failed}"
         errors="${suite.errors}"
@@ -733,7 +733,7 @@ ${this.generateRecommendationsMarkdown(suite)}
           .map(
             (result) => `
         <testcase
-            name="${result.scenarioName}"
+            Name="${result.scenarioName}"
             classname="WorkflowJourneyTest"
             time="${(result.duration / 1000).toFixed(3)}"
         >

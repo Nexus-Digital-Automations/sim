@@ -423,7 +423,7 @@ export class ConversionService implements IConversionService {
     details?: Record<string, any>
   ): ConversionError {
     const error = new Error(message) as ConversionError
-    error.name = 'ConversionError'
+    error.Name = 'ConversionError'
     error.type = type
     error.code = code
     error.details = details

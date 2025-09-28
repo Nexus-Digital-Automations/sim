@@ -93,7 +93,7 @@ describe('Parlant Integration Tests', () => {
   describe('Agent Management', () => {
     it('should create an agent', async () => {
       const createRequest: AgentCreateRequest = {
-        name: 'Test Agent',
+        Name: 'Test Agent',
         description: 'Integration test agent',
         workspace_id: authContext.workspace_id!,
         guidelines: [
@@ -114,7 +114,7 @@ describe('Parlant Integration Tests', () => {
 
       expect(response.success).toBe(true)
       expect(response.data).toBeDefined()
-      expect(response.data.name).toBe(createRequest.name)
+      expect(response.data.Name).toBe(createRequest.Name)
       expect(response.data.workspace_id).toBe(authContext.workspace_id)
       expect(response.data.id).toBeDefined()
 
@@ -125,7 +125,7 @@ describe('Parlant Integration Tests', () => {
       // First create an agent
       if (!testAgent) {
         const createRequest: AgentCreateRequest = {
-          name: 'Get Test Agent',
+          Name: 'Get Test Agent',
           workspace_id: authContext.workspace_id!,
         }
         const createResponse = await agentService.createAgent(createRequest, authContext)
@@ -137,14 +137,14 @@ describe('Parlant Integration Tests', () => {
       expect(response.success).toBe(true)
       expect(response.data).toBeDefined()
       expect(response.data.id).toBe(testAgent.id)
-      expect(response.data.name).toBe(testAgent.name)
+      expect(response.data.Name).toBe(testAgent.Name)
     })
 
     it('should list agents for workspace', async () => {
       // Ensure we have at least one agent
       if (!testAgent) {
         const createRequest: AgentCreateRequest = {
-          name: 'List Test Agent',
+          Name: 'List Test Agent',
           workspace_id: authContext.workspace_id!,
         }
         const createResponse = await agentService.createAgent(createRequest, authContext)
@@ -174,7 +174,7 @@ describe('Parlant Integration Tests', () => {
       // First create an agent
       if (!testAgent) {
         const createRequest: AgentCreateRequest = {
-          name: 'Update Test Agent',
+          Name: 'Update Test Agent',
           workspace_id: authContext.workspace_id!,
         }
         const createResponse = await agentService.createAgent(createRequest, authContext)
@@ -182,7 +182,7 @@ describe('Parlant Integration Tests', () => {
       }
 
       const updates = {
-        name: 'Updated Test Agent',
+        Name: 'Updated Test Agent',
         description: 'Updated description',
         config: {
           temperature: 0.9,
@@ -192,7 +192,7 @@ describe('Parlant Integration Tests', () => {
       const response = await agentService.updateAgent(testAgent.id, updates, authContext)
 
       expect(response.success).toBe(true)
-      expect(response.data.name).toBe(updates.name)
+      expect(response.data.Name).toBe(updates.Name)
       expect(response.data.description).toBe(updates.description)
     })
 
@@ -200,7 +200,7 @@ describe('Parlant Integration Tests', () => {
       // Ensure we have an agent to search for
       if (!testAgent) {
         const createRequest: AgentCreateRequest = {
-          name: 'Searchable Test Agent',
+          Name: 'Searchable Test Agent',
           workspace_id: authContext.workspace_id!,
         }
         const createResponse = await agentService.createAgent(createRequest, authContext)
@@ -218,7 +218,7 @@ describe('Parlant Integration Tests', () => {
       expect(Array.isArray(response.data)).toBe(true)
 
       // Should find our test agent
-      const foundAgent = response.data.find((a) => a.name.includes('Searchable'))
+      const foundAgent = response.data.find((a) => a.Name.includes('Searchable'))
       expect(foundAgent).toBeDefined()
     })
   })
@@ -228,7 +228,7 @@ describe('Parlant Integration Tests', () => {
       // Create a test agent if needed
       if (!testAgent) {
         const createRequest: AgentCreateRequest = {
-          name: 'Session Test Agent',
+          Name: 'Session Test Agent',
           workspace_id: authContext.workspace_id!,
         }
         const createResponse = await agentService.createAgent(createRequest, authContext)
@@ -411,7 +411,7 @@ describe('Parlant Integration Tests', () => {
       // Create multiple agents concurrently
       for (let i = 0; i < 5; i++) {
         const createRequest: AgentCreateRequest = {
-          name: `Concurrent Agent ${i}`,
+          Name: `Concurrent Agent ${i}`,
           workspace_id: authContext.workspace_id!,
         }
         promises.push(agentService.createAgent(createRequest, authContext))
@@ -437,7 +437,7 @@ describe('Parlant Integration Tests', () => {
 
       // Create agent
       const createRequest: AgentCreateRequest = {
-        name: 'Performance Test Agent',
+        Name: 'Performance Test Agent',
         workspace_id: authContext.workspace_id!,
       }
       const agentResponse = await agentService.createAgent(createRequest, authContext)

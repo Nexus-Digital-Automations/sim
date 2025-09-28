@@ -9,18 +9,18 @@ import { getAssetUrl } from '@/lib/utils'
 export function generateBrandedMetadata(override: Partial<Metadata> = {}): Metadata {
   const brand = getBrandConfig()
 
-  const defaultTitle = brand.name
+  const defaultTitle = brand.Name
   const summaryFull = `Sim is an open-source AI agent workflow builder. Developers at trail-blazing startups to Fortune 500 companies deploy agentic workflows on the Sim platform.  35,000+ developers are already using Sim to build and deploy AI agent workflows. Sim lets developers integrate with 100+ apps to streamline workflows with AI agents. Sim is SOC2 and HIPAA compliant, ensuring enterprise-level security.`
   const summaryShort = `Sim is an open-source AI agent workflow builder.`
 
   return {
     title: {
-      template: `%s | ${brand.name}`,
+      template: `%s | ${brand.Name}`,
       default: defaultTitle,
     },
     description: summaryShort,
-    applicationName: brand.name,
-    authors: [{ name: brand.name }],
+    applicationName: brand.Name,
+    authors: [{ Name: brand.Name }],
     generator: 'Next.js',
     keywords: [
       'AI agent',
@@ -39,8 +39,8 @@ export function generateBrandedMetadata(override: Partial<Metadata> = {}): Metad
       'visual programming',
     ],
     referrer: 'origin-when-cross-origin',
-    creator: brand.name,
-    publisher: brand.name,
+    creator: brand.Name,
+    publisher: brand.Name,
     metadataBase: env.NEXT_PUBLIC_APP_URL
       ? new URL(env.NEXT_PUBLIC_APP_URL)
       : new URL('https://sim.ai'),
@@ -67,13 +67,13 @@ export function generateBrandedMetadata(override: Partial<Metadata> = {}): Metad
       url: env.NEXT_PUBLIC_APP_URL || 'https://sim.ai',
       title: defaultTitle,
       description: summaryFull,
-      siteName: brand.name,
+      siteName: brand.Name,
       images: [
         {
           url: brand.logoUrl || getAssetUrl('social/facebook.png'),
           width: 1200,
           height: 630,
-          alt: brand.name,
+          alt: brand.Name,
         },
       ],
     },
@@ -108,7 +108,7 @@ export function generateBrandedMetadata(override: Partial<Metadata> = {}): Metad
     appleWebApp: {
       capable: true,
       statusBarStyle: 'default',
-      title: brand.name,
+      title: brand.Name,
     },
     formatDetection: {
       telephone: false,
@@ -131,7 +131,7 @@ export function generateStructuredData() {
   return {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'Sim',
+    Name: 'Sim',
     description:
       'Sim is an open-source AI agent workflow builder. Developers at trail-blazing startups to Fortune 500 companies deploy agentic workflows on the Sim platform.  30,000+ developers are already using Sim to build and deploy AI agent workflows. Sim lets developers integrate with 100+ apps to streamline workflows with AI agents. Sim is SOC2 and HIPAA compliant, ensuring enterprise-level security.',
     url: 'https://sim.ai',
@@ -143,7 +143,7 @@ export function generateStructuredData() {
     },
     creator: {
       '@type': 'Organization',
-      name: 'Sim',
+      Name: 'Sim',
       url: 'https://sim.ai',
     },
     featureList: [

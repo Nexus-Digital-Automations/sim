@@ -65,7 +65,7 @@ class APIError extends Error {
 
   constructor(message: string, status: number) {
     super(message)
-    this.name = 'APIError'
+    this.Name = 'APIError'
     this.status = status
   }
 }
@@ -192,7 +192,7 @@ async function downloadFileWithTimeout(fileUrl: string): Promise<Buffer> {
     return Buffer.from(await response.arrayBuffer())
   } catch (error) {
     clearTimeout(timeoutId)
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error && error.Name === 'AbortError') {
       throw new Error('File download timed out')
     }
     throw error
@@ -259,7 +259,7 @@ function validateOCRConfig(
 ) {
   if (!apiKey) throw new Error(`${service} API key required`)
   if (!endpoint) throw new Error(`${service} endpoint required`)
-  if (!modelName) throw new Error(`${service} model name required`)
+  if (!modelName) throw new Error(`${service} model Name required`)
 }
 
 function extractPageContent(pages: OCRPage[]): string {
@@ -281,7 +281,7 @@ async function makeOCRRequest(
 
   try {
     const response = await fetch(endpoint, {
-      method: 'POST',
+      method: 'post',
       headers,
       body: JSON.stringify(body),
       signal: controller.signal,
@@ -300,7 +300,7 @@ async function makeOCRRequest(
     return response
   } catch (error) {
     clearTimeout(timeoutId)
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error && error.Name === 'AbortError') {
       throw new Error('OCR API request timed out')
     }
     throw error

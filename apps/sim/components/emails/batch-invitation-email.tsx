@@ -81,7 +81,7 @@ export const BatchInvitationEmail = ({
                 <Img
                   src={brand.logoUrl || `${baseUrl}/logo/reverse/text/medium.png`}
                   width='114'
-                  alt={brand.name}
+                  alt={brand.Name}
                   style={{
                     margin: '0 auto',
                   }}

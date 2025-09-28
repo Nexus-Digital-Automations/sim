@@ -6,7 +6,7 @@ import {
 import { env } from '@/lib/env'
 
 export interface BillingPlan {
-  name: string
+  Name: string
   priceId: string
   limits: {
     cost: number
@@ -19,28 +19,28 @@ export interface BillingPlan {
 export function getPlans(): BillingPlan[] {
   return [
     {
-      name: 'free',
+      Name: 'free',
       priceId: env.STRIPE_FREE_PRICE_ID || '',
       limits: {
         cost: getFreeTierLimit(),
       },
     },
     {
-      name: 'pro',
+      Name: 'pro',
       priceId: env.STRIPE_PRO_PRICE_ID || '',
       limits: {
         cost: getProTierLimit(),
       },
     },
     {
-      name: 'team',
+      Name: 'team',
       priceId: env.STRIPE_TEAM_PRICE_ID || '',
       limits: {
         cost: getTeamTierLimitPerSeat(),
       },
     },
     {
-      name: 'enterprise',
+      Name: 'enterprise',
       priceId: 'price_dynamic',
       limits: {
         cost: getTeamTierLimitPerSeat(),
@@ -50,14 +50,14 @@ export function getPlans(): BillingPlan[] {
 }
 
 /**
- * Get a specific plan by name
+ * Get a specific plan by Name
  */
 export function getPlanByName(planName: string): BillingPlan | undefined {
-  return getPlans().find((plan) => plan.name === planName)
+  return getPlans().find((plan) => plan.Name === planName)
 }
 
 /**
- * Get plan limits for a given plan name
+ * Get plan limits for a given plan Name
  */
 export function getPlanLimits(planName: string): number {
   const plan = getPlanByName(planName)

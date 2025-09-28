@@ -21,7 +21,7 @@ export class ConversationalWorkflowError extends Error {
     retryable = false
   ) {
     super(message)
-    this.name = 'ConversationalWorkflowError'
+    this.Name = 'ConversationalWorkflowError'
     this.errorCode = errorCode
     this.context = context
     this.retryable = retryable
@@ -35,7 +35,7 @@ export class ConversationalWorkflowError extends Error {
 
   toJSON() {
     return {
-      name: this.name,
+      Name: this.Name,
       message: this.message,
       errorCode: this.errorCode,
       context: this.context,
@@ -57,7 +57,7 @@ export class WorkflowMappingError extends ConversationalWorkflowError {
     retryable = false
   ) {
     super(message, errorCode, context, retryable)
-    this.name = 'WorkflowMappingError'
+    this.Name = 'WorkflowMappingError'
   }
 }
 
@@ -77,7 +77,7 @@ export class NLPProcessingError extends ConversationalWorkflowError {
     retryable = true
   ) {
     super(message, errorCode, context, retryable)
-    this.name = 'NLPProcessingError'
+    this.Name = 'NLPProcessingError'
     this.originalInput = originalInput
     this.processingStage = processingStage
   }
@@ -105,7 +105,7 @@ export class CommandProcessingError extends ConversationalWorkflowError {
     userFriendlyMessage?: string
   ) {
     super(message, errorCode, context, retryable)
-    this.name = 'CommandProcessingError'
+    this.Name = 'CommandProcessingError'
     this.userFriendlyMessage = userFriendlyMessage || message
   }
 
@@ -131,7 +131,7 @@ export class SessionManagementError extends ConversationalWorkflowError {
     retryable = false
   ) {
     super(message, errorCode, context, retryable)
-    this.name = 'SessionManagementError'
+    this.Name = 'SessionManagementError'
     this.sessionId = sessionId
   }
 
@@ -157,7 +157,7 @@ export class RealtimeCommunicationError extends ConversationalWorkflowError {
     retryable = true
   ) {
     super(message, errorCode, context, retryable)
-    this.name = 'RealtimeCommunicationError'
+    this.Name = 'RealtimeCommunicationError'
     this.communicationType = communicationType
   }
 

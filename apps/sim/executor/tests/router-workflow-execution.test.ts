@@ -17,7 +17,7 @@ describe('Router → Workflow Block Execution Fix', () => {
         {
           id: 'starter',
           position: { x: 0, y: 0 },
-          metadata: { id: BlockType.STARTER, name: 'Start' },
+          metadata: { id: BlockType.STARTER, Name: 'Start' },
           config: { tool: BlockType.STARTER, params: {} },
           inputs: {},
           outputs: {},
@@ -26,7 +26,7 @@ describe('Router → Workflow Block Execution Fix', () => {
         {
           id: 'router-1',
           position: { x: 100, y: 0 },
-          metadata: { id: BlockType.ROUTER, name: 'Router 1' },
+          metadata: { id: BlockType.ROUTER, Name: 'Router 1' },
           config: { tool: BlockType.ROUTER, params: {} },
           inputs: {},
           outputs: {},
@@ -35,7 +35,7 @@ describe('Router → Workflow Block Execution Fix', () => {
         {
           id: 'function-1',
           position: { x: 200, y: -100 },
-          metadata: { id: BlockType.FUNCTION, name: 'Function 1' },
+          metadata: { id: BlockType.FUNCTION, Name: 'Function 1' },
           config: { tool: BlockType.FUNCTION, params: {} },
           inputs: {},
           outputs: {},
@@ -44,7 +44,7 @@ describe('Router → Workflow Block Execution Fix', () => {
         {
           id: 'router-2',
           position: { x: 200, y: 0 },
-          metadata: { id: BlockType.ROUTER, name: 'Router 2' },
+          metadata: { id: BlockType.ROUTER, Name: 'Router 2' },
           config: { tool: BlockType.ROUTER, params: {} },
           inputs: {},
           outputs: {},
@@ -53,7 +53,7 @@ describe('Router → Workflow Block Execution Fix', () => {
         {
           id: 'function-2',
           position: { x: 300, y: -50 },
-          metadata: { id: BlockType.FUNCTION, name: 'Function 2' },
+          metadata: { id: BlockType.FUNCTION, Name: 'Function 2' },
           config: { tool: BlockType.FUNCTION, params: {} },
           inputs: {},
           outputs: {},
@@ -62,7 +62,7 @@ describe('Router → Workflow Block Execution Fix', () => {
         {
           id: 'workflow-2',
           position: { x: 300, y: 50 },
-          metadata: { id: BlockType.WORKFLOW, name: 'Workflow 2' },
+          metadata: { id: BlockType.WORKFLOW, Name: 'Workflow 2' },
           config: { tool: BlockType.WORKFLOW, params: {} },
           inputs: {},
           outputs: {},

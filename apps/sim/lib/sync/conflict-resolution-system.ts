@@ -54,7 +54,7 @@ export interface ConflictResolution {
 
 // Advanced merge strategies
 export interface MergeStrategy {
-  name: string
+  Name: string
   description: string
   applicableTypes: ConflictType[]
   priority: number
@@ -168,7 +168,7 @@ export class ConflictResolutionSystem {
 
       logger.info('Resolving conflict', {
         conflictId: conflict.id,
-        strategy: strategy.name,
+        strategy: strategy.Name,
       })
 
       // Execute strategy
@@ -177,7 +177,7 @@ export class ConflictResolutionSystem {
       resolution.autoResolved = resolution.outcome !== 'deferred'
 
       // Update metrics
-      this.updateResolutionMetrics(strategy.name, resolution, startTime)
+      this.updateResolutionMetrics(strategy.Name, resolution, startTime)
 
       // Store resolution
       this.resolutionHistory.push(resolution)
@@ -495,7 +495,7 @@ export class ConflictResolutionSystem {
   private initializeMergeStrategies(): void {
     // Latest wins strategy
     this.mergeStrategies.set('latest-wins', {
-      name: 'latest-wins',
+      Name: 'latest-wins',
       description: 'Apply the most recent change',
       applicableTypes: ['CONCURRENT_EDIT', 'ORDERING_CONFLICT'],
       priority: 3,
@@ -515,7 +515,7 @@ export class ConflictResolutionSystem {
 
     // Three-way merge strategy
     this.mergeStrategies.set('three-way-merge', {
-      name: 'three-way-merge',
+      Name: 'three-way-merge',
       description: 'Merge changes intelligently when possible',
       applicableTypes: ['CONCURRENT_EDIT', 'DEPENDENT_CHANGE'],
       priority: 5,
@@ -544,7 +544,7 @@ export class ConflictResolutionSystem {
 
     // User prompt strategy
     this.mergeStrategies.set('user-prompt', {
-      name: 'user-prompt',
+      Name: 'user-prompt',
       description: 'Ask user to resolve conflict manually',
       applicableTypes: ['SEMANTIC_CONFLICT', 'STATE_DIVERGENCE', 'CONCURRENT_EDIT'],
       priority: 2,
@@ -573,7 +573,7 @@ export class ConflictResolutionSystem {
 
     // Rollback strategy
     this.mergeStrategies.set('rollback', {
-      name: 'rollback',
+      Name: 'rollback',
       description: 'Revert to previous stable state',
       applicableTypes: ['STATE_DIVERGENCE', 'SEMANTIC_CONFLICT'],
       priority: 1,

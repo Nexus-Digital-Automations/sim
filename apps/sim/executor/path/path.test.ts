@@ -420,7 +420,7 @@ describe('PathTracker', () => {
         blocks: [
           {
             id: 'router1',
-            metadata: { id: BlockType.ROUTER, name: 'Router' },
+            metadata: { id: BlockType.ROUTER, Name: 'Router' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.ROUTER, params: {} },
             inputs: {},
@@ -429,7 +429,7 @@ describe('PathTracker', () => {
           },
           {
             id: 'api1',
-            metadata: { id: BlockType.API, name: 'API 1' },
+            metadata: { id: BlockType.API, Name: 'API 1' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.API, params: {} },
             inputs: {},
@@ -438,7 +438,7 @@ describe('PathTracker', () => {
           },
           {
             id: 'api2',
-            metadata: { id: BlockType.API, name: 'API 2' },
+            metadata: { id: BlockType.API, Name: 'API 2' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.API, params: {} },
             inputs: {},
@@ -447,7 +447,7 @@ describe('PathTracker', () => {
           },
           {
             id: 'agent1',
-            metadata: { id: BlockType.AGENT, name: 'Agent' },
+            metadata: { id: BlockType.AGENT, Name: 'Agent' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.AGENT, params: {} },
             inputs: {},
@@ -511,7 +511,7 @@ describe('PathTracker', () => {
       // Add another level to test deep activation
       mockWorkflow.blocks.push({
         id: 'finalStep',
-        metadata: { id: BlockType.API, name: 'Final Step' },
+        metadata: { id: BlockType.API, Name: 'Final Step' },
         position: { x: 0, y: 0 },
         config: { tool: BlockType.API, params: {} },
         inputs: {},
@@ -614,7 +614,7 @@ describe('PathTracker', () => {
         blocks: [
           {
             id: 'condition1',
-            metadata: { id: BlockType.CONDITION, name: 'Condition' },
+            metadata: { id: BlockType.CONDITION, Name: 'Condition' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.CONDITION, params: {} },
             inputs: {},
@@ -623,7 +623,7 @@ describe('PathTracker', () => {
           },
           {
             id: 'knowledge1',
-            metadata: { id: BlockType.FUNCTION, name: 'Knowledge 1' },
+            metadata: { id: BlockType.FUNCTION, Name: 'Knowledge 1' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.FUNCTION, params: {} },
             inputs: {},
@@ -632,7 +632,7 @@ describe('PathTracker', () => {
           },
           {
             id: 'knowledge2',
-            metadata: { id: BlockType.FUNCTION, name: 'Knowledge 2' },
+            metadata: { id: BlockType.FUNCTION, Name: 'Knowledge 2' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.FUNCTION, params: {} },
             inputs: {},
@@ -641,7 +641,7 @@ describe('PathTracker', () => {
           },
           {
             id: 'agent1',
-            metadata: { id: BlockType.AGENT, name: 'Agent' },
+            metadata: { id: BlockType.AGENT, Name: 'Agent' },
             position: { x: 0, y: 0 },
             config: { tool: BlockType.AGENT, params: {} },
             inputs: {},
@@ -751,7 +751,7 @@ describe('PathTracker', () => {
       // Add another level to test deep activation
       mockWorkflow.blocks.push({
         id: 'finalStep',
-        metadata: { id: BlockType.FUNCTION, name: 'Final Step' },
+        metadata: { id: BlockType.FUNCTION, Name: 'Final Step' },
         position: { x: 0, y: 0 },
         config: { tool: BlockType.FUNCTION, params: {} },
         inputs: {},
@@ -786,7 +786,7 @@ describe('PathTracker', () => {
       // Add another condition block as a target
       mockWorkflow.blocks.push({
         id: 'condition2',
-        metadata: { id: BlockType.CONDITION, name: 'Nested Condition' },
+        metadata: { id: BlockType.CONDITION, Name: 'Nested Condition' },
         position: { x: 0, y: 0 },
         config: { tool: BlockType.CONDITION, params: {} },
         inputs: {},
@@ -827,7 +827,7 @@ describe('PathTracker', () => {
       // Add a parallel block as a target
       mockWorkflow.blocks.push({
         id: 'parallel1',
-        metadata: { id: BlockType.PARALLEL, name: 'Parallel Block' },
+        metadata: { id: BlockType.PARALLEL, Name: 'Parallel Block' },
         position: { x: 0, y: 0 },
         config: { tool: BlockType.PARALLEL, params: {} },
         inputs: {},

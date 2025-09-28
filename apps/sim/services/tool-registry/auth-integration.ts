@@ -149,7 +149,7 @@ export class ToolRegistryAuthService {
   async getUserWorkspaces(userId: string): Promise<
     Array<{
       id: string
-      name: string
+      Name: string
       role: string
       permissions: string[]
     }>
@@ -158,7 +158,7 @@ export class ToolRegistryAuthService {
       const workspaces = await db
         .select({
           id: workspace.id,
-          name: workspace.name,
+          Name: workspace.Name,
           permission: permissions.permissionType,
         })
         .from(workspace)
@@ -176,7 +176,7 @@ export class ToolRegistryAuthService {
         string,
         {
           id: string
-          name: string
+          Name: string
           permissions: string[]
         }
       >()
@@ -185,7 +185,7 @@ export class ToolRegistryAuthService {
         if (!workspaceMap.has(ws.id)) {
           workspaceMap.set(ws.id, {
             id: ws.id,
-            name: ws.name,
+            Name: ws.Name,
             permissions: [],
           })
         }
@@ -288,7 +288,7 @@ export class ToolRegistryAuthService {
    */
   async getUserContext(userId: string): Promise<{
     id: string
-    name?: string
+    Name?: string
     email?: string
     workspaces: string[]
     permissions: string[]
@@ -298,7 +298,7 @@ export class ToolRegistryAuthService {
       const [userData] = await db
         .select({
           id: user.id,
-          name: user.name,
+          Name: user.Name,
           email: user.email,
         })
         .from(user)
@@ -323,7 +323,7 @@ export class ToolRegistryAuthService {
 
       return {
         id: userData.id,
-        name: userData.name || undefined,
+        Name: userData.Name || undefined,
         email: userData.email,
         workspaces: workspaceIds,
         permissions: Array.from(new Set(allPermissions)),
@@ -338,8 +338,8 @@ export class ToolRegistryAuthService {
    * Validate session and get user information
    */
   async validateSession(sessionToken?: string): Promise<{
-    user: { id: string; name?: string; email?: string }
-    workspace?: { id: string; name: string }
+    user: { id: string; Name?: string; email?: string }
+    workspace?: { id: string; Name: string }
   } | null> {
     try {
       if (!sessionToken) {
@@ -361,7 +361,7 @@ export class ToolRegistryAuthService {
       let activeWorkspace = null
       if (session.activeOrganizationId) {
         const [ws] = await db
-          .select({ id: workspace.id, name: workspace.name })
+          .select({ id: workspace.id, Name: workspace.Name })
           .from(workspace)
           .where(eq(workspace.id, session.activeOrganizationId))
           .limit(1)
@@ -374,7 +374,7 @@ export class ToolRegistryAuthService {
       return {
         user: {
           id: session.userId,
-          name: session.user.name || undefined,
+          Name: session.user.Name || undefined,
           email: session.user.email,
         },
         workspace: activeWorkspace || undefined,

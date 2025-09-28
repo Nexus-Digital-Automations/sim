@@ -40,7 +40,7 @@ function createReadableStreamFromCerebrasStream(
 
 export const cerebrasProvider: ProviderConfig = {
   id: 'cerebras',
-  name: 'Cerebras',
+  Name: 'Cerebras',
   description: 'Cerebras Cloud LLMs',
   version: '1.0.0',
   models: getProviderModels('cerebras'),
@@ -91,7 +91,7 @@ export const cerebrasProvider: ProviderConfig = {
         ? request.tools.map((tool) => ({
             type: 'function',
             function: {
-              name: tool.id,
+              Name: tool.id,
               description: tool.description,
               parameters: tool.parameters,
             },
@@ -120,7 +120,7 @@ export const cerebrasProvider: ProviderConfig = {
       if (tools?.length) {
         // Filter out any tools with usageControl='none', treat 'force' as 'auto' since Cerebras only supports 'auto'
         const filteredTools = tools.filter((tool) => {
-          const toolId = tool.function?.name
+          const toolId = tool.function?.Name
           const toolConfig = request.tools?.find((t) => t.id === toolId)
           // Only filter out tools with usageControl='none'
           return toolConfig?.usageControl !== 'none'
@@ -174,7 +174,7 @@ export const cerebrasProvider: ProviderConfig = {
                 timeSegments: [
                   {
                     type: 'model',
-                    name: 'Streaming response',
+                    Name: 'Streaming response',
                     startTime: providerStartTime,
                     endTime: Date.now(),
                     duration: Date.now() - providerStartTime,
@@ -228,7 +228,7 @@ export const cerebrasProvider: ProviderConfig = {
       const timeSegments: TimeSegment[] = [
         {
           type: 'model',
-          name: 'Initial response',
+          Name: 'Initial response',
           startTime: initialCallTime,
           endTime: initialCallTime + firstResponseTime,
           duration: firstResponseTime,
@@ -267,7 +267,7 @@ export const cerebrasProvider: ProviderConfig = {
             }
 
             // Create a signature for this tool call to detect repeats
-            const toolCallSignature = `${toolCall.function.name}-${toolCall.function.arguments}`
+            const toolCallSignature = `${toolCall.function.Name}-${toolCall.function.arguments}`
             if (toolCallSignatures.has(toolCallSignature)) {
               hasRepeatedToolCalls = true
               continue
@@ -278,7 +278,7 @@ export const cerebrasProvider: ProviderConfig = {
               toolCallSignatures.add(toolCallSignature)
               processedAnyToolCall = true
 
-              const toolName = toolCall.function.name
+              const toolName = toolCall.function.Name
               const toolArgs = JSON.parse(toolCall.function.arguments)
 
               // Get the tool from the tools registry
@@ -297,7 +297,7 @@ export const cerebrasProvider: ProviderConfig = {
               // Add to time segments for both success and failure
               timeSegments.push({
                 type: 'tool',
-                name: toolName,
+                Name: toolName,
                 startTime: toolCallStartTime,
                 endTime: toolCallEndTime,
                 duration: toolCallDuration,
@@ -318,7 +318,7 @@ export const cerebrasProvider: ProviderConfig = {
               }
 
               toolCalls.push({
-                name: toolName,
+                Name: toolName,
                 arguments: toolParams,
                 startTime: new Date(toolCallStartTime).toISOString(),
                 endTime: new Date(toolCallEndTime).toISOString(),
@@ -336,7 +336,7 @@ export const cerebrasProvider: ProviderConfig = {
                     id: toolCall.id,
                     type: 'function',
                     function: {
-                      name: toolName,
+                      Name: toolName,
                       arguments: toolCall.function.arguments,
                     },
                   },
@@ -381,7 +381,7 @@ export const cerebrasProvider: ProviderConfig = {
             // Add to time segments
             timeSegments.push({
               type: 'model',
-              name: 'Final response',
+              Name: 'Final response',
               startTime: nextModelStartTime,
               endTime: nextModelEndTime,
               duration: thisModelTime,
@@ -426,7 +426,7 @@ export const cerebrasProvider: ProviderConfig = {
             // Add to time segments
             timeSegments.push({
               type: 'model',
-              name: `Model response (iteration ${iterationCount + 1})`,
+              Name: `Model response (iteration ${iterationCount + 1})`,
               startTime: nextModelStartTime,
               endTime: nextModelEndTime,
               duration: thisModelTime,
@@ -454,7 +454,7 @@ export const cerebrasProvider: ProviderConfig = {
       const providerEndTimeISO = new Date(providerEndTime).toISOString()
       const totalDuration = providerEndTime - providerStartTime
 
-      // POST-TOOL-STREAMING: stream after tool calls if requested
+      // post-TOOL-STREAMING: stream after tool calls if requested
       if (request.stream && iterationCount > 0) {
         logger.info('Using streaming for final Cerebras response after tool calls')
 

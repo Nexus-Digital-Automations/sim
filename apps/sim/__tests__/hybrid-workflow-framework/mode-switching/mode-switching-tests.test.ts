@@ -29,7 +29,7 @@ vi.mock('@/lib/logs/console/logger', () => ({
 vi.mock('@/blocks', () => ({
   getBlock: vi.fn((type: string) => ({
     type,
-    name: `Mock ${type} block`,
+    Name: `Mock ${type} block`,
     description: `Mock block for ${type}`,
     icon: 'test-icon',
     category: 'test',
@@ -46,12 +46,12 @@ describe('Hybrid Mode Switching Framework', () => {
     // Create comprehensive mock workflow state
     mockWorkflowState = {
       id: testWorkflowId,
-      name: 'Test Hybrid Workflow',
+      Name: 'Test Hybrid Workflow',
       blocks: {
         'block-1': {
           id: 'block-1',
           type: 'starter',
-          name: 'Start Block',
+          Name: 'Start Block',
           position: { x: 100, y: 100 },
           enabled: true,
           config: { message: 'Starting workflow' },
@@ -59,7 +59,7 @@ describe('Hybrid Mode Switching Framework', () => {
         'block-2': {
           id: 'block-2',
           type: 'condition',
-          name: 'Decision Block',
+          Name: 'Decision Block',
           position: { x: 300, y: 100 },
           enabled: true,
           config: { condition: 'user.age > 18' },
@@ -67,10 +67,10 @@ describe('Hybrid Mode Switching Framework', () => {
         'block-3': {
           id: 'block-3',
           type: 'webhook',
-          name: 'API Call',
+          Name: 'API Call',
           position: { x: 500, y: 100 },
           enabled: true,
-          config: { url: 'https://api.example.com', method: 'POST' },
+          config: { url: 'https://api.example.com', method: 'post' },
         } as BlockState,
       },
       edges: [
@@ -207,7 +207,7 @@ describe('Hybrid Mode Switching Framework', () => {
   describe('State Preservation Validation', () => {
     it('should preserve workflow metadata during mode switch', async () => {
       const context = await initializeDualMode(testWorkflowId, mockWorkflowState)
-      const originalName = context.reactFlowState.name
+      const originalName = context.reactFlowState.Name
       const originalBlockIds = Object.keys(context.reactFlowState.blocks)
 
       // Switch modes
@@ -216,7 +216,7 @@ describe('Hybrid Mode Switching Framework', () => {
 
       // Verify metadata preservation
       const finalContext = dualModeArchitecture.getExecutionContext(testWorkflowId)
-      expect(finalContext!.reactFlowState.name).toBe(originalName)
+      expect(finalContext!.reactFlowState.Name).toBe(originalName)
       expect(Object.keys(finalContext!.reactFlowState.blocks)).toEqual(originalBlockIds)
     })
 

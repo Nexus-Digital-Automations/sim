@@ -122,7 +122,7 @@ export async function initializeUniversalToolAdapterSystem(
       // Register performance alerts for all adapters
       for (const adapterId of registeredAdapters) {
         globalAdapterMonitoring.registerAlert({
-          name: `${adapterId}_high_latency`,
+          Name: `${adapterId}_high_latency`,
           adapterId,
           condition: {
             metric: 'latency',
@@ -139,7 +139,7 @@ export async function initializeUniversalToolAdapterSystem(
         })
 
         globalAdapterMonitoring.registerAlert({
-          name: `${adapterId}_high_error_rate`,
+          Name: `${adapterId}_high_error_rate`,
           adapterId,
           condition: {
             metric: 'error_rate',
@@ -224,7 +224,7 @@ export async function validateUniversalToolAdapterSystem(): Promise<{
           const parlantTool = adapter.getParlantTool()
 
           // Validate tool definition structure
-          if (!parlantTool.id || !parlantTool.name || !parlantTool.description) {
+          if (!parlantTool.id || !parlantTool.Name || !parlantTool.description) {
             issues.push(`Adapter '${adapterId}' has incomplete tool definition`)
           }
 
@@ -425,7 +425,7 @@ export function getSystemHealthDashboard(): {
 
     return {
       id: adapterId,
-      name: adapter?.getParlantTool().name || adapterId,
+      Name: adapter?.getParlantTool().Name || adapterId,
       category: adapter?.getParlantTool().category || 'unknown',
       health: metadata?.health || 'unknown',
       metrics: metadata?.metrics || {},

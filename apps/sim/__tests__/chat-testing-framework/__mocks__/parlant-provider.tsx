@@ -177,7 +177,7 @@ export const MockParlantProvider: React.FC<MockParlantProviderProps> = ({
 
         const newAgent: ParlantAgent = {
           id: `mock-agent-${Date.now()}`,
-          name: config.name || 'New Agent',
+          Name: config.Name || 'New Agent',
           description: config.description || 'Mock agent for testing',
           status: 'active',
           capabilities: config.capabilities || ['general-support'],
@@ -235,7 +235,7 @@ export const MockParlantProvider: React.FC<MockParlantProviderProps> = ({
             previousInteractions: [],
             userProfile: {
               id: 'mock-user-123',
-              name: 'Mock User',
+              Name: 'Mock User',
               tier: 'premium',
               previousIssues: [],
             },
@@ -250,8 +250,8 @@ export const MockParlantProvider: React.FC<MockParlantProviderProps> = ({
           setTimeout(() => {
             const welcomeMessage: ChatMessage = {
               id: `welcome-${Date.now()}`,
-              content: `Hello! I'm ${agent.name}. How can I help you today?`,
-              sender: { type: 'agent', id: agent.id, name: agent.name },
+              content: `Hello! I'm ${agent.Name}. How can I help you today?`,
+              sender: { type: 'agent', id: agent.id, Name: agent.Name },
               timestamp: new Date(),
               type: 'text',
               sessionId: newSession.id,
@@ -303,7 +303,7 @@ export const MockParlantProvider: React.FC<MockParlantProviderProps> = ({
         const userMessage: ChatMessage = {
           id: `msg-${Date.now()}`,
           content: content,
-          sender: { type: 'user', id: 'mock-user-123', name: 'Mock User' },
+          sender: { type: 'user', id: 'mock-user-123', Name: 'Mock User' },
           timestamp: new Date(),
           type: type,
           sessionId: currentSession.id,
@@ -412,7 +412,7 @@ export const MockParlantProvider: React.FC<MockParlantProviderProps> = ({
       const agentMessage: ChatMessage = {
         id: `agent-msg-${Date.now()}`,
         content: message,
-        sender: { type: 'agent', id: currentAgent.id, name: currentAgent.name },
+        sender: { type: 'agent', id: currentAgent.id, Name: currentAgent.Name },
         timestamp: new Date(),
         type: 'text',
         sessionId: currentSession.id,
@@ -522,7 +522,7 @@ export default MockParlantProvider
 // Additional mock utilities
 export const createMockAgent = (overrides: Partial<ParlantAgent> = {}): ParlantAgent => ({
   id: `mock-agent-${Math.random().toString(36).substr(2, 9)}`,
-  name: 'Mock Agent',
+  Name: 'Mock Agent',
   description: 'A mock agent for testing',
   status: 'active',
   capabilities: ['general-support'],
@@ -544,7 +544,7 @@ export const createMockAgent = (overrides: Partial<ParlantAgent> = {}): ParlantA
 export const createMockMessage = (overrides: Partial<ChatMessage> = {}): ChatMessage => ({
   id: `mock-msg-${Math.random().toString(36).substr(2, 9)}`,
   content: 'Mock message content',
-  sender: { type: 'user', id: 'mock-user', name: 'Mock User' },
+  sender: { type: 'user', id: 'mock-user', Name: 'Mock User' },
   timestamp: new Date(),
   type: 'text',
   sessionId: 'mock-session',
@@ -564,7 +564,7 @@ export const createMockSession = (overrides: Partial<ChatSession> = {}): ChatSes
     previousInteractions: [],
     userProfile: {
       id: 'mock-user',
-      name: 'Mock User',
+      Name: 'Mock User',
       tier: 'premium',
       previousIssues: [],
     },
@@ -575,19 +575,19 @@ export const createMockSession = (overrides: Partial<ChatSession> = {}): ChatSes
 // Test scenario generators
 export const generateTestScenarios = () => ({
   basicConversation: {
-    agents: [createMockAgent({ name: 'Support Agent' })],
+    agents: [createMockAgent({ Name: 'Support Agent' })],
     initialMessages: [
       createMockMessage({
         content: 'Hello, how can I help you?',
-        sender: { type: 'agent', id: 'support-agent', name: 'Support Agent' },
+        sender: { type: 'agent', id: 'support-agent', Name: 'Support Agent' },
       }),
     ],
   },
   multiAgentScenario: {
     agents: [
-      createMockAgent({ id: 'support', name: 'Support Agent' }),
-      createMockAgent({ id: 'sales', name: 'Sales Agent' }),
-      createMockAgent({ id: 'technical', name: 'Technical Agent' }),
+      createMockAgent({ id: 'support', Name: 'Support Agent' }),
+      createMockAgent({ id: 'sales', Name: 'Sales Agent' }),
+      createMockAgent({ id: 'technical', Name: 'Technical Agent' }),
     ],
   },
   errorScenario: {

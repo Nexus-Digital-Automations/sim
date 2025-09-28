@@ -1,12 +1,12 @@
-import { LinearIcon } from '@/components/icons'
+import { linearIcon } from '@/components/icons'
 import type { BlockConfig, BlockIcon } from '@/blocks/types'
 import type { LinearResponse } from '@/tools/linear/types'
 
-const LinearBlockIcon: BlockIcon = (props) => LinearIcon(props as any)
+const LinearBlockIcon: BlockIcon = (props) => linearIcon(props as any)
 
 export const LinearBlock: BlockConfig<LinearResponse> = {
   type: 'linear',
-  name: 'Linear',
+  Name: 'Linear',
   description: 'Read and create issues in Linear',
   longDescription:
     'Integrate Linear into the workflow. Can read and create issues. Requires OAuth.',

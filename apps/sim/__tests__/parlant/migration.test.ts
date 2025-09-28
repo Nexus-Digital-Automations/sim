@@ -58,7 +58,7 @@ describe('Parlant Database Migration Tests', () => {
       .insert(workspace)
       .values({
         id: `workspace-${Date.now()}`,
-        name: 'Test Workspace',
+        Name: 'Test Workspace',
         ownerId: 'test-user-id',
       })
       .returning({ id: workspace.id })
@@ -67,7 +67,7 @@ describe('Parlant Database Migration Tests', () => {
       .insert(user)
       .values({
         id: 'test-user-id',
-        name: 'Test User',
+        Name: 'Test User',
         email: `test-${Date.now()}@example.com`,
         emailVerified: true,
         createdAt: new Date(),
@@ -81,7 +81,7 @@ describe('Parlant Database Migration Tests', () => {
         id: `kb-${Date.now()}`,
         userId: userResult[0].id,
         workspaceId: workspaceResult[0].id,
-        name: 'Test Knowledge Base',
+        Name: 'Test Knowledge Base',
         description: 'Test KB for Parlant tests',
       })
       .returning({ id: knowledgeBase.id })
@@ -174,7 +174,7 @@ describe('Parlant Database Migration Tests', () => {
         'id',
         'workspace_id',
         'created_by',
-        'name',
+        'Name',
         'description',
         'status',
         'composition_mode',
@@ -284,7 +284,7 @@ describe('Parlant Database Migration Tests', () => {
       await expect(
         db.insert(parlantAgent).values({
           // Missing required workspace_id and created_by
-          name: 'Test Agent',
+          Name: 'Test Agent',
         })
       ).rejects.toThrow()
     })
@@ -296,7 +296,7 @@ describe('Parlant Database Migration Tests', () => {
         .values({
           workspaceId: testData.workspaceId,
           createdBy: testData.userId,
-          name: 'Test Agent',
+          Name: 'Test Agent',
           description: 'Test agent for FK tests',
         })
         .returning()
@@ -338,7 +338,7 @@ describe('Parlant Database Migration Tests', () => {
         .values({
           workspaceId: testData.workspaceId,
           createdBy: testData.userId,
-          name: 'Test Agent',
+          Name: 'Test Agent',
         })
         .returning()
 
@@ -380,7 +380,7 @@ describe('Parlant Database Migration Tests', () => {
         .values({
           workspaceId: testData.workspaceId,
           createdBy: testData.userId,
-          name: 'Test Agent',
+          Name: 'Test Agent',
           status: 'active', // valid enum value
         })
         .returning()
@@ -392,7 +392,7 @@ describe('Parlant Database Migration Tests', () => {
         db.insert(parlantAgent).values({
           workspaceId: testData.workspaceId,
           createdBy: testData.userId,
-          name: 'Invalid Agent',
+          Name: 'Invalid Agent',
           status: 'invalid_status' as any,
         })
       ).rejects.toThrow()
@@ -407,7 +407,7 @@ describe('Parlant Database Migration Tests', () => {
         .values({
           workspaceId: testData.workspaceId,
           createdBy: testData.userId,
-          name: 'Test Agent',
+          Name: 'Test Agent',
         })
         .returning()
 
@@ -415,7 +415,7 @@ describe('Parlant Database Migration Tests', () => {
         .insert(parlantTool)
         .values({
           workspaceId: testData.workspaceId,
-          name: 'test_tool',
+          Name: 'test_tool',
           displayName: 'Test Tool',
           description: 'A test tool',
           toolType: 'custom',
@@ -457,7 +457,7 @@ describe('Parlant Database Migration Tests', () => {
         .values({
           workspaceId: testData.workspaceId,
           createdBy: testData.userId,
-          name: 'Test Agent',
+          Name: 'Test Agent',
         })
         .returning()
 
@@ -475,7 +475,7 @@ describe('Parlant Database Migration Tests', () => {
         .insert(parlantJourneyState)
         .values({
           journeyId: journey[0].id,
-          name: 'Initial State',
+          Name: 'Initial State',
           stateType: 'chat',
           chatPrompt: 'Welcome! How can I help you?',
           isInitial: true,
@@ -486,7 +486,7 @@ describe('Parlant Database Migration Tests', () => {
         .insert(parlantJourneyState)
         .values({
           journeyId: journey[0].id,
-          name: 'Final State',
+          Name: 'Final State',
           stateType: 'final',
           isFinal: true,
         })
@@ -506,14 +506,14 @@ describe('Parlant Database Migration Tests', () => {
       const journeyDetails = await db
         .select({
           journeyTitle: parlantJourney.title,
-          agentName: parlantAgent.name,
+          agentName: parlantAgent.Name,
           stateCount: count(parlantJourneyState.id),
         })
         .from(parlantJourney)
         .innerJoin(parlantAgent, eq(parlantJourney.agentId, parlantAgent.id))
         .leftJoin(parlantJourneyState, eq(parlantJourneyState.journeyId, parlantJourney.id))
         .where(eq(parlantJourney.id, journey[0].id))
-        .groupBy(parlantJourney.title, parlantAgent.name)
+        .groupBy(parlantJourney.title, parlantAgent.Name)
 
       expect(journeyDetails[0].journeyTitle).toBe('Test Journey')
       expect(journeyDetails[0].agentName).toBe('Test Agent')
@@ -559,7 +559,7 @@ describe('Parlant Database Migration Tests', () => {
         .values({
           workspaceId: testData.workspaceId,
           createdBy: testData.userId,
-          name: 'Migration Test Agent',
+          Name: 'Migration Test Agent',
           status: 'active',
           compositionMode: 'fluid',
           totalSessions: 5,
@@ -603,7 +603,7 @@ describe('Parlant Database Migration Tests', () => {
         .values({
           workspaceId: testData.workspaceId,
           createdBy: testData.userId,
-          name: 'Bulk Test Agent',
+          Name: 'Bulk Test Agent',
         })
         .returning()
 
@@ -647,7 +647,7 @@ describe('Parlant Database Migration Tests', () => {
         .values({
           workspaceId: testData.workspaceId,
           createdBy: testData.userId,
-          name: 'Performance Test Agent',
+          Name: 'Performance Test Agent',
         })
         .returning()
 

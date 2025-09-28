@@ -63,7 +63,7 @@ interface WorkflowStep {
 
 interface WorkflowDefinition {
   id: string
-  name: string
+  Name: string
   description: string
   complexity: 'SIMPLE' | 'MEDIUM' | 'COMPLEX'
   scenario: string
@@ -97,7 +97,7 @@ interface WorkflowExecutionResult {
 const WORKFLOW_SCENARIOS: WorkflowDefinition[] = [
   {
     id: 'data-research-workflow',
-    name: 'Data Research and Documentation',
+    Name: 'Data Research and Documentation',
     description: 'Research information, process it, and document findings',
     complexity: 'SIMPLE',
     scenario: 'User wants to research a topic and save findings to a document',
@@ -135,7 +135,7 @@ const WORKFLOW_SCENARIOS: WorkflowDefinition[] = [
 
   {
     id: 'communication-workflow',
-    name: 'Multi-Channel Communication',
+    Name: 'Multi-Channel Communication',
     description: 'Send notifications across multiple communication channels',
     complexity: 'MEDIUM',
     scenario: 'User wants to broadcast important information to team via multiple channels',
@@ -189,7 +189,7 @@ const WORKFLOW_SCENARIOS: WorkflowDefinition[] = [
 
   {
     id: 'data-pipeline-workflow',
-    name: 'Data Processing Pipeline',
+    Name: 'Data Processing Pipeline',
     description: 'Extract, transform, and load data across multiple systems',
     complexity: 'COMPLEX',
     scenario: 'User wants to process data from one system and load it into another',
@@ -277,7 +277,7 @@ class EndToEndWorkflowTester {
       // Create test agent for workflow execution
       const agentResponse = await agentService.createAgent(
         {
-          name: 'E2E Workflow Test Agent',
+          Name: 'E2E Workflow Test Agent',
           description: 'Agent for testing end-to-end workflows with Universal Tool Adapter System',
           workspace_id: E2E_TEST_CONFIG.WORKFLOW_WORKSPACES.PRIMARY,
           config: {
@@ -287,7 +287,7 @@ class EndToEndWorkflowTester {
           },
           guidelines: [
             {
-              name: 'Workflow Testing Guidelines',
+              Name: 'Workflow Testing Guidelines',
               description: 'Guidelines for systematic workflow testing',
               content: `You are a workflow testing agent. Your role is to:
 1. Execute multi-tool workflows systematically
@@ -349,7 +349,7 @@ class EndToEndWorkflowTester {
   }
 
   async executeWorkflow(workflowDef: WorkflowDefinition): Promise<WorkflowExecutionResult> {
-    console.log(`🔄 Executing workflow: ${workflowDef.name}`)
+    console.log(`🔄 Executing workflow: ${workflowDef.Name}`)
     console.log(`   Scenario: ${workflowDef.scenario}`)
     console.log(`   Complexity: ${workflowDef.complexity}`)
     console.log(`   Steps: ${workflowDef.steps.length}`)
@@ -372,7 +372,7 @@ class EndToEndWorkflowTester {
         sessionId: this.testAgent!.session.id,
         metadata: {
           workflowId: workflowDef.id,
-          workflowName: workflowDef.name,
+          workflowName: workflowDef.Name,
           testRun: true,
         },
       }
@@ -435,13 +435,13 @@ class EndToEndWorkflowTester {
         result.finalOutcome = this.generateWorkflowSummary(workflowDef, stepOutputs)
       }
 
-      console.log(`   🎯 Workflow ${workflowDef.name}: ${result.success ? 'SUCCESS' : 'FAILED'}`)
+      console.log(`   🎯 Workflow ${workflowDef.Name}: ${result.success ? 'SUCCESS' : 'FAILED'}`)
       console.log(`      Steps: ${result.stepsSuccessful}/${result.stepsExecuted} successful`)
       console.log(`      Duration: ${result.totalExecutionTime}ms`)
     } catch (error) {
       result.error = error instanceof Error ? error.message : String(error)
       result.totalExecutionTime = Date.now() - startTime
-      console.log(`   ❌ Workflow ${workflowDef.name} failed with error: ${result.error}`)
+      console.log(`   ❌ Workflow ${workflowDef.Name} failed with error: ${result.error}`)
     }
 
     this.workflowResults.set(workflowDef.id, result)
@@ -554,7 +554,7 @@ class EndToEndWorkflowTester {
   ): any {
     return {
       workflowId: workflowDef.id,
-      workflowName: workflowDef.name,
+      workflowName: workflowDef.Name,
       completedSteps: Array.from(stepOutputs.keys()),
       finalResults: Object.fromEntries(stepOutputs),
       expectedOutcome: workflowDef.expectedFinalOutcome,
@@ -666,7 +666,7 @@ describe('End-to-End Workflow Integration Tests', () => {
         const workflow = workflowDef as WorkflowDefinition
         const result = await workflowTester.executeWorkflow(workflow)
 
-        console.log(`\n📊 Workflow Results for ${workflow.name}:`)
+        console.log(`\n📊 Workflow Results for ${workflow.Name}:`)
         console.log(`   Overall Success: ${result.success ? '✅' : '❌'}`)
         console.log(`   Steps Executed: ${result.stepsExecuted}`)
         console.log(`   Steps Successful: ${result.stepsSuccessful}`)
@@ -753,7 +753,7 @@ describe('End-to-End Workflow Integration Tests', () => {
         // Test a simple workflow that passes data between steps
         const dataFlowWorkflow: WorkflowDefinition = {
           id: 'data-flow-test',
-          name: 'Data Flow Validation',
+          Name: 'Data Flow Validation',
           description: 'Test data passing between workflow steps',
           complexity: 'SIMPLE',
           scenario: 'Validate that data flows correctly between tools',
@@ -821,7 +821,7 @@ describe('End-to-End Workflow Integration Tests', () => {
         // Test workflow with intentional failures
         const errorRecoveryWorkflow: WorkflowDefinition = {
           id: 'error-recovery-test',
-          name: 'Error Recovery Validation',
+          Name: 'Error Recovery Validation',
           description: 'Test workflow behavior with tool failures',
           complexity: 'MEDIUM',
           scenario: 'Validate error handling and recovery mechanisms',

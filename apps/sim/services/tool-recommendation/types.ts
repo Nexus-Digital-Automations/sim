@@ -172,7 +172,7 @@ export interface WorkspacePattern {
 
 export interface WorkflowPattern {
   id: string
-  name: string
+  Name: string
   frequency: number
   tools: string[]
   triggers: string[]
@@ -296,7 +296,7 @@ export interface RecommendationExplanation {
 // ===== MACHINE LEARNING MODELS =====
 
 export interface MLModelConfig {
-  name: string
+  Name: string
   version: string
   type: MLModelType
   features: string[]
@@ -509,7 +509,7 @@ export class RecommendationError extends Error {
     public context?: Record<string, any>
   ) {
     super(message)
-    this.name = 'RecommendationError'
+    this.Name = 'RecommendationError'
   }
 }
 
@@ -521,7 +521,7 @@ export interface RecommendationSystemHealth {
 }
 
 export interface ComponentHealth {
-  name: string
+  Name: string
   status: 'healthy' | 'warning' | 'error'
   latency?: number
   errorRate?: number

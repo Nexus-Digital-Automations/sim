@@ -472,7 +472,7 @@ describe('Provider Management', () => {
       const openaiProvider = getProvider('openai')
       expect(openaiProvider).toBeDefined()
       expect(openaiProvider?.id).toBe('openai')
-      expect(openaiProvider?.name).toBe('OpenAI')
+      expect(openaiProvider?.Name).toBe('OpenAI')
 
       const anthropicProvider = getProvider('anthropic')
       expect(anthropicProvider).toBeDefined()
@@ -580,16 +580,16 @@ describe('JSON and Structured Output', () => {
     })
 
     it.concurrent('should extract JSON without code blocks', () => {
-      const content = 'Text before {"name": "test", "value": 42} text after'
+      const content = 'Text before {"Name": "test", "value": 42} text after'
       const result = extractAndParseJSON(content)
-      expect(result).toEqual({ name: 'test', value: 42 })
+      expect(result).toEqual({ Name: 'test', value: 42 })
     })
 
     it.concurrent('should handle nested objects', () => {
-      const content = '{"user": {"name": "John", "age": 30}, "active": true}'
+      const content = '{"user": {"Name": "John", "age": 30}, "active": true}'
       const result = extractAndParseJSON(content)
       expect(result).toEqual({
-        user: { name: 'John', age: 30 },
+        user: { Name: 'John', age: 30 },
         active: true,
       })
     })
@@ -632,8 +632,8 @@ describe('JSON and Structured Output', () => {
     it.concurrent('should generate instructions for legacy fields format', () => {
       const fieldsFormat = {
         fields: [
-          { name: 'score', type: 'number', description: 'A score from 1-10' },
-          { name: 'comment', type: 'string', description: 'A comment' },
+          { Name: 'score', type: 'number', description: 'A score from 1-10' },
+          { Name: 'comment', type: 'string', description: 'A comment' },
         ],
       }
       const result = generateStructuredOutputInstructions(fieldsFormat)
@@ -648,7 +648,7 @@ describe('JSON and Structured Output', () => {
       const fieldsFormat = {
         fields: [
           {
-            name: 'metadata',
+            Name: 'metadata',
             type: 'object',
             properties: {
               version: { type: 'string', description: 'Version number' },
@@ -680,7 +680,7 @@ describe('Tool Management', () => {
         id: 'test-tool',
         schema: {
           function: {
-            name: 'testFunction',
+            Name: 'testFunction',
             description: 'A test function',
             parameters: {
               type: 'object',
@@ -696,7 +696,7 @@ describe('Tool Management', () => {
       const result = transformCustomTool(customTool)
 
       expect(result.id).toBe('custom_test-tool')
-      expect(result.name).toBe('testFunction')
+      expect(result.Name).toBe('testFunction')
       expect(result.description).toBe('A test function')
       expect(result.parameters.type).toBe('object')
       expect(result.parameters.properties).toBeDefined()
@@ -741,9 +741,9 @@ describe('Tool Management', () => {
 
     it.concurrent('should filter out tools with usageControl="none"', () => {
       const tools = [
-        { function: { name: 'tool1' } },
-        { function: { name: 'tool2' } },
-        { function: { name: 'tool3' } },
+        { function: { Name: 'tool1' } },
+        { function: { Name: 'tool2' } },
+        { function: { Name: 'tool3' } },
       ]
       const providerTools = [
         { id: 'tool1', usageControl: 'auto' },
@@ -760,31 +760,31 @@ describe('Tool Management', () => {
     })
 
     it.concurrent('should set toolChoice for forced tools (OpenAI format)', () => {
-      const tools = [{ function: { name: 'forcedTool' } }]
+      const tools = [{ function: { Name: 'forcedTool' } }]
       const providerTools = [{ id: 'forcedTool', usageControl: 'force' }]
 
       const result = prepareToolsWithUsageControl(tools, providerTools, mockLogger)
 
       expect(result.toolChoice).toEqual({
         type: 'function',
-        function: { name: 'forcedTool' },
+        function: { Name: 'forcedTool' },
       })
     })
 
     it.concurrent('should set toolChoice for forced tools (Anthropic format)', () => {
-      const tools = [{ function: { name: 'forcedTool' } }]
+      const tools = [{ function: { Name: 'forcedTool' } }]
       const providerTools = [{ id: 'forcedTool', usageControl: 'force' }]
 
       const result = prepareToolsWithUsageControl(tools, providerTools, mockLogger, 'anthropic')
 
       expect(result.toolChoice).toEqual({
         type: 'tool',
-        name: 'forcedTool',
+        Name: 'forcedTool',
       })
     })
 
     it.concurrent('should set toolConfig for Google format', () => {
-      const tools = [{ function: { name: 'forcedTool' } }]
+      const tools = [{ function: { Name: 'forcedTool' } }]
       const providerTools = [{ id: 'forcedTool', usageControl: 'force' }]
 
       const result = prepareToolsWithUsageControl(tools, providerTools, mockLogger, 'google')
@@ -798,7 +798,7 @@ describe('Tool Management', () => {
     })
 
     it.concurrent('should return empty when all tools are filtered', () => {
-      const tools = [{ function: { name: 'tool1' } }]
+      const tools = [{ function: { Name: 'tool1' } }]
       const providerTools = [{ id: 'tool1', usageControl: 'none' }]
 
       const result = prepareToolsWithUsageControl(tools, providerTools, mockLogger)
@@ -809,7 +809,7 @@ describe('Tool Management', () => {
     })
 
     it.concurrent('should default to auto when no forced tools', () => {
-      const tools = [{ function: { name: 'tool1' } }]
+      const tools = [{ function: { Name: 'tool1' } }]
       const providerTools = [{ id: 'tool1', usageControl: 'auto' }]
 
       const result = prepareToolsWithUsageControl(tools, providerTools, mockLogger)

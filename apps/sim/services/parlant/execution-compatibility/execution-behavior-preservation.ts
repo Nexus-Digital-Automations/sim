@@ -228,9 +228,9 @@ export class ExecutionBehaviorPreservationSystem {
   /**
    * Register behavior interceptor for custom behavior preservation
    */
-  registerBehaviorInterceptor(name: string, interceptor: BehaviorInterceptor): void {
-    this.behaviorInterceptors.set(name, interceptor)
-    logger.info('Behavior interceptor registered', { name })
+  registerBehaviorInterceptor(Name: string, interceptor: BehaviorInterceptor): void {
+    this.behaviorInterceptors.set(Name, interceptor)
+    logger.info('Behavior interceptor registered', { Name })
   }
 
   /**

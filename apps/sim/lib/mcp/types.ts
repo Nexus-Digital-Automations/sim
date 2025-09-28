@@ -37,7 +37,7 @@ export type McpTransport = 'http' | 'sse' | 'streamable-http'
 
 export interface McpServerConfig {
   id: string
-  name: string
+  Name: string
   description?: string
   transport: McpTransport
 
@@ -72,7 +72,7 @@ export interface McpInitializeParams {
   protocolVersion: string
   capabilities: McpCapabilities
   clientInfo: {
-    name: string
+    Name: string
     version: string
   }
 }
@@ -97,7 +97,7 @@ export interface McpInitializeResult {
   protocolVersion: string
   capabilities: McpCapabilities
   serverInfo: {
-    name: string
+    Name: string
     version: string
   }
 }
@@ -108,7 +108,7 @@ export interface McpConsentRequest {
   context: {
     serverId: string
     serverName: string
-    action: string // Tool name or resource path
+    action: string // Tool Name or resource path
     description?: string // Human-readable description
     dataAccess?: string[] // Types of data being accessed
     sideEffects?: string[] // Potential side effects
@@ -141,7 +141,7 @@ export interface McpToolSchema {
 }
 
 export interface McpTool {
-  name: string
+  Name: string
   description?: string
   inputSchema: McpToolSchema
   serverId: string
@@ -149,7 +149,7 @@ export interface McpTool {
 }
 
 export interface McpToolCall {
-  name: string
+  Name: string
   arguments: Record<string, any>
 }
 
@@ -169,7 +169,7 @@ export interface McpToolResult {
 // MCP Resource Types
 export interface McpResource {
   uri: string
-  name: string
+  Name: string
   description?: string
   mimeType?: string
 }
@@ -183,10 +183,10 @@ export interface McpResourceContent {
 
 // MCP Prompt Types
 export interface McpPrompt {
-  name: string
+  Name: string
   description?: string
   arguments?: Array<{
-    name: string
+    Name: string
     description?: string
     required?: boolean
   }>
@@ -217,21 +217,21 @@ export class McpError extends Error {
     public data?: any
   ) {
     super(message)
-    this.name = 'McpError'
+    this.Name = 'McpError'
   }
 }
 
 export class McpConnectionError extends McpError {
   constructor(message: string, serverId: string) {
     super(`MCP Connection Error for server ${serverId}: ${message}`)
-    this.name = 'McpConnectionError'
+    this.Name = 'McpConnectionError'
   }
 }
 
 export class McpTimeoutError extends McpError {
   constructor(serverId: string, timeout: number) {
     super(`MCP request to server ${serverId} timed out after ${timeout}ms`)
-    this.name = 'McpTimeoutError'
+    this.Name = 'McpTimeoutError'
   }
 }
 
@@ -246,7 +246,7 @@ export interface McpToolInput {
 
 export interface McpServerSummary {
   id: string
-  name: string
+  Name: string
   url?: string
   transport?: McpTransport
   status: 'connected' | 'disconnected' | 'error'

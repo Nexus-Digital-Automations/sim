@@ -339,7 +339,7 @@ export const UnifiedCopilot = forwardRef<UnifiedCopilotRef, UnifiedCopilotProps>
                   <>
                     <span className='text-muted-foreground text-sm'>•</span>
                     <Badge variant='secondary' className='text-xs'>
-                      {selectedAgent.name}
+                      {selectedAgent.Name}
                     </Badge>
                   </>
                 )}

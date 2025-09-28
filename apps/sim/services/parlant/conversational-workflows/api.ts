@@ -76,7 +76,7 @@ export async function createConversationalWorkflowHandler(
     logger.error('Failed to create conversational workflow', {
       workflowId: request.workflowId,
       error: error.message,
-      errorType: error.constructor.name,
+      errorType: error.constructor.Name,
       executionTime,
       requestId,
     })
@@ -152,7 +152,7 @@ export async function processNaturalLanguageCommandHandler(
     logger.error('Failed to process natural language command', {
       sessionId: request.sessionId,
       error: error.message,
-      errorType: error.constructor.name,
+      errorType: error.constructor.Name,
       executionTime,
       requestId,
     })
@@ -251,7 +251,7 @@ export async function getWorkflowStateHandler(
     logger.error('Failed to get workflow state', {
       sessionId: request.sessionId,
       error: error.message,
-      errorType: error.constructor.name,
+      errorType: error.constructor.Name,
       executionTime,
       requestId,
     })
@@ -340,7 +340,7 @@ export async function terminateWorkflowSessionHandler(
     logger.error('Failed to terminate workflow session', {
       sessionId,
       error: error.message,
-      errorType: error.constructor.name,
+      errorType: error.constructor.Name,
       executionTime,
       requestId,
     })

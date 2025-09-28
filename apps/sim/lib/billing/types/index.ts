@@ -55,7 +55,7 @@ export interface UserSubscriptionState {
 }
 
 export interface SubscriptionPlan {
-  name: string
+  Name: string
   priceId: string
   limits: {
     cost: number
@@ -118,7 +118,7 @@ export interface TeamUsageLimit {
 export interface BillingSummary {
   userId: string
   email: string
-  name: string
+  Name: string
   currentPeriodCost: number
   currentUsageLimit: number
   currentUsagePercentage: number

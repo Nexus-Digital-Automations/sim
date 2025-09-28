@@ -333,42 +333,42 @@ export class ToolRecommendationService implements RecommendationAPI {
   async getSystemHealth(): Promise<RecommendationSystemHealth> {
     const components = [
       {
-        name: 'Context Analyzer',
+        Name: 'Context Analyzer',
         status: 'healthy' as const,
         latency: 50,
         errorRate: 0.01,
         lastSuccess: new Date(),
       },
       {
-        name: 'ML Engine',
+        Name: 'ML Engine',
         status: 'healthy' as const,
         latency: 200,
         errorRate: 0.02,
         lastSuccess: new Date(),
       },
       {
-        name: 'Behavior Tracker',
+        Name: 'Behavior Tracker',
         status: 'healthy' as const,
         latency: 30,
         errorRate: 0.005,
         lastSuccess: new Date(),
       },
       {
-        name: 'Workspace Analyzer',
+        Name: 'Workspace Analyzer',
         status: 'healthy' as const,
         latency: 100,
         errorRate: 0.01,
         lastSuccess: new Date(),
       },
       {
-        name: 'Real-time Suggester',
+        Name: 'Real-time Suggester',
         status: 'healthy' as const,
         latency: 25,
         errorRate: 0.001,
         lastSuccess: new Date(),
       },
       {
-        name: 'Personalization Engine',
+        Name: 'Personalization Engine',
         status: 'healthy' as const,
         latency: 75,
         errorRate: 0.01,
@@ -450,7 +450,7 @@ export class ToolRecommendationService implements RecommendationAPI {
     const contextInsights = contextAnalyzer.getContextualInsights(context)
 
     return {
-      summary: `Based on your conversation context and ${contextInsights.dominantIntents.join(', ')} intent, we recommend ${topRecommendation.tool.name}.`,
+      summary: `Based on your conversation context and ${contextInsights.dominantIntents.join(', ')} intent, we recommend ${topRecommendation.tool.Name}.`,
       keyFactors: [
         `Intent match: ${topRecommendation.contextAlignment * 100}%`,
         `User fit: ${topRecommendation.userFit * 100}%`,

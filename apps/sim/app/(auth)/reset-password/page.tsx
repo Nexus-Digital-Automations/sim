@@ -39,7 +39,7 @@ function ResetPasswordContent() {
       setStatusMessage({ type: null, text: '' })
 
       const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },

@@ -1,32 +1,32 @@
 import {
-  AirtableIcon,
-  DiscordIcon,
-  GithubIcon,
-  GmailIcon,
-  MicrosoftTeamsIcon,
-  OutlookIcon,
-  SignalIcon,
-  SlackIcon,
-  StripeIcon,
-  TelegramIcon,
-  WebhookIcon,
-  WhatsAppIcon,
+  airtableIcon,
+  discordIcon,
+  githubIcon,
+  gmailIcon,
+  microsoftTeamsIcon,
+  outlookIcon,
+  signalIcon,
+  slackIcon,
+  stripeIcon,
+  telegramIcon,
+  webhookIcon,
+  whatsAppIcon,
 } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 
 const getWebhookProviderIcon = (provider: string) => {
   const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    slack: SlackIcon,
-    gmail: GmailIcon,
-    outlook: OutlookIcon,
-    airtable: AirtableIcon,
-    telegram: TelegramIcon,
-    generic: SignalIcon,
-    whatsapp: WhatsAppIcon,
-    github: GithubIcon,
-    discord: DiscordIcon,
-    stripe: StripeIcon,
-    microsoftteams: MicrosoftTeamsIcon,
+    slack: slackIcon,
+    gmail: gmailIcon,
+    outlook: outlookIcon,
+    airtable: airtableIcon,
+    telegram: telegramIcon,
+    generic: signalIcon,
+    whatsapp: whatsAppIcon,
+    github: githubIcon,
+    discord: discordIcon,
+    stripe: stripeIcon,
+    microsoftteams: microsoftTeamsIcon,
   }
 
   return iconMap[provider.toLowerCase()]
@@ -34,10 +34,10 @@ const getWebhookProviderIcon = (provider: string) => {
 
 export const WebhookBlock: BlockConfig = {
   type: 'webhook',
-  name: 'Webhook',
+  Name: 'Webhook',
   description: 'Trigger workflow execution from external webhooks',
   category: 'triggers',
-  icon: WebhookIcon,
+  icon: webhookIcon,
   bgColor: '#10B981', // Green color for triggers
   hideFromToolbar: true, // Hidden for backwards compatibility - use generic webhook trigger instead
 

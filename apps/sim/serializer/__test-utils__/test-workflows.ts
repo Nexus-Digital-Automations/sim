@@ -24,7 +24,7 @@ export function createMinimalWorkflowState(): WorkflowStateFixture {
     starter: {
       id: 'starter',
       type: 'starter',
-      name: 'Starter Block',
+      Name: 'Starter Block',
       position: { x: 0, y: 0 },
       subBlocks: {
         description: {
@@ -39,7 +39,7 @@ export function createMinimalWorkflowState(): WorkflowStateFixture {
     agent1: {
       id: 'agent1',
       type: 'agent',
-      name: 'Agent Block',
+      Name: 'Agent Block',
       position: { x: 300, y: 0 },
       subBlocks: {
         provider: {
@@ -99,7 +99,7 @@ export function createConditionalWorkflowState(): WorkflowStateFixture {
     starter: {
       id: 'starter',
       type: 'starter',
-      name: 'Starter Block',
+      Name: 'Starter Block',
       position: { x: 0, y: 0 },
       subBlocks: {
         description: {
@@ -114,7 +114,7 @@ export function createConditionalWorkflowState(): WorkflowStateFixture {
     condition1: {
       id: 'condition1',
       type: 'condition',
-      name: 'Condition Block',
+      Name: 'Condition Block',
       position: { x: 300, y: 0 },
       subBlocks: {
         condition: {
@@ -129,7 +129,7 @@ export function createConditionalWorkflowState(): WorkflowStateFixture {
     agent1: {
       id: 'agent1',
       type: 'agent',
-      name: 'True Path Agent',
+      Name: 'True Path Agent',
       position: { x: 600, y: -100 },
       subBlocks: {
         provider: {
@@ -169,7 +169,7 @@ export function createConditionalWorkflowState(): WorkflowStateFixture {
     agent2: {
       id: 'agent2',
       type: 'agent',
-      name: 'False Path Agent',
+      Name: 'False Path Agent',
       position: { x: 600, y: 100 },
       subBlocks: {
         provider: {
@@ -241,7 +241,7 @@ export function createLoopWorkflowState(): WorkflowStateFixture {
     starter: {
       id: 'starter',
       type: 'starter',
-      name: 'Starter Block',
+      Name: 'Starter Block',
       position: { x: 0, y: 0 },
       subBlocks: {
         description: {
@@ -256,7 +256,7 @@ export function createLoopWorkflowState(): WorkflowStateFixture {
     function1: {
       id: 'function1',
       type: 'function',
-      name: 'Function Block',
+      Name: 'Function Block',
       position: { x: 300, y: 0 },
       subBlocks: {
         code: {
@@ -276,7 +276,7 @@ export function createLoopWorkflowState(): WorkflowStateFixture {
     condition1: {
       id: 'condition1',
       type: 'condition',
-      name: 'Loop Condition',
+      Name: 'Loop Condition',
       position: { x: 600, y: 0 },
       subBlocks: {
         condition: {
@@ -291,7 +291,7 @@ export function createLoopWorkflowState(): WorkflowStateFixture {
     agent1: {
       id: 'agent1',
       type: 'agent',
-      name: 'Loop Complete Agent',
+      Name: 'Loop Complete Agent',
       position: { x: 900, y: 100 },
       subBlocks: {
         provider: {
@@ -375,7 +375,7 @@ export function createComplexWorkflowState(): WorkflowStateFixture {
     starter: {
       id: 'starter',
       type: 'starter',
-      name: 'Starter Block',
+      Name: 'Starter Block',
       position: { x: 0, y: 0 },
       subBlocks: {
         description: {
@@ -390,7 +390,7 @@ export function createComplexWorkflowState(): WorkflowStateFixture {
     api1: {
       id: 'api1',
       type: 'api',
-      name: 'API Request',
+      Name: 'API Request',
       position: { x: 300, y: 0 },
       subBlocks: {
         url: {
@@ -401,7 +401,7 @@ export function createComplexWorkflowState(): WorkflowStateFixture {
         method: {
           id: 'method',
           type: 'dropdown',
-          value: 'GET',
+          value: 'get',
         },
         headers: {
           id: 'headers',
@@ -423,13 +423,13 @@ export function createComplexWorkflowState(): WorkflowStateFixture {
     function1: {
       id: 'function1',
       type: 'function',
-      name: 'Process Data',
+      Name: 'Process Data',
       position: { x: 600, y: 0 },
       subBlocks: {
         code: {
           id: 'code',
           type: 'code',
-          value: 'const data = input.data;\nreturn { processed: data.map(item => item.name) };',
+          value: 'const data = input.data;\nreturn { processed: data.map(item => item.Name) };',
         },
         language: {
           id: 'language',
@@ -443,7 +443,7 @@ export function createComplexWorkflowState(): WorkflowStateFixture {
     agent1: {
       id: 'agent1',
       type: 'agent',
-      name: 'Summarize Data',
+      Name: 'Summarize Data',
       position: { x: 900, y: 0 },
       subBlocks: {
         provider: {
@@ -465,7 +465,7 @@ export function createComplexWorkflowState(): WorkflowStateFixture {
           id: 'tools',
           type: 'tool-input',
           value:
-            '[{"type":"function","name":"calculator","description":"Perform calculations","parameters":{"type":"object","properties":{"expression":{"type":"string","description":"Math expression to evaluate"}},"required":["expression"]}}]',
+            '[{"type":"function","Name":"calculator","description":"Perform calculations","parameters":{"type":"object","properties":{"expression":{"type":"string","description":"Math expression to evaluate"}},"required":["expression"]}}]',
         },
         system: {
           id: 'system',
@@ -515,7 +515,7 @@ export function createAgentWithToolsWorkflowState(): WorkflowStateFixture {
     starter: {
       id: 'starter',
       type: 'starter',
-      name: 'Starter Block',
+      Name: 'Starter Block',
       position: { x: 0, y: 0 },
       subBlocks: {
         description: {
@@ -530,7 +530,7 @@ export function createAgentWithToolsWorkflowState(): WorkflowStateFixture {
     agent1: {
       id: 'agent1',
       type: 'agent',
-      name: 'Custom Tools Agent',
+      Name: 'Custom Tools Agent',
       position: { x: 300, y: 0 },
       subBlocks: {
         provider: {
@@ -552,7 +552,7 @@ export function createAgentWithToolsWorkflowState(): WorkflowStateFixture {
           id: 'tools',
           type: 'tool-input',
           value:
-            '[{"type":"custom-tool","name":"weather","description":"Get current weather","parameters":{"type":"object","properties":{"location":{"type":"string"}},"required":["location"]}},{"type":"function","name":"calculator","description":"Calculate expression","parameters":{"type":"object","properties":{"expression":{"type":"string"}},"required":["expression"]}}]',
+            '[{"type":"custom-tool","Name":"weather","description":"Get current weather","parameters":{"type":"object","properties":{"location":{"type":"string"}},"required":["location"]}},{"type":"function","Name":"calculator","description":"Calculate expression","parameters":{"type":"object","properties":{"expression":{"type":"string"}},"required":["expression"]}}]',
         },
         system: {
           id: 'system',
@@ -593,7 +593,7 @@ export function createInvalidWorkflowState(): WorkflowStateFixture {
   blocks.invalid = {
     id: 'invalid',
     type: 'invalid-type',
-    name: 'Invalid Block',
+    Name: 'Invalid Block',
     position: { x: 600, y: 0 },
     subBlocks: {},
     outputs: {},

@@ -331,7 +331,7 @@ export class ConversationalExecutionInterface {
     workflow: WorkflowData,
     journey: JourneyDefinition
   ): Promise<void> {
-    let welcomeMessage = `👋 Hello! I'm your AI assistant for the "${workflow.name}" workflow.\n\n`
+    let welcomeMessage = `👋 Hello! I'm your AI assistant for the "${workflow.Name}" workflow.\n\n`
 
     if (context.preferences.explanations) {
       welcomeMessage += `📋 **About this workflow:**\n${workflow.description || 'No description available'}\n\n`
@@ -341,7 +341,7 @@ export class ConversationalExecutionInterface {
       const keySteps = journey.states
         .filter((s) => s.type !== 'initial' && s.type !== 'final')
         .slice(0, 3)
-        .map((s, i) => `${i + 1}. ${s.name || s.id}`)
+        .map((s, i) => `${i + 1}. ${s.Name || s.id}`)
         .join('\n')
 
       welcomeMessage += `${keySteps}\n\n`
@@ -678,7 +678,7 @@ export class ConversationalExecutionInterface {
     // Mock implementation - would integrate with workflow storage
     return {
       id: workflowId,
-      name: 'Sample Workflow',
+      Name: 'Sample Workflow',
       description: 'A sample workflow for demonstration',
       version: '1.0',
       nodes: [],
@@ -690,12 +690,12 @@ export class ConversationalExecutionInterface {
     // Mock implementation - would use actual conversion service
     return {
       id: `journey_${workflow.id}`,
-      title: workflow.name,
+      title: workflow.Name,
       description: workflow.description,
-      conditions: [`User wants to execute ${workflow.name}`],
+      conditions: [`User wants to execute ${workflow.Name}`],
       states: [
-        { id: 'start', type: 'initial', name: 'Start' },
-        { id: 'end', type: 'final', name: 'Complete' },
+        { id: 'start', type: 'initial', Name: 'Start' },
+        { id: 'end', type: 'final', Name: 'Complete' },
       ],
     }
   }

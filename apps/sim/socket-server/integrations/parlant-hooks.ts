@@ -56,7 +56,7 @@ export const ParlantAgentHooks = {
   async onAgentCreated(agentData: {
     id: string
     workspaceId: string
-    name: string
+    Name: string
     description?: string
     model: string
     temperature: number

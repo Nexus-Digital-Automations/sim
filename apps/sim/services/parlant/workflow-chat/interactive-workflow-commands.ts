@@ -11,7 +11,7 @@ import type { ParlantJourney } from '../workflow-converter/types'
 const logger = createLogger('InteractiveWorkflowCommands')
 
 export interface WorkflowCommand {
-  name: string
+  Name: string
   aliases: string[]
   description: string
   usage: string
@@ -88,7 +88,7 @@ export class InteractiveWorkflowCommands {
     }
 
     // Execute command
-    const handler = this.commandHandlers.get(commandDef.name)
+    const handler = this.commandHandlers.get(commandDef.Name)
     if (!handler) {
       return {
         success: false,
@@ -132,7 +132,7 @@ export class InteractiveWorkflowCommands {
       if (categoryCommands.length > 0) {
         helpMessage += `**${categoryName}**\n`
         categoryCommands.forEach((cmd) => {
-          helpMessage += `• \`/${cmd.name}\` - ${cmd.description}\n`
+          helpMessage += `• \`/${cmd.Name}\` - ${cmd.description}\n`
         })
         helpMessage += '\n'
       }
@@ -205,7 +205,7 @@ export class InteractiveWorkflowCommands {
     // Control commands
     this.addCommand(
       {
-        name: 'pause',
+        Name: 'pause',
         aliases: ['stop', 'halt'],
         description: 'Pause workflow execution',
         usage: '/pause',
@@ -217,7 +217,7 @@ export class InteractiveWorkflowCommands {
 
     this.addCommand(
       {
-        name: 'resume',
+        Name: 'resume',
         aliases: ['continue', 'start'],
         description: 'Resume paused workflow execution',
         usage: '/resume',
@@ -229,7 +229,7 @@ export class InteractiveWorkflowCommands {
 
     this.addCommand(
       {
-        name: 'skip',
+        Name: 'skip',
         aliases: ['next'],
         description: 'Skip current step and move to next',
         usage: '/skip [reason]',
@@ -241,7 +241,7 @@ export class InteractiveWorkflowCommands {
 
     this.addCommand(
       {
-        name: 'retry',
+        Name: 'retry',
         aliases: ['redo', 'repeat'],
         description: 'Retry the current step',
         usage: '/retry',
@@ -254,7 +254,7 @@ export class InteractiveWorkflowCommands {
     // Information commands
     this.addCommand(
       {
-        name: 'status',
+        Name: 'status',
         aliases: ['progress', 'info'],
         description: 'Show current workflow status and progress',
         usage: '/status',
@@ -266,7 +266,7 @@ export class InteractiveWorkflowCommands {
 
     this.addCommand(
       {
-        name: 'history',
+        Name: 'history',
         aliases: ['log'],
         description: 'Show execution history',
         usage: '/history [count]',
@@ -278,7 +278,7 @@ export class InteractiveWorkflowCommands {
 
     this.addCommand(
       {
-        name: 'steps',
+        Name: 'steps',
         aliases: ['workflow', 'journey'],
         description: 'List all workflow steps',
         usage: '/steps',
@@ -291,7 +291,7 @@ export class InteractiveWorkflowCommands {
     // Debug commands
     this.addCommand(
       {
-        name: 'debug',
+        Name: 'debug',
         aliases: ['inspect', 'details'],
         description: 'Show debug information for current step',
         usage: '/debug [step_id]',
@@ -303,7 +303,7 @@ export class InteractiveWorkflowCommands {
 
     this.addCommand(
       {
-        name: 'context',
+        Name: 'context',
         aliases: ['variables', 'data'],
         description: 'Show current workflow context and variables',
         usage: '/context',
@@ -316,7 +316,7 @@ export class InteractiveWorkflowCommands {
     // Navigation commands
     this.addCommand(
       {
-        name: 'goto',
+        Name: 'goto',
         aliases: ['jump'],
         description: 'Jump to a specific step (advanced)',
         usage: '/goto <step_number>',
@@ -330,7 +330,7 @@ export class InteractiveWorkflowCommands {
     // Help command
     this.addCommand(
       {
-        name: 'help',
+        Name: 'help',
         aliases: ['commands', '?'],
         description: 'Show available commands',
         usage: '/help [command]',
@@ -345,8 +345,8 @@ export class InteractiveWorkflowCommands {
     command: WorkflowCommand,
     handler: (context: CommandContext, params: string[]) => Promise<CommandResult>
   ): void {
-    this.commands.set(command.name, command)
-    this.commandHandlers.set(command.name, handler)
+    this.commands.set(command.Name, command)
+    this.commandHandlers.set(command.Name, handler)
 
     // Add aliases
     command.aliases.forEach((alias) => {
@@ -371,8 +371,8 @@ export class InteractiveWorkflowCommands {
     return { command: null, params: [] }
   }
 
-  private findCommand(name: string): WorkflowCommand | undefined {
-    return this.commands.get(name.toLowerCase())
+  private findCommand(Name: string): WorkflowCommand | undefined {
+    return this.commands.get(Name.toLowerCase())
   }
 
   private matchesPattern(input: string, patterns: string[]): boolean {
@@ -480,7 +480,7 @@ export class InteractiveWorkflowCommands {
       }
     }
 
-    const currentStepName = context.journey.states[context.currentStep]?.name || 'Unknown Step'
+    const currentStepName = context.journey.states[context.currentStep]?.Name || 'Unknown Step'
     const reason = params.join(' ') || 'User requested'
 
     return {
@@ -502,7 +502,7 @@ export class InteractiveWorkflowCommands {
       }
     }
 
-    const currentStepName = context.journey.states[context.currentStep]?.name || 'Unknown Step'
+    const currentStepName = context.journey.states[context.currentStep]?.Name || 'Unknown Step'
 
     return {
       success: true,
@@ -516,7 +516,7 @@ export class InteractiveWorkflowCommands {
     params: string[]
   ): Promise<CommandResult> {
     const progress = ((context.currentStep + 1) / context.journey.states.length) * 100
-    const currentStepName = context.journey.states[context.currentStep]?.name || 'Unknown Step'
+    const currentStepName = context.journey.states[context.currentStep]?.Name || 'Unknown Step'
 
     // Calculate estimated time remaining based on execution history
     const avgStepTime = this.calculateAverageStepTime(context.executionHistory)
@@ -588,7 +588,7 @@ export class InteractiveWorkflowCommands {
       const isCompleted = index < context.currentStep
       const status = isCompleted ? '✅' : isCurrent ? '🔄' : '⏸️'
 
-      message += `${status} **Step ${index + 1}**: ${step.name || step.id}\n`
+      message += `${status} **Step ${index + 1}**: ${step.Name || step.id}\n`
       if (step.type) {
         message += `   *Type*: ${step.type}\n`
       }
@@ -623,7 +623,7 @@ export class InteractiveWorkflowCommands {
 
     const debugInfo = {
       stepId: step.id,
-      stepName: step.name || 'Unnamed',
+      stepName: step.Name || 'Unnamed',
       stepType: step.type || 'Unknown',
       toolId: step.toolId || 'None',
       configuration: step.configuration || {},
@@ -699,7 +699,7 @@ export class InteractiveWorkflowCommands {
       }
     }
 
-    const stepName = context.journey.states[targetStep]?.name || 'Unknown Step'
+    const stepName = context.journey.states[targetStep]?.Name || 'Unknown Step'
 
     return {
       success: true,
@@ -724,7 +724,7 @@ export class InteractiveWorkflowCommands {
         }
       }
 
-      let message = `📖 **Help: /${command.name}**\n\n`
+      let message = `📖 **Help: /${command.Name}**\n\n`
       message += `**Description**: ${command.description}\n`
       message += `**Usage**: ${command.usage}\n\n`
       message += `**Examples**:\n${command.examples.map((e) => `• ${e}`).join('\n')}\n\n`

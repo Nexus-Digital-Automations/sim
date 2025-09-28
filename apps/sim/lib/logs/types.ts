@@ -30,7 +30,7 @@ export interface CostBreakdown {
 }
 
 export interface ToolCall {
-  name: string
+  Name: string
   duration: number
   startTime: string
   endTime: string
@@ -88,7 +88,7 @@ export interface WorkflowExecutionLog {
   totalDurationMs: number
   files?: Array<{
     id: string
-    name: string
+    Name: string
     size: number
     type: string
     url: string
@@ -135,7 +135,7 @@ export type WorkflowExecutionLogSelect = WorkflowExecutionLog
 
 export interface TraceSpan {
   id: string
-  name: string
+  Name: string
   type: string
   duration: number
   startTime: string
@@ -265,7 +265,7 @@ export class LogsServiceError extends Error {
 
   constructor(message: string, code: LogsError['code'], details?: Record<string, unknown>) {
     super(message)
-    this.name = 'LogsServiceError'
+    this.Name = 'LogsServiceError'
     this.code = code
     this.details = details
   }

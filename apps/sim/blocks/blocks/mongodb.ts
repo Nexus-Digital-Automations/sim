@@ -1,17 +1,17 @@
-import { MongoDBIcon } from '@/components/icons'
+import { mongoDbicon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { MongoDBResponse } from '@/tools/mongodb/types'
 
 export const MongoDBBlock: BlockConfig<MongoDBResponse> = {
   type: 'mongodb',
-  name: 'MongoDB',
+  Name: 'MongoDB',
   description: 'Connect to MongoDB database',
   longDescription:
     'Integrate MongoDB into the workflow. Can find, insert, update, delete, and aggregate data.',
   docsLink: 'https://docs.sim.ai/tools/mongodb',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: MongoDBIcon,
+  icon: mongoDbicon,
   subBlocks: [
     {
       id: 'operation',
@@ -149,7 +149,7 @@ Return ONLY the MongoDB query filter as valid JSON. Do not include any explanati
 - **$size**: Array size - \`{"items": {"$size": 3}}\`
 
 **String Operators**:
-- **$regex**: Regular expression - \`{"name": {"$regex": "^John", "$options": "i"}}\`
+- **$regex**: Regular expression - \`{"Name": {"$regex": "^John", "$options": "i"}}\`
 - **$text**: Text search - \`{"$text": {"$search": "mongodb tutorial"}}\`
 
 ### EXAMPLES
@@ -204,7 +204,7 @@ Return ONLY the MongoDB query filter as valid JSON. Do not include any explanati
 - Use proper data types (ObjectId for IDs, dates for timestamps)
 - Consider query performance and indexing
 - Be cautious with regex patterns that could cause performance issues
-- Validate that field names exist in your schema
+- Validate that field NAMES exist in your schema
 
 ### PERFORMANCE TIPS
 - Structure filters to use indexed fields first
@@ -242,7 +242,7 @@ Return ONLY the aggregation pipeline as a valid JSON array. Do not include any e
 1. **Structure**: Always return a JSON array of aggregation stages
 2. **Performance**: Order stages efficiently - use $match and $limit early when possible
 3. **Security**: Avoid unsafe operations or overly complex expressions
-4. **Readability**: Use clear field names and logical stage ordering
+4. **Readability**: Use clear field NAMES and logical stage ordering
 5. **Data Types**: Handle ObjectId, dates, numbers, and nested objects correctly
 
 ### AGGREGATION STAGES
@@ -322,7 +322,7 @@ Return ONLY the aggregation pipeline as a valid JSON array. Do not include any e
     }},
     {"$group": {
       "_id": "$_id",
-      "name": {"$first": "$name"},
+      "Name": {"$first": "$Name"},
       "email": {"$first": "$email"},
       "recentOrderCount": {"$sum": {"$cond": [{"$ifNull": ["$orders", false]}, 1, 0]}},
       "totalOrderValue": {"$sum": {"$ifNull": ["$orders.amount", 0]}}
@@ -391,7 +391,7 @@ Return ONLY the aggregation pipeline as a valid JSON array. Do not include any e
       "priceScore": {"$divide": [{"$subtract": [2000, "$price"]}, 1500]}
     }},
     {"$project": {
-      "name": 1,
+      "Name": 1,
       "price": 1,
       "category": 1,
       "rating": 1,
@@ -426,7 +426,7 @@ Return ONLY the aggregation pipeline as a valid JSON array. Do not include any e
     }},
     {"$match": {"hasProduct": true}},
     {"$project": {
-      "name": 1,
+      "Name": 1,
       "address": 1,
       "distance": {"$round": ["$distance", 0]},
       "inventoryCount": 1
@@ -479,7 +479,7 @@ Return ONLY the JSON array pipeline - no explanations, no markdown, no extra tex
 
 ### EXAMPLES
 Newest first: {"createdAt": -1}
-Alphabetical: {"name": 1}
+Alphabetical: {"Name": 1}
 Multiple fields: {"category": 1, "price": -1}
 
 Use 1 for ascending, -1 for descending. Return ONLY valid JSON.`,
@@ -492,7 +492,7 @@ Use 1 for ascending, -1 for descending. Return ONLY valid JSON.`,
       title: 'Documents (JSON Array)',
       type: 'code',
       layout: 'full',
-      placeholder: '[{"name": "John Doe", "email": "john@example.com", "status": "active"}]',
+      placeholder: '[{"Name": "John Doe", "email": "john@example.com", "status": "active"}]',
       condition: { field: 'operation', value: 'insert' },
       required: true,
       wandConfig: {
@@ -504,9 +504,9 @@ Use 1 for ascending, -1 for descending. Return ONLY valid JSON.`,
 {context}
 
 ### EXAMPLES
-Simple user: [{"name": "John Doe", "email": "john@example.com", "active": true}]
-With nested data: [{"user": {"name": "Jane", "profile": {"age": 25, "city": "NYC"}}, "status": "active"}]
-Multiple docs: [{"name": "User1", "type": "admin"}, {"name": "User2", "type": "user"}]
+Simple user: [{"Name": "John Doe", "email": "john@example.com", "active": true}]
+With nested data: [{"user": {"Name": "Jane", "profile": {"age": 25, "city": "NYC"}}, "status": "active"}]
+Multiple docs: [{"Name": "User1", "type": "admin"}, {"Name": "User2", "type": "user"}]
 
 Return ONLY valid JSON array - no explanations.`,
         placeholder: 'Describe the documents you want to insert...',
@@ -518,7 +518,7 @@ Return ONLY valid JSON array - no explanations.`,
       title: 'Filter (JSON)',
       type: 'code',
       layout: 'full',
-      placeholder: '{"name": "Alice Test"}',
+      placeholder: '{"Name": "Alice Test"}',
       condition: { field: 'operation', value: 'update' },
       required: true,
       wandConfig: {
@@ -590,7 +590,7 @@ Return ONLY the MongoDB query filter as valid JSON. Do not include any explanati
 - **Use unique identifiers** when updating single documents (_id, email, username)
 - **Be specific** - avoid filters that might match more documents than intended
 - **Consider using $and** to combine multiple conditions for precision
-- **Validate field names** exist in your schema before updating
+- **Validate field NAMES** exist in your schema before updating
 
 ### REMEMBER
 Return ONLY the MongoDB query filter as valid JSON - no explanations, no markdown, no extra text. This filter will determine which documents get updated, so be precise and careful.`,
@@ -603,7 +603,7 @@ Return ONLY the MongoDB query filter as valid JSON - no explanations, no markdow
       title: 'Update (JSON)',
       type: 'code',
       layout: 'full',
-      placeholder: '{"$set": {"name": "Jane Doe", "email": "jane@example.com"}}',
+      placeholder: '{"$set": {"Name": "Jane Doe", "email": "jane@example.com"}}',
       condition: { field: 'operation', value: 'update' },
       required: true,
       wandConfig: {
@@ -625,7 +625,7 @@ The output MUST be a single, valid JSON object representing MongoDB update opera
 ### MONGODB UPDATE OPERATORS & EXAMPLES
 
 #### Field Update Operators:
-- $set (update/create fields): {"$set": {"name": "John Doe", "email": "john@example.com", "lastLogin": new Date()}}
+- $set (update/create fields): {"$set": {"Name": "John Doe", "email": "john@example.com", "lastLogin": new Date()}}
 - $unset (remove fields): {"$unset": {"temporaryField": "", "deprecatedData": ""}}
 - $inc (increment numbers): {"$inc": {"views": 1, "score": -5, "balance": 100.50}}
 - $mul (multiply values): {"$mul": {"price": 0.9, "quantity": 2}}
@@ -650,12 +650,12 @@ The output MUST be a single, valid JSON object representing MongoDB update opera
 - Multiple positional $[]: {"$inc": {"items.$[item].reviews.$[review].helpful": 1}}
 
 #### Complex Combinations:
-- Multiple operations: {"$set": {"name": "Updated Name", "status": "active"}, "$inc": {"version": 1}, "$push": {"history": {"action": "updated", "date": new Date()}}}
+- Multiple operations: {"$set": {"Name": "Updated Name", "status": "active"}, "$inc": {"version": 1}, "$push": {"history": {"action": "updated", "date": new Date()}}}
 - Nested field updates: {"$set": {"profile.settings.notifications": true, "profile.lastSeen": new Date()}}
 - Conditional updates with $cond in aggregation: {"$set": {"discount": {"$cond": [{"$gte": ["$orderAmount", 100]}, 0.1, 0]}}}
 
 #### Data Type Examples:
-- String: {"$set": {"name": "John Doe", "status": "active"}}
+- String: {"$set": {"Name": "John Doe", "status": "active"}}
 - Number: {"$set": {"age": 25, "score": 87.5}, "$inc": {"points": 100}}
 - Boolean: {"$set": {"isActive": true, "verified": false}}
 - Date: {"$set": {"createdAt": new Date("2024-01-01"), "updatedAt": new Date()}}
@@ -793,7 +793,7 @@ DELETIONS ARE PERMANENT! This filter will determine which documents are permanen
 - **Consider soft deletion** (marking as deleted) instead of hard deletion
 - **Backup important data** before performing bulk deletions
 - **Avoid broad filters** that might delete more than intended
-- **Validate field names** exist in your schema
+- **Validate field NAMES** exist in your schema
 - **Document your deletion criteria** for audit purposes
 - **Consider the impact** on related data and foreign keys
 
@@ -907,12 +907,12 @@ Return ONLY the MongoDB query filter as valid JSON - no explanations, no markdow
     operation: { type: 'string', description: 'Database operation to perform' },
     host: { type: 'string', description: 'MongoDB host' },
     port: { type: 'string', description: 'MongoDB port' },
-    database: { type: 'string', description: 'Database name' },
+    database: { type: 'string', description: 'Database Name' },
     username: { type: 'string', description: 'MongoDB username' },
     password: { type: 'string', description: 'MongoDB password' },
     authSource: { type: 'string', description: 'Authentication database' },
     ssl: { type: 'string', description: 'SSL mode' },
-    collection: { type: 'string', description: 'Collection name' },
+    collection: { type: 'string', description: 'Collection Name' },
     query: { type: 'string', description: 'Query filter as JSON string' },
     limit: { type: 'number', description: 'Limit number of documents' },
     sort: { type: 'string', description: 'Sort criteria as JSON string' },

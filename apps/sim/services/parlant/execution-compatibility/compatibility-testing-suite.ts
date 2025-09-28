@@ -62,14 +62,14 @@ export class CompatibilityTestingSuite {
    * Create a new test suite for workflow-journey compatibility testing
    */
   async createTestSuite(
-    name: string,
+    Name: string,
     description: string,
     configuration: TestConfiguration
   ): Promise<CompatibilityTestSuite> {
-    logger.info('Creating compatibility test suite', { name, description })
+    logger.info('Creating compatibility test suite', { Name, description })
 
     const testSuite: CompatibilityTestSuite = {
-      name,
+      Name,
       description,
       tests: [],
       configuration,
@@ -82,16 +82,16 @@ export class CompatibilityTestingSuite {
       },
     }
 
-    this.testSuites.set(name, testSuite)
+    this.testSuites.set(Name, testSuite)
 
     // Emit test suite created event
     await this.emitEvent({
       id: `suite_created_${Date.now()}`,
       type: 'execution_started',
       source: 'workflow',
-      executionId: name,
+      executionId: Name,
       timestamp: new Date().toISOString(),
-      data: { testSuite: { name, description, testsCount: 0 } },
+      data: { testSuite: { Name, description, testsCount: 0 } },
     })
 
     return testSuite
@@ -120,7 +120,7 @@ export class CompatibilityTestingSuite {
     logger.info('Test added to suite', {
       suiteName,
       testId: fullTest.id,
-      testName: fullTest.name,
+      testName: fullTest.Name,
     })
 
     return fullTest
@@ -277,7 +277,7 @@ export class CompatibilityTestingSuite {
     configuration: TestConfiguration,
     context?: Partial<ExecutionContext>
   ): Promise<TestResult> {
-    logger.info('Running compatibility test', { testId: test.id, testName: test.name })
+    logger.info('Running compatibility test', { testId: test.id, testName: test.Name })
 
     const startTime = Date.now()
     const testResult: TestResult = {
@@ -486,7 +486,7 @@ export class CompatibilityTestingSuite {
     // Basic execution test
     tests.push({
       id: '',
-      name: 'Basic Execution Compatibility',
+      Name: 'Basic Execution Compatibility',
       description: 'Verifies that workflow and journey execute successfully with identical inputs',
       workflowId,
       inputData: options.defaultInputData || {},
@@ -520,7 +520,7 @@ export class CompatibilityTestingSuite {
     // Output comparison test
     tests.push({
       id: '',
-      name: 'Output Comparison Test',
+      Name: 'Output Comparison Test',
       description: 'Compares outputs between workflow and journey execution',
       workflowId,
       inputData: options.defaultInputData || {},
@@ -554,7 +554,7 @@ export class CompatibilityTestingSuite {
     if (options.enableSideEffectTesting) {
       tests.push({
         id: '',
-        name: 'Side Effect Preservation Test',
+        Name: 'Side Effect Preservation Test',
         description: 'Verifies that side effects are preserved between execution modes',
         workflowId,
         inputData: options.defaultInputData || {},
@@ -588,7 +588,7 @@ export class CompatibilityTestingSuite {
 
     tests.push({
       id: '',
-      name: 'State Synchronization Test',
+      Name: 'State Synchronization Test',
       description: 'Verifies state synchronization between execution modes',
       workflowId,
       inputData: options.defaultInputData || {},
@@ -621,7 +621,7 @@ export class CompatibilityTestingSuite {
 
     tests.push({
       id: '',
-      name: 'Integration Compatibility Test',
+      Name: 'Integration Compatibility Test',
       description: 'Verifies external integrations work identically',
       workflowId,
       inputData: options.defaultInputData || {},
@@ -655,7 +655,7 @@ export class CompatibilityTestingSuite {
     // Error handling test with invalid input
     tests.push({
       id: '',
-      name: 'Error Handling Compatibility',
+      Name: 'Error Handling Compatibility',
       description: 'Verifies error handling works identically between modes',
       workflowId,
       inputData: { invalid: true, ...options.defaultInputData },
@@ -688,7 +688,7 @@ export class CompatibilityTestingSuite {
 
     tests.push({
       id: '',
-      name: 'Performance Comparison Test',
+      Name: 'Performance Comparison Test',
       description: 'Compares performance between execution modes',
       workflowId,
       inputData: options.defaultInputData || {},

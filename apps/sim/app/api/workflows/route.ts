@@ -11,15 +11,15 @@ import { verifyWorkspaceMembership } from './utils'
 const logger = createLogger('WorkflowAPI')
 
 const CreateWorkflowSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  Name: z.string().min(1, 'Name is required'),
   description: z.string().optional().default(''),
   color: z.string().optional().default('#3972F6'),
   workspaceId: z.string().optional(),
   folderId: z.string().nullable().optional(),
 })
 
-// GET /api/workflows - Get workflows for user (optionally filtered by workspaceId)
-export async function GET(request: Request) {
+// get /api/workflows - Get workflows for user (optionally filtered by workspaceId)
+export async function get(request: Request) {
   const requestId = generateRequestId()
   const startTime = Date.now()
   const url = new URL(request.url)
@@ -80,8 +80,8 @@ export async function GET(request: Request) {
   }
 }
 
-// POST /api/workflows - Create a new workflow
-export async function POST(req: NextRequest) {
+// post /api/workflows - Create a new workflow
+export async function post(req: NextRequest) {
   const requestId = generateRequestId()
   const session = await getSession()
 
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { name, description, color, workspaceId, folderId } = CreateWorkflowSchema.parse(body)
+    const { Name, description, color, workspaceId, folderId } = CreateWorkflowSchema.parse(body)
 
     const workflowId = crypto.randomUUID()
     const starterId = crypto.randomUUID()
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
         userId: session.user.id,
         workspaceId: workspaceId || null,
         folderId: folderId || null,
-        name,
+        Name,
         description,
         color,
         lastSynced: now,
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
         id: starterId,
         workflowId: workflowId,
         type: 'starter',
-        name: 'Start',
+        Name: 'Start',
         positionX: '100',
         positionY: '100',
         enabled: true,
@@ -223,7 +223,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       id: workflowId,
-      name,
+      Name,
       description,
       color,
       workspaceId,

@@ -1003,7 +1003,7 @@ export class InteractiveExecutionVisualizationEngine {
           debugInfo: {
             originalEvent: event,
             errorDetails: {
-              name: error.name,
+              Name: error.Name,
               message: error.message,
               stack: error.stack,
             },

@@ -84,7 +84,7 @@ export interface UserConversationContext {
   toolUsagePatterns: Record<string, any>
   /** Current workflow or project context */
   workflowContext?: {
-    name: string
+    Name: string
     stage: string
     availableVariables: Record<string, any>
   }
@@ -173,7 +173,7 @@ export interface QuickCommand {
  * File attachment information
  */
 export interface FileAttachment {
-  name: string
+  Name: string
   type: string
   size: number
   url: string
@@ -332,7 +332,7 @@ export class ConversationalIntelligenceEngine {
 
     return {
       conversationId,
-      toolName: state.currentTool?.name || 'Unknown',
+      toolName: state.currentTool?.Name || 'Unknown',
       currentStep: state.currentStep,
       totalSteps: state.totalSteps,
       completionPercentage: ((state.currentStep - 1) / state.totalSteps) * 100,
@@ -504,7 +504,7 @@ export class ConversationalIntelligenceEngine {
   private inferApiParameters(state: ConversationState, message: string): void {
     // Infer HTTP method
     if (!state.collectedParameters.method) {
-      const methodMatch = message.match(/\b(GET|POST|PUT|DELETE|PATCH)\b/i)
+      const methodMatch = message.match(/\b(get|post|PUT|DELETE|PATCH)\b/i)
       if (methodMatch) {
         state.collectedParameters.method = methodMatch[1].toUpperCase()
         state.remainingParameters = state.remainingParameters.filter((p) => p !== 'method')
@@ -512,13 +512,13 @@ export class ConversationalIntelligenceEngine {
         message.toLowerCase().includes('fetch') ||
         message.toLowerCase().includes('get data')
       ) {
-        state.collectedParameters.method = 'GET'
+        state.collectedParameters.method = 'get'
         state.remainingParameters = state.remainingParameters.filter((p) => p !== 'method')
       } else if (
         message.toLowerCase().includes('submit') ||
         message.toLowerCase().includes('post')
       ) {
-        state.collectedParameters.method = 'POST'
+        state.collectedParameters.method = 'post'
         state.remainingParameters = state.remainingParameters.filter((p) => p !== 'method')
       }
     }
@@ -627,8 +627,8 @@ export class ConversationalIntelligenceEngine {
       text: 'What message do you want to send?',
       channel: 'Which channel should receive the message?',
       url: 'What API endpoint do you want to call?',
-      method: 'What HTTP method should be used? (GET, POST, PUT, DELETE)',
-      operation: `What do you want to do with ${tool.name}?`,
+      method: 'What HTTP method should be used? (get, post, PUT, DELETE)',
+      operation: `What do you want to do with ${tool.Name}?`,
     }
 
     return suggestions[paramName]
@@ -727,7 +727,7 @@ export class ConversationalIntelligenceEngine {
       quickActions = [
         {
           id: 'execute',
-          label: `Execute ${state.currentTool?.name}`,
+          label: `Execute ${state.currentTool?.Name}`,
           action: 'execute_tool',
           parameters: state.collectedParameters,
         },
@@ -764,7 +764,7 @@ export class ConversationalIntelligenceEngine {
     const issue = state.validationIssues[0] // Focus on first issue
     const tool = state.currentTool!
 
-    const baseMessage = `I need to fix an issue with ${tool.name}.`
+    const baseMessage = `I need to fix an issue with ${tool.Name}.`
 
     switch (issue.issue) {
       case 'required':
@@ -801,7 +801,7 @@ export class ConversationalIntelligenceEngine {
     const tool = state.currentTool!
     const paramCount = Object.keys(state.collectedParameters).length
 
-    return `Perfect! I have all ${paramCount} parameters needed for ${tool.name}. Ready to execute when you are.`
+    return `Perfect! I have all ${paramCount} parameters needed for ${tool.Name}. Ready to execute when you are.`
   }
 
   /**
@@ -844,7 +844,7 @@ export class ConversationalIntelligenceEngine {
     return {
       execution,
       conversationalSummary: {
-        achievement: `Successfully executed ${tool.name}`,
+        achievement: `Successfully executed ${tool.Name}`,
         highlights: [execution.conversationalResult.summary],
         notes: execution.userFriendlyErrors,
       },
@@ -861,7 +861,7 @@ export class ConversationalIntelligenceEngine {
         quickCommands: [
           {
             trigger: 'again',
-            description: `Run ${tool.name} again with same parameters`,
+            description: `Run ${tool.Name} again with same parameters`,
             action: 'repeat_execution',
             parameters: state.collectedParameters,
           },

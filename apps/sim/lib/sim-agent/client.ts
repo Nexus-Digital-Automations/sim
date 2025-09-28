@@ -33,14 +33,14 @@ class SimAgentClient {
   async makeRequest<T = any>(
     endpoint: string,
     options: {
-      method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+      method?: 'get' | 'post' | 'PUT' | 'DELETE'
       body?: Record<string, any>
       headers?: Record<string, string>
       apiKey?: string // Allow passing API key directly
     } = {}
   ): Promise<SimAgentResponse<T>> {
     const requestId = generateRequestId()
-    const { method = 'POST', body, headers = {} } = options
+    const { method = 'post', body, headers = {} } = options
 
     try {
       const url = `${this.baseUrl}${endpoint}`
@@ -61,7 +61,7 @@ class SimAgentClient {
         headers: requestHeaders,
       }
 
-      if (body && (method === 'POST' || method === 'PUT')) {
+      if (body && (method === 'post' || method === 'PUT')) {
         fetchOptions.body = JSON.stringify(body)
       }
 
@@ -109,7 +109,7 @@ class SimAgentClient {
   async call<T = any>(
     endpoint: string,
     request: SimAgentRequest,
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'POST'
+    method: 'get' | 'post' | 'PUT' | 'DELETE' = 'post'
   ): Promise<SimAgentResponse<T>> {
     return this.makeRequest<T>(endpoint, {
       method,
@@ -136,7 +136,7 @@ class SimAgentClient {
    */
   async healthCheck() {
     try {
-      const response = await this.makeRequest('/health', { method: 'GET' })
+      const response = await this.makeRequest('/health', { method: 'get' })
       return response.success && response.data?.healthy === true
     } catch (error) {
       logger.error('Sim-agent health check failed:', error)

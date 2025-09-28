@@ -1,14 +1,14 @@
-import { BrainIcon } from '@/components/icons'
+import { brainIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 
 export const MemoryBlock: BlockConfig = {
   type: 'memory',
-  name: 'Memory',
+  Name: 'Memory',
   description: 'Add memory store',
   longDescription:
     'Integrate Memory into the workflow. Can add, get a memory, get all memories, and delete memories.',
   bgColor: '#F64F9E',
-  icon: BrainIcon,
+  icon: brainIcon,
   category: 'blocks',
   docsLink: 'https://docs.sim.ai/tools/memory',
   subBlocks: [

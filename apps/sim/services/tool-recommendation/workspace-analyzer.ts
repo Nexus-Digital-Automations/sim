@@ -176,7 +176,7 @@ export class WorkspaceAnalyzer {
         if (!workflow) {
           workflow = {
             id: `workflow-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            name: this.generateWorkflowName(sequence),
+            Name: this.generateWorkflowName(sequence),
             frequency: 0,
             tools: sequence,
             triggers: await this.identifyTriggers(sequence),
@@ -357,7 +357,7 @@ export class WorkspaceAnalyzer {
     // Workflow recommendations
     const workflowRecommendations = pattern.commonWorkflows
       .filter((w) => w.frequency < 5)
-      .map((w) => `Standardize workflow: ${w.name}`)
+      .map((w) => `Standardize workflow: ${w.Name}`)
 
     // Training recommendations for resistance points
     const trainingRecommendations = resistancePoints

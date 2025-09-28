@@ -30,7 +30,7 @@ export class TemplateService implements ITemplateService {
   async createTemplate(request: TemplateCreateRequest): Promise<WorkflowTemplate> {
     const startTime = Date.now()
     logger.info('Creating workflow template', {
-      name: request.name,
+      Name: request.Name,
       workspaceId: request.workspace_id,
       parametersCount: request.parameters.length,
     })
@@ -45,7 +45,7 @@ export class TemplateService implements ITemplateService {
           .insert(workflowTemplates)
           .values({
             id: templateId,
-            name: request.name,
+            Name: request.Name,
             description: request.description,
             workspace_id: request.workspace_id,
             workflow_id: request.workflow_id,
@@ -63,7 +63,7 @@ export class TemplateService implements ITemplateService {
           const parametersToInsert = request.parameters.map((param, index) => ({
             id: generateId('param'),
             template_id: templateId,
-            name: param.name,
+            Name: param.Name,
             type: param.type,
             description: param.description,
             default_value: param.default_value,
@@ -127,7 +127,7 @@ export class TemplateService implements ITemplateService {
           updated_at: new Date(),
         }
 
-        if (request.name !== undefined) updateData.name = request.name
+        if (request.Name !== undefined) updateData.Name = request.Name
         if (request.description !== undefined) updateData.description = request.description
         if (request.tags !== undefined) updateData.tags = request.tags
 
@@ -146,7 +146,7 @@ export class TemplateService implements ITemplateService {
             const parametersToInsert = request.parameters.map((param, index) => ({
               id: param.id || generateId('param'),
               template_id: templateId,
-              name: param.name,
+              Name: param.Name,
               type: param.type,
               description: param.description,
               default_value: param.default_value,
@@ -206,7 +206,7 @@ export class TemplateService implements ITemplateService {
       return this.mapDbTemplateToApiTemplate(template)
     } catch (error) {
       logger.error('Failed to get template', { error: error.message, templateId, workspaceId })
-      if (error instanceof Error && error.name === 'ConversionError') {
+      if (error instanceof Error && error.Name === 'ConversionError') {
         throw error
       }
       throw this.createError('template', 'TEMPLATE_FETCH_FAILED', error.message, { templateId })
@@ -228,7 +228,7 @@ export class TemplateService implements ITemplateService {
       const conditions: any[] = [eq(workflowTemplates.workspace_id, query.workspace_id)]
 
       if (query.search) {
-        conditions.push(like(workflowTemplates.name, `%${query.search}%`))
+        conditions.push(like(workflowTemplates.Name, `%${query.search}%`))
       }
 
       if (query.tags && query.tags.length > 0) {
@@ -325,7 +325,7 @@ export class TemplateService implements ITemplateService {
       })
     } catch (error) {
       logger.error('Failed to delete template', { error: error.message, templateId })
-      if (error instanceof Error && error.name === 'ConversionError') {
+      if (error instanceof Error && error.Name === 'ConversionError') {
         throw error
       }
       throw this.createError('template', 'TEMPLATE_DELETE_FAILED', error.message, { templateId })
@@ -347,29 +347,29 @@ export class TemplateService implements ITemplateService {
 
       // Check required parameters
       for (const param of template.parameters) {
-        if (param.required && !(param.name in parameters)) {
+        if (param.required && !(param.Name in parameters)) {
           errors.push({
-            parameter: param.name,
-            message: `Required parameter '${param.name}' is missing`,
+            parameter: param.Name,
+            message: `Required parameter '${param.Name}' is missing`,
           })
           continue
         }
 
-        if (param.name in parameters) {
-          const value = parameters[param.name]
+        if (param.Name in parameters) {
+          const value = parameters[param.Name]
           const validation = this.validateParameter(param, value)
 
           if (!validation.valid) {
             errors.push({
-              parameter: param.name,
-              message: validation.error || `Invalid value for parameter '${param.name}'`,
+              parameter: param.Name,
+              message: validation.error || `Invalid value for parameter '${param.Name}'`,
             })
           }
         }
       }
 
       // Check for unexpected parameters
-      const validParamNames = new Set(template.parameters.map((p) => p.name))
+      const validParamNames = new Set(template.parameters.map((p) => p.Name))
       for (const paramName of Object.keys(parameters)) {
         if (!validParamNames.has(paramName)) {
           errors.push({
@@ -437,7 +437,7 @@ export class TemplateService implements ITemplateService {
   private mapDbTemplateToApiTemplate(dbTemplate: any): WorkflowTemplate {
     return {
       id: dbTemplate.id,
-      name: dbTemplate.name,
+      Name: dbTemplate.Name,
       description: dbTemplate.description,
       workspace_id: dbTemplate.workspace_id,
       version: dbTemplate.version,
@@ -453,7 +453,7 @@ export class TemplateService implements ITemplateService {
   private mapDbParameterToApiParameter(dbParam: any): TemplateParameter {
     return {
       id: dbParam.id,
-      name: dbParam.name,
+      Name: dbParam.Name,
       type: dbParam.type,
       description: dbParam.description,
       default_value: dbParam.default_value,
@@ -551,7 +551,7 @@ export class TemplateService implements ITemplateService {
     details?: Record<string, any>
   ): ConversionError {
     const error = new Error(message) as ConversionError
-    error.name = 'ConversionError'
+    error.Name = 'ConversionError'
     error.type = type
     error.code = code
     error.details = details

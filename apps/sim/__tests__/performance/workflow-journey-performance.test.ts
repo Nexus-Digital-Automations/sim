@@ -60,7 +60,7 @@ class PerformanceTestDataGenerator {
   static createSimpleWorkflow(): WorkflowState {
     return {
       id: 'perf-simple',
-      name: 'Simple Performance Test Workflow',
+      Name: 'Simple Performance Test Workflow',
       description: 'Basic workflow for performance baseline',
       blocks: [
         {
@@ -89,7 +89,7 @@ class PerformanceTestDataGenerator {
           position: { x: 550, y: 100 },
           data: {
             label: 'Output',
-            method: 'POST',
+            method: 'post',
             url: '{{endpoint}}',
           },
           width: 200,
@@ -212,7 +212,7 @@ class PerformanceTestDataGenerator {
 
     return {
       id: 'perf-complex',
-      name: 'Complex Performance Test Workflow',
+      Name: 'Complex Performance Test Workflow',
       description: 'Complex workflow with nested conditions, parallels, and routing',
       blocks,
       edges,
@@ -269,7 +269,7 @@ class PerformanceTestDataGenerator {
 
     return {
       id: `perf-large-${blockCount}`,
-      name: `Large Performance Test Workflow (${blockCount} blocks)`,
+      Name: `Large Performance Test Workflow (${blockCount} blocks)`,
       description: `Large workflow with ${blockCount} blocks for scalability testing`,
       blocks,
       edges,
@@ -285,7 +285,7 @@ class PerformanceTestDataGenerator {
       },
       api: {
         label: `API ${index}`,
-        method: 'POST',
+        method: 'post',
         url: `{{api_endpoint_${index}}}`,
         headers: { 'X-Step': index.toString() },
       },
@@ -316,7 +316,7 @@ class PerformanceTestDataGenerator {
     for (const match of paramMatches) {
       const paramName = match.replace(/[{}]/g, '').trim()
 
-      // Generate appropriate test values based on parameter name
+      // Generate appropriate test values based on parameter Name
       if (paramName.includes('endpoint') || paramName.includes('url')) {
         parameters[paramName] = 'https://api.test.example.com'
       } else if (paramName.includes('priority')) {
@@ -929,7 +929,7 @@ describe('Workflow to Journey Performance Tests', () => {
       expect(secondTime).toBeLessThan(firstTime * 0.5) // At least 50% faster
 
       // Results should be equivalent
-      expect(secondResult.journey.name).toBe(firstResult.journey.name)
+      expect(secondResult.journey.Name).toBe(firstResult.journey.Name)
       expect(secondResult.steps.length).toBe(firstResult.steps.length)
 
       logger.info(

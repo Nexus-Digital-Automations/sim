@@ -26,7 +26,7 @@ describe('ConditionBlockHandler', () => {
     // Define blocks first
     mockSourceBlock = {
       id: 'source-block-1',
-      metadata: { id: 'source', name: 'Source Block' },
+      metadata: { id: 'source', Name: 'Source Block' },
       position: { x: 10, y: 10 },
       config: { tool: 'source_tool', params: {} },
       inputs: {},
@@ -35,7 +35,7 @@ describe('ConditionBlockHandler', () => {
     }
     mockBlock = {
       id: 'cond-block-1',
-      metadata: { id: BlockType.CONDITION, name: 'Test Condition' },
+      metadata: { id: BlockType.CONDITION, Name: 'Test Condition' },
       position: { x: 50, y: 50 },
       config: { tool: BlockType.CONDITION, params: {} },
       inputs: { conditions: 'json' }, // Corrected based on previous step
@@ -44,7 +44,7 @@ describe('ConditionBlockHandler', () => {
     }
     mockTargetBlock1 = {
       id: 'target-block-1',
-      metadata: { id: 'target', name: 'Target Block 1' },
+      metadata: { id: 'target', Name: 'Target Block 1' },
       position: { x: 100, y: 100 },
       config: { tool: 'target_tool_1', params: {} },
       inputs: {},
@@ -53,7 +53,7 @@ describe('ConditionBlockHandler', () => {
     }
     mockTargetBlock2 = {
       id: 'target-block-2',
-      metadata: { id: 'target', name: 'Target Block 2' },
+      metadata: { id: 'target', Name: 'Target Block 2' },
       position: { x: 100, y: 150 },
       config: { tool: 'target_tool_2', params: {} },
       inputs: {},
@@ -390,7 +390,7 @@ describe('ConditionBlockHandler', () => {
       .mockReturnValueOnce('context.value === 99')
 
     await expect(handler.execute(mockBlock, inputs, mockContext)).rejects.toThrow(
-      `No matching path found for condition block "${mockBlock.metadata?.name}", and no 'else' block exists.`
+      `No matching path found for condition block "${mockBlock.metadata?.Name}", and no 'else' block exists.`
     )
   })
 

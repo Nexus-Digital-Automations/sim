@@ -536,9 +536,9 @@ export class MLRecommendationEngine {
   }
 
   private getToolCategory(tool: ToolConfig): string {
-    const name = tool.name.toLowerCase()
+    const Name = tool.Name.toLowerCase()
     const description = tool.description.toLowerCase()
-    const text = `${name} ${description}`
+    const text = `${Name} ${description}`
 
     if (text.includes('database') || text.includes('sql')) return 'database'
     if (text.includes('email') || text.includes('message')) return 'communication'
@@ -620,7 +620,7 @@ export class MLRecommendationEngine {
   private initializeModels(): void {
     // Initialize model configurations
     this.models.set('collaborative_filtering', {
-      name: 'Collaborative Filtering',
+      Name: 'Collaborative Filtering',
       version: '1.0.0',
       type: 'collaborative_filtering',
       features: ['user_interactions', 'tool_ratings', 'usage_patterns'],
@@ -639,7 +639,7 @@ export class MLRecommendationEngine {
     })
 
     this.models.set('content_based', {
-      name: 'Content-Based Filtering',
+      Name: 'Content-Based Filtering',
       version: '1.0.0',
       type: 'content_based',
       features: ['tool_features', 'user_preferences', 'context_similarity'],

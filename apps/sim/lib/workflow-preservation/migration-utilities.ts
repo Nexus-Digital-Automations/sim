@@ -20,7 +20,7 @@ const logger = createLogger('MigrationUtilities')
 
 export interface MigrationPlan {
   id: string
-  name: string
+  Name: string
   description: string
   fromVersion: CompatibilityVersion
   toVersion: CompatibilityVersion
@@ -42,7 +42,7 @@ export interface MigrationOperation {
 
 export interface ValidationCheck {
   id: string
-  name: string
+  Name: string
   description: string
   type: 'data-integrity' | 'functionality' | 'performance' | 'compatibility'
   validator: (workflow: WorkflowState) => Promise<ValidationResult>
@@ -57,7 +57,7 @@ export interface RollbackStrategy {
 
 export interface RollbackCheckpoint {
   id: string
-  name: string
+  Name: string
   workflow: WorkflowState
   timestamp: Date
   metadata: Record<string, any>
@@ -121,7 +121,7 @@ export class MigrationUtilities {
     // Migration plan for adding conversational capabilities
     const conversationalMigration: MigrationPlan = {
       id: 'add-conversational-v1',
-      name: 'Add Conversational Capabilities',
+      Name: 'Add Conversational Capabilities',
       description:
         'Safely add Parlant conversational layer while preserving all ReactFlow functionality',
       fromVersion: {
@@ -173,21 +173,21 @@ export class MigrationUtilities {
       validations: [
         {
           id: 'reactflow-compatibility',
-          name: 'ReactFlow Compatibility',
+          Name: 'ReactFlow Compatibility',
           description: 'Ensure ReactFlow components work unchanged',
           type: 'compatibility',
           validator: this.validateReactFlowCompatibility,
         },
         {
           id: 'data-integrity',
-          name: 'Data Integrity',
+          Name: 'Data Integrity',
           description: 'Verify workflow data integrity',
           type: 'data-integrity',
           validator: this.validateDataIntegrity,
         },
         {
           id: 'functionality-preservation',
-          name: 'Functionality Preservation',
+          Name: 'Functionality Preservation',
           description: 'Confirm all features work as before',
           type: 'functionality',
           validator: this.validateFunctionalityPreservation,
@@ -238,7 +238,7 @@ export class MigrationUtilities {
     const validationResults: ValidationResult[] = []
     const checkpoints: RollbackCheckpoint[] = []
 
-    logger.info(`Starting migration: ${plan.name}`, {
+    logger.info(`Starting migration: ${plan.Name}`, {
       workflowId,
       migrationId,
       operationCount: plan.operations.length,
@@ -549,7 +549,7 @@ export class MigrationUtilities {
 
     const checkpoint: RollbackCheckpoint = {
       id: checkpointId,
-      name: description,
+      Name: description,
       workflow: this.deepClone(workflow),
       timestamp: new Date(),
       metadata: {

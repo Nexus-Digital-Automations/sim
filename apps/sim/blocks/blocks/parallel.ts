@@ -1,16 +1,16 @@
-import { ParallelIcon } from '@/components/icons'
+import { parallelIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { ToolResponse } from '@/tools/types'
 
 export const ParallelBlock: BlockConfig<ToolResponse> = {
   type: 'parallel_ai',
-  name: 'Parallel AI',
+  Name: 'Parallel AI',
   description: 'Search with Parallel AI',
   longDescription: 'Integrate Parallel AI into the workflow. Can search the web. Requires API Key.',
   docsLink: 'https://docs.parallel.ai/search-api/search-quickstart',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: ParallelIcon,
+  icon: parallelIcon,
   subBlocks: [
     {
       id: 'objective',

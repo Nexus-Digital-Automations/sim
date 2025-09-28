@@ -402,7 +402,7 @@ export class WorkflowExecutionStreamer {
         failed: 'Failed at',
       }[action] || 'Processing'
 
-    return `${actionVerb} ${step.name || step.id}`
+    return `${actionVerb} ${step.Name || step.id}`
   }
 
   private generateResultSummary(data: any, step: JourneyState | undefined): string {
@@ -586,7 +586,7 @@ export class WorkflowExecutionStreamer {
 
     const debugInfo = {
       stepId: currentStepId,
-      stepName: currentStep?.name || 'Unknown',
+      stepName: currentStep?.Name || 'Unknown',
       stepType: currentStep?.type || 'Unknown',
       toolId: currentStep?.toolId,
       configuration: currentStep?.configuration,

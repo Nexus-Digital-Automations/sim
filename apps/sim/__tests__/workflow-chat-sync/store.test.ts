@@ -48,7 +48,7 @@ describe('WorkflowChatSyncStore', () => {
       workflows: {
         'test-workflow-id': {
           id: 'test-workflow-id',
-          name: 'Test Workflow',
+          Name: 'Test Workflow',
           description: 'Test workflow description',
           color: '#000000',
           lastModified: new Date(),
@@ -235,7 +235,7 @@ describe('WorkflowChatSyncStore', () => {
           'block-1': {
             id: 'block-1',
             type: 'starter',
-            name: 'Start',
+            Name: 'Start',
             position: { x: 100, y: 100 },
             enabled: true,
             subBlocks: {},
@@ -249,7 +249,7 @@ describe('WorkflowChatSyncStore', () => {
           'block-2': {
             id: 'block-2',
             type: 'llm',
-            name: 'LLM',
+            Name: 'LLM',
             position: { x: 300, y: 100 },
             enabled: true,
             subBlocks: {},
@@ -290,12 +290,12 @@ describe('WorkflowChatSyncStore', () => {
       const startBlock = representation.blockSummaries.find((b) => b.id === 'block-1')
       expect(startBlock).toBeDefined()
       expect(startBlock?.isActive).toBe(true)
-      expect(startBlock?.name).toBe('Start')
+      expect(startBlock?.Name).toBe('Start')
 
       const llmBlock = representation.blockSummaries.find((b) => b.id === 'block-2')
       expect(llmBlock).toBeDefined()
       expect(llmBlock?.isActive).toBe(false)
-      expect(llmBlock?.name).toBe('LLM')
+      expect(llmBlock?.Name).toBe('LLM')
 
       // Check connection summary
       expect(representation.connectionSummaries[0].description).toBe('Start → LLM')
@@ -333,7 +333,7 @@ describe('WorkflowChatSyncStore', () => {
 
       const addedBlock = Object.values(workflowStore.blocks)[0]
       expect(addedBlock.type).toBe('llm')
-      expect(addedBlock.name).toBe('Llm')
+      expect(addedBlock.Name).toBe('Llm')
       expect(addedBlock.position).toEqual({ x: 200, y: 200 })
     })
 
@@ -344,7 +344,7 @@ describe('WorkflowChatSyncStore', () => {
           'block-1': {
             id: 'block-1',
             type: 'starter',
-            name: 'Start',
+            Name: 'Start',
             position: { x: 100, y: 100 },
             enabled: true,
             subBlocks: {},
@@ -491,7 +491,7 @@ describe('WorkflowChatSyncStore', () => {
           'block-1': {
             id: 'block-1',
             type: 'starter',
-            name: 'Start',
+            Name: 'Start',
             position: { x: 100, y: 100 },
             enabled: true,
             subBlocks: {},

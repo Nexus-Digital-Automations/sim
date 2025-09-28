@@ -32,7 +32,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
   describe('AC1: Multiple agents can work on same workflow', () => {
     it('should allow creating agent teams with multiple agents', async () => {
       const teamData = {
-        name: 'Customer Support Team',
+        Name: 'Customer Support Team',
         description: 'Multi-agent team for customer support workflows',
         workspaceId: mockAuth.workspace_id,
         agents: [
@@ -57,7 +57,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       const team = await multiAgentOrchestrationService.createAgentTeam(teamData, mockAuth)
 
       expect(team).toBeDefined()
-      expect(team.name).toBe('Customer Support Team')
+      expect(team.Name).toBe('Customer Support Team')
       expect(team.agents).toHaveLength(3)
       expect(team.agents[0].role).toBe('leader')
       expect(team.agents[1].role).toBe('specialist')
@@ -69,7 +69,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       // First create a team
       const team = await multiAgentOrchestrationService.createAgentTeam(
         {
-          name: 'Test Team',
+          Name: 'Test Team',
           description: 'Test team for process validation',
           workspaceId: mockAuth.workspace_id,
           agents: [
@@ -81,22 +81,22 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       )
 
       const processData = {
-        name: 'Multi-Agent Customer Inquiry Process',
+        Name: 'Multi-Agent Customer Inquiry Process',
         description: 'Complex process involving multiple agents',
         teamId: team.id,
         steps: [
           {
-            name: 'Initial Analysis',
+            Name: 'Initial Analysis',
             description: 'Analyze customer inquiry',
             assignedAgentId: 'agent-1',
           },
           {
-            name: 'Technical Processing',
+            Name: 'Technical Processing',
             description: 'Process technical aspects',
             assignedAgentId: 'agent-2',
           },
           {
-            name: 'Response Generation',
+            Name: 'Response Generation',
             description: 'Generate final response',
             assignedAgentId: 'agent-1',
           },
@@ -109,7 +109,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       )
 
       expect(process).toBeDefined()
-      expect(process.name).toBe('Multi-Agent Customer Inquiry Process')
+      expect(process.Name).toBe('Multi-Agent Customer Inquiry Process')
       expect(process.totalSteps).toBe(3)
       expect(process.steps).toHaveLength(3)
       expect(process.status).toBe('running')
@@ -125,7 +125,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       // Create a mock process first
       const team = await multiAgentOrchestrationService.createAgentTeam(
         {
-          name: 'Handoff Test Team',
+          Name: 'Handoff Test Team',
           description: 'Team for testing handoffs',
           workspaceId: mockAuth.workspace_id,
           agents: [
@@ -138,17 +138,17 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
 
       const process = await multiAgentOrchestrationService.startOrchestrationProcess(
         {
-          name: 'Handoff Test Process',
+          Name: 'Handoff Test Process',
           description: 'Process for testing handoffs',
           teamId: team.id,
           steps: [
             {
-              name: 'Step 1',
+              Name: 'Step 1',
               description: 'Initial step',
               assignedAgentId: 'agent-from',
             },
             {
-              name: 'Step 2',
+              Name: 'Step 2',
               description: 'Final step',
               assignedAgentId: 'agent-to',
             },
@@ -234,7 +234,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
     it('should support human intervention requests', async () => {
       const team = await multiAgentOrchestrationService.createAgentTeam(
         {
-          name: 'Intervention Test Team',
+          Name: 'Intervention Test Team',
           description: 'Team for testing human intervention',
           workspaceId: mockAuth.workspace_id,
           agents: [{ agentId: 'agent-1', role: 'leader', specialization: 'General' }],
@@ -244,12 +244,12 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
 
       const process = await multiAgentOrchestrationService.startOrchestrationProcess(
         {
-          name: 'Intervention Test Process',
+          Name: 'Intervention Test Process',
           description: 'Process requiring human intervention',
           teamId: team.id,
           steps: [
             {
-              name: 'Complex Decision Step',
+              Name: 'Complex Decision Step',
               description: 'Step requiring human approval',
               assignedAgentId: 'agent-1',
             },
@@ -308,7 +308,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       // Create a mock process that will be paused
       const team = await multiAgentOrchestrationService.createAgentTeam(
         {
-          name: 'Pause Test Team',
+          Name: 'Pause Test Team',
           description: 'Team for testing process pausing',
           workspaceId: mockAuth.workspace_id,
           agents: [{ agentId: 'agent-1', role: 'leader', specialization: 'General' }],
@@ -318,12 +318,12 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
 
       const process = await multiAgentOrchestrationService.startOrchestrationProcess(
         {
-          name: 'Pausable Process',
+          Name: 'Pausable Process',
           description: 'Process that can be paused',
           teamId: team.id,
           steps: [
             {
-              name: 'Decision Step',
+              Name: 'Decision Step',
               description: 'Step requiring decision',
               assignedAgentId: 'agent-1',
             },
@@ -353,7 +353,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
     it('should handle multi-step processes with dependencies', async () => {
       const team = await multiAgentOrchestrationService.createAgentTeam(
         {
-          name: 'Complex Process Team',
+          Name: 'Complex Process Team',
           description: 'Team for complex multi-step processes',
           workspaceId: mockAuth.workspace_id,
           agents: [
@@ -366,17 +366,17 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       )
 
       const processData = {
-        name: 'Complex Data Processing Workflow',
+        Name: 'Complex Data Processing Workflow',
         description: 'Multi-step workflow with dependencies and conditions',
         teamId: team.id,
         steps: [
           {
-            name: 'Data Collection',
+            Name: 'Data Collection',
             description: 'Collect and validate input data',
             assignedAgentId: 'agent-analysis',
           },
           {
-            name: 'Data Processing',
+            Name: 'Data Processing',
             description: 'Process and transform data',
             assignedAgentId: 'agent-processing',
             dependencies: ['step_1'], // Depends on first step
@@ -389,13 +389,13 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
             ],
           },
           {
-            name: 'Quality Review',
+            Name: 'Quality Review',
             description: 'Review processed results',
             assignedAgentId: 'agent-review',
             dependencies: ['step_2'], // Depends on second step
           },
           {
-            name: 'Final Delivery',
+            Name: 'Final Delivery',
             description: 'Deliver results to customer',
             assignedAgentId: 'agent-analysis',
             dependencies: ['step_3'], // Depends on third step
@@ -414,7 +414,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       )
 
       expect(process).toBeDefined()
-      expect(process.name).toBe('Complex Data Processing Workflow')
+      expect(process.Name).toBe('Complex Data Processing Workflow')
       expect(process.totalSteps).toBe(4)
       expect(process.status).toBe('running')
       expect(process.context.sharedData).toEqual({
@@ -438,7 +438,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       // Create a simple process for metrics testing
       const team = await multiAgentOrchestrationService.createAgentTeam(
         {
-          name: 'Metrics Test Team',
+          Name: 'Metrics Test Team',
           description: 'Team for testing process metrics',
           workspaceId: mockAuth.workspace_id,
           agents: [{ agentId: 'agent-metrics', role: 'leader', specialization: 'Testing' }],
@@ -448,17 +448,17 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
 
       const process = await multiAgentOrchestrationService.startOrchestrationProcess(
         {
-          name: 'Metrics Test Process',
+          Name: 'Metrics Test Process',
           description: 'Process for testing metrics collection',
           teamId: team.id,
           steps: [
             {
-              name: 'Test Step 1',
+              Name: 'Test Step 1',
               description: 'First test step',
               assignedAgentId: 'agent-metrics',
             },
             {
-              name: 'Test Step 2',
+              Name: 'Test Step 2',
               description: 'Second test step',
               assignedAgentId: 'agent-metrics',
             },
@@ -490,12 +490,12 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
 
     it('should handle error conditions and recovery', async () => {
       const processData = {
-        name: 'Error Handling Test Process',
+        Name: 'Error Handling Test Process',
         description: 'Process for testing error handling and recovery',
         teamId: 'test-team-id',
         steps: [
           {
-            name: 'Potentially Failing Step',
+            Name: 'Potentially Failing Step',
             description: 'Step that might fail',
             assignedAgentId: 'agent-test',
             conditions: [
@@ -529,7 +529,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       // 1. Create agent team
       const team = await multiAgentOrchestrationService.createAgentTeam(
         {
-          name: 'E2E Test Team',
+          Name: 'E2E Test Team',
           description: 'End-to-end testing team',
           workspaceId: mockAuth.workspace_id,
           agents: [
@@ -544,23 +544,23 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       // 2. Start complex process
       const process = await multiAgentOrchestrationService.startOrchestrationProcess(
         {
-          name: 'Customer Support E2E Process',
+          Name: 'Customer Support E2E Process',
           description: 'Complete customer support workflow',
           teamId: team.id,
           steps: [
             {
-              name: 'Customer Intake',
+              Name: 'Customer Intake',
               description: 'Gather customer information and issue details',
               assignedAgentId: 'agent-intake',
             },
             {
-              name: 'Issue Analysis',
+              Name: 'Issue Analysis',
               description: 'Analyze the customer issue',
               assignedAgentId: 'agent-analysis',
               dependencies: ['step_1'],
             },
             {
-              name: 'Resolution Planning',
+              Name: 'Resolution Planning',
               description: 'Plan resolution approach',
               assignedAgentId: 'agent-resolution',
               dependencies: ['step_2'],
@@ -578,7 +578,7 @@ describe('Multi-Agent Orchestration System - Acceptance Criteria', () => {
       // 3. Create collaboration room
       const room = await orchestrationCollaborationHub.createCollaborationRoom(
         {
-          name: 'E2E Process Collaboration',
+          Name: 'E2E Process Collaboration',
           type: 'process',
           workspaceId: mockAuth.workspace_id,
           processId: process.id,

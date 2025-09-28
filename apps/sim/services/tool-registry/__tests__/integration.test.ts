@@ -67,14 +67,14 @@ vi.mock('../adapters', () => ({
         {
           id: 'get_user_workflow',
           source: 'copilot',
-          name: 'get_user_workflow',
+          Name: 'get_user_workflow',
           schema: z.object({}),
         },
       ])
     ),
     adaptTool: vi.fn((tool) => ({
       id: tool.id,
-      name: tool.name,
+      Name: tool.Name,
       displayName: 'Get User Workflow',
       description: 'Retrieve user workflow',
       version: '1.0.0',
@@ -98,7 +98,7 @@ vi.mock('../adapters', () => ({
 
 const testToolDefinition: ToolDefinition = {
   id: 'test_integration_tool',
-  name: 'test_integration_tool',
+  Name: 'test_integration_tool',
   displayName: 'Test Integration Tool',
   description: 'A tool for integration testing',
   version: '1.0.0',
@@ -177,7 +177,7 @@ describe('Tool Registry Integration Tests', () => {
       const configuration = await configService.createConfiguration({
         toolId: testToolDefinition.id,
         workspaceId: 'test_workspace_123',
-        name: 'Test Configuration',
+        Name: 'Test Configuration',
         description: 'Configuration for integration testing',
         configuration: {
           apiUrl: 'https://test-api.example.com',
@@ -356,7 +356,7 @@ describe('Tool Registry Integration Tests', () => {
         tools.push({
           ...testToolDefinition,
           id: `bulk_test_tool_${i}`,
-          name: `bulk_test_tool_${i}`,
+          Name: `bulk_test_tool_${i}`,
           displayName: `Bulk Test Tool ${i}`,
         })
       }

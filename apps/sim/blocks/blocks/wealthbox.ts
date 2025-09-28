@@ -1,17 +1,17 @@
-import { WealthboxIcon } from '@/components/icons'
+import { wealthboxIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { WealthboxResponse } from '@/tools/wealthbox/types'
 
 export const WealthboxBlock: BlockConfig<WealthboxResponse> = {
   type: 'wealthbox',
-  name: 'Wealthbox',
+  Name: 'Wealthbox',
   description: 'Interact with Wealthbox',
   longDescription:
     'Integrate Wealthbox into the workflow. Can read and write notes, read and write contacts, and read and write tasks. Requires OAuth.',
   docsLink: 'https://docs.sim.ai/tools/wealthbox',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: WealthboxIcon,
+  icon: wealthboxIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -241,8 +241,8 @@ export const WealthboxBlock: BlockConfig<WealthboxResponse> = {
     taskId: { type: 'string', description: 'Task identifier' },
     manualTaskId: { type: 'string', description: 'Manual task identifier' },
     content: { type: 'string', description: 'Content text' },
-    firstName: { type: 'string', description: 'First name' },
-    lastName: { type: 'string', description: 'Last name' },
+    firstName: { type: 'string', description: 'First Name' },
+    lastName: { type: 'string', description: 'Last Name' },
     emailAddress: { type: 'string', description: 'Email address' },
     backgroundInformation: { type: 'string', description: 'Background information' },
     title: { type: 'string', description: 'Task title' },
@@ -256,12 +256,12 @@ export const WealthboxBlock: BlockConfig<WealthboxResponse> = {
     notes: { type: 'json', description: 'Array of note objects from bulk read operations' },
     contact: {
       type: 'json',
-      description: 'Single contact object with name, email, phone, and background info',
+      description: 'Single contact object with Name, email, phone, and background info',
     },
     contacts: { type: 'json', description: 'Array of contact objects from bulk read operations' },
     task: {
       type: 'json',
-      description: 'Single task object with name, due date, description, and priority',
+      description: 'Single task object with Name, due date, description, and priority',
     },
     tasks: { type: 'json', description: 'Array of task objects from bulk read operations' },
     metadata: {

@@ -10,7 +10,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    name: 'Hybrid Workflow Framework Tests',
+    Name: 'Hybrid Workflow Framework Tests',
     globals: true,
     environment: 'jsdom',
     include: ['__tests__/hybrid-workflow-framework/**/*.test.ts'],

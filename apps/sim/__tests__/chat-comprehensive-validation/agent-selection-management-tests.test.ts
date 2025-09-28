@@ -112,7 +112,7 @@ describe('Agent Selection and Management', () => {
       .insert(workspace)
       .values({
         id: workspaceId,
-        name: 'Agent Test Workspace',
+        Name: 'Agent Test Workspace',
         slug: 'agent-test-workspace',
       })
       .onConflictDoNothing()
@@ -122,7 +122,7 @@ describe('Agent Selection and Management', () => {
       .values({
         id: userId,
         email: 'agent-test@example.com',
-        name: 'Agent Test User',
+        Name: 'Agent Test User',
       })
       .onConflictDoNothing()
 
@@ -130,7 +130,7 @@ describe('Agent Selection and Management', () => {
     const testAgents: Agent[] = []
     const agentConfigs = [
       {
-        name: 'Customer Support Agent',
+        Name: 'Customer Support Agent',
         description: 'Specialized in customer inquiries and support',
         status: 'active' as const,
         config: {
@@ -141,7 +141,7 @@ describe('Agent Selection and Management', () => {
         },
       },
       {
-        name: 'Sales Assistant',
+        Name: 'Sales Assistant',
         description: 'Expert in sales processes and lead qualification',
         status: 'active' as const,
         config: {
@@ -152,7 +152,7 @@ describe('Agent Selection and Management', () => {
         },
       },
       {
-        name: 'Technical Support',
+        Name: 'Technical Support',
         description: 'Handles technical issues and troubleshooting',
         status: 'active' as const,
         config: {
@@ -163,7 +163,7 @@ describe('Agent Selection and Management', () => {
         },
       },
       {
-        name: 'Training Agent',
+        Name: 'Training Agent',
         description: 'Currently in training mode',
         status: 'training' as const,
         config: {
@@ -174,7 +174,7 @@ describe('Agent Selection and Management', () => {
         },
       },
       {
-        name: 'Inactive Agent',
+        Name: 'Inactive Agent',
         description: 'Temporarily disabled agent',
         status: 'inactive' as const,
         config: {
@@ -197,7 +197,7 @@ describe('Agent Selection and Management', () => {
           id: agentId,
           workspaceId,
           createdBy: userId,
-          name: config.name,
+          Name: config.Name,
           description: config.description,
           status: config.status,
           systemPrompt: config.config.systemPrompt,
@@ -210,7 +210,7 @@ describe('Agent Selection and Management', () => {
 
       const agent: Agent = {
         id: agentId,
-        name: config.name,
+        Name: config.Name,
         description: config.description,
         status: config.status,
         workspace_id: workspaceId,
@@ -322,13 +322,13 @@ describe('Agent Selection and Management', () => {
       )
     })
 
-    it('should search agents by name and description', async () => {
+    it('should search agents by Name and description', async () => {
       const startTime = Date.now()
 
       const searchQuery = 'support'
       const expectedAgents = testContext.testAgents.filter(
         (agent) =>
-          agent.name.toLowerCase().includes(searchQuery) ||
+          agent.Name.toLowerCase().includes(searchQuery) ||
           agent.description?.toLowerCase().includes(searchQuery)
       )
 
@@ -360,7 +360,7 @@ describe('Agent Selection and Management', () => {
 
       // Verify search results contain the query term
       searchResult.data.forEach((agent) => {
-        const matchesName = agent.name.toLowerCase().includes(searchQuery)
+        const matchesName = agent.Name.toLowerCase().includes(searchQuery)
         const matchesDescription = agent.description?.toLowerCase().includes(searchQuery)
         expect(matchesName || matchesDescription).toBe(true)
       })
@@ -741,7 +741,7 @@ describe('Agent Selection and Management', () => {
       const sessionPromises = concurrentAgents.map((agent) =>
         testContext.sessionManager.createAgentSession(agent.id, testContext.authContext, {
           enablePerformanceTracking: true,
-          customMetadata: { concurrent: true, agentName: agent.name },
+          customMetadata: { concurrent: true, agentName: agent.Name },
         })
       )
 
@@ -894,7 +894,7 @@ describe('Agent Selection and Management', () => {
   describe('5. Agent Configuration and Updates', () => {
     it('should create agents with custom configurations', async () => {
       const createRequest: AgentCreateRequest = {
-        name: 'Test Dynamic Agent',
+        Name: 'Test Dynamic Agent',
         description: 'Dynamically created agent for testing',
         workspace_id: testContext.workspaceId,
         config: {
@@ -934,17 +934,17 @@ describe('Agent Selection and Management', () => {
       )
 
       expect(result.success).toBe(true)
-      expect(result.data.name).toBe(createRequest.name)
+      expect(result.data.Name).toBe(createRequest.Name)
       expect(result.data.config?.model).toBe('gpt-4-turbo')
       expect(result.data.guidelines).toHaveLength(1)
 
-      console.log(`✅ Agent creation with custom config validated - Agent: ${result.data.name}`)
+      console.log(`✅ Agent creation with custom config validated - Agent: ${result.data.Name}`)
     })
 
     it('should update agent configurations and validate changes', async () => {
       const agentToUpdate = testContext.testAgents[0]
       const updates = {
-        name: 'Updated Customer Support Agent',
+        Name: 'Updated Customer Support Agent',
         description: 'Enhanced customer support with new capabilities',
         config: {
           ...agentToUpdate.config,
@@ -973,12 +973,12 @@ describe('Agent Selection and Management', () => {
       )
 
       expect(result.success).toBe(true)
-      expect(result.data.name).toBe(updates.name)
+      expect(result.data.Name).toBe(updates.Name)
       expect(result.data.description).toBe(updates.description)
       expect(result.data.config?.temperature).toBe(0.8)
       expect(result.data.config?.maxTokens).toBe(2500)
 
-      console.log(`✅ Agent configuration update validated - ${result.data.name}`)
+      console.log(`✅ Agent configuration update validated - ${result.data.Name}`)
     })
 
     it('should duplicate agents with modified configurations', async () => {
@@ -989,7 +989,7 @@ describe('Agent Selection and Management', () => {
       const mockDuplicatedAgent: Agent = {
         ...sourceAgent,
         id: uuidv4(),
-        name: newName,
+        Name: newName,
         description: `Copy of ${sourceAgent.description}`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -1014,12 +1014,12 @@ describe('Agent Selection and Management', () => {
       )
 
       expect(result.success).toBe(true)
-      expect(result.data.name).toBe(newName)
+      expect(result.data.Name).toBe(newName)
       expect(result.data.description).toContain('Copy of')
       expect(result.data.id).not.toBe(sourceAgent.id)
 
       console.log(
-        `✅ Agent duplication validated - Original: ${sourceAgent.name}, Copy: ${result.data.name}`
+        `✅ Agent duplication validated - Original: ${sourceAgent.Name}, Copy: ${result.data.Name}`
       )
     })
   })
@@ -1201,7 +1201,7 @@ describe('Agent Selection and Management', () => {
       // Try to select non-existent agent
       const invalidAgent = {
         id: 'invalid-agent-id',
-        name: 'Non-existent Agent',
+        Name: 'Non-existent Agent',
         status: 'active' as const,
         workspace_id: testContext.workspaceId,
         created_by: testContext.userId,
@@ -1275,7 +1275,7 @@ describe('Agent Selection and Management', () => {
       try {
         await testContext.agentService.updateAgent(
           agentToUpdate.id,
-          { name: 'Unauthorized Update' },
+          { Name: 'Unauthorized Update' },
           restrictedAuth
         )
 
@@ -1421,7 +1421,7 @@ describe('Agent Selection and Management', () => {
         expect(selectionResult.current.isLoading).toBe(false)
       })
 
-      const selectedAgent = availableAgents.data.find((a) => a.name.includes('Customer Support'))!
+      const selectedAgent = availableAgents.data.find((a) => a.Name.includes('Customer Support'))!
 
       act(() => {
         selectionResult.current.selectAgent(selectedAgent)
@@ -1466,7 +1466,7 @@ describe('Agent Selection and Management', () => {
       }
 
       // Step 5: User decides to escalate to technical support
-      const technicalAgent = availableAgents.data.find((a) => a.name.includes('Technical'))!
+      const technicalAgent = availableAgents.data.find((a) => a.Name.includes('Technical'))!
 
       act(() => {
         selectionResult.current.selectAgent(technicalAgent)

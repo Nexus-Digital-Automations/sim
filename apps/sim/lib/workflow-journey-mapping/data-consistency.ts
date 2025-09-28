@@ -515,14 +515,14 @@ export class DataConsistencyManager {
         })
       }
 
-      if (!block.type || !block.name || !block.position) {
+      if (!block.type || !block.Name || !block.position) {
         inconsistencies.push({
           type: 'MISSING_DATA',
           severity: 'HIGH',
           location: `blocks.${blockId}`,
           description: 'Block missing required properties',
-          expected: 'type, name, and position properties',
-          actual: { type: block.type, name: block.name, position: block.position },
+          expected: 'type, Name, and position properties',
+          actual: { type: block.type, Name: block.Name, position: block.position },
           autoFixable: false,
         })
       }

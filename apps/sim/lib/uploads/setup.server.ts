@@ -66,7 +66,7 @@ if (typeof process !== 'undefined') {
       if (env.AZURE_CONNECTION_STRING) {
         logger.info('Using Azure connection string for authentication')
       } else {
-        logger.info('Using Azure account name and key for authentication')
+        logger.info('Using Azure account Name and key for authentication')
       }
     }
   } else if (USE_S3_STORAGE) {

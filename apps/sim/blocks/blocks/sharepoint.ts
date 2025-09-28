@@ -1,4 +1,4 @@
-import { MicrosoftSharepointIcon } from '@/components/icons'
+import { microsoftSharepointIcon } from '@/components/icons'
 import { createLogger } from '@/lib/logs/console/logger'
 import type { BlockConfig } from '@/blocks/types'
 import type { SharepointResponse } from '@/tools/sharepoint/types'
@@ -7,14 +7,14 @@ const logger = createLogger('SharepointBlock')
 
 export const SharepointBlock: BlockConfig<SharepointResponse> = {
   type: 'sharepoint',
-  name: 'Sharepoint',
+  Name: 'Sharepoint',
   description: 'Work with pages and lists',
   longDescription:
     'Integrate SharePoint into the workflow. Read/create pages, list sites, and work with lists (read, create, update items). Requires OAuth.',
   docsLink: 'https://docs.sim.ai/tools/sharepoint',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: MicrosoftSharepointIcon,
+  icon: microsoftSharepointIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -99,7 +99,7 @@ export const SharepointBlock: BlockConfig<SharepointResponse> = {
       title: 'Page ID',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Page ID (alternative to page name)',
+      placeholder: 'Page ID (alternative to page Name)',
       condition: { field: 'operation', value: 'read_page' },
       mode: 'advanced',
     },
@@ -285,14 +285,14 @@ export const SharepointBlock: BlockConfig<SharepointResponse> = {
   inputs: {
     operation: { type: 'string', description: 'Operation to perform' },
     credential: { type: 'string', description: 'Microsoft account credential' },
-    pageName: { type: 'string', description: 'Page name' },
+    pageName: { type: 'string', description: 'Page Name' },
     pageContent: { type: 'string', description: 'Page content' },
     pageTitle: { type: 'string', description: 'Page title' },
     pageId: { type: 'string', description: 'Page ID' },
     siteSelector: { type: 'string', description: 'Site selector' },
     manualSiteId: { type: 'string', description: 'Manual site ID' },
     pageSize: { type: 'number', description: 'Results per page' },
-    listDisplayName: { type: 'string', description: 'List display name' },
+    listDisplayName: { type: 'string', description: 'List display Name' },
     listDescription: { type: 'string', description: 'List description' },
     listTemplate: { type: 'string', description: 'List template' },
     listId: { type: 'string', description: 'List ID' },
@@ -306,11 +306,11 @@ export const SharepointBlock: BlockConfig<SharepointResponse> = {
     sites: {
       type: 'json',
       description:
-        'An array of SharePoint site objects, each containing details such as id, name, and more.',
+        'An array of SharePoint site objects, each containing details such as id, Name, and more.',
     },
     list: {
       type: 'json',
-      description: 'SharePoint list object (id, displayName, name, webUrl, etc.)',
+      description: 'SharePoint list object (id, displayName, Name, webUrl, etc.)',
     },
     item: {
       type: 'json',

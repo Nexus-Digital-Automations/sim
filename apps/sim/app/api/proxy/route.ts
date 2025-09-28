@@ -34,7 +34,7 @@ const formatResponse = (responseData: any, status = 200) => {
     status,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'get, post, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   })
@@ -69,10 +69,10 @@ const createErrorResponse = (error: any, status = 500, additionalData = {}) => {
 }
 
 /**
- * GET handler for direct external URL proxying
- * This allows for GET requests to external APIs
+ * get handler for direct external URL proxying
+ * This allows for get requests to external APIs
  */
-export async function GET(request: Request) {
+export async function get(request: Request) {
   const url = new URL(request.url)
   const targetUrl = url.searchParams.get('url')
   const requestId = generateRequestId()
@@ -91,12 +91,12 @@ export async function GET(request: Request) {
     return createErrorResponse(urlValidation.error || 'Invalid URL', 403)
   }
 
-  const method = url.searchParams.get('method') || 'GET'
+  const method = url.searchParams.get('method') || 'get'
 
   const bodyParam = url.searchParams.get('body')
   let body: string | undefined
 
-  if (bodyParam && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+  if (bodyParam && ['post', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
     try {
       body = decodeURIComponent(bodyParam)
     } catch (error) {
@@ -157,7 +157,7 @@ export async function GET(request: Request) {
       error: errorMessage,
     })
   } catch (error: any) {
-    logger.error(`[${requestId}] Proxy GET request failed`, {
+    logger.error(`[${requestId}] Proxy get request failed`, {
       url: targetUrl,
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
@@ -167,7 +167,7 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function post(request: Request) {
   const requestId = generateRequestId()
   const startTime = new Date()
   const startTimeISO = startTime.toISOString()
@@ -266,7 +266,7 @@ export async function POST(request: Request) {
     logger.error(`[${requestId}] Proxy request failed`, {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : undefined,
+      Name: error instanceof Error ? error.Name : undefined,
     })
 
     // Add timing information even to error responses
@@ -287,7 +287,7 @@ export async function OPTIONS() {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'get, post, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400',
     },

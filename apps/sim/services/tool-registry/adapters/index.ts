@@ -56,7 +56,7 @@ export class ToolAdapter implements IToolAdapter {
    */
   adaptTool(originalTool: any): ToolDefinition {
     logger.debug('Adapting tool to registry format', {
-      toolId: originalTool.id || originalTool.name,
+      toolId: originalTool.id || originalTool.Name,
     })
 
     try {
@@ -134,7 +134,7 @@ export class ToolAdapter implements IToolAdapter {
       copilotTools.push({
         id: toolId,
         source: 'copilot',
-        name: toolId,
+        Name: toolId,
         schema: schemas,
         resultSchema: (ToolResultSchemas as any)[toolId],
       })
@@ -152,11 +152,11 @@ export class ToolAdapter implements IToolAdapter {
     try {
       const registeredTools = getRegisteredTools()
 
-      for (const [name, tool] of Object.entries(registeredTools)) {
+      for (const [Name, tool] of Object.entries(registeredTools)) {
         clientTools.push({
-          id: name,
+          id: Name,
           source: 'client',
-          name: name,
+          Name: Name,
           definition: tool,
           metadata: tool.metadata,
         })
@@ -177,7 +177,7 @@ export class ToolAdapter implements IToolAdapter {
 
     return {
       id: toolId,
-      name: toolId,
+      Name: toolId,
       displayName: this.formatDisplayName(toolId),
       description: this.generateDescription(toolId),
       longDescription: this.generateLongDescription(toolId),
@@ -211,7 +211,7 @@ export class ToolAdapter implements IToolAdapter {
 
     return {
       id: toolId,
-      name: toolId,
+      Name: toolId,
       displayName: definition.metadata?.displayName || this.formatDisplayName(toolId),
       description: definition.metadata?.description || this.generateDescription(toolId),
       longDescription: definition.metadata?.longDescription,
@@ -242,8 +242,8 @@ export class ToolAdapter implements IToolAdapter {
   private adaptCustomTool(tool: any): ToolDefinition {
     return {
       id: tool.id,
-      name: tool.name || tool.id,
-      displayName: tool.title || tool.name || this.formatDisplayName(tool.id),
+      Name: tool.Name || tool.id,
+      displayName: tool.title || tool.Name || this.formatDisplayName(tool.id),
       description: tool.description || 'Custom tool',
       longDescription: tool.longDescription,
       version: tool.version || '1.0.0',
@@ -252,7 +252,7 @@ export class ToolAdapter implements IToolAdapter {
       status: 'active',
       categoryId: 'cat_custom',
       tags: tool.tags || ['custom'],
-      keywords: tool.keywords || [tool.name],
+      keywords: tool.keywords || [tool.Name],
       schema: tool.schema || z.object({}),
       resultSchema: tool.resultSchema,
       metadata: {
@@ -276,9 +276,9 @@ export class ToolAdapter implements IToolAdapter {
    */
   private adaptGenericTool(tool: any): ToolDefinition {
     return {
-      id: tool.id || tool.name,
-      name: tool.name || tool.id,
-      displayName: tool.displayName || tool.title || this.formatDisplayName(tool.id || tool.name),
+      id: tool.id || tool.Name,
+      Name: tool.Name || tool.id,
+      displayName: tool.displayName || tool.title || this.formatDisplayName(tool.id || tool.Name),
       description: tool.description || 'Tool',
       version: '1.0.0',
       toolType: 'integration',
@@ -462,7 +462,7 @@ export class ToolAdapter implements IToolAdapter {
           description: 'Fetch current weather from an API',
           parameters: {
             url: 'https://api.weather.com/current',
-            method: 'GET',
+            method: 'get',
             queryParams: { city: 'New York' },
           },
           scenario: 'When you need to fetch data from an external service',

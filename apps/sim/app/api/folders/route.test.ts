@@ -17,7 +17,7 @@ describe('Folders API Route', () => {
   const mockFolders = [
     {
       id: 'folder-1',
-      name: 'Test Folder 1',
+      Name: 'Test Folder 1',
       userId: 'user-123',
       workspaceId: 'workspace-123',
       parentId: null,
@@ -29,7 +29,7 @@ describe('Folders API Route', () => {
     },
     {
       id: 'folder-2',
-      name: 'Test Folder 2',
+      Name: 'Test Folder 2',
       userId: 'user-123',
       workspaceId: 'workspace-123',
       parentId: 'folder-1',
@@ -92,17 +92,17 @@ describe('Folders API Route', () => {
     vi.clearAllMocks()
   })
 
-  describe('GET /api/folders', () => {
+  describe('get /api/folders', () => {
     it('should return folders for a valid workspace', async () => {
       mockAuthenticatedUser()
 
-      const mockRequest = createMockRequest('GET')
+      const mockRequest = createMockRequest('get')
       Object.defineProperty(mockRequest, 'url', {
         value: 'http://localhost:3000/api/folders?workspaceId=workspace-123',
       })
 
-      const { GET } = await import('@/app/api/folders/route')
-      const response = await GET(mockRequest)
+      const { get } = await import('@/app/api/folders/route')
+      const response = await get(mockRequest)
 
       expect(response.status).toBe(200)
 
@@ -111,7 +111,7 @@ describe('Folders API Route', () => {
       expect(data.folders).toHaveLength(2)
       expect(data.folders[0]).toMatchObject({
         id: 'folder-1',
-        name: 'Test Folder 1',
+        Name: 'Test Folder 1',
         workspaceId: 'workspace-123',
       })
     })
@@ -119,13 +119,13 @@ describe('Folders API Route', () => {
     it('should return 401 for unauthenticated requests', async () => {
       mockUnauthenticated()
 
-      const mockRequest = createMockRequest('GET')
+      const mockRequest = createMockRequest('get')
       Object.defineProperty(mockRequest, 'url', {
         value: 'http://localhost:3000/api/folders?workspaceId=workspace-123',
       })
 
-      const { GET } = await import('@/app/api/folders/route')
-      const response = await GET(mockRequest)
+      const { get } = await import('@/app/api/folders/route')
+      const response = await get(mockRequest)
 
       expect(response.status).toBe(401)
 
@@ -136,13 +136,13 @@ describe('Folders API Route', () => {
     it('should return 400 when workspaceId is missing', async () => {
       mockAuthenticatedUser()
 
-      const mockRequest = createMockRequest('GET')
+      const mockRequest = createMockRequest('get')
       Object.defineProperty(mockRequest, 'url', {
         value: 'http://localhost:3000/api/folders',
       })
 
-      const { GET } = await import('@/app/api/folders/route')
-      const response = await GET(mockRequest)
+      const { get } = await import('@/app/api/folders/route')
+      const response = await get(mockRequest)
 
       expect(response.status).toBe(400)
 
@@ -154,13 +154,13 @@ describe('Folders API Route', () => {
       mockAuthenticatedUser()
       mockGetUserEntityPermissions.mockResolvedValue(null) // No permissions
 
-      const mockRequest = createMockRequest('GET')
+      const mockRequest = createMockRequest('get')
       Object.defineProperty(mockRequest, 'url', {
         value: 'http://localhost:3000/api/folders?workspaceId=workspace-123',
       })
 
-      const { GET } = await import('@/app/api/folders/route')
-      const response = await GET(mockRequest)
+      const { get } = await import('@/app/api/folders/route')
+      const response = await get(mockRequest)
 
       expect(response.status).toBe(403)
 
@@ -172,13 +172,13 @@ describe('Folders API Route', () => {
       mockAuthenticatedUser()
       mockGetUserEntityPermissions.mockResolvedValue('read') // Read-only permissions
 
-      const mockRequest = createMockRequest('GET')
+      const mockRequest = createMockRequest('get')
       Object.defineProperty(mockRequest, 'url', {
         value: 'http://localhost:3000/api/folders?workspaceId=workspace-123',
       })
 
-      const { GET } = await import('@/app/api/folders/route')
-      const response = await GET(mockRequest)
+      const { get } = await import('@/app/api/folders/route')
+      const response = await get(mockRequest)
 
       expect(response.status).toBe(200) // Should work for read permissions
 
@@ -193,13 +193,13 @@ describe('Folders API Route', () => {
         throw new Error('Database connection failed')
       })
 
-      const mockRequest = createMockRequest('GET')
+      const mockRequest = createMockRequest('get')
       Object.defineProperty(mockRequest, 'url', {
         value: 'http://localhost:3000/api/folders?workspaceId=workspace-123',
       })
 
-      const { GET } = await import('@/app/api/folders/route')
-      const response = await GET(mockRequest)
+      const { get } = await import('@/app/api/folders/route')
+      const response = await get(mockRequest)
 
       expect(response.status).toBe(500)
 
@@ -211,7 +211,7 @@ describe('Folders API Route', () => {
     })
   })
 
-  describe('POST /api/folders', () => {
+  describe('post /api/folders', () => {
     it('should create a new folder successfully', async () => {
       mockAuthenticatedUser()
 
@@ -235,14 +235,14 @@ describe('Folders API Route', () => {
         return await callback(tx)
       })
 
-      const req = createMockRequest('POST', {
-        name: 'New Test Folder',
+      const req = createMockRequest('post', {
+        Name: 'New Test Folder',
         workspaceId: 'workspace-123',
         color: '#6B7280',
       })
 
-      const { POST } = await import('@/app/api/folders/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/folders/route')
+      const response = await post(req)
 
       expect(response.status).toBe(200)
 
@@ -250,7 +250,7 @@ describe('Folders API Route', () => {
       expect(data).toHaveProperty('folder')
       expect(data.folder).toMatchObject({
         id: 'folder-1',
-        name: 'Test Folder 1',
+        Name: 'Test Folder 1',
         workspaceId: 'workspace-123',
       })
     })
@@ -278,13 +278,13 @@ describe('Folders API Route', () => {
         return await callback(tx)
       })
 
-      const req = createMockRequest('POST', {
-        name: 'New Test Folder',
+      const req = createMockRequest('post', {
+        Name: 'New Test Folder',
         workspaceId: 'workspace-123',
       })
 
-      const { POST } = await import('@/app/api/folders/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/folders/route')
+      const response = await post(req)
 
       expect(response.status).toBe(200)
 
@@ -304,14 +304,14 @@ describe('Folders API Route', () => {
         })
       )
 
-      const req = createMockRequest('POST', {
-        name: 'Subfolder',
+      const req = createMockRequest('post', {
+        Name: 'Subfolder',
         workspaceId: 'workspace-123',
         parentId: 'folder-1',
       })
 
-      const { POST } = await import('@/app/api/folders/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/folders/route')
+      const response = await post(req)
 
       expect(response.status).toBe(200)
 
@@ -324,13 +324,13 @@ describe('Folders API Route', () => {
     it('should return 401 for unauthenticated requests', async () => {
       mockUnauthenticated()
 
-      const req = createMockRequest('POST', {
-        name: 'Test Folder',
+      const req = createMockRequest('post', {
+        Name: 'Test Folder',
         workspaceId: 'workspace-123',
       })
 
-      const { POST } = await import('@/app/api/folders/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/folders/route')
+      const response = await post(req)
 
       expect(response.status).toBe(401)
 
@@ -342,13 +342,13 @@ describe('Folders API Route', () => {
       mockAuthenticatedUser()
       mockGetUserEntityPermissions.mockResolvedValue('read') // Read-only permissions
 
-      const req = createMockRequest('POST', {
-        name: 'Test Folder',
+      const req = createMockRequest('post', {
+        Name: 'Test Folder',
         workspaceId: 'workspace-123',
       })
 
-      const { POST } = await import('@/app/api/folders/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/folders/route')
+      const response = await post(req)
 
       expect(response.status).toBe(403)
 
@@ -380,13 +380,13 @@ describe('Folders API Route', () => {
         return await callback(tx)
       })
 
-      const req = createMockRequest('POST', {
-        name: 'Test Folder',
+      const req = createMockRequest('post', {
+        Name: 'Test Folder',
         workspaceId: 'workspace-123',
       })
 
-      const { POST } = await import('@/app/api/folders/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/folders/route')
+      const response = await post(req)
 
       expect(response.status).toBe(200)
 
@@ -418,13 +418,13 @@ describe('Folders API Route', () => {
         return await callback(tx)
       })
 
-      const req = createMockRequest('POST', {
-        name: 'Test Folder',
+      const req = createMockRequest('post', {
+        Name: 'Test Folder',
         workspaceId: 'workspace-123',
       })
 
-      const { POST } = await import('@/app/api/folders/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/folders/route')
+      const response = await post(req)
 
       expect(response.status).toBe(200)
 
@@ -434,19 +434,19 @@ describe('Folders API Route', () => {
 
     it('should return 400 when required fields are missing', async () => {
       const testCases = [
-        { name: '', workspaceId: 'workspace-123' }, // Missing name
-        { name: 'Test Folder', workspaceId: '' }, // Missing workspaceId
-        { workspaceId: 'workspace-123' }, // Missing name entirely
-        { name: 'Test Folder' }, // Missing workspaceId entirely
+        { Name: '', workspaceId: 'workspace-123' }, // Missing Name
+        { Name: 'Test Folder', workspaceId: '' }, // Missing workspaceId
+        { workspaceId: 'workspace-123' }, // Missing Name entirely
+        { Name: 'Test Folder' }, // Missing workspaceId entirely
       ]
 
       for (const body of testCases) {
         mockAuthenticatedUser()
 
-        const req = createMockRequest('POST', body)
+        const req = createMockRequest('post', body)
 
-        const { POST } = await import('@/app/api/folders/route')
-        const response = await POST(req)
+        const { post } = await import('@/app/api/folders/route')
+        const response = await post(req)
 
         expect(response.status).toBe(400)
 
@@ -463,13 +463,13 @@ describe('Folders API Route', () => {
         throw new Error('Database transaction failed')
       })
 
-      const req = createMockRequest('POST', {
-        name: 'Test Folder',
+      const req = createMockRequest('post', {
+        Name: 'Test Folder',
         workspaceId: 'workspace-123',
       })
 
-      const { POST } = await import('@/app/api/folders/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/folders/route')
+      const response = await post(req)
 
       expect(response.status).toBe(500)
 
@@ -480,7 +480,7 @@ describe('Folders API Route', () => {
       })
     })
 
-    it('should trim folder name when creating', async () => {
+    it('should trim folder Name when creating', async () => {
       mockAuthenticatedUser()
 
       let capturedValues: CapturedFolderValues | null = null
@@ -508,16 +508,16 @@ describe('Folders API Route', () => {
         return await callback(tx)
       })
 
-      const req = createMockRequest('POST', {
-        name: '  Test Folder With Spaces  ',
+      const req = createMockRequest('post', {
+        Name: '  Test Folder With Spaces  ',
         workspaceId: 'workspace-123',
       })
 
-      const { POST } = await import('@/app/api/folders/route')
-      await POST(req)
+      const { post } = await import('@/app/api/folders/route')
+      await post(req)
 
       expect(capturedValues).not.toBeNull()
-      expect(capturedValues!.name).toBe('Test Folder With Spaces')
+      expect(capturedValues!.Name).toBe('Test Folder With Spaces')
     })
 
     it('should use default color when not provided', async () => {
@@ -548,13 +548,13 @@ describe('Folders API Route', () => {
         return await callback(tx)
       })
 
-      const req = createMockRequest('POST', {
-        name: 'Test Folder',
+      const req = createMockRequest('post', {
+        Name: 'Test Folder',
         workspaceId: 'workspace-123',
       })
 
-      const { POST } = await import('@/app/api/folders/route')
-      await POST(req)
+      const { post } = await import('@/app/api/folders/route')
+      await post(req)
 
       expect(capturedValues).not.toBeNull()
       expect(capturedValues!.color).toBe('#6B7280')

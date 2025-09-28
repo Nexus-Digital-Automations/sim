@@ -106,12 +106,12 @@ export const journeyConversion = {
    * Create a workflow template
    */
   async createTemplate(request: {
-    name: string
+    Name: string
     workflowId: string
     workspaceId: string
     description?: string
     parameters: Array<{
-      name: string
+      Name: string
       type: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'json'
       description: string
       defaultValue?: any
@@ -121,12 +121,12 @@ export const journeyConversion = {
     tags?: string[]
   }) {
     return templateService.createTemplate({
-      name: request.name,
+      Name: request.Name,
       workflow_id: request.workflowId,
       workspace_id: request.workspaceId,
       description: request.description,
       parameters: request.parameters.map((param, index) => ({
-        name: param.name,
+        Name: param.Name,
         type: param.type,
         description: param.description,
         default_value: param.defaultValue,

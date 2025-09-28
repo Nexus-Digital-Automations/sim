@@ -1,17 +1,17 @@
-import { HunterIOIcon } from '@/components/icons'
+import { hunterIoicon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { HunterResponse } from '@/tools/hunter/types'
 
 export const HunterBlock: BlockConfig<HunterResponse> = {
   type: 'hunter',
-  name: 'Hunter io',
+  Name: 'Hunter io',
   description: 'Find and verify professional email addresses',
   longDescription:
     'Integrate Hunter into the workflow. Can search domains, find email addresses, verify email addresses, discover companies, find companies, and count email addresses. Requires API Key.',
   docsLink: 'https://docs.sim.ai/tools/hunter',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: HunterIOIcon,
+  icon: hunterIoicon,
   subBlocks: [
     {
       id: 'operation',
@@ -35,7 +35,7 @@ export const HunterBlock: BlockConfig<HunterResponse> = {
       type: 'short-input',
       layout: 'full',
       required: true,
-      placeholder: 'Enter domain name (e.g., stripe.com)',
+      placeholder: 'Enter domain Name (e.g., stripe.com)',
       condition: { field: 'operation', value: 'hunter_domain_search' },
     },
     {
@@ -88,7 +88,7 @@ export const HunterBlock: BlockConfig<HunterResponse> = {
       type: 'short-input',
       layout: 'full',
       required: true,
-      placeholder: 'Enter domain name (e.g., stripe.com)',
+      placeholder: 'Enter domain Name (e.g., stripe.com)',
       condition: { field: 'operation', value: 'hunter_email_finder' },
     },
     {
@@ -97,7 +97,7 @@ export const HunterBlock: BlockConfig<HunterResponse> = {
       type: 'short-input',
       layout: 'full',
       required: true,
-      placeholder: 'Enter first name',
+      placeholder: 'Enter first Name',
       condition: { field: 'operation', value: 'hunter_email_finder' },
     },
     {
@@ -106,7 +106,7 @@ export const HunterBlock: BlockConfig<HunterResponse> = {
       type: 'short-input',
       layout: 'full',
       required: true,
-      placeholder: 'Enter last name',
+      placeholder: 'Enter last Name',
       condition: { field: 'operation', value: 'hunter_email_finder' },
     },
     {
@@ -114,7 +114,7 @@ export const HunterBlock: BlockConfig<HunterResponse> = {
       title: 'Company Name',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Enter company name',
+      placeholder: 'Enter company Name',
       condition: { field: 'operation', value: 'hunter_email_finder' },
     },
     // Email Verifier operation inputs
@@ -162,7 +162,7 @@ export const HunterBlock: BlockConfig<HunterResponse> = {
       title: 'Domain',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Enter domain name',
+      placeholder: 'Enter domain Name',
       condition: { field: 'operation', value: 'hunter_email_count' },
       required: true,
     },
@@ -171,7 +171,7 @@ export const HunterBlock: BlockConfig<HunterResponse> = {
       title: 'Company Name',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Enter company name',
+      placeholder: 'Enter company Name',
       condition: { field: 'operation', value: 'hunter_email_count' },
     },
     {
@@ -237,16 +237,16 @@ export const HunterBlock: BlockConfig<HunterResponse> = {
     operation: { type: 'string', description: 'Operation to perform' },
     apiKey: { type: 'string', description: 'Hunter.io API key' },
     // Domain Search & Email Count
-    domain: { type: 'string', description: 'Company domain name' },
+    domain: { type: 'string', description: 'Company domain Name' },
     limit: { type: 'number', description: 'Result limit' },
     offset: { type: 'number', description: 'Result offset' },
     type: { type: 'string', description: 'Email type filter' },
     seniority: { type: 'string', description: 'Seniority level filter' },
     department: { type: 'string', description: 'Department filter' },
     // Email Finder
-    first_name: { type: 'string', description: 'First name' },
-    last_name: { type: 'string', description: 'Last name' },
-    company: { type: 'string', description: 'Company name' },
+    first_name: { type: 'string', description: 'First Name' },
+    last_name: { type: 'string', description: 'Last Name' },
+    company: { type: 'string', description: 'Company Name' },
     // Email Verifier & Enrichment
     email: { type: 'string', description: 'Email address' },
     // Discover

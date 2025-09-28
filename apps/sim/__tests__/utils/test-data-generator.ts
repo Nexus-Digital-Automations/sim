@@ -28,7 +28,7 @@ export interface TestDataConfig {
 
 export interface TestScenario {
   id: string
-  name: string
+  Name: string
   description: string
   complexity: TestDataConfig['complexity']
   workflow: WorkflowState
@@ -169,7 +169,7 @@ export class ComprehensiveTestDataGenerator {
         { x: 100, y: 300 },
         {
           url: 'https://api.example.com/user-data',
-          method: 'GET',
+          method: 'get',
           headers: { Authorization: `Bearer ${token}` },
         }
       ),
@@ -184,12 +184,12 @@ export class ComprehensiveTestDataGenerator {
 
     return {
       id: 'linear-workflow-basic',
-      name: 'Linear Workflow - Basic Flow',
+      Name: 'Linear Workflow - Basic Flow',
       description: 'Simple linear progression through starter, agent, API call, and end',
       complexity: 'simple',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: 'Linear Workflow Journey',
+        Name: 'Linear Workflow Journey',
         description: 'Generated journey for linear workflow testing',
       },
       validationRules: [
@@ -272,12 +272,12 @@ export class ComprehensiveTestDataGenerator {
 
     return {
       id: 'simple-branching-workflow',
-      name: 'Simple Branching - User Type Routing',
+      Name: 'Simple Branching - User Type Routing',
       description: 'Workflow with conditional branching based on user type',
       complexity: 'medium',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: 'Branching Workflow Journey',
+        Name: 'Branching Workflow Journey',
         description: 'Journey with conditional state transitions',
       },
       validationRules: [
@@ -344,12 +344,12 @@ export class ComprehensiveTestDataGenerator {
 
     return {
       id: 'basic-loop-workflow',
-      name: 'Basic Loop - Question Iteration',
+      Name: 'Basic Loop - Question Iteration',
       description: 'Workflow with simple loop for repeated interactions',
       complexity: 'medium',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: 'Loop Workflow Journey',
+        Name: 'Loop Workflow Journey',
         description: 'Journey with loop-back transitions',
       },
       validationRules: [
@@ -400,7 +400,7 @@ export class ComprehensiveTestDataGenerator {
           { x: 300, y: branchY },
           {
             url: `https://api.example.com/branch-${branch}/data`,
-            method: 'GET',
+            method: 'get',
           }
         ),
         this.createDecisionNode(`branch-${branch}-decision`, `Branch ${branch} - Decision`, {
@@ -423,7 +423,7 @@ export class ComprehensiveTestDataGenerator {
         { x: 700, y: 250 },
         {
           url: 'https://api.example.com/save-results',
-          method: 'POST',
+          method: 'post',
         }
       ),
       this.createEndNode('end-1', 'Large Workflow Complete', { x: 800, y: 250 })
@@ -460,12 +460,12 @@ export class ComprehensiveTestDataGenerator {
 
     return {
       id: 'large-scale-workflow',
-      name: 'Large Scale - Complex Multi-Branch',
+      Name: 'Large Scale - Complex Multi-Branch',
       description: 'Large workflow with parallel processing and convergence',
       complexity: 'extreme',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: 'Large Scale Journey',
+        Name: 'Large Scale Journey',
         description: 'Complex journey with parallel state execution',
       },
       validationRules: [
@@ -502,12 +502,12 @@ export class ComprehensiveTestDataGenerator {
   private createEmptyWorkflowScenario(): TestScenario {
     return {
       id: 'empty-workflow-edge-case',
-      name: 'Empty Workflow - Edge Case',
+      Name: 'Empty Workflow - Edge Case',
       description: 'Workflow with no nodes or edges to test error handling',
       complexity: 'simple',
       workflow: { nodes: [], edges: [] },
       expectedJourney: {
-        name: 'Empty Journey',
+        Name: 'Empty Journey',
         description: 'Should handle empty workflow gracefully',
       },
       validationRules: [
@@ -535,7 +535,7 @@ export class ComprehensiveTestDataGenerator {
 
   private createStarterNode(
     id: string,
-    name: string,
+    Name: string,
     position: { x: number; y: number },
     data?: any
   ): ReactFlowNode {
@@ -544,9 +544,9 @@ export class ComprehensiveTestDataGenerator {
       type: 'starter',
       position,
       data: {
-        name,
+        Name,
         type: 'starter',
-        description: `Starter node for ${name}`,
+        description: `Starter node for ${Name}`,
         ...data,
       },
     }
@@ -554,7 +554,7 @@ export class ComprehensiveTestDataGenerator {
 
   private createAgentNode(
     id: string,
-    name: string,
+    Name: string,
     position: { x: number; y: number },
     config: any
   ): ReactFlowNode {
@@ -563,9 +563,9 @@ export class ComprehensiveTestDataGenerator {
       type: 'agent',
       position,
       data: {
-        name,
+        Name,
         type: 'agent',
-        description: `AI agent: ${name}`,
+        description: `AI agent: ${Name}`,
         ...config,
       },
     }
@@ -573,7 +573,7 @@ export class ComprehensiveTestDataGenerator {
 
   private createApiNode(
     id: string,
-    name: string,
+    Name: string,
     position: { x: number; y: number },
     config: any
   ): ReactFlowNode {
@@ -582,9 +582,9 @@ export class ComprehensiveTestDataGenerator {
       type: 'api',
       position,
       data: {
-        name,
+        Name,
         type: 'api',
-        description: `API call: ${name}`,
+        description: `API call: ${Name}`,
         ...config,
       },
     }
@@ -592,7 +592,7 @@ export class ComprehensiveTestDataGenerator {
 
   private createDecisionNode(
     id: string,
-    name: string,
+    Name: string,
     position: { x: number; y: number },
     config: any
   ): ReactFlowNode {
@@ -601,9 +601,9 @@ export class ComprehensiveTestDataGenerator {
       type: 'decision',
       position,
       data: {
-        name,
+        Name,
         type: 'decision',
-        description: `Decision point: ${name}`,
+        description: `Decision point: ${Name}`,
         ...config,
       },
     }
@@ -611,7 +611,7 @@ export class ComprehensiveTestDataGenerator {
 
   private createEndNode(
     id: string,
-    name: string,
+    Name: string,
     position: { x: number; y: number },
     data?: any
   ): ReactFlowNode {
@@ -620,9 +620,9 @@ export class ComprehensiveTestDataGenerator {
       type: 'end',
       position,
       data: {
-        name,
+        Name,
         type: 'end',
-        description: `End point: ${name}`,
+        description: `End point: ${Name}`,
         ...data,
       },
     }
@@ -669,7 +669,7 @@ export class ComprehensiveTestDataGenerator {
 
     // Validate basic structure
     if (!scenario.id) errors.push('Scenario missing ID')
-    if (!scenario.name) errors.push('Scenario missing name')
+    if (!scenario.Name) errors.push('Scenario missing Name')
     if (!scenario.workflow) errors.push('Scenario missing workflow')
     if (!scenario.workflow.nodes) errors.push('Workflow missing nodes array')
     if (!scenario.workflow.edges) errors.push('Workflow missing edges array')
@@ -882,7 +882,7 @@ export class PerformanceTestDataGenerator {
         type: nodeType,
         position: { x: i * 100, y: 100 },
         data: {
-          name: `Load Test Node ${i}`,
+          Name: `Load Test Node ${i}`,
           type: nodeType,
           description: `Generated node for load testing - ${i}/${nodeCount}`,
         },
@@ -900,12 +900,12 @@ export class PerformanceTestDataGenerator {
 
     return {
       id: `load-test-${nodeCount}-nodes`,
-      name: `Load Test - ${nodeCount} Nodes`,
+      Name: `Load Test - ${nodeCount} Nodes`,
       description: `Linear workflow with ${nodeCount} nodes for load testing`,
       complexity: nodeCount < 25 ? 'simple' : nodeCount < 100 ? 'medium' : 'extreme',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: `Load Test Journey - ${nodeCount} nodes`,
+        Name: `Load Test Journey - ${nodeCount} nodes`,
         description: `Performance test journey with ${nodeCount} states`,
       },
       validationRules: [
@@ -945,7 +945,7 @@ export class PerformanceTestDataGenerator {
       id: 'stress-root',
       type: 'starter',
       position: { x: 500, y: 100 },
-      data: { name: 'Stress Test Root', type: 'starter' },
+      data: { Name: 'Stress Test Root', type: 'starter' },
     })
 
     // Create many branches
@@ -959,7 +959,7 @@ export class PerformanceTestDataGenerator {
         type: 'agent',
         position: { x: Math.round(x), y: Math.round(y) },
         data: {
-          name: `Stress Branch ${i}`,
+          Name: `Stress Branch ${i}`,
           type: 'agent',
           prompt: `Processing branch ${i} of ${branchCount}`,
         },
@@ -978,7 +978,7 @@ export class PerformanceTestDataGenerator {
       id: 'stress-end',
       type: 'end',
       position: { x: 500, y: 500 },
-      data: { name: 'Stress Test End', type: 'end' },
+      data: { Name: 'Stress Test End', type: 'end' },
     })
 
     for (let i = 0; i < branchCount; i++) {
@@ -992,12 +992,12 @@ export class PerformanceTestDataGenerator {
 
     return {
       id: 'stress-high-branching',
-      name: 'Stress Test - High Branching Factor',
+      Name: 'Stress Test - High Branching Factor',
       description: `Workflow with ${branchCount} parallel branches`,
       complexity: 'extreme',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: 'High Branching Stress Journey',
+        Name: 'High Branching Stress Journey',
         description: 'Journey with many parallel states',
       },
       validationRules: [
@@ -1032,7 +1032,7 @@ export class PerformanceTestDataGenerator {
         type: nodeType,
         position: { x: 100, y: i * 50 + 100 },
         data: {
-          name: `Deep Node ${i}`,
+          Name: `Deep Node ${i}`,
           type: nodeType,
           description: `Depth level ${i}/${depth}`,
         },
@@ -1050,12 +1050,12 @@ export class PerformanceTestDataGenerator {
 
     return {
       id: 'stress-deep-nesting',
-      name: 'Stress Test - Deep Nesting',
+      Name: 'Stress Test - Deep Nesting',
       description: `Linear workflow with ${depth} levels of depth`,
       complexity: 'extreme',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: 'Deep Nesting Stress Journey',
+        Name: 'Deep Nesting Stress Journey',
         description: 'Journey with maximum depth',
       },
       validationRules: [
@@ -1087,12 +1087,12 @@ export class PerformanceTestDataGenerator {
 
     return {
       id: 'stress-maximum-complexity',
-      name: 'Stress Test - Maximum Complexity',
+      Name: 'Stress Test - Maximum Complexity',
       description: 'Ultimate stress test combining all complexity factors',
       complexity: 'extreme',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: 'Maximum Complexity Journey',
+        Name: 'Maximum Complexity Journey',
         description: 'Ultimate stress test journey',
       },
       validationRules: [],
@@ -1120,7 +1120,7 @@ export class PerformanceTestDataGenerator {
     const largeData = {
       users: Array.from({ length: 1000 }, (_, i) => ({
         id: i,
-        name: `User ${i}`,
+        Name: `User ${i}`,
         email: `user${i}@example.com`,
         data: Array.from({ length: 100 }, (_, j) => `data-${i}-${j}`),
       })),
@@ -1132,7 +1132,7 @@ export class PerformanceTestDataGenerator {
         type: 'starter',
         position: { x: 100, y: 100 },
         data: {
-          name: 'Memory Test Start',
+          Name: 'Memory Test Start',
           type: 'starter',
           payload: largeData,
         },
@@ -1142,7 +1142,7 @@ export class PerformanceTestDataGenerator {
         type: 'agent',
         position: { x: 100, y: 200 },
         data: {
-          name: 'Memory Processing Agent',
+          Name: 'Memory Processing Agent',
           type: 'agent',
           prompt: 'Process large dataset',
           context: largeData,
@@ -1152,7 +1152,7 @@ export class PerformanceTestDataGenerator {
         id: 'memory-end',
         type: 'end',
         position: { x: 100, y: 300 },
-        data: { name: 'Memory Test End', type: 'end' },
+        data: { Name: 'Memory Test End', type: 'end' },
       },
     ]
 
@@ -1163,12 +1163,12 @@ export class PerformanceTestDataGenerator {
 
     return {
       id: 'memory-large-payload',
-      name: 'Memory Test - Large Data Payload',
+      Name: 'Memory Test - Large Data Payload',
       description: 'Test memory handling with large data structures',
       complexity: 'complex',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: 'Memory Test Journey',
+        Name: 'Memory Test Journey',
         description: 'Journey with large data payloads',
       },
       validationRules: [
@@ -1208,7 +1208,7 @@ export class PerformanceTestDataGenerator {
         type: 'starter',
         position: { x: 100, y: 100 },
         data: {
-          name: 'Variables Test Start',
+          Name: 'Variables Test Start',
           type: 'starter',
           variables,
         },
@@ -1217,7 +1217,7 @@ export class PerformanceTestDataGenerator {
         id: 'vars-end',
         type: 'end',
         position: { x: 100, y: 200 },
-        data: { name: 'Variables Test End', type: 'end' },
+        data: { Name: 'Variables Test End', type: 'end' },
       },
     ]
 
@@ -1227,12 +1227,12 @@ export class PerformanceTestDataGenerator {
 
     return {
       id: 'memory-many-variables',
-      name: 'Memory Test - Many Variables',
+      Name: 'Memory Test - Many Variables',
       description: 'Test memory handling with many variables',
       complexity: 'complex',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: 'Many Variables Journey',
+        Name: 'Many Variables Journey',
         description: 'Journey with many state variables',
       },
       validationRules: [
@@ -1266,14 +1266,14 @@ export class PerformanceTestDataGenerator {
         id: 'conditions-start',
         type: 'starter',
         position: { x: 100, y: 100 },
-        data: { name: 'Complex Conditions Start', type: 'starter' },
+        data: { Name: 'Complex Conditions Start', type: 'starter' },
       },
       {
         id: 'conditions-decision',
         type: 'decision',
         position: { x: 100, y: 200 },
         data: {
-          name: 'Complex Decision',
+          Name: 'Complex Decision',
           type: 'decision',
           conditions: complexConditions.map((condition, i) => ({
             condition,
@@ -1285,7 +1285,7 @@ export class PerformanceTestDataGenerator {
         id: 'conditions-end',
         type: 'end',
         position: { x: 100, y: 300 },
-        data: { name: 'Complex Conditions End', type: 'end' },
+        data: { Name: 'Complex Conditions End', type: 'end' },
       },
     ]
 
@@ -1307,12 +1307,12 @@ export class PerformanceTestDataGenerator {
 
     return {
       id: 'memory-complex-conditions',
-      name: 'Memory Test - Complex Conditions',
+      Name: 'Memory Test - Complex Conditions',
       description: 'Test memory handling with complex conditional logic',
       complexity: 'complex',
       workflow: { nodes, edges },
       expectedJourney: {
-        name: 'Complex Conditions Journey',
+        Name: 'Complex Conditions Journey',
         description: 'Journey with complex conditional transitions',
       },
       validationRules: [

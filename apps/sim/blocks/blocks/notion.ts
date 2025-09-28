@@ -1,17 +1,17 @@
-import { NotionIcon } from '@/components/icons'
+import { notionIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { NotionResponse } from '@/tools/notion/types'
 
 export const NotionBlock: BlockConfig<NotionResponse> = {
   type: 'notion',
-  name: 'Notion',
+  Name: 'Notion',
   description: 'Manage Notion pages',
   longDescription:
     'Integrate with Notion into the workflow. Can read page, read database, create page, create database, append content, query database, and search workspace. Requires OAuth.',
   docsLink: 'https://docs.sim.ai/tools/notion',
   category: 'tools',
   bgColor: '#181C1E',
-  icon: NotionIcon,
+  icon: notionIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -36,7 +36,7 @@ export const NotionBlock: BlockConfig<NotionResponse> = {
       layout: 'full',
       provider: 'notion',
       serviceId: 'notion',
-      requiredScopes: ['workspace.content', 'workspace.name', 'page.read', 'page.write'],
+      requiredScopes: ['workspace.content', 'workspace.Name', 'page.read', 'page.write'],
       placeholder: 'Select Notion account',
       required: true,
     },

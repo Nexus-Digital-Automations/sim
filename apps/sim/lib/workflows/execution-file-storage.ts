@@ -123,7 +123,7 @@ export async function uploadExecutionFile(
 
     const userFile: UserFile = {
       id: fileId,
-      name: fileName,
+      Name: fileName,
       size: fileBuffer.length,
       type: contentType,
       url: directUrl || `/api/files/serve/${fileInfo.key}`, // Use 5-minute presigned URL, fallback to serve path
@@ -146,7 +146,7 @@ export async function uploadExecutionFile(
  * Download a file from execution-scoped storage
  */
 export async function downloadExecutionFile(userFile: UserFile): Promise<Buffer> {
-  logger.info(`Downloading execution file: ${userFile.name}`)
+  logger.info(`Downloading execution file: ${userFile.Name}`)
 
   try {
     let fileBuffer: Buffer
@@ -168,11 +168,11 @@ export async function downloadExecutionFile(userFile: UserFile): Promise<Buffer>
     }
 
     logger.info(
-      `Successfully downloaded execution file: ${userFile.name} (${fileBuffer.length} bytes)`
+      `Successfully downloaded execution file: ${userFile.Name} (${fileBuffer.length} bytes)`
     )
     return fileBuffer
   } catch (error) {
-    logger.error(`Failed to download execution file ${userFile.name}:`, error)
+    logger.error(`Failed to download execution file ${userFile.Name}:`, error)
     throw new Error(
       `Failed to download file: ${error instanceof Error ? error.message : 'Unknown error'}`
     )
@@ -183,7 +183,7 @@ export async function downloadExecutionFile(userFile: UserFile): Promise<Buffer>
  * Generate a short-lived presigned URL for file download (5 minutes)
  */
 export async function generateExecutionFileDownloadUrl(userFile: UserFile): Promise<string> {
-  logger.info(`Generating download URL for execution file: ${userFile.name}`)
+  logger.info(`Generating download URL for execution file: ${userFile.Name}`)
   logger.info(`File key: "${userFile.key}"`)
   logger.info(`S3 bucket: ${S3_EXECUTION_FILES_CONFIG.bucket}`)
 
@@ -214,10 +214,10 @@ export async function generateExecutionFileDownloadUrl(userFile: UserFile): Prom
       throw new Error('No cloud storage configured for execution files')
     }
 
-    logger.info(`Generated download URL for execution file: ${userFile.name}`)
+    logger.info(`Generated download URL for execution file: ${userFile.Name}`)
     return downloadUrl
   } catch (error) {
-    logger.error(`Failed to generate download URL for ${userFile.name}:`, error)
+    logger.error(`Failed to generate download URL for ${userFile.Name}:`, error)
     throw new Error(
       `Failed to generate download URL: ${error instanceof Error ? error.message : 'Unknown error'}`
     )
@@ -228,7 +228,7 @@ export async function generateExecutionFileDownloadUrl(userFile: UserFile): Prom
  * Delete a file from execution-scoped storage
  */
 export async function deleteExecutionFile(userFile: UserFile): Promise<void> {
-  logger.info(`Deleting execution file: ${userFile.name}`)
+  logger.info(`Deleting execution file: ${userFile.Name}`)
 
   try {
     if (USE_S3_STORAGE) {
@@ -247,9 +247,9 @@ export async function deleteExecutionFile(userFile: UserFile): Promise<void> {
       throw new Error('No cloud storage configured for execution files')
     }
 
-    logger.info(`Successfully deleted execution file: ${userFile.name}`)
+    logger.info(`Successfully deleted execution file: ${userFile.Name}`)
   } catch (error) {
-    logger.error(`Failed to delete execution file ${userFile.name}:`, error)
+    logger.error(`Failed to delete execution file ${userFile.Name}:`, error)
     throw new Error(
       `Failed to delete file: ${error instanceof Error ? error.message : 'Unknown error'}`
     )

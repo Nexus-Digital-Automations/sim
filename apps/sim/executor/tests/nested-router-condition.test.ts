@@ -17,7 +17,7 @@ describe('Nested Routing Fix - Router → Condition → Target', () => {
         {
           id: 'starter',
           position: { x: 0, y: 0 },
-          metadata: { id: BlockType.STARTER, name: 'Start' },
+          metadata: { id: BlockType.STARTER, Name: 'Start' },
           config: { tool: BlockType.STARTER, params: {} },
           inputs: {},
           outputs: {},
@@ -26,7 +26,7 @@ describe('Nested Routing Fix - Router → Condition → Target', () => {
         {
           id: 'router-1',
           position: { x: 100, y: 0 },
-          metadata: { id: BlockType.ROUTER, name: 'Router 1' },
+          metadata: { id: BlockType.ROUTER, Name: 'Router 1' },
           config: { tool: BlockType.ROUTER, params: {} },
           inputs: {},
           outputs: {},
@@ -35,7 +35,7 @@ describe('Nested Routing Fix - Router → Condition → Target', () => {
         {
           id: 'function-2',
           position: { x: 200, y: -100 },
-          metadata: { id: BlockType.FUNCTION, name: 'Function 2' },
+          metadata: { id: BlockType.FUNCTION, Name: 'Function 2' },
           config: { tool: BlockType.FUNCTION, params: {} },
           inputs: {},
           outputs: {},
@@ -44,7 +44,7 @@ describe('Nested Routing Fix - Router → Condition → Target', () => {
         {
           id: 'condition-1',
           position: { x: 200, y: 100 },
-          metadata: { id: BlockType.CONDITION, name: 'Condition 1' },
+          metadata: { id: BlockType.CONDITION, Name: 'Condition 1' },
           config: { tool: BlockType.CONDITION, params: {} },
           inputs: {},
           outputs: {},
@@ -53,7 +53,7 @@ describe('Nested Routing Fix - Router → Condition → Target', () => {
         {
           id: 'function-4',
           position: { x: 350, y: 50 },
-          metadata: { id: BlockType.FUNCTION, name: 'Function 4' },
+          metadata: { id: BlockType.FUNCTION, Name: 'Function 4' },
           config: { tool: BlockType.FUNCTION, params: {} },
           inputs: {},
           outputs: {},
@@ -62,7 +62,7 @@ describe('Nested Routing Fix - Router → Condition → Target', () => {
         {
           id: 'parallel-block',
           position: { x: 350, y: 150 },
-          metadata: { id: BlockType.PARALLEL, name: 'Parallel Block' },
+          metadata: { id: BlockType.PARALLEL, Name: 'Parallel Block' },
           config: { tool: BlockType.PARALLEL, params: {} },
           inputs: {},
           outputs: {},
@@ -71,7 +71,7 @@ describe('Nested Routing Fix - Router → Condition → Target', () => {
         {
           id: 'agent-inside-parallel',
           position: { x: 450, y: 150 },
-          metadata: { id: BlockType.AGENT, name: 'Agent Inside Parallel' },
+          metadata: { id: BlockType.AGENT, Name: 'Agent Inside Parallel' },
           config: { tool: BlockType.AGENT, params: {} },
           inputs: {},
           outputs: {},

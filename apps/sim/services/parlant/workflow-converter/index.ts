@@ -97,7 +97,7 @@ export async function convertWorkflowToJourney(
 ): Promise<ConversionResult> {
   logger.info('Converting workflow to journey', {
     workflowId: workflow.id,
-    workflowName: workflow.name,
+    workflowName: workflow.Name,
   })
 
   const engine = createWorkflowConverter()

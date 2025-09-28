@@ -34,7 +34,7 @@ export function PlanWelcomeEmail({
   const baseUrl = env.NEXT_PUBLIC_APP_URL || 'https://sim.ai'
   const cta = loginLink || `${baseUrl}/login`
 
-  const previewText = `${brand.name}: Your ${planName} plan is active`
+  const previewText = `${brand.Name}: Your ${planName} plan is active`
 
   return (
     <Html>
@@ -48,7 +48,7 @@ export function PlanWelcomeEmail({
                 <Img
                   src={brand.logoUrl || `${baseUrl}/logo/reverse/text/medium.png`}
                   width='114'
-                  alt={brand.name}
+                  alt={brand.Name}
                   style={{
                     margin: '0 auto',
                   }}
@@ -70,12 +70,12 @@ export function PlanWelcomeEmail({
               {userName ? `Hi ${userName},` : 'Hi,'}
             </Text>
             <Text style={baseStyles.paragraph}>
-              Welcome to the <strong>{planName}</strong> plan on {brand.name}. You're all set to
+              Welcome to the <strong>{planName}</strong> plan on {brand.Name}. You're all set to
               build, test, and scale your agentic workflows.
             </Text>
 
             <Link href={cta} style={{ textDecoration: 'none' }}>
-              <Text style={baseStyles.button}>Open {brand.name}</Text>
+              <Text style={baseStyles.button}>Open {brand.Name}</Text>
             </Link>
 
             <Text style={baseStyles.paragraph}>

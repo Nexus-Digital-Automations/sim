@@ -61,7 +61,7 @@ export interface AgentKnowledgeProfile {
   agentId: string
   knowledgeBases: Array<{
     id: string
-    name: string
+    Name: string
     priority: number
     specializationTags: string[]
   }>
@@ -253,7 +253,7 @@ export class KnowledgeRAGIntegrationService {
         agentId,
         knowledgeBases: knowledgeBases.map((kb) => ({
           id: kb.id,
-          name: kb.name,
+          Name: kb.Name,
           priority: 1,
           specializationTags: [],
         })),
@@ -294,7 +294,7 @@ export class KnowledgeRAGIntegrationService {
   ): Promise<FileUploadResult> {
     try {
       logger.info('Processing knowledge file upload', {
-        fileName: request.file.name,
+        fileName: request.file.Name,
         knowledgeBaseId: request.knowledgeBaseId,
         hasAgentContext: !!request.agentContext,
       })
@@ -658,7 +658,7 @@ export const ragOperations = {
    * Upload and process multiple files
    */
   async bulkUpload(
-    files: Array<{ name: string; content: string | Buffer; mimeType: string; size: number }>,
+    files: Array<{ Name: string; content: string | Buffer; mimeType: string; size: number }>,
     knowledgeBaseId: string,
     auth: AuthContext
   ): Promise<BatchUploadResult> {

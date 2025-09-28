@@ -40,7 +40,7 @@ export interface TransformedResponse {
 
 export interface ProviderConfig {
   id: string
-  name: string
+  Name: string
   description: string
   version: string
   models: string[]
@@ -52,7 +52,7 @@ export interface ProviderConfig {
 }
 
 export interface FunctionCallResponse {
-  name: string
+  Name: string
   arguments: Record<string, any>
   startTime?: string
   endTime?: string
@@ -64,7 +64,7 @@ export interface FunctionCallResponse {
 
 export interface TimeSegment {
   type: 'model' | 'tool'
-  name: string
+  Name: string
   startTime: number
   endTime: number
   duration: number
@@ -102,7 +102,7 @@ export type ToolUsageControl = 'auto' | 'force' | 'none'
 
 export interface ProviderToolConfig {
   id: string
-  name: string
+  Name: string
   description: string
   params: Record<string, any>
   parameters: {
@@ -116,16 +116,16 @@ export interface ProviderToolConfig {
 export interface Message {
   role: 'system' | 'user' | 'assistant' | 'function' | 'tool'
   content: string | null
-  name?: string
+  Name?: string
   function_call?: {
-    name: string
+    Name: string
     arguments: string
   }
   tool_calls?: Array<{
     id: string
     type: 'function'
     function: {
-      name: string
+      Name: string
       arguments: string
     }
   }>
@@ -142,7 +142,7 @@ export interface ProviderRequest {
   apiKey: string
   messages?: Message[]
   responseFormat?: {
-    name: string
+    Name: string
     schema: any
     strict?: boolean
   }
@@ -154,9 +154,9 @@ export interface ProviderRequest {
   stream?: boolean
   streamToolCalls?: boolean // Whether to stream tool call responses back to user (default: false)
   environmentVariables?: Record<string, string> // Environment variables for tool execution
-  workflowVariables?: Record<string, any> // Workflow variables for <variable.name> resolution
+  workflowVariables?: Record<string, any> // Workflow variables for <variable.Name> resolution
   blockData?: Record<string, any> // Runtime block outputs for <block.field> resolution in custom tools
-  blockNameMapping?: Record<string, string> // Mapping of block names to IDs for resolution
+  blockNameMapping?: Record<string, string> // Mapping of block NAMES to IDs for resolution
   isCopilotRequest?: boolean // Flag to indicate this request is from the copilot system
   // Azure OpenAI specific parameters
   azureEndpoint?: string

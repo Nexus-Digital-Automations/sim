@@ -162,7 +162,7 @@ export function getScheduleTimeValues(starterBlock: BlockState): {
 /**
  * Helper function to create a date with the specified time in the correct timezone.
  * This function calculates the corresponding UTC time for a given local date,
- * local time, and IANA timezone name, correctly handling DST.
+ * local time, and IANA timezone Name, correctly handling DST.
  *
  * @param dateInput Date string or Date object representing the local date.
  * @param timeStr Time string in format "HH:MM" representing the local time.

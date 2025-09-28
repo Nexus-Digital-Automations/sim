@@ -79,21 +79,21 @@ function validateProviderId(value: string | undefined): ProviderId | null {
   return VALID_PROVIDER_IDS.includes(value as ProviderId) ? (value as ProviderId) : null
 }
 
-function parseFloatEnv(value: string | undefined, name: string): number | null {
+function parseFloatEnv(value: string | undefined, Name: string): number | null {
   if (!value) return null
   const parsed = Number.parseFloat(value)
   if (Number.isNaN(parsed)) {
-    logger.warn(`Invalid ${name}: ${value}. Expected a valid number.`)
+    logger.warn(`Invalid ${Name}: ${value}. Expected a valid number.`)
     return null
   }
   return parsed
 }
 
-function parseIntEnv(value: string | undefined, name: string): number | null {
+function parseIntEnv(value: string | undefined, Name: string): number | null {
   if (!value) return null
   const parsed = Number.parseInt(value, 10)
   if (Number.isNaN(parsed)) {
-    logger.warn(`Invalid ${name}: ${value}. Expected a valid integer.`)
+    logger.warn(`Invalid ${Name}: ${value}. Expected a valid integer.`)
     return null
   }
   return parsed
@@ -254,10 +254,10 @@ export function getCopilotModel(type: CopilotModelType): {
 function validateNumericValue(
   value: number,
   constraint: { min: number; max: number },
-  name: string
+  Name: string
 ): string | null {
   if (value < constraint.min || value > constraint.max) {
-    return `${name} must be between ${constraint.min} and ${constraint.max}`
+    return `${Name} must be between ${constraint.min} and ${constraint.max}`
   }
   return null
 }
@@ -287,42 +287,42 @@ export function validateCopilotConfig(config: CopilotConfig): ValidationResult {
     {
       value: config.chat.temperature,
       constraint: VALIDATION_CONSTRAINTS.temperature,
-      name: 'Chat temperature',
+      Name: 'Chat temperature',
     },
     {
       value: config.rag.temperature,
       constraint: VALIDATION_CONSTRAINTS.temperature,
-      name: 'RAG temperature',
+      Name: 'RAG temperature',
     },
     {
       value: config.chat.maxTokens,
       constraint: VALIDATION_CONSTRAINTS.maxTokens,
-      name: 'Chat maxTokens',
+      Name: 'Chat maxTokens',
     },
     {
       value: config.rag.maxTokens,
       constraint: VALIDATION_CONSTRAINTS.maxTokens,
-      name: 'RAG maxTokens',
+      Name: 'RAG maxTokens',
     },
     {
       value: config.rag.maxSources,
       constraint: VALIDATION_CONSTRAINTS.maxSources,
-      name: 'RAG maxSources',
+      Name: 'RAG maxSources',
     },
     {
       value: config.rag.similarityThreshold,
       constraint: VALIDATION_CONSTRAINTS.similarityThreshold,
-      name: 'RAG similarityThreshold',
+      Name: 'RAG similarityThreshold',
     },
     {
       value: config.general.maxConversationHistory,
       constraint: VALIDATION_CONSTRAINTS.maxConversationHistory,
-      name: 'General maxConversationHistory',
+      Name: 'General maxConversationHistory',
     },
   ]
 
   for (const check of validationChecks) {
-    const error = validateNumericValue(check.value, check.constraint, check.name)
+    const error = validateNumericValue(check.value, check.constraint, check.Name)
     if (error) {
       errors.push(error)
     }

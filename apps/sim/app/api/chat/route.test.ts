@@ -82,15 +82,15 @@ describe('Chat API Route', () => {
     vi.clearAllMocks()
   })
 
-  describe('GET', () => {
+  describe('get', () => {
     it('should return 401 when user is not authenticated', async () => {
       vi.doMock('@/lib/auth', () => ({
         getSession: vi.fn().mockResolvedValue(null),
       }))
 
       const req = new NextRequest('http://localhost:3000/api/chat')
-      const { GET } = await import('@/app/api/chat/route')
-      const response = await GET(req)
+      const { get } = await import('@/app/api/chat/route')
+      const response = await get(req)
 
       expect(response.status).toBe(401)
       expect(mockCreateErrorResponse).toHaveBeenCalledWith('Unauthorized', 401)
@@ -107,8 +107,8 @@ describe('Chat API Route', () => {
       mockWhere.mockResolvedValue(mockDeployments)
 
       const req = new NextRequest('http://localhost:3000/api/chat')
-      const { GET } = await import('@/app/api/chat/route')
-      const response = await GET(req)
+      const { get } = await import('@/app/api/chat/route')
+      const response = await get(req)
 
       expect(response.status).toBe(200)
       expect(mockCreateSuccessResponse).toHaveBeenCalledWith({ deployments: mockDeployments })
@@ -125,26 +125,26 @@ describe('Chat API Route', () => {
       mockWhere.mockRejectedValue(new Error('Database error'))
 
       const req = new NextRequest('http://localhost:3000/api/chat')
-      const { GET } = await import('@/app/api/chat/route')
-      const response = await GET(req)
+      const { get } = await import('@/app/api/chat/route')
+      const response = await get(req)
 
       expect(response.status).toBe(500)
       expect(mockCreateErrorResponse).toHaveBeenCalledWith('Database error', 500)
     })
   })
 
-  describe('POST', () => {
+  describe('post', () => {
     it('should return 401 when user is not authenticated', async () => {
       vi.doMock('@/lib/auth', () => ({
         getSession: vi.fn().mockResolvedValue(null),
       }))
 
       const req = new NextRequest('http://localhost:3000/api/chat', {
-        method: 'POST',
+        method: 'post',
         body: JSON.stringify({}),
       })
-      const { POST } = await import('@/app/api/chat/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/chat/route')
+      const response = await post(req)
 
       expect(response.status).toBe(401)
       expect(mockCreateErrorResponse).toHaveBeenCalledWith('Unauthorized', 401)
@@ -160,11 +160,11 @@ describe('Chat API Route', () => {
       const invalidData = { title: 'Test Chat' } // Missing required fields
 
       const req = new NextRequest('http://localhost:3000/api/chat', {
-        method: 'POST',
+        method: 'post',
         body: JSON.stringify(invalidData),
       })
-      const { POST } = await import('@/app/api/chat/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/chat/route')
+      const response = await post(req)
 
       expect(response.status).toBe(400)
     })
@@ -189,11 +189,11 @@ describe('Chat API Route', () => {
       mockLimit.mockResolvedValueOnce([{ id: 'existing-chat' }]) // Subdomain exists
 
       const req = new NextRequest('http://localhost:3000/api/chat', {
-        method: 'POST',
+        method: 'post',
         body: JSON.stringify(validData),
       })
-      const { POST } = await import('@/app/api/chat/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/chat/route')
+      const response = await post(req)
 
       expect(response.status).toBe(400)
       expect(mockCreateErrorResponse).toHaveBeenCalledWith('Subdomain already in use', 400)
@@ -220,11 +220,11 @@ describe('Chat API Route', () => {
       mockCheckWorkflowAccessForChatCreation.mockResolvedValue({ hasAccess: false })
 
       const req = new NextRequest('http://localhost:3000/api/chat', {
-        method: 'POST',
+        method: 'post',
         body: JSON.stringify(validData),
       })
-      const { POST } = await import('@/app/api/chat/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/chat/route')
+      const response = await post(req)
 
       expect(response.status).toBe(404)
       expect(mockCreateErrorResponse).toHaveBeenCalledWith(
@@ -270,11 +270,11 @@ describe('Chat API Route', () => {
       mockReturning.mockResolvedValue([{ id: 'test-uuid' }])
 
       const req = new NextRequest('http://localhost:3000/api/chat', {
-        method: 'POST',
+        method: 'post',
         body: JSON.stringify(validData),
       })
-      const { POST } = await import('@/app/api/chat/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/chat/route')
+      const response = await post(req)
 
       expect(response.status).toBe(200)
       expect(mockCheckWorkflowAccessForChatCreation).toHaveBeenCalledWith('workflow-123', 'user-id')
@@ -315,11 +315,11 @@ describe('Chat API Route', () => {
       mockReturning.mockResolvedValue([{ id: 'test-uuid' }])
 
       const req = new NextRequest('http://localhost:3000/api/chat', {
-        method: 'POST',
+        method: 'post',
         body: JSON.stringify(validData),
       })
-      const { POST } = await import('@/app/api/chat/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/chat/route')
+      const response = await post(req)
 
       expect(response.status).toBe(200)
       expect(mockCheckWorkflowAccessForChatCreation).toHaveBeenCalledWith('workflow-123', 'user-id')
@@ -348,11 +348,11 @@ describe('Chat API Route', () => {
       })
 
       const req = new NextRequest('http://localhost:3000/api/chat', {
-        method: 'POST',
+        method: 'post',
         body: JSON.stringify(validData),
       })
-      const { POST } = await import('@/app/api/chat/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/chat/route')
+      const response = await post(req)
 
       expect(response.status).toBe(404)
       expect(mockCreateErrorResponse).toHaveBeenCalledWith(
@@ -383,11 +383,11 @@ describe('Chat API Route', () => {
       mockCheckWorkflowAccessForChatCreation.mockRejectedValue(new Error('Permission check failed'))
 
       const req = new NextRequest('http://localhost:3000/api/chat', {
-        method: 'POST',
+        method: 'post',
         body: JSON.stringify(validData),
       })
-      const { POST } = await import('@/app/api/chat/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/chat/route')
+      const response = await post(req)
 
       expect(response.status).toBe(500)
       expect(mockCheckWorkflowAccessForChatCreation).toHaveBeenCalledWith('workflow-123', 'user-id')
@@ -417,11 +417,11 @@ describe('Chat API Route', () => {
       })
 
       const req = new NextRequest('http://localhost:3000/api/chat', {
-        method: 'POST',
+        method: 'post',
         body: JSON.stringify(validData),
       })
-      const { POST } = await import('@/app/api/chat/route')
-      const response = await POST(req)
+      const { post } = await import('@/app/api/chat/route')
+      const response = await post(req)
 
       expect(response.status).toBe(400)
       expect(mockCreateErrorResponse).toHaveBeenCalledWith(

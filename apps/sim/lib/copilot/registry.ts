@@ -38,7 +38,7 @@ const ToolCallSSEBase = z.object({
   type: z.literal('tool_call'),
   data: z.object({
     id: z.string(),
-    name: ToolIds,
+    Name: ToolIds,
     arguments: z.record(z.any()),
     partial: z.boolean().default(false),
   }),
@@ -62,7 +62,7 @@ export const ToolArgSchemas = {
     operations: z.array(
       z.object({
         operation: z.enum(['add', 'delete', 'edit']),
-        name: z.string(),
+        Name: z.string(),
         type: z.enum(['plain', 'number', 'boolean', 'array', 'object']).optional(),
         value: z.string().optional(),
       })
@@ -129,7 +129,7 @@ export const ToolArgSchemas = {
 
   make_api_request: z.object({
     url: z.string(),
-    method: z.enum(['GET', 'POST', 'PUT']),
+    method: z.enum(['get', 'post', 'PUT']),
     queryParams: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
     headers: z.record(z.string()).optional(),
     body: z.union([z.record(z.any()), z.string()]).optional(),
@@ -164,12 +164,12 @@ export type ToolArgSchemaMap = typeof ToolArgSchemas
 
 // Tool-specific SSE schemas (tool_call with typed arguments)
 function toolCallSSEFor<TName extends ToolId, TArgs extends z.ZodTypeAny>(
-  name: TName,
+  Name: TName,
   argsSchema: TArgs
 ) {
   return ToolCallSSEBase.extend({
     data: ToolCallSSEBase.shape.data.extend({
-      name: z.literal(name),
+      Name: z.literal(Name),
       arguments: argsSchema,
     }),
   })
@@ -276,7 +276,7 @@ export const ToolResultSchemas = {
   // New variable tools
   get_global_workflow_variables: z
     .object({ variables: z.record(z.any()) })
-    .or(z.array(z.object({ name: z.string(), value: z.any() }))),
+    .or(z.array(z.object({ Name: z.string(), value: z.any() }))),
   set_global_workflow_variables: z
     .object({ variables: z.record(z.any()) })
     .or(z.object({ message: z.any().optional(), data: z.any().optional() })),
@@ -336,7 +336,7 @@ export const ToolResultSchemas = {
     files: z.array(
       z.object({
         id: z.string(),
-        name: z.string().optional(),
+        Name: z.string().optional(),
         mimeType: z.string().optional(),
         size: z.number().optional(),
       })

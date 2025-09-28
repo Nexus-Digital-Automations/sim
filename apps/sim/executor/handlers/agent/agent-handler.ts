@@ -25,7 +25,7 @@ const REQUEST_TIMEOUT = 120000
 const CUSTOM_TOOL_PREFIX = 'custom_'
 
 /**
- * Helper function to collect runtime block outputs and name mappings
+ * Helper function to collect runtime block outputs and Name mappings
  * for tag resolution in custom tools and prompts
  */
 function collectBlockData(context: ExecutionContext): {
@@ -39,10 +39,10 @@ function collectBlockData(context: ExecutionContext): {
     if (state.output !== undefined) {
       blockData[id] = state.output
       const workflowBlock = context.workflow?.blocks?.find((b) => b.id === id)
-      if (workflowBlock?.metadata?.name) {
-        // Map both the display name and normalized form
-        blockNameMapping[workflowBlock.metadata.name] = id
-        const normalized = workflowBlock.metadata.name.replace(/\s+/g, '').toLowerCase()
+      if (workflowBlock?.metadata?.Name) {
+        // Map both the display Name and normalized form
+        blockNameMapping[workflowBlock.metadata.Name] = id
+        const normalized = workflowBlock.metadata.Name.replace(/\s+/g, '').toLowerCase()
         blockNameMapping[normalized] = id
       }
     }
@@ -93,9 +93,9 @@ export class AgentBlockHandler implements BlockHandler {
     // If already an object, process it directly
     if (typeof responseFormat === 'object' && responseFormat !== null) {
       const formatObj = responseFormat as any
-      if (!formatObj.schema && !formatObj.name) {
+      if (!formatObj.schema && !formatObj.Name) {
         return {
-          name: 'response_schema',
+          Name: 'response_schema',
           schema: responseFormat,
           strict: true,
         }
@@ -122,9 +122,9 @@ export class AgentBlockHandler implements BlockHandler {
       try {
         const parsed = JSON.parse(trimmedValue)
 
-        if (parsed && typeof parsed === 'object' && !parsed.schema && !parsed.name) {
+        if (parsed && typeof parsed === 'object' && !parsed.schema && !parsed.Name) {
           return {
-            name: 'response_schema',
+            Name: 'response_schema',
             schema: parsed,
             strict: true,
           }
@@ -191,7 +191,7 @@ export class AgentBlockHandler implements BlockHandler {
     const toolId = `${CUSTOM_TOOL_PREFIX}${tool.title}`
     const base: any = {
       id: toolId,
-      name: tool.schema.function.name,
+      Name: tool.schema.function.Name,
       description: tool.schema.function.description || '',
       params: userProvidedParams,
       parameters: {
@@ -276,7 +276,7 @@ export class AgentBlockHandler implements BlockHandler {
       }
 
       const response = await fetch(url.toString(), {
-        method: 'GET',
+        method: 'get',
         headers,
       })
       if (!response.ok) {
@@ -288,7 +288,7 @@ export class AgentBlockHandler implements BlockHandler {
         throw new Error(data.error || 'Failed to discover MCP tools')
       }
 
-      const mcpTool = data.data.tools.find((t: any) => t.name === toolName)
+      const mcpTool = data.data.tools.find((t: any) => t.Name === toolName)
       if (!mcpTool) {
         throw new Error(`MCP tool ${toolName} not found on server ${serverId}`)
       }
@@ -297,7 +297,7 @@ export class AgentBlockHandler implements BlockHandler {
 
       return {
         id: toolId,
-        name: toolName,
+        Name: toolName,
         description: mcpTool.description || `MCP tool ${toolName} from ${mcpTool.serverName}`,
         parameters: mcpTool.inputSchema || { type: 'object', properties: {} },
         usageControl: tool.usageControl || 'auto',
@@ -317,7 +317,7 @@ export class AgentBlockHandler implements BlockHandler {
           }
 
           const execResponse = await fetch(`${appUrl}/api/mcp/tools/execute`, {
-            method: 'POST',
+            method: 'post',
             headers,
             body: JSON.stringify({
               serverId,
@@ -642,7 +642,7 @@ export class AgentBlockHandler implements BlockHandler {
 
     const url = new URL('/api/providers', getEnv('NEXT_PUBLIC_APP_URL') || '')
     const response = await fetch(url.toString(), {
-      method: 'POST',
+      method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(providerRequest),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT),
@@ -701,7 +701,7 @@ export class AgentBlockHandler implements BlockHandler {
             },
             isStreaming: true,
             blockId: block.id,
-            blockName: block.metadata?.name,
+            blockName: block.metadata?.Name,
             blockType: block.metadata?.id,
           } as any,
         }
@@ -792,16 +792,16 @@ export class AgentBlockHandler implements BlockHandler {
     logger.error('Provider request error details', {
       workflowId: context.workflowId,
       blockId: block.id,
-      errorName: error.name,
+      errorName: error.Name,
       errorMessage: error.message,
       errorStack: error.stack,
       timestamp: new Date().toISOString(),
     })
 
-    if (error.name === 'AbortError') {
+    if (error.Name === 'AbortError') {
       throw new Error('Provider request timed out - the API took too long to respond')
     }
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    if (error.Name === 'TypeError' && error.message.includes('fetch')) {
       throw new Error(
         'Network error - unable to connect to provider API. Please check your internet connection.'
       )
@@ -842,7 +842,7 @@ export class AgentBlockHandler implements BlockHandler {
 
     if (streamingExec.execution.output) {
       const execution = streamingExec.execution as any
-      if (block.metadata?.name) execution.blockName = block.metadata.name
+      if (block.metadata?.Name) execution.blockName = block.metadata.Name
       if (block.metadata?.id) execution.blockType = block.metadata.id
       execution.blockId = block.id
       execution.isStreaming = true
@@ -924,11 +924,11 @@ export class AgentBlockHandler implements BlockHandler {
   }
 
   private formatToolCall(tc: any) {
-    const toolName = this.stripCustomToolPrefix(tc.name)
+    const toolName = this.stripCustomToolPrefix(tc.Name)
 
     return {
       ...tc,
-      name: toolName,
+      Name: toolName,
       startTime: tc.startTime,
       endTime: tc.endTime,
       duration: tc.duration,
@@ -938,7 +938,7 @@ export class AgentBlockHandler implements BlockHandler {
     }
   }
 
-  private stripCustomToolPrefix(name: string): string {
-    return name.startsWith('custom_') ? name.replace('custom_', '') : name
+  private stripCustomToolPrefix(Name: string): string {
+    return Name.startsWith('custom_') ? Name.replace('custom_', '') : Name
   }
 }

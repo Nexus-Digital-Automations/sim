@@ -286,7 +286,7 @@ interface UserAction {
  */
 interface ResponseTemplate {
   templateId: string
-  name: string
+  Name: string
   pattern: string
   variations: Array<{
     condition: string

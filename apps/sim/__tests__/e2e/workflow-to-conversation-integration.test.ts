@@ -62,7 +62,7 @@ class MockParlantServer extends EventEmitter {
     this.port = port
     this.server = createServer()
     this.io = new SocketIOServer(this.server, {
-      cors: { origin: '*', methods: ['GET', 'POST'] },
+      cors: { origin: '*', methods: ['get', 'post'] },
     })
     this.setupSocketHandlers()
   }
@@ -138,7 +138,7 @@ class MockParlantServer extends EventEmitter {
   async createAgent(config: any): Promise<any> {
     const agent = {
       id: `agent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: config.name || 'Test Agent',
+      Name: config.Name || 'Test Agent',
       description: config.description || 'Agent created for testing',
       created_at: new Date().toISOString(),
       guidelines: config.guidelines || [],
@@ -146,7 +146,7 @@ class MockParlantServer extends EventEmitter {
     }
 
     this.agents.set(agent.id, agent)
-    logger.debug('Agent created', { agentId: agent.id, name: agent.name })
+    logger.debug('Agent created', { agentId: agent.id, Name: agent.Name })
 
     return agent
   }
@@ -154,7 +154,7 @@ class MockParlantServer extends EventEmitter {
   async createJourney(data: any): Promise<any> {
     const journey = {
       id: `journey_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: data.name || 'Test Journey',
+      Name: data.Name || 'Test Journey',
       agent_id: data.agent_id,
       steps: data.steps || [],
       created_at: new Date().toISOString(),
@@ -487,7 +487,7 @@ class E2ETestWorkflowGenerator {
   static createLinearConversationalWorkflow(): WorkflowState {
     return {
       id: 'e2e-linear-conversational',
-      name: 'Linear Conversational Workflow',
+      Name: 'Linear Conversational Workflow',
       description: 'Simple workflow that maps to a linear conversation',
       blocks: [
         {
@@ -528,7 +528,7 @@ class E2ETestWorkflowGenerator {
           position: { x: 800, y: 200 },
           data: {
             label: 'Submit Result',
-            method: 'POST',
+            method: 'post',
             url: '{{submission_endpoint}}',
             body: '{"result": "{{processed_result}}"}',
           },
@@ -547,7 +547,7 @@ class E2ETestWorkflowGenerator {
   static createBranchingConversationalWorkflow(): WorkflowState {
     return {
       id: 'e2e-branching-conversational',
-      name: 'Branching Conversational Workflow',
+      Name: 'Branching Conversational Workflow',
       description: 'Workflow with conditions that create branching conversations',
       blocks: [
         {
@@ -643,7 +643,7 @@ class E2ETestWorkflowGenerator {
   static createLongRunningWorkflow(): WorkflowState {
     return {
       id: 'e2e-long-running',
-      name: 'Long Running Workflow',
+      Name: 'Long Running Workflow',
       description: 'Workflow that simulates a long-running process with multiple interactions',
       blocks: [
         {
@@ -786,12 +786,12 @@ describe('End-to-End Workflow to Conversation Integration', () => {
 
       // Step 2: Create agent and journey in Parlant
       const agent = await testClient.createAgent({
-        name: 'E2E Test Agent',
+        Name: 'E2E Test Agent',
         description: 'Agent for linear workflow testing',
       })
 
       const journey = await testClient.createJourney({
-        name: conversionResult.journey.name,
+        Name: conversionResult.journey.Name,
         agent_id: agent.id,
         steps: conversionResult.steps.map((step) => ({
           id: step.id,
@@ -883,12 +883,12 @@ describe('End-to-End Workflow to Conversation Integration', () => {
 
       // Create agent and journey
       const agent = await testClient.createAgent({
-        name: 'Branching Test Agent',
+        Name: 'Branching Test Agent',
         description: 'Agent for testing conditional workflows',
       })
 
       const journey = await testClient.createJourney({
-        name: conversionResult.journey.name,
+        Name: conversionResult.journey.Name,
         agent_id: agent.id,
         steps: conversionResult.steps.map((step) => ({
           id: step.id,
@@ -977,12 +977,12 @@ describe('End-to-End Workflow to Conversation Integration', () => {
 
       // Create agent and journey
       const agent = await testClient.createAgent({
-        name: 'Long Process Agent',
+        Name: 'Long Process Agent',
         description: 'Agent for testing long-running processes',
       })
 
       const journey = await testClient.createJourney({
-        name: conversionResult.journey.name,
+        Name: conversionResult.journey.Name,
         agent_id: agent.id,
         steps: conversionResult.steps.map((step) => ({
           id: step.id,
@@ -1054,12 +1054,12 @@ describe('End-to-End Workflow to Conversation Integration', () => {
       const conversionResult = await converter.convertWorkflowToJourney(context)
 
       const agent = await testClient.createAgent({
-        name: 'Broadcast Test Agent',
+        Name: 'Broadcast Test Agent',
         description: 'Agent for testing real-time updates',
       })
 
       const journey = await testClient.createJourney({
-        name: conversionResult.journey.name,
+        Name: conversionResult.journey.Name,
         agent_id: agent.id,
         steps: conversionResult.steps.map((step) => ({
           id: step.id,
@@ -1108,12 +1108,12 @@ describe('End-to-End Workflow to Conversation Integration', () => {
       const conversionResult = await converter.convertWorkflowToJourney(context)
 
       const agent = await testClient.createAgent({
-        name: 'Concurrent Test Agent',
+        Name: 'Concurrent Test Agent',
         description: 'Agent for testing concurrent conversations',
       })
 
       const journey = await testClient.createJourney({
-        name: conversionResult.journey.name,
+        Name: conversionResult.journey.Name,
         agent_id: agent.id,
         steps: conversionResult.steps.map((step) => ({
           id: step.id,
@@ -1179,12 +1179,12 @@ describe('End-to-End Workflow to Conversation Integration', () => {
       const conversionResult = await converter.convertWorkflowToJourney(context)
 
       const agent = await testClient.createAgent({
-        name: 'Error Test Agent',
+        Name: 'Error Test Agent',
         description: 'Agent for testing error handling',
       })
 
       const journey = await testClient.createJourney({
-        name: conversionResult.journey.name,
+        Name: conversionResult.journey.Name,
         agent_id: agent.id,
         steps: conversionResult.steps.map((step) => ({
           id: step.id,
@@ -1232,7 +1232,7 @@ describe('End-to-End Workflow to Conversation Integration', () => {
 
       // Verify main client still works
       const agent = await testClient.createAgent({
-        name: 'Recovery Test Agent',
+        Name: 'Recovery Test Agent',
         description: 'Agent for testing recovery scenarios',
       })
 

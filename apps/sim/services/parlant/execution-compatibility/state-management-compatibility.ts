@@ -123,7 +123,7 @@ export class StateManagementCompatibilityLayer {
    */
   async updateVariable(
     executionId: string,
-    name: string,
+    Name: string,
     value: any,
     source: 'workflow' | 'journey' | 'user' | 'system' = 'system',
     scope: 'global' | 'workflow' | 'block' | 'step' = 'global'
@@ -134,18 +134,18 @@ export class StateManagementCompatibilityLayer {
     }
 
     // Acquire lock if needed
-    await this.acquireLock(executionId, `variable:${name}`, 'write')
+    await this.acquireLock(executionId, `variable:${Name}`, 'write')
 
     try {
-      const existingVariable = state.variables[name]
+      const existingVariable = state.variables[Name]
       const newVariable: VariableState = {
-        name,
+        Name,
         value,
         type: typeof value,
         scope,
         lastUpdated: new Date().toISOString(),
         source,
-        encrypted: this.shouldEncryptVariable(name, value),
+        encrypted: this.shouldEncryptVariable(Name, value),
       }
 
       // Validate variable if configured
@@ -154,13 +154,13 @@ export class StateManagementCompatibilityLayer {
       }
 
       // Update variable
-      state.variables[name] = newVariable
+      state.variables[Name] = newVariable
 
       // Queue state update for synchronization
       if (this.config.enableStateSynchronization) {
         await this.queueStateUpdate(executionId, {
           type: 'variable_update',
-          path: `variables.${name}`,
+          path: `variables.${Name}`,
           oldValue: existingVariable,
           newValue: newVariable,
           timestamp: new Date().toISOString(),
@@ -173,7 +173,7 @@ export class StateManagementCompatibilityLayer {
         this.config.enableStateSnapshots &&
         this.isSignificantChange('variable', existingVariable, newVariable)
       ) {
-        await this.createStateSnapshot(executionId, `variable_update:${name}`)
+        await this.createStateSnapshot(executionId, `variable_update:${Name}`)
       }
 
       // Emit variable updated event
@@ -183,14 +183,14 @@ export class StateManagementCompatibilityLayer {
         source: source as any,
         executionId,
         timestamp: new Date().toISOString(),
-        data: { name, value, previousValue: existingVariable?.value },
+        data: { Name, value, previousValue: existingVariable?.value },
       })
 
-      logger.debug('Variable updated', { executionId, name, type: typeof value, source, scope })
+      logger.debug('Variable updated', { executionId, Name, type: typeof value, source, scope })
       return newVariable
     } finally {
       // Release lock
-      await this.releaseLock(executionId, `variable:${name}`)
+      await this.releaseLock(executionId, `variable:${Name}`)
     }
   }
 
@@ -496,7 +496,7 @@ export class StateManagementCompatibilityLayer {
     const typeValidator = this.stateValidators.get('variable_type')
     if (typeValidator) {
       const result = await typeValidator.validate(
-        `variables.${newVariable.name}`,
+        `variables.${newVariable.Name}`,
         existingVariable,
         newVariable
       )
@@ -574,15 +574,15 @@ export class StateManagementCompatibilityLayer {
     const changes: StateChange[] = []
     const conflicts: StateConflict[] = []
 
-    for (const [name, sourceVar] of Object.entries(sourceVariables)) {
-      const targetVar = targetVariables[name]
+    for (const [Name, sourceVar] of Object.entries(sourceVariables)) {
+      const targetVar = targetVariables[Name]
 
       if (!targetVar) {
         // Variable doesn't exist in target, add it
-        targetVariables[name] = { ...sourceVar }
+        targetVariables[Name] = { ...sourceVar }
         changes.push({
           type: 'variable_added',
-          path: `variables.${name}`,
+          path: `variables.${Name}`,
           value: sourceVar,
           direction,
         })
@@ -591,10 +591,10 @@ export class StateManagementCompatibilityLayer {
         switch (this.config.handleStateConflicts) {
           case 'workflow_wins':
             if (direction === 'workflow_to_journey') {
-              targetVariables[name] = { ...sourceVar }
+              targetVariables[Name] = { ...sourceVar }
               changes.push({
                 type: 'variable_updated',
-                path: `variables.${name}`,
+                path: `variables.${Name}`,
                 value: sourceVar,
                 previousValue: targetVar,
                 direction,
@@ -603,10 +603,10 @@ export class StateManagementCompatibilityLayer {
             break
           case 'journey_wins':
             if (direction === 'journey_to_workflow') {
-              targetVariables[name] = { ...sourceVar }
+              targetVariables[Name] = { ...sourceVar }
               changes.push({
                 type: 'variable_updated',
-                path: `variables.${name}`,
+                path: `variables.${Name}`,
                 value: sourceVar,
                 previousValue: targetVar,
                 direction,
@@ -616,10 +616,10 @@ export class StateManagementCompatibilityLayer {
           case 'merge': {
             // Attempt to merge values (implementation depends on value types)
             const mergedValue = await this.mergeVariableValues(targetVar, sourceVar)
-            targetVariables[name] = mergedValue
+            targetVariables[Name] = mergedValue
             changes.push({
               type: 'variable_merged',
-              path: `variables.${name}`,
+              path: `variables.${Name}`,
               value: mergedValue,
               previousValue: targetVar,
               direction,
@@ -629,7 +629,7 @@ export class StateManagementCompatibilityLayer {
           case 'error':
             conflicts.push({
               type: 'variable_value_conflict',
-              path: `variables.${name}`,
+              path: `variables.${Name}`,
               workflowValue: direction === 'workflow_to_journey' ? sourceVar : targetVar,
               journeyValue: direction === 'workflow_to_journey' ? targetVar : sourceVar,
               resolution: 'unresolved',
@@ -656,10 +656,10 @@ export class StateManagementCompatibilityLayer {
     if (direction === 'bidirectional') {
       const allTools = new Map()
       for (const tool of workflowContext.activeTools) {
-        allTools.set(tool.name, tool)
+        allTools.set(tool.Name, tool)
       }
       for (const tool of journeyContext.activeTools) {
-        allTools.set(tool.name, tool)
+        allTools.set(tool.Name, tool)
       }
 
       const mergedTools = Array.from(allTools.values())
@@ -716,14 +716,14 @@ export class StateManagementCompatibilityLayer {
       ...Object.keys(journeyVariables),
     ])
 
-    for (const name of allVariableNames) {
-      const workflowVar = workflowVariables[name]
-      const journeyVar = journeyVariables[name]
+    for (const Name of allVariableNames) {
+      const workflowVar = workflowVariables[Name]
+      const journeyVar = journeyVariables[Name]
 
       if (!workflowVar && journeyVar) {
         inconsistencies.push({
           type: 'missing_variable',
-          path: `variables.${name}`,
+          path: `variables.${Name}`,
           description: `Variable exists in journey but not in workflow`,
           severity: 'warning',
           workflowValue: undefined,
@@ -732,7 +732,7 @@ export class StateManagementCompatibilityLayer {
       } else if (workflowVar && !journeyVar) {
         inconsistencies.push({
           type: 'missing_variable',
-          path: `variables.${name}`,
+          path: `variables.${Name}`,
           description: `Variable exists in workflow but not in journey`,
           severity: 'warning',
           workflowValue: workflowVar,
@@ -743,7 +743,7 @@ export class StateManagementCompatibilityLayer {
         if (workflowVar.value !== journeyVar.value) {
           inconsistencies.push({
             type: 'value_mismatch',
-            path: `variables.${name}.value`,
+            path: `variables.${Name}.value`,
             description: `Variable values differ between workflow and journey`,
             severity: 'error',
             workflowValue: workflowVar.value,
@@ -755,7 +755,7 @@ export class StateManagementCompatibilityLayer {
         if (workflowVar.type !== journeyVar.type) {
           inconsistencies.push({
             type: 'type_mismatch',
-            path: `variables.${name}.type`,
+            path: `variables.${Name}.type`,
             description: `Variable types differ between workflow and journey`,
             severity: 'error',
             workflowValue: workflowVar.type,
@@ -855,11 +855,11 @@ export class StateManagementCompatibilityLayer {
     return sourceTime > targetTime ? sourceVar : targetVar
   }
 
-  private shouldEncryptVariable(name: string, value: any): boolean {
+  private shouldEncryptVariable(Name: string, value: any): boolean {
     // Encrypt sensitive variables
     const sensitivePatterns = [/password/i, /secret/i, /token/i, /key/i, /credential/i]
 
-    return sensitivePatterns.some((pattern) => pattern.test(name))
+    return sensitivePatterns.some((pattern) => pattern.test(Name))
   }
 
   private isSignificantChange(type: string, oldValue: any, newValue: any): boolean {

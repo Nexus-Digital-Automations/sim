@@ -616,19 +616,19 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     // API validation rules
     this.validationRules.set('api', [
       {
-        name: 'endpoint_consistency',
+        Name: 'endpoint_consistency',
         validate: (actual: any, expected: any) => actual.url === expected.url,
         impact: 'high',
         message: 'API endpoint must be consistent',
       },
       {
-        name: 'method_consistency',
+        Name: 'method_consistency',
         validate: (actual: any, expected: any) => actual.method === expected.method,
         impact: 'high',
         message: 'HTTP method must be consistent',
       },
       {
-        name: 'header_consistency',
+        Name: 'header_consistency',
         validate: (actual: any, expected: any) => this.deepEqual(actual.headers, expected.headers),
         impact: 'medium',
         message: 'Request headers should be consistent',
@@ -638,13 +638,13 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     // Database validation rules
     this.validationRules.set('database', [
       {
-        name: 'operation_consistency',
+        Name: 'operation_consistency',
         validate: (actual: any, expected: any) => actual.operation === expected.operation,
         impact: 'high',
         message: 'Database operation type must be consistent',
       },
       {
-        name: 'table_consistency',
+        Name: 'table_consistency',
         validate: (actual: any, expected: any) => actual.table === expected.table,
         impact: 'high',
         message: 'Database table must be consistent',
@@ -1126,7 +1126,7 @@ interface IntegrationSequenceItem {
 }
 
 interface ValidationRule {
-  name: string
+  Name: string
   validate: (actual: any, expected: any) => boolean
   impact: 'high' | 'medium' | 'low'
   message: string

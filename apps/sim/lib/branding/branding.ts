@@ -9,7 +9,7 @@ export interface ThemeColors {
 }
 
 export interface BrandConfig {
-  name: string
+  Name: string
   logoUrl?: string
   faviconUrl?: string
   customCssUrl?: string
@@ -24,7 +24,7 @@ export interface BrandConfig {
  * Default brand configuration values
  */
 const defaultConfig: BrandConfig = {
-  name: 'Sim',
+  Name: 'Sim',
   logoUrl: undefined,
   faviconUrl: '/favicon/favicon.ico',
   customCssUrl: undefined,
@@ -60,7 +60,7 @@ const getThemeColors = (): ThemeColors => {
  */
 export const getBrandConfig = (): BrandConfig => {
   return {
-    name: getEnv('NEXT_PUBLIC_BRAND_NAME') || defaultConfig.name,
+    Name: getEnv('NEXT_PUBLIC_BRAND_NAME') || defaultConfig.Name,
     logoUrl: getEnv('NEXT_PUBLIC_BRAND_LOGO_URL') || defaultConfig.logoUrl,
     faviconUrl: getEnv('NEXT_PUBLIC_BRAND_FAVICON_URL') || defaultConfig.faviconUrl,
     customCssUrl: getEnv('NEXT_PUBLIC_CUSTOM_CSS_URL') || defaultConfig.customCssUrl,

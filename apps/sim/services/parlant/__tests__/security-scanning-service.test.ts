@@ -248,7 +248,7 @@ describe('SecurityScanningService', () => {
     it('should create custom content filters', async () => {
       const filterData = {
         workspace_id: testWorkspaceId,
-        name: 'Custom Keyword Filter',
+        Name: 'Custom Keyword Filter',
         description: 'Filters specific business keywords',
         filter_type: 'custom' as const,
         patterns: [
@@ -272,7 +272,7 @@ describe('SecurityScanningService', () => {
 
       expect(filter).toBeDefined()
       expect(filter.id).toMatch(/^filter_/)
-      expect(filter.name).toBe(filterData.name)
+      expect(filter.Name).toBe(filterData.Name)
       expect(filter.patterns).toHaveLength(1)
       expect(filter.enabled).toBe(true)
     })
@@ -280,7 +280,7 @@ describe('SecurityScanningService', () => {
     it('should validate filter pattern configurations', async () => {
       const invalidFilterData = {
         workspace_id: testWorkspaceId,
-        name: 'Invalid Filter',
+        Name: 'Invalid Filter',
         description: 'Filter with invalid regex',
         filter_type: 'custom' as const,
         patterns: [
@@ -495,7 +495,7 @@ describe('SecurityScanningService', () => {
       await securityScanningService.createContentFilter(
         {
           workspace_id: workspace1,
-          name: 'Workspace 1 Filter',
+          Name: 'Workspace 1 Filter',
           description: 'Custom filter',
           filter_type: 'custom',
           patterns: [
@@ -556,7 +556,7 @@ describe('SecurityScanningService', () => {
           securityScanningService.createContentFilter(
             {
               workspace_id: testWorkspaceId,
-              name: 'Invalid Pattern Filter',
+              Name: 'Invalid Pattern Filter',
               description: 'Test invalid patterns',
               filter_type: 'custom',
               patterns: [invalidPattern],

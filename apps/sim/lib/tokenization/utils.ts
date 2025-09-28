@@ -30,7 +30,7 @@ export function getProviderConfig(providerId: string): ProviderTokenizationConfi
 }
 
 /**
- * Extracts provider ID from model name
+ * Extracts provider ID from model Name
  */
 export function getProviderForTokenization(model: string): string {
   try {

@@ -14,7 +14,7 @@ function isUrlBasedTransport(transport: McpTransport): boolean {
 }
 
 export interface McpServerTestConfig {
-  name: string
+  Name: string
   transport: McpTransport
   url?: string
   headers?: Record<string, string>
@@ -38,11 +38,11 @@ export function useMcpServerTest() {
 
   const testConnection = useCallback(
     async (config: McpServerTestConfig): Promise<McpServerTestResult> => {
-      if (!config.name || !config.transport || !config.workspaceId) {
+      if (!config.Name || !config.transport || !config.workspaceId) {
         const result: McpServerTestResult = {
           success: false,
           message: 'Missing required configuration',
-          error: 'Please provide server name, transport method, and workspace ID',
+          error: 'Please provide server Name, transport method, and workspace ID',
         }
         setTestResult(result)
         return result
@@ -74,7 +74,7 @@ export function useMcpServerTest() {
         }
 
         const response = await fetch('/api/mcp/servers/test-connection', {
-          method: 'POST',
+          method: 'post',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -88,7 +88,7 @@ export function useMcpServerTest() {
         }
 
         setTestResult(result)
-        logger.info(`MCP server test ${result.success ? 'passed' : 'failed'}:`, config.name)
+        logger.info(`MCP server test ${result.success ? 'passed' : 'failed'}:`, config.Name)
         return result
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'

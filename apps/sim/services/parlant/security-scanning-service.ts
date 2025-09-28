@@ -37,7 +37,7 @@ import type { AuthContext } from './types'
  */
 interface SecurityPattern {
   id: string
-  name: string
+  Name: string
   type: ViolationType
   pattern: RegExp
   severity: ViolationSeverity
@@ -276,7 +276,7 @@ export class SecurityScanningService {
       // Store filter
       this.filterCache.set(filter.id, filter)
 
-      console.log(`[ContentFilter] Created filter: ${filter.name} (${filter.id})`)
+      console.log(`[ContentFilter] Created filter: ${filter.Name} (${filter.id})`)
       return filter
     } catch (error) {
       console.error('[ContentFilter] Failed to create filter:', error)
@@ -431,7 +431,7 @@ export class SecurityScanningService {
         }
       }
     } catch (error) {
-      console.error(`[SecurityScan] Pattern application failed for ${pattern.name}:`, error)
+      console.error(`[SecurityScan] Pattern application failed for ${pattern.Name}:`, error)
     }
 
     return violations
@@ -692,7 +692,7 @@ export class SecurityScanningService {
               type: 'redacted',
               original,
               replacement,
-              reason: `${filter.name} filter applied`,
+              reason: `${filter.Name} filter applied`,
             })
           }
 
@@ -701,7 +701,7 @@ export class SecurityScanningService {
             id: this.generateId('violation'),
             type: this.mapFilterTypeToViolationType(filter.filter_type),
             severity: this.mapFilterToSeverity(filter, pattern),
-            description: `Content filter violation: ${filter.name}`,
+            description: `Content filter violation: ${filter.Name}`,
             evidence: {
               matched_text: original,
               pattern: pattern.pattern,
@@ -712,7 +712,7 @@ export class SecurityScanningService {
               context: this.getContextAround(content, match.index, 30),
               confidence: pattern.weight / 10, // Convert weight to confidence
             },
-            recommendation: `Remove or modify content to comply with ${filter.name}`,
+            recommendation: `Remove or modify content to comply with ${filter.Name}`,
             risk_score: Math.min(100, pattern.weight * 10),
             false_positive_likelihood: this.estimateFalsePositive(pattern, original),
           })
@@ -769,7 +769,7 @@ export class SecurityScanningService {
       // Social Security Number
       {
         id: 'ssn-001',
-        name: 'Social Security Number Detection',
+        Name: 'Social Security Number Detection',
         type: 'pii_exposure',
         pattern: /\b\d{3}-\d{2}-\d{4}\b/,
         severity: 'critical',
@@ -781,7 +781,7 @@ export class SecurityScanningService {
       // Credit Card Numbers
       {
         id: 'cc-001',
-        name: 'Credit Card Number Detection',
+        Name: 'Credit Card Number Detection',
         type: 'pii_exposure',
         pattern: /\b(?:\d{4}[-\s]?){3}\d{4}\b/,
         severity: 'critical',
@@ -793,7 +793,7 @@ export class SecurityScanningService {
       // Email Addresses
       {
         id: 'email-001',
-        name: 'Email Address Detection',
+        Name: 'Email Address Detection',
         type: 'pii_exposure',
         pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/,
         severity: 'medium',
@@ -805,7 +805,7 @@ export class SecurityScanningService {
       // Phone Numbers
       {
         id: 'phone-001',
-        name: 'Phone Number Detection',
+        Name: 'Phone Number Detection',
         type: 'pii_exposure',
         pattern: /\b(?:\+?1[-.\s]?)?\(?[2-9]\d{2}\)?[-.\s]?[2-9]\d{2}[-.\s]?\d{4}\b/,
         severity: 'medium',
@@ -817,7 +817,7 @@ export class SecurityScanningService {
       // Profanity Detection (simplified)
       {
         id: 'prof-001',
-        name: 'Inappropriate Language Detection',
+        Name: 'Inappropriate Language Detection',
         type: 'inappropriate_content',
         pattern: /\b(damn|hell|crap)\b/i,
         severity: 'low',
@@ -836,7 +836,7 @@ export class SecurityScanningService {
       {
         id: 'default-pii',
         workspace_id: 'default',
-        name: 'PII Protection Filter',
+        Name: 'PII Protection Filter',
         description: 'Filters personally identifiable information',
         filter_type: 'pii',
         patterns: [

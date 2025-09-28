@@ -45,14 +45,14 @@ describe('Chat Interface Component Testing Suite', () => {
     mockAgents = [
       {
         id: 'agent-1',
-        name: 'Support Agent',
+        Name: 'Support Agent',
         description: 'Customer support specialist',
         status: 'active',
         capabilities: ['general-support', 'troubleshooting'],
       },
       {
         id: 'agent-2',
-        name: 'Sales Agent',
+        Name: 'Sales Agent',
         description: 'Sales and product specialist',
         status: 'active',
         capabilities: ['sales', 'product-info'],
@@ -63,14 +63,14 @@ describe('Chat Interface Component Testing Suite', () => {
       {
         id: 'msg-1',
         content: 'Hello! How can I help you today?',
-        sender: { type: 'agent', id: 'agent-1', name: 'Support Agent' },
+        sender: { type: 'agent', id: 'agent-1', Name: 'Support Agent' },
         timestamp: new Date('2024-01-01T10:00:00Z'),
         type: 'text',
       },
       {
         id: 'msg-2',
         content: 'I need help with my account settings.',
-        sender: { type: 'user', id: 'user-1', name: 'John Doe' },
+        sender: { type: 'user', id: 'user-1', Name: 'John Doe' },
         timestamp: new Date('2024-01-01T10:01:00Z'),
         type: 'text',
       },
@@ -106,7 +106,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'chat-interface-render',
-            name: 'Chat Interface Rendering',
+            Name: 'Chat Interface Rendering',
             complexity: 'simple',
             metadata: { component: 'ChatInterface' },
           } as any,
@@ -135,7 +135,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'chat-interface-accessibility',
-            name: 'Chat Interface Accessibility',
+            Name: 'Chat Interface Accessibility',
             complexity: 'medium',
             metadata: {
               component: 'ChatInterface',
@@ -153,9 +153,9 @@ describe('Chat Interface Component Testing Suite', () => {
     it('should be responsive across different viewport sizes', async () => {
       const startTime = new Date()
       const viewports = [
-        { width: 320, height: 568, name: 'mobile' },
-        { width: 768, height: 1024, name: 'tablet' },
-        { width: 1920, height: 1080, name: 'desktop' },
+        { width: 320, height: 568, Name: 'mobile' },
+        { width: 768, height: 1024, Name: 'tablet' },
+        { width: 1920, height: 1080, Name: 'desktop' },
       ]
 
       for (const viewport of viewports) {
@@ -200,7 +200,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'chat-interface-responsive',
-            name: 'Chat Interface Responsive Design',
+            Name: 'Chat Interface Responsive Design',
             complexity: 'complex',
             metadata: {
               component: 'ChatInterface',
@@ -244,7 +244,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'chat-interface-loading',
-            name: 'Chat Interface Loading States',
+            Name: 'Chat Interface Loading States',
             complexity: 'medium',
             metadata: { component: 'ChatInterface' },
           } as any,
@@ -273,7 +273,7 @@ describe('Chat Interface Component Testing Suite', () => {
       fireEvent.click(screen.getByRole('combobox'))
 
       for (const agent of mockAgents) {
-        expect(screen.getByText(agent.name)).toBeInTheDocument()
+        expect(screen.getByText(agent.Name)).toBeInTheDocument()
         expect(screen.getByText(agent.description)).toBeInTheDocument()
       }
 
@@ -282,7 +282,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'agent-selector-display',
-            name: 'Agent Selector Display',
+            Name: 'Agent Selector Display',
             complexity: 'simple',
             metadata: { component: 'AgentSelector', agentCount: mockAgents.length },
           } as any,
@@ -316,7 +316,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'agent-selector-interaction',
-            name: 'Agent Selector Interaction',
+            Name: 'Agent Selector Interaction',
             complexity: 'medium',
             metadata: { component: 'AgentSelector' },
           } as any,
@@ -351,7 +351,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'agent-selector-keyboard',
-            name: 'Agent Selector Keyboard Navigation',
+            Name: 'Agent Selector Keyboard Navigation',
             complexity: 'medium',
             metadata: { component: 'AgentSelector' },
           } as any,
@@ -380,7 +380,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'message-bubble-user',
-            name: 'Message Bubble User Message',
+            Name: 'Message Bubble User Message',
             complexity: 'simple',
             metadata: { component: 'MessageBubble', messageType: 'user' },
           } as any,
@@ -407,7 +407,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'message-bubble-agent',
-            name: 'Message Bubble Agent Message',
+            Name: 'Message Bubble Agent Message',
             complexity: 'simple',
             metadata: { component: 'MessageBubble', messageType: 'agent' },
           } as any,
@@ -434,7 +434,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'message-bubble-timestamp',
-            name: 'Message Bubble Timestamp',
+            Name: 'Message Bubble Timestamp',
             complexity: 'simple',
             metadata: { component: 'MessageBubble' },
           } as any,
@@ -476,7 +476,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'message-bubble-types',
-            name: 'Message Bubble Message Types',
+            Name: 'Message Bubble Message Types',
             complexity: 'complex',
             metadata: {
               component: 'MessageBubble',
@@ -510,7 +510,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'chat-input-typing',
-            name: 'Chat Input Text Typing',
+            Name: 'Chat Input Text Typing',
             complexity: 'simple',
             metadata: { component: 'ChatInput' },
           } as any,
@@ -540,7 +540,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'chat-input-send',
-            name: 'Chat Input Send Message',
+            Name: 'Chat Input Send Message',
             complexity: 'medium',
             metadata: { component: 'ChatInput' },
           } as any,
@@ -571,7 +571,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'chat-input-file-upload',
-            name: 'Chat Input File Upload',
+            Name: 'Chat Input File Upload',
             complexity: 'complex',
             metadata: { component: 'ChatInput' },
           } as any,
@@ -599,7 +599,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'chat-input-typing-indicator',
-            name: 'Chat Input Typing Indicator',
+            Name: 'Chat Input Typing Indicator',
             complexity: 'medium',
             metadata: { component: 'ChatInput' },
           } as any,
@@ -627,7 +627,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'conversation-history-render',
-            name: 'Conversation History Rendering',
+            Name: 'Conversation History Rendering',
             complexity: 'medium',
             metadata: {
               component: 'ConversationHistory',
@@ -666,7 +666,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'conversation-history-autoscroll',
-            name: 'Conversation History Auto-scroll',
+            Name: 'Conversation History Auto-scroll',
             complexity: 'medium',
             metadata: {
               component: 'ConversationHistory',
@@ -705,7 +705,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'conversation-history-grouping',
-            name: 'Conversation History Date Grouping',
+            Name: 'Conversation History Date Grouping',
             complexity: 'complex',
             metadata: { component: 'ConversationHistory' },
           } as any,
@@ -730,7 +730,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'conversation-history-empty',
-            name: 'Conversation History Empty State',
+            Name: 'Conversation History Empty State',
             complexity: 'simple',
             metadata: { component: 'ConversationHistory' },
           } as any,
@@ -763,7 +763,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'visual-regression-consistency',
-            name: 'Visual Regression Consistency',
+            Name: 'Visual Regression Consistency',
             complexity: 'complex',
             metadata: {
               component: 'ChatInterface',
@@ -806,7 +806,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'performance-large-history',
-            name: 'Performance Large History Rendering',
+            Name: 'Performance Large History Rendering',
             complexity: 'extreme',
             metadata: {
               component: 'ConversationHistory',
@@ -850,7 +850,7 @@ describe('Chat Interface Component Testing Suite', () => {
         reporter.createTestResult(
           {
             id: 'performance-rapid-updates',
-            name: 'Performance Rapid Message Updates',
+            Name: 'Performance Rapid Message Updates',
             complexity: 'complex',
             metadata: {
               component: 'ChatInterface',

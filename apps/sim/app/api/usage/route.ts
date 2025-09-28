@@ -11,10 +11,10 @@ const logger = createLogger('UnifiedUsageAPI')
 
 /**
  * Unified Usage Endpoint
- * GET/PUT /api/usage?context=user|organization&userId=<id>&organizationId=<id>
+ * get/PUT /api/usage?context=user|organization&userId=<id>&organizationId=<id>
  *
  */
-export async function GET(request: NextRequest) {
+export async function get(request: NextRequest) {
   const session = await getSession()
 
   try {

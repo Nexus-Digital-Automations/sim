@@ -91,7 +91,7 @@ export class ErrorHandler {
     const breaker = this.circuitBreakers.get(serviceName)
     if (!breaker) {
       return {
-        name: serviceName,
+        Name: serviceName,
         status: 'healthy',
         errorCount: 0,
         lastError: null,
@@ -99,7 +99,7 @@ export class ErrorHandler {
     }
 
     return {
-      name: serviceName,
+      Name: serviceName,
       status: breaker.getStatus(),
       errorCount: breaker.getErrorCount(),
       lastError: breaker.getLastError(),
@@ -325,7 +325,7 @@ export interface RetryOptions {
 }
 
 export interface ServiceStatus {
-  name: string
+  Name: string
   status: 'healthy' | 'degraded' | 'unhealthy'
   errorCount: number
   lastError: Date | null

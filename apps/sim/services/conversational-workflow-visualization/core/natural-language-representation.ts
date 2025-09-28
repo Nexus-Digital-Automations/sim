@@ -293,10 +293,10 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     [
       NarrativeStyle.CASUAL,
       {
-        introduction: (name, purpose) =>
-          `Hey! Let me walk you through the "${name}" workflow. Basically, this is designed to ${purpose.toLowerCase()}. Pretty cool, right?`,
-        nodeDescription: (name, purpose, context) =>
-          `Next up, we have "${name}" - this little guy ${purpose.toLowerCase()}. ${context}`,
+        introduction: (Name, purpose) =>
+          `Hey! Let me walk you through the "${Name}" workflow. Basically, this is designed to ${purpose.toLowerCase()}. Pretty cool, right?`,
+        nodeDescription: (Name, purpose, context) =>
+          `Next up, we have "${Name}" - this little guy ${purpose.toLowerCase()}. ${context}`,
         conclusion: (outcome, benefits) =>
           `And that's it! When this workflow finishes, you'll have ${outcome}. The cool thing is ${benefits.join(', ')}.`,
       },
@@ -304,10 +304,10 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     [
       NarrativeStyle.PROFESSIONAL,
       {
-        introduction: (name, purpose) =>
-          `The "${name}" workflow is designed to ${purpose}. This automated process ensures consistent and efficient execution.`,
-        nodeDescription: (name, purpose, context) =>
-          `The "${name}" component ${purpose}. ${context}`,
+        introduction: (Name, purpose) =>
+          `The "${Name}" workflow is designed to ${purpose}. This automated process ensures consistent and efficient execution.`,
+        nodeDescription: (Name, purpose, context) =>
+          `The "${Name}" component ${purpose}. ${context}`,
         conclusion: (outcome, benefits) =>
           `Upon completion, this workflow delivers ${outcome}. Key benefits include ${benefits.join(', ')}.`,
       },
@@ -315,10 +315,10 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     [
       NarrativeStyle.STORYTELLING,
       {
-        introduction: (name, purpose) =>
-          `Imagine you need to ${purpose}. That's exactly what our "${name}" workflow does - but like having a super-efficient assistant who never makes mistakes.`,
-        nodeDescription: (name, purpose, context) =>
-          `At this point in our story, "${name}" steps in to ${purpose}. Think of it as ${context}`,
+        introduction: (Name, purpose) =>
+          `Imagine you need to ${purpose}. That's exactly what our "${Name}" workflow does - but like having a super-efficient assistant who never makes mistakes.`,
+        nodeDescription: (Name, purpose, context) =>
+          `At this point in our story, "${Name}" steps in to ${purpose}. Think of it as ${context}`,
         conclusion: (outcome, benefits) =>
           `And so our workflow story concludes with ${outcome}. The happy ending includes ${benefits.join(', ')}.`,
       },
@@ -326,10 +326,10 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     [
       NarrativeStyle.EDUCATIONAL,
       {
-        introduction: (name, purpose) =>
-          `Let's learn about the "${name}" workflow. This is an excellent example of how automation can ${purpose}. We'll examine each component to understand the complete process.`,
-        nodeDescription: (name, purpose, context) =>
-          `Now we encounter "${name}". This component demonstrates how to ${purpose}. Notice how ${context}`,
+        introduction: (Name, purpose) =>
+          `Let's learn about the "${Name}" workflow. This is an excellent example of how automation can ${purpose}. We'll examine each component to understand the complete process.`,
+        nodeDescription: (Name, purpose, context) =>
+          `Now we encounter "${Name}". This component demonstrates how to ${purpose}. Notice how ${context}`,
         conclusion: (outcome, benefits) =>
           `To summarize, this workflow achieves ${outcome}. The educational value includes understanding ${benefits.join(', ')}.`,
       },
@@ -389,7 +389,7 @@ export class NaturalLanguageWorkflowRepresentationSystem {
 
       const narrative: WorkflowNarrative = {
         workflowId: workflowData.id,
-        title: workflowData.name || 'Unnamed Workflow',
+        title: workflowData.Name || 'Unnamed Workflow',
         overview,
         story,
         nodeNarratives,
@@ -477,7 +477,7 @@ export class NaturalLanguageWorkflowRepresentationSystem {
 
     return {
       introduction: template.introduction(
-        workflowData.name || 'Custom Workflow',
+        workflowData.Name || 'Custom Workflow',
         workflowData.description || 'automate important tasks'
       ),
 
@@ -522,7 +522,7 @@ export class NaturalLanguageWorkflowRepresentationSystem {
     narrativeStyle: NarrativeStyle
   ): Promise<WorkflowNodeNarrative> {
     const nodeType = nodeData.type || 'generic'
-    const nodeName = nodeData.data?.name || nodeData.data?.title || `${nodeType} node`
+    const nodeName = nodeData.data?.Name || nodeData.data?.title || `${nodeType} node`
 
     // Generate descriptions for all expertise levels
     const descriptions = {
@@ -633,7 +633,7 @@ export class NaturalLanguageWorkflowRepresentationSystem {
   }
 
   private generateHumanFriendlyName(nodeData: any): string {
-    if (nodeData.data?.name) return nodeData.data.name
+    if (nodeData.data?.Name) return nodeData.data.Name
     if (nodeData.data?.title) return nodeData.data.title
 
     const type = nodeData.type || 'step'
@@ -696,7 +696,7 @@ export class NaturalLanguageWorkflowRepresentationSystem {
   ): WorkflowNarrative {
     return {
       workflowId: workflowData.id,
-      title: workflowData.name || 'Workflow',
+      title: workflowData.Name || 'Workflow',
       overview: {
         [UserExpertiseLevel.NOVICE]: 'This workflow helps you accomplish a task automatically.',
         [UserExpertiseLevel.BEGINNER]: 'This workflow automates a process for you.',

@@ -526,7 +526,7 @@ export class WorkflowContextIntegration {
   }
 
   private getStepName(context: JourneyContext, stepId: string): string {
-    // This would lookup step name from journey definition
+    // This would lookup step Name from journey definition
     return stepId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
   }
 

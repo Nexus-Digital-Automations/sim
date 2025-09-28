@@ -7,7 +7,7 @@ function formatStarCount(num: number): string {
   return formatted.endsWith('.0') ? `${formatted.slice(0, -2)}k` : `${formatted}k`
 }
 
-export async function GET() {
+export async function get() {
   try {
     const token = env.GITHUB_TOKEN
     const response = await fetch('https://api.github.com/repos/simstudioai/sim', {

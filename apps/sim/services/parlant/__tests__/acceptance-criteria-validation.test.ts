@@ -13,7 +13,7 @@ import { beforeAll, describe, expect, test } from '@jest/globals'
 // Test interfaces for type safety
 interface WorkflowDefinition {
   id: string
-  name: string
+  Name: string
   description: string
   version: string
   nodes: WorkflowNode[]
@@ -48,7 +48,7 @@ interface JourneyDefinition {
 interface JourneyState {
   id: string
   type: string
-  name: string
+  Name: string
   config?: any
   originalNodeId?: string
 }
@@ -90,7 +90,7 @@ interface ExecutionResult {
 
 interface ExecutionStep {
   id: string
-  name: string
+  Name: string
   status: 'completed' | 'running' | 'failed'
   outputs?: any
   executionTime?: number
@@ -127,12 +127,12 @@ class WorkflowToJourneyConverter {
       // Convert workflow to journey
       const journey: JourneyDefinition = {
         id: `journey_${workflow.id}`,
-        title: `Conversational ${workflow.name}`,
+        title: `Conversational ${workflow.Name}`,
         description: `Interactive version of: ${workflow.description}`,
         conditions: [
-          `User wants to execute ${workflow.name}`,
-          `User asks about ${workflow.name}`,
-          `User needs help with ${workflow.name.toLowerCase()}`,
+          `User wants to execute ${workflow.Name}`,
+          `User asks about ${workflow.Name}`,
+          `User needs help with ${workflow.Name.toLowerCase()}`,
         ],
         states: this.convertNodesToStates(workflow.nodes),
         transitions: this.convertEdgesToTransitions(workflow.edges),
@@ -178,7 +178,7 @@ class WorkflowToJourneyConverter {
     return nodes.map((node) => ({
       id: `state_${node.id}`,
       type: this.mapNodeTypeToStateType(node.type),
-      name: node.data.label || node.id,
+      Name: node.data.label || node.id,
       config: {
         ...node.data,
         originalPosition: node.position,
@@ -348,9 +348,9 @@ class MockWorkflowExecutor {
   async executeWorkflow(workflowId: string, inputs: any = {}): Promise<ExecutionResult> {
     // Simulate workflow execution
     const steps: ExecutionStep[] = [
-      { id: 'step1', name: 'Initialize', status: 'completed', executionTime: 100 },
-      { id: 'step2', name: 'Process Data', status: 'completed', executionTime: 250 },
-      { id: 'step3', name: 'Generate Output', status: 'completed', executionTime: 150 },
+      { id: 'step1', Name: 'Initialize', status: 'completed', executionTime: 100 },
+      { id: 'step2', Name: 'Process Data', status: 'completed', executionTime: 250 },
+      { id: 'step3', Name: 'Generate Output', status: 'completed', executionTime: 150 },
     ]
 
     return {
@@ -374,10 +374,10 @@ class MockJourneyExecutor {
   ): Promise<ExecutionResult> {
     // Simulate journey execution with conversational context
     const steps: ExecutionStep[] = [
-      { id: 'step1', name: 'Start Conversation', status: 'completed', executionTime: 50 },
-      { id: 'step2', name: 'Process User Intent', status: 'completed', executionTime: 200 },
-      { id: 'step3', name: 'Execute Business Logic', status: 'completed', executionTime: 250 },
-      { id: 'step4', name: 'Generate Response', status: 'completed', executionTime: 100 },
+      { id: 'step1', Name: 'Start Conversation', status: 'completed', executionTime: 50 },
+      { id: 'step2', Name: 'Process User Intent', status: 'completed', executionTime: 200 },
+      { id: 'step3', Name: 'Execute Business Logic', status: 'completed', executionTime: 250 },
+      { id: 'step4', Name: 'Generate Response', status: 'completed', executionTime: 100 },
     ]
 
     return {
@@ -507,7 +507,7 @@ class MockReactFlowEditor {
     const testWorkflows: WorkflowDefinition[] = [
       {
         id: 'test_workflow_1',
-        name: 'Customer Onboarding',
+        Name: 'Customer Onboarding',
         description: 'Standard customer onboarding process',
         version: '1.0',
         nodes: [
@@ -539,7 +539,7 @@ class MockReactFlowEditor {
       },
       {
         id: 'test_workflow_2',
-        name: 'Order Processing',
+        Name: 'Order Processing',
         description: 'E-commerce order processing workflow',
         version: '1.0',
         nodes: [
@@ -640,7 +640,7 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
         expect(conversionResult.validationReport.preservationScore).toBeGreaterThanOrEqual(80)
 
         console.log(
-          `✅ Converted "${workflow!.name}" with ${conversionResult.validationReport.preservationScore}% preservation`
+          `✅ Converted "${workflow!.Name}" with ${conversionResult.validationReport.preservationScore}% preservation`
         )
       }
     })
@@ -678,7 +678,7 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
     test('should handle complex workflows with branching and conditions', async () => {
       const complexWorkflow: WorkflowDefinition = {
         id: 'complex_test_workflow',
-        name: 'Complex Branching Workflow',
+        Name: 'Complex Branching Workflow',
         description: 'Workflow with multiple branches and conditions',
         version: '1.0',
         nodes: [
@@ -996,7 +996,7 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       // Create a new workflow through the editor
       const newWorkflow: WorkflowDefinition = {
         id: 'new_test_workflow',
-        name: 'New Test Workflow',
+        Name: 'New Test Workflow',
         description: 'Created after journey system implementation',
         version: '1.0',
         nodes: [
@@ -1021,7 +1021,7 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       // Verify new workflow can be loaded and edited
       const loadedWorkflow = await reactFlowEditor.loadWorkflow('new_test_workflow')
       expect(loadedWorkflow).toBeDefined()
-      expect(loadedWorkflow?.name).toBe('New Test Workflow')
+      expect(loadedWorkflow?.Name).toBe('New Test Workflow')
 
       console.log('✅ Bidirectional workflow management confirmed')
     })

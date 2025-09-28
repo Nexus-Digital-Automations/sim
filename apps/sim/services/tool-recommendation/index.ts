@@ -129,7 +129,7 @@ export const configureRecommendationSystem = (config: {
  * System information and version
  */
 export const SYSTEM_INFO = {
-  name: 'Tool Recommendation System',
+  Name: 'Tool Recommendation System',
   version: '1.0.0',
   description: 'Intelligent tool recommendation engine for Universal Tool Adapter',
   features: [
@@ -174,7 +174,7 @@ export const healthCheck = async (): Promise<{
 
     return {
       status: health.status,
-      components: health.components.map((c) => `${c.name}: ${c.status}`),
+      components: health.components.map((c) => `${c.Name}: ${c.status}`),
       timestamp: health.lastCheck,
     }
   } catch (error) {

@@ -17,7 +17,7 @@ const logger = createLogger('useMcpTools')
 
 export interface McpToolForUI {
   id: string
-  name: string
+  Name: string
   description?: string
   serverId: string
   serverName: string
@@ -79,8 +79,8 @@ export function useMcpTools(workspaceId: string): UseMcpToolsResult {
 
         const tools = data.data.tools || []
         const transformedTools = tools.map((tool: McpTool) => ({
-          id: createMcpToolId(tool.serverId, tool.name),
-          name: tool.name,
+          id: createMcpToolId(tool.serverId, tool.Name),
+          Name: tool.Name,
           description: tool.description,
           serverId: tool.serverId,
           serverName: tool.serverName,
@@ -174,7 +174,7 @@ export function useMcpToolExecution(workspaceId: string) {
       )
 
       const response = await fetch('/api/mcp/tools/execute', {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },

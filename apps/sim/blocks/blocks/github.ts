@@ -1,17 +1,17 @@
-import { GithubIcon } from '@/components/icons'
+import { githubIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { GitHubResponse } from '@/tools/github/types'
 
 export const GitHubBlock: BlockConfig<GitHubResponse> = {
   type: 'github',
-  name: 'GitHub',
+  Name: 'GitHub',
   description: 'Interact with GitHub or trigger workflows from GitHub events',
   longDescription:
     'Integrate Github into the workflow. Can get get PR details, create PR comment, get repository info, and get latest commit. Requires github token API Key. Can be used in trigger mode to trigger a workflow when a PR is created, commented on, or a commit is pushed.',
   docsLink: 'https://docs.sim.ai/tools/github',
   category: 'tools',
   bgColor: '#181C1E',
-  icon: GithubIcon,
+  icon: githubIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -159,7 +159,7 @@ export const GitHubBlock: BlockConfig<GitHubResponse> = {
   inputs: {
     operation: { type: 'string', description: 'Operation to perform' },
     owner: { type: 'string', description: 'Repository owner' },
-    repo: { type: 'string', description: 'Repository name' },
+    repo: { type: 'string', description: 'Repository Name' },
     pullNumber: { type: 'number', description: 'Pull request number' },
     body: { type: 'string', description: 'Comment text' },
     apiKey: { type: 'string', description: 'GitHub access token' },
@@ -168,7 +168,7 @@ export const GitHubBlock: BlockConfig<GitHubResponse> = {
     line: { type: 'number', description: 'Line number' },
     side: { type: 'string', description: 'Comment side' },
     commitId: { type: 'string', description: 'Commit identifier' },
-    branch: { type: 'string', description: 'Branch name' },
+    branch: { type: 'string', description: 'Branch Name' },
   },
   outputs: {
     content: { type: 'string', description: 'Response content' },
@@ -176,8 +176,8 @@ export const GitHubBlock: BlockConfig<GitHubResponse> = {
     // Trigger outputs
     action: { type: 'string', description: 'The action that was performed' },
     event_type: { type: 'string', description: 'Type of GitHub event' },
-    repository: { type: 'string', description: 'Repository full name' },
-    repository_name: { type: 'string', description: 'Repository name only' },
+    repository: { type: 'string', description: 'Repository full Name' },
+    repository_name: { type: 'string', description: 'Repository Name only' },
     repository_owner: { type: 'string', description: 'Repository owner username' },
     sender: { type: 'string', description: 'Username of the user who triggered the event' },
     sender_id: { type: 'string', description: 'User ID of the sender' },
@@ -188,7 +188,7 @@ export const GitHubBlock: BlockConfig<GitHubResponse> = {
     pull_request: { type: 'string', description: 'Pull request object (for pull_request events)' },
     issue: { type: 'string', description: 'Issue object (for issues events)' },
     comment: { type: 'string', description: 'Comment object (for comment events)' },
-    branch: { type: 'string', description: 'Branch name extracted from ref' },
+    branch: { type: 'string', description: 'Branch Name extracted from ref' },
     commit_message: { type: 'string', description: 'Latest commit message' },
     commit_author: { type: 'string', description: 'Author of the latest commit' },
   },

@@ -123,7 +123,7 @@ describe('Chat Persistence and Message History', () => {
       .insert(workspace)
       .values({
         id: workspaceId,
-        name: 'Test Workspace',
+        Name: 'Test Workspace',
         slug: 'test-workspace',
       })
       .onConflictDoNothing()
@@ -133,7 +133,7 @@ describe('Chat Persistence and Message History', () => {
       .values({
         id: userId,
         email: 'test@example.com',
-        name: 'Test User',
+        Name: 'Test User',
       })
       .onConflictDoNothing()
 
@@ -143,7 +143,7 @@ describe('Chat Persistence and Message History', () => {
         id: agentId,
         workspaceId,
         createdBy: userId,
-        name: 'Test Agent',
+        Name: 'Test Agent',
         description: 'Test agent for persistence testing',
         status: 'active',
       })

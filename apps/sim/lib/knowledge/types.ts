@@ -6,7 +6,7 @@ export interface ChunkingConfig {
 
 export interface KnowledgeBaseWithCounts {
   id: string
-  name: string
+  Name: string
   description: string | null
   tokenCount: number
   embeddingModel: string
@@ -19,7 +19,7 @@ export interface KnowledgeBaseWithCounts {
 }
 
 export interface CreateKnowledgeBaseData {
-  name: string
+  Name: string
   description?: string
   workspaceId?: string
   embeddingModel: 'text-embedding-3-small'

@@ -47,7 +47,7 @@ export function useSubscriptionUpgrade() {
           })
 
           const response = await fetch('/api/organizations', {
-            method: 'POST',
+            method: 'post',
             headers: {
               'Content-Type': 'application/json',
             },
@@ -92,7 +92,7 @@ export function useSubscriptionUpgrade() {
             const transferResponse = await fetch(
               `/api/users/me/subscription/${currentSubscriptionId}/transfer`,
               {
-                method: 'POST',
+                method: 'post',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ organizationId: referenceId }),
               }

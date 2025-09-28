@@ -1,6 +1,6 @@
-import { createEnv } from '@t3-oss/env-nextjs'
-import { env as runtimeEnv } from 'next-runtime-env'
-import { z } from 'zod'
+import { createEnv } from "@t3-oss/env-nextjs";
+import { env as runtimeEnv } from "next-runtime-env";
+import { z } from "zod";
 
 /**
  * Universal environment variable getter that works in both client and server contexts.
@@ -8,7 +8,8 @@ import { z } from 'zod'
  * - Server-side: Falls back to process.env when runtimeEnv returns undefined
  * - Provides seamless Docker runtime variable support for NEXT_PUBLIC_ vars
  */
-const getEnv = (variable: string) => runtimeEnv(variable) ?? process.env[variable]
+const getEnv = (variable: string) =>
+  runtimeEnv(variable) ?? process.env[variable];
 
 // biome-ignore format: keep alignment for readability
 export const env = createEnv({
@@ -79,18 +80,18 @@ export const env = createEnv({
     AZURE_OPENAI_ENDPOINT: z.string().url().optional(), // Shared Azure OpenAI service endpoint
     AZURE_OPENAI_API_VERSION: z.string().optional(), // Shared Azure OpenAI API version
     AZURE_OPENAI_API_KEY: z.string().min(1).optional(), // Shared Azure OpenAI API key
-    KB_OPENAI_MODEL_NAME: z.string().optional(), // Knowledge base OpenAI model name (works with both regular OpenAI and Azure OpenAI)
-    WAND_OPENAI_MODEL_NAME: z.string().optional(), // Wand generation OpenAI model name (works with both regular OpenAI and Azure OpenAI)
+    KB_OPENAI_MODEL_NAME: z.string().optional(), // Knowledge base OpenAI model Name (works with both regular OpenAI and Azure OpenAI)
+    WAND_OPENAI_MODEL_NAME: z.string().optional(), // Wand generation OpenAI model Name (works with both regular OpenAI and Azure OpenAI)
     OCR_AZURE_ENDPOINT: z.string().url().optional(), // Azure Mistral OCR service endpoint
-    OCR_AZURE_MODEL_NAME: z.string().optional(), // Azure Mistral OCR model name for document processing
+    OCR_AZURE_MODEL_NAME: z.string().optional(), // Azure Mistral OCR model Name for document processing
     OCR_AZURE_API_KEY: z.string().min(1).optional(), // Azure Mistral OCR API key
 
     // Monitoring & Analytics
     TELEMETRY_ENDPOINT: z.string().url().optional(), // Custom telemetry/analytics endpoint
     COST_MULTIPLIER: z.number().optional(), // Multiplier for cost calculations
-    SENTRY_ORG: z.string().optional(), // Sentry organization for error tracking
-    SENTRY_PROJECT: z.string().optional(), // Sentry project for error tracking
-    SENTRY_AUTH_TOKEN: z.string().optional(), // Sentry authentication token
+    SENTRY_ORG: z.string().optional(), // SENTRY organization for error tracking
+    SENTRY_PROJECT: z.string().optional(), // SENTRY project for error tracking
+    SENTRY_AUTH_TOKEN: z.string().optional(), // SENTRY authentication token
     LOG_LEVEL: z.enum(["DEBUG", "INFO", "WARN", "ERROR"]).optional(), // Minimum log level to display (defaults to ERROR in production, DEBUG in development)
 
     // External Services
@@ -122,7 +123,7 @@ export const env = createEnv({
     S3_PROFILE_PICTURES_BUCKET_NAME: z.string().optional(), // S3 bucket for profile pictures
 
     // Cloud Storage - Azure Blob
-    AZURE_ACCOUNT_NAME: z.string().optional(), // Azure storage account name
+    AZURE_ACCOUNT_NAME: z.string().optional(), // Azure storage account Name
     AZURE_ACCOUNT_KEY: z.string().optional(), // Azure storage account key
     AZURE_CONNECTION_STRING: z.string().optional(), // Azure storage connection string
     AZURE_STORAGE_CONTAINER_NAME: z.string().optional(), // Azure container for general files
@@ -210,7 +211,7 @@ export const env = createEnv({
     NEXT_PUBLIC_VERCEL_URL: z.string().optional(), // Vercel deployment URL for preview/production
 
     // Client-side Services
-    NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(), // Sentry DSN for client-side error tracking
+    NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(), // SENTRY DSN for client-side error tracking
     NEXT_PUBLIC_SOCKET_URL: z.string().url().optional(), // WebSocket server URL for real-time features
 
     // Asset Storage
@@ -227,7 +228,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GOOGLE_PROJECT_NUMBER: z.string().optional(), // Google project number for Drive picker
 
     // UI Branding & Whitelabeling
-    NEXT_PUBLIC_BRAND_NAME: z.string().optional(), // Custom brand name (defaults to "Sim")
+    NEXT_PUBLIC_BRAND_NAME: z.string().optional(), // Custom brand Name (defaults to "Sim")
     NEXT_PUBLIC_BRAND_LOGO_URL: z.string().url().optional(), // Custom logo URL
     NEXT_PUBLIC_BRAND_FAVICON_URL: z.string().url().optional(), // Custom favicon URL
     NEXT_PUBLIC_CUSTOM_CSS_URL: z.string().url().optional(), // Custom css stylesheet URL
@@ -308,6 +309,8 @@ export const env = createEnv({
 
 // Need this utility because t3-env is returning string for boolean values.
 export const isTruthy = (value: string | boolean | number | undefined) =>
-  typeof value === 'string' ? value.toLowerCase() === 'true' || value === '1' : Boolean(value)
+  typeof value === "string"
+    ? value.toLowerCase() === "true" || value === "1"
+    : Boolean(value);
 
-export { getEnv }
+export { getEnv };

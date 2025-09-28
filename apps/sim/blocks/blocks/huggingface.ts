@@ -1,17 +1,17 @@
-import { HuggingFaceIcon } from '@/components/icons'
+import { huggingFaceIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { HuggingFaceChatResponse } from '@/tools/huggingface/types'
 
 export const HuggingFaceBlock: BlockConfig<HuggingFaceChatResponse> = {
   type: 'huggingface',
-  name: 'Hugging Face',
+  Name: 'Hugging Face',
   description: 'Use Hugging Face Inference API',
   longDescription:
     'Integrate Hugging Face into the workflow. Can generate completions using the Hugging Face Inference API. Requires API Key.',
   docsLink: 'https://docs.sim.ai/tools/huggingface',
   category: 'tools',
   bgColor: '#0B0F19',
-  icon: HuggingFaceIcon,
+  icon: huggingFaceIcon,
   subBlocks: [
     {
       id: 'systemPrompt',

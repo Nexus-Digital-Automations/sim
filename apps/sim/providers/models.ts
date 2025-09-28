@@ -9,15 +9,15 @@
 
 import type React from 'react'
 import {
-  AnthropicIcon,
-  AzureIcon,
-  CerebrasIcon,
-  DeepseekIcon,
-  GeminiIcon,
-  GroqIcon,
-  OllamaIcon,
-  OpenAIIcon,
-  OpenRouterIcon,
+  ANTHROPIC_ICON,
+  AZURE_ICON,
+  CEREBRAS_ICON,
+  DEEPSEEK_ICON,
+  GEMINI_ICON,
+  GROQ_ICON,
+  OLLAMA_ICON,
+  openAiicon,
+  openRouterIcon,
   xAIIcon,
 } from '@/components/icons'
 
@@ -51,7 +51,7 @@ export interface ModelDefinition {
 
 export interface ProviderDefinition {
   id: string
-  name: string
+  Name: string
   description: string
   models: ModelDefinition[]
   defaultModel: string
@@ -66,11 +66,11 @@ export interface ProviderDefinition {
 export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
   openrouter: {
     id: 'openrouter',
-    name: 'OpenRouter',
+    Name: 'OpenRouter',
     description: 'Unified access to many models via OpenRouter',
     defaultModel: '',
     modelPatterns: [/^openrouter\//],
-    icon: OpenRouterIcon,
+    icon: openRouterIcon,
     capabilities: {
       temperature: { min: 0, max: 2 },
       toolUsageControl: true,
@@ -79,11 +79,11 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
   },
   openai: {
     id: 'openai',
-    name: 'OpenAI',
+    Name: 'OpenAI',
     description: "OpenAI's models",
     defaultModel: 'gpt-4o',
     modelPatterns: [/^gpt/, /^o1/],
-    icon: OpenAIIcon,
+    icon: openAiicon,
     capabilities: {
       toolUsageControl: true,
     },
@@ -231,14 +231,14 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
   },
   'azure-openai': {
     id: 'azure-openai',
-    name: 'Azure OpenAI',
+    Name: 'Azure OpenAI',
     description: 'Microsoft Azure OpenAI Service models',
     defaultModel: 'azure/gpt-4o',
     modelPatterns: [/^azure\//],
     capabilities: {
       toolUsageControl: true,
     },
-    icon: AzureIcon,
+    icon: AZURE_ICON,
     models: [
       {
         id: 'azure/gpt-4o',
@@ -357,11 +357,11 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
   },
   anthropic: {
     id: 'anthropic',
-    name: 'Anthropic',
+    Name: 'Anthropic',
     description: "Anthropic's Claude models",
     defaultModel: 'claude-sonnet-4-0',
     modelPatterns: [/^claude/],
-    icon: AnthropicIcon,
+    icon: ANTHROPIC_ICON,
     capabilities: {
       toolUsageControl: true,
     },
@@ -420,14 +420,14 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
   },
   google: {
     id: 'google',
-    name: 'Google',
+    Name: 'Google',
     description: "Google's Gemini models",
     defaultModel: 'gemini-2.5-pro',
     modelPatterns: [/^gemini/],
     capabilities: {
       toolUsageControl: true,
     },
-    icon: GeminiIcon,
+    icon: GEMINI_ICON,
     models: [
       {
         id: 'gemini-2.5-pro',
@@ -457,11 +457,11 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
   },
   deepseek: {
     id: 'deepseek',
-    name: 'Deepseek',
+    Name: 'Deepseek',
     description: "Deepseek's chat models",
     defaultModel: 'deepseek-chat',
     modelPatterns: [],
-    icon: DeepseekIcon,
+    icon: DEEPSEEK_ICON,
     capabilities: {
       toolUsageControl: true,
     },
@@ -502,7 +502,7 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
   },
   xai: {
     id: 'xai',
-    name: 'xAI',
+    Name: 'xAI',
     description: "xAI's Grok models",
     defaultModel: 'grok-4-latest',
     modelPatterns: [/^grok/],
@@ -551,11 +551,11 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
   },
   cerebras: {
     id: 'cerebras',
-    name: 'Cerebras',
+    Name: 'Cerebras',
     description: 'Cerebras Cloud LLMs',
     defaultModel: 'cerebras/llama-3.3-70b',
     modelPatterns: [/^cerebras/],
-    icon: CerebrasIcon,
+    icon: CEREBRAS_ICON,
     capabilities: {
       toolUsageControl: false,
     },
@@ -574,11 +574,11 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
   },
   groq: {
     id: 'groq',
-    name: 'Groq',
+    Name: 'Groq',
     description: "Groq's LLM models with high-performance inference",
     defaultModel: 'groq/openai/gpt-oss-120b',
     modelPatterns: [/^groq/],
-    icon: GroqIcon,
+    icon: GROQ_ICON,
     capabilities: {
       toolUsageControl: false,
     },
@@ -667,11 +667,11 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
   },
   ollama: {
     id: 'ollama',
-    name: 'Ollama',
+    Name: 'Ollama',
     description: 'Local LLM models via Ollama',
     defaultModel: '',
     modelPatterns: [],
-    icon: OllamaIcon,
+    icon: OLLAMA_ICON,
     models: [], // Populated dynamically
   },
 }

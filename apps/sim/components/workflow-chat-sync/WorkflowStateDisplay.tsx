@@ -207,7 +207,7 @@ export function WorkflowStateDisplay({
                 >
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2'>
-                      <span className='font-medium'>{block.name}</span>
+                      <span className='font-medium'>{block.Name}</span>
                       <Badge variant='outline' className='text-xs'>
                         {block.type}
                       </Badge>

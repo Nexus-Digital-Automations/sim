@@ -186,7 +186,7 @@ export interface EnvironmentContext {
 }
 
 export interface PackageInfo {
-  name: string
+  Name: string
   version: string
   critical: boolean
 }
@@ -704,7 +704,7 @@ export class ConversationalWorkflowDebugger {
       memoryLimit: 2048,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       environmentVariables: { NODE_ENV: process.env.NODE_ENV || 'development' },
-      installedPackages: [{ name: 'parlant', version: '1.0.0', critical: true }],
+      installedPackages: [{ Name: 'parlant', version: '1.0.0', critical: true }],
     }
   }
 

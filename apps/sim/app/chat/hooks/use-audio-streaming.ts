@@ -85,7 +85,7 @@ export function useAudioStreaming(sharedAudioContextRef?: RefObject<AudioContext
         await audioContext.resume()
       }
       const response = await fetch('/api/proxy/tts/stream', {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -125,7 +125,7 @@ export function useAudioStreaming(sharedAudioContextRef?: RefObject<AudioContext
       setIsPlayingAudio(true)
       onAudioStart?.()
     } catch (error) {
-      if (error instanceof Error && error.name !== 'AbortError') {
+      if (error instanceof Error && error.Name !== 'AbortError') {
         logger.error('Audio streaming error:', error)
         onError?.(error)
       }

@@ -45,7 +45,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
   // Additional communication tools
   microsoft_teams: {
     id: 'microsoft_teams',
-    name: 'Microsoft Teams',
+    Name: 'Microsoft Teams',
     shortDescription: 'Send messages and notifications to Microsoft Teams channels',
     longDescription:
       'Integrate with Microsoft Teams to send messages, create posts, and manage team communications. Supports rich formatting, file attachments, and channel management. Perfect for enterprise team collaboration and automated notifications.',
@@ -107,7 +107,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
 
   discord: {
     id: 'discord',
-    name: 'Discord',
+    Name: 'Discord',
     shortDescription: 'Send messages to Discord servers and channels',
     longDescription:
       'Connect with Discord communities by sending messages, managing channels, and creating automated notifications. Supports rich embeds, file attachments, and bot interactions. Great for gaming communities, developer teams, and online communities.',
@@ -168,7 +168,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
 
   whatsapp: {
     id: 'whatsapp',
-    name: 'WhatsApp Business',
+    Name: 'WhatsApp Business',
     shortDescription: 'Send WhatsApp messages for business communications',
     longDescription:
       'Integrate WhatsApp Business API for customer communications, support messages, and marketing campaigns. Supports text messages, media attachments, and message templates. Perfect for customer service and business messaging.',
@@ -230,7 +230,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
   // Database tools
   mysql: {
     id: 'mysql',
-    name: 'MySQL Database',
+    Name: 'MySQL Database',
     shortDescription: 'Execute SQL queries and manage MySQL databases',
     longDescription:
       'Connect to MySQL databases to execute queries, manage data, and perform database operations. Supports complex SQL operations, transactions, and data analysis. Essential for data-driven applications and analytics.',
@@ -288,7 +288,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
 
   postgresql: {
     id: 'postgresql',
-    name: 'PostgreSQL Database',
+    Name: 'PostgreSQL Database',
     shortDescription: 'Execute advanced SQL operations with PostgreSQL',
     longDescription:
       'Connect to PostgreSQL databases for advanced SQL operations, JSON queries, and complex data analysis. Supports advanced PostgreSQL features like arrays, JSON operations, and window functions.',
@@ -326,7 +326,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
           parameter: 'query',
           question: 'What PostgreSQL query do you want to execute?',
           examples: [
-            'SELECT jsonb_extract_path_text(data, "name") FROM users',
+            'SELECT jsonb_extract_path_text(data, "Name") FROM users',
             'WITH RECURSIVE hierarchy AS (...) SELECT * FROM hierarchy',
             'SELECT * FROM products WHERE location <-> point(1,1) < 10',
           ],
@@ -341,7 +341,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
   // File and storage tools
   s3: {
     id: 's3',
-    name: 'Amazon S3',
+    Name: 'Amazon S3',
     shortDescription: 'Upload, download, and manage files in Amazon S3',
     longDescription:
       'Interact with Amazon S3 for file storage, backup, and content distribution. Supports file uploads, downloads, folder management, and access control. Essential for scalable file storage and content delivery.',
@@ -398,7 +398,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
 
   google_drive: {
     id: 'google_drive',
-    name: 'Google Drive',
+    Name: 'Google Drive',
     shortDescription: 'Upload, download, and share files via Google Drive',
     longDescription:
       'Integrate with Google Drive for file management, sharing, and collaboration. Supports file uploads, downloads, folder creation, and permission management. Perfect for document sharing and team collaboration.',
@@ -456,7 +456,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
   // Search and information tools
   google: {
     id: 'google',
-    name: 'Google Search',
+    Name: 'Google Search',
     shortDescription: 'Search the web using Google Search API',
     longDescription:
       'Perform web searches using Google Search API to find information, articles, and resources. Returns structured search results with titles, descriptions, and URLs. Essential for research and information gathering.',
@@ -518,7 +518,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
 
   wikipedia: {
     id: 'wikipedia',
-    name: 'Wikipedia',
+    Name: 'Wikipedia',
     shortDescription: 'Search and retrieve information from Wikipedia',
     longDescription:
       'Access Wikipedia articles and information for research, fact-checking, and knowledge gathering. Provides structured article content, summaries, and related information. Perfect for educational and informational content.',
@@ -575,7 +575,7 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
   // Workflow and automation tools
   schedule: {
     id: 'schedule',
-    name: 'Schedule',
+    Name: 'Schedule',
     shortDescription: 'Schedule tasks and workflows to run at specific times',
     longDescription:
       'Create scheduled tasks, recurring workflows, and time-based automation. Supports cron expressions, one-time scheduling, and recurring patterns. Essential for automated reporting, maintenance tasks, and periodic operations.',
@@ -633,10 +633,10 @@ export const COMPREHENSIVE_TOOL_DESCRIPTIONS: Record<string, EnhancedToolDescrip
 
   webhook: {
     id: 'webhook',
-    name: 'Webhook',
+    Name: 'Webhook',
     shortDescription: 'Send HTTP webhooks to trigger external systems',
     longDescription:
-      'Send HTTP POST requests to external webhooks for system integration and event notifications. Supports custom headers, payload formatting, and retry logic. Perfect for triggering external workflows and system notifications.',
+      'Send HTTP post requests to external webhooks for system integration and event notifications. Supports custom headers, payload formatting, and retry logic. Perfect for triggering external workflows and system notifications.',
     usageExamples: [
       'Notify external systems of order completion',
       'Trigger deployment pipelines',
@@ -765,7 +765,7 @@ export class ToolRegistryInitializer {
       // Mock configurations for other tools
       microsoft_teams: {
         type: 'microsoft_teams',
-        name: 'Microsoft Teams',
+        Name: 'Microsoft Teams',
         category: 'tools',
         bgColor: '#464EB8',
         inputs: {
@@ -784,7 +784,7 @@ export class ToolRegistryInitializer {
 
       discord: {
         type: 'discord',
-        name: 'Discord',
+        Name: 'Discord',
         category: 'tools',
         bgColor: '#7289DA',
         inputs: {
@@ -803,7 +803,7 @@ export class ToolRegistryInitializer {
 
       mysql: {
         type: 'mysql',
-        name: 'MySQL',
+        Name: 'MySQL',
         category: 'tools',
         bgColor: '#00758F',
         inputs: {
@@ -823,11 +823,11 @@ export class ToolRegistryInitializer {
 
       s3: {
         type: 's3',
-        name: 'S3',
+        Name: 'S3',
         category: 'tools',
         bgColor: '#FF9900',
         inputs: {
-          bucket: { type: 'string', description: 'S3 bucket name' },
+          bucket: { type: 'string', description: 'S3 bucket Name' },
           key: { type: 'string', description: 'File key/path' },
           operation: { type: 'string', description: 'Operation type' },
         },
@@ -846,7 +846,7 @@ export class ToolRegistryInitializer {
       // Add more mock configurations as needed
       schedule: {
         type: 'schedule',
-        name: 'Schedule',
+        Name: 'Schedule',
         category: 'tools',
         bgColor: '#28A745',
         inputs: {

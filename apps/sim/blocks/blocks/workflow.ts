@@ -1,4 +1,4 @@
-import { WorkflowIcon } from '@/components/icons'
+import { workflowIcon } from '@/components/icons'
 import { createLogger } from '@/lib/logs/console/logger'
 import type { BlockConfig } from '@/blocks/types'
 import { useWorkflowRegistry } from '@/stores/workflows/registry/store'
@@ -24,7 +24,7 @@ const getAvailableWorkflows = (): Array<{ label: string; id: string }> => {
     const availableWorkflows = Object.entries(workflows)
       .filter(([id]) => id !== activeWorkflowId)
       .map(([id, workflow]) => ({
-        label: workflow.name || `Workflow ${id.slice(0, 8)}`,
+        label: workflow.Name || `Workflow ${id.slice(0, 8)}`,
         id: id,
       }))
       .sort((a, b) => a.label.localeCompare(b.label))
@@ -38,12 +38,12 @@ const getAvailableWorkflows = (): Array<{ label: string; id: string }> => {
 
 export const WorkflowBlock: BlockConfig = {
   type: 'workflow',
-  name: 'Workflow',
+  Name: 'Workflow',
   description:
     'This is a core workflow block. Execute another workflow as a block in your workflow. Enter the input variable to pass to the child workflow.',
   category: 'blocks',
   bgColor: '#705335',
-  icon: WorkflowIcon,
+  icon: workflowIcon,
   subBlocks: [
     {
       id: 'workflowId',
@@ -76,7 +76,7 @@ export const WorkflowBlock: BlockConfig = {
   },
   outputs: {
     success: { type: 'boolean', description: 'Execution success status' },
-    childWorkflowName: { type: 'string', description: 'Child workflow name' },
+    childWorkflowName: { type: 'string', description: 'Child workflow Name' },
     result: { type: 'json', description: 'Workflow execution result' },
     error: { type: 'string', description: 'Error message' },
   },

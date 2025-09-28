@@ -337,7 +337,7 @@ export default function LoginPage({
       setResetStatus({ type: null, message: '' })
 
       const response = await fetch('/api/auth/forget-password', {
-        method: 'POST',
+        method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -407,7 +407,7 @@ export default function LoginPage({
             </div>
             <Input
               id={emailInputId}
-              name='email'
+              Name='email'
               placeholder='Enter your email'
               required
               autoCapitalize='none'
@@ -444,7 +444,7 @@ export default function LoginPage({
             <div className='relative'>
               <Input
                 id={passwordInputId}
-                name='password'
+                Name='password'
                 required
                 type={showPassword ? 'text' : 'password'}
                 autoCapitalize='none'

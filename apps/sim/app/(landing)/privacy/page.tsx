@@ -84,7 +84,7 @@ export default function PrivacyPolicy() {
           <li>
             <strong>Personal Data</strong> is any information that relates to an identified or
             identifiable individual. For the purposes for GDPR, Personal Data means any information
-            relating to You such as a name, an identification number, location data, online
+            relating to You such as a Name, an identification number, location data, online
             identifier or to one or more factors specific to the physical, physiological, genetic,
             mental, economic, cultural or social identity. For the purposes of the CCPA, Personal
             Data means any information that identifies, relates to, describes or is capable of being
@@ -140,7 +140,7 @@ export default function PrivacyPolicy() {
         </p>
         <ul className='mb-4 list-disc space-y-2 pl-6'>
           <li>Email address</li>
-          <li>First name and last name</li>
+          <li>First Name and last Name</li>
           <li>Phone number</li>
           <li>Address, State, Province, ZIP/Postal code, City</li>
           <li>Cookies and Usage Data</li>
@@ -479,7 +479,7 @@ export default function PrivacyPolicy() {
           California Civil Code Section 1798.83, also known as the "Shine The Light" law, permits
           our users who are California residents to request and obtain from us, once a year and free
           of charge, information about categories of personal information (if any) we disclosed to
-          third parties for direct marketing purposes and the names and addresses of all third
+          third parties for direct marketing purposes and the NAMES and addresses of all third
           parties with which we shared personal information in the immediately preceding calendar
           year.
         </p>

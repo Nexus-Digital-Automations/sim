@@ -52,7 +52,7 @@ async function createOrganizationWithOwner(
     .insert(schema.organization)
     .values({
       id: orgId,
-      name: organizationName,
+      Name: organizationName,
       slug: organizationSlug,
       metadata,
     })

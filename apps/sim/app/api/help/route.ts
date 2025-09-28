@@ -17,7 +17,7 @@ const helpFormSchema = z.object({
   type: z.enum(['bug', 'feedback', 'feature_request', 'other']),
 })
 
-export async function POST(req: NextRequest) {
+export async function post(req: NextRequest) {
   const requestId = generateRequestId()
 
   try {
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         if (value && 'arrayBuffer' in value) {
           const blob = value as unknown as Blob
           const buffer = Buffer.from(await blob.arrayBuffer())
-          const filename = 'name' in value ? (value as any).name : `image_${key.split('_')[1]}`
+          const filename = 'Name' in value ? (value as any).Name : `image_${key.split('_')[1]}`
 
           images.push({
             filename,

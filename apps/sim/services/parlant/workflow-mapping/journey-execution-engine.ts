@@ -81,7 +81,7 @@ interface ProgressTracker {
 
 interface ProgressMilestone {
   id: string
-  name: string
+  Name: string
   description: string
   stateId: string
   completed: boolean
@@ -327,7 +327,7 @@ export class JourneyExecutionEngine {
     await this.sendConversationMessage(
       context,
       'system',
-      `Transitioning to: ${nextState.name || nextStateId}`,
+      `Transitioning to: ${nextState.Name || nextStateId}`,
       { stateId: nextStateId, progressUpdate: true }
     )
 
@@ -424,8 +424,8 @@ export class JourneyExecutionEngine {
       .filter((s) => s.type !== 'initial' && s.type !== 'final')
       .map((state, index) => ({
         id: state.id,
-        name: state.name || state.id,
-        description: state.description || `Execute ${state.name || state.id}`,
+        Name: state.Name || state.id,
+        description: state.description || `Execute ${state.Name || state.id}`,
         stateId: state.id,
         completed: false,
       }))
@@ -447,7 +447,7 @@ export class JourneyExecutionEngine {
     const currentState = this.getCurrentState(journey, context)
 
     if (currentState) {
-      tracker.currentStateName = currentState.name || currentState.id
+      tracker.currentStateName = currentState.Name || currentState.id
 
       // Mark current milestone as completed
       const milestone = tracker.milestones.find((m) => m.stateId === context.currentStateId)
@@ -605,8 +605,8 @@ class ToolStateHandler extends StateHandler {
         success: toolResult.success,
         nextStateId: nextTransition?.to,
         conversationResponse: toolResult.success
-          ? `✅ Executed ${state.name || toolId} successfully`
-          : `❌ Failed to execute ${state.name || toolId}: ${toolResult.error?.message}`,
+          ? `✅ Executed ${state.Name || toolId} successfully`
+          : `❌ Failed to execute ${state.Name || toolId}: ${toolResult.error?.message}`,
         toolExecutions: [toolResult],
       }
     } catch (error) {
@@ -679,7 +679,7 @@ class ChatStateHandler extends StateHandler {
       return {
         success: true,
         conversationResponse:
-          state.description || state.name || 'Please provide input to continue.',
+          state.description || state.Name || 'Please provide input to continue.',
         userInputRequired: true,
       }
     }

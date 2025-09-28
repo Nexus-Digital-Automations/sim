@@ -36,7 +36,7 @@ export interface ExecutionMode {
 }
 
 export interface ExecutionCapability {
-  name: string
+  Name: string
   description: string
   available: boolean
   reactFlowSupported: boolean
@@ -407,28 +407,28 @@ export class DualModeExecutionArchitecture {
 
     const capabilities: ExecutionCapability[] = [
       {
-        name: 'Visual Editing',
+        Name: 'Visual Editing',
         description: 'Interactive visual workflow editor',
         available: true,
         reactFlowSupported: true,
         journeySupported: false,
       },
       {
-        name: 'Conversational Interaction',
+        Name: 'Conversational Interaction',
         description: 'Natural language workflow interaction',
         available: this.config.journeyMappingEnabled,
         reactFlowSupported: false,
         journeySupported: true,
       },
       {
-        name: 'Container Nodes',
+        Name: 'Container Nodes',
         description: 'Loop and parallel execution containers',
         available: hasContainers,
         reactFlowSupported: true,
         journeySupported: true,
       },
       {
-        name: 'Real-time Collaboration',
+        Name: 'Real-time Collaboration',
         description: 'Multi-user editing capabilities',
         available: true,
         reactFlowSupported: true,
@@ -482,7 +482,7 @@ export class DualModeExecutionArchitecture {
 
       journeyStates.push({
         id: blockId,
-        name: block.name,
+        Name: block.Name,
         type: this.mapBlockTypeToJourneyState(block.type),
         config: {
           originalBlock: block,
@@ -738,7 +738,7 @@ export class DualModeExecutionArchitecture {
           }
 
           // Add PREFER_JOURNEY conflicts for specific patterns
-          if (changeData.path === 'path-b' || changeData.name?.includes('Journey')) {
+          if (changeData.path === 'path-b' || changeData.Name?.includes('Journey')) {
             conflicts.push({
               type: 'EXECUTION_DIVERGENCE',
               description: `Execution path divergence`,

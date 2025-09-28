@@ -27,7 +27,7 @@ import type {
 } from '@/lib/logs/types'
 
 export interface ToolCall {
-  name: string
+  Name: string
   duration: number // in milliseconds
   startTime: string // ISO timestamp
   endTime: string // ISO timestamp
@@ -187,7 +187,7 @@ export class ExecutionLogger implements IExecutionLoggerService {
       const [wf] = await db.select().from(workflow).where(eq(workflow.id, updatedLog.workflowId))
       if (wf) {
         const [usr] = await db
-          .select({ id: userTable.id, email: userTable.email, name: userTable.name })
+          .select({ id: userTable.id, email: userTable.email, Name: userTable.Name })
           .from(userTable)
           .where(eq(userTable.id, wf.userId))
           .limit(1)
@@ -222,7 +222,7 @@ export class ExecutionLogger implements IExecutionLoggerService {
               scope: 'user',
               userId: usr.id,
               userEmail: usr.email,
-              userName: usr.name || undefined,
+              userName: usr.Name || undefined,
               planName,
               percentBefore,
               percentAfter,
@@ -469,12 +469,12 @@ export class ExecutionLogger implements IExecutionLoggerService {
       // Check if this object has files property
       if (Array.isArray(obj.files)) {
         for (const file of obj.files) {
-          if (file?.name && file.key && file.id) {
+          if (file?.Name && file.key && file.id) {
             if (!seenFileIds.has(file.id)) {
               seenFileIds.add(file.id)
               files.push({
                 id: file.id,
-                name: file.name,
+                Name: file.Name,
                 size: file.size,
                 type: file.type,
                 url: file.url,
@@ -492,12 +492,12 @@ export class ExecutionLogger implements IExecutionLoggerService {
       // Check if this object has attachments property (for Gmail and other tools)
       if (Array.isArray(obj.attachments)) {
         for (const file of obj.attachments) {
-          if (file?.name && file.key && file.id) {
+          if (file?.Name && file.key && file.id) {
             if (!seenFileIds.has(file.id)) {
               seenFileIds.add(file.id)
               files.push({
                 id: file.id,
-                name: file.name,
+                Name: file.Name,
                 size: file.size,
                 type: file.type,
                 url: file.url,
@@ -513,9 +513,9 @@ export class ExecutionLogger implements IExecutionLoggerService {
       }
 
       // Check if this object itself is a file reference
-      if (obj.name && obj.key && typeof obj.size === 'number') {
+      if (obj.Name && obj.key && typeof obj.size === 'number') {
         if (!obj.id) {
-          logger.warn(`File object missing ID, skipping: ${obj.name}`)
+          logger.warn(`File object missing ID, skipping: ${obj.Name}`)
           return
         }
 
@@ -523,7 +523,7 @@ export class ExecutionLogger implements IExecutionLoggerService {
           seenFileIds.add(obj.id)
           files.push({
             id: obj.id,
-            name: obj.name,
+            Name: obj.Name,
             size: obj.size,
             type: obj.type,
             url: obj.url,

@@ -137,7 +137,7 @@ export function getEmailSubject(
     | 'plan-welcome-pro'
     | 'plan-welcome-team'
 ): string {
-  const brandName = getBrandConfig().name
+  const brandName = getBrandConfig().Name
 
   switch (type) {
     case 'sign-in':

@@ -53,7 +53,7 @@ function createReadableStreamFromOpenAIStream(
 
 export const openRouterProvider: ProviderConfig = {
   id: 'openrouter',
-  name: 'OpenRouter',
+  Name: 'OpenRouter',
   description: 'Unified access to many models via OpenRouter',
   version: '1.0.0',
   models: getProviderModels('openrouter'),
@@ -101,7 +101,7 @@ export const openRouterProvider: ProviderConfig = {
       ? request.tools.map((tool) => ({
           type: 'function',
           function: {
-            name: tool.id,
+            Name: tool.id,
             description: tool.description,
             parameters: tool.parameters,
           },
@@ -120,7 +120,7 @@ export const openRouterProvider: ProviderConfig = {
       payload.response_format = {
         type: 'json_schema',
         json_schema: {
-          name: request.responseFormat.name || 'response_schema',
+          Name: request.responseFormat.Name || 'response_schema',
           schema: request.responseFormat.schema || request.responseFormat,
           strict: request.responseFormat.strict !== false,
         },
@@ -189,7 +189,7 @@ export const openRouterProvider: ProviderConfig = {
                 timeSegments: [
                   {
                     type: 'model',
-                    name: 'Streaming response',
+                    Name: 'Streaming response',
                     startTime: providerStartTime,
                     endTime: Date.now(),
                     duration: Date.now() - providerStartTime,
@@ -234,7 +234,7 @@ export const openRouterProvider: ProviderConfig = {
       const timeSegments: TimeSegment[] = [
         {
           type: 'model',
-          name: 'Initial response',
+          Name: 'Initial response',
           startTime: initialCallTime,
           endTime: initialCallTime + firstResponseTime,
           duration: firstResponseTime,
@@ -243,7 +243,7 @@ export const openRouterProvider: ProviderConfig = {
 
       const checkForForcedToolUsage = (
         response: any,
-        toolChoice: string | { type: string; function?: { name: string }; name?: string; any?: any }
+        toolChoice: string | { type: string; function?: { Name: string }; Name?: string; any?: any }
       ) => {
         if (typeof toolChoice === 'object' && response.choices[0]?.message?.tool_calls) {
           const toolCallsResponse = response.choices[0].message.tool_calls
@@ -271,7 +271,7 @@ export const openRouterProvider: ProviderConfig = {
         const toolsStartTime = Date.now()
         for (const toolCall of toolCallsInResponse) {
           try {
-            const toolName = toolCall.function.name
+            const toolName = toolCall.function.Name
             const toolArgs = JSON.parse(toolCall.function.arguments)
             const tool = request.tools?.find((t) => t.id === toolName)
             if (!tool) continue
@@ -284,7 +284,7 @@ export const openRouterProvider: ProviderConfig = {
 
             timeSegments.push({
               type: 'tool',
-              name: toolName,
+              Name: toolName,
               startTime: toolCallStartTime,
               endTime: toolCallEndTime,
               duration: toolCallDuration,
@@ -303,7 +303,7 @@ export const openRouterProvider: ProviderConfig = {
             }
 
             toolCalls.push({
-              name: toolName,
+              Name: toolName,
               arguments: toolParams,
               startTime: new Date(toolCallStartTime).toISOString(),
               endTime: new Date(toolCallEndTime).toISOString(),
@@ -320,7 +320,7 @@ export const openRouterProvider: ProviderConfig = {
                   id: toolCall.id,
                   type: 'function',
                   function: {
-                    name: toolName,
+                    Name: toolName,
                     arguments: toolCall.function.arguments,
                   },
                 },
@@ -335,7 +335,7 @@ export const openRouterProvider: ProviderConfig = {
           } catch (error) {
             logger.error('Error processing tool call (OpenRouter):', {
               error: error instanceof Error ? error.message : String(error),
-              toolName: toolCall?.function?.name,
+              toolName: toolCall?.function?.Name,
             })
           }
         }
@@ -351,7 +351,7 @@ export const openRouterProvider: ProviderConfig = {
         if (typeof originalToolChoice === 'object' && hasUsedForcedTool && forcedTools.length > 0) {
           const remainingTools = forcedTools.filter((tool) => !usedForcedTools.includes(tool))
           if (remainingTools.length > 0) {
-            nextPayload.tool_choice = { type: 'function', function: { name: remainingTools[0] } }
+            nextPayload.tool_choice = { type: 'function', function: { Name: remainingTools[0] } }
           } else {
             nextPayload.tool_choice = 'auto'
           }
@@ -364,7 +364,7 @@ export const openRouterProvider: ProviderConfig = {
         const thisModelTime = nextModelEndTime - nextModelStartTime
         timeSegments.push({
           type: 'model',
-          name: `Model response (iteration ${iterationCount + 1})`,
+          Name: `Model response (iteration ${iterationCount + 1})`,
           startTime: nextModelStartTime,
           endTime: nextModelEndTime,
           duration: thisModelTime,

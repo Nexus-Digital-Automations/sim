@@ -28,8 +28,8 @@ import type { ToolResponse } from '@/tools/types'
 export interface ParlantTool {
   /** Unique tool identifier matching Sim's block type */
   id: string
-  /** Human-readable tool name for conversational use */
-  name: string
+  /** Human-readable tool Name for conversational use */
+  Name: string
   /** Natural language description explaining what the tool does */
   description: string
   /** Detailed explanation of tool capabilities and usage */
@@ -56,8 +56,8 @@ export interface ParlantTool {
  * Simplified parameter definition for LLM-friendly interaction
  */
 export interface ParlantToolParameter {
-  /** Parameter name */
-  name: string
+  /** Parameter Name */
+  Name: string
   /** Human-readable parameter description */
   description: string
   /** Parameter data type */
@@ -86,8 +86,8 @@ export interface ParlantToolParameter {
  * Tool output definition with natural language descriptions
  */
 export interface ParlantToolOutput {
-  /** Output field name */
-  name: string
+  /** Output field Name */
+  Name: string
   /** Human-readable description of the output */
   description: string
   /** Output data type */
@@ -304,11 +304,11 @@ export abstract class UniversalToolAdapter {
     const errors: string[] = []
 
     for (const param of this.parlantTool.parameters) {
-      const value = parameters[param.name]
+      const value = parameters[param.Name]
 
       // Check required parameters
       if (param.required && (value === undefined || value === null)) {
-        errors.push(`Required parameter '${param.name}' is missing`)
+        errors.push(`Required parameter '${param.Name}' is missing`)
         continue
       }
 
@@ -319,14 +319,14 @@ export abstract class UniversalToolAdapter {
 
       // Type validation
       if (!this.validateParameterType(value, param.type)) {
-        errors.push(`Parameter '${param.name}' must be of type ${param.type}`)
+        errors.push(`Parameter '${param.Name}' must be of type ${param.type}`)
         continue
       }
 
       // Constraint validation
       if (param.constraints) {
         const constraintErrors = this.validateParameterConstraints(value, param.constraints)
-        errors.push(...constraintErrors.map((err) => `Parameter '${param.name}': ${err}`))
+        errors.push(...constraintErrors.map((err) => `Parameter '${param.Name}': ${err}`))
       }
     }
 

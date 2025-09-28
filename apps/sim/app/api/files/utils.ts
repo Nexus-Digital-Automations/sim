@@ -31,14 +31,14 @@ export interface FileResponse {
 export class FileNotFoundError extends Error {
   constructor(message: string) {
     super(message)
-    this.name = 'FileNotFoundError'
+    this.Name = 'FileNotFoundError'
   }
 }
 
 export class InvalidRequestError extends Error {
   constructor(message: string) {
     super(message)
-    this.name = 'InvalidRequestError'
+    this.Name = 'InvalidRequestError'
   }
 }
 
@@ -335,7 +335,7 @@ export function createErrorResponse(error: Error, status = 500): NextResponse {
 
   return NextResponse.json(
     {
-      error: error.name,
+      error: error.Name,
       message: error.message,
     },
     { status: statusCode }
@@ -356,7 +356,7 @@ export function createOptionsResponse(): NextResponse {
   return new NextResponse(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'get, post, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
   })

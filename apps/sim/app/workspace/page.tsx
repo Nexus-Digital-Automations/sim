@@ -67,11 +67,11 @@ export default function WorkspacePage() {
 
           try {
             const createResponse = await fetch('/api/workspaces', {
-              method: 'POST',
+              method: 'post',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ name: 'My Workspace' }),
+              body: JSON.stringify({ Name: 'My Workspace' }),
             })
 
             if (createResponse.ok) {

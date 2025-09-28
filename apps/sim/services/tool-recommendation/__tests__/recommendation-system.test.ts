@@ -81,7 +81,7 @@ describe('Tool Recommendation System', () => {
 
     test('should provide system information', () => {
       const { SYSTEM_INFO } = require('../index')
-      expect(SYSTEM_INFO.name).toBe('Tool Recommendation System')
+      expect(SYSTEM_INFO.Name).toBe('Tool Recommendation System')
       expect(SYSTEM_INFO.version).toBe('1.0.0')
       expect(SYSTEM_INFO.features).toHaveLength(8)
       expect(SYSTEM_INFO.components).toBeDefined()
@@ -295,7 +295,7 @@ describe('Tool Recommendation System', () => {
       expect(Array.isArray(workflows)).toBe(true)
       workflows.forEach((workflow) => {
         expect(workflow.id).toBeDefined()
-        expect(workflow.name).toBeDefined()
+        expect(workflow.Name).toBeDefined()
         expect(workflow.tools).toBeDefined()
         expect(workflow.frequency).toBeGreaterThan(0)
       })
@@ -718,7 +718,7 @@ describe('Tool Recommendation System', () => {
 const testHelpers = {
   createMockRecommendation: (toolId: string, score = 0.8): ToolRecommendation => ({
     toolId,
-    tool: { id: toolId, name: toolId, description: 'Mock tool', version: '1.0.0' } as any,
+    tool: { id: toolId, Name: toolId, description: 'Mock tool', version: '1.0.0' } as any,
     score,
     confidence: score * 0.9,
     reasons: [{ type: 'intent_match', weight: 0.8, explanation: 'Mock reason' }],

@@ -41,7 +41,7 @@ function createReadableStreamFromXAIStream(xaiStream: any): ReadableStream {
 
 export const xAIProvider: ProviderConfig = {
   id: 'xai',
-  name: 'xAI',
+  Name: 'xAI',
   description: "xAI's Grok models",
   version: '1.0.0',
   models: getProviderModels('xai'),
@@ -92,7 +92,7 @@ export const xAIProvider: ProviderConfig = {
       ? request.tools.map((tool) => ({
           type: 'function',
           function: {
-            name: tool.id,
+            Name: tool.id,
             description: tool.description,
             parameters: tool.parameters,
           },
@@ -126,7 +126,7 @@ export const xAIProvider: ProviderConfig = {
         payload.response_format = {
           type: 'json_schema',
           json_schema: {
-            name: request.responseFormat.name || 'structured_response',
+            Name: request.responseFormat.Name || 'structured_response',
             schema: request.responseFormat.schema || request.responseFormat,
             strict: request.responseFormat.strict !== false,
           },
@@ -189,7 +189,7 @@ export const xAIProvider: ProviderConfig = {
               timeSegments: [
                 {
                   type: 'model',
-                  name: 'Streaming response',
+                  Name: 'Streaming response',
                   startTime: providerStartTime,
                   endTime: Date.now(),
                   duration: Date.now() - providerStartTime,
@@ -273,7 +273,7 @@ export const xAIProvider: ProviderConfig = {
       const timeSegments: TimeSegment[] = [
         {
           type: 'model',
-          name: 'Initial response',
+          Name: 'Initial response',
           startTime: initialCallTime,
           endTime: initialCallTime + firstResponseTime,
           duration: firstResponseTime,
@@ -283,7 +283,7 @@ export const xAIProvider: ProviderConfig = {
       // Helper function to check for forced tool usage in responses
       const checkForForcedToolUsage = (
         response: any,
-        toolChoice: string | { type: string; function?: { name: string }; name?: string; any?: any }
+        toolChoice: string | { type: string; function?: { Name: string }; Name?: string; any?: any }
       ) => {
         if (typeof toolChoice === 'object' && response.choices[0]?.message?.tool_calls) {
           const toolCallsResponse = response.choices[0].message.tool_calls
@@ -318,7 +318,7 @@ export const xAIProvider: ProviderConfig = {
 
           for (const toolCall of toolCallsInResponse) {
             try {
-              const toolName = toolCall.function.name
+              const toolName = toolCall.function.Name
               const toolArgs = JSON.parse(toolCall.function.arguments)
 
               const tool = request.tools?.find((t) => t.id === toolName)
@@ -338,7 +338,7 @@ export const xAIProvider: ProviderConfig = {
               // Add to time segments for both success and failure
               timeSegments.push({
                 type: 'tool',
-                name: toolName,
+                Name: toolName,
                 startTime: toolCallStartTime,
                 endTime: toolCallEndTime,
                 duration: toolCallDuration,
@@ -364,7 +364,7 @@ export const xAIProvider: ProviderConfig = {
               }
 
               toolCalls.push({
-                name: toolName,
+                Name: toolName,
                 arguments: toolParams,
                 startTime: new Date(toolCallStartTime).toISOString(),
                 endTime: new Date(toolCallEndTime).toISOString(),
@@ -382,7 +382,7 @@ export const xAIProvider: ProviderConfig = {
                     id: toolCall.id,
                     type: 'function',
                     function: {
-                      name: toolName,
+                      Name: toolName,
                       arguments: toolCall.function.arguments,
                     },
                   },
@@ -397,7 +397,7 @@ export const xAIProvider: ProviderConfig = {
             } catch (error) {
               logger.error('XAI Provider - Error processing tool call:', {
                 error: error instanceof Error ? error.message : String(error),
-                toolCall: toolCall.function.name,
+                toolCall: toolCall.function.Name,
               })
             }
           }
@@ -426,7 +426,7 @@ export const xAIProvider: ProviderConfig = {
                 tools: preparedTools?.tools,
                 tool_choice: {
                   type: 'function',
-                  function: { name: remainingTools[0] },
+                  function: { Name: remainingTools[0] },
                 },
               }
             } else {
@@ -473,7 +473,7 @@ export const xAIProvider: ProviderConfig = {
           // Add to time segments
           timeSegments.push({
             type: 'model',
-            name: `Model response (iteration ${iterationCount + 1})`,
+            Name: `Model response (iteration ${iterationCount + 1})`,
             startTime: nextModelStartTime,
             endTime: nextModelEndTime,
             duration: thisModelTime,

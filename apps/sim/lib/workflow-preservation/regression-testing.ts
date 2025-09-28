@@ -20,7 +20,7 @@ import { createLogger } from '@/lib/logs/console/logger'
 const logger = createLogger('RegressionTesting')
 
 export interface TestSuite {
-  name: string
+  Name: string
   description: string
   category: TestCategory
   tests: TestCase[]
@@ -30,7 +30,7 @@ export interface TestSuite {
 
 export interface TestCase {
   id: string
-  name: string
+  Name: string
   description: string
   priority: TestPriority
   operations: TestOperation[]
@@ -140,20 +140,20 @@ export class RegressionTestingFramework {
    */
   private createCoreReactFlowTestSuite(): TestSuite {
     return {
-      name: 'Core ReactFlow Operations',
+      Name: 'Core ReactFlow Operations',
       description: 'Tests basic ReactFlow canvas functionality',
       category: 'core-reactflow',
       tests: [
         {
           id: 'reactflow-canvas-render',
-          name: 'Canvas Rendering',
+          Name: 'Canvas Rendering',
           description: 'Verify ReactFlow canvas renders correctly',
           priority: 'critical',
           operations: [
             {
               type: 'create-workflow',
               description: 'Create new workflow',
-              params: { name: 'Test Workflow' },
+              params: { Name: 'Test Workflow' },
             },
           ],
           expectedResults: [
@@ -166,7 +166,7 @@ export class RegressionTestingFramework {
         },
         {
           id: 'reactflow-zoom-pan',
-          name: 'Zoom and Pan',
+          Name: 'Zoom and Pan',
           description: 'Verify zoom and pan functionality',
           priority: 'high',
           operations: [
@@ -191,7 +191,7 @@ export class RegressionTestingFramework {
         },
         {
           id: 'reactflow-viewport-fit',
-          name: 'Fit to Viewport',
+          Name: 'Fit to Viewport',
           description: 'Verify fit view functionality',
           priority: 'high',
           operations: [
@@ -223,13 +223,13 @@ export class RegressionTestingFramework {
    */
   private createBlockOperationsTestSuite(): TestSuite {
     return {
-      name: 'Block Operations',
+      Name: 'Block Operations',
       description: 'Tests block creation, modification, and deletion',
       category: 'block-operations',
       tests: [
         {
           id: 'block-creation',
-          name: 'Block Creation',
+          Name: 'Block Creation',
           description: 'Verify blocks can be created successfully',
           priority: 'critical',
           operations: [
@@ -259,7 +259,7 @@ export class RegressionTestingFramework {
         },
         {
           id: 'block-drag-drop',
-          name: 'Block Drag and Drop',
+          Name: 'Block Drag and Drop',
           description: 'Verify blocks can be dragged and repositioned',
           priority: 'critical',
           operations: [
@@ -284,7 +284,7 @@ export class RegressionTestingFramework {
         },
         {
           id: 'block-configuration',
-          name: 'Block Configuration',
+          Name: 'Block Configuration',
           description: 'Verify block properties can be configured',
           priority: 'high',
           operations: [
@@ -315,7 +315,7 @@ export class RegressionTestingFramework {
         },
         {
           id: 'block-deletion',
-          name: 'Block Deletion',
+          Name: 'Block Deletion',
           description: 'Verify blocks can be deleted',
           priority: 'critical',
           operations: [
@@ -347,13 +347,13 @@ export class RegressionTestingFramework {
    */
   private createEdgeManagementTestSuite(): TestSuite {
     return {
-      name: 'Edge Management',
+      Name: 'Edge Management',
       description: 'Tests edge creation, modification, and deletion',
       category: 'edge-management',
       tests: [
         {
           id: 'edge-creation',
-          name: 'Edge Creation',
+          Name: 'Edge Creation',
           description: 'Verify edges can be created between blocks',
           priority: 'critical',
           operations: [
@@ -388,7 +388,7 @@ export class RegressionTestingFramework {
         },
         {
           id: 'conditional-edge',
-          name: 'Conditional Edge',
+          Name: 'Conditional Edge',
           description: 'Verify conditional edges work correctly',
           priority: 'high',
           operations: [
@@ -423,7 +423,7 @@ export class RegressionTestingFramework {
         },
         {
           id: 'edge-deletion',
-          name: 'Edge Deletion',
+          Name: 'Edge Deletion',
           description: 'Verify edges can be deleted',
           priority: 'high',
           operations: [
@@ -465,13 +465,13 @@ export class RegressionTestingFramework {
    */
   private createContainerOperationsTestSuite(): TestSuite {
     return {
-      name: 'Container Operations',
+      Name: 'Container Operations',
       description: 'Tests loop and parallel container functionality',
       category: 'container-operations',
       tests: [
         {
           id: 'loop-creation',
-          name: 'Loop Container Creation',
+          Name: 'Loop Container Creation',
           description: 'Verify loop containers can be created',
           priority: 'high',
           operations: [
@@ -491,7 +491,7 @@ export class RegressionTestingFramework {
         },
         {
           id: 'container-resize',
-          name: 'Container Resizing',
+          Name: 'Container Resizing',
           description: 'Verify containers can be resized',
           priority: 'medium',
           operations: [
@@ -516,7 +516,7 @@ export class RegressionTestingFramework {
         },
         {
           id: 'block-in-container',
-          name: 'Block in Container',
+          Name: 'Block in Container',
           description: 'Verify blocks can be placed inside containers',
           priority: 'high',
           operations: [
@@ -552,13 +552,13 @@ export class RegressionTestingFramework {
    */
   private createWorkflowExecutionTestSuite(): TestSuite {
     return {
-      name: 'Workflow Execution',
+      Name: 'Workflow Execution',
       description: 'Tests workflow execution functionality',
       category: 'workflow-execution',
       tests: [
         {
           id: 'basic-execution',
-          name: 'Basic Workflow Execution',
+          Name: 'Basic Workflow Execution',
           description: 'Verify simple workflow can execute',
           priority: 'critical',
           operations: [
@@ -600,13 +600,13 @@ export class RegressionTestingFramework {
    */
   private createUIInteractionsTestSuite(): TestSuite {
     return {
-      name: 'UI Interactions',
+      Name: 'UI Interactions',
       description: 'Tests user interface interactions',
       category: 'ui-interactions',
       tests: [
         {
           id: 'keyboard-shortcuts',
-          name: 'Keyboard Shortcuts',
+          Name: 'Keyboard Shortcuts',
           description: 'Verify keyboard shortcuts work correctly',
           priority: 'medium',
           operations: [
@@ -633,13 +633,13 @@ export class RegressionTestingFramework {
    */
   private createDataPersistenceTestSuite(): TestSuite {
     return {
-      name: 'Data Persistence',
+      Name: 'Data Persistence',
       description: 'Tests workflow data persistence',
       category: 'data-persistence',
       tests: [
         {
           id: 'save-workflow',
-          name: 'Save Workflow',
+          Name: 'Save Workflow',
           description: 'Verify workflow can be saved',
           priority: 'critical',
           operations: [
@@ -664,7 +664,7 @@ export class RegressionTestingFramework {
         },
         {
           id: 'load-workflow',
-          name: 'Load Workflow',
+          Name: 'Load Workflow',
           description: 'Verify workflow can be loaded',
           priority: 'critical',
           operations: [
@@ -691,13 +691,13 @@ export class RegressionTestingFramework {
    */
   private createCollaborationTestSuite(): TestSuite {
     return {
-      name: 'Collaboration Features',
+      Name: 'Collaboration Features',
       description: 'Tests real-time collaboration functionality',
       category: 'collaboration',
       tests: [
         {
           id: 'real-time-sync',
-          name: 'Real-time Synchronization',
+          Name: 'Real-time Synchronization',
           description: 'Verify changes sync in real-time',
           priority: 'high',
           operations: [
@@ -727,7 +727,7 @@ export class RegressionTestingFramework {
     const results: TestResult[] = []
 
     for (const suite of this.testSuites) {
-      logger.info(`Running test suite: ${suite.name}`)
+      logger.info(`Running test suite: ${suite.Name}`)
 
       if (suite.setup) {
         await suite.setup()
@@ -764,7 +764,7 @@ export class RegressionTestingFramework {
     const operationResults: OperationResult[] = []
     const assertionResults: AssertionResult[] = []
 
-    logger.debug(`Running test case: ${testCase.name}`)
+    logger.debug(`Running test case: ${testCase.Name}`)
 
     try {
       // Execute operations

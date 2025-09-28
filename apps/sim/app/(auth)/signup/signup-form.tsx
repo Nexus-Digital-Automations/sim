@@ -98,7 +98,7 @@ function SignupFormContent({
   const [isInviteFlow, setIsInviteFlow] = useState(false)
   const [buttonClass, setButtonClass] = useState('auth-button-gradient')
 
-  const [name, setName] = useState('')
+  const [Name, setName] = useState('')
   const [nameErrors, setNameErrors] = useState<string[]>([])
   const [showNameValidationError, setShowNameValidationError] = useState(false)
 
@@ -238,7 +238,7 @@ function SignupFormContent({
     const emailValueRaw = formData.get('email') as string
     const emailValue = emailValueRaw.trim().toLowerCase()
     const passwordValue = formData.get('password') as string
-    const nameValue = formData.get('name') as string
+    const nameValue = formData.get('Name') as string
 
     const trimmedName = nameValue.trim()
 
@@ -278,7 +278,7 @@ function SignupFormContent({
       }
 
       if (trimmedName.length > 100) {
-        setNameErrors(['Name will be truncated to 100 characters. Please shorten your name.'])
+        setNameErrors(['Name will be truncated to 100 characters. Please shorten your Name.'])
         setShowNameValidationError(true)
         setIsLoading(false)
         return
@@ -290,7 +290,7 @@ function SignupFormContent({
         {
           email: emailValue,
           password: passwordValue,
-          name: sanitizedName,
+          Name: sanitizedName,
         },
         {
           onError: (ctx) => {
@@ -410,17 +410,17 @@ function SignupFormContent({
         <div className='space-y-6'>
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor={nameInputId}>Full name</Label>
+              <Label htmlFor={nameInputId}>Full Name</Label>
             </div>
             <Input
               id={nameInputId}
-              name='name'
-              placeholder='Enter your name'
+              Name='Name'
+              placeholder='Enter your Name'
               type='text'
               autoCapitalize='words'
-              autoComplete='name'
+              autoComplete='Name'
               title='Name can only contain letters, spaces, hyphens, and apostrophes'
-              value={name}
+              value={Name}
               onChange={handleNameChange}
               className={cn(
                 'rounded-[10px] shadow-sm transition-colors focus:border-gray-400 focus:ring-2 focus:ring-gray-100',
@@ -443,7 +443,7 @@ function SignupFormContent({
             </div>
             <Input
               id={emailInputId}
-              name='email'
+              Name='email'
               placeholder='Enter your email'
               autoCapitalize='none'
               autoComplete='email'
@@ -476,7 +476,7 @@ function SignupFormContent({
             <div className='relative'>
               <Input
                 id={passwordInputId}
-                name='password'
+                Name='password'
                 type={showPassword ? 'text' : 'password'}
                 autoCapitalize='none'
                 autoComplete='new-password'

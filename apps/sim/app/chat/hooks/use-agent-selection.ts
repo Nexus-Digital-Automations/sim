@@ -174,7 +174,7 @@ export function useAgentSelection({
     (agent: Agent) => {
       logger.info('Selecting agent', {
         agentId: agent.id,
-        agentName: agent.name,
+        agentName: agent.Name,
         workspaceId,
       })
 
@@ -215,13 +215,13 @@ export function useAgentSelection({
         newFavorites = prevState.favoriteAgents.filter((a) => a.id !== agent.id)
         logger.info('Removed agent from favorites', {
           agentId: agent.id,
-          agentName: agent.name,
+          agentName: agent.Name,
         })
       } else {
         newFavorites = [...prevState.favoriteAgents, agent]
         logger.info('Added agent to favorites', {
           agentId: agent.id,
-          agentName: agent.name,
+          agentName: agent.Name,
         })
       }
 
@@ -275,7 +275,7 @@ export function useAgentSelection({
 
     logger.info('Updated agent data', {
       agentId: updatedAgent.id,
-      agentName: updatedAgent.name,
+      agentName: updatedAgent.Name,
     })
   }, [])
 

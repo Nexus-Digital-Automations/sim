@@ -7,7 +7,7 @@ export interface KnowledgeBaseData {
   id: string
   userId: string
   workspaceId?: string | null
-  name: string
+  Name: string
   description?: string | null
   tokenCount: number
   embeddingModel: string

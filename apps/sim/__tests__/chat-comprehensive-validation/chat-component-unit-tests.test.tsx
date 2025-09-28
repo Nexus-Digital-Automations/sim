@@ -261,7 +261,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
       )
 
       expect(screen.getByRole('textbox')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /send/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { Name: /send/i })).toBeInTheDocument()
     })
 
     it('should handle text input changes', async () => {
@@ -295,7 +295,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
       )
 
       const input = screen.getByRole('textbox')
-      const sendButton = screen.getByRole('button', { name: /send/i })
+      const sendButton = screen.getByRole('button', { Name: /send/i })
 
       await user.type(input, 'Test message')
       await user.click(sendButton)
@@ -335,7 +335,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         />
       )
 
-      const sendButton = screen.getByRole('button', { name: /send/i })
+      const sendButton = screen.getByRole('button', { Name: /send/i })
 
       await user.click(sendButton)
 
@@ -365,7 +365,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         />
       )
 
-      expect(screen.getByRole('button', { name: /stop/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { Name: /stop/i })).toBeInTheDocument()
     })
 
     it('should call onStopStreaming when stop button clicked', async () => {
@@ -380,7 +380,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         />
       )
 
-      const stopButton = screen.getByRole('button', { name: /stop/i })
+      const stopButton = screen.getByRole('button', { Name: /stop/i })
       await user.click(stopButton)
 
       expect(mockOnStopStreaming).toHaveBeenCalled()
@@ -398,7 +398,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         />
       )
 
-      const voiceButton = screen.getByRole('button', { name: /voice/i })
+      const voiceButton = screen.getByRole('button', { Name: /voice/i })
       await user.click(voiceButton)
 
       expect(mockOnVoiceStart).toHaveBeenCalled()
@@ -500,7 +500,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         />
       )
 
-      expect(screen.getByRole('button', { name: /scroll to bottom/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { Name: /scroll to bottom/i })).toBeInTheDocument()
     })
 
     it('should call scrollToBottom when scroll button clicked', async () => {
@@ -519,7 +519,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         />
       )
 
-      const scrollButton = screen.getByRole('button', { name: /scroll to bottom/i })
+      const scrollButton = screen.getByRole('button', { Name: /scroll to bottom/i })
       await user.click(scrollButton)
 
       expect(mockScrollToBottom).toHaveBeenCalled()
@@ -598,7 +598,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         )
 
         expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: /enter/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { Name: /enter/i })).toBeInTheDocument()
       })
 
       it('should handle password submission', async () => {
@@ -620,7 +620,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         )
 
         const passwordInput = screen.getByLabelText(/password/i)
-        const submitButton = screen.getByRole('button', { name: /enter/i })
+        const submitButton = screen.getByRole('button', { Name: /enter/i })
 
         await user.type(passwordInput, 'secret-password')
         await user.click(submitButton)
@@ -629,7 +629,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
           expect(mockFetch).toHaveBeenCalledWith(
             '/api/chat/protected-chat',
             expect.objectContaining({
-              method: 'POST',
+              method: 'post',
               body: JSON.stringify({ password: 'secret-password' }),
             })
           )
@@ -655,7 +655,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         )
 
         const passwordInput = screen.getByLabelText(/password/i)
-        const submitButton = screen.getByRole('button', { name: /enter/i })
+        const submitButton = screen.getByRole('button', { Name: /enter/i })
 
         await user.type(passwordInput, 'wrong-password')
         await user.click(submitButton)
@@ -677,7 +677,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
           />
         )
 
-        const submitButton = screen.getByRole('button', { name: /enter/i })
+        const submitButton = screen.getByRole('button', { Name: /enter/i })
 
         await user.click(submitButton)
 
@@ -697,7 +697,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         )
 
         expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: /continue/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { Name: /continue/i })).toBeInTheDocument()
       })
 
       it('should validate email format', async () => {
@@ -713,7 +713,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         )
 
         const emailInput = screen.getByLabelText(/email/i)
-        const submitButton = screen.getByRole('button', { name: /continue/i })
+        const submitButton = screen.getByRole('button', { Name: /continue/i })
 
         await user.type(emailInput, 'invalid-email')
         await user.click(submitButton)
@@ -741,7 +741,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         )
 
         const emailInput = screen.getByLabelText(/email/i)
-        const submitButton = screen.getByRole('button', { name: /continue/i })
+        const submitButton = screen.getByRole('button', { Name: /continue/i })
 
         await user.type(emailInput, 'user@example.com')
         await user.click(submitButton)
@@ -750,7 +750,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
           expect(mockFetch).toHaveBeenCalledWith(
             '/api/chat/email-protected-chat',
             expect.objectContaining({
-              method: 'POST',
+              method: 'post',
               body: JSON.stringify({ email: 'user@example.com' }),
             })
           )
@@ -780,7 +780,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
 
       render(<ChatErrorState error='Connection failed' starCount='3.4k' onRetry={mockOnRetry} />)
 
-      const retryButton = screen.getByRole('button', { name: /retry/i })
+      const retryButton = screen.getByRole('button', { Name: /retry/i })
       await user.click(retryButton)
 
       expect(mockOnRetry).toHaveBeenCalled()
@@ -809,8 +809,8 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         />
       )
 
-      expect(screen.getByRole('button', { name: /end call/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /start speaking/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { Name: /end call/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { Name: /start speaking/i })).toBeInTheDocument()
     })
 
     it('should handle call end', async () => {
@@ -830,7 +830,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         />
       )
 
-      const endCallButton = screen.getByRole('button', { name: /end call/i })
+      const endCallButton = screen.getByRole('button', { Name: /end call/i })
       await user.click(endCallButton)
 
       expect(mockOnCallEnd).toHaveBeenCalled()
@@ -1127,7 +1127,7 @@ describe('Parlant Chat Interface Component Unit Tests', () => {
         />
       )
 
-      const recoverButton = screen.getByRole('button', { name: /recover/i })
+      const recoverButton = screen.getByRole('button', { Name: /recover/i })
       await user.click(recoverButton)
 
       expect(mockOnRecover).toHaveBeenCalled()

@@ -89,9 +89,9 @@ const AgentCard: React.FC<AgentCardProps> = ({
               <Bot className='h-4 w-4 text-primary' />
             </div>
             <div>
-              <CardTitle className='font-medium text-sm'>{agent.name}</CardTitle>
+              <CardTitle className='font-medium text-sm'>{agent.Name}</CardTitle>
               <CardDescription className='text-xs'>
-                {agent.description || `AI agent for ${agent.name.toLowerCase()} tasks`}
+                {agent.description || `AI agent for ${agent.Name.toLowerCase()} tasks`}
               </CardDescription>
             </div>
           </div>
@@ -205,7 +205,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterBy, setFilterBy] = useState<'all' | 'recent' | 'tools'>('all')
-  const [sortBy, setSortBy] = useState<'name' | 'recent' | 'conversations'>('name')
+  const [sortBy, setSortBy] = useState<'Name' | 'recent' | 'conversations'>('Name')
 
   // Create agent selections with metadata
   const agentSelections: AgentSelection[] = useMemo(() => {
@@ -233,7 +233,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
       const query = searchQuery.toLowerCase().trim()
       filtered = filtered.filter(
         ({ agent, capabilities }) =>
-          agent.name.toLowerCase().includes(query) ||
+          agent.Name.toLowerCase().includes(query) ||
           agent.description?.toLowerCase().includes(query) ||
           capabilities.some((cap) => cap.toLowerCase().includes(query))
       )
@@ -263,7 +263,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
         case 'conversations':
           return b.conversationCount - a.conversationCount
         default:
-          return a.agent.name.localeCompare(b.agent.name)
+          return a.agent.Name.localeCompare(b.agent.Name)
       }
     })
 
@@ -274,7 +274,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
     (agent: Agent) => {
       logger.info('Agent selected from selector', {
         agentId: agent.id,
-        agentName: agent.name,
+        agentName: agent.Name,
         workspaceId,
       })
       onSelectAgent(agent)
@@ -334,7 +334,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
               <div className='relative'>
                 <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
                 <Input
-                  placeholder='Search agents by name, description, or capabilities...'
+                  placeholder='Search agents by Name, description, or capabilities...'
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className='pl-10'
@@ -358,7 +358,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='name'>Name</SelectItem>
+                    <SelectItem value='Name'>Name</SelectItem>
                     <SelectItem value='recent'>Last Used</SelectItem>
                     <SelectItem value='conversations'>Usage</SelectItem>
                   </SelectContent>

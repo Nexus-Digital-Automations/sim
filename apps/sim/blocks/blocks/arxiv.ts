@@ -1,17 +1,17 @@
-import { ArxivIcon } from '@/components/icons'
+import { arxivIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { ArxivResponse } from '@/tools/arxiv/types'
 
 export const ArxivBlock: BlockConfig<ArxivResponse> = {
   type: 'arxiv',
-  name: 'ArXiv',
+  Name: 'ArXiv',
   description: 'Search and retrieve academic papers from ArXiv',
   longDescription:
     'Integrates ArXiv into the workflow. Can search for papers, get paper details, and get author papers. Does not require OAuth or an API key.',
   docsLink: 'https://docs.sim.ai/tools/arxiv',
   category: 'tools',
   bgColor: '#E0E0E0',
-  icon: ArxivIcon,
+  icon: arxivIcon,
   subBlocks: [
     {
       id: 'operation',
@@ -102,7 +102,7 @@ export const ArxivBlock: BlockConfig<ArxivResponse> = {
       title: 'Author Name',
       type: 'short-input',
       layout: 'full',
-      placeholder: 'Enter author name (e.g., "John Smith")...',
+      placeholder: 'Enter author Name (e.g., "John Smith")...',
       condition: { field: 'operation', value: 'arxiv_get_author_papers' },
       required: true,
     },
@@ -148,7 +148,7 @@ export const ArxivBlock: BlockConfig<ArxivResponse> = {
     // Get Paper Details operation
     paperId: { type: 'string', description: 'ArXiv paper identifier' },
     // Get Author Papers operation
-    authorName: { type: 'string', description: 'Author name' },
+    authorName: { type: 'string', description: 'Author Name' },
   },
   outputs: {
     // Search output

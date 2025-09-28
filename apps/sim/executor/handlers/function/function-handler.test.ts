@@ -30,7 +30,7 @@ describe('FunctionBlockHandler', () => {
 
     mockBlock = {
       id: 'func-block-1',
-      metadata: { id: BlockType.FUNCTION, name: 'Test Function' },
+      metadata: { id: BlockType.FUNCTION, Name: 'Test Function' },
       position: { x: 30, y: 30 },
       config: { tool: BlockType.FUNCTION, params: {} },
       inputs: { code: 'string', timeout: 'number' }, // Using ParamType strings

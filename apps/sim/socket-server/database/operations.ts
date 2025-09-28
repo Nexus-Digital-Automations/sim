@@ -230,7 +230,7 @@ async function handleBlockOperationTx(
   switch (operation) {
     case 'add': {
       // Validate required fields for add operation
-      if (!payload.id || !payload.type || !payload.name || !payload.position) {
+      if (!payload.id || !payload.type || !payload.Name || !payload.position) {
         throw new Error('Missing required fields for add block operation')
       }
 
@@ -256,7 +256,7 @@ async function handleBlockOperationTx(
           id: payload.id,
           workflowId,
           type: payload.type,
-          name: payload.name,
+          Name: payload.Name,
           positionX: payload.position.x,
           positionY: payload.position.y,
           data: payload.data || {},
@@ -433,15 +433,15 @@ async function handleBlockOperationTx(
       break
     }
 
-    case 'update-name': {
-      if (!payload.id || !payload.name) {
-        throw new Error('Missing required fields for update name operation')
+    case 'update-Name': {
+      if (!payload.id || !payload.Name) {
+        throw new Error('Missing required fields for update Name operation')
       }
 
       const updateResult = await tx
         .update(workflowBlocks)
         .set({
-          name: payload.name,
+          Name: payload.Name,
           updatedAt: new Date(),
         })
         .where(and(eq(workflowBlocks.id, payload.id), eq(workflowBlocks.workflowId, workflowId)))
@@ -451,7 +451,7 @@ async function handleBlockOperationTx(
         throw new Error(`Block ${payload.id} not found in workflow ${workflowId}`)
       }
 
-      logger.debug(`Updated block name: ${payload.id} -> "${payload.name}"`)
+      logger.debug(`Updated block Name: ${payload.id} -> "${payload.Name}"`)
       break
     }
 
@@ -627,7 +627,7 @@ async function handleBlockOperationTx(
 
     case 'duplicate': {
       // Validate required fields for duplicate operation
-      if (!payload.sourceId || !payload.id || !payload.type || !payload.name || !payload.position) {
+      if (!payload.sourceId || !payload.id || !payload.type || !payload.Name || !payload.position) {
         throw new Error('Missing required fields for duplicate block operation')
       }
 
@@ -648,7 +648,7 @@ async function handleBlockOperationTx(
           id: payload.id,
           workflowId,
           type: payload.type,
-          name: payload.name,
+          Name: payload.Name,
           positionX: payload.position.x,
           positionY: payload.position.y,
           data: payload.data || {},
@@ -898,7 +898,7 @@ async function handleVariableOperationTx(
 
   switch (operation) {
     case 'add': {
-      if (!payload.id || !payload.name || payload.type === undefined) {
+      if (!payload.id || !payload.Name || payload.type === undefined) {
         throw new Error('Missing required fields for add variable operation')
       }
 
@@ -908,7 +908,7 @@ async function handleVariableOperationTx(
         [payload.id]: {
           id: payload.id,
           workflowId: payload.workflowId,
-          name: payload.name,
+          Name: payload.Name,
           type: payload.type,
           value: payload.value || '',
         },
@@ -922,7 +922,7 @@ async function handleVariableOperationTx(
         })
         .where(eq(workflow.id, workflowId))
 
-      logger.debug(`Added variable ${payload.id} (${payload.name}) to workflow ${workflowId}`)
+      logger.debug(`Added variable ${payload.id} (${payload.Name}) to workflow ${workflowId}`)
       break
     }
 
@@ -956,13 +956,13 @@ async function handleVariableOperationTx(
         throw new Error(`Source variable ${payload.sourceVariableId} not found`)
       }
 
-      // Create duplicated variable with unique name
-      const baseName = `${sourceVariable.name} (copy)`
+      // Create duplicated variable with unique Name
+      const baseName = `${sourceVariable.Name} (copy)`
       let uniqueName = baseName
       let nameIndex = 1
 
-      // Ensure name uniqueness
-      const existingNames = Object.values(currentVariables).map((v: any) => v.name)
+      // Ensure Name uniqueness
+      const existingNames = Object.values(currentVariables).map((v: any) => v.Name)
       while (existingNames.includes(uniqueName)) {
         uniqueName = `${baseName} (${nameIndex})`
         nameIndex++
@@ -971,7 +971,7 @@ async function handleVariableOperationTx(
       const duplicatedVariable = {
         ...sourceVariable,
         id: payload.id,
-        name: uniqueName,
+        Name: uniqueName,
       }
 
       const updatedVariables = {

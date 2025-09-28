@@ -22,7 +22,7 @@ export function getBlobServiceClient(): BlobServiceClient {
     // Use connection string if provided
     _blobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
   } else if (accountName && accountKey) {
-    // Use account name and key
+    // Use account Name and key
     const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey)
     _blobServiceClient = new BlobServiceClient(
       `https://${accountName}.blob.core.windows.net`,
@@ -63,8 +63,8 @@ export function sanitizeFilenameForMetadata(filename: string): string {
  */
 export interface FileInfo {
   path: string // Path to access the file
-  key: string // Blob name or local filename
-  name: string // Original filename
+  key: string // Blob Name or local filename
+  Name: string // Original filename
   size: number // File size in bytes
   type: string // MIME type
 }
@@ -82,7 +82,7 @@ export interface CustomBlobConfig {
 /**
  * Upload a file to Azure Blob Storage
  * @param file Buffer containing file data
- * @param fileName Original file name
+ * @param fileName Original file Name
  * @param contentType MIME type of the file
  * @param size File size in bytes (optional, will use buffer length if not provided)
  * @returns Object with file information
@@ -97,7 +97,7 @@ export async function uploadToBlob(
 /**
  * Upload a file to Azure Blob Storage with custom container configuration
  * @param file Buffer containing file data
- * @param fileName Original file name
+ * @param fileName Original file Name
  * @param contentType MIME type of the file
  * @param customConfig Custom Blob configuration (container and account info)
  * @param size File size in bytes (optional, will use buffer length if not provided)
@@ -159,7 +159,7 @@ export async function uploadToBlob(
   return {
     path: servePath,
     key: uniqueKey,
-    name: fileName, // Return the actual original filename in the response
+    Name: fileName, // Return the actual original filename in the response
     size: fileSize,
     type: contentType,
   }
@@ -167,7 +167,7 @@ export async function uploadToBlob(
 
 /**
  * Generate a presigned URL for direct file access
- * @param key Blob name
+ * @param key Blob Name
  * @param expiresIn Time in seconds until URL expires
  * @returns Presigned URL
  */
@@ -190,7 +190,7 @@ export async function getPresignedUrl(key: string, expiresIn = 3600) {
       BLOB_CONFIG.accountName,
       BLOB_CONFIG.accountKey ??
         (() => {
-          throw new Error('AZURE_ACCOUNT_KEY is required when using account name authentication')
+          throw new Error('AZURE_ACCOUNT_KEY is required when using account Name authentication')
         })()
     )
   ).toString()
@@ -200,7 +200,7 @@ export async function getPresignedUrl(key: string, expiresIn = 3600) {
 
 /**
  * Generate a presigned URL for direct file access with custom container
- * @param key Blob name
+ * @param key Blob Name
  * @param customConfig Custom Blob configuration
  * @param expiresIn Time in seconds until URL expires
  * @returns Presigned URL
@@ -246,7 +246,7 @@ export async function getPresignedUrlWithConfig(
       customConfig.accountName,
       customConfig.accountKey ??
         (() => {
-          throw new Error('Account key is required when using account name authentication')
+          throw new Error('Account key is required when using account Name authentication')
         })()
     )
   ).toString()
@@ -256,14 +256,14 @@ export async function getPresignedUrlWithConfig(
 
 /**
  * Download a file from Azure Blob Storage
- * @param key Blob name
+ * @param key Blob Name
  * @returns File buffer
  */
 export async function downloadFromBlob(key: string): Promise<Buffer>
 
 /**
  * Download a file from Azure Blob Storage with custom configuration
- * @param key Blob name
+ * @param key Blob Name
  * @param customConfig Custom Blob configuration
  * @returns File buffer
  */
@@ -311,13 +311,13 @@ export async function downloadFromBlob(
 
 /**
  * Delete a file from Azure Blob Storage
- * @param key Blob name
+ * @param key Blob Name
  */
 export async function deleteFromBlob(key: string): Promise<void>
 
 /**
  * Delete a file from Azure Blob Storage with custom configuration
- * @param key Blob name
+ * @param key Blob Name
  * @param customConfig Custom Blob configuration
  */
 export async function deleteFromBlob(key: string, customConfig: CustomBlobConfig): Promise<void>
@@ -470,9 +470,9 @@ export async function getMultipartPartUrls(
   if (customConfig) {
     if (customConfig.connectionString) {
       blobServiceClient = BlobServiceClient.fromConnectionString(customConfig.connectionString)
-      // Extract account name from connection string
+      // Extract account Name from connection string
       const match = customConfig.connectionString.match(/AccountName=([^;]+)/)
-      if (!match) throw new Error('Cannot extract account name from connection string')
+      if (!match) throw new Error('Cannot extract account Name from connection string')
       accountName = match[1]
 
       const keyMatch = customConfig.connectionString.match(/AccountKey=([^;]+)/)

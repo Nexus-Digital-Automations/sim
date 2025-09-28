@@ -172,7 +172,7 @@ describe('Sim-Parlant Integration Bridge', () => {
   describe('Agent Management', () => {
     it('should create an agent', async () => {
       const agentRequest = {
-        name: `Test Agent - ${Date.now()}`,
+        Name: `Test Agent - ${Date.now()}`,
         description: 'A test agent for validation',
         workspace_id: TEST_WORKSPACE_ID,
         guidelines: [
@@ -193,7 +193,7 @@ describe('Sim-Parlant Integration Bridge', () => {
 
         expect(agent).toBeDefined()
         expect(agent.id).toBeDefined()
-        expect(agent.name).toBe(agentRequest.name)
+        expect(agent.Name).toBe(agentRequest.Name)
         expect(agent.description).toBe(agentRequest.description)
         expect(agent.workspace_id).toBe(TEST_WORKSPACE_ID)
         expect(agent.user_id).toBe(TEST_USER_ID)
@@ -215,7 +215,7 @@ describe('Sim-Parlant Integration Bridge', () => {
 
     it('should validate agent creation input', async () => {
       const invalidRequest = {
-        name: '', // Invalid: empty name
+        Name: '', // Invalid: empty Name
         workspace_id: 'invalid-workspace-id', // Invalid: not a UUID
       }
 
@@ -242,7 +242,7 @@ describe('Sim-Parlant Integration Bridge', () => {
         expect(agent.id).toBe(testAgentId)
         expect(agent.workspace_id).toBe(TEST_WORKSPACE_ID)
 
-        console.log(`✅ Agent retrieved: ${agent.name}`)
+        console.log(`✅ Agent retrieved: ${agent.Name}`)
       } catch (error) {
         if (isParlantError(error)) {
           console.warn(`⚠️  Agent retrieval failed: ${error.code}`)
@@ -272,7 +272,7 @@ describe('Sim-Parlant Integration Bridge', () => {
       }
 
       const updateRequest = {
-        name: 'Updated Test Agent',
+        Name: 'Updated Test Agent',
         description: 'Updated description for testing',
         config: {
           temperature: 0.5,
@@ -284,10 +284,10 @@ describe('Sim-Parlant Integration Bridge', () => {
         const updatedAgent = await updateAgent(testAgentId, updateRequest, testAuthContext)
 
         expect(updatedAgent.id).toBe(testAgentId)
-        expect(updatedAgent.name).toBe(updateRequest.name)
+        expect(updatedAgent.Name).toBe(updateRequest.Name)
         expect(updatedAgent.description).toBe(updateRequest.description)
 
-        console.log(`✅ Agent updated: ${updatedAgent.name}`)
+        console.log(`✅ Agent updated: ${updatedAgent.Name}`)
       } catch (error) {
         if (isParlantError(error)) {
           console.warn(`⚠️  Agent update failed: ${error.code}`)
@@ -556,7 +556,7 @@ describe('Sim-Parlant Integration Bridge', () => {
       try {
         await createAgent(
           {
-            name: '', // Invalid
+            Name: '', // Invalid
             workspace_id: 'invalid', // Invalid
           } as any,
           testAuthContext
@@ -639,7 +639,7 @@ describe('Sim-Parlant Integration Bridge', () => {
         // 1. Create agent
         const agent = await createAgent(
           {
-            name: `E2E Test Agent - ${Date.now()}`,
+            Name: `E2E Test Agent - ${Date.now()}`,
             description: 'End-to-end test agent',
             workspace_id: TEST_WORKSPACE_ID,
             guidelines: [
@@ -767,7 +767,7 @@ async function runManualTests(): Promise<void> {
     try {
       const agent = await createAgent(
         {
-          name: 'Manual Test Agent',
+          Name: 'Manual Test Agent',
           description: 'Created during manual testing',
           workspace_id: authContext.workspace_id!,
         },

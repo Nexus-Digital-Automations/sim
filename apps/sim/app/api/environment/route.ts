@@ -14,7 +14,7 @@ const EnvVarSchema = z.object({
   variables: z.record(z.string()),
 })
 
-export async function POST(req: NextRequest) {
+export async function post(req: NextRequest) {
   const requestId = generateRequestId()
 
   try {
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(request: Request) {
+export async function get(request: Request) {
   const requestId = generateRequestId()
 
   try {

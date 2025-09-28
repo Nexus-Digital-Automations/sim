@@ -165,7 +165,7 @@ export interface ExecutionEnvironment {
 }
 
 export interface ExternalServiceConfig {
-  name: string
+  Name: string
   endpoint: string
   version: string
   available: boolean
@@ -321,7 +321,7 @@ export interface ExecutionState {
 }
 
 export interface VariableState {
-  name: string
+  Name: string
   value: any
   type: string
   scope: 'global' | 'workflow' | 'block' | 'step'
@@ -473,7 +473,7 @@ export interface ValidationWarning {
 // ========================================
 
 export interface CompatibilityTestSuite {
-  name: string
+  Name: string
   description: string
   tests: CompatibilityTest[]
   configuration: TestConfiguration
@@ -482,7 +482,7 @@ export interface CompatibilityTestSuite {
 
 export interface CompatibilityTest {
   id: string
-  name: string
+  Name: string
   description: string
   workflowId: string
   journeyId?: string
@@ -592,7 +592,7 @@ export interface ReportMetadata {
 
 export interface ToolCall {
   id: string
-  name: string
+  Name: string
   parameters: Record<string, any>
   result: any
   duration: number
@@ -636,7 +636,7 @@ export interface ConversationTurn {
 }
 
 export interface ActiveTool {
-  name: string
+  Name: string
   status: 'active' | 'idle' | 'error'
   lastUsed: string
   callCount: number
