@@ -9,20 +9,20 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 2,
-      "current_day": "2025-09-27",
+      "total_reinitializations": 3,
+      "current_day": "2025-09-28",
       "time_buckets": {
         "11:00-15:59": {
           "init": 0,
-          "reinit": 1
+          "reinit": 0
         },
         "16:00-20:59": {
           "init": 0,
-          "reinit": 1
+          "reinit": 0
         },
         "21:00-01:59": {
           "init": 0,
-          "reinit": 0
+          "reinit": 1
         },
         "02:00-06:59": {
           "init": 0,
@@ -33,9 +33,37 @@
           "reinit": 0
         }
       },
-      "daily_history": [],
-      "last_reset": "2025-09-27T18:51:16.146Z",
-      "last_updated": "2025-09-27T22:08:35.214Z"
+      "daily_history": [
+        {
+          "date": "2025-09-27",
+          "total_init": 0,
+          "total_reinit": 2,
+          "buckets": {
+            "11:00-15:59": {
+              "init": 0,
+              "reinit": 1
+            },
+            "16:00-20:59": {
+              "init": 0,
+              "reinit": 1
+            },
+            "21:00-01:59": {
+              "init": 0,
+              "reinit": 0
+            },
+            "02:00-06:59": {
+              "init": 0,
+              "reinit": 0
+            },
+            "07:00-11:59": {
+              "init": 0,
+              "reinit": 0
+            }
+          }
+        }
+      ],
+      "last_reset": "2025-09-28T02:00:29.238Z",
+      "last_updated": "2025-09-28T02:00:29.242Z"
     }
   },
   "workflow_config": {
@@ -57,6 +85,13 @@
       "status": "active",
       "reinitialized": "2025-09-27T22:08:35.204Z",
       "sessionId": "ca3fc090bc74d691",
+      "previousSessions": []
+    },
+    "claude-code-agent-recovery": {
+      "lastHeartbeat": "2025-09-28T02:00:29.230Z",
+      "status": "active",
+      "reinitialized": "2025-09-28T02:00:29.230Z",
+      "sessionId": "9a1205f51c90a931",
       "previousSessions": []
     }
   }

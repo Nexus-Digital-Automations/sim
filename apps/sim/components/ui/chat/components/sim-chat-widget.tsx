@@ -33,13 +33,10 @@ import type {
 } from '../types/parlant-widget.types'
 
 // Dynamic import of ParlantChatbox to avoid SSR issues
-const ParlantChatbox = dynamic(
-  () => import('parlant-chat-react').then((mod) => ({ default: mod.default || mod })),
-  {
-    ssr: false,
-    loading: () => <ChatLoadingSpinner />,
-  }
-)
+const ParlantChatbox = dynamic(() => import('parlant-chat-react'), {
+  ssr: false,
+  loading: () => <ChatLoadingSpinner />,
+})
 
 const logger = createLogger('SimChatWidget')
 

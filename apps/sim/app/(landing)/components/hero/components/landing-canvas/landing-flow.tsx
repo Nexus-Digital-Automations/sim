@@ -5,8 +5,8 @@ import ReactFlow, { applyNodeChanges, type NodeChange, useReactFlow } from 'reac
 import 'reactflow/dist/style.css'
 import { LandingLoopNode } from './landing-block/landing-loop-node'
 import { LandingNode } from './landing-block/landing-node'
-import { CARD_WIDTH, type LandingCanvasProps } from './landing-canvas'
 import { LandingEdge } from './landing-edge/landing-edge'
+import { CARD_WIDTH, type LandingCanvasProps } from './types'
 
 /**
  * Props for the LandingFlow component

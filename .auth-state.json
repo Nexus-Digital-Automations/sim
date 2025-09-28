@@ -1,8 +1,8 @@
 {
-  "authKey": "2db4df5ade6f10f7e6297f5e0cadc6ad",
-  "agentId": "build-fix-agent",
-  "startTime": "2025-09-27T20:44:50.953Z",
-  "expiresAt": "2025-09-27T21:14:50.953Z",
+  "authKey": "cab5fe567a27e3f6400b54b5a4c5fc5b",
+  "agentId": "claude-code-agent-recovery",
+  "startTime": "2025-09-28T02:16:07.840Z",
+  "expiresAt": "2025-09-28T02:46:07.840Z",
   "currentStep": 4,
   "completedSteps": [
     "focused-codebase",
@@ -20,5 +20,5 @@
     "test-validation"
   ],
   "status": "in_progress",
-  "lastValidation": "2025-09-27T20:50:09.130Z"
+  "lastValidation": "2025-09-28T02:17:44.193Z"
 }

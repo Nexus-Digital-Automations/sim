@@ -1,20 +1,19 @@
-import type { NextConfig } from "next";
-import { env } from "./lib/env";
-import { isProd } from "./lib/environment";
+import type { NextConfig } from 'next'
+import { env } from './lib/env'
+import { isProd } from './lib/environment'
 
 const nextConfig: NextConfig = {
-  // Emergency build configuration to bypass optimization hang
-  output: "export",
+  // Removed static export to fix build hanging issue
 
   // Enable optimized images with basic configuration
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "**",
+        protocol: 'https',
+        hostname: '**',
       },
     ],
-    formats: ["image/webp", "image/avif"],
+    formats: ['image/webp', 'image/avif'],
   },
 
   // Enable TypeScript and ESLint for production builds
@@ -33,19 +32,19 @@ const nextConfig: NextConfig = {
 
   // External packages that should not be bundled
   serverExternalPackages: [
-    "fs",
-    "path",
-    "crypto",
-    "stream",
-    "util",
-    "os",
-    "sharp",
-    "canvas",
-    "better-sqlite3",
-    "fsevents",
-    "mysql2",
-    "pg",
-    "sqlite3",
+    'fs',
+    'path',
+    'crypto',
+    'stream',
+    'util',
+    'os',
+    'sharp',
+    'canvas',
+    'better-sqlite3',
+    'fsevents',
+    'mysql2',
+    'pg',
+    'sqlite3',
   ],
 
   // Let Next.js handle webpack optimization completely
@@ -56,12 +55,12 @@ const nextConfig: NextConfig = {
   generateEtags: true,
   compress: true,
   trailingSlash: false,
-};
+}
 
 const sentryConfig = {
   silent: true,
-  org: env.SENTRY_ORG || "",
-  project: env.SENTRY_PROJECT || "",
+  org: env.SENTRY_ORG || '',
+  project: env.SENTRY_PROJECT || '',
   authToken: env.SENTRY_AUTH_TOKEN || undefined,
   disableSourceMapUpload: !isProd,
   autoInstrumentServerFunctions: isProd,
@@ -72,8 +71,8 @@ const sentryConfig = {
     excludeReplayShadowDom: true,
     excludeReplayWorker: true,
   },
-};
+}
 
 // Temporarily disable Sentry during build to debug timeout issue
-export default nextConfig;
+export default nextConfig
 // export default isDev ? nextConfig : withSentryConfig(nextConfig, sentryConfig)

@@ -1,4 +1,4 @@
-import type { SerializedWorkflow } from "@/serializer/types";
+import type { SerializedWorkflow } from '@/serializer/types'
 
 /**
  * Shared utility for calculating block paths and accessible connections.
@@ -16,55 +16,54 @@ export class BlockPathCalculator {
    */
   static findAllPathNodes(
     edges: Array<{ source: string; target: string }>,
-    targetNodeId: string,
+    targetNodeId: string
   ): string[] {
     // We'll use a reverse topological sort approach by tracking "distance" from target
-    const nodeDistances = new Map<string, number>();
-    const visited = new Set<string>();
-    const queue: [string, number][] = [[targetNodeId, 0]]; // [nodeId, distance]
-    const pathNodes = new Set<string>();
+    const nodeDistances = new Map<string, number>()
+    const visited = new Set<string>()
+    const queue: [string, number][] = [[targetNodeId, 0]] // [nodeId, distance]
+    const pathNodes = new Set<string>()
 
     // Build a reverse adjacency list for faster traversal
-    const reverseAdjList: Record<string, string[]> = {};
+    const reverseAdjList: Record<string, string[]> = {}
     for (const edge of edges) {
       if (!reverseAdjList[edge.target]) {
-        reverseAdjList[edge.target] = [];
+        reverseAdjList[edge.target] = []
       }
-      reverseAdjList[edge.target].push(edge.source);
+      reverseAdjList[edge.target].push(edge.source)
     }
 
     // BFS to find all ancestors and their shortest distance from target
     while (queue.length > 0) {
-      const [currentNodeId, distance] = queue.shift()!;
+      const [currentNodeId, distance] = queue.shift()!
 
       if (visited.has(currentNodeId)) {
         // If we've seen this node before, update its distance if this path is shorter
-        const currentDistance =
-          nodeDistances.get(currentNodeId) || Number.POSITIVE_INFINITY;
+        const currentDistance = nodeDistances.get(currentNodeId) || Number.POSITIVE_INFINITY
         if (distance < currentDistance) {
-          nodeDistances.set(currentNodeId, distance);
+          nodeDistances.set(currentNodeId, distance)
         }
-        continue;
+        continue
       }
 
-      visited.add(currentNodeId);
-      nodeDistances.set(currentNodeId, distance);
+      visited.add(currentNodeId)
+      nodeDistances.set(currentNodeId, distance)
 
       // Don't add the target node itself to the results
       if (currentNodeId !== targetNodeId) {
-        pathNodes.add(currentNodeId);
+        pathNodes.add(currentNodeId)
       }
 
       // Get all incoming edges from the reverse adjacency list
-      const incomingNodeIds = reverseAdjList[currentNodeId] || [];
+      const incomingNodeIds = reverseAdjList[currentNodeId] || []
 
       // Add all source nodes to the queue with incremented distance
       for (const sourceId of incomingNodeIds) {
-        queue.push([sourceId, distance + 1]);
+        queue.push([sourceId, distance + 1])
       }
     }
 
-    return Array.from(pathNodes);
+    return Array.from(pathNodes)
   }
 
   /**
@@ -75,34 +74,29 @@ export class BlockPathCalculator {
    * @returns Map of block ID to Set of accessible block IDs
    */
   static calculateAccessibleBlocksForWorkflow(
-    workflow: SerializedWorkflow,
+    workflow: SerializedWorkflow
   ): Map<string, Set<string>> {
-    const accessibleMap = new Map<string, Set<string>>();
+    const accessibleMap = new Map<string, Set<string>>()
 
     for (const block of workflow.blocks) {
-      const accessibleBlocks = new Set<string>();
+      const accessibleBlocks = new Set<string>()
 
       // Find all blocks along paths leading to this block
-      const pathNodes = BlockPathCalculator.findAllPathNodes(
-        workflow.connections,
-        block.id,
-      );
+      const pathNodes = BlockPathCalculator.findAllPathNodes(workflow.connections, block.id)
       for (const nodeId of pathNodes) {
-        accessibleBlocks.add(nodeId);
+        accessibleBlocks.add(nodeId)
       }
 
       // Always allow referencing the starter block (special case)
-      const starterBlock = workflow.blocks.find(
-        (b) => b.metadata?.id === "starter",
-      );
+      const starterBlock = workflow.blocks.find((b) => b.metadata?.id === 'starter')
       if (starterBlock && starterBlock.id !== block.id) {
-        accessibleBlocks.add(starterBlock.id);
+        accessibleBlocks.add(starterBlock.id)
       }
 
-      accessibleMap.set(block.id, accessibleBlocks);
+      accessibleMap.set(block.id, accessibleBlocks)
     }
 
-    return accessibleMap;
+    return accessibleMap
   }
 
   /**
@@ -116,32 +110,29 @@ export class BlockPathCalculator {
   static getAccessibleBlockNames(
     blockId: string,
     workflow: SerializedWorkflow,
-    accessibleBlocksMap: Map<string, Set<string>>,
+    accessibleBlocksMap: Map<string, Set<string>>
   ): string[] {
-    const accessibleBlockIds =
-      accessibleBlocksMap.get(blockId) || new Set<string>();
-    const names: string[] = [];
+    const accessibleBlockIds = accessibleBlocksMap.get(blockId) || new Set<string>()
+    const names: string[] = []
 
     // Create a map of block IDs to blocks for efficient lookup
-    const blockById = new Map(
-      workflow.blocks.map((block) => [block.id, block]),
-    );
+    const blockById = new Map(workflow.blocks.map((block) => [block.id, block]))
 
     for (const accessibleBlockId of accessibleBlockIds) {
-      const block = blockById.get(accessibleBlockId);
+      const block = blockById.get(accessibleBlockId)
       if (block) {
         // Add both the actual name and the normalized name
         if (block.metadata?.name) {
-          names.push(block.metadata.name);
-          names.push(block.metadata.name.toLowerCase().replace(/\s+/g, ""));
+          names.push(block.metadata.name)
+          names.push(block.metadata.name.toLowerCase().replace(/\s+/g, ''))
         }
-        names.push(accessibleBlockId);
+        names.push(accessibleBlockId)
       }
     }
 
     // Add special aliases
-    names.push("start"); // Always allow start alias
+    names.push('start') // Always allow start alias
 
-    return [...new Set(names)]; // Remove duplicates
+    return [...new Set(names)] // Remove duplicates
   }
 }

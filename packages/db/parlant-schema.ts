@@ -3,7 +3,6 @@ import {
   index,
   integer,
   jsonb,
-  pgEnum,
   pgTable,
   text,
   timestamp,
@@ -11,7 +10,15 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 import { apiKey, knowledgeBase, user, workspace } from './base-schema'
-import { workflow } from './schema'
+import {
+  agentStatusEnum,
+  compositionModeEnum,
+  eventTypeEnum,
+  journeyStateTypeEnum,
+  sessionModeEnum,
+  sessionStatusEnum,
+} from './shared-enums'
+import { workflow } from './workflow-schema'
 
 /**
  * Parlant Database Schema Extension
@@ -26,26 +33,16 @@ import { workflow } from './schema'
  * - Indexes optimized for common query patterns
  */
 
-// Enums for Parlant-specific types
-export const agentStatusEnum = pgEnum('agent_status', ['active', 'inactive', 'archived'])
-export const sessionModeEnum = pgEnum('session_mode', ['auto', 'manual', 'paused'])
-export const sessionStatusEnum = pgEnum('session_status', ['active', 'completed', 'abandoned'])
-export const eventTypeEnum = pgEnum('event_type', [
-  'customer_message',
-  'agent_message',
-  'tool_call',
-  'tool_result',
-  'status_update',
-  'journey_transition',
-  'variable_update',
-])
-export const journeyStateTypeEnum = pgEnum('journey_state_type', [
-  'chat',
-  'tool',
-  'decision',
-  'final',
-])
-export const compositionModeEnum = pgEnum('composition_mode', ['fluid', 'strict'])
+// Enums imported from shared-enums.ts to avoid circular dependencies
+// Re-export enums for external consumption
+export {
+  agentStatusEnum,
+  compositionModeEnum,
+  eventTypeEnum,
+  journeyStateTypeEnum,
+  sessionModeEnum,
+  sessionStatusEnum,
+} from './shared-enums'
 
 /**
  * Parlant Agents - AI agents with behavior configurations

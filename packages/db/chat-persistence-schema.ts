@@ -3,7 +3,6 @@ import {
   index,
   integer,
   jsonb,
-  pgEnum,
   pgTable,
   text,
   timestamp,
@@ -12,6 +11,7 @@ import {
 } from 'drizzle-orm/pg-core'
 import { user, workspace } from './base-schema'
 import { parlantEvent, parlantSession } from './parlant-schema'
+import { conversationTypeEnum, messageStatusEnum, messageTypeEnum } from './shared-enums'
 
 /**
  * Chat Persistence Schema Extension
@@ -27,32 +27,7 @@ import { parlantEvent, parlantSession } from './parlant-schema'
  * - Efficient pagination and filtering
  */
 
-// Enums for chat-specific types
-export const messageStatusEnum = pgEnum('message_status', [
-  'pending',
-  'sent',
-  'delivered',
-  'read',
-  'failed',
-])
-
-export const conversationTypeEnum = pgEnum('conversation_type', [
-  'direct',
-  'group',
-  'workflow',
-  'support',
-  'onboarding',
-])
-
-export const messageTypeEnum = pgEnum('message_type', [
-  'text',
-  'tool_call',
-  'tool_result',
-  'system',
-  'error',
-  'media',
-  'file',
-])
+// Enums imported from shared-enums.ts to avoid circular dependencies
 
 /**
  * Chat Messages - Enhanced message storage with metadata and status tracking
