@@ -47,8 +47,18 @@ const nextConfig: NextConfig = {
     'sqlite3',
   ],
 
-  // Let Next.js handle webpack optimization completely
-  // No custom webpack configuration
+  // Custom webpack configuration to help with parlant-chat-react resolution
+  webpack: (config, { isServer }) => {
+    // Ensure parlant-chat-react is properly resolved
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+      }
+    }
+    return config
+  },
 
   // Performance optimizations
   poweredByHeader: false,

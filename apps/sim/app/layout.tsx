@@ -49,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
 
-        {/* Theme CSS Override */}
+        {/* Theme css Override */}
         {themeCSS && (
           <style
             id={themeStyleId}

@@ -14,7 +14,7 @@ const fs = require('fs')
 const dotenv = require('dotenv')
 
 // Load test environment
-const testEnvPath = path.join(__dirname, '.env.test')
+const testEnvPath = path.join(DIRNAME, '.env.test')
 if (fs.existsSync(testEnvPath)) {
   console.log('📄 Loading test environment from .env.test')
   dotenv.config({ path: testEnvPath })

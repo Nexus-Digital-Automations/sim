@@ -230,7 +230,7 @@ export const env = createEnv({
     NEXT_PUBLIC_BRAND_NAME: z.string().optional(), // Custom brand name (defaults to "Sim")
     NEXT_PUBLIC_BRAND_LOGO_URL: z.string().url().optional(), // Custom logo URL
     NEXT_PUBLIC_BRAND_FAVICON_URL: z.string().url().optional(), // Custom favicon URL
-    NEXT_PUBLIC_CUSTOM_CSS_URL: z.string().url().optional(), // Custom CSS stylesheet URL
+    NEXT_PUBLIC_CUSTOM_CSS_URL: z.string().url().optional(), // Custom css stylesheet URL
     NEXT_PUBLIC_SUPPORT_EMAIL: z.string().email().optional(), // Custom support email
 
     NEXT_PUBLIC_E2B_ENABLED: z.string().optional(), // Enable E2B remote code execution (client-side)

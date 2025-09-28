@@ -19,58 +19,58 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, '**/node_modules/**', '**/dist/**'],
     setupFiles: ['./vitest.setup.ts'],
     alias: {
-      '@sim/db': resolve(__dirname, '../../packages/db'),
+      '@sim/db': resolve(DIRNAME, '../../packages/db'),
     },
   },
   resolve: {
     alias: [
       {
         find: '@sim/db',
-        replacement: path.resolve(__dirname, '../../packages/db'),
+        replacement: path.resolve(DIRNAME, '../../packages/db'),
       },
       {
         find: '@/lib/logs/console/logger',
-        replacement: path.resolve(__dirname, 'lib/logs/console/logger.ts'),
+        replacement: path.resolve(DIRNAME, 'lib/logs/console/logger.ts'),
       },
       {
         find: '@/stores/console/store',
-        replacement: path.resolve(__dirname, 'stores/console/store.ts'),
+        replacement: path.resolve(DIRNAME, 'stores/console/store.ts'),
       },
       {
         find: '@/stores/execution/store',
-        replacement: path.resolve(__dirname, 'stores/execution/store.ts'),
+        replacement: path.resolve(DIRNAME, 'stores/execution/store.ts'),
       },
       {
         find: '@/blocks/types',
-        replacement: path.resolve(__dirname, 'blocks/types.ts'),
+        replacement: path.resolve(DIRNAME, 'blocks/types.ts'),
       },
       {
         find: '@/serializer/types',
-        replacement: path.resolve(__dirname, 'serializer/types.ts'),
+        replacement: path.resolve(DIRNAME, 'serializer/types.ts'),
       },
-      { find: '@/lib', replacement: path.resolve(__dirname, 'lib') },
-      { find: '@/stores', replacement: path.resolve(__dirname, 'stores') },
+      { find: '@/lib', replacement: path.resolve(DIRNAME, 'lib') },
+      { find: '@/stores', replacement: path.resolve(DIRNAME, 'stores') },
       {
         find: '@/components',
-        replacement: path.resolve(__dirname, 'components'),
+        replacement: path.resolve(DIRNAME, 'components'),
       },
-      { find: '@/app', replacement: path.resolve(__dirname, 'app') },
-      { find: '@/api', replacement: path.resolve(__dirname, 'app/api') },
+      { find: '@/app', replacement: path.resolve(DIRNAME, 'app') },
+      { find: '@/api', replacement: path.resolve(DIRNAME, 'app/api') },
       {
         find: '@/executor',
-        replacement: path.resolve(__dirname, 'executor'),
+        replacement: path.resolve(DIRNAME, 'executor'),
       },
       {
         find: '@/providers',
-        replacement: path.resolve(__dirname, 'providers'),
+        replacement: path.resolve(DIRNAME, 'providers'),
       },
-      { find: '@/tools', replacement: path.resolve(__dirname, 'tools') },
-      { find: '@/blocks', replacement: path.resolve(__dirname, 'blocks') },
+      { find: '@/tools', replacement: path.resolve(DIRNAME, 'tools') },
+      { find: '@/blocks', replacement: path.resolve(DIRNAME, 'blocks') },
       {
         find: '@/serializer',
-        replacement: path.resolve(__dirname, 'serializer'),
+        replacement: path.resolve(DIRNAME, 'serializer'),
       },
-      { find: '@', replacement: path.resolve(__dirname) },
+      { find: '@', replacement: path.resolve(DIRNAME) },
     ],
   },
 })

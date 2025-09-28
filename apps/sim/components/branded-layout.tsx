@@ -24,7 +24,7 @@ export function BrandedLayout({ children }: BrandedLayoutProps) {
       }
     }
 
-    // Load custom CSS if provided
+    // Load custom css if provided
     if (config.customCssUrl) {
       const customCssId = 'custom-brand-css'
       let customCssLink = document.getElementById(customCssId) as HTMLLinkElement

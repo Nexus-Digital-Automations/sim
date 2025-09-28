@@ -32,11 +32,28 @@ import type {
   SimChatWidgetState,
 } from '../types/parlant-widget.types'
 
-// Dynamic import of ParlantChatbox to avoid SSR issues
-const ParlantChatbox = dynamic(() => import('parlant-chat-react'), {
-  ssr: false,
-  loading: () => <ChatLoadingSpinner />,
-})
+// Dynamic import of ParlantChatbox with fallback for build issues
+const ParlantChatbox = dynamic(
+  () => {
+    return import('parlant-chat-react').catch(() => {
+      // Fallback component if parlant-chat-react fails to load
+      console.warn('Failed to load parlant-chat-react, using fallback component')
+      return {
+        default: () => (
+          <div className='fixed right-4 bottom-4 max-w-md rounded-lg border bg-muted p-4'>
+            <p className='text-muted-foreground text-sm'>
+              Chat widget is temporarily unavailable. Please try refreshing the page.
+            </p>
+          </div>
+        ),
+      }
+    })
+  },
+  {
+    ssr: false,
+    loading: () => <ChatLoadingSpinner />,
+  }
+)
 
 const logger = createLogger('SimChatWidget')
 

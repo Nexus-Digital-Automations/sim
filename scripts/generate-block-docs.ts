@@ -7,9 +7,9 @@ import { glob } from 'glob'
 console.log('Starting documentation generator...')
 
 // Define directory paths
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const rootDir = path.resolve(__dirname, '..')
+const FILENAME = fileURLToPath(import.meta.url)
+const DIRNAME = path.dirname(FILENAME)
+const rootDir = path.resolve(DIRNAME, '..')
 
 // Paths configuration
 const BLOCKS_PATH = path.join(rootDir, 'apps/sim/blocks/blocks')
@@ -59,7 +59,7 @@ function extractIcons(): Record<string, string> {
         let svgContent = svgMatch[0]
         svgContent = svgContent.replace(/{\.\.\.props}/g, '')
         svgContent = svgContent.replace(/{\.\.\.(props|rest)}/g, '')
-        // Remove any existing width/height attributes to let CSS handle sizing
+        // Remove any existing width/height attributes to let css handle sizing
         svgContent = svgContent.replace(/width=["'][^"']*["']/g, '')
         svgContent = svgContent.replace(/height=["'][^"']*["']/g, '')
         // Add className for styling
@@ -80,7 +80,7 @@ function extractIcons(): Record<string, string> {
         let cleanedSvg = svgMatch[0]
         cleanedSvg = cleanedSvg.replace(/{\.\.\.props}/g, '')
         cleanedSvg = cleanedSvg.replace(/{\.\.\.(props|rest)}/g, '')
-        // Remove any existing width/height attributes to let CSS handle sizing
+        // Remove any existing width/height attributes to let css handle sizing
         cleanedSvg = cleanedSvg.replace(/width=["'][^"']*["']/g, '')
         cleanedSvg = cleanedSvg.replace(/height=["'][^"']*["']/g, '')
         // Add className for styling

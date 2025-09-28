@@ -12,7 +12,7 @@ import { existsSync, readFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const DIRNAME = dirname(fileURLToPath(import.meta.url))
 
 // Configuration validation rules
 const CONFIG_RULES = {
@@ -173,14 +173,14 @@ function main() {
     // Determine env file path
     let envFile
     if (environment === 'example') {
-      envFile = join(__dirname, '.env.example')
+      envFile = join(DIRNAME, '.env.example')
     } else {
-      envFile = join(__dirname, `.env.${environment}`)
+      envFile = join(DIRNAME, `.env.${environment}`)
     }
 
     // Check if specific env file exists, fallback to .env
     if (!existsSync(envFile)) {
-      envFile = join(__dirname, '.env')
+      envFile = join(DIRNAME, '.env')
       if (!existsSync(envFile)) {
         throw new Error(`No environment file found for '${environment}' environment`)
       }

@@ -66,8 +66,8 @@ class ParlantMigrationMonitor {
     })
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    this.logFile = path.join(__dirname, `../logs/parlant-migration-${timestamp}.log`)
-    this.metricsFile = path.join(__dirname, `../logs/parlant-metrics-${timestamp}.json`)
+    this.logFile = path.join(DIRNAME, `../logs/parlant-migration-${timestamp}.log`)
+    this.metricsFile = path.join(DIRNAME, `../logs/parlant-metrics-${timestamp}.json`)
 
     // Ensure logs directory exists
     const logsDir = path.dirname(this.logFile)
