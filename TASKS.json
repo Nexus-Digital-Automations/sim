@@ -199,14 +199,6 @@
       "last_updated": "2025-09-28T02:20:46.860Z"
     }
   },
-  "agents": {
-    "claude-code-agent-recovery": {
-      "lastHeartbeat": "2025-09-28T02:20:46.841Z",
-      "status": "active",
-      "reinitialized": "2025-09-28T02:20:46.841Z",
-      "sessionId": "70b8fbde195b389e",
-      "previousSessions": ["39e08c24d1521b34", "ee8e26184883ec00"]
-    }
-  },
+  "agents": {},
   "features": []
 }
