@@ -9,15 +9,14 @@
  * - Error handling and logging
  */
 
-"use client";
+'use client'
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, MessageCircle, X } from "lucide-react";
-import dynamic from "next/dynamic";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { createLogger } from "@/lib/logs/console/logger";
-import { cn } from "@/lib/utils";
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AlertTriangle, MessageCircle, X } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { createLogger } from '@/lib/logs/console/logger'
+import { cn } from '@/lib/utils'
 import {
   createThemeCSS,
   generateTailwindClasses,
@@ -25,23 +24,23 @@ import {
   getSizeStyles,
   mergeWithDefaults,
   validateWidgetConfig,
-} from "../config/widget-config";
+} from '../config/widget-config'
 import type {
   ChatWidgetError,
   SimChatWidgetProps,
   SimChatWidgetState,
-} from "../types/parlant-widget.types";
+} from '../types/parlant-widget.types'
 
 // Temporary fallback component to bypass parlant-chat-react import issues during build
 const ParlantChatbox = () => (
-  <div className="fixed right-4 bottom-4 max-w-md rounded-lg border bg-muted p-4">
-    <p className="text-muted-foreground text-sm">
+  <div className='fixed right-4 bottom-4 max-w-md rounded-lg border bg-muted p-4'>
+    <p className='text-muted-foreground text-sm'>
       Chat widget is temporarily unavailable due to build constraints.
     </p>
   </div>
-);
+)
 
-const logger = createLogger("SimChatWidget");
+const logger = createLogger('SimChatWidget')
 
 /**
  * Main Sim Chat Widget Component
@@ -54,41 +53,35 @@ export function SimChatWidget({
   ...parlantProps
 }: SimChatWidgetProps) {
   // Merge user config with defaults
-  const config = useMemo(() => mergeWithDefaults(userConfig), [userConfig]);
+  const config = useMemo(() => mergeWithDefaults(userConfig), [userConfig])
 
   // Validate configuration
-  const validation = useMemo(() => validateWidgetConfig(config), [config]);
+  const validation = useMemo(() => validateWidgetConfig(config), [config])
 
   // Widget state management
   const [state, setState] = useState<SimChatWidgetState>({
     isOpen: false,
     isMinimized: false,
-    connectionStatus: "disconnected",
+    connectionStatus: 'disconnected',
     messages: [],
     isTyping: false,
     hasUnreadMessages: false,
     unreadCount: 0,
     ...initialState,
-  });
+  })
 
   // Error state
   const [error, setError] = useState<{
-    type: ChatWidgetError;
-    message: string;
-    details?: any;
-  } | null>(null);
+    type: ChatWidgetError
+    message: string
+    details?: any
+  } | null>(null)
 
   // Generate dynamic styles and classes
-  const tailwindClasses = useMemo(
-    () => generateTailwindClasses(config),
-    [config],
-  );
-  const positionStyles = useMemo(
-    () => getPositionStyles(config.position),
-    [config.position],
-  );
-  const sizeStyles = useMemo(() => getSizeStyles(config.size), [config.size]);
-  const themeCSS = useMemo(() => createThemeCSS(config), [config]);
+  const tailwindClasses = useMemo(() => generateTailwindClasses(config), [config])
+  const positionStyles = useMemo(() => getPositionStyles(config.position), [config.position])
+  const sizeStyles = useMemo(() => getSizeStyles(config.size), [config.size])
+  const themeCSS = useMemo(() => createThemeCSS(config), [config])
 
   // Event handlers
   const handleChatOpen = useCallback(() => {
@@ -97,106 +90,98 @@ export function SimChatWidget({
       isOpen: true,
       hasUnreadMessages: false,
       unreadCount: 0,
-    }));
-    config.onChatOpen?.();
-    logger.info("Chat widget opened", { workspaceId: config.workspaceId });
-  }, [config]);
+    }))
+    config.onChatOpen?.()
+    logger.info('Chat widget opened', { workspaceId: config.workspaceId })
+  }, [config])
 
   const handleChatClose = useCallback(() => {
-    setState((prev) => ({ ...prev, isOpen: false }));
-    config.onChatClose?.();
-    logger.info("Chat widget closed", { workspaceId: config.workspaceId });
-  }, [config]);
+    setState((prev) => ({ ...prev, isOpen: false }))
+    config.onChatClose?.()
+    logger.info('Chat widget closed', { workspaceId: config.workspaceId })
+  }, [config])
 
   const handleSessionCreated = useCallback(
     (sessionId: string) => {
       setState((prev) => ({
         ...prev,
         currentSessionId: sessionId,
-        connectionStatus: "connected",
-      }));
-      config.onSessionStart?.(sessionId);
-      logger.info("Chat session created", {
+        connectionStatus: 'connected',
+      }))
+      config.onSessionStart?.(sessionId)
+      logger.info('Chat session created', {
         sessionId,
         workspaceId: config.workspaceId,
-      });
+      })
     },
-    [config],
-  );
+    [config]
+  )
 
   const handleError = useCallback(
     (error: Error) => {
       const chatError = {
-        type: "UNKNOWN_ERROR" as ChatWidgetError,
+        type: 'UNKNOWN_ERROR' as ChatWidgetError,
         message: error.message,
         details: error.stack,
-      };
+      }
 
-      setError(chatError);
-      setState((prev) => ({ ...prev, connectionStatus: "error" }));
-      config.onError?.(error);
-      logger.error("Chat widget error", {
+      setError(chatError)
+      setState((prev) => ({ ...prev, connectionStatus: 'error' }))
+      config.onError?.(error)
+      logger.error('Chat widget error', {
         error: chatError,
         workspaceId: config.workspaceId,
-      });
+      })
     },
-    [config],
-  );
+    [config]
+  )
 
   // Inject custom CSS
   useEffect(() => {
-    if (!themeCSS) return;
+    if (!themeCSS) return
 
-    const styleElement = document.createElement("style");
-    styleElement.id = `parlant-theme-${config.workspaceId}`;
-    styleElement.textContent = themeCSS;
-    document.head.appendChild(styleElement);
+    const styleElement = document.createElement('style')
+    styleElement.id = `parlant-theme-${config.workspaceId}`
+    styleElement.textContent = themeCSS
+    document.head.appendChild(styleElement)
 
     return () => {
-      const existingStyle = document.getElementById(
-        `parlant-theme-${config.workspaceId}`,
-      );
+      const existingStyle = document.getElementById(`parlant-theme-${config.workspaceId}`)
       if (existingStyle) {
-        document.head.removeChild(existingStyle);
+        document.head.removeChild(existingStyle)
       }
-    };
-  }, [themeCSS, config.workspaceId]);
+    }
+  }, [themeCSS, config.workspaceId])
 
   // Handle connection status updates
   useEffect(() => {
-    if (state.isOpen && state.connectionStatus === "disconnected") {
-      setState((prev) => ({ ...prev, connectionStatus: "connecting" }));
+    if (state.isOpen && state.connectionStatus === 'disconnected') {
+      setState((prev) => ({ ...prev, connectionStatus: 'connecting' }))
     }
-  }, [state.isOpen]);
+  }, [state.isOpen])
 
   // Custom popup button component
   const PopupButton = useCallback(
     ({ toggleChatOpen }: { toggleChatOpen: () => void }) => (
       <Button
         onClick={() => {
-          toggleChatOpen();
-          handleChatOpen();
+          toggleChatOpen()
+          handleChatOpen()
         }}
         className={cn(tailwindClasses.popupButton, containerClassName)}
         style={positionStyles}
-        aria-label="Open chat"
+        aria-label='Open chat'
       >
         <MessageCircle className={tailwindClasses.popupButtonIcon} />
         {state.unreadCount > 0 && (
-          <div className="-top-1 -right-1 absolute flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive font-medium text-destructive-foreground text-xs">
+          <div className='-top-1 -right-1 absolute flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive font-medium text-destructive-foreground text-xs'>
             {state.unreadCount}
           </div>
         )}
       </Button>
     ),
-    [
-      tailwindClasses,
-      containerClassName,
-      positionStyles,
-      state.unreadCount,
-      handleChatOpen,
-    ],
-  );
+    [tailwindClasses, containerClassName, positionStyles, state.unreadCount, handleChatOpen]
+  )
 
   // Custom header component
   const Header = useCallback(
@@ -204,50 +189,50 @@ export function SimChatWidget({
       changeIsExpanded,
       agentName,
     }: {
-      changeIsExpanded: () => void;
-      agentName: string | undefined;
+      changeIsExpanded: () => void
+      agentName: string | undefined
     }) => (
-      <div className="flex items-center justify-between bg-primary p-4 text-primary-foreground">
-        <div className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground/20">
-            <MessageCircle className="h-4 w-4" />
+      <div className='flex items-center justify-between bg-primary p-4 text-primary-foreground'>
+        <div className='flex items-center space-x-2'>
+          <div className='flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground/20'>
+            <MessageCircle className='h-4 w-4' />
           </div>
           <div>
-            <h3 className="font-medium">{agentName || "Chat Assistant"}</h3>
-            <p className="text-xs opacity-75">
-              {state.connectionStatus === "connected" && "Online"}
-              {state.connectionStatus === "connecting" && "Connecting..."}
-              {state.connectionStatus === "error" && "Connection Error"}
+            <h3 className='font-medium'>{agentName || 'Chat Assistant'}</h3>
+            <p className='text-xs opacity-75'>
+              {state.connectionStatus === 'connected' && 'Online'}
+              {state.connectionStatus === 'connecting' && 'Connecting...'}
+              {state.connectionStatus === 'error' && 'Connection Error'}
             </p>
           </div>
         </div>
         <Button
-          variant="ghost"
-          size="sm"
+          variant='ghost'
+          size='sm'
           onClick={() => {
-            changeIsExpanded();
-            handleChatClose();
+            changeIsExpanded()
+            handleChatClose()
           }}
-          className="text-primary-foreground hover:bg-primary-foreground/20"
+          className='text-primary-foreground hover:bg-primary-foreground/20'
         >
-          <X className="h-4 w-4" />
+          <X className='h-4 w-4' />
         </Button>
       </div>
     ),
-    [state.connectionStatus, handleChatClose],
-  );
+    [state.connectionStatus, handleChatClose]
+  )
 
   // Show validation errors
   if (!validation.isValid) {
     return (
-      <div className="fixed right-4 bottom-4 max-w-md">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
+      <div className='fixed right-4 bottom-4 max-w-md'>
+        <Alert variant='destructive'>
+          <AlertTriangle className='h-4 w-4' />
           <AlertDescription>
             Chat Widget Configuration Error:
-            <ul className="mt-2 list-inside list-disc">
+            <ul className='mt-2 list-inside list-disc'>
               {validation.errors.map((error, index) => (
-                <li key={index} className="text-sm">
+                <li key={index} className='text-sm'>
                   {error}
                 </li>
               ))}
@@ -255,28 +240,28 @@ export function SimChatWidget({
           </AlertDescription>
         </Alert>
       </div>
-    );
+    )
   }
 
   // Show runtime errors
   if (error) {
     return (
-      <div className="fixed right-4 bottom-4 max-w-md">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
+      <div className='fixed right-4 bottom-4 max-w-md'>
+        <Alert variant='destructive'>
+          <AlertTriangle className='h-4 w-4' />
           <AlertDescription>
-            <div className="space-y-2">
-              <p className="font-medium">Chat Error</p>
-              <p className="text-sm">{error.message}</p>
+            <div className='space-y-2'>
+              <p className='font-medium'>Chat Error</p>
+              <p className='text-sm'>{error.message}</p>
               <Button
-                variant="outline"
-                size="sm"
+                variant='outline'
+                size='sm'
                 onClick={() => {
-                  setError(null);
+                  setError(null)
                   setState((prev) => ({
                     ...prev,
-                    connectionStatus: "disconnected",
-                  }));
+                    connectionStatus: 'disconnected',
+                  }))
                 }}
               >
                 Retry
@@ -285,7 +270,7 @@ export function SimChatWidget({
           </AlertDescription>
         </Alert>
       </div>
-    );
+    )
   }
 
   const parlantPropsWithDefaults = {
@@ -301,16 +286,16 @@ export function SimChatWidget({
     },
     onSessionCreated: handleSessionCreated,
     ...parlantProps,
-  };
+  }
 
   return (
     <div
-      className={cn("parlant-chat-widget", className)}
+      className={cn('parlant-chat-widget', className)}
       style={state.isOpen ? sizeStyles : undefined}
     >
       <ParlantChatbox {...parlantPropsWithDefaults} />
     </div>
-  );
+  )
 }
 
 /**
@@ -318,10 +303,10 @@ export function SimChatWidget({
  */
 function ChatLoadingSpinner() {
   return (
-    <div className="fixed right-4 bottom-4 flex h-14 w-14 animate-pulse items-center justify-center rounded-full bg-primary">
-      <MessageCircle className="h-6 w-6 animate-pulse text-primary-foreground" />
+    <div className='fixed right-4 bottom-4 flex h-14 w-14 animate-pulse items-center justify-center rounded-full bg-primary'>
+      <MessageCircle className='h-6 w-6 animate-pulse text-primary-foreground' />
     </div>
-  );
+  )
 }
 
-export default SimChatWidget;
+export default SimChatWidget

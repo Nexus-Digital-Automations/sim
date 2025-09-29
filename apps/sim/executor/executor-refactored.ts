@@ -1,32 +1,29 @@
-import { BlockPathCalculator } from "@/lib/block-path-calculator";
-import { createLogger } from "@/lib/logs/console/logger";
-import type { TraceSpan } from "@/lib/logs/types";
-import type { BlockOutput } from "@/blocks/types";
-import { LoopManager } from "@/executor/loops/loops";
-import { ParallelManager } from "@/executor/parallels/parallels";
-import { PathTracker } from "@/executor/path/path";
-import { InputResolver } from "@/executor/resolver/resolver";
+import { BlockPathCalculator } from '@/lib/block-path-calculator'
+import { createLogger } from '@/lib/logs/console/logger'
+import type { TraceSpan } from '@/lib/logs/types'
+import type { BlockOutput } from '@/blocks/types'
+import { LoopManager } from '@/executor/loops/loops'
+import { ParallelManager } from '@/executor/parallels/parallels'
+import { PathTracker } from '@/executor/path/path'
+import { InputResolver } from '@/executor/resolver/resolver'
 import type {
   BlockLog,
   ExecutionResult,
   NormalizedBlockOutput,
   StreamingExecution,
-} from "@/executor/types";
-import type { SerializedBlock, SerializedWorkflow } from "@/serializer/types";
-import { ContextManager } from "./core/context-manager";
+} from '@/executor/types'
+import type { SerializedBlock, SerializedWorkflow } from '@/serializer/types'
+import { ContextManager } from './core/context-manager'
 // Import modular components
-import { ExecutionEngine } from "./core/execution-engine";
-import { HandlerRegistry } from "./core/handler-registry";
+import { ExecutionEngine } from './core/execution-engine'
+import { HandlerRegistry } from './core/handler-registry'
 
-const logger = createLogger("ExecutorRefactored");
+const logger = createLogger('ExecutorRefactored')
 
 declare global {
   interface Window {
-    __SIM_TELEMETRY_ENABLED?: boolean;
-    __SIM_TRACK_EVENT?: (
-      eventName: string,
-      properties?: Record<string, any>,
-    ) => void;
+    __SIM_TELEMETRY_ENABLED?: boolean
+    __SIM_TRACK_EVENT?: (eventName: string, properties?: Record<string, any>) => void
   }
 }
 
@@ -38,12 +35,12 @@ function trackWorkflowTelemetry(eventName: string, data: Record<string, any>) {
     const safeData = {
       ...data,
       timestamp: Date.now(),
-    };
+    }
 
     window.__SIM_TRACK_EVENT(eventName, {
-      category: "workflow",
+      category: 'workflow',
       ...safeData,
-    });
+    })
   }
 }
 
@@ -51,22 +48,22 @@ interface ExecutorConfig {
   workflowParam:
     | SerializedWorkflow
     | {
-        workflow: SerializedWorkflow;
-        currentBlockStates?: Record<string, BlockOutput>;
-        envVarValues?: Record<string, string>;
-        workflowInput?: any;
-        workflowVariables?: Record<string, any>;
+        workflow: SerializedWorkflow
+        currentBlockStates?: Record<string, BlockOutput>
+        envVarValues?: Record<string, string>
+        workflowInput?: any
+        workflowVariables?: Record<string, any>
         contextExtensions?: {
-          stream?: boolean;
-          selectedOutputIds?: string[];
-          edges?: Array<{ source: string; target: string }>;
-          onStream?: (streamingExecution: StreamingExecution) => Promise<void>;
-          executionId?: string;
-          workspaceId?: string;
-          userId?: string;
-        };
-      };
-  isChildExecution?: boolean;
+          stream?: boolean
+          selectedOutputIds?: string[]
+          edges?: Array<{ source: string; target: string }>
+          onStream?: (streamingExecution: StreamingExecution) => Promise<void>
+          executionId?: string
+          workspaceId?: string
+          userId?: string
+        }
+      }
+  isChildExecution?: boolean
 }
 
 /**
@@ -75,11 +72,11 @@ interface ExecutorConfig {
  */
 export class ExecutorRefactored {
   // Core modular components
-  private readonly handlerRegistry: HandlerRegistry;
-  private readonly executionEngine: ExecutionEngine;
-  private readonly contextManager: ContextManager;
-  private readonly isChildExecution: boolean;
-  private readonly actualWorkflow: SerializedWorkflow;
+  private readonly handlerRegistry: HandlerRegistry
+  private readonly executionEngine: ExecutionEngine
+  private readonly contextManager: ContextManager
+  private readonly isChildExecution: boolean
+  private readonly actualWorkflow: SerializedWorkflow
 
   constructor({ workflowParam, isChildExecution = false }: ExecutorConfig) {
     // Extract workflow and parameters
@@ -90,19 +87,19 @@ export class ExecutorRefactored {
       workflowInput,
       workflowVariables,
       contextExtensions,
-    } = this.extractWorkflowParams(workflowParam);
+    } = this.extractWorkflowParams(workflowParam)
 
-    this.actualWorkflow = workflow;
-    this.isChildExecution = isChildExecution;
+    this.actualWorkflow = workflow
+    this.isChildExecution = isChildExecution
 
     // Initialize modular components
-    this.handlerRegistry = new HandlerRegistry();
-    this.handlerRegistry.initialize();
+    this.handlerRegistry = new HandlerRegistry()
+    this.handlerRegistry.initialize()
 
     this.executionEngine = new ExecutionEngine(
       this.handlerRegistry.getAllHandlers(),
-      trackWorkflowTelemetry,
-    );
+      trackWorkflowTelemetry
+    )
 
     this.contextManager = new ContextManager(
       workflow,
@@ -110,26 +107,24 @@ export class ExecutorRefactored {
       envVarValues,
       workflowInput,
       workflowVariables,
-      { ...contextExtensions, isChildExecution },
-    );
+      { ...contextExtensions, isChildExecution }
+    )
 
     // Initialize existing components (for compatibility)
-    this.resolver = new InputResolver();
-    this.loopManager = new LoopManager();
-    this.parallelManager = new ParallelManager();
-    this.pathTracker = new PathTracker();
+    this.resolver = new InputResolver()
+    this.loopManager = new LoopManager()
+    this.parallelManager = new ParallelManager()
+    this.pathTracker = new PathTracker()
 
-    logger.info(`Executor initialized for workflow: ${workflow.id}`);
+    logger.info(`Executor initialized for workflow: ${workflow.id}`)
   }
 
   /**
    * Extract workflow parameters from input
    */
-  private extractWorkflowParams(
-    workflowParam: ExecutorConfig["workflowParam"],
-  ) {
-    if ("workflow" in workflowParam) {
-      return workflowParam;
+  private extractWorkflowParams(workflowParam: ExecutorConfig['workflowParam']) {
+    if ('workflow' in workflowParam) {
+      return workflowParam
     }
     return {
       workflow: workflowParam,
@@ -138,7 +133,7 @@ export class ExecutorRefactored {
       workflowInput: undefined,
       workflowVariables: undefined,
       contextExtensions: undefined,
-    };
+    }
   }
 
   /**
@@ -146,74 +141,74 @@ export class ExecutorRefactored {
    */
   async execute(
     input?: any,
-    span?: TraceSpan,
+    span?: TraceSpan
   ): Promise<{
-    logs: BlockLog[];
-    output: NormalizedBlockOutput;
-    executionResult: ExecutionResult;
+    logs: BlockLog[]
+    output: NormalizedBlockOutput
+    executionResult: ExecutionResult
   }> {
-    const startTime = Date.now();
-    const context = this.contextManager.getContext();
+    const startTime = Date.now()
+    const context = this.contextManager.getContext()
 
-    logger.info(`Starting execution for workflow: ${this.actualWorkflow.id}`);
+    logger.info(`Starting execution for workflow: ${this.actualWorkflow.id}`)
 
     // Track workflow execution start
-    trackWorkflowTelemetry("workflow_execution_start", {
+    trackWorkflowTelemetry('workflow_execution_start', {
       workflowId: this.actualWorkflow.id,
       executionId: context.executionId,
       isChildExecution: this.isChildExecution,
-    });
+    })
 
     try {
       // Update workflow input if provided
       if (input) {
-        this.contextManager.updateWorkflowInput(input);
+        this.contextManager.updateWorkflowInput(input)
       }
 
       // Calculate execution order
-      const executionOrder = this.calculateExecutionOrder();
+      const executionOrder = this.calculateExecutionOrder()
 
       // Execute blocks in topological order
-      const logs: BlockLog[] = [];
-      let finalOutput: NormalizedBlockOutput = { data: null, metadata: {} };
+      const logs: BlockLog[] = []
+      let finalOutput: NormalizedBlockOutput = { data: null, metadata: {} }
 
       for (const block of executionOrder) {
         try {
           const result = await this.executionEngine.executeBlock(
             block,
             this.contextManager.getContext(),
-            span,
-          );
+            span
+          )
 
           // Update context with result
           if (result.output) {
-            this.contextManager.updateBlockState(block.id, result.output);
+            this.contextManager.updateBlockState(block.id, result.output)
           }
 
           // Collect logs
           if (result.logs) {
-            logs.push(...result.logs);
+            logs.push(...result.logs)
           }
 
           // Update final output if this is the last block
           if (this.isOutputBlock(block)) {
-            finalOutput = result.normalizedOutput || finalOutput;
+            finalOutput = result.normalizedOutput || finalOutput
           }
         } catch (error) {
-          logger.error(`Block execution failed: ${block.id}`, error);
+          logger.error(`Block execution failed: ${block.id}`, error)
 
           // Add error log
           logs.push({
             id: `${block.id}_error`,
             blockId: block.id,
-            level: "error",
-            message: error instanceof Error ? error.message : "Unknown error",
+            level: 'error',
+            message: error instanceof Error ? error.message : 'Unknown error',
             timestamp: Date.now(),
-          });
+          })
 
           // Decide whether to continue or stop based on error handling strategy
           if (this.shouldStopOnError(block, error)) {
-            throw error;
+            throw error
           }
         }
       }
@@ -224,39 +219,36 @@ export class ExecutorRefactored {
         metadata: finalOutput.metadata,
         logs,
         executionTime: Date.now() - startTime,
-      };
+      }
 
       // Track successful execution
-      trackWorkflowTelemetry("workflow_execution_success", {
+      trackWorkflowTelemetry('workflow_execution_success', {
         workflowId: this.actualWorkflow.id,
         executionId: context.executionId,
         duration: Date.now() - startTime,
         blocksExecuted: executionOrder.length,
-      });
+      })
 
       logger.info(
-        `Workflow executed successfully: ${this.actualWorkflow.id} in ${Date.now() - startTime}ms`,
-      );
+        `Workflow executed successfully: ${this.actualWorkflow.id} in ${Date.now() - startTime}ms`
+      )
 
       return {
         logs,
         output: finalOutput,
         executionResult,
-      };
+      }
     } catch (error) {
       // Track execution failure
-      trackWorkflowTelemetry("workflow_execution_error", {
+      trackWorkflowTelemetry('workflow_execution_error', {
         workflowId: this.actualWorkflow.id,
         executionId: context.executionId,
         duration: Date.now() - startTime,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
 
-      logger.error(
-        `Workflow execution failed: ${this.actualWorkflow.id}`,
-        error,
-      );
-      throw error;
+      logger.error(`Workflow execution failed: ${this.actualWorkflow.id}`, error)
+      throw error
     }
   }
 
@@ -265,8 +257,8 @@ export class ExecutorRefactored {
    */
   private calculateExecutionOrder(): SerializedBlock[] {
     // Use existing path calculator or implement topological sort
-    const calculator = new BlockPathCalculator();
-    return calculator.calculateExecutionOrder(this.actualWorkflow.blocks);
+    const calculator = new BlockPathCalculator()
+    return calculator.calculateExecutionOrder(this.actualWorkflow.blocks)
   }
 
   /**
@@ -274,7 +266,7 @@ export class ExecutorRefactored {
    */
   private isOutputBlock(block: SerializedBlock): boolean {
     // Implement logic to determine if this is an output block
-    return block.type === "response" || block.type === "output";
+    return block.type === 'response' || block.type === 'output'
   }
 
   /**
@@ -283,15 +275,15 @@ export class ExecutorRefactored {
   private shouldStopOnError(block: SerializedBlock, error: any): boolean {
     // Implement error handling strategy
     // For now, stop on any error
-    return true;
+    return true
   }
 
   /**
    * Cancel execution
    */
   cancel(): void {
-    logger.info("Cancelling executor");
-    this.executionEngine.cancel();
+    logger.info('Cancelling executor')
+    this.executionEngine.cancel()
   }
 
   /**
@@ -302,15 +294,15 @@ export class ExecutorRefactored {
       ...this.contextManager.getExecutionStats(),
       handlerStats: this.handlerRegistry.getStats(),
       activeExecutions: this.executionEngine.activeExecutions,
-    };
+    }
   }
 
   /**
    * Reset executor state
    */
   reset(): void {
-    this.executionEngine.reset();
-    this.contextManager.reset();
-    logger.info("Executor reset");
+    this.executionEngine.reset()
+    this.contextManager.reset()
+    logger.info('Executor reset')
   }
 }
