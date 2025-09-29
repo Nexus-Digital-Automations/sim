@@ -3,8 +3,7 @@ import { env } from "./lib/env";
 import { isProd } from "./lib/environment";
 
 const nextConfig: NextConfig = {
-  // Emergency build configuration to bypass optimization hang
-  output: "export",
+  // Removed static export to fix build hanging issue
 
   // Enable optimized images with basic configuration
   images: {
@@ -25,11 +24,12 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: false,
   },
 
-  // Use default experimental features (Next.js handles these safely)
+  // Completely disable experimental features to fix build timeout
   experimental: {
-    // Temporarily disable optimizePackageImports to fix build timeout
-    // optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
+    // All experimental features disabled to prevent optimization hangs
   },
+
+  // EMERGENCY BUILD MODE - Heavy optimizations disabled via webpack config
 
   // External packages that should not be bundled
   serverExternalPackages: [
@@ -48,8 +48,102 @@ const nextConfig: NextConfig = {
     "sqlite3",
   ],
 
-  // Let Next.js handle webpack optimization completely
-  // No custom webpack configuration
+  // Optimized webpack configuration to handle large files
+  webpack: (config, { isServer }) => {
+    // Ensure parlant-chat-react is properly resolved
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+      };
+    }
+
+    // Optimize handling of large files that cause build timeouts
+    if (!isServer) {
+      // Exclude test files from client bundle completely
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        "@test-utils": false,
+      };
+
+      // Add specific handling for all massive files (>2000 lines)
+      config.module.rules.push({
+        test: /\/(components\/icons\.tsx|.*user-input\.tsx|stores\/.*store\.ts|executor\/index\.ts)$/,
+        use: [
+          {
+            loader: "babel-loader",
+            options: {
+              presets: ["next/babel"],
+              cacheDirectory: true,
+              // Skip heavy optimizations for massive files
+              compact: false,
+              minified: false,
+            },
+          },
+        ],
+      });
+
+      // Re-enable selective optimizations with exclusions for problematic files
+      config.optimization = {
+        ...config.optimization,
+        minimize: true,
+        minimizer: config.optimization.minimizer?.map((minimizer: any) => {
+          if (minimizer.constructor.name === "TerserPlugin") {
+            minimizer.options = {
+              ...minimizer.options,
+              exclude: [
+                /\/components\/icons\.tsx$/,
+                /.*user-input\.tsx$/,
+                /stores\/.*store\.ts$/,
+                /executor\/index\.ts$/,
+                /\.test\.ts$/,
+                /\.test\.tsx$/,
+              ], // Exclude massive files from minification
+              parallel: 2, // Reduce parallelism to prevent memory issues
+            };
+          }
+          return minimizer;
+        }),
+        sideEffects: false,
+        usedExports: true,
+        providedExports: true,
+        concatenateModules: false, // Keep disabled to prevent timeout
+        splitChunks: {
+          chunks: "all",
+          cacheGroups: {
+            // Separate massive files into their own chunks
+            icons: {
+              test: /\/components\/icons\.tsx$/,
+              name: "icons",
+              chunks: "all",
+              enforce: true,
+            },
+            largeComponents: {
+              test: /.*user-input\.tsx$/,
+              name: "large-components",
+              chunks: "all",
+              enforce: true,
+            },
+            stores: {
+              test: /stores\/.*store\.ts$/,
+              name: "stores",
+              chunks: "all",
+              enforce: true,
+            },
+            executor: {
+              test: /executor\/index\.ts$/,
+              name: "executor",
+              chunks: "all",
+              enforce: true,
+            },
+          },
+        },
+      };
+    }
+
+    return config;
+  },
 
   // Performance optimizations
   poweredByHeader: false,
@@ -74,6 +168,6 @@ const sentryConfig = {
   },
 };
 
-// Temporarily disable Sentry during build to debug timeout issue
+// Temporarily disable SENTRY during build to debug timeout issue
 export default nextConfig;
 // export default isDev ? nextConfig : withSentryConfig(nextConfig, sentryConfig)

@@ -3,8 +3,6 @@ import { env } from "./lib/env";
 import { isProd } from "./lib/environment";
 
 const nextConfig: NextConfig = {
-  // Removed static export to fix build hanging issue
-
   // Enable optimized images with basic configuration
   images: {
     remotePatterns: [
@@ -24,9 +22,12 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: false,
   },
 
-  // Temporarily disable experimental features to fix build timeout
+  // Simplified experimental features to prevent build hangs
   experimental: {
-    // All experimental features disabled to prevent optimization hangs
+    // Enable webpack build cache for faster rebuilds
+    webpackBuildWorker: true,
+    // Optimize large page chunks
+    largePageDataBytes: 128 * 1000, // 128KB
   },
 
   // External packages that should not be bundled
@@ -46,7 +47,7 @@ const nextConfig: NextConfig = {
     "sqlite3",
   ],
 
-  // Custom webpack configuration to help with parlant-chat-react resolution
+  // Simplified webpack configuration to prevent hanging
   webpack: (config, { isServer }) => {
     // Ensure parlant-chat-react is properly resolved
     if (!isServer) {
@@ -56,6 +57,15 @@ const nextConfig: NextConfig = {
         path: false,
       };
     }
+
+    // Basic resolve aliases (keep essential ones only)
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@icons": "./components/icons",
+      "@executor/core": "./executor/core",
+      "@stores/copilot": "./stores/copilot",
+    };
+
     return config;
   },
 
@@ -82,6 +92,6 @@ const sentryConfig = {
   },
 };
 
-// Temporarily disable SENTRY during build to debug timeout issue
+// Export optimized configuration for modular architecture
 export default nextConfig;
 // export default isDev ? nextConfig : withSentryConfig(nextConfig, sentryConfig)

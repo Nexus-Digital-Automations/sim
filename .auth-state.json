@@ -1,15 +1,10 @@
 {
-  "authKey": "cab5fe567a27e3f6400b54b5a4c5fc5b",
-  "agentId": "claude-code-agent-recovery",
-  "startTime": "2025-09-28T02:16:07.840Z",
-  "expiresAt": "2025-09-28T02:46:07.840Z",
-  "currentStep": 4,
-  "completedSteps": [
-    "focused-codebase",
-    "security-validation",
-    "linter-validation",
-    "type-validation"
-  ],
+  "authKey": "19d59936f2038d4fba42636c6f66aef6",
+  "agentId": "CLAUDE_AGENT_MAIN",
+  "startTime": "2025-09-28T06:56:18.161Z",
+  "expiresAt": "2025-09-28T07:26:18.161Z",
+  "currentStep": 0,
+  "completedSteps": [],
   "requiredSteps": [
     "focused-codebase",
     "security-validation",
@@ -19,6 +14,5 @@
     "start-validation",
     "test-validation"
   ],
-  "status": "in_progress",
-  "lastValidation": "2025-09-28T02:17:44.193Z"
+  "status": "in_progress"
 }

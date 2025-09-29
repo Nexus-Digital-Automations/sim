@@ -1,110 +1,113 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { githubIcon, googleIcon } from '@/components/icons'
-import { Button } from '@/components/ui/button'
-import { client } from '@/lib/auth-client'
-import { inter } from '@/app/fonts/inter'
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { client } from "@/lib/auth-client";
+import { inter } from "@/app/fonts/inter";
 
 interface SocialLoginButtonsProps {
-  githubAvailable: boolean
-  googleAvailable: boolean
-  callbackURL?: string
-  isProduction: boolean
+  githubAvailable: boolean;
+  googleAvailable: boolean;
+  callbackURL?: string;
+  isProduction: boolean;
 }
 
 export function SocialLoginButtons({
   githubAvailable,
   googleAvailable,
-  callbackURL = '/workspace',
+  callbackURL = "/workspace",
   isProduction,
 }: SocialLoginButtonsProps) {
-  const [isGithubLoading, setIsGithubLoading] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [isGithubLoading, setIsGithubLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Set mounted state to true on client-side
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   // Only render on the client side to avoid hydration errors
-  if (!mounted) return null
+  if (!mounted) return null;
 
   async function signInWithGithub() {
-    if (!githubAvailable) return
+    if (!githubAvailable) return;
 
-    setIsGithubLoading(true)
+    setIsGithubLoading(true);
     try {
-      await client.signIn.social({ provider: 'github', callbackURL })
+      await client.signIn.social({ provider: "github", callbackURL });
     } catch (err: any) {
-      let errorMessage = 'Failed to sign in with GitHub'
+      let errorMessage = "Failed to sign in with GitHub";
 
-      if (err.message?.includes('account exists')) {
-        errorMessage = 'An account with this email already exists. Please sign in instead.'
-      } else if (err.message?.includes('cancelled')) {
-        errorMessage = 'GitHub sign in was cancelled. Please try again.'
-      } else if (err.message?.includes('network')) {
-        errorMessage = 'Network error. Please check your connection and try again.'
-      } else if (err.message?.includes('rate limit')) {
-        errorMessage = 'Too many attempts. Please try again later.'
+      if (err.message?.includes("account exists")) {
+        errorMessage =
+          "An account with this email already exists. Please sign in instead.";
+      } else if (err.message?.includes("cancelled")) {
+        errorMessage = "GitHub sign in was cancelled. Please try again.";
+      } else if (err.message?.includes("network")) {
+        errorMessage =
+          "Network error. Please check your connection and try again.";
+      } else if (err.message?.includes("rate limit")) {
+        errorMessage = "Too many attempts. Please try again later.";
       }
     } finally {
-      setIsGithubLoading(false)
+      setIsGithubLoading(false);
     }
   }
 
   async function signInWithGoogle() {
-    if (!googleAvailable) return
+    if (!googleAvailable) return;
 
-    setIsGoogleLoading(true)
+    setIsGoogleLoading(true);
     try {
-      await client.signIn.social({ provider: 'google', callbackURL })
+      await client.signIn.social({ provider: "google", callbackURL });
     } catch (err: any) {
-      let errorMessage = 'Failed to sign in with Google'
+      let errorMessage = "Failed to sign in with Google";
 
-      if (err.message?.includes('account exists')) {
-        errorMessage = 'An account with this email already exists. Please sign in instead.'
-      } else if (err.message?.includes('cancelled')) {
-        errorMessage = 'Google sign in was cancelled. Please try again.'
-      } else if (err.message?.includes('network')) {
-        errorMessage = 'Network error. Please check your connection and try again.'
-      } else if (err.message?.includes('rate limit')) {
-        errorMessage = 'Too many attempts. Please try again later.'
+      if (err.message?.includes("account exists")) {
+        errorMessage =
+          "An account with this email already exists. Please sign in instead.";
+      } else if (err.message?.includes("cancelled")) {
+        errorMessage = "Google sign in was cancelled. Please try again.";
+      } else if (err.message?.includes("network")) {
+        errorMessage =
+          "Network error. Please check your connection and try again.";
+      } else if (err.message?.includes("rate limit")) {
+        errorMessage = "Too many attempts. Please try again later.";
       }
     } finally {
-      setIsGoogleLoading(false)
+      setIsGoogleLoading(false);
     }
   }
 
   const githubButton = (
     <Button
-      variant='outline'
-      className='w-full rounded-[10px] shadow-sm hover:bg-gray-50'
+      variant="outline"
+      className="w-full rounded-[10px] shadow-sm hover:bg-gray-50"
       disabled={!githubAvailable || isGithubLoading}
       onClick={signInWithGithub}
     >
-      <githubIcon className='!h-[18px] !w-[18px] mr-1' />
-      {isGithubLoading ? 'Connecting...' : 'GitHub'}
+      <githubIcon className="!h-[18px] !w-[18px] mr-1" />
+      {isGithubLoading ? "Connecting..." : "GitHub"}
     </Button>
-  )
+  );
 
   const googleButton = (
     <Button
-      variant='outline'
-      className='w-full rounded-[10px] shadow-sm hover:bg-gray-50'
+      variant="outline"
+      className="w-full rounded-[10px] shadow-sm hover:bg-gray-50"
       disabled={!googleAvailable || isGoogleLoading}
       onClick={signInWithGoogle}
     >
-      <googleIcon className='!h-[18px] !w-[18px] mr-1' />
-      {isGoogleLoading ? 'Connecting...' : 'Google'}
+      <googleIcon className="!h-[18px] !w-[18px] mr-1" />
+      {isGoogleLoading ? "Connecting..." : "Google"}
     </Button>
-  )
+  );
 
-  const hasAnyOAuthProvider = githubAvailable || googleAvailable
+  const hasAnyOAuthProvider = githubAvailable || googleAvailable;
 
   if (!hasAnyOAuthProvider) {
-    return null
+    return null;
   }
 
   return (
@@ -112,5 +115,5 @@ export function SocialLoginButtons({
       {googleAvailable && googleButton}
       {githubAvailable && githubButton}
     </div>
-  )
+  );
 }
