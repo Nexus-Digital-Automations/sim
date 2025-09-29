@@ -115,26 +115,26 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 81,
-      "current_day": "2025-09-28",
+      "total_reinitializations": 82,
+      "current_day": "2025-09-29",
       "time_buckets": {
-        "11:00-15:59": {
+        "13:00-17:59": {
           "init": 0,
           "reinit": 0
         },
-        "16:00-20:59": {
+        "18:00-22:59": {
+          "init": 0,
+          "reinit": 0
+        },
+        "23:00-03:59": {
           "init": 0,
           "reinit": 1
         },
-        "21:00-01:59": {
-          "init": 0,
-          "reinit": 3
-        },
-        "02:00-06:59": {
+        "04:00-08:59": {
           "init": 0,
           "reinit": 0
         },
-        "07:00-11:59": {
+        "09:00-13:59": {
           "init": 0,
           "reinit": 0
         }
@@ -193,12 +193,47 @@
               "reinit": 2
             }
           }
+        },
+        {
+          "date": "2025-09-28",
+          "total_init": 0,
+          "total_reinit": 4,
+          "buckets": {
+            "11:00-15:59": {
+              "init": 0,
+              "reinit": 0
+            },
+            "16:00-20:59": {
+              "init": 0,
+              "reinit": 1
+            },
+            "21:00-01:59": {
+              "init": 0,
+              "reinit": 3
+            },
+            "02:00-06:59": {
+              "init": 0,
+              "reinit": 0
+            },
+            "07:00-11:59": {
+              "init": 0,
+              "reinit": 0
+            }
+          }
         }
       ],
-      "last_reset": "2025-09-28T01:21:10.979Z",
-      "last_updated": "2025-09-28T02:20:46.860Z"
+      "last_reset": "2025-09-29T05:03:30.209Z",
+      "last_updated": "2025-09-29T05:03:30.209Z"
     }
   },
-  "agents": {},
+  "agents": {
+    "claude-build-quality-agent": {
+      "lastHeartbeat": "2025-09-29T05:03:30.200Z",
+      "status": "active",
+      "reinitialized": "2025-09-29T05:03:30.200Z",
+      "sessionId": "8c48374551676403",
+      "previousSessions": []
+    }
+  },
   "features": []
 }
