@@ -23,7 +23,7 @@ from database.connection import (
     get_async_session_context,
     test_connection,
     test_async_connection,
-    close_connections
+    close_connections_async
 )
 from config.settings import get_settings
 
@@ -90,13 +90,17 @@ class DatabaseManager:
             logger.info("Shutting down database manager")
 
             # Close all database connections
-            close_connections()
+            await close_connections_async()
 
             self._initialized = False
             logger.info("Database manager shutdown completed")
 
         except Exception as e:
             logger.error(f"Error during database manager shutdown: {e}")
+
+    async def close(self):
+        """Alias for shutdown method for compatibility."""
+        await self.shutdown()
 
     async def health_check(self) -> Dict[str, Any]:
         """

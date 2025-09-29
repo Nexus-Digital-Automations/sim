@@ -8,7 +8,7 @@ import logging
 from typing import AsyncIterator, Generator
 from contextlib import asynccontextmanager
 
-from sqlalchemy import create_engine, Engine
+from sqlalchemy import create_engine, Engine, text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import QueuePool
@@ -111,7 +111,6 @@ def create_async_engine_instance():
         pool_recycle=3600,  # Recycle connections after 1 hour
         pool_timeout=30,  # Connection timeout in seconds
         connect_args={
-            "application_name": "parlant-server",
             "server_settings": {
                 "timezone": "utc",
                 "application_name": "parlant-server"
@@ -160,7 +159,7 @@ def test_connection() -> bool:
     try:
         engine = get_engine()
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         logger.info("Database connection test successful")
         return True
     except Exception as e:
@@ -173,7 +172,7 @@ async def test_async_connection() -> bool:
     try:
         engine = get_async_engine()
         async with engine.begin() as conn:
-            await conn.execute("SELECT 1")
+            await conn.execute(text("SELECT 1"))
         logger.info("Async database connection test successful")
         return True
     except Exception as e:
@@ -191,6 +190,26 @@ def close_connections():
         logger.info("Sync database engine disposed")
 
     if _async_engine:
-        _async_engine.dispose()
+        # For sync context, dispose without awaiting (this will still close properly)
+        try:
+            _async_engine.sync_dispose()
+        except AttributeError:
+            # Fallback: dispose synchronously without awaiting
+            _async_engine.dispose()
+        _async_engine = None
+        logger.info("Async database engine disposed")
+
+
+async def close_connections_async():
+    """Close all database connections asynchronously."""
+    global _engine, _async_engine
+
+    if _engine:
+        _engine.dispose()
+        _engine = None
+        logger.info("Sync database engine disposed")
+
+    if _async_engine:
+        await _async_engine.dispose()
         _async_engine = None
         logger.info("Async database engine disposed")

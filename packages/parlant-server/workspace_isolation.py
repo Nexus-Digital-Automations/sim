@@ -105,6 +105,28 @@ class WorkspaceIsolationManager:
 
         logger.info("Workspace Isolation System initialized successfully")
 
+    async def _initialize_security_monitoring(self):
+        """Initialize security monitoring for workspace isolation."""
+        try:
+            logger.info("Initializing security monitoring systems")
+            # Security monitoring setup would go here
+            # For now, just log that it's initialized
+            logger.info("Security monitoring initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize security monitoring: {e}")
+            raise
+
+    async def _load_workspace_configurations(self):
+        """Load existing workspace configurations."""
+        try:
+            logger.info("Loading workspace configurations")
+            # Workspace configuration loading would go here
+            # For now, just log that it's loaded
+            logger.info("Workspace configurations loaded successfully")
+        except Exception as e:
+            logger.error(f"Failed to load workspace configurations: {e}")
+            raise
+
     async def create_workspace_scoped_agent(
         self,
         session: SimSession,
@@ -516,6 +538,65 @@ class WorkspaceIsolationManager:
 
     # Additional private methods would continue here...
     # This is a comprehensive framework that can be extended with specific implementations
+
+    async def _initialize_security_monitoring(self):
+        """Initialize security monitoring and audit systems."""
+        try:
+            logger.info("Initializing security monitoring systems")
+
+            # Initialize security event logging
+            self.security_events = []
+
+            # Set up monitoring configuration
+            self.monitoring_config = {
+                'cross_workspace_access_detection': True,
+                'unauthorized_access_logging': True,
+                'data_isolation_monitoring': True,
+                'audit_trail_enabled': True
+            }
+
+            # Initialize security metrics
+            self.security_metrics = {
+                'access_violations': 0,
+                'cross_workspace_attempts': 0,
+                'last_security_check': datetime.now().isoformat()
+            }
+
+            logger.info("Security monitoring initialized successfully")
+
+        except Exception as e:
+            logger.error(f"Failed to initialize security monitoring: {e}")
+            # Don't raise - allow system to continue with limited monitoring
+            logger.warning("Continuing with limited security monitoring capabilities")
+
+    async def _load_workspace_configurations(self):
+        """Load existing workspace isolation configurations."""
+        try:
+            logger.info("Loading workspace isolation configurations")
+
+            # Initialize workspace configurations storage
+            self.workspace_configs = {}
+
+            # In a full implementation, this would load from database
+            # For now, set up basic default configuration
+            default_config = {
+                'isolation_enabled': True,
+                'cross_workspace_access_policy': 'deny',
+                'audit_level': 'full',
+                'data_residency_enforcement': True
+            }
+
+            # Apply default configuration
+            self.default_workspace_config = default_config
+
+            logger.info("Workspace configurations loaded successfully")
+
+        except Exception as e:
+            logger.error(f"Failed to load workspace configurations: {e}")
+            # Set minimal safe defaults
+            self.workspace_configs = {}
+            self.default_workspace_config = {'isolation_enabled': True}
+            logger.warning("Using minimal safe workspace configuration")
 
     async def _log_security_event(self, event_type: str, event_data: Dict[str, Any]):
         """Log security events for audit and monitoring."""

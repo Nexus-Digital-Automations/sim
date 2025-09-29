@@ -115,7 +115,7 @@
     "approval_history": [],
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 82,
+      "total_reinitializations": 83,
       "current_day": "2025-09-29",
       "time_buckets": {
         "13:00-17:59": {
@@ -128,7 +128,7 @@
         },
         "23:00-03:59": {
           "init": 0,
-          "reinit": 1
+          "reinit": 2
         },
         "04:00-08:59": {
           "init": 0,
@@ -223,7 +223,7 @@
         }
       ],
       "last_reset": "2025-09-29T05:03:30.209Z",
-      "last_updated": "2025-09-29T05:03:30.209Z"
+      "last_updated": "2025-09-29T05:18:31.496Z"
     }
   },
   "agents": {
@@ -232,6 +232,13 @@
       "status": "active",
       "reinitialized": "2025-09-29T05:03:30.200Z",
       "sessionId": "8c48374551676403",
+      "previousSessions": []
+    },
+    "claude-build-fix-agent": {
+      "lastHeartbeat": "2025-09-29T05:18:31.493Z",
+      "status": "active",
+      "reinitialized": "2025-09-29T05:18:31.493Z",
+      "sessionId": "d8a500b9fd54df1d",
       "previousSessions": []
     }
   },

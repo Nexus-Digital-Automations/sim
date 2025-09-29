@@ -10,8 +10,9 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file in parlant-server directory
+_project_root = Path(__file__).parent.parent
+load_dotenv(_project_root / ".env")
 
 
 class Settings(BaseSettings):
