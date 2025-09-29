@@ -1,18 +1,17 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { ReactFlowProvider } from 'reactflow'
-import { DotPattern } from './dot-pattern'
-import { LandingFlow } from './landing-flow'
+import React from "react";
+import { ReactFlowProvider } from "reactflow";
+import { DotPattern } from "./dot-pattern";
+import { LandingFlow } from "./landing-flow";
 import type {
-  CARD_HEIGHT,
-  CARD_WIDTH,
   LandingBlockNode,
   LandingCanvasProps,
   LandingEdgeData,
   LandingGroupData,
   LandingViewportApi,
-} from './types'
+} from "./types";
+import { CARD_HEIGHT, CARD_WIDTH } from "./types";
 
 // Re-export types and constants for backward compatibility
 export type {
@@ -21,8 +20,8 @@ export type {
   LandingGroupData,
   LandingViewportApi,
   LandingCanvasProps,
-}
-export type { CARD_WIDTH, CARD_HEIGHT }
+};
+export { CARD_WIDTH, CARD_HEIGHT };
 
 /**
  * Main landing canvas component that provides the container and background
@@ -37,11 +36,11 @@ export function LandingCanvas({
   worldWidth,
   viewportApiRef,
 }: LandingCanvasProps) {
-  const flowWrapRef = React.useRef<HTMLDivElement | null>(null)
+  const flowWrapRef = React.useRef<HTMLDivElement | null>(null);
 
   return (
-    <div className='relative mx-auto flex h-[612px] w-full max-w-[1285px] border-none bg-background/80'>
-      <DotPattern className='pointer-events-none absolute inset-0 z-0 h-full w-full opacity-20' />
+    <div className="relative mx-auto flex h-[612px] w-full max-w-[1285px] border-none bg-background/80">
+      <DotPattern className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-20" />
 
       {/* Use template button overlay */}
       {/* <button
@@ -55,7 +54,7 @@ export function LandingCanvas({
         Use template
       </button> */}
 
-      <div ref={flowWrapRef} className='relative z-10 h-full w-full'>
+      <div ref={flowWrapRef} className="relative z-10 h-full w-full">
         <ReactFlowProvider>
           <LandingFlow
             nodes={nodes}
@@ -68,5 +67,5 @@ export function LandingCanvas({
         </ReactFlowProvider>
       </div>
     </div>
-  )
+  );
 }
