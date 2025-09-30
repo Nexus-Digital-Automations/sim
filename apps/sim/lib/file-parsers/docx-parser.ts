@@ -1,56 +1,56 @@
-import mammoth from "mammoth";
-import type { FileParseResult, FileParser } from "@/lib/file-parsers/types";
-import { createLogger } from "@/lib/logs/console/logger";
+import mammoth from 'mammoth'
+import type { FileParseResult, FileParser } from '@/lib/file-parsers/types'
+import { createLogger } from '@/lib/logs/console/logger'
 
-const logger = createLogger("DocxParser");
+const logger = createLogger('DocxParser')
 
 // Check if we're on the server side
-const isServer = typeof window === "undefined";
+const isServer = typeof window === 'undefined'
 
 // Conditional imports for server-side only
 const getServerModules = () => {
   if (!isServer) {
-    throw new Error("DOCX parsing is only available on the server side");
+    throw new Error('DOCX parsing is only available on the server side')
   }
 
-  const fsPromises = require("fs/promises");
-  return { fsPromises };
-};
+  const fsPromises = require('fs/promises')
+  return { fsPromises }
+}
 
 // Define interface for mammoth result
 interface MammothResult {
-  value: string;
-  messages: any[];
+  value: string
+  messages: any[]
 }
 
 export class DocxParser implements FileParser {
   async parseFile(filePath: string): Promise<FileParseResult> {
     try {
       if (!filePath) {
-        throw new Error("No file path provided");
+        throw new Error('No file path provided')
       }
 
-      const { fsPromises } = getServerModules();
-      const buffer = await fsPromises.readFile(filePath);
+      const { fsPromises } = getServerModules()
+      const buffer = await fsPromises.readFile(filePath)
 
-      return this.parseBuffer(buffer);
+      return this.parseBuffer(buffer)
     } catch (error) {
-      logger.error("DOCX file error:", error);
-      throw new Error(`Failed to parse DOCX file: ${(error as Error).message}`);
+      logger.error('DOCX file error:', error)
+      throw new Error(`Failed to parse DOCX file: ${(error as Error).message}`)
     }
   }
 
   async parseBuffer(buffer: Buffer): Promise<FileParseResult> {
     try {
-      logger.info("Parsing buffer, size:", buffer.length);
+      logger.info('Parsing buffer, size:', buffer.length)
 
-      const result = await mammoth.extractRawText({ buffer });
+      const result = await mammoth.extractRawText({ buffer })
 
-      let htmlResult: MammothResult = { value: "", messages: [] };
+      let htmlResult: MammothResult = { value: '', messages: [] }
       try {
-        htmlResult = await mammoth.convertToHtml({ buffer });
+        htmlResult = await mammoth.convertToHtml({ buffer })
       } catch (htmlError) {
-        logger.warn("HTML conversion warning:", htmlError);
+        logger.warn('HTML conversion warning:', htmlError)
       }
 
       return {
@@ -59,12 +59,10 @@ export class DocxParser implements FileParser {
           messages: [...result.messages, ...htmlResult.messages],
           html: htmlResult.value,
         },
-      };
+      }
     } catch (error) {
-      logger.error("DOCX buffer parsing error:", error);
-      throw new Error(
-        `Failed to parse DOCX buffer: ${(error as Error).message}`,
-      );
+      logger.error('DOCX buffer parsing error:', error)
+      throw new Error(`Failed to parse DOCX buffer: ${(error as Error).message}`)
     }
   }
 }

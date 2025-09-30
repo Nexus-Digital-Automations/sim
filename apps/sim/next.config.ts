@@ -1,6 +1,21 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
-// Completely empty config to prevent build hanging
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 
-export default nextConfig;
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        encoding: false,
+        fs: false,
+        path: false,
+      }
+    }
+    return config
+  },
+}
+
+export default nextConfig

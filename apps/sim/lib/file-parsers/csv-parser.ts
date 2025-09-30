@@ -1,10 +1,22 @@
-import { existsSync, readFileSync } from 'fs'
 import * as Papa from 'papaparse'
 import type { FileParseResult, FileParser } from '@/lib/file-parsers/types'
 import { sanitizeTextForUTF8 } from '@/lib/file-parsers/utils'
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('CsvParser')
+
+// Check if we're on the server side
+const isServer = typeof window === 'undefined'
+
+// Conditional imports for server-side only
+const getServerModules = () => {
+  if (!isServer) {
+    throw new Error('CSV parsing is only available on the server side')
+  }
+
+  const fs = require('fs')
+  return { existsSync: fs.existsSync, readFileSync: fs.readFileSync }
+}
 
 const PARSE_OPTIONS = {
   header: true,
@@ -19,6 +31,8 @@ export class CsvParser implements FileParser {
       if (!filePath) {
         throw new Error('No file path provided')
       }
+
+      const { existsSync, readFileSync } = getServerModules()
 
       if (!existsSync(filePath)) {
         throw new Error(`File not found: ${filePath}`)

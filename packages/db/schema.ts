@@ -1582,4 +1582,6 @@ export {
   messageTypeEnum,
 } from './shared-enums'
 
-// Note: Parlant tables and enums are exported through parlant-exports.ts to avoid conflicts
+// Export commonly used Parlant tables for convenience
+// (Full exports available through parlant-exports.ts)
+export { parlantAgent, parlantSession } from './parlant-schema'
